@@ -1,0 +1,88 @@
+{
+  "name": "Email Settings",
+  "description": "Account configuration, Vault references, locks, and scan state",
+  "position": 2,
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "record-id",
+      "name": "Record ID",
+      "type": "text",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "kind",
+      "name": "Kind",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "payload",
+      "name": "Configuration",
+      "type": "json",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "vault-refs",
+      "name": "Vault References",
+      "type": "longtext",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "locked",
+      "name": "Locked",
+      "type": "checkbox",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "message",
+      "name": "Message",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Owner",
+      "type": "text",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "started-at",
+      "name": "Started At",
+      "type": "date",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "updated-at",
+      "name": "Updated At",
+      "type": "date",
+      "required": false,
+      "position": 9,
+      "options": {}
+    }
+  ],
+  "views": []
+}

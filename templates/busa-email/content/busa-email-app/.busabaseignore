@@ -1,0 +1,8 @@
+# Files that belong in the repository but not in the running AirApp.
+# Never exclude package.json or the entry it declares — the app would install
+# and then fail to boot, which is the hardest failure to attribute.
+test/
+scripts/check.mjs
+pnpm-lock.yaml
+pnpm-workspace.yaml
+.gitignore

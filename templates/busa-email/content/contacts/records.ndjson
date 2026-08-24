@@ -1,0 +1,2 @@
+{"key":"con-demo-1","fields":{"record-id":"con-demo-1","email":"dana@acme.example","name":"Dana Okafor","organization":"Acme","relationship":"client","notes":"Reschedules often; prefers mornings."}}
+{"key":"con-demo-2","fields":{"record-id":"con-demo-2","email":"billing@northwind.example","name":"Northwind Billing","organization":"Northwind Supplies","relationship":"supplier","notes":"Sends invoice reminders on a 12-day cycle."}}

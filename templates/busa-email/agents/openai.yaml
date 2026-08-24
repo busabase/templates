@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Email"
+  short_description: "Busabase AirApp email review and inbox zero"
+  default_prompt: "Use $busa-email to propose an unread-email batch, publish it to the Busabase AirApp for review, and execute only approved decisions."

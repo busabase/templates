@@ -1,0 +1,23 @@
+{
+  "name": "busa-email",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Busa Email Busabase Cloud skill and trusted mailbox operator.",
+  "scripts": {
+    "generate": "node scripts/generate_review_batch.ts",
+    "execute": "node scripts/execute_ui_decisions.ts",
+    "validate": "node scripts/validate_ui_schema.ts",
+    "busabase:init": "node scripts/init_busabase_schema.ts",
+    "app:check": "pnpm --dir app check"
+  },
+  "dependencies": {
+    "busabase-sdk": "0.17.2",
+    "imapflow": "^1.6.5",
+    "mailparser": "^3.9.14",
+    "nodemailer": "^9.0.3"
+  },
+  "engines": {
+    "node": ">=23.6"
+  }
+}

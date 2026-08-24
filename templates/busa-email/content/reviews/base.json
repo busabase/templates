@@ -1,0 +1,528 @@
+{
+  "name": "Email Reviews",
+  "description": "Mailbox review items, human decisions, and execution outcomes",
+  "position": 0,
+  "fields": [
+    {
+      "slug": "subject",
+      "name": "Subject",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "record-id",
+      "name": "Record ID",
+      "type": "text",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "kind",
+      "name": "Kind",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "batch-id",
+      "name": "Batch ID",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "item-id",
+      "name": "Item ID",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "email-uid",
+      "name": "Email UID",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "thread-id",
+      "name": "Thread ID",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "message-id",
+      "name": "Message ID",
+      "type": "text",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "folder",
+      "name": "Mailbox Folder",
+      "type": "text",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "sender",
+      "name": "Sender",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "sender-contact-id",
+      "name": "Sender Contact ID",
+      "type": "text",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "sender-email",
+      "name": "Sender Email",
+      "type": "email",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "sender-domain",
+      "name": "Sender Domain",
+      "type": "text",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "recipients",
+      "name": "Recipients",
+      "type": "longtext",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "recipient-contact-ids",
+      "name": "Recipient Contact IDs",
+      "type": "longtext",
+      "required": false,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "recipient-emails",
+      "name": "Recipient Emails",
+      "type": "longtext",
+      "required": false,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "cc",
+      "name": "CC",
+      "type": "longtext",
+      "required": false,
+      "position": 16,
+      "options": {}
+    },
+    {
+      "slug": "source-account",
+      "name": "Source Account",
+      "type": "text",
+      "required": false,
+      "position": 17,
+      "options": {}
+    },
+    {
+      "slug": "email-date",
+      "name": "Email Date",
+      "type": "date",
+      "required": false,
+      "position": 18,
+      "options": {}
+    },
+    {
+      "slug": "category",
+      "name": "Category",
+      "type": "text",
+      "required": false,
+      "position": 19,
+      "options": {}
+    },
+    {
+      "slug": "risk",
+      "name": "Risk",
+      "type": "longtext",
+      "required": false,
+      "position": 20,
+      "options": {}
+    },
+    {
+      "slug": "reason",
+      "name": "Reason",
+      "type": "longtext",
+      "required": false,
+      "position": 21,
+      "options": {}
+    },
+    {
+      "slug": "summary",
+      "name": "Summary",
+      "type": "longtext",
+      "required": false,
+      "position": 22,
+      "options": {}
+    },
+    {
+      "slug": "review-background",
+      "name": "Review Background",
+      "type": "longtext",
+      "required": false,
+      "position": 23,
+      "options": {}
+    },
+    {
+      "slug": "review-recommendation",
+      "name": "Recommendation",
+      "type": "longtext",
+      "required": false,
+      "position": 24,
+      "options": {}
+    },
+    {
+      "slug": "review-why",
+      "name": "Why Review",
+      "type": "longtext",
+      "required": false,
+      "position": 25,
+      "options": {}
+    },
+    {
+      "slug": "body-text",
+      "name": "Body Text",
+      "type": "longtext",
+      "required": false,
+      "position": 26,
+      "options": {}
+    },
+    {
+      "slug": "body-original",
+      "name": "Original Body",
+      "type": "longtext",
+      "required": false,
+      "position": 27,
+      "options": {}
+    },
+    {
+      "slug": "body-translation",
+      "name": "Body Translation",
+      "type": "longtext",
+      "required": false,
+      "position": 28,
+      "options": {}
+    },
+    {
+      "slug": "body-excerpt",
+      "name": "Body Excerpt",
+      "type": "longtext",
+      "required": false,
+      "position": 29,
+      "options": {}
+    },
+    {
+      "slug": "quote-preview",
+      "name": "Quote Preview",
+      "type": "longtext",
+      "required": false,
+      "position": 30,
+      "options": {}
+    },
+    {
+      "slug": "html-excerpt",
+      "name": "HTML Excerpt",
+      "type": "longtext",
+      "required": false,
+      "position": 31,
+      "options": {}
+    },
+    {
+      "slug": "draft-text",
+      "name": "Draft Text",
+      "type": "longtext",
+      "required": false,
+      "position": 32,
+      "options": {}
+    },
+    {
+      "slug": "suggested-reply",
+      "name": "Suggested Reply",
+      "type": "longtext",
+      "required": false,
+      "position": 33,
+      "options": {}
+    },
+    {
+      "slug": "draft-excerpt",
+      "name": "Draft Excerpt",
+      "type": "longtext",
+      "required": false,
+      "position": 34,
+      "options": {}
+    },
+    {
+      "slug": "user-comment",
+      "name": "User Comment",
+      "type": "longtext",
+      "required": false,
+      "position": 35,
+      "options": {}
+    },
+    {
+      "slug": "decision-action",
+      "name": "Decision Action",
+      "type": "text",
+      "required": false,
+      "position": 36,
+      "options": {}
+    },
+    {
+      "slug": "decided-at",
+      "name": "Decided At",
+      "type": "date",
+      "required": false,
+      "position": 37,
+      "options": {}
+    },
+    {
+      "slug": "execution-status",
+      "name": "Execution Status",
+      "type": "text",
+      "required": false,
+      "position": 38,
+      "options": {}
+    },
+    {
+      "slug": "mailbox-operation",
+      "name": "Mailbox Operation",
+      "type": "text",
+      "required": false,
+      "position": 39,
+      "options": {}
+    },
+    {
+      "slug": "target-folder",
+      "name": "Target Folder",
+      "type": "text",
+      "required": false,
+      "position": 40,
+      "options": {}
+    },
+    {
+      "slug": "executed-at",
+      "name": "Executed At",
+      "type": "date",
+      "required": false,
+      "position": 41,
+      "options": {}
+    },
+    {
+      "slug": "execution-reason",
+      "name": "Execution Reason",
+      "type": "longtext",
+      "required": false,
+      "position": 42,
+      "options": {}
+    },
+    {
+      "slug": "execution-error",
+      "name": "Execution Error",
+      "type": "longtext",
+      "required": false,
+      "position": 43,
+      "options": {}
+    },
+    {
+      "slug": "has-html",
+      "name": "Has HTML",
+      "type": "checkbox",
+      "required": false,
+      "position": 44,
+      "options": {}
+    },
+    {
+      "slug": "has-draft",
+      "name": "Has Draft",
+      "type": "checkbox",
+      "required": false,
+      "position": 45,
+      "options": {}
+    },
+    {
+      "slug": "has-translation",
+      "name": "Has Translation",
+      "type": "checkbox",
+      "required": false,
+      "position": 46,
+      "options": {}
+    },
+    {
+      "slug": "has-attachments",
+      "name": "Has Attachments",
+      "type": "checkbox",
+      "required": false,
+      "position": 47,
+      "options": {}
+    },
+    {
+      "slug": "drive-path",
+      "name": "Drive Path",
+      "type": "text",
+      "required": false,
+      "position": 48,
+      "options": {}
+    },
+    {
+      "slug": "html-drive-path",
+      "name": "HTML Drive Path",
+      "type": "text",
+      "required": false,
+      "position": 49,
+      "options": {}
+    },
+    {
+      "slug": "attachments-drive-path",
+      "name": "Attachments Drive Path",
+      "type": "text",
+      "required": false,
+      "position": 50,
+      "options": {}
+    },
+    {
+      "slug": "attachment-count",
+      "name": "Attachment Count",
+      "type": "number",
+      "required": false,
+      "position": 51,
+      "options": {}
+    },
+    {
+      "slug": "attachment-names",
+      "name": "Attachment Names",
+      "type": "longtext",
+      "required": false,
+      "position": 52,
+      "options": {}
+    },
+    {
+      "slug": "attachment-refs",
+      "name": "Attachment References",
+      "type": "longtext",
+      "required": false,
+      "position": 53,
+      "options": {}
+    },
+    {
+      "slug": "classification-method",
+      "name": "Classification Method",
+      "type": "text",
+      "required": false,
+      "position": 54,
+      "options": {}
+    },
+    {
+      "slug": "user-language",
+      "name": "User Language",
+      "type": "text",
+      "required": false,
+      "position": 55,
+      "options": {}
+    },
+    {
+      "slug": "source-language",
+      "name": "Source Language",
+      "type": "text",
+      "required": false,
+      "position": 56,
+      "options": {}
+    },
+    {
+      "slug": "body-original-language",
+      "name": "Original Language",
+      "type": "text",
+      "required": false,
+      "position": 57,
+      "options": {}
+    },
+    {
+      "slug": "body-translation-language",
+      "name": "Translation Language",
+      "type": "text",
+      "required": false,
+      "position": 58,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "text",
+      "required": false,
+      "position": 59,
+      "options": {}
+    },
+    {
+      "slug": "proposed-action",
+      "name": "Proposed Action",
+      "type": "text",
+      "required": false,
+      "position": 60,
+      "options": {}
+    },
+    {
+      "slug": "updated-at",
+      "name": "Updated At",
+      "type": "date",
+      "required": false,
+      "position": 61,
+      "options": {}
+    },
+    {
+      "slug": "created-at",
+      "name": "Created At",
+      "type": "date",
+      "required": false,
+      "position": 62,
+      "options": {}
+    },
+    {
+      "slug": "report",
+      "name": "Execution Report",
+      "type": "json",
+      "required": false,
+      "position": 63,
+      "options": {}
+    },
+    {
+      "slug": "latest-record-id",
+      "name": "Latest Record ID",
+      "type": "text",
+      "required": false,
+      "position": 64,
+      "options": {}
+    }
+  ],
+  "views": []
+}

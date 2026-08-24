@@ -1,0 +1,184 @@
+{
+  "name": "Email Contacts",
+  "description": "Contact observations derived from reviewed mail",
+  "position": 1,
+  "fields": [
+    {
+      "slug": "email",
+      "name": "Email",
+      "type": "email",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "record-id",
+      "name": "Record ID",
+      "type": "text",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "kind",
+      "name": "Kind",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "contact-id",
+      "name": "Contact ID",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "display-name",
+      "name": "Display Name",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "domain",
+      "name": "Domain",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "roles",
+      "name": "Roles",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "source-accounts",
+      "name": "Source Accounts",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "first-seen-at",
+      "name": "First Seen At",
+      "type": "date",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "last-seen-at",
+      "name": "Last Seen At",
+      "type": "date",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "message-count",
+      "name": "Message Count",
+      "type": "number",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "last-subject",
+      "name": "Last Subject",
+      "type": "longtext",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "last-message-id",
+      "name": "Last Message ID",
+      "type": "text",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "last-batch-id",
+      "name": "Last Batch ID",
+      "type": "text",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "last-status",
+      "name": "Last Status",
+      "type": "text",
+      "required": false,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "last-proposed-action",
+      "name": "Last Proposed Action",
+      "type": "text",
+      "required": false,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "category-counts",
+      "name": "Category Counts",
+      "type": "longtext",
+      "required": false,
+      "position": 16,
+      "options": {}
+    },
+    {
+      "slug": "risk-tags",
+      "name": "Risk Tags",
+      "type": "longtext",
+      "required": false,
+      "position": 17,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Notes",
+      "type": "longtext",
+      "required": false,
+      "position": 18,
+      "options": {}
+    },
+    {
+      "slug": "default-action",
+      "name": "Default Action",
+      "type": "text",
+      "required": false,
+      "position": 19,
+      "options": {}
+    },
+    {
+      "slug": "updated-at",
+      "name": "Updated At",
+      "type": "date",
+      "required": false,
+      "position": 20,
+      "options": {}
+    },
+    {
+      "slug": "created-at",
+      "name": "Created At",
+      "type": "date",
+      "required": false,
+      "position": 21,
+      "options": {}
+    }
+  ],
+  "views": []
+}

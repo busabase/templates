@@ -1,0 +1,1 @@
+{"key":"set-demo-config","fields":{"record-id":"set-demo-config","name":"busa-email-config","kind":"config","value":"See config.example.json. Mailbox credentials belong in the Vault namespace busa-email, never here."}}

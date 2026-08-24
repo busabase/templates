@@ -1,0 +1,31 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-email",
+  "description": "Inbox triage, human review, and trusted execution — an approval-first email desk.",
+  "version": "0.3.0",
+  "license": "MIT",
+  "tags": ["email", "triage", "approval"],
+  "template": {
+    "category": "email",
+    "schemaVersion": 3,
+    "airapp": "busa-email-app",
+    "tags": ["inbox", "review-queue", "drafts"],
+    "screenshots": [
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/inbox-approval.webp",
+      "assets/screenshots/needs-review.webp",
+      "assets/screenshots/blocked-security.webp"
+    ],
+    "agentPrompts": [
+      "Triage this morning's mail and draft replies for anything high priority.",
+      "List the reviews still waiting on me, newest first.",
+      "Summarise what changed in the inbox since yesterday."
+    ],
+    "vaultNamespace": "busa-email",
+    "secrets": [
+      { "key": "BUSA_EMAIL_IMAP_PASSWORD_PRIMARY", "description": "IMAP password for the primary mailbox", "required": true },
+      { "key": "BUSA_EMAIL_SMTP_PASSWORD_PRIMARY", "description": "SMTP password for the primary mailbox", "required": false }
+    ],
+    "requires": { "airapp": true }
+  }
+}

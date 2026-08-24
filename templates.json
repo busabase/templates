@@ -1,0 +1,44 @@
+{
+  "format": "busabase-template-index@1",
+  "repo": "busabase/templates",
+  "ref": "main",
+  "templates": [
+    {
+      "subdir": "templates/busa-email",
+      "name": "busa-email",
+      "description": "Inbox triage, human review, and trusted execution — an approval-first email desk.",
+      "category": "email",
+      "tags": [
+        "email",
+        "triage",
+        "approval",
+        "inbox",
+        "review-queue",
+        "drafts"
+      ],
+      "screenshots": [
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/inbox-approval.webp",
+        "assets/screenshots/needs-review.webp",
+        "assets/screenshots/blocked-security.webp"
+      ],
+      "agentPrompts": [
+        "Triage this morning's mail and draft replies for anything high priority.",
+        "List the reviews still waiting on me, newest first.",
+        "Summarise what changed in the inbox since yesterday."
+      ],
+      "version": "0.3.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 3,
+        "records": 7,
+        "files": 51,
+        "airapps": 1,
+        "skill": true
+      }
+    }
+  ],
+  "rejected": []
+}
