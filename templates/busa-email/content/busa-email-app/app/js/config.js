@@ -127,6 +127,7 @@ export const appConfig = {
   bases: [
     {
       key: "reviews",
+      slug: "busa-email-reviews",
       name: "Email Reviews",
       description: "Mailbox review items, human decisions, and execution outcomes",
       readLimit: 100,
@@ -134,6 +135,7 @@ export const appConfig = {
     },
     {
       key: "contacts",
+      slug: "busa-email-contacts",
       name: "Email Contacts",
       description: "Contact observations derived from reviewed mail",
       readLimit: 100,
@@ -141,6 +143,7 @@ export const appConfig = {
     },
     {
       key: "settings",
+      slug: "busa-email-settings",
       name: "Email Settings",
       description: "Account configuration, Vault references, locks, and scan state",
       readLimit: 30,
@@ -148,6 +151,7 @@ export const appConfig = {
     },
   ],
   drive: {
+    slug: "busa-email-files",
     name: "Email Files",
     description: "Email HTML and attachment artifacts",
   },
