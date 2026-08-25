@@ -1,0 +1,23 @@
+{
+  "name": "b2b-crm",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24.18.0"
+  },
+  "scripts": {
+    "build:sdk": "esbuild scripts/sdk-entry.js --bundle --format=esm --platform=browser --outfile=app/vendor/busabase-sdk.js",
+    "dev": "node server.js",
+    "start": "node server.js",
+    "check": "node scripts/check.mjs"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.1",
+    "busabase-sdk": "0.19.0",
+    "hono": "4.13.4"
+  },
+  "devDependencies": {
+    "esbuild-wasm": "0.28.1"
+  }
+}

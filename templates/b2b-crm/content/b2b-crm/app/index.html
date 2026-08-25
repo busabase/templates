@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>B2B CRM</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand-row">
+          <div class="brand-mark" aria-hidden="true">B2</div>
+          <div class="brand-copy"><strong id="brandName">B2B CRM</strong><span>Sales relationships</span></div>
+          <button class="icon-button panel-button" id="sidebarClose" type="button" aria-label="Close navigation" title="Close navigation"><span class="panel-icon" aria-hidden="true"></span></button>
+        </div>
+        <section class="attention" aria-labelledby="attentionTitle">
+          <span class="eyebrow" id="attentionTitle">Follow-up attention</span>
+          <strong id="attentionValue">0</strong>
+          <span id="attentionCopy">due in the loaded window</span>
+        </section>
+        <nav class="main-nav" id="mainNav" aria-label="CRM navigation">
+          <button class="nav-item active" type="button" data-screen="directory"><span>Directory</span><span id="directoryNavCount">0</span></button>
+          <button class="nav-item" type="button" data-screen="activities"><span>Activities</span><span id="activitiesNavCount">0</span></button>
+        </nav>
+        <button class="settings-button" id="settingsOpen" type="button">Help &amp; Settings</button>
+      </aside>
+
+      <main class="main">
+        <header class="mobile-bar">
+          <button class="icon-button" id="sidebarOpen" type="button" aria-label="Open navigation" title="Open navigation"><span class="panel-icon" aria-hidden="true"></span></button>
+          <strong id="mobileTitle">Directory</strong>
+          <button class="icon-button" id="mobileSettings" type="button" aria-label="Open settings" title="Open settings">i</button>
+        </header>
+        <section class="workspace-header">
+          <div><span class="eyebrow" id="viewEyebrow">Account workspace</span><h1 id="viewTitle">Company &amp; Contact Directory</h1><p id="viewSummary">Find an account, understand the people involved, and review the relationship history.</p></div>
+          <label class="search"><span class="sr-only" id="searchLabel">Search directory</span><input id="searchInput" type="search" autocomplete="off" placeholder="Search companies"></label>
+        </section>
+        <section class="metrics" id="metrics" aria-label="CRM summary"></section>
+        <section class="control-bar" id="controlBar">
+          <div class="segmented" id="directoryTabs" aria-label="Directory type">
+            <button class="active" type="button" data-directory-tab="companies">Companies</button>
+            <button type="button" data-directory-tab="contacts">Contacts</button>
+          </div>
+          <label class="filter-control"><span id="filterLabel">Relationship</span><select id="recordFilter" aria-label="Filter records"></select></label>
+          <span class="window-note" id="windowNote">Showing one bounded data window</span>
+        </section>
+        <section class="content-split">
+          <section class="list-panel" id="listPanel">
+            <div class="panel-heading"><div><span class="eyebrow" id="listEyebrow">Directory</span><h2 id="listTitle">Companies</h2></div><span class="count" id="recordCount">0</span></div>
+            <div class="state-message" id="loadingState" role="status">Loading CRM records...</div>
+            <div class="state-message error" id="errorState" role="alert" hidden></div>
+            <div class="record-list" id="recordList"></div>
+            <button class="load-more" id="loadMore" type="button" hidden>Load more</button>
+          </section>
+          <aside class="detail-panel" id="detailPanel">
+            <button class="back-button" id="backButton" type="button">Back to list</button>
+            <div class="detail-empty" id="detailEmpty"><strong>Select a company</strong><span>Relationship details and recent activity will appear here.</span></div>
+            <article id="detailContent" hidden>
+              <header class="detail-header"><div><span class="eyebrow" id="detailEyebrow">Company</span><h2 id="detailTitle"></h2></div><button class="primary-button" id="logActivityOpen" type="button" hidden>Log Activity</button></header>
+              <div class="audit-line" id="auditLine"></div>
+              <div class="detail-fields" id="detailFields"></div>
+              <section class="related-section" id="relatedContactsSection" hidden><div class="section-heading"><h3>Contacts</h3><span id="relatedContactsCount"></span></div><div class="related-list" id="relatedContacts"></div></section>
+              <section class="related-section" id="relatedActivitiesSection" hidden><div class="section-heading"><h3>Recent activity</h3><span id="relatedActivitiesCount"></span></div><div class="related-list" id="relatedActivities"></div></section>
+            </article>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <button class="sidebar-scrim" id="sidebarScrim" type="button" aria-label="Close navigation" hidden></button>
+
+    <div class="modal-backdrop" id="settingsModal" hidden>
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <header class="modal-header"><div><span class="eyebrow">B2B CRM</span><h2 id="settingsTitle">Help &amp; Settings</h2></div><button class="icon-button" id="settingsClose" type="button" aria-label="Close settings" title="Close settings">x</button></header>
+        <div class="settings-intro"><strong>Runtime and data access</strong><p>This AirApp reads only its configured CRM resources. New activities are proposed for review before becoming canonical.</p></div>
+        <div class="settings-grid" id="settingsGrid"></div>
+      </section>
+    </div>
+
+    <div class="modal-backdrop" id="activityModal" hidden>
+      <section class="modal activity-modal" role="dialog" aria-modal="true" aria-labelledby="activityModalTitle">
+        <header class="modal-header"><div><span class="eyebrow">ChangeRequest</span><h2 id="activityModalTitle">Log Activity</h2></div><button class="icon-button" id="activityModalClose" type="button" aria-label="Close activity form" title="Close activity form">x</button></header>
+        <form id="activityForm">
+          <div class="form-context" id="activityContext"></div>
+          <div class="form-grid" id="activityFields">
+            <label class="wide"><span>Activity Subject</span><input name="activity-subject" required maxlength="140"></label>
+            <label><span>Activity Type</span><select name="activity-type" required><option value="call">Call</option><option value="email">Email</option><option value="meeting">Meeting</option><option value="note">Note</option></select></label>
+            <label><span>Activity Date</span><input name="activity-date" type="date" required></label>
+            <label class="wide"><span>Summary</span><textarea name="summary" required rows="5" maxlength="1200"></textarea></label>
+            <label><span>Next Follow-Up Date</span><input name="next-follow-up-date" type="date"></label>
+          </div>
+          <section class="request-preview" id="requestPreview" hidden><span class="eyebrow">Review before submitting</span><dl id="previewFields"></dl><p>This creates a pending ChangeRequest. It does not update canonical CRM data directly.</p></section>
+          <div class="form-result" id="activityResult" role="status" hidden></div>
+          <footer class="modal-actions">
+            <button class="secondary-button" id="activityBack" type="button" hidden>Back</button>
+            <button class="secondary-button" id="activityCancel" type="button">Cancel</button>
+            <button class="primary-button" id="activityReview" type="submit">Review request</button>
+            <button class="primary-button" id="activitySubmit" type="button" hidden>Submit ChangeRequest</button>
+          </footer>
+        </form>
+      </section>
+    </div>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

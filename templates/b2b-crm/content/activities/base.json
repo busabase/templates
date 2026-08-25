@@ -1,0 +1,130 @@
+{
+  "name": "Activities",
+  "description": "Calls, emails, meetings, notes, and next follow-up dates.",
+  "position": 0,
+  "reviewPolicy": {
+    "kind": "single",
+    "requiredApprovals": 1
+  },
+  "fields": [
+    {
+      "slug": "activity-subject",
+      "name": "Activity Subject",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "company",
+      "name": "Company",
+      "type": "relation",
+      "required": true,
+      "position": 1,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "companies"
+      }
+    },
+    {
+      "slug": "contact",
+      "name": "Contact",
+      "type": "relation",
+      "required": false,
+      "position": 2,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "contacts"
+      }
+    },
+    {
+      "slug": "activity-type",
+      "name": "Activity Type",
+      "type": "select",
+      "required": true,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "call",
+            "name": "Call"
+          },
+          {
+            "id": "email",
+            "name": "Email"
+          },
+          {
+            "id": "meeting",
+            "name": "Meeting"
+          },
+          {
+            "id": "note",
+            "name": "Note"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "activity-date",
+      "name": "Activity Date",
+      "type": "date",
+      "required": true,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "summary",
+      "name": "Summary",
+      "type": "longtext",
+      "required": true,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "next-follow-up-date",
+      "name": "Next Follow-Up Date",
+      "type": "date",
+      "required": false,
+      "position": 6,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "follow-up-calendar",
+      "name": "Follow-Up Calendar",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "next-follow-up-date",
+            "operator": "not_empty"
+          }
+        ],
+        "sorts": []
+      }
+    },
+    {
+      "slug": "activity-timeline",
+      "name": "Activity Timeline",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "direction": "desc",
+            "fieldSlug": "activity-date"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "activity-subject",
+          "activity-type",
+          "company",
+          "contact",
+          "activity-date",
+          "next-follow-up-date"
+        ]
+      }
+    }
+  ]
+}

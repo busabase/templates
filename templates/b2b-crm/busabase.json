@@ -1,0 +1,26 @@
+{
+  "format": "busabase-package@1",
+  "name": "b2b-crm",
+  "description": "A lightweight B2B CRM for organizing companies, contacts, activities, and follow-ups.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "tags": ["sales", "accounts", "contacts", "activities"],
+  "template": {
+    "category": "crm",
+    "schemaVersion": 1,
+    "airapp": "b2b-crm",
+    "tags": ["sales", "accounts", "contacts", "activities"],
+    "screenshots": [
+      "assets/screenshots/directory-overview.webp",
+      "assets/screenshots/company-detail.webp",
+      "assets/screenshots/log-activity-review.webp"
+    ],
+    "agentPrompts": [
+      "Add a new company and its primary contact from these notes.",
+      "Show me the accounts with follow-ups due and summarize the latest activity.",
+      "Log this customer interaction and schedule the next follow-up."
+    ],
+    "secrets": [],
+    "requires": { "airapp": true }
+  }
+}

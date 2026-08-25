@@ -4,6 +4,39 @@
   "ref": "main",
   "templates": [
     {
+      "subdir": "templates/b2b-crm",
+      "name": "b2b-crm",
+      "description": "A lightweight B2B CRM for organizing companies, contacts, activities, and follow-ups.",
+      "category": "crm",
+      "tags": [
+        "sales",
+        "accounts",
+        "contacts",
+        "activities"
+      ],
+      "screenshots": [
+        "assets/screenshots/directory-overview.webp",
+        "assets/screenshots/company-detail.webp",
+        "assets/screenshots/log-activity-review.webp"
+      ],
+      "agentPrompts": [
+        "Add a new company and its primary contact from these notes.",
+        "Show me the accounts with follow-ups due and summarize the latest activity.",
+        "Log this customer interaction and schedule the next follow-up."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 3,
+        "records": 9,
+        "files": 16,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-email",
       "name": "busa-email",
       "description": "Inbox triage, human review, and trusted execution — an approval-first email desk.",

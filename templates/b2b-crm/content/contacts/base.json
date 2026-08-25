@@ -1,0 +1,148 @@
+{
+  "name": "Contacts",
+  "description": "People connected to tracked companies.",
+  "position": 0,
+  "reviewPolicy": {
+    "kind": "single",
+    "requiredApprovals": 1
+  },
+  "fields": [
+    {
+      "slug": "full-name",
+      "name": "Full Name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "company",
+      "name": "Company",
+      "type": "relation",
+      "required": true,
+      "position": 1,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "companies"
+      }
+    },
+    {
+      "slug": "job-title",
+      "name": "Job Title",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "buying-role",
+      "name": "Buying Role",
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "decision-maker",
+            "name": "Decision Maker"
+          },
+          {
+            "id": "champion",
+            "name": "Champion"
+          },
+          {
+            "id": "influencer",
+            "name": "Influencer"
+          },
+          {
+            "id": "evaluator",
+            "name": "Evaluator"
+          },
+          {
+            "id": "end-user",
+            "name": "End User"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "email",
+      "name": "Email",
+      "type": "email",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "phone",
+      "name": "Phone",
+      "type": "phone",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "linkedin-profile",
+      "name": "LinkedIn Profile",
+      "type": "url",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "contact-status",
+      "name": "Contact Status",
+      "type": "select",
+      "required": true,
+      "position": 7,
+      "options": {
+        "choices": [
+          {
+            "id": "active",
+            "name": "Active"
+          },
+          {
+            "id": "inactive",
+            "name": "Inactive"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "notes",
+      "name": "Notes",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "contact-directory",
+      "name": "Contact Directory",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "direction": "asc",
+            "fieldSlug": "full-name"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "full-name",
+          "company",
+          "job-title",
+          "buying-role",
+          "email",
+          "contact-status"
+        ]
+      }
+    }
+  ]
+}
