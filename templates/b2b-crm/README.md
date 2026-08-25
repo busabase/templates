@@ -15,7 +15,7 @@ A lightweight Busabase CRM template for companies, contacts, interaction history
 After this template is merged into the official catalog, install it from the Busabase Template Center. To test this branch directly:
 
 ```bash
-npx busabase-cli install https://github.com/kwp-lab/busabase-templates/tree/feat/b2b-crm-template/templates/b2b-crm --dry-run
+npx busabase-cli install https://github.com/kwp-lab/busabase-templates/tree/b2b-crm-template/templates/b2b-crm --dry-run
 ```
 
 Review and merge the generated AirApp and Skill ChangeRequests before running the installed app.

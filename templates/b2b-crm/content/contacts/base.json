@@ -2,10 +2,6 @@
   "name": "Contacts",
   "description": "People connected to tracked companies.",
   "position": 0,
-  "reviewPolicy": {
-    "kind": "single",
-    "requiredApprovals": 1
-  },
   "fields": [
     {
       "slug": "full-name",

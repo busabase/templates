@@ -2,10 +2,6 @@
   "name": "Companies",
   "description": "Organizations tracked by the sales team.",
   "position": 0,
-  "reviewPolicy": {
-    "kind": "single",
-    "requiredApprovals": 1
-  },
   "fields": [
     {
       "slug": "company-name",

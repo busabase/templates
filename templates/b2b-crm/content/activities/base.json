@@ -2,10 +2,6 @@
   "name": "Activities",
   "description": "Calls, emails, meetings, notes, and next follow-up dates.",
   "position": 0,
-  "reviewPolicy": {
-    "kind": "single",
-    "requiredApprovals": 1
-  },
   "fields": [
     {
       "slug": "activity-subject",
