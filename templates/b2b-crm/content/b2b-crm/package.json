@@ -7,7 +7,7 @@
     "node": ">=24.18.0"
   },
   "scripts": {
-    "build:sdk": "esbuild scripts/sdk-entry.js --bundle --format=esm --platform=browser --outfile=app/vendor/busabase-sdk.js",
+    "build:sdk": "esbuild scripts/sdk-entry.js --bundle --format=esm --platform=browser --minify-whitespace --outfile=app/vendor/busabase-sdk.js",
     "dev": "node server.js",
     "start": "node server.js",
     "check": "node scripts/check.mjs"
