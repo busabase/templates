@@ -81,7 +81,7 @@ let runtimeBases = new Map();
 export const busabaseProvider = {
   name: "busabase",
   async getState() {
-    const client = await createRuntimeClient();
+    const client = createRuntimeClient();
     const bases = await resolveRuntimeResources(client);
     runtimeClient = client;
     runtimeBases = new Map(bases.map((base) => [base.key, base]));

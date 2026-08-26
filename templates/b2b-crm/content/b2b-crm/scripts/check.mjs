@@ -103,8 +103,8 @@ if (!browserSource.includes("records.changeRequest"))
 // leftover bridge prefix would work in exactly one of them.
 if (!browserSource.includes("window.location.origin"))
   throw new Error("Runtime client must target its own origin.");
-if (!browserSource.includes("client.auth.verify"))
-  throw new Error("Template runtime must verify its Dashboard Space before reading resources.");
+if (!browserSource.includes("dashboardSpaceHint"))
+  throw new Error("Template runtime must scope reads to its canonical Dashboard Space.");
 if (browserSource.includes("__busabase_api__"))
   throw new Error("Obsolete /__busabase_api__ bridge prefix found.");
 if (/baseUrl\s*:\s*["'`]https?:\/\//.test(browserSource))
