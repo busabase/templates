@@ -770,6 +770,7 @@ export const appConfig = {
   },
   "permissions": {
     "read_procedures": [
+      "auth.verify",
       "nodes.list",
       "nodes.get",
       "records.listPaged",

@@ -19,11 +19,63 @@ import { appConfig } from "./config.js";
  * That is why no credential ever appears in these files: the browser never
  * holds one.
  */
-export function createRuntimeClient() {
-  return createBusabaseClient({
-    baseUrl: window.location.origin,
-    ...(appConfig.spaceId ? { spaceId: appConfig.spaceId } : {}),
+const parentUrls = () => {
+  const values = [];
+  if (document.referrer) values.push(document.referrer);
+  try {
+    if (window.parent !== window) values.push(window.parent.location.href);
+  } catch {
+    // Cross-origin embeds cannot expose their parent URL; auth discovery handles them.
+  }
+  return values.flatMap((value) => {
+    try {
+      return [new URL(value)];
+    } catch {
+      return [];
+    }
   });
+};
+
+const dashboardSpaceHint = () => {
+  for (const url of parentUrls()) {
+    const match = url.pathname.match(/^\/dashboard\/([^/]+)(?:\/|$)/);
+    if (!match) continue;
+    try {
+      return decodeURIComponent(match[1]);
+    } catch {
+      return match[1];
+    }
+  }
+  return "";
+};
+
+const parentHostname = () => parentUrls()[0]?.hostname || "";
+
+async function verifiedClient(spaceId) {
+  const client = createBusabaseClient({ baseUrl: window.location.origin, spaceId });
+  await client.auth.verify();
+  return client;
+}
+
+export async function createRuntimeClient() {
+  if (appConfig.spaceId) return verifiedClient(appConfig.spaceId);
+
+  const hintedSpaceId = dashboardSpaceHint();
+  if (hintedSpaceId) {
+    try {
+      return await verifiedClient(hintedSpaceId);
+    } catch {
+      // A stale or non-space route segment falls through to authenticated discovery.
+    }
+  }
+
+  const discoveryClient = createBusabaseClient({ baseUrl: window.location.origin });
+  const auth = await discoveryClient.auth.verify();
+  const hostname = parentHostname();
+  const subdomainSpace = (auth.spaces || []).find(
+    (space) => space.slug && (hostname === space.slug || hostname.startsWith(`${space.slug}.`)),
+  );
+  return verifiedClient(subdomainSpace?.id || auth.space.id);
 }
 
 const resourceConfig = {
