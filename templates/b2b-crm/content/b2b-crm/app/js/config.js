@@ -1,9 +1,9 @@
 export const appConfig = {
   "appId": "b2b-crm",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "appName": "B2B CRM",
   "appSlug": "b2b-crm",
-  "description": "A lightweight B2B CRM for organizing companies, contacts, activities, and follow-ups.",
+  "description": "A lightweight B2B CRM with account relationships, follow-ups, and a review-first sales pipeline.",
   "locale": "en",
   "deployment": "cloud",
   "spaceId": "",
@@ -388,6 +388,16 @@ export const appConfig = {
             "name": "Next Follow-Up Date",
             "type": "date",
             "required": false
+          },
+          {
+            "slug": "deal",
+            "name": "Deal",
+            "type": "relation",
+            "required": false,
+            "options": {
+              "targetBaseSlug": "deals",
+              "multiple": false
+            }
           }
         ],
         "views": [
@@ -429,6 +439,182 @@ export const appConfig = {
             "viewId": ""
           }
         ]
+      },
+      {
+        "key": "deals",
+        "name": "Deals",
+        "slug": "b2b-crm-deals",
+        "nodeId": "",
+        "baseId": "",
+        "readLimit": 50,
+        "description": "Sales opportunities tracked from qualification through closed outcome.",
+        "fields": [
+          {
+            "slug": "deal-name",
+            "name": "Deal Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "slug": "company",
+            "name": "Company",
+            "type": "relation",
+            "required": true,
+            "options": {
+              "targetBaseSlug": "companies",
+              "multiple": false
+            }
+          },
+          {
+            "slug": "primary-contact",
+            "name": "Primary Contact",
+            "type": "relation",
+            "required": false,
+            "options": {
+              "targetBaseSlug": "contacts",
+              "multiple": false
+            }
+          },
+          {
+            "slug": "amount",
+            "name": "Amount",
+            "type": "number",
+            "required": true,
+            "options": {
+              "number": {
+                "format": "plain"
+              }
+            }
+          },
+          {
+            "slug": "currency",
+            "name": "Currency",
+            "type": "select",
+            "required": true,
+            "options": {
+              "choices": [
+                {
+                  "id": "usd",
+                  "name": "USD"
+                },
+                {
+                  "id": "eur",
+                  "name": "EUR"
+                },
+                {
+                  "id": "gbp",
+                  "name": "GBP"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "stage",
+            "name": "Stage",
+            "type": "select",
+            "required": true,
+            "options": {
+              "choices": [
+                {
+                  "id": "qualification",
+                  "name": "Qualification",
+                  "color": "#64748b"
+                },
+                {
+                  "id": "discovery",
+                  "name": "Discovery",
+                  "color": "#0f766e"
+                },
+                {
+                  "id": "proposal",
+                  "name": "Proposal",
+                  "color": "#2563eb"
+                },
+                {
+                  "id": "negotiation",
+                  "name": "Negotiation",
+                  "color": "#7c3aed"
+                },
+                {
+                  "id": "closed-won",
+                  "name": "Closed Won",
+                  "color": "#15803d"
+                },
+                {
+                  "id": "closed-lost",
+                  "name": "Closed Lost",
+                  "color": "#b91c1c"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "expected-close-date",
+            "name": "Expected Close Date",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "next-step",
+            "name": "Next Step",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "notes",
+            "name": "Notes",
+            "type": "longtext",
+            "required": false
+          }
+        ],
+        "views": [
+          {
+            "key": "sales-pipeline",
+            "name": "Sales Pipeline",
+            "type": "kanban",
+            "config": {
+              "stackByFieldSlug": "stage",
+              "visibleFieldSlugs": [
+                "deal-name",
+                "company",
+                "amount",
+                "currency",
+                "expected-close-date"
+              ],
+              "sorts": [
+                {
+                  "fieldSlug": "expected-close-date",
+                  "direction": "asc"
+                }
+              ]
+            },
+            "viewId": ""
+          },
+          {
+            "key": "deal-register",
+            "name": "Deal Register",
+            "type": "table",
+            "config": {
+              "visibleFieldSlugs": [
+                "deal-name",
+                "company",
+                "primary-contact",
+                "amount",
+                "currency",
+                "stage",
+                "expected-close-date",
+                "next-step"
+              ],
+              "sorts": [
+                {
+                  "fieldSlug": "expected-close-date",
+                  "direction": "asc"
+                }
+              ]
+            },
+            "viewId": ""
+          }
+        ]
       }
     ],
     "relations": [
@@ -452,6 +638,30 @@ export const appConfig = {
         "source_base": "activities",
         "field_slug": "contact",
         "field_name": "Contact",
+        "target_base": "contacts",
+        "required": false,
+        "multiple": false
+      },
+      {
+        "source_base": "activities",
+        "field_slug": "deal",
+        "field_name": "Deal",
+        "target_base": "deals",
+        "required": false,
+        "multiple": false
+      },
+      {
+        "source_base": "deals",
+        "field_slug": "company",
+        "field_name": "Company",
+        "target_base": "companies",
+        "required": true,
+        "multiple": false
+      },
+      {
+        "source_base": "deals",
+        "field_slug": "primary-contact",
+        "field_name": "Primary Contact",
         "target_base": "contacts",
         "required": false,
         "multiple": false
@@ -491,6 +701,17 @@ export const appConfig = {
         ]
       },
       {
+        "id": "pipeline",
+        "name": "Pipeline",
+        "purpose": "Track deals by stage, value, close date, and next step.",
+        "data_sources": [
+          "deals",
+          "companies",
+          "contacts",
+          "activities"
+        ]
+      },
+      {
         "id": "help-settings",
         "name": "Help & Settings",
         "purpose": "Show sanitized provider status, data budgets, and recovery guidance.",
@@ -515,7 +736,34 @@ export const appConfig = {
           "activity-type",
           "activity-date",
           "summary",
-          "next-follow-up-date"
+          "next-follow-up-date",
+          "deal"
+        ]
+      },
+      {
+        "id": "add-deal",
+        "label": "Add Deal",
+        "kind": "change_request",
+        "base": "deals",
+        "fields": [
+          "deal-name",
+          "company",
+          "primary-contact",
+          "amount",
+          "currency",
+          "stage",
+          "expected-close-date",
+          "next-step",
+          "notes"
+        ]
+      },
+      {
+        "id": "request-stage-change",
+        "label": "Request Stage Change",
+        "kind": "change_request",
+        "base": "deals",
+        "fields": [
+          "stage"
         ]
       }
     ]
@@ -529,7 +777,8 @@ export const appConfig = {
       "changeRequests.listPaged"
     ],
     "change_request_procedures": [
-      "bases.createChangeRequest"
+      "bases.createChangeRequest",
+      "records.changeRequest"
     ]
   },
   "demoRecords": [
@@ -544,19 +793,6 @@ export const appConfig = {
         "company-size": "51-200",
         "headquarters": "Austin, TX",
         "notes": "Evaluating a shared relationship workspace for the revenue team."
-      }
-    },
-    {
-      "id": "demo-companies-2",
-      "baseKey": "companies",
-      "fields": {
-        "company-name": "Harborline Manufacturing",
-        "website": "https://harborline.example",
-        "industry": "manufacturing",
-        "relationship-type": "customer",
-        "company-size": "201-500",
-        "headquarters": "Rotterdam, Netherlands",
-        "notes": "Active customer with an operations-led buying committee."
       }
     },
     {
@@ -575,31 +811,46 @@ export const appConfig = {
       }
     },
     {
-      "id": "demo-contacts-2",
-      "baseKey": "contacts",
-      "fields": {
-        "full-name": "Lucas Meyer",
-        "company": "Harborline Manufacturing",
-        "job-title": "Director of Operations",
-        "buying-role": "champion",
-        "email": "lucas.meyer@harborline.example",
-        "phone": "+31 10 555 0184",
-        "linkedin-profile": "https://www.linkedin.com/in/lucas-meyer-example",
-        "contact-status": "active",
-        "notes": "Coordinates adoption across operations teams."
-      }
-    },
-    {
       "id": "demo-activities-2",
       "baseKey": "activities",
       "fields": {
-        "activity-subject": "Operations review with Harborline",
-        "company": "Harborline Manufacturing",
-        "contact": "Lucas Meyer",
-        "activity-type": "meeting",
+        "activity-subject": "Discovery call with Northstar",
+        "company": "Northstar Analytics",
+        "contact": "Maya Chen",
+        "activity-type": "call",
         "activity-date": "2026-08-20",
-        "summary": "Reviewed adoption progress and captured two workflow improvements.",
+        "summary": "Reviewed the rollout scope and agreed on the evaluation criteria.",
         "next-follow-up-date": "2026-08-25"
+      }
+    },
+    {
+      "id": "demo-deals-1",
+      "baseKey": "deals",
+      "fields": {
+        "deal-name": "Northstar CRM Rollout",
+        "company": "Northstar Analytics",
+        "primary-contact": "Maya Chen",
+        "amount": 48000,
+        "currency": "usd",
+        "stage": "discovery",
+        "expected-close-date": "2026-10-15",
+        "next-step": "Confirm the evaluation workshop agenda.",
+        "notes": "Initial multi-team rollout opportunity."
+      }
+    },
+    {
+      "id": "demo-deals-2",
+      "baseKey": "deals",
+      "fields": {
+        "deal-name": "Northstar Expansion Planning",
+        "company": "Northstar Analytics",
+        "primary-contact": "Maya Chen",
+        "amount": 18000,
+        "currency": "usd",
+        "stage": "proposal",
+        "expected-close-date": "2026-09-30",
+        "next-step": "Review the proposal with finance.",
+        "notes": "Second-phase planning package."
       }
     }
   ]

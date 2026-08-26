@@ -6,32 +6,36 @@
     {
       "subdir": "templates/b2b-crm",
       "name": "b2b-crm",
-      "description": "A lightweight B2B CRM for organizing companies, contacts, activities, and follow-ups.",
+      "description": "A lightweight B2B CRM for accounts, contacts, activities, follow-ups, and a review-first sales pipeline.",
       "category": "crm",
       "tags": [
         "sales",
         "accounts",
         "contacts",
-        "activities"
+        "activities",
+        "deals",
+        "pipeline"
       ],
       "screenshots": [
         "assets/screenshots/directory-overview.webp",
-        "assets/screenshots/company-detail.webp",
-        "assets/screenshots/log-activity-review.webp"
+        "assets/screenshots/pipeline-overview.webp",
+        "assets/screenshots/deal-detail.webp",
+        "assets/screenshots/add-deal-review.webp"
       ],
       "agentPrompts": [
         "Add a new company and its primary contact from these notes.",
         "Show me the accounts with follow-ups due and summarize the latest activity.",
-        "Log this customer interaction and schedule the next follow-up."
+        "Log this customer interaction and schedule the next follow-up.",
+        "Add this opportunity to the pipeline and show me deals by stage."
       ],
-      "version": "0.1.0",
+      "version": "0.2.0",
       "license": "MIT",
       "stats": {
         "folders": 0,
         "docs": 0,
-        "bases": 3,
-        "records": 9,
-        "files": 17,
+        "bases": 4,
+        "records": 12,
+        "files": 18,
         "airapps": 1,
         "skill": true
       }

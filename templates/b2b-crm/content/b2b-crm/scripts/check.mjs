@@ -11,6 +11,7 @@ const required = [
   "app/js/app.js",
   "app/js/config.js",
   "app/js/messages.js",
+  "app/js/pipeline.js",
   "app/js/busabase-client.js",
   "app/js/providers/busabase-provider.js",
   "app/js/providers/demo-provider.js",
@@ -50,6 +51,8 @@ if (appConfig.spaceId || appConfig.schema.folder?.nodeId)
   throw new Error("Template source must not pin a Space or Folder node id.");
 if (appConfig.schema.bases.some((base) => base.nodeId || base.baseId))
   throw new Error("Template source must resolve Base ids from ownership stamps at runtime.");
+if (appConfig.schemaVersion !== 2 || appConfig.schema.bases.length !== 4)
+  throw new Error("B2B CRM v0.2 requires schemaVersion 2 and four Bases.");
 if (
   appConfig.schema.bases.some(
     (base) => !Number.isInteger(base.readLimit) || base.readLimit < 1 || base.readLimit > 50,
@@ -93,6 +96,8 @@ const browserSource = [
 if (!browserSource.includes("createBusabaseClient")) throw new Error("SDK client missing.");
 if (!browserSource.includes("inspectProvisionedResources"))
   throw new Error("Template runtime must resolve ownership-stamped resources.");
+if (!browserSource.includes("records.changeRequest"))
+  throw new Error("Pipeline stage changes must use records.changeRequest.");
 // One relative path, every environment: same-origin inside Busabase, this app's
 // own dev proxy when run standalone. A hard-coded absolute Busabase URL or a
 // leftover bridge prefix would work in exactly one of them.

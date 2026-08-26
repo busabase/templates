@@ -147,6 +147,33 @@ export const busabaseProvider = {
       autoMerge: false,
     });
   },
+  async createDeal(fields) {
+    requireWrite("bases.createChangeRequest");
+    const base = runtimeBases.get("deals");
+    if (!runtimeClient || !base) throw new Error("SCHEMA_INCOMPLETE: deals");
+    const name = String(fields["deal-name"] || "Deal");
+    return runtimeClient.bases.createChangeRequest({
+      baseId: base.baseId,
+      fields,
+      message: `Add deal: ${name}`,
+      submittedBy: "airapp",
+      idempotencyKey: crypto.randomUUID(),
+      autoMerge: false,
+    });
+  },
+  async updateDealStage({ recordId, baseCommitId, stage }) {
+    requireWrite("records.changeRequest");
+    if (!runtimeClient || !recordId) throw new Error("SCHEMA_INCOMPLETE: deal record");
+    return runtimeClient.records.changeRequest({
+      recordId,
+      operation: "update",
+      fields: { stage },
+      message: `Move deal to ${stage}`,
+      author: "airapp",
+      ...(baseCommitId ? { baseCommitId } : {}),
+      autoMerge: false,
+    });
+  },
   async refreshPending() {
     if (!runtimeClient) throw new Error("SESSION_REQUIRED: runtime client is unavailable");
     return readChangeRequests(runtimeClient);

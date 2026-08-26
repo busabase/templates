@@ -1,13 +1,13 @@
 # B2B CRM
 
-A lightweight Busabase CRM template for companies, contacts, interaction history, and follow-ups.
+A lightweight Busabase CRM template for companies, contacts, interaction history, follow-ups, and a review-first sales pipeline.
 
 ## Included
 
-- Companies, Contacts, and Activities Bases with typed fields and relations
-- Account Directory, Contact Directory, Activity Timeline, and Follow-Up Calendar views
-- An English AirApp with bounded search, filters, related records, audit identity, and review-first activity logging
-- Nine fictional sample records using `.example` domains
+- Companies, Contacts, Activities, and Deals Bases with typed fields and relations
+- Directory, timeline, calendar, deal register, and stage-based pipeline views
+- An English AirApp with bounded search, multi-currency pipeline metrics, deal detail, audit identity, and review-first deal, stage, and activity actions
+- Twelve fictional sample records using `.example` domains
 - An Agent Skill manual for safe, ChangeRequest-first CRM operations
 
 ## Install
@@ -22,4 +22,4 @@ Review and merge the generated AirApp and Skill ChangeRequests before running th
 
 ## Boundaries
 
-This version does not include Deals, a pipeline, revenue forecasts, email sending, or external integrations. AirApp writes create ChangeRequests and never approve or merge canonical data.
+The pipeline stores stated deal amounts in USD, EUR, or GBP without currency conversion or probability-weighted forecasting. It does not send email or invoke external integrations. AirApp writes create ChangeRequests and never approve or merge canonical data.

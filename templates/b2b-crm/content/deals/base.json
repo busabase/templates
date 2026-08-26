@@ -1,0 +1,150 @@
+{
+  "name": "Deals",
+  "description": "Sales opportunities tracked from qualification through closed outcome.",
+  "position": 0,
+  "fields": [
+    {
+      "slug": "deal-name",
+      "name": "Deal Name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "company",
+      "name": "Company",
+      "type": "relation",
+      "required": true,
+      "position": 1,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "companies"
+      }
+    },
+    {
+      "slug": "primary-contact",
+      "name": "Primary Contact",
+      "type": "relation",
+      "required": false,
+      "position": 2,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "contacts"
+      }
+    },
+    {
+      "slug": "amount",
+      "name": "Amount",
+      "type": "number",
+      "required": true,
+      "position": 3,
+      "options": {
+        "number": {
+          "format": "plain"
+        }
+      }
+    },
+    {
+      "slug": "currency",
+      "name": "Currency",
+      "type": "select",
+      "required": true,
+      "position": 4,
+      "options": {
+        "choices": [
+          { "id": "usd", "name": "USD" },
+          { "id": "eur", "name": "EUR" },
+          { "id": "gbp", "name": "GBP" }
+        ]
+      }
+    },
+    {
+      "slug": "stage",
+      "name": "Stage",
+      "type": "select",
+      "required": true,
+      "position": 5,
+      "options": {
+        "choices": [
+          { "id": "qualification", "name": "Qualification", "color": "#64748b" },
+          { "id": "discovery", "name": "Discovery", "color": "#0f766e" },
+          { "id": "proposal", "name": "Proposal", "color": "#2563eb" },
+          { "id": "negotiation", "name": "Negotiation", "color": "#7c3aed" },
+          { "id": "closed-won", "name": "Closed Won", "color": "#15803d" },
+          { "id": "closed-lost", "name": "Closed Lost", "color": "#b91c1c" }
+        ]
+      }
+    },
+    {
+      "slug": "expected-close-date",
+      "name": "Expected Close Date",
+      "type": "date",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "next-step",
+      "name": "Next Step",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Notes",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "sales-pipeline",
+      "name": "Sales Pipeline",
+      "type": "table",
+      "config": {
+        "visibleFieldSlugs": [
+          "deal-name",
+          "stage",
+          "company",
+          "amount",
+          "currency",
+          "expected-close-date"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "expected-close-date",
+            "direction": "asc"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "deal-register",
+      "name": "Deal Register",
+      "type": "table",
+      "config": {
+        "visibleFieldSlugs": [
+          "deal-name",
+          "company",
+          "primary-contact",
+          "amount",
+          "currency",
+          "stage",
+          "expected-close-date",
+          "next-step"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "expected-close-date",
+            "direction": "asc"
+          }
+        ]
+      }
+    }
+  ]
+}

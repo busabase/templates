@@ -83,6 +83,17 @@
       "required": false,
       "position": 6,
       "options": {}
+    },
+    {
+      "slug": "deal",
+      "name": "Deal",
+      "type": "relation",
+      "required": false,
+      "position": 7,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "deals"
+      }
     }
   ],
   "views": [
@@ -117,6 +128,7 @@
           "activity-type",
           "company",
           "contact",
+          "deal",
           "activity-date",
           "next-follow-up-date"
         ]

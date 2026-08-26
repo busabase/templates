@@ -1,6 +1,7 @@
 import { appConfig } from "./config.js";
 import { messages } from "./messages.js";
 import { getProvider } from "./providers/index.js";
+import { formatMoney, pipelineMetrics, renderPipelineBoard } from "./pipeline.js";
 
 const state = {
   provider: null,
@@ -12,6 +13,9 @@ const state = {
   filter: "",
   querySequence: 0,
   activityDraft: null,
+  activitySource: null,
+  dealDraft: null,
+  stageDraft: null,
 };
 
 const byId = (id) => document.getElementById(id);
@@ -23,7 +27,8 @@ const escapeHtml = (value) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-const activeBaseKey = () => (state.screen === "activities" ? "activities" : state.directoryTab);
+const activeBaseKey = () =>
+  state.screen === "activities" ? "activities" : state.screen === "pipeline" ? "deals" : state.directoryTab;
 const baseConfig = (key = activeBaseKey()) =>
   appConfig.schema.bases.find((base) => base.key === key);
 const recordsForBase = (key = activeBaseKey()) =>
@@ -110,6 +115,7 @@ function renderNavigation() {
   });
   const directoryCount = recordsForBase("companies").length + recordsForBase("contacts").length;
   setText("directoryNavCount", loadedCount(directoryCount, pageInfo("companies").nextCursor || pageInfo("contacts").nextCursor));
+  setText("pipelineNavCount", loadedCount(recordsForBase("deals").length, pageInfo("deals").nextCursor));
   setText("activitiesNavCount", loadedCount(recordsForBase("activities").length, pageInfo("activities").nextCursor));
 }
 
@@ -117,22 +123,31 @@ function renderMetrics() {
   const pending = (state.payload?.changeRequests || []).filter((request) =>
     ["in_review", "changes_requested", "approved", "conflict"].includes(request.status),
   ).length;
-  const metrics = [
-    ["Companies", loadedCount(recordsForBase("companies").length, pageInfo("companies").nextCursor)],
-    ["Contacts", loadedCount(recordsForBase("contacts").length, pageInfo("contacts").nextCursor)],
-    ["Follow-ups due", loadedCount(dueActivities().length, pageInfo("activities").nextCursor)],
-    ["Pending reviews", loadedCount(pending, state.payload?.changeRequestPageInfo?.nextCursor)],
-  ];
+  const pipeline = pipelineMetrics(recordsForBase("deals"));
+  const metrics = state.screen === "pipeline"
+    ? [
+        ["Open deals", loadedCount(pipeline.openDeals, pageInfo("deals").nextCursor)],
+        ["Open value", pipeline.openValue],
+        ["Closing in 30 days", loadedCount(pipeline.closingSoon, pageInfo("deals").nextCursor)],
+        ["Pending reviews", loadedCount(pending, state.payload?.changeRequestPageInfo?.nextCursor)],
+      ]
+    : [
+        ["Companies", loadedCount(recordsForBase("companies").length, pageInfo("companies").nextCursor)],
+        ["Contacts", loadedCount(recordsForBase("contacts").length, pageInfo("contacts").nextCursor)],
+        ["Follow-ups due", loadedCount(dueActivities().length, pageInfo("activities").nextCursor)],
+        ["Pending reviews", loadedCount(pending, state.payload?.changeRequestPageInfo?.nextCursor)],
+      ];
   byId("metrics").innerHTML = metrics
     .map(([label, value]) => `<div class="metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`)
     .join("");
-  setText("attentionValue", loadedCount(dueActivities().length, pageInfo("activities").nextCursor));
-  setText("attentionCopy", messages.followUpLabel);
+  setText("attentionValue", state.screen === "pipeline" ? pipeline.openDeals : loadedCount(dueActivities().length, pageInfo("activities").nextCursor));
+  setText("attentionCopy", state.screen === "pipeline" ? "open deals in the loaded window" : messages.followUpLabel);
 }
 
 const filterDefinition = () => {
   if (activeBaseKey() === "companies") return { label: "Relationship", fieldSlug: "relationship-type" };
   if (activeBaseKey() === "contacts") return { label: "Status", fieldSlug: "contact-status" };
+  if (activeBaseKey() === "deals") return { label: "Stage", fieldSlug: "stage" };
   return { label: "Activity type", fieldSlug: "activity-type" };
 };
 
@@ -141,8 +156,10 @@ function renderControls() {
   setText("viewEyebrow", screenCopy.eyebrow);
   setText("viewTitle", screenCopy.title);
   setText("viewSummary", screenCopy.summary);
-  setText("mobileTitle", state.screen === "activities" ? "Activities" : "Directory");
+  setText("mobileTitle", state.screen === "activities" ? "Activities" : state.screen === "pipeline" ? "Pipeline" : "Directory");
   byId("directoryTabs").hidden = state.screen !== "directory";
+  byId("addDealOpen").hidden = state.screen !== "pipeline";
+  document.body.classList.toggle("pipeline-screen", state.screen === "pipeline");
   document.querySelectorAll("[data-directory-tab]").forEach((button) => {
     button.classList.toggle("active", button.dataset.directoryTab === state.directoryTab);
   });
@@ -189,11 +206,25 @@ function listRow(record) {
 function renderList() {
   const records = recordsForBase();
   const base = baseConfig();
-  setText("listEyebrow", state.screen === "activities" ? "Relationship history" : "Directory");
-  setText("listTitle", base?.name || "Records");
+  setText("listEyebrow", state.screen === "activities" ? "Relationship history" : state.screen === "pipeline" ? "Revenue workflow" : "Directory");
+  setText("listTitle", state.screen === "pipeline" ? "Sales Pipeline" : base?.name || "Records");
   setText("recordCount", loadedCount(records.length, pageInfo().nextCursor));
   byId("loadMore").hidden = !pageInfo().nextCursor || Boolean(state.query || state.filter);
   setText("loadMore", messages.loadMore);
+  byId("recordList").className = state.screen === "pipeline" ? "record-list pipeline-board" : "record-list";
+  if (state.screen === "pipeline") {
+    const stages = base?.fields.find((field) => field.slug === "stage")?.options?.choices || [];
+    byId("recordList").innerHTML = renderPipelineBoard({
+      records,
+      stages,
+      selectedId: state.selectedRecordId,
+      stageFilter: state.filter,
+      titleFor: recordTitle,
+      relationFor: (value) => displayValue(value),
+      dateFor: formatDate,
+    });
+    return;
+  }
   if (!records.length) {
     byId("recordList").innerHTML = `<div class="empty-list">${escapeHtml(state.query || state.filter ? messages.noMatches : messages.noRecords)}</div>`;
     return;
@@ -207,7 +238,10 @@ function renderList() {
   }).join("");
 }
 
-const fieldValueHtml = (baseKey, field, value) => {
+const fieldValueHtml = (baseKey, field, value, record) => {
+  if (baseKey === "deals" && field.slug === "amount") {
+    return escapeHtml(formatMoney(value, record?.fields?.currency));
+  }
   const label = displayValue(value, baseKey, field.slug);
   if (value && field.type === "url") return `<a href="${escapeHtml(value)}" target="_blank" rel="noreferrer">${escapeHtml(label)}</a>`;
   if (value && field.type === "email") return `<a href="mailto:${escapeHtml(value)}">${escapeHtml(label)}</a>`;
@@ -238,6 +272,8 @@ function renderRelated(record) {
     activities = relatedFor(record, "activities", "company");
   } else if (record.baseKey === "contacts") {
     activities = relatedFor(record, "activities", "contact");
+  } else if (record.baseKey === "deals") {
+    activities = relatedFor(record, "activities", "deal");
   }
   contactsSection.hidden = record.baseKey !== "companies";
   activitiesSection.hidden = record.baseKey === "activities";
@@ -261,17 +297,24 @@ function renderDetail() {
   byId("detailEmpty").hidden = Boolean(record);
   byId("detailContent").hidden = !record;
   if (!record) {
-    const message = activeBaseKey() === "companies" ? messages.selectCompany : activeBaseKey() === "contacts" ? messages.selectContact : messages.selectActivity;
+    const message = activeBaseKey() === "companies"
+      ? messages.selectCompany
+      : activeBaseKey() === "contacts"
+        ? messages.selectContact
+        : activeBaseKey() === "deals"
+          ? messages.selectDeal
+          : messages.selectActivity;
     byId("detailEmpty").innerHTML = `<strong>No record selected</strong><span>${escapeHtml(message)}</span>`;
     return;
   }
   const base = baseConfig();
   setText("detailEyebrow", base?.name.slice(0, -1) || "Record");
   setText("detailTitle", recordTitle(record));
-  byId("logActivityOpen").hidden = record.baseKey !== "contacts";
+  byId("logActivityOpen").hidden = !["contacts", "deals"].includes(record.baseKey);
+  byId("stageChangeOpen").hidden = record.baseKey !== "deals";
   renderAudit(record);
   byId("detailFields").innerHTML = (base?.fields || []).slice(1).map((field) =>
-    `<div class="field-row"><span>${escapeHtml(field.name)}</span><strong>${fieldValueHtml(record.baseKey, field, record.fields?.[field.slug])}</strong></div>`,
+    `<div class="field-row"><span>${escapeHtml(field.name)}</span><strong>${fieldValueHtml(record.baseKey, field, record.fields?.[field.slug], record)}</strong></div>`,
   ).join("");
   renderRelated(record);
 }
@@ -283,7 +326,7 @@ function renderSettings() {
     ["Provider", provider.name || state.provider?.name || "Not connected"],
     ["Mode", provider.mode || "Not set"],
     ["Deployment", appConfig.deployment],
-    ["Space", appConfig.spaceId || "Ambient Busabase session"],
+    ["Space", "Busa Sales"],
     ["Configured Bases", appConfig.schema.bases.map((base) => base.slug).join(", ")],
     ["Page budgets", `${budgets}; pending reviews: 20`],
     ["Write policy", "ChangeRequest only; no direct canonical mutation"],
@@ -371,18 +414,22 @@ async function loadMore() {
 }
 
 const selectedContact = () => recordsForBase("contacts").find((record) => record.id === state.selectedRecordId);
+const selectedDeal = () => recordsForBase("deals").find((record) => record.id === state.selectedRecordId);
 const closeActivityModal = () => {
   byId("activityModal").hidden = true;
   state.activityDraft = null;
+  state.activitySource = null;
 };
 
 function openActivityModal() {
-  const contact = selectedContact();
-  if (!contact) return;
+  const source = activeBaseKey() === "deals" ? selectedDeal() : selectedContact();
+  if (!source) return;
+  state.activitySource = source;
   const form = byId("activityForm");
   form.reset();
   form.elements["activity-date"].value = today();
-  setText("activityContext", `${recordTitle(contact)} / ${displayValue(contact.fields?.company)}`);
+  const contactName = source.baseKey === "deals" ? displayValue(source.fields?.["primary-contact"]) : recordTitle(source);
+  setText("activityContext", `${contactName} / ${displayValue(source.fields?.company)}${source.baseKey === "deals" ? ` / ${recordTitle(source)}` : ""}`);
   byId("activityFields").hidden = false;
   byId("requestPreview").hidden = true;
   byId("activityResult").hidden = true;
@@ -395,18 +442,19 @@ function openActivityModal() {
 }
 
 function draftFromForm() {
-  const contact = selectedContact();
+  const source = state.activitySource;
   const data = new FormData(byId("activityForm"));
   const draft = {
     "activity-subject": String(data.get("activity-subject") || "").trim(),
-    company: contact?.fields?.company,
-    contact: contact?.id,
+    company: source?.fields?.company,
+    contact: source?.baseKey === "deals" ? source.fields?.["primary-contact"] : source?.id,
     "activity-type": String(data.get("activity-type") || ""),
     "activity-date": String(data.get("activity-date") || ""),
     summary: String(data.get("summary") || "").trim(),
   };
   const followUp = String(data.get("next-follow-up-date") || "");
   if (followUp) draft["next-follow-up-date"] = followUp;
+  if (source?.baseKey === "deals") draft.deal = source.id;
   return draft;
 }
 
@@ -414,10 +462,11 @@ function reviewActivity(event) {
   event.preventDefault();
   if (!byId("activityForm").reportValidity()) return;
   state.activityDraft = draftFromForm();
-  const contact = selectedContact();
+  const source = state.activitySource;
   const rows = [
-    ["Contact", recordTitle(contact)],
-    ["Company", displayValue(contact?.fields?.company)],
+    ["Contact", source?.baseKey === "deals" ? displayValue(source.fields?.["primary-contact"]) : recordTitle(source)],
+    ["Company", displayValue(source?.fields?.company)],
+    ...(source?.baseKey === "deals" ? [["Deal", recordTitle(source)]] : []),
     ["Subject", state.activityDraft["activity-subject"]],
     ["Type", choiceLabel("activities", "activity-type", state.activityDraft["activity-type"])],
     ["Activity date", formatDate(state.activityDraft["activity-date"])],
@@ -454,7 +503,178 @@ async function submitActivity() {
     setText("activityResult", humanError(error));
   } finally {
     button.disabled = false;
-    setText("activitySubmit", "Submit ChangeRequest");
+    setText("activitySubmit", "Submit request");
+  }
+}
+
+const recordOptions = (baseKey, selected = "") => recordsForBase(baseKey)
+  .map((record) => `<option value="${escapeHtml(record.id)}" ${record.id === selected ? "selected" : ""}>${escapeHtml(recordTitle(record))}</option>`)
+  .join("");
+
+const closeDealModal = () => {
+  byId("dealModal").hidden = true;
+  state.dealDraft = null;
+};
+
+function refreshDealContacts() {
+  const form = byId("dealForm");
+  const company = recordsForBase("companies").find((record) => record.id === form.elements.company.value);
+  const current = form.elements["primary-contact"].value;
+  const contacts = company
+    ? recordsForBase("contacts").filter((record) => relationMatches(record.fields?.company, company))
+    : recordsForBase("contacts");
+  form.elements["primary-contact"].innerHTML = '<option value="">Not set</option>' + contacts
+    .map((record) => `<option value="${escapeHtml(record.id)}">${escapeHtml(recordTitle(record))}</option>`)
+    .join("");
+  if (contacts.some((record) => record.id === current)) form.elements["primary-contact"].value = current;
+}
+
+function openDealModal() {
+  const form = byId("dealForm");
+  form.reset();
+  form.elements.company.innerHTML = '<option value="">Select company</option>' + recordOptions("companies");
+  refreshDealContacts();
+  byId("dealFields").hidden = false;
+  byId("dealPreview").hidden = true;
+  byId("dealResult").hidden = true;
+  byId("dealBack").hidden = true;
+  byId("dealCancel").hidden = false;
+  byId("dealCancel").textContent = "Cancel";
+  byId("dealReview").hidden = false;
+  byId("dealSubmit").hidden = true;
+  byId("dealModal").hidden = false;
+  form.elements["deal-name"].focus();
+}
+
+function dealDraftFromForm() {
+  const data = new FormData(byId("dealForm"));
+  const draft = {
+    "deal-name": String(data.get("deal-name") || "").trim(),
+    company: String(data.get("company") || ""),
+    amount: Number(data.get("amount") || 0),
+    currency: String(data.get("currency") || ""),
+    stage: String(data.get("stage") || ""),
+  };
+  for (const field of ["primary-contact", "expected-close-date", "next-step", "notes"]) {
+    const value = String(data.get(field) || "").trim();
+    if (value) draft[field] = value;
+  }
+  return draft;
+}
+
+function reviewDeal(event) {
+  event.preventDefault();
+  if (!byId("dealForm").reportValidity()) return;
+  state.dealDraft = dealDraftFromForm();
+  const rows = [
+    ["Deal", state.dealDraft["deal-name"]],
+    ["Company", displayValue(state.dealDraft.company)],
+    ["Primary contact", displayValue(state.dealDraft["primary-contact"])],
+    ["Amount", `${choiceLabel("deals", "currency", state.dealDraft.currency)} ${new Intl.NumberFormat("en").format(state.dealDraft.amount)}`],
+    ["Stage", choiceLabel("deals", "stage", state.dealDraft.stage)],
+    ["Expected close", formatDate(state.dealDraft["expected-close-date"])],
+    ["Next step", displayValue(state.dealDraft["next-step"])],
+  ];
+  byId("dealPreviewFields").innerHTML = rows.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`).join("");
+  byId("dealFields").hidden = true;
+  byId("dealPreview").hidden = false;
+  byId("dealBack").hidden = false;
+  byId("dealReview").hidden = true;
+  byId("dealSubmit").hidden = false;
+}
+
+async function submitDeal() {
+  if (!state.dealDraft) return;
+  const button = byId("dealSubmit");
+  button.disabled = true;
+  setText("dealSubmit", "Submitting...");
+  try {
+    const request = await state.provider.createDeal(state.dealDraft);
+    const pending = await state.provider.refreshPending();
+    state.payload.changeRequests = pending.changeRequests;
+    state.payload.changeRequestPageInfo.nextCursor = pending.nextCursor;
+    byId("dealPreview").hidden = true;
+    byId("dealResult").hidden = false;
+    byId("dealResult").innerHTML = `ChangeRequest <strong>${escapeHtml(request.id)}</strong> is ready for review.`;
+    byId("dealBack").hidden = true;
+    byId("dealSubmit").hidden = true;
+    byId("dealCancel").textContent = "Close";
+    renderMetrics();
+  } catch (error) {
+    byId("dealResult").hidden = false;
+    setText("dealResult", humanError(error));
+  } finally {
+    button.disabled = false;
+    setText("dealSubmit", "Submit request");
+  }
+}
+
+const closeStageModal = () => {
+  byId("stageModal").hidden = true;
+  state.stageDraft = null;
+};
+
+function openStageModal() {
+  const deal = selectedDeal();
+  if (!deal) return;
+  const form = byId("stageForm");
+  form.reset();
+  form.elements.stage.value = deal.fields?.stage || "qualification";
+  setText("stageContext", `${recordTitle(deal)} / Current: ${choiceLabel("deals", "stage", deal.fields?.stage)}`);
+  byId("stageFields").hidden = false;
+  byId("stagePreview").hidden = true;
+  byId("stageResult").hidden = true;
+  byId("stageBack").hidden = true;
+  byId("stageCancel").hidden = false;
+  byId("stageCancel").textContent = "Cancel";
+  byId("stageReview").hidden = false;
+  byId("stageSubmit").hidden = true;
+  byId("stageModal").hidden = false;
+  form.elements.stage.focus();
+}
+
+function reviewStage(event) {
+  event.preventDefault();
+  const deal = selectedDeal();
+  if (!deal || !byId("stageForm").reportValidity()) return;
+  const stage = byId("stageForm").elements.stage.value;
+  state.stageDraft = { recordId: deal.id, baseCommitId: deal.headCommitId, stage };
+  const rows = [
+    ["Deal", recordTitle(deal)],
+    ["Current stage", choiceLabel("deals", "stage", deal.fields?.stage)],
+    ["New stage", choiceLabel("deals", "stage", stage)],
+  ];
+  byId("stagePreviewFields").innerHTML = rows.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`).join("");
+  byId("stageFields").hidden = true;
+  byId("stagePreview").hidden = false;
+  byId("stageBack").hidden = false;
+  byId("stageReview").hidden = true;
+  byId("stageSubmit").hidden = false;
+}
+
+async function submitStage() {
+  if (!state.stageDraft) return;
+  const button = byId("stageSubmit");
+  button.disabled = true;
+  setText("stageSubmit", "Submitting...");
+  try {
+    const request = await state.provider.updateDealStage(state.stageDraft);
+    const pending = await state.provider.refreshPending();
+    state.payload.changeRequests = pending.changeRequests;
+    state.payload.changeRequestPageInfo.nextCursor = pending.nextCursor;
+    byId("stagePreview").hidden = true;
+    byId("stageResult").hidden = false;
+    byId("stageResult").innerHTML = `ChangeRequest <strong>${escapeHtml(request.id)}</strong> is ready for review.`;
+    byId("stageBack").hidden = true;
+    byId("stageSubmit").hidden = true;
+    byId("stageCancel").textContent = "Close";
+    renderMetrics();
+  } catch (error) {
+    byId("stageResult").hidden = false;
+    setText("stageResult", humanError(error));
+  } finally {
+    button.disabled = false;
+    setText("stageSubmit", "Submit request");
   }
 }
 
@@ -468,7 +688,7 @@ function switchContext({ screen = state.screen, tab = state.directoryTab }) {
   byId("searchInput").value = "";
   setMobileSidebar(false);
   setMobileDetail(false);
-  window.location.hash = screen === "activities" ? "#/activities" : `#/directory/${tab}`;
+  window.location.hash = screen === "activities" ? "#/activities" : screen === "pipeline" ? "#/pipeline" : `#/directory/${tab}`;
   render();
 }
 
@@ -537,9 +757,44 @@ byId("activityModal").addEventListener("click", (event) => {
   if (event.target === byId("activityModal")) closeActivityModal();
 });
 
+byId("addDealOpen").addEventListener("click", openDealModal);
+byId("dealForm").elements.company.addEventListener("change", refreshDealContacts);
+byId("dealForm").addEventListener("submit", reviewDeal);
+byId("dealSubmit").addEventListener("click", submitDeal);
+byId("dealBack").addEventListener("click", () => {
+  byId("dealFields").hidden = false;
+  byId("dealPreview").hidden = true;
+  byId("dealBack").hidden = true;
+  byId("dealReview").hidden = false;
+  byId("dealSubmit").hidden = true;
+});
+byId("dealCancel").addEventListener("click", closeDealModal);
+byId("dealModalClose").addEventListener("click", closeDealModal);
+byId("dealModal").addEventListener("click", (event) => {
+  if (event.target === byId("dealModal")) closeDealModal();
+});
+
+byId("stageChangeOpen").addEventListener("click", openStageModal);
+byId("stageForm").addEventListener("submit", reviewStage);
+byId("stageSubmit").addEventListener("click", submitStage);
+byId("stageBack").addEventListener("click", () => {
+  byId("stageFields").hidden = false;
+  byId("stagePreview").hidden = true;
+  byId("stageBack").hidden = true;
+  byId("stageReview").hidden = false;
+  byId("stageSubmit").hidden = true;
+});
+byId("stageCancel").addEventListener("click", closeStageModal);
+byId("stageModalClose").addEventListener("click", closeStageModal);
+byId("stageModal").addEventListener("click", (event) => {
+  if (event.target === byId("stageModal")) closeStageModal();
+});
+
 window.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
-  if (!byId("activityModal").hidden) closeActivityModal();
+  if (!byId("stageModal").hidden) closeStageModal();
+  else if (!byId("dealModal").hidden) closeDealModal();
+  else if (!byId("activityModal").hidden) closeActivityModal();
   else if (!byId("settingsModal").hidden) setSettings(false);
   else setMobileSidebar(false);
 });

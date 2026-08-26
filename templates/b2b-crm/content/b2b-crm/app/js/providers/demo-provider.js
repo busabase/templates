@@ -2,8 +2,8 @@ import { appConfig } from "../config.js";
 
 const DEMO_ACTOR = {
   id: "demo-user-kelvin",
-  name: "Alex Morgan",
-  email: "alex.morgan@example.com",
+  name: "Kelvin",
+  email: "kelvin@example.com",
   image: null,
   role: "owner",
 };
@@ -84,6 +84,35 @@ export const demoProvider = {
       createdAt: new Date("2026-08-25T12:00:00.000Z").toISOString(),
       submittedByUser: DEMO_ACTOR,
       fields,
+    };
+    pendingRequests = [request, ...pendingRequests];
+    return request;
+  },
+  async createDeal(fields) {
+    const id = `cr_demo_deal_${String(requestSequence).padStart(3, "0")}`;
+    requestSequence += 1;
+    const request = {
+      id,
+      baseId: baseByKey("deals")?.baseId,
+      status: "in_review",
+      createdAt: new Date("2026-08-26T12:00:00.000Z").toISOString(),
+      submittedByUser: DEMO_ACTOR,
+      fields,
+    };
+    pendingRequests = [request, ...pendingRequests];
+    return request;
+  },
+  async updateDealStage({ recordId, stage }) {
+    const id = `cr_demo_stage_${String(requestSequence).padStart(3, "0")}`;
+    requestSequence += 1;
+    const request = {
+      id,
+      baseId: baseByKey("deals")?.baseId,
+      recordId,
+      status: "in_review",
+      createdAt: new Date("2026-08-26T12:00:00.000Z").toISOString(),
+      submittedByUser: DEMO_ACTOR,
+      fields: { stage },
     };
     pendingRequests = [request, ...pendingRequests];
     return request;
