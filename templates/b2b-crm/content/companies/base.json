@@ -1,0 +1,164 @@
+{
+  "name": "Companies",
+  "description": "Organizations tracked by the sales team.",
+  "position": 0,
+  "fields": [
+    {
+      "slug": "company-name",
+      "name": "Company Name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "website",
+      "name": "Website",
+      "type": "url",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "industry",
+      "name": "Industry",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "software-technology",
+            "name": "Software & Technology"
+          },
+          {
+            "id": "financial-services",
+            "name": "Financial Services"
+          },
+          {
+            "id": "professional-services",
+            "name": "Professional Services"
+          },
+          {
+            "id": "manufacturing",
+            "name": "Manufacturing"
+          },
+          {
+            "id": "healthcare",
+            "name": "Healthcare"
+          },
+          {
+            "id": "retail-ecommerce",
+            "name": "Retail & E-commerce"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "relationship-type",
+      "name": "Relationship Type",
+      "type": "select",
+      "required": true,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "prospect",
+            "name": "Prospect"
+          },
+          {
+            "id": "customer",
+            "name": "Customer"
+          },
+          {
+            "id": "partner",
+            "name": "Partner"
+          },
+          {
+            "id": "former-customer",
+            "name": "Former Customer"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "company-size",
+      "name": "Company Size",
+      "type": "select",
+      "required": false,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "1-10",
+            "name": "1-10"
+          },
+          {
+            "id": "11-50",
+            "name": "11-50"
+          },
+          {
+            "id": "51-200",
+            "name": "51-200"
+          },
+          {
+            "id": "201-500",
+            "name": "201-500"
+          },
+          {
+            "id": "501-1000",
+            "name": "501-1,000"
+          },
+          {
+            "id": "1001-plus",
+            "name": "1,001+"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "headquarters",
+      "name": "Headquarters",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Notes",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "account-directory",
+      "name": "Account Directory",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "direction": "asc",
+            "fieldSlug": "company-name"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "company-name",
+          "relationship-type",
+          "industry",
+          "company-size",
+          "website",
+          "headquarters"
+        ]
+      }
+    }
+  ]
+}

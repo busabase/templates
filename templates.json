@@ -4,6 +4,43 @@
   "ref": "main",
   "templates": [
     {
+      "subdir": "templates/b2b-crm",
+      "name": "b2b-crm",
+      "description": "A lightweight B2B CRM for accounts, contacts, activities, follow-ups, and a review-first sales pipeline.",
+      "category": "crm",
+      "tags": [
+        "sales",
+        "accounts",
+        "contacts",
+        "activities",
+        "deals",
+        "pipeline"
+      ],
+      "screenshots": [
+        "assets/screenshots/directory-overview.webp",
+        "assets/screenshots/pipeline-overview.webp",
+        "assets/screenshots/deal-detail.webp",
+        "assets/screenshots/add-deal-review.webp"
+      ],
+      "agentPrompts": [
+        "Add a new company and its primary contact from these notes.",
+        "Show me the accounts with follow-ups due and summarize the latest activity.",
+        "Log this customer interaction and schedule the next follow-up.",
+        "Add this opportunity to the pipeline and show me deals by stage."
+      ],
+      "version": "0.2.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 12,
+        "files": 18,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-email",
       "name": "busa-email",
       "description": "Inbox triage, human review, and trusted execution — an approval-first email desk.",

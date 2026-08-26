@@ -1,0 +1,42 @@
+export const messages = {
+  screens: {
+    directory: {
+      eyebrow: "Account workspace",
+      title: "Company & Contact Directory",
+      summary: "Find an account, understand the people involved, and review the relationship history.",
+    },
+    activities: {
+      eyebrow: "Relationship history",
+      title: "Activities & Follow-Ups",
+      summary: "Review recent interactions and the follow-ups that need attention.",
+    },
+    pipeline: {
+      eyebrow: "Revenue workflow",
+      title: "Sales Pipeline",
+      summary: "Track opportunities by stage, value, expected close date, and next step.",
+    },
+  },
+  loading: "Loading the configured CRM data window...",
+  refreshing: "Refreshing this bounded data window...",
+  noRecords: "No records are available in this view yet.",
+  noMatches: "No records match the current search and filter.",
+  selectCompany: "Select a company to review its people and recent activity.",
+  selectContact: "Select a contact to review relationship context and log an activity.",
+  selectActivity: "Select an activity to review its details and follow-up date.",
+  selectDeal: "Select a deal to review its value, next step, related activity, or request a stage change.",
+  loadMore: "Load more",
+  loadingMore: "Loading one more page...",
+  loadMoreFailed: "The next page could not be loaded. Try again.",
+  queryFailed: "The filtered data window could not be loaded. Try again.",
+  pendingEmpty: "No pending reviews",
+  pendingLabel: "pending reviews",
+  followUpLabel: "due in the loaded window",
+  providerErrors: {
+    BRIDGE_UNAVAILABLE: "The Busabase API bridge is unavailable. Start the local proxy or run this app inside Busabase.",
+    SESSION_REQUIRED: "Your Busabase session is missing or expired. Sign in and reopen the AirApp.",
+    SPACE_UNAVAILABLE: "The configured Space is unavailable to this session.",
+    SPACE_HEADER_REJECTED: "This session cannot target the configured Space.",
+    SCHEMA_INCOMPLETE: "The CRM schema is incomplete. Verify the configured Base IDs.",
+    PROCEDURE_DENIED: "This operation is outside the AirApp procedure allowlist.",
+  },
+};
