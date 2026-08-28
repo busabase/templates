@@ -28,7 +28,7 @@
         "Log this customer interaction and schedule the next follow-up.",
         "Add this opportunity to the pipeline and show me deals by stage."
       ],
-      "version": "0.2.0",
+      "version": "0.2.1",
       "license": "MIT",
       "stats": {
         "folders": 0,

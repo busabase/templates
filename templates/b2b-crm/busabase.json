@@ -2,7 +2,7 @@
   "format": "busabase-package@1",
   "name": "b2b-crm",
   "description": "A lightweight B2B CRM for accounts, contacts, activities, follow-ups, and a review-first sales pipeline.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "tags": ["sales", "accounts", "contacts", "activities", "deals", "pipeline"],
   "template": {

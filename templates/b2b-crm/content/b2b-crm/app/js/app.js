@@ -16,6 +16,7 @@ const state = {
   activitySource: null,
   dealDraft: null,
   stageDraft: null,
+  detailTrigger: null,
 };
 
 const byId = (id) => document.getElementById(id);
@@ -97,11 +98,46 @@ const setText = (id, value) => {
   const element = byId(id);
   if (element) element.textContent = value;
 };
+const resetFormResult = (id) => {
+  const element = byId(id);
+  element.hidden = true;
+  element.className = "form-result";
+  element.textContent = "";
+};
+const showRequestSuccess = (id, requestId) => {
+  const element = byId(id);
+  element.className = "form-result success";
+  element.innerHTML = `<span class="result-icon" aria-hidden="true">&#10003;</span><span class="result-copy"><strong>Request submitted</strong><span>Ready for human review</span><code>${escapeHtml(requestId)}</code></span>`;
+  element.hidden = false;
+};
+const showRequestError = (id, error) => {
+  const element = byId(id);
+  element.className = "form-result error";
+  element.textContent = humanError(error);
+  element.hidden = false;
+};
 const setMobileSidebar = (open) => {
   document.body.classList.toggle("sidebar-open", open);
   byId("sidebarScrim").hidden = !open;
 };
-const setMobileDetail = (open) => document.body.classList.toggle("mobile-detail-open", open);
+const setDetailOpen = (open) => {
+  document.body.classList.toggle("detail-drawer-open", open);
+  byId("detailScrim").hidden = !open;
+};
+
+function closeDetail({ restoreFocus = true } = {}) {
+  const triggerRecordId = state.detailTrigger?.dataset.record;
+  state.selectedRecordId = null;
+  state.detailTrigger = null;
+  setDetailOpen(false);
+  renderList();
+  renderDetail();
+  if (restoreFocus && triggerRecordId) {
+    const trigger = [...byId("recordList").querySelectorAll("[data-record]")]
+      .find((element) => element.dataset.record === triggerRecordId);
+    trigger?.focus();
+  }
+}
 
 const humanError = (error) => {
   const raw = error instanceof Error ? error.message : String(error);
@@ -378,6 +414,8 @@ async function runQuery() {
     ];
     state.payload.pageInfo[baseKey] = { nextCursor: page.nextCursor, limit: page.limit };
     state.selectedRecordId = null;
+    state.detailTrigger = null;
+    setDetailOpen(false);
     setText("loadingState", "");
     render();
   } catch (error) {
@@ -432,7 +470,7 @@ function openActivityModal() {
   setText("activityContext", `${contactName} / ${displayValue(source.fields?.company)}${source.baseKey === "deals" ? ` / ${recordTitle(source)}` : ""}`);
   byId("activityFields").hidden = false;
   byId("requestPreview").hidden = true;
-  byId("activityResult").hidden = true;
+  resetFormResult("activityResult");
   byId("activityBack").hidden = true;
   byId("activityCancel").hidden = false;
   byId("activityReview").hidden = false;
@@ -458,8 +496,7 @@ function draftFromForm() {
   return draft;
 }
 
-function reviewActivity(event) {
-  event.preventDefault();
+function reviewActivity() {
   if (!byId("activityForm").reportValidity()) return;
   state.activityDraft = draftFromForm();
   const source = state.activitySource;
@@ -492,15 +529,13 @@ async function submitActivity() {
     state.payload.changeRequests = pending.changeRequests;
     state.payload.changeRequestPageInfo.nextCursor = pending.nextCursor;
     byId("requestPreview").hidden = true;
-    byId("activityResult").hidden = false;
-    byId("activityResult").innerHTML = `ChangeRequest <strong>${escapeHtml(request.id)}</strong> is ready for review.`;
+    showRequestSuccess("activityResult", request.id);
     byId("activityBack").hidden = true;
     byId("activitySubmit").hidden = true;
     byId("activityCancel").textContent = "Close";
     renderMetrics();
   } catch (error) {
-    byId("activityResult").hidden = false;
-    setText("activityResult", humanError(error));
+    showRequestError("activityResult", error);
   } finally {
     button.disabled = false;
     setText("activitySubmit", "Submit request");
@@ -536,7 +571,7 @@ function openDealModal() {
   refreshDealContacts();
   byId("dealFields").hidden = false;
   byId("dealPreview").hidden = true;
-  byId("dealResult").hidden = true;
+  resetFormResult("dealResult");
   byId("dealBack").hidden = true;
   byId("dealCancel").hidden = false;
   byId("dealCancel").textContent = "Cancel";
@@ -562,8 +597,7 @@ function dealDraftFromForm() {
   return draft;
 }
 
-function reviewDeal(event) {
-  event.preventDefault();
+function reviewDeal() {
   if (!byId("dealForm").reportValidity()) return;
   state.dealDraft = dealDraftFromForm();
   const rows = [
@@ -594,15 +628,13 @@ async function submitDeal() {
     state.payload.changeRequests = pending.changeRequests;
     state.payload.changeRequestPageInfo.nextCursor = pending.nextCursor;
     byId("dealPreview").hidden = true;
-    byId("dealResult").hidden = false;
-    byId("dealResult").innerHTML = `ChangeRequest <strong>${escapeHtml(request.id)}</strong> is ready for review.`;
+    showRequestSuccess("dealResult", request.id);
     byId("dealBack").hidden = true;
     byId("dealSubmit").hidden = true;
     byId("dealCancel").textContent = "Close";
     renderMetrics();
   } catch (error) {
-    byId("dealResult").hidden = false;
-    setText("dealResult", humanError(error));
+    showRequestError("dealResult", error);
   } finally {
     button.disabled = false;
     setText("dealSubmit", "Submit request");
@@ -623,7 +655,7 @@ function openStageModal() {
   setText("stageContext", `${recordTitle(deal)} / Current: ${choiceLabel("deals", "stage", deal.fields?.stage)}`);
   byId("stageFields").hidden = false;
   byId("stagePreview").hidden = true;
-  byId("stageResult").hidden = true;
+  resetFormResult("stageResult");
   byId("stageBack").hidden = true;
   byId("stageCancel").hidden = false;
   byId("stageCancel").textContent = "Cancel";
@@ -633,8 +665,7 @@ function openStageModal() {
   form.elements.stage.focus();
 }
 
-function reviewStage(event) {
-  event.preventDefault();
+function reviewStage() {
   const deal = selectedDeal();
   if (!deal || !byId("stageForm").reportValidity()) return;
   const stage = byId("stageForm").elements.stage.value;
@@ -663,15 +694,13 @@ async function submitStage() {
     state.payload.changeRequests = pending.changeRequests;
     state.payload.changeRequestPageInfo.nextCursor = pending.nextCursor;
     byId("stagePreview").hidden = true;
-    byId("stageResult").hidden = false;
-    byId("stageResult").innerHTML = `ChangeRequest <strong>${escapeHtml(request.id)}</strong> is ready for review.`;
+    showRequestSuccess("stageResult", request.id);
     byId("stageBack").hidden = true;
     byId("stageSubmit").hidden = true;
     byId("stageCancel").textContent = "Close";
     renderMetrics();
   } catch (error) {
-    byId("stageResult").hidden = false;
-    setText("stageResult", humanError(error));
+    showRequestError("stageResult", error);
   } finally {
     button.disabled = false;
     setText("stageSubmit", "Submit request");
@@ -685,9 +714,10 @@ function switchContext({ screen = state.screen, tab = state.directoryTab }) {
   state.query = "";
   state.filter = "";
   state.querySequence += 1;
+  state.detailTrigger = null;
   byId("searchInput").value = "";
   setMobileSidebar(false);
-  setMobileDetail(false);
+  setDetailOpen(false);
   window.location.hash = screen === "activities" ? "#/activities" : screen === "pipeline" ? "#/pipeline" : `#/directory/${tab}`;
   render();
 }
@@ -704,9 +734,11 @@ byId("recordList").addEventListener("click", (event) => {
   const button = event.target.closest("[data-record]");
   if (!button) return;
   state.selectedRecordId = button.dataset.record;
-  setMobileDetail(true);
+  state.detailTrigger = button;
+  setDetailOpen(true);
   renderList();
   renderDetail();
+  setTimeout(() => byId("detailClose").focus({ preventScroll: true }), 220);
 });
 byId("searchInput").addEventListener("input", (event) => {
   state.query = event.target.value;
@@ -717,12 +749,9 @@ byId("recordFilter").addEventListener("change", (event) => {
   queueQuery();
 });
 byId("loadMore").addEventListener("click", loadMore);
-byId("backButton").addEventListener("click", () => {
-  state.selectedRecordId = null;
-  setMobileDetail(false);
-  renderList();
-  renderDetail();
-});
+byId("backButton").addEventListener("click", closeDetail);
+byId("detailClose").addEventListener("click", closeDetail);
+byId("detailScrim").addEventListener("click", closeDetail);
 byId("sidebarOpen").addEventListener("click", () => setMobileSidebar(true));
 byId("sidebarClose").addEventListener("click", () => setMobileSidebar(false));
 byId("sidebarScrim").addEventListener("click", () => setMobileSidebar(false));
@@ -742,7 +771,8 @@ byId("settingsModal").addEventListener("click", (event) => {
 });
 
 byId("logActivityOpen").addEventListener("click", openActivityModal);
-byId("activityForm").addEventListener("submit", reviewActivity);
+byId("activityForm").addEventListener("submit", (event) => event.preventDefault());
+byId("activityReview").addEventListener("click", reviewActivity);
 byId("activitySubmit").addEventListener("click", submitActivity);
 byId("activityBack").addEventListener("click", () => {
   byId("activityFields").hidden = false;
@@ -759,7 +789,8 @@ byId("activityModal").addEventListener("click", (event) => {
 
 byId("addDealOpen").addEventListener("click", openDealModal);
 byId("dealForm").elements.company.addEventListener("change", refreshDealContacts);
-byId("dealForm").addEventListener("submit", reviewDeal);
+byId("dealForm").addEventListener("submit", (event) => event.preventDefault());
+byId("dealReview").addEventListener("click", reviewDeal);
 byId("dealSubmit").addEventListener("click", submitDeal);
 byId("dealBack").addEventListener("click", () => {
   byId("dealFields").hidden = false;
@@ -775,7 +806,8 @@ byId("dealModal").addEventListener("click", (event) => {
 });
 
 byId("stageChangeOpen").addEventListener("click", openStageModal);
-byId("stageForm").addEventListener("submit", reviewStage);
+byId("stageForm").addEventListener("submit", (event) => event.preventDefault());
+byId("stageReview").addEventListener("click", reviewStage);
 byId("stageSubmit").addEventListener("click", submitStage);
 byId("stageBack").addEventListener("click", () => {
   byId("stageFields").hidden = false;
@@ -796,12 +828,12 @@ window.addEventListener("keydown", (event) => {
   else if (!byId("dealModal").hidden) closeDealModal();
   else if (!byId("activityModal").hidden) closeActivityModal();
   else if (!byId("settingsModal").hidden) setSettings(false);
+  else if (document.body.classList.contains("detail-drawer-open")) closeDetail();
   else setMobileSidebar(false);
 });
 window.addEventListener("resize", () => {
   if (!window.matchMedia("(max-width: 720px)").matches) {
     setMobileSidebar(false);
-    setMobileDetail(false);
   }
 });
 

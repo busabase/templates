@@ -6,7 +6,7 @@ A lightweight Busabase CRM template for companies, contacts, interaction history
 
 - Companies, Contacts, Activities, and Deals Bases with typed fields and relations
 - Directory, timeline, calendar, deal register, and stage-based pipeline views
-- An English AirApp with bounded search, multi-currency pipeline metrics, deal detail, audit identity, and review-first deal, stage, and activity actions
+- An English AirApp with bounded search, multi-currency pipeline metrics, overlay detail drawers, audit identity, and review-first deal, stage, and activity actions
 - Twelve fictional sample records using `.example` domains
 - An Agent Skill manual for safe, ChangeRequest-first CRM operations
 

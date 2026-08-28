@@ -82,6 +82,22 @@ if (
 ) {
   throw new Error("Demo provider requires 3-5 records.");
 }
+if (/id="(?:activity|deal|stage)Review"[^>]*type="submit"/.test(contents["app/index.html"]))
+  throw new Error("Review actions must not use native form submission inside the sandbox.");
+for (const id of ["activityReview", "dealReview", "stageReview"]) {
+  if (!contents["app/js/app.js"].includes(`byId("${id}").addEventListener("click"`))
+    throw new Error(`Review action ${id} requires a direct click handler.`);
+}
+if (!contents["app/index.html"].includes('id="detailScrim"') || !contents["app/index.html"].includes('id="detailClose"'))
+  throw new Error("Shared record detail drawer controls are missing.");
+if (!contents["app/styles.css"].includes("body.detail-drawer-open .detail-panel"))
+  throw new Error("Shared record detail drawer open state is missing.");
+if (/mobile-detail-open/.test(contents["app/js/app.js"]) || /body\.mobile-detail-open/.test(contents["app/styles.css"]))
+  throw new Error("Legacy split-pane mobile detail state found.");
+if (!contents["app/js/app.js"].includes("Request submitted") || !contents["app/js/app.js"].includes("Ready for human review"))
+  throw new Error("ChangeRequest success state hierarchy is missing.");
+if (!contents["app/styles.css"].includes(".result-copy code"))
+  throw new Error("ChangeRequest success id styling is missing.");
 
 // Everything the browser downloads. `server.js` is deliberately NOT here: it is
 // the only file allowed to know about credentials, because its dev proxy reads
