@@ -91,4 +91,4 @@ Query Activities with a non-empty Next Follow-Up Date, sort or filter server-sid
 
 ## Sample Data
 
-The template installs three fictional companies, three fictional contacts, three fictional activities, and three fictional deals. `.example` domains and fictional names are demonstration data, not real leads or revenue. Preserve them only when the user wants the demo; never present them as actual customers or pipeline.
+The template installs ten fictional companies, ten fictional contacts, ten fictional activities, and ten fictional deals. `.example` domains and fictional names are demonstration data, not real leads or revenue. Preserve them only when the user wants the demo; never present them as actual customers or pipeline.

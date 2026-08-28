@@ -28,13 +28,13 @@
         "Log this customer interaction and schedule the next follow-up.",
         "Add this opportunity to the pipeline and show me deals by stage."
       ],
-      "version": "0.2.0",
+      "version": "0.2.1",
       "license": "MIT",
       "stats": {
         "folders": 0,
         "docs": 0,
         "bases": 4,
-        "records": 12,
+        "records": 40,
         "files": 18,
         "airapps": 1,
         "skill": true
