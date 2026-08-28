@@ -105,7 +105,7 @@ def load_font(
             return font
         except OSError:
             continue
-    raise CoverError("No supported system font was found")
+    raise CoverError("No usable font file was found (bundled or system)")
 
 
 def display_name(raw_name: str) -> str:
