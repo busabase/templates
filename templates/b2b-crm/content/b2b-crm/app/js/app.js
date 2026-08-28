@@ -120,6 +120,14 @@ const setMobileSidebar = (open) => {
   document.body.classList.toggle("sidebar-open", open);
   byId("sidebarScrim").hidden = !open;
 };
+const setDesktopSidebar = (collapsed, { restoreFocus = false } = {}) => {
+  document.body.classList.toggle("sidebar-collapsed", collapsed);
+  byId("sidebarClose").setAttribute("aria-expanded", String(!collapsed));
+  byId("sidebarExpand").setAttribute("aria-expanded", String(!collapsed));
+  if (restoreFocus) {
+    setTimeout(() => (collapsed ? byId("sidebarExpand") : byId("sidebarClose")).focus({ preventScroll: true }), 200);
+  }
+};
 const setDetailOpen = (open) => {
   document.body.classList.toggle("detail-drawer-open", open);
   byId("detailScrim").hidden = !open;
@@ -753,7 +761,11 @@ byId("backButton").addEventListener("click", closeDetail);
 byId("detailClose").addEventListener("click", closeDetail);
 byId("detailScrim").addEventListener("click", closeDetail);
 byId("sidebarOpen").addEventListener("click", () => setMobileSidebar(true));
-byId("sidebarClose").addEventListener("click", () => setMobileSidebar(false));
+byId("sidebarClose").addEventListener("click", () => {
+  if (window.matchMedia("(max-width: 720px)").matches) setMobileSidebar(false);
+  else setDesktopSidebar(true, { restoreFocus: true });
+});
+byId("sidebarExpand").addEventListener("click", () => setDesktopSidebar(false, { restoreFocus: true }));
 byId("sidebarScrim").addEventListener("click", () => setMobileSidebar(false));
 
 const setSettings = (open) => {
@@ -832,9 +844,8 @@ window.addEventListener("keydown", (event) => {
   else setMobileSidebar(false);
 });
 window.addEventListener("resize", () => {
-  if (!window.matchMedia("(max-width: 720px)").matches) {
-    setMobileSidebar(false);
-  }
+  if (!window.matchMedia("(max-width: 720px)").matches) setMobileSidebar(false);
+  else setDesktopSidebar(false);
 });
 
 load();

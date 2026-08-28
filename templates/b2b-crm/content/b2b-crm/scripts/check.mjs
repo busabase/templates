@@ -98,6 +98,33 @@ if (!contents["app/js/app.js"].includes("Request submitted") || !contents["app/j
   throw new Error("ChangeRequest success state hierarchy is missing.");
 if (!contents["app/styles.css"].includes(".result-copy code"))
   throw new Error("ChangeRequest success id styling is missing.");
+const stylesSource = contents["app/styles.css"];
+for (const token of [
+  "--text-caption: 12px",
+  "--text-body: 14px",
+  "--text-section: 16px",
+  "--text-modal-title: 18px",
+  "--text-drawer-title: 20px",
+  "--text-page-title: 24px",
+  "--weight-regular: 400",
+  "--weight-medium: 500",
+  "--weight-semibold: 600",
+  "--weight-bold: 700",
+]) {
+  if (!stylesSource.includes(token)) throw new Error(`Typography token missing: ${token}.`);
+}
+if (/font-weight:\s*(?:550|650|750)\b/.test(stylesSource))
+  throw new Error("Non-standard synthesized font weight found.");
+if ([...stylesSource.matchAll(/letter-spacing:\s*([^;]+)/g)].some((match) => match[1].trim() !== "0"))
+  throw new Error("Letter spacing must remain zero.");
+if (!/\.nav-item\s*\{[^}]*font-size:\s*var\(--text-body\)[^}]*font-weight:\s*var\(--weight-regular\)/s.test(stylesSource))
+  throw new Error("Sidebar navigation must use regular 14px text.");
+if (!/\.settings-button\s*\{[^}]*font-size:\s*var\(--text-body\)[^}]*font-weight:\s*var\(--weight-regular\)/s.test(stylesSource))
+  throw new Error("Help and Settings must use regular 14px text.");
+if (!/\.primary-button,\s*\.secondary-button\s*\{[^}]*font-size:\s*var\(--text-body\)[^}]*font-weight:\s*var\(--weight-regular\)/s.test(stylesSource))
+  throw new Error("Command buttons must use regular 14px text.");
+if (!contents["app/index.html"].includes('id="sidebarExpand"') || !contents["app/js/app.js"].includes("setDesktopSidebar"))
+  throw new Error("Desktop sidebar collapse and expand controls are missing.");
 
 // Everything the browser downloads. `server.js` is deliberately NOT here: it is
 // the only file allowed to know about credentials, because its dev proxy reads
