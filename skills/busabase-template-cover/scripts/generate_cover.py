@@ -249,6 +249,7 @@ def add_ambient_shadow(
 
 
 def resolve_source(template_dir: Path, screenshots: list[str], source_override: str | None) -> tuple[Path, str]:
+    cover_path = (template_dir / COVER_RELATIVE_PATH).resolve()
     candidates = [source_override] if source_override else [
         screenshot for screenshot in screenshots if Path(screenshot).as_posix() != COVER_RELATIVE_PATH.as_posix()
     ]
@@ -256,7 +257,9 @@ def resolve_source(template_dir: Path, screenshots: list[str], source_override: 
         if not candidate:
             continue
         path = Path(candidate)
-        resolved = path if path.is_absolute() else template_dir / path
+        resolved = (path if path.is_absolute() else template_dir / path).resolve()
+        if resolved == cover_path:
+            raise CoverError("The generated cover cannot be used as its own source")
         if resolved.is_file():
             try:
                 label = resolved.relative_to(template_dir).as_posix()
