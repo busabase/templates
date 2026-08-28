@@ -1,0 +1,5 @@
+interface:
+  display_name: "Busabase Template Cover"
+  short_description: "Generate consistent covers for Busabase templates"
+  brand_color: "#0B7A75"
+  default_prompt: "Use $busabase-template-cover to generate and register a cover for this Busabase template."

@@ -38,6 +38,10 @@ templates/<name>/
 `name`, and the `name` in SKILL.md's frontmatter. The validator requires the
 three to agree, because they are one thing.
 
+Repository-maintenance skills live under `skills/`. They automate work on the
+template catalog itself, are not installable templates, and must not be added to
+`templates.json`.
+
 ## What is generated, and must not be hand-edited
 
 **`templates.json`** — the catalog the dashboard reads. Rebuild it after any
