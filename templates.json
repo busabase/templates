@@ -17,6 +17,7 @@
         "pipeline"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/directory-overview.webp",
         "assets/screenshots/pipeline-overview.webp",
         "assets/screenshots/deal-detail.webp",
@@ -54,6 +55,7 @@
         "drafts"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp",
         "assets/screenshots/inbox-approval.webp",
         "assets/screenshots/needs-review.webp",

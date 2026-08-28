@@ -11,6 +11,7 @@
     "airapp": "b2b-crm",
     "tags": ["sales", "accounts", "contacts", "activities", "deals", "pipeline"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/directory-overview.webp",
       "assets/screenshots/pipeline-overview.webp",
       "assets/screenshots/deal-detail.webp",

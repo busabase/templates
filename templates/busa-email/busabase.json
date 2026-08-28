@@ -11,6 +11,7 @@
     "airapp": "busa-email-app",
     "tags": ["inbox", "review-queue", "drafts"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",
       "assets/screenshots/inbox-approval.webp",
       "assets/screenshots/needs-review.webp",
