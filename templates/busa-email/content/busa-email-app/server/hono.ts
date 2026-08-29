@@ -63,12 +63,17 @@ app.use("/api/state", attachDemoVisuals);
  * served from localhost on Desktop/OSS, and a standalone run is reached over
  * LAN IPs and dev tunnels, so both directions of that guess are wrong.
  */
-const AIRAPP_HOSTED_RUNTIMES = new Set(["nodepod", "local-node", "srt", "embed"]);
 const airappRuntime = (process.env.BUSABASE_AIRAPP_RUNTIME || "").trim();
 app.get("/__airapp/runtime", (c) =>
   c.json({
     runtime: airappRuntime || "standalone",
-    hosted: AIRAPP_HOSTED_RUNTIMES.has(airappRuntime),
+    // PRESENCE, never membership of a list of engine names. The list this replaced
+    // still said `local-node`, a name that no longer exists — so under the `local`
+    // and `sandock` engines this app decided it was standalone while running inside
+    // a hosted preview, showed its own connection gate, and called /api/v1 with no
+    // credential. That is the same failure the comment above warns about, arriving
+    // through the one door the comment did not cover.
+    hosted: airappRuntime !== "",
   }),
 );
 
