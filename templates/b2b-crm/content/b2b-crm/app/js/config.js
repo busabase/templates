@@ -681,6 +681,17 @@ export const appConfig = {
     "summary": "Find the right account, understand the people involved, and capture the next follow-up.",
     "screens": [
       {
+        "id": "overview",
+        "name": "Overview",
+        "purpose": "Review relationship momentum, pipeline movement, and today's follow-up priorities.",
+        "data_sources": [
+          "companies",
+          "contacts",
+          "activities",
+          "deals"
+        ]
+      },
+      {
         "id": "directory",
         "name": "Directory",
         "purpose": "Search and review companies and contacts.",
@@ -773,6 +784,7 @@ export const appConfig = {
       "nodes.list",
       "nodes.get",
       "records.listPaged",
+      "records.count",
       "records.search",
       "changeRequests.listPaged"
     ],
@@ -780,78 +792,5 @@ export const appConfig = {
       "bases.createChangeRequest",
       "records.changeRequest"
     ]
-  },
-  "demoRecords": [
-    {
-      "id": "demo-companies-1",
-      "baseKey": "companies",
-      "fields": {
-        "company-name": "Northstar Analytics",
-        "website": "https://northstar-analytics.example",
-        "industry": "software-technology",
-        "relationship-type": "prospect",
-        "company-size": "51-200",
-        "headquarters": "Austin, TX",
-        "notes": "Evaluating a shared relationship workspace for the revenue team."
-      }
-    },
-    {
-      "id": "demo-contacts-1",
-      "baseKey": "contacts",
-      "fields": {
-        "full-name": "Maya Chen",
-        "company": "Northstar Analytics",
-        "job-title": "VP, Revenue Operations",
-        "buying-role": "decision-maker",
-        "email": "maya.chen@northstar-analytics.example",
-        "phone": "+1 512 555 0148",
-        "linkedin-profile": "https://www.linkedin.com/in/maya-chen-example",
-        "contact-status": "active",
-        "notes": "Owns the evaluation process and executive alignment."
-      }
-    },
-    {
-      "id": "demo-activities-2",
-      "baseKey": "activities",
-      "fields": {
-        "activity-subject": "Discovery call with Northstar",
-        "company": "Northstar Analytics",
-        "contact": "Maya Chen",
-        "activity-type": "call",
-        "activity-date": "2026-08-20",
-        "summary": "Reviewed the rollout scope and agreed on the evaluation criteria.",
-        "next-follow-up-date": "2026-08-25"
-      }
-    },
-    {
-      "id": "demo-deals-1",
-      "baseKey": "deals",
-      "fields": {
-        "deal-name": "Northstar CRM Rollout",
-        "company": "Northstar Analytics",
-        "primary-contact": "Maya Chen",
-        "amount": 48000,
-        "currency": "usd",
-        "stage": "discovery",
-        "expected-close-date": "2026-10-15",
-        "next-step": "Confirm the evaluation workshop agenda.",
-        "notes": "Initial multi-team rollout opportunity."
-      }
-    },
-    {
-      "id": "demo-deals-2",
-      "baseKey": "deals",
-      "fields": {
-        "deal-name": "Northstar Expansion Planning",
-        "company": "Northstar Analytics",
-        "primary-contact": "Maya Chen",
-        "amount": 18000,
-        "currency": "usd",
-        "stage": "proposal",
-        "expected-close-date": "2026-09-30",
-        "next-step": "Review the proposal with finance.",
-        "notes": "Second-phase planning package."
-      }
-    }
-  ]
+  }
 };
