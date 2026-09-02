@@ -1,13 +1,15 @@
 {
   "name": "b2b-crm",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.3.0",
   "type": "module",
   "engines": {
     "node": ">=24.18.0"
   },
   "scripts": {
     "build:sdk": "esbuild scripts/sdk-entry.js --bundle --format=esm --platform=browser --minify-whitespace --outfile=app/vendor/busabase-sdk.js && node scripts/normalize-bundle.mjs",
+    "build:icons": "esbuild scripts/icons-entry.js --bundle --format=esm --platform=browser --minify-whitespace --outfile=app/vendor/lucide-icons.js",
+    "build:vendor": "npm run build:sdk && npm run build:icons",
     "dev": "node server.js",
     "start": "node server.js",
     "check": "node scripts/check.mjs"
@@ -15,7 +17,8 @@
   "dependencies": {
     "@hono/node-server": "2.1.1",
     "busabase-sdk": "0.30.1",
-    "hono": "4.13.4"
+    "hono": "4.13.4",
+    "lucide": "1.39.0"
   },
   "devDependencies": {
     "esbuild-wasm": "0.28.1"

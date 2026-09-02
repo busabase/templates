@@ -22,7 +22,7 @@ metadata:
 
 ## Product Contract
 
-B2B CRM is a shared account, contact, activity, and opportunity workspace for small sales teams. Use the AirApp as the primary human interface: it combines relationship context, follow-up dates, a stage-based sales pipeline, and Busabase audit identity in one focused view.
+B2B CRM is a shared account, contact, activity, and opportunity workspace for small sales teams. Use the AirApp as the primary human interface: its Overview combines relationship context, follow-up dates, exact account and stage counts, a stage-based sales pipeline, and Busabase audit identity in one focused view.
 
 `Relationship Type` describes the account relationship; `Stage` describes one Deal's sales progress. Keep them separate. The template tracks stated deal amounts in their original USD, EUR, or GBP currency and does not convert currencies or calculate probability-weighted forecasts.
 
@@ -66,6 +66,8 @@ Confirm the canonical Company and, when supplied, Primary Contact before proposi
 
 Group or filter Deals by Stage and state when a summary covers only the loaded page. Report multi-currency values separately by currency. Do not combine USD, EUR, and GBP into one total unless the user supplies an approved conversion method and rate source.
 
+The Overview uses exact record counts for relationship types and Deal stages. Date-window metrics, attention lists, and multi-currency values remain bounded by their configured record pages and show a `+` or loaded-window label when more records exist.
+
 ### Review follow-ups
 
 Query Activities with a non-empty Next Follow-Up Date, sort or filter server-side when supported, and distinguish overdue from upcoming dates. Summaries must state when they cover only the loaded page.
@@ -92,3 +94,5 @@ Query Activities with a non-empty Next Follow-Up Date, sort or filter server-sid
 ## Sample Data
 
 The template installs ten fictional companies, ten fictional contacts, ten fictional activities, and ten fictional deals. `.example` domains and fictional names are demonstration data, not real leads or revenue. Preserve them only when the user wants the demo; never present them as actual customers or pipeline.
+
+The AirApp's local `?demo=1` preview uses a separate deterministic 30-record fixture to exercise every Deal stage and a varied seven-day Activity rhythm. Those browser fixtures are never loaded by the production provider and are not canonical Base records.

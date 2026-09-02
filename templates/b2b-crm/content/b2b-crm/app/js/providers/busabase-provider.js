@@ -30,11 +30,59 @@ const readPage = async (client, base, options = {}) => {
     limit: base.readLimit,
     ...(options.cursor ? { cursor: options.cursor } : {}),
     ...(options.filters?.length ? { filters: options.filters } : {}),
+    ...(options.sort ? { sort: options.sort } : {}),
   });
   return {
     records: normalizeRecords(page.records, base.key),
     nextCursor: page.nextCursor || null,
     limit: base.readLimit,
+  };
+};
+
+const defaultSortFor = (base) => {
+  if (base.key === "activities") {
+    return { fieldSlug: "activity-date", fieldType: "date", direction: "desc" };
+  }
+  if (base.key === "deals") {
+    return { fieldSlug: "expected-close-date", fieldType: "date", direction: "asc" };
+  }
+  return null;
+};
+
+const countRecords = async (client, base, filters) => {
+  requireRead("records.count");
+  const result = await client.records.count({
+    baseId: base.baseId,
+    ...(filters?.length ? { filters } : {}),
+  });
+  return result.total;
+};
+
+const readOverviewCounts = async (client, bases) => {
+  const companies = bases.find((base) => base.key === "companies");
+  const deals = bases.find((base) => base.key === "deals");
+  if (!companies || !deals) throw new Error("SCHEMA_INCOMPLETE: overview resources");
+  const stages = deals.fields.find((field) => field.slug === "stage")?.options?.choices || [];
+  const requests = [
+    ["customerAccounts", countRecords(client, companies, [
+      { fieldSlug: "relationship-type", operator: "equals", value: "customer" },
+    ])],
+    ["prospects", countRecords(client, companies, [
+      { fieldSlug: "relationship-type", operator: "equals", value: "prospect" },
+    ])],
+    ...stages.map((stage) => [
+      stage.id,
+      countRecords(client, deals, [
+        { fieldSlug: "stage", operator: "equals", value: stage.id },
+      ]),
+    ]),
+  ];
+  const resolved = await Promise.all(requests.map(async ([key, request]) => [key, await request]));
+  return {
+    exact: true,
+    customerAccounts: resolved.find(([key]) => key === "customerAccounts")?.[1] || 0,
+    prospects: resolved.find(([key]) => key === "prospects")?.[1] || 0,
+    dealStages: Object.fromEntries(resolved.filter(([key]) => stages.some((stage) => stage.id === key))),
   };
 };
 
@@ -85,9 +133,12 @@ export const busabaseProvider = {
     const bases = await resolveRuntimeResources(client);
     runtimeClient = client;
     runtimeBases = new Map(bases.map((base) => [base.key, base]));
-    const [pages, changeRequestPage] = await Promise.all([
-      Promise.all(bases.map(async (base) => [base.key, await readPage(client, base)])),
+    const [pages, changeRequestPage, overviewCounts] = await Promise.all([
+      Promise.all(bases.map(async (base) => [base.key, await readPage(client, base, {
+        sort: defaultSortFor(base),
+      })])),
       readChangeRequests(client),
+      readOverviewCounts(client, bases),
     ]);
     return {
       provider: {
@@ -107,6 +158,7 @@ export const busabaseProvider = {
         nextCursor: changeRequestPage.nextCursor,
         limit: PENDING_CHANGE_REQUEST_LIMIT,
       },
+      overviewCounts,
     };
   },
   async queryBase(baseKey, options = {}) {
@@ -118,6 +170,7 @@ export const busabaseProvider = {
           filters: options.filter ? [
             { fieldSlug: options.filter.fieldSlug, operator: "equals", value: options.filter.value },
           ] : [],
+          sort: defaultSortFor(base),
         });
     if (!options.query || !options.filter) return page;
     return {
@@ -130,7 +183,7 @@ export const busabaseProvider = {
   async loadMore(baseKey, cursor) {
     const base = runtimeBases.get(baseKey);
     if (!runtimeClient || !base || !cursor) throw new Error(`SCHEMA_INCOMPLETE: ${baseKey}`);
-    return readPage(runtimeClient, base, { cursor });
+    return readPage(runtimeClient, base, { cursor, sort: defaultSortFor(base) });
   },
   async createActivity(fields) {
     requireWrite("bases.createChangeRequest");
