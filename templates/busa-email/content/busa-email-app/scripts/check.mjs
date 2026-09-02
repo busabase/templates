@@ -5,6 +5,8 @@ const root = path.resolve(import.meta.dirname, "..");
 const packageJson = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
 const configText = await readFile(path.join(root, "app", "js", "config.js"), "utf8");
 const index = await readFile(path.join(root, "app", "index.html"), "utf8");
+const baseUiText = await readFile(path.join(root, "app", "styles", "base-ui.css"), "utf8");
+const layersText = await readFile(path.join(root, "app", "styles", "layers.css"), "utf8");
 const setupText = await readFile(path.join(root, "app", "js", "setup.js"), "utf8");
 const localAuthText = await readFile(path.join(root, "server", "local-auth.js"), "utf8");
 const providerText = await readFile(path.join(root, "lib", "data-provider", "busabase-client.ts"), "utf8");
@@ -38,6 +40,18 @@ if (/BUSA_EMAIL_DATA_PROVIDER|local-file-provider|folders\.get/.test(configText)
   throw new Error("Retired provider/runtime contract remains in app config");
 }
 if (/\b(?:href|src)="\/(?!api\/v1)/.test(index)) throw new Error("AirApp assets must use relative URLs");
+if (!index.includes('name="color-scheme" content="light dark"')) {
+  throw new Error("Native controls must advertise light and dark color schemes");
+}
+if (index.indexOf("styles/base-ui.css") > index.indexOf("styles/layers.css")) {
+  throw new Error("Base UI must load before app styles");
+}
+if (!layersText.includes("@layer base-ui, base, components, shell")) {
+  throw new Error("Base UI must be the first cascade layer");
+}
+for (const token of ["--text-xs: 11px", "--text-3xl: 38px", "--radius-lg: 14px", "--surface-blur:"]) {
+  if (!baseUiText.includes(token)) throw new Error(`Base UI token missing: ${token}`);
+}
 if (
   configText.includes("orglnl02ONE36pXGXTs") ||
   !setupText.includes('name="space_id"') ||
