@@ -6,6 +6,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const required = [
   "package.json",
   "server.js",
+  "app/base-ui.css",
   "app/index.html",
   "app/styles.css",
   "app/js/app.js",
@@ -99,13 +100,23 @@ if (!contents["app/js/app.js"].includes("Request submitted") || !contents["app/j
 if (!contents["app/styles.css"].includes(".result-copy code"))
   throw new Error("ChangeRequest success id styling is missing.");
 const stylesSource = contents["app/styles.css"];
+const baseUiSource = contents["app/base-ui.css"];
 for (const token of [
-  "--text-caption: 12px",
-  "--text-body: 14px",
-  "--text-section: 16px",
-  "--text-modal-title: 18px",
-  "--text-drawer-title: 20px",
-  "--text-page-title: 24px",
+  "--text-xs: 11px",
+  "--text-sm: 12px",
+  "--text-base: 13px",
+  "--text-md: 14px",
+  "--text-lg: 16px",
+  "--text-xl: 20px",
+  "--text-2xl: 30px",
+  "--text-3xl: 38px",
+  "--radius-sm: 8px",
+  "--radius-md: 10px",
+  "--radius-lg: 14px",
+]) {
+  if (!baseUiSource.includes(token)) throw new Error(`Base UI token missing: ${token}.`);
+}
+for (const token of [
   "--weight-regular: 400",
   "--weight-medium: 500",
   "--weight-semibold: 600",
@@ -117,12 +128,16 @@ if (/font-weight:\s*(?:550|650|750)\b/.test(stylesSource))
   throw new Error("Non-standard synthesized font weight found.");
 if ([...stylesSource.matchAll(/letter-spacing:\s*([^;]+)/g)].some((match) => match[1].trim() !== "0"))
   throw new Error("Letter spacing must remain zero.");
-if (!/\.nav-item\s*\{[^}]*font-size:\s*var\(--text-body\)[^}]*font-weight:\s*var\(--weight-regular\)/s.test(stylesSource))
+if (!/\.nav-item\s*\{[^}]*font-size:\s*var\(--text-md\)[^}]*font-weight:\s*var\(--weight-regular\)/s.test(stylesSource))
   throw new Error("Sidebar navigation must use regular 14px text.");
-if (!/\.settings-button\s*\{[^}]*font-size:\s*var\(--text-body\)[^}]*font-weight:\s*var\(--weight-regular\)/s.test(stylesSource))
+if (!/\.settings-button\s*\{[^}]*font-size:\s*var\(--text-md\)[^}]*font-weight:\s*var\(--weight-regular\)/s.test(stylesSource))
   throw new Error("Help and Settings must use regular 14px text.");
-if (!/\.primary-button,\s*\.secondary-button\s*\{[^}]*font-size:\s*var\(--text-body\)[^}]*font-weight:\s*var\(--weight-regular\)/s.test(stylesSource))
+if (!/\.primary-button,\s*\.secondary-button\s*\{[^}]*font-size:\s*var\(--text-md\)[^}]*font-weight:\s*var\(--weight-regular\)/s.test(stylesSource))
   throw new Error("Command buttons must use regular 14px text.");
+if (!contents["app/index.html"].includes('name="color-scheme" content="light dark"'))
+  throw new Error("Native controls must advertise light and dark color schemes.");
+if (contents["app/index.html"].indexOf("base-ui.css") > contents["app/index.html"].indexOf("styles.css"))
+  throw new Error("Base UI must load before app styles.");
 if (!contents["app/index.html"].includes('id="sidebarExpand"') || !contents["app/js/app.js"].includes("setDesktopSidebar"))
   throw new Error("Desktop sidebar collapse and expand controls are missing.");
 
