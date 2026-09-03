@@ -1,4 +1,6 @@
-import { api, toast } from "./api.js";
+import { toast } from "./api.js";
+import { analyze } from "./content-model.js";
+import { getProvider } from "./providers/index.js";
 import { activeHelpTab, closeHelp, isHelpOpen, openHelp, renderHelp, setHelpTab } from "./help-modal.js";
 import { applyTranslations, onLanguageChange, setAccentTheme, setLanguageMode, t } from "./i18n.js";
 import {
@@ -22,13 +24,18 @@ import {
   syncResponsiveShell,
   toggleSidebar,
 } from "./shell.js";
+import { CHOICES } from "./schema.js";
 import { $, store } from "./store.js";
 
 const REFRESH_INTERVAL_MS = 45_000;
 
 export async function refresh({ preserveScroll = true } = {}) {
-  const data = await api("/api/state");
-  store.state = data;
+  store.provider ??= await getProvider();
+  const data = await store.provider.getState();
+  // The analysis runs here, on whichever provider answered, so "what counts as
+  // published" cannot end up implemented twice.
+  const analysis = analyze(data.records || {});
+  store.state = { ...data, ...analysis, choices: CHOICES };
   applyGateState();
   if (preserveScroll) renderAllPreservingScroll();
   else renderAll();

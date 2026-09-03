@@ -1,4 +1,4 @@
-import { api, toast } from "./api.js";
+import { toast } from "./api.js";
 import { ISSUE_TONES, LIVE_STATUS } from "./content-model.js";
 import { escapeHtml, formatDate, localeLabel, statusLabel, templateLabel } from "./format.js";
 import { t } from "./i18n.js";
@@ -18,6 +18,13 @@ import { $, CONTENT_MODES, store } from "./store.js";
  */
 
 const choices = () => store.state.choices || {};
+
+/**
+ * Did the write land, or is it waiting for someone with write access? The app does
+ * not decide that — Busabase does, from the actor's own permission — so the answer
+ * is read off what came back.
+ */
+const merged = (result) => result?.materialized !== false && result?.status !== "in_review";
 export const inContentMode = () => CONTENT_MODES.includes(store.mode);
 
 const STATUS_FILTERS = ["all", "published", "draft"];
@@ -74,7 +81,7 @@ const statusBadge = (item) =>
  * hit: a path the SDK will refuse, or two live pages fighting over one URL. The
  * rest of the checks stay in the detail pane, where there is room to explain them.
  */
-const ROW_WARNINGS = ["bad-path", "duplicate-path", "empty-body"];
+const ROW_WARNINGS = ["blank-field", "bad-path", "duplicate-path", "empty-body"];
 const rowWarning = (item) => {
   const code = item.issues.find((issue) => ROW_WARNINGS.includes(issue));
   if (!code) return "";
@@ -295,18 +302,14 @@ export function renderDetail() {
       toggle.disabled = true;
       const publishing = record.status !== LIVE_STATUS;
       try {
-        const result = await api("/api/status", {
+        const result = await store.provider.setStatus({
           recordId: record.recordId,
           baseCommitId: record.headCommitId,
           title: record.title,
           publishedAt: record.publishedAt || undefined,
           status: publishing ? "published" : "draft",
         });
-        toast(
-          result.merged
-            ? t(publishing ? "toast.published" : "toast.unpublished")
-            : t("toast.needs_approval"),
-        );
+        toast(merged(result) ? t(publishing ? "toast.published" : "toast.unpublished") : t("toast.needs_approval"));
         await hooks.refresh();
       } catch (error) {
         toast(error.message);
@@ -417,7 +420,7 @@ export function registerEditorSubmit() {
     const submit = $("editorSubmit");
     submit.disabled = true;
     try {
-      const result = await api("/api/save", {
+      const result = await store.provider.save({
         kind: sheet.dataset.kind === "pages" ? "pages" : "posts",
         recordId: sheet.dataset.recordId || undefined,
         baseCommitId: sheet.dataset.baseCommitId || undefined,
@@ -425,7 +428,7 @@ export function registerEditorSubmit() {
       });
       sheet.close();
       form.reset();
-      toast(result.merged ? t("toast.saved") : t("toast.needs_approval"));
+      toast(merged(result) ? t("toast.saved") : t("toast.needs_approval"));
       await hooks.refresh();
     } catch (error) {
       toast(error.message);

@@ -310,7 +310,6 @@ export const sampleRecords = {
         slug: "why-we-raised-prices",
         locale: "en",
         status: "draft",
-        description: "",
         body: "Outline only. Needs the final numbers from finance before review.",
         author: "Ada Whitfield",
         categories: [],

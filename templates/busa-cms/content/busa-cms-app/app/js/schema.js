@@ -159,3 +159,20 @@ export const CMS_BASES = [
 /** `metadata.busabaseCms.schemaVersion` the SDK writes onto the Folder. */
 export const CMS_SCHEMA_VERSION = 1;
 export const CMS_SCHEMA_PROFILE = "standard";
+
+/**
+ * Choice id → its "English / 中文" name, for the labels the UI shows. Derived from
+ * the field definitions above so a choice can never be renamed in one place only.
+ */
+const namedChoices = (role, slug) =>
+  Object.fromEntries(
+    (CMS_BASES.find((base) => base.role === role)
+      ?.fields.find((field) => field.slug === slug)
+      ?.options?.choices ?? []).map((choice) => [choice.id, choice.name]),
+  );
+
+export const CHOICES = {
+  locale: namedChoices("posts", "locale"),
+  status: namedChoices("posts", "status"),
+  template: namedChoices("pages", "template"),
+};

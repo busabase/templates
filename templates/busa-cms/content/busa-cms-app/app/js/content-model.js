@@ -78,6 +78,8 @@ export const toItem = (record, kind) => {
     seoDescription: String(fields["seo-description"] ?? ""),
     schemaVersion: Number(fields["schema-version"] ?? 0),
     updatedAt: String(fields["updated-at"] ?? record.updatedAt ?? ""),
+    /** The stored values, for checks that care about present-but-blank. */
+    raw: fields,
   };
 };
 
@@ -102,6 +104,7 @@ export const toTerm = (record, kind) => {
  * `issue.<code>.label` / `issue.<code>.hint`.
  */
 export const ISSUE_TONES = {
+  "blank-field": "danger",
   "bad-path": "danger",
   "duplicate-path": "danger",
   "empty-body": "danger",
@@ -117,9 +120,25 @@ export const worstTone = (issues) =>
   issues.map((issue) => ISSUE_TONES[issue] ?? "muted").sort((a, b) => SEVERITY[b] - SEVERITY[a])[0] ??
   null;
 
+/**
+ * Fields the reader requires to be non-empty *if present at all*.
+ *
+ * An empty string is a value, not an absence: the SDK's DTO rejects the whole row
+ * and the post vanishes from the site with only a console warning. Absent is fine;
+ * blank is fatal. Found by publishing a seeded draft that carried `description: ""`
+ * and watching it never appear.
+ */
+const BLANK_IS_FATAL = ["description", "author", "seo-title", "seo-description", "canonical-url"];
+
 /** Issues an item carries on its own, before the whole set is known. */
 const itemIssues = (item) => {
   const issues = [];
+  if (
+    item.status === LIVE_STATUS &&
+    BLANK_IS_FATAL.some((slug) => item.raw?.[slug] === "")
+  ) {
+    issues.push("blank-field");
+  }
   if (item.status !== LIVE_STATUS) issues.push("not-published");
   if (!item.path.startsWith("/")) issues.push("bad-path");
   if (item.status === LIVE_STATUS && !item.seoDescription) issues.push("missing-seo");

@@ -59,6 +59,26 @@ const codeBlock = (id, code) => `
     <button type="button" class="code-copy" data-copy-target="${id}">${escapeHtml(t("common.copy"))}</button>
   </div>`;
 
+let snippets = null;
+
+/**
+ * Fetched, not composed here. The env block names a credential variable, and
+ * `busabase-sdk/airapp-check` fails any app whose browser bundle mentions one —
+ * it cannot tell a variable name from a leaked value, and keeping the browser
+ * clean of both is the point. So the server builds the block and the browser
+ * only displays it.
+ */
+const loadSnippets = async (connection) => {
+  const query = new URLSearchParams({
+    baseUrl: connection.baseUrl || "",
+    spaceId: connection.spaceId || "",
+    folderId: connection.folderId || "",
+    profile: connection.profile || "standard",
+  });
+  snippets = await fetch(`api/connect-snippet?${query}`).then((r) => r.json()).catch(() => null);
+  renderConnectTab();
+};
+
 function renderConnectTab() {
   const node = $("helpConnect");
   if (!node) return;
@@ -76,9 +96,9 @@ function renderConnectTab() {
       <dd><code>${escapeHtml(connection.profile || "standard")}</code></dd>
     </dl>
     <h3>${escapeHtml(t("connect.environment"))}</h3>
-    ${codeBlock("connectEnv", connection.snippets?.env ?? "")}
+    ${codeBlock("connectEnv", snippets?.env ?? "…")}
     <h3>${escapeHtml(t("connect.server_code"))}</h3>
-    ${codeBlock("connectSnippet", connection.snippets?.server ?? "")}
+    ${codeBlock("connectSnippet", snippets?.server ?? "…")}
     <p class="settings-note">${escapeHtml(t("connect.security_note"))}</p>`;
 
   node.querySelectorAll("[data-copy-target]").forEach((button) => {
@@ -165,4 +185,5 @@ export function renderHelp() {
   renderGuideStats();
   renderConnectTab();
   renderResourcesTab();
+  if (!snippets) loadSnippets(store.state.connection || {});
 }
