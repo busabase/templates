@@ -12,6 +12,6 @@
     "check": "node scripts/sync-content.mjs --check && node scripts/check-sdk-contract.mjs"
   },
   "devDependencies": {
-    "busabase-cms": "0.1.2"
+    "busabase-cms": "0.1.3"
   }
 }
