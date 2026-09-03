@@ -10,6 +10,12 @@
  * Relation values are package-local `key`s of rows in the target Base; install
  * mints real record ids and rewrites them.
  *
+ * A `json` field (`legacy-paths`, `hero`, `features`, `faqs`) holds JSON **text**,
+ * not a parsed value: Busabase stores it raw like `code` and validates that it
+ * parses, so an array literal here is rejected at install with "must be text". The
+ * SDK reader accepts either form, which is exactly why this only shows up against
+ * a real server — `scripts/sync-content.mjs` now checks it too.
+ *
  * The seed is a small bilingual site on purpose: one locale would hide the fact
  * that every Base carries `locale`, and one status would hide that the SDK
  * serves `published` and nothing else.
@@ -172,7 +178,8 @@ export const sampleRecords = {
           "});",
           "",
           "export default async function Page({ params }) {",
-          "  const post = await cms.posts.getBySlug(params.slug);",
+          // Posts and Pages are looked up by `path`; only taxonomy has getBySlug.
+          '  const post = await cms.posts.getByPath(`/blog/${params.slug}`);',
           "  if (!post) notFound();",
           "  return <Article post={post} />;",
           "}",
@@ -234,7 +241,7 @@ export const sampleRecords = {
         categories: ["category-engineering", "category-guides"],
         tags: ["tag-migration", "tag-seo"],
         "published-at": "2026-08-11",
-        "legacy-paths": ["/posts/moving-off-markdown", "/blog/2026/markdown-migration"],
+        "legacy-paths": '["/posts/moving-off-markdown", "/blog/2026/markdown-migration"]',
         "seo-title": "Migrating 60 MDX posts into a Busabase CMS",
         "seo-description":
           "A frontmatter-to-field mapping, and the redirect table worth writing first.",
@@ -332,16 +339,16 @@ export const sampleRecords = {
           "  <p>No query builder, no dashboard to configure, no analyst required.</p>",
           "</section>",
         ].join("\n"),
-        hero: {
+        hero: JSON.stringify({
           headline: "Did this week go better than last week?",
           subhead: "One trend line, one sentence, every Monday.",
           cta: { label: "Start free", href: "/signup" },
-        },
-        features: [
+        }),
+        features: JSON.stringify([
           { title: "Weekly digest", body: "A short note, not a dashboard invitation." },
           { title: "Cohorts without SQL", body: "Retention you can read down a column." },
           { title: "Public changelog", body: "Fed straight from your CMS." },
-        ],
+        ]),
         "seo-title": "Tidepool — weekly analytics for solo makers",
         "seo-description":
           "One trend line and one sentence, every Monday. Analytics for people who ship alone.",
@@ -365,16 +372,13 @@ export const sampleRecords = {
           "  <li><strong>Studio</strong> — $19 a month, unlimited projects.</li>",
           "</ul>",
         ].join("\n"),
-        faqs: [
-          {
-            q: "Do you charge per seat?",
-            a: "No. Invite whoever needs to see the numbers.",
-          },
+        faqs: JSON.stringify([
+          { q: "Do you charge per seat?", a: "No. Invite whoever needs to see the numbers." },
           {
             q: "What happens over the free limit?",
             a: "Collection continues and we email you. Nothing is dropped.",
           },
-        ],
+        ]),
         "seo-title": "Tidepool pricing — free while you are small",
         "seo-description": "Free up to 10,000 events a month, then $19 for unlimited projects.",
         "schema-version": 1,
@@ -415,7 +419,7 @@ export const sampleRecords = {
           "<p>Two people in two time zones, building the analytics tool we kept failing to",
           "  find. Started in 2025, still independent.</p>",
         ].join("\n"),
-        "legacy-paths": ["/company"],
+        "legacy-paths": '["/company"]',
         "schema-version": 1,
       },
     },
@@ -434,11 +438,11 @@ export const sampleRecords = {
           "  <p>每周一早上，一封邮件，一句话回答这个问题。</p>",
           "</section>",
         ].join("\n"),
-        hero: {
+        hero: JSON.stringify({
           headline: "这周比上周好吗？",
           subhead: "一条趋势线，一句话，每周一。",
           cta: { label: "免费开始", href: "/zh-CN/signup" },
-        },
+        }),
         "seo-title": "Tidepool —— 给独立开发者的每周数据简报",
         "seo-description": "一条趋势线，一句话，每周一送到你的邮箱。",
         "schema-version": 1,

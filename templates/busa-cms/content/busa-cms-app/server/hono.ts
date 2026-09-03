@@ -56,7 +56,13 @@ app.use("*", async (c, next) => {
     const value = c.req.header(name);
     if (value) headers[name] = value;
   }
-  return withRuntimeRequest({ origin: new URL(c.req.url).origin, headers }, next);
+  // Hosted, `headers` carries the viewer's ambient session and that is the whole
+  // story. Standalone there is no such session, so the gateway hands over the
+  // credential and the Space it validated — server-side, never from the browser.
+  const local = describeBusabaseAirAppRuntime().hosted
+    ? null
+    : await installLocalBusabaseAuth.resolve?.(c).catch(() => null);
+  return withRuntimeRequest({ origin: new URL(c.req.url).origin, headers, local }, next);
 });
 
 app.get("/health", (c) => c.json({ ok: true, app: "busa-cms" }));

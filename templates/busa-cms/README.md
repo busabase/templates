@@ -3,7 +3,13 @@
 A WordPress-style admin for the four Bases the [`busabase-cms`](https://www.npmjs.com/package/busabase-cms)
 SDK reads: **Posts**, **Pages**, **Categories**, **Tags**.
 
-Install it into a Space, write in it, and point a Next.js site at the Folder:
+```bash
+# --auto-merge is required, not a shortcut: the seed links posts to categories and
+# tags, and a relation stores the ids of rows that only exist once they are merged.
+busabase-cli install ./templates/busa-cms --auto-merge
+```
+
+Then write in it, and point a Next.js site at the Folder:
 
 ```ts
 import { createBusabaseCms } from "busabase-cms";
@@ -14,7 +20,9 @@ export const cms = createBusabaseCms({
   lazyCreate: true,
 });
 
-const posts = await cms.posts.list();             // only `published` rows, ever
+const posts = await cms.posts.list();                        // only `published` rows, ever
+const post = await cms.posts.getByPath("/blog/hello");       // posts and pages: by path
+const tag  = await cms.tags.getBySlug("nextjs");             // taxonomy: by slug
 ```
 
 ## Why the schema is not negotiable

@@ -115,6 +115,42 @@ for (const base of appConfig.schema.bases) {
 }
 
 /**
+ * A `json` field holds JSON **text**. Busabase stores it raw like `code` and
+ * validates only that it parses, so an array or object literal in a seed row is
+ * rejected at install with "must be text" — halfway through, after the Bases exist.
+ *
+ * Checked here because nothing else catches it: the SDK's own DTO for these fields
+ * is `z.unknown()`, its reader happily accepts a decoded value, and the demo
+ * provider never talks to a server. It cost one aborted install to find.
+ */
+const jsonFieldProblems = [];
+for (const base of appConfig.schema.bases) {
+  const jsonSlugs = base.fields.filter((field) => field.type === "json").map((f) => f.slug);
+  for (const row of sampleRecords[base.key] ?? []) {
+    for (const slug of jsonSlugs) {
+      const value = row.fields[slug];
+      if (value === undefined) continue;
+      if (typeof value !== "string") {
+        jsonFieldProblems.push(`${base.key}/${row.key}.${slug} is a ${Array.isArray(value) ? "array" : typeof value}, not JSON text`);
+        continue;
+      }
+      try {
+        JSON.parse(value);
+      } catch {
+        jsonFieldProblems.push(`${base.key}/${row.key}.${slug} is not valid JSON`);
+      }
+    }
+  }
+}
+if (jsonFieldProblems.length > 0) {
+  console.error(
+    `json fields must hold JSON text:\n${jsonFieldProblems.map((p) => `  ${p}`).join("\n")}\n\n` +
+      "Wrap the value in JSON.stringify(...) — Busabase rejects a parsed value at install.",
+  );
+  process.exit(1);
+}
+
+/**
  * A relation value in a seed row is the package-local `key` of a row in the target
  * Base. A typo here installs cleanly and silently drops the link, so it is checked
  * rather than trusted.

@@ -44,6 +44,11 @@ const posts = await cms.posts.list();
 const page = await cms.pages.getByPath("/pricing");
 ```
 
+Posts and Pages are looked up by **path**; only Categories and Tags have
+`getBySlug`. Installing the package needs `--auto-merge`, because the seed links
+posts to categories and tags and a relation stores ids that exist only once the
+rows are merged.
+
 The Folder id that goes in `BUSABASE_CMS_FOLDER_ID` is shown in the app under
 **Help & Settings › Connect**, along with the snippet above filled in for this
 install.
@@ -74,6 +79,10 @@ Rules the site depends on, in the order they bite:
 - **`path` is also a promise.** Changing it breaks every existing link. Put the old
   value in `legacy-paths` before you change it, not after the traffic drops.
 - **`schema-version` is required and is `1`.** Write it on every row you create.
+- **A `json` field holds JSON *text*.** `legacy-paths`, `hero`, `features` and
+  `faqs` are stored raw and validated to parse, so write `JSON.stringify(value)`,
+  not the value. The SDK reader accepts either form, so the mistake only surfaces
+  as a rejected write.
 - **`locale` matters even on a single-language site.** Every uniqueness rule is
   scoped to it, and a row with the wrong locale simply will not appear.
 - **Relations point at record ids** in `categories`/`tags`. Resolve the term first;

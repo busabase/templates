@@ -1,7 +1,7 @@
 import { createBusabaseClient as createSdkClient } from "busabase-sdk";
 import { inspectProvisionedResources } from "busabase-sdk/airapp";
 import { appConfig } from "../app/js/config.js";
-import { runtimeHeaders, runtimeOrigin } from "./runtime-context.ts";
+import { localCredential, runtimeHeaders, runtimeOrigin } from "./runtime-context.ts";
 
 /**
  * The single Busabase boundary.
@@ -71,11 +71,22 @@ const recordFields = (record: any) =>
   record?.fields || record?.headCommit?.payload?.fields || record?.headCommit?.payload || {};
 
 export function createBusabaseClient() {
-  const sdk = createSdkClient({
-    baseUrl: runtimeOrigin(),
-    ...(appConfig.spaceId ? { spaceId: appConfig.spaceId } : {}),
-    headers: runtimeHeaders,
-  });
+  const local = localCredential();
+  // Two shapes, one client. Hosted: this app's origin IS Busabase and the viewer's
+  // forwarded session authenticates — no key, no Space to choose. Standalone: the
+  // server holds the key and the operator's confirmed Space, and the browser holds
+  // neither.
+  const sdk = local
+    ? createSdkClient({
+        baseUrl: local.baseUrl,
+        ...(local.spaceId ? { spaceId: local.spaceId } : {}),
+        ...(local.accessToken ? { apiKey: local.accessToken } : {}),
+      })
+    : createSdkClient({
+        baseUrl: runtimeOrigin(),
+        ...(appConfig.spaceId ? { spaceId: appConfig.spaceId } : {}),
+        headers: runtimeHeaders,
+      });
 
   const declaration = (key: BaseKey) => {
     const resource = appConfig.schema.bases.find((candidate) => candidate.key === key);
