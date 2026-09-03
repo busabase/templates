@@ -1,5 +1,10 @@
 export const messages = {
   screens: {
+    overview: {
+      eyebrow: "Sales command",
+      title: "Sales Overview",
+      summary: "Your pipeline, relationship momentum, and follow-ups for today.",
+    },
     directory: {
       eyebrow: "Account workspace",
       title: "Company & Contact Directory",

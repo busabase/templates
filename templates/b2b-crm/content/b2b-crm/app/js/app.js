@@ -1,12 +1,15 @@
 import { appConfig } from "./config.js";
 import { messages } from "./messages.js";
 import { getProvider } from "./providers/index.js";
+import { buildOverviewModel, localDateKey, renderOverviewMarkup } from "./overview.js";
+import { playOverviewEntrance } from "./overview-motion.js";
 import { formatMoney, pipelineMetrics, renderPipelineBoard } from "./pipeline.js";
+import { renderIcons } from "../vendor/lucide-icons.js";
 
 const state = {
   provider: null,
   payload: null,
-  screen: "directory",
+  screen: "overview",
   directoryTab: "companies",
   selectedRecordId: null,
   query: "",
@@ -87,7 +90,7 @@ const formatTimestamp = (value) => {
     : new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(date);
 };
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => localDateKey();
 const dueActivities = () =>
   recordsForBase("activities").filter((record) => {
     const followUp = record.fields?.["next-follow-up-date"];
@@ -98,6 +101,12 @@ const setText = (id, value) => {
   const element = byId(id);
   if (element) element.textContent = value;
 };
+const setButtonLabel = (id, value) => {
+  const element = byId(id);
+  const label = element?.querySelector(".button-label");
+  if (label) label.textContent = value;
+  else if (element) element.textContent = value;
+};
 const resetFormResult = (id) => {
   const element = byId(id);
   element.hidden = true;
@@ -107,8 +116,9 @@ const resetFormResult = (id) => {
 const showRequestSuccess = (id, requestId) => {
   const element = byId(id);
   element.className = "form-result success";
-  element.innerHTML = `<span class="result-icon" aria-hidden="true">&#10003;</span><span class="result-copy"><strong>Request submitted</strong><span>Ready for human review</span><code>${escapeHtml(requestId)}</code></span>`;
+  element.innerHTML = `<span class="result-icon" aria-hidden="true"><i data-lucide="circle-check"></i></span><span class="result-copy"><strong>Request submitted</strong><span>Ready for human review</span><code>${escapeHtml(requestId)}</code></span>`;
   element.hidden = false;
+  renderIcons(element);
 };
 const showRequestError = (id, error) => {
   const element = byId(id);
@@ -188,6 +198,30 @@ function renderMetrics() {
   setText("attentionCopy", state.screen === "pipeline" ? "open deals in the loaded window" : messages.followUpLabel);
 }
 
+function renderOverview() {
+  const stages = baseConfig("deals")?.fields.find((field) => field.slug === "stage")?.options?.choices || [];
+  const model = buildOverviewModel({
+    records: state.payload?.records || [],
+    pageInfo: state.payload?.pageInfo || {},
+    counts: state.payload?.overviewCounts || {},
+    stages,
+    ...(state.payload?.provider?.now ? { now: new Date(state.payload.provider.now) } : {}),
+  });
+  const staleNotice = state.payload?.provider?.stale
+    ? '<div class="overview-notice" role="status">This data window may be stale. Refresh the AirApp before acting on time-sensitive follow-ups.</div>'
+    : "";
+  byId("overviewPage").innerHTML = staleNotice + renderOverviewMarkup(model, {
+    escapeHtml,
+    formatDate,
+    formatMoney,
+    recordTitle,
+    displayValue,
+    choiceLabel,
+  });
+  setText("attentionValue", loadedCount(model.dueActivities.length, model.dueActivitiesPartial));
+  setText("attentionCopy", messages.followUpLabel);
+}
+
 const filterDefinition = () => {
   if (activeBaseKey() === "companies") return { label: "Relationship", fieldSlug: "relationship-type" };
   if (activeBaseKey() === "contacts") return { label: "Status", fieldSlug: "contact-status" };
@@ -197,13 +231,22 @@ const filterDefinition = () => {
 
 function renderControls() {
   const screenCopy = messages.screens[state.screen];
+  const overview = state.screen === "overview";
   setText("viewEyebrow", screenCopy.eyebrow);
   setText("viewTitle", screenCopy.title);
   setText("viewSummary", screenCopy.summary);
-  setText("mobileTitle", state.screen === "activities" ? "Activities" : state.screen === "pipeline" ? "Pipeline" : "Directory");
+  setText("mobileTitle", overview ? "Overview" : state.screen === "activities" ? "Activities" : state.screen === "pipeline" ? "Pipeline" : "Directory");
+  byId("overviewHeaderActions").hidden = !overview;
+  byId("workspaceSearch").hidden = overview;
+  byId("overviewPage").hidden = !overview;
+  byId("metrics").hidden = overview;
+  byId("controlBar").hidden = overview;
+  byId("workspaceContent").hidden = overview;
   byId("directoryTabs").hidden = state.screen !== "directory";
   byId("addDealOpen").hidden = state.screen !== "pipeline";
+  document.body.classList.toggle("overview-screen", overview);
   document.body.classList.toggle("pipeline-screen", state.screen === "pipeline");
+  if (overview) return;
   document.querySelectorAll("[data-directory-tab]").forEach((button) => {
     button.classList.toggle("active", button.dataset.directoryTab === state.directoryTab);
   });
@@ -373,6 +416,7 @@ function renderSettings() {
     ["Space", "Busa Sales"],
     ["Configured Bases", appConfig.schema.bases.map((base) => base.slug).join(", ")],
     ["Page budgets", `${budgets}; pending reviews: 20`],
+    ["Overview counts", "Exact records.count filters; dated lists and values remain bounded"],
     ["Write policy", "ChangeRequest only; no direct canonical mutation"],
   ];
   byId("settingsGrid").innerHTML = rows.map(([label, value]) => `<div class="settings-row"><span>${escapeHtml(label)}</span><code>${escapeHtml(value)}</code></div>`).join("");
@@ -384,10 +428,16 @@ function render() {
   document.title = appConfig.appName;
   renderNavigation();
   renderControls();
-  renderMetrics();
-  renderList();
-  renderDetail();
+  if (state.screen === "overview") {
+    renderOverview();
+  } else {
+    renderMetrics();
+    renderList();
+    renderDetail();
+  }
   renderSettings();
+  renderIcons();
+  if (state.screen === "overview") playOverviewEntrance(byId("overviewPage"));
 }
 
 async function load() {
@@ -396,7 +446,8 @@ async function load() {
   try {
     state.provider = await getProvider();
     state.payload = await state.provider.getState();
-    setText("loadingState", state.payload?.provider?.stale ? "This demo window is marked stale." : "");
+    setText("loadingState", "");
+    byId("errorState").hidden = true;
     render();
   } catch (error) {
     setText("loadingState", "");
@@ -530,7 +581,7 @@ async function submitActivity() {
   if (!state.activityDraft) return;
   const button = byId("activitySubmit");
   button.disabled = true;
-  setText("activitySubmit", "Submitting...");
+  setButtonLabel("activitySubmit", "Submitting...");
   try {
     const request = await state.provider.createActivity(state.activityDraft);
     const pending = await state.provider.refreshPending();
@@ -546,7 +597,7 @@ async function submitActivity() {
     showRequestError("activityResult", error);
   } finally {
     button.disabled = false;
-    setText("activitySubmit", "Submit request");
+    setButtonLabel("activitySubmit", "Submit request");
   }
 }
 
@@ -629,7 +680,7 @@ async function submitDeal() {
   if (!state.dealDraft) return;
   const button = byId("dealSubmit");
   button.disabled = true;
-  setText("dealSubmit", "Submitting...");
+  setButtonLabel("dealSubmit", "Submitting...");
   try {
     const request = await state.provider.createDeal(state.dealDraft);
     const pending = await state.provider.refreshPending();
@@ -645,7 +696,7 @@ async function submitDeal() {
     showRequestError("dealResult", error);
   } finally {
     button.disabled = false;
-    setText("dealSubmit", "Submit request");
+    setButtonLabel("dealSubmit", "Submit request");
   }
 }
 
@@ -695,7 +746,7 @@ async function submitStage() {
   if (!state.stageDraft) return;
   const button = byId("stageSubmit");
   button.disabled = true;
-  setText("stageSubmit", "Submitting...");
+  setButtonLabel("stageSubmit", "Submitting...");
   try {
     const request = await state.provider.updateDealStage(state.stageDraft);
     const pending = await state.provider.refreshPending();
@@ -711,28 +762,71 @@ async function submitStage() {
     showRequestError("stageResult", error);
   } finally {
     button.disabled = false;
-    setText("stageSubmit", "Submit request");
+    setButtonLabel("stageSubmit", "Submit request");
   }
 }
 
-function switchContext({ screen = state.screen, tab = state.directoryTab }) {
+function switchContext({ screen = state.screen, tab = state.directoryTab, filter = "" }) {
   state.screen = screen;
   state.directoryTab = tab;
   state.selectedRecordId = null;
   state.query = "";
-  state.filter = "";
+  state.filter = filter;
   state.querySequence += 1;
   state.detailTrigger = null;
   byId("searchInput").value = "";
   setMobileSidebar(false);
   setDetailOpen(false);
-  window.location.hash = screen === "activities" ? "#/activities" : screen === "pipeline" ? "#/pipeline" : `#/directory/${tab}`;
+  window.location.hash = screen === "overview"
+    ? "#/overview"
+    : screen === "activities"
+      ? "#/activities"
+      : screen === "pipeline"
+        ? "#/pipeline"
+        : `#/directory/${tab}`;
   render();
 }
 
 byId("mainNav").addEventListener("click", (event) => {
   const button = event.target.closest("[data-screen]");
   if (button) switchContext({ screen: button.dataset.screen });
+});
+byId("overviewPage").addEventListener("click", async (event) => {
+  const stageButton = event.target.closest("[data-stage]");
+  if (stageButton) {
+    switchContext({ screen: "pipeline", filter: stageButton.dataset.stage });
+    await runQuery();
+    return;
+  }
+  const recordButton = event.target.closest("[data-overview-record]");
+  if (recordButton) {
+    const screen = recordButton.dataset.overviewBase === "deals" ? "pipeline" : "activities";
+    const recordId = recordButton.dataset.overviewRecord;
+    switchContext({ screen });
+    state.selectedRecordId = recordId;
+    setDetailOpen(true);
+    renderList();
+    renderDetail();
+    setTimeout(() => byId("detailClose").focus({ preventScroll: true }), 220);
+    return;
+  }
+  const targetButton = event.target.closest("[data-overview-target]");
+  if (!targetButton) return;
+  const target = targetButton.dataset.overviewTarget;
+  if (target === "customers" || target === "prospects") {
+    switchContext({
+      screen: "directory",
+      tab: "companies",
+      filter: target === "customers" ? "customer" : "prospect",
+    });
+    await runQuery();
+    return;
+  }
+  if (target === "activities" || target === "followups") {
+    switchContext({ screen: "activities" });
+    return;
+  }
+  if (target === "missing-next-step") switchContext({ screen: "pipeline" });
 });
 byId("directoryTabs").addEventListener("click", (event) => {
   const button = event.target.closest("[data-directory-tab]");
@@ -767,6 +861,8 @@ byId("sidebarClose").addEventListener("click", () => {
 });
 byId("sidebarExpand").addEventListener("click", () => setDesktopSidebar(false, { restoreFocus: true }));
 byId("sidebarScrim").addEventListener("click", () => setMobileSidebar(false));
+byId("overviewAddDeal").addEventListener("click", openDealModal);
+byId("overviewFollowUps").addEventListener("click", () => switchContext({ screen: "activities" }));
 
 const setSettings = (open) => {
   byId("settingsModal").hidden = !open;
@@ -848,4 +944,5 @@ window.addEventListener("resize", () => {
   else setDesktopSidebar(false);
 });
 
+renderIcons();
 load();

@@ -3,19 +3,19 @@
     border: 1px solid var(--line);
     background: var(--panel);
     color: var(--text);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     padding: 7px 11px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: var(--text-base);
     line-height: 1.15;
     box-shadow: var(--shadow);
-    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+    transition: background var(--ease), border-color var(--ease), color var(--ease), box-shadow var(--ease);
   }
 
   button:hover {
     border-color: var(--line-strong);
-    background: #fbfbfc;
-    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.08);
+    background: var(--surface-soft);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 6%, transparent);
   }
 
   button:active {
@@ -40,7 +40,7 @@
     opacity: 0;
     pointer-events: none;
     transform: translate(-50%, 6px);
-    transition: opacity 0.12s ease, transform 0.12s ease;
+    transition: opacity var(--ease), transform var(--ease);
     z-index: 20;
   }
 
@@ -50,21 +50,21 @@
     width: max-content;
     max-width: min(360px, 70vw);
     white-space: normal;
-    background: #111827;
-    color: #fff;
-    border-radius: 6px;
+    background: var(--ink);
+    color: var(--surface);
+    border-radius: var(--radius-sm);
     padding: 8px 10px;
-    font-size: 12px;
+    font-size: var(--text-sm);
     line-height: 1.38;
     text-align: left;
-    box-shadow: 0 10px 28px rgba(17, 24, 39, 0.24);
+    box-shadow: 0 10px 28px color-mix(in srgb, var(--ink) 24%, transparent);
   }
 
   button.has-tooltip::before {
     content: "";
     top: calc(100% + 3px);
     border: 6px solid transparent;
-    border-bottom-color: #111827;
+    border-bottom-color: var(--ink);
   }
 
   button.has-tooltip:hover::after,
@@ -76,17 +76,22 @@
   }
 
   button.primary {
-    background: linear-gradient(180deg, color-mix(in srgb, var(--accent-strong) 88%, #ffffff), var(--accent-strong));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent-strong) 88%, var(--surface)),
+      var(--accent-strong)
+    );
     border-color: var(--accent-strong);
     color: var(--accent-contrast);
-    box-shadow: 0 1px 1px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    box-shadow: 0 1px 1px color-mix(in srgb, var(--ink) 10%, transparent), inset 0 1px 0
+      color-mix(in srgb, var(--surface) 62%, transparent);
   }
 
   button.primary:hover {
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--accent-strong) 94%, #ffffff),
-      color-mix(in srgb, var(--accent-strong) 88%, #000000)
+      color-mix(in srgb, var(--accent-strong) 94%, var(--surface)),
+      color-mix(in srgb, var(--accent-strong) 88%, var(--ink))
     );
     border-color: var(--accent-strong);
   }
@@ -106,7 +111,7 @@
   .brand-subtitle,
   .muted {
     color: var(--muted);
-    font-size: 12px;
+    font-size: var(--text-sm);
     line-height: 1.45;
     word-break: break-word;
   }
@@ -114,10 +119,10 @@
   .onboarding-card {
     margin: 14px;
     border: 1px solid var(--accent-line);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: var(--accent-wash);
     padding: 14px;
-    color: #263142;
+    color: var(--ink);
   }
 
   .onboarding-card.compact {
@@ -127,19 +132,19 @@
   .onboarding-card strong {
     display: block;
     margin-bottom: 6px;
-    font-size: 14px;
+    font-size: var(--text-md);
   }
 
   .onboarding-card p {
     margin: 0 0 10px;
-    color: #4b5563;
+    color: var(--ink-soft);
     line-height: 1.48;
   }
 
   .onboarding-card ol {
     margin: 0 0 10px;
     padding-left: 20px;
-    color: #4b5563;
+    color: var(--ink-soft);
     line-height: 1.55;
   }
 
@@ -156,7 +161,7 @@
 
   .help-paths dt {
     color: var(--muted);
-    font-size: 12px;
+    font-size: var(--text-sm);
   }
 
   .help-paths dd {
@@ -169,8 +174,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: #374151;
-    font-size: 12px;
+    color: var(--ink-soft);
+    font-size: var(--text-sm);
   }
 
   .language-options label,
@@ -179,11 +184,11 @@
     align-items: center;
     gap: 7px;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: var(--panel);
     padding: 8px 10px;
-    color: #374151;
-    font-size: 13px;
+    color: var(--ink-soft);
+    font-size: var(--text-base);
     box-shadow: var(--shadow);
     cursor: pointer;
     user-select: none;
@@ -210,10 +215,10 @@
     padding: 9px 6px 7px;
     cursor: pointer;
     color: var(--muted);
-    font-size: 12px;
+    font-size: var(--text-sm);
     font-weight: 560;
     text-align: center;
-    transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+    transition: background var(--ease), border-color var(--ease), box-shadow var(--ease);
   }
 
   .theme-option input {
@@ -228,7 +233,7 @@
     border-color: var(--accent-line);
     background: var(--accent-wash);
     color: var(--text);
-    box-shadow: 0 0 0 3px var(--accent-soft), inset 0 1px 0 rgba(255, 255, 255, 0.62);
+    box-shadow: 0 0 0 3px var(--accent-soft), inset 0 1px 0 color-mix(in srgb, var(--surface) 62%, transparent);
   }
 
   .theme-option:has(input:focus-visible) {
@@ -241,15 +246,17 @@
     width: 26px;
     height: 26px;
     flex: 0 0 auto;
-    border: 1px solid rgba(15, 23, 42, 0.16);
+    border: 1px solid var(--shadow-modal);
     border-radius: 999px;
     background: var(--swatch);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.46), inset 0 -1px 1px rgba(0, 0, 0, 0.12);
+    box-shadow: inset 0 1px 1px color-mix(in srgb, var(--surface) 62%, transparent), inset 0 -1px 1px
+      color-mix(in srgb, var(--ink) 12%, transparent);
   }
 
   .theme-option:has(input:checked) .theme-swatch {
-    box-shadow: 0 0 0 3px var(--panel), 0 0 0 5px var(--accent), inset 0 1px 1px rgba(255, 255, 255, 0.46), inset 0 -1px
-      1px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 0 0 3px var(--panel), 0 0 0 5px var(--accent), inset 0 1px 1px
+      color-mix(in srgb, var(--surface) 62%, transparent), inset 0 -1px 1px
+      color-mix(in srgb, var(--ink) 12%, transparent);
   }
 
   .theme-option:has(input:checked) .theme-swatch::after {
@@ -277,20 +284,20 @@
     border: 1px solid var(--line);
     border-radius: 999px;
     padding: 2px 7px;
-    font-size: 11px;
-    color: #4b5563;
+    font-size: var(--text-xs);
+    color: var(--ink-soft);
     background: var(--panel-subtle);
   }
 
   .env-pill.ok {
     color: var(--ok);
-    border-color: #bbf7d0;
+    border-color: color-mix(in srgb, var(--positive) 30%, var(--surface));
     background: var(--ok-soft);
   }
 
   .env-pill.warn {
     color: var(--warning);
-    border-color: #fde68a;
+    border-color: color-mix(in srgb, var(--warning) 30%, var(--surface));
     background: var(--warning-soft);
   }
 
@@ -298,12 +305,12 @@
     position: fixed;
     right: 18px;
     bottom: 18px;
-    background: #111827;
-    color: #fff;
-    border-radius: 8px;
+    background: var(--ink);
+    color: var(--surface);
+    border-radius: var(--radius-sm);
     padding: 10px 12px;
     max-width: 420px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 18%, transparent);
   }
 
   @media (max-width: 720px) {

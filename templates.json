@@ -6,7 +6,7 @@
     {
       "subdir": "templates/b2b-crm",
       "name": "b2b-crm",
-      "description": "A lightweight B2B CRM for accounts, contacts, activities, follow-ups, and a review-first sales pipeline.",
+      "description": "A lightweight B2B CRM with a daily sales overview, accounts, activities, follow-ups, and a review-first pipeline.",
       "category": "crm",
       "tags": [
         "sales",
@@ -18,6 +18,7 @@
       ],
       "screenshots": [
         "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
         "assets/screenshots/directory-overview.webp",
         "assets/screenshots/pipeline-overview.webp",
         "assets/screenshots/deal-detail.webp",
@@ -29,14 +30,14 @@
         "Log this customer interaction and schedule the next follow-up.",
         "Add this opportunity to the pipeline and show me deals by stage."
       ],
-      "version": "0.2.1",
+      "version": "0.3.0",
       "license": "MIT",
       "stats": {
         "folders": 0,
         "docs": 0,
         "bases": 4,
         "records": 40,
-        "files": 18,
+        "files": 25,
         "airapps": 1,
         "skill": true
       }
@@ -114,7 +115,7 @@
         "docs": 0,
         "bases": 3,
         "records": 7,
-        "files": 51,
+        "files": 52,
         "airapps": 1,
         "skill": true
       }

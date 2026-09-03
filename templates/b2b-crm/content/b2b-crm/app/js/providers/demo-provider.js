@@ -1,4 +1,5 @@
 import { appConfig } from "../config.js";
+import { demoNow, demoRecords } from "../demo-data.js";
 
 const DEMO_ACTOR = {
   id: "demo-user-kelvin",
@@ -22,11 +23,26 @@ const copyRecord = (record) => ({
 
 const baseByKey = (baseKey) => appConfig.schema.bases.find((base) => base.key === baseKey);
 
+const demoOverviewCounts = (records = demoRecords) => {
+  const companies = records.filter((record) => record.baseKey === "companies");
+  const deals = records.filter((record) => record.baseKey === "deals");
+  const stages = baseByKey("deals")?.fields.find((field) => field.slug === "stage")?.options?.choices || [];
+  return {
+    exact: true,
+    customerAccounts: companies.filter((record) => record.fields?.["relationship-type"] === "customer").length,
+    prospects: companies.filter((record) => record.fields?.["relationship-type"] === "prospect").length,
+    dealStages: Object.fromEntries(stages.map((stage) => [
+      stage.id,
+      deals.filter((record) => record.fields?.stage === stage.id).length,
+    ])),
+  };
+};
+
 const filterRecords = ({ baseKey, query = "", filter = null }) => {
   const base = baseByKey(baseKey);
   const primarySlug = base?.fields?.[0]?.slug;
   const normalizedQuery = query.trim().toLowerCase();
-  return appConfig.demoRecords
+  return demoRecords
     .filter((record) => record.baseKey === baseKey)
     .filter((record) => {
       if (!normalizedQuery) return true;
@@ -42,7 +58,7 @@ export const demoProvider = {
     const demoState = new URLSearchParams(window.location.search).get("state") || "ready";
     if (demoState === "error") throw new Error("DEMO_ERROR: the CRM data window could not be loaded.");
     if (demoState === "permission") throw new Error("PROCEDURE_DENIED: records.listPaged");
-    const records = demoState === "empty" ? [] : appConfig.demoRecords.map(copyRecord);
+    const records = demoState === "empty" ? [] : demoRecords.map(copyRecord);
     const partial = demoState === "partial";
     return {
       provider: {
@@ -51,6 +67,7 @@ export const demoProvider = {
         mode: "deterministic_local_demo",
         readOnly: false,
         stale: demoState === "stale",
+        now: demoNow,
       },
       bases: appConfig.schema.bases,
       records,
@@ -62,6 +79,7 @@ export const demoProvider = {
       ),
       changeRequests: [...pendingRequests],
       changeRequestPageInfo: { nextCursor: null, limit: 20 },
+      overviewCounts: demoOverviewCounts(records),
     };
   },
   async queryBase(baseKey, options = {}) {

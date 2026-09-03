@@ -3,8 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="light">
+    <meta name="color-scheme" content="light dark">
     <title>B2B CRM</title>
+    <link rel="stylesheet" href="./base-ui.css">
     <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
@@ -13,55 +14,61 @@
         <div class="brand-row">
           <div class="brand-mark" aria-hidden="true">B2</div>
           <div class="brand-copy"><strong id="brandName">B2B CRM</strong><span>Sales relationships</span></div>
-          <button class="icon-button panel-button" id="sidebarClose" type="button" aria-label="Collapse navigation" aria-expanded="true" title="Collapse navigation"><span class="panel-icon" aria-hidden="true"></span></button>
+          <button class="icon-button panel-button" id="sidebarClose" type="button" aria-label="Collapse navigation" aria-expanded="true" title="Collapse navigation"><i data-lucide="panel-left-close"></i></button>
         </div>
         <section class="attention" aria-labelledby="attentionTitle">
-          <span class="eyebrow" id="attentionTitle">Follow-up attention</span>
+          <span class="eyebrow" id="attentionTitle"><i data-lucide="alarm-clock"></i>Follow-up attention</span>
           <strong id="attentionValue">0</strong>
           <span id="attentionCopy">due in the loaded window</span>
         </section>
         <nav class="main-nav" id="mainNav" aria-label="CRM navigation">
-          <button class="nav-item active" type="button" data-screen="directory"><span>Directory</span><span id="directoryNavCount">0</span></button>
-          <button class="nav-item" type="button" data-screen="pipeline"><span>Pipeline</span><span id="pipelineNavCount">0</span></button>
-          <button class="nav-item" type="button" data-screen="activities"><span>Activities</span><span id="activitiesNavCount">0</span></button>
+          <button class="nav-item active" type="button" data-screen="overview"><span class="nav-label"><i data-lucide="layout-dashboard"></i><span>Overview</span></span><span class="nav-count" aria-hidden="true"></span></button>
+          <button class="nav-item" type="button" data-screen="directory"><span class="nav-label"><i data-lucide="book-user"></i><span>Directory</span></span><span class="nav-count" id="directoryNavCount">0</span></button>
+          <button class="nav-item" type="button" data-screen="pipeline"><span class="nav-label"><i data-lucide="chart-no-axes-column-increasing"></i><span>Pipeline</span></span><span class="nav-count" id="pipelineNavCount">0</span></button>
+          <button class="nav-item" type="button" data-screen="activities"><span class="nav-label"><i data-lucide="calendar-clock"></i><span>Activities</span></span><span class="nav-count" id="activitiesNavCount">0</span></button>
         </nav>
-        <button class="settings-button" id="settingsOpen" type="button">Help &amp; Settings</button>
+        <button class="settings-button" id="settingsOpen" type="button"><i data-lucide="settings"></i><span>Help &amp; Settings</span></button>
       </aside>
 
       <main class="main">
         <header class="mobile-bar">
-          <button class="icon-button" id="sidebarOpen" type="button" aria-label="Open navigation" title="Open navigation"><span class="panel-icon" aria-hidden="true"></span></button>
-          <strong id="mobileTitle">Directory</strong>
-          <button class="icon-button" id="mobileSettings" type="button" aria-label="Open settings" title="Open settings">i</button>
+          <button class="icon-button" id="sidebarOpen" type="button" aria-label="Open navigation" title="Open navigation"><i data-lucide="menu"></i></button>
+          <strong id="mobileTitle">Overview</strong>
+          <button class="icon-button" id="mobileSettings" type="button" aria-label="Open settings" title="Open settings"><i data-lucide="circle-help"></i></button>
         </header>
         <section class="workspace-header">
-          <div><span class="eyebrow" id="viewEyebrow">Account workspace</span><h1 id="viewTitle">Company &amp; Contact Directory</h1><p id="viewSummary">Find an account, understand the people involved, and review the relationship history.</p></div>
-          <label class="search"><span class="sr-only" id="searchLabel">Search directory</span><input id="searchInput" type="search" autocomplete="off" placeholder="Search companies"></label>
+          <div><span class="eyebrow" id="viewEyebrow">Sales command</span><h1 id="viewTitle">Sales Overview</h1><p id="viewSummary">Your pipeline, relationship momentum, and follow-ups for today.</p></div>
+          <div class="overview-header-actions" id="overviewHeaderActions">
+            <button class="secondary-button" id="overviewFollowUps" type="button"><i data-lucide="calendar-clock"></i><span>View Follow-Ups</span></button>
+            <button class="primary-button" id="overviewAddDeal" type="button"><i data-lucide="plus"></i><span>Add Deal</span></button>
+          </div>
+          <label class="search" id="workspaceSearch" hidden><span class="sr-only" id="searchLabel">Search directory</span><input id="searchInput" type="search" autocomplete="off" placeholder="Search companies"></label>
         </section>
-        <section class="metrics" id="metrics" aria-label="CRM summary"></section>
-        <section class="control-bar" id="controlBar">
+        <div class="state-message workspace-state" id="loadingState" role="status">Loading the configured CRM data window...</div>
+        <div class="state-message error workspace-state" id="errorState" role="alert" hidden></div>
+        <section class="overview-page" id="overviewPage" aria-label="Sales overview" hidden></section>
+        <section class="metrics" id="metrics" aria-label="CRM summary" hidden></section>
+        <section class="control-bar" id="controlBar" hidden>
           <div class="segmented" id="directoryTabs" aria-label="Directory type">
             <button class="active" type="button" data-directory-tab="companies">Companies</button>
             <button type="button" data-directory-tab="contacts">Contacts</button>
           </div>
           <label class="filter-control"><span id="filterLabel">Relationship</span><select id="recordFilter" aria-label="Filter records"></select></label>
-          <button class="primary-button control-action" id="addDealOpen" type="button" hidden>Add Deal</button>
+          <button class="primary-button control-action" id="addDealOpen" type="button" hidden><i data-lucide="plus"></i><span>Add Deal</span></button>
           <span class="window-note" id="windowNote">Showing one bounded data window</span>
         </section>
-        <section class="content-split">
+        <section class="content-split" id="workspaceContent" hidden>
           <section class="list-panel" id="listPanel">
             <div class="panel-heading"><div><span class="eyebrow" id="listEyebrow">Directory</span><h2 id="listTitle">Companies</h2></div><span class="count" id="recordCount">0</span></div>
-            <div class="state-message" id="loadingState" role="status">Loading CRM records...</div>
-            <div class="state-message error" id="errorState" role="alert" hidden></div>
             <div class="record-list" id="recordList"></div>
             <button class="load-more" id="loadMore" type="button" hidden>Load more</button>
           </section>
           <aside class="detail-panel" id="detailPanel" aria-label="Record details">
-            <button class="icon-button detail-close" id="detailClose" type="button" aria-label="Close details" title="Close details">x</button>
-            <button class="back-button" id="backButton" type="button">Back to list</button>
+            <button class="icon-button detail-close" id="detailClose" type="button" aria-label="Close details" title="Close details"><i data-lucide="x"></i></button>
+            <button class="back-button" id="backButton" type="button"><i data-lucide="arrow-left"></i><span>Back to list</span></button>
             <div class="detail-empty" id="detailEmpty"><strong>Select a company</strong><span>Relationship details and recent activity will appear here.</span></div>
             <article id="detailContent" hidden>
-              <header class="detail-header"><div><span class="eyebrow" id="detailEyebrow">Company</span><h2 id="detailTitle"></h2></div><div class="detail-actions"><button class="secondary-button" id="stageChangeOpen" type="button" hidden>Change Stage</button><button class="primary-button" id="logActivityOpen" type="button" hidden>Log Activity</button></div></header>
+              <header class="detail-header"><div><span class="eyebrow" id="detailEyebrow">Company</span><h2 id="detailTitle"></h2></div><div class="detail-actions"><button class="secondary-button" id="stageChangeOpen" type="button" hidden><i data-lucide="arrow-right-left"></i><span>Change Stage</span></button><button class="primary-button" id="logActivityOpen" type="button" hidden><i data-lucide="notebook-pen"></i><span>Log Activity</span></button></div></header>
               <div class="audit-line" id="auditLine"></div>
               <div class="detail-fields" id="detailFields"></div>
               <section class="related-section" id="relatedContactsSection" hidden><div class="section-heading"><h3>Contacts</h3><span id="relatedContactsCount"></span></div><div class="related-list" id="relatedContacts"></div></section>
@@ -73,12 +80,12 @@
       </main>
     </div>
 
-    <button class="icon-button sidebar-expand" id="sidebarExpand" type="button" aria-label="Expand navigation" aria-expanded="false" title="Expand navigation"><span class="panel-icon" aria-hidden="true"></span></button>
+    <button class="icon-button sidebar-expand" id="sidebarExpand" type="button" aria-label="Expand navigation" aria-expanded="false" title="Expand navigation"><i data-lucide="panel-left-open"></i></button>
     <button class="sidebar-scrim" id="sidebarScrim" type="button" aria-label="Close navigation" hidden></button>
 
     <div class="modal-backdrop" id="settingsModal" hidden>
       <section class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-        <header class="modal-header"><div><span class="eyebrow">B2B CRM</span><h2 id="settingsTitle">Help &amp; Settings</h2></div><button class="icon-button" id="settingsClose" type="button" aria-label="Close settings" title="Close settings">x</button></header>
+        <header class="modal-header"><div><span class="eyebrow">B2B CRM</span><h2 id="settingsTitle">Help &amp; Settings</h2></div><button class="icon-button" id="settingsClose" type="button" aria-label="Close settings" title="Close settings"><i data-lucide="x"></i></button></header>
         <div class="settings-intro"><strong>Runtime and data access</strong><p>This AirApp reads only its configured CRM resources. New activities are proposed for review before becoming canonical.</p></div>
         <div class="settings-grid" id="settingsGrid"></div>
       </section>
@@ -86,7 +93,7 @@
 
     <div class="modal-backdrop" id="activityModal" hidden>
       <section class="modal activity-modal" role="dialog" aria-modal="true" aria-labelledby="activityModalTitle">
-        <header class="modal-header"><div><span class="eyebrow">ChangeRequest</span><h2 id="activityModalTitle">Log Activity</h2></div><button class="icon-button" id="activityModalClose" type="button" aria-label="Close activity form" title="Close activity form">x</button></header>
+        <header class="modal-header"><div><span class="eyebrow">ChangeRequest</span><h2 id="activityModalTitle">Log Activity</h2></div><button class="icon-button" id="activityModalClose" type="button" aria-label="Close activity form" title="Close activity form"><i data-lucide="x"></i></button></header>
         <form id="activityForm">
           <div class="form-context" id="activityContext"></div>
           <div class="form-grid" id="activityFields">
@@ -99,10 +106,10 @@
           <section class="request-preview" id="requestPreview" hidden><span class="eyebrow">Review before submitting</span><dl id="previewFields"></dl><p>This creates a pending ChangeRequest. It does not update canonical CRM data directly.</p></section>
           <div class="form-result" id="activityResult" role="status" hidden></div>
           <footer class="modal-actions">
-            <button class="secondary-button" id="activityBack" type="button" hidden>Back</button>
+            <button class="secondary-button" id="activityBack" type="button" hidden><i data-lucide="arrow-left"></i><span>Back</span></button>
             <button class="secondary-button" id="activityCancel" type="button">Cancel</button>
-            <button class="primary-button" id="activityReview" type="button">Review request</button>
-            <button class="primary-button" id="activitySubmit" type="button" hidden>Submit request</button>
+            <button class="primary-button" id="activityReview" type="button"><i data-lucide="eye"></i><span>Review request</span></button>
+            <button class="primary-button" id="activitySubmit" type="button" hidden><i data-lucide="send"></i><span class="button-label">Submit request</span></button>
           </footer>
         </form>
       </section>
@@ -110,7 +117,7 @@
 
     <div class="modal-backdrop" id="dealModal" hidden>
       <section class="modal activity-modal" role="dialog" aria-modal="true" aria-labelledby="dealModalTitle">
-        <header class="modal-header"><div><span class="eyebrow">ChangeRequest</span><h2 id="dealModalTitle">Add Deal</h2></div><button class="icon-button" id="dealModalClose" type="button" aria-label="Close deal form" title="Close deal form">x</button></header>
+        <header class="modal-header"><div><span class="eyebrow">ChangeRequest</span><h2 id="dealModalTitle">Add Deal</h2></div><button class="icon-button" id="dealModalClose" type="button" aria-label="Close deal form" title="Close deal form"><i data-lucide="x"></i></button></header>
         <form id="dealForm">
           <div class="form-grid" id="dealFields">
             <label class="wide"><span>Deal Name</span><input name="deal-name" required maxlength="140"></label>
@@ -125,20 +132,20 @@
           </div>
           <section class="request-preview" id="dealPreview" hidden><span class="eyebrow">Review before submitting</span><dl id="dealPreviewFields"></dl><p>This creates a pending ChangeRequest. It does not update canonical pipeline data directly.</p></section>
           <div class="form-result" id="dealResult" role="status" hidden></div>
-          <footer class="modal-actions"><button class="secondary-button" id="dealBack" type="button" hidden>Back</button><button class="secondary-button" id="dealCancel" type="button">Cancel</button><button class="primary-button" id="dealReview" type="button">Review request</button><button class="primary-button" id="dealSubmit" type="button" hidden>Submit request</button></footer>
+          <footer class="modal-actions"><button class="secondary-button" id="dealBack" type="button" hidden><i data-lucide="arrow-left"></i><span>Back</span></button><button class="secondary-button" id="dealCancel" type="button">Cancel</button><button class="primary-button" id="dealReview" type="button"><i data-lucide="eye"></i><span>Review request</span></button><button class="primary-button" id="dealSubmit" type="button" hidden><i data-lucide="send"></i><span class="button-label">Submit request</span></button></footer>
         </form>
       </section>
     </div>
 
     <div class="modal-backdrop" id="stageModal" hidden>
       <section class="modal compact-modal" role="dialog" aria-modal="true" aria-labelledby="stageModalTitle">
-        <header class="modal-header"><div><span class="eyebrow">ChangeRequest</span><h2 id="stageModalTitle">Request Stage Change</h2></div><button class="icon-button" id="stageModalClose" type="button" aria-label="Close stage form" title="Close stage form">x</button></header>
+        <header class="modal-header"><div><span class="eyebrow">ChangeRequest</span><h2 id="stageModalTitle">Request Stage Change</h2></div><button class="icon-button" id="stageModalClose" type="button" aria-label="Close stage form" title="Close stage form"><i data-lucide="x"></i></button></header>
         <form id="stageForm">
           <div class="form-context" id="stageContext"></div>
           <div class="form-grid single-column" id="stageFields"><label><span>New Stage</span><select name="stage" required><option value="qualification">Qualification</option><option value="discovery">Discovery</option><option value="proposal">Proposal</option><option value="negotiation">Negotiation</option><option value="closed-won">Closed Won</option><option value="closed-lost">Closed Lost</option></select></label></div>
           <section class="request-preview" id="stagePreview" hidden><span class="eyebrow">Review before submitting</span><dl id="stagePreviewFields"></dl><p>This proposes a stage update. The deal remains unchanged until a human merges the ChangeRequest.</p></section>
           <div class="form-result" id="stageResult" role="status" hidden></div>
-          <footer class="modal-actions"><button class="secondary-button" id="stageBack" type="button" hidden>Back</button><button class="secondary-button" id="stageCancel" type="button">Cancel</button><button class="primary-button" id="stageReview" type="button">Review request</button><button class="primary-button" id="stageSubmit" type="button" hidden>Submit request</button></footer>
+          <footer class="modal-actions"><button class="secondary-button" id="stageBack" type="button" hidden><i data-lucide="arrow-left"></i><span>Back</span></button><button class="secondary-button" id="stageCancel" type="button">Cancel</button><button class="primary-button" id="stageReview" type="button"><i data-lucide="eye"></i><span>Review request</span></button><button class="primary-button" id="stageSubmit" type="button" hidden><i data-lucide="send"></i><span class="button-label">Submit request</span></button></footer>
         </form>
       </section>
     </div>
