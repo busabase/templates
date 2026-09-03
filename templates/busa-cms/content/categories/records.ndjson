@@ -1,0 +1,4 @@
+{"key":"category-product","fields":{"name":"Product","slug":"product","locale":"en","description":"Releases, changelogs, and what shipped."}}
+{"key":"category-guides","fields":{"name":"Guides","slug":"guides","locale":"en","description":"How to get something done with Tidepool."}}
+{"key":"category-engineering","fields":{"name":"Engineering","slug":"engineering","locale":"en","description":"How the product is built and why."}}
+{"key":"category-product-zh","fields":{"name":"产品","slug":"product","locale":"zh-CN","description":"版本发布与更新日志。"}}

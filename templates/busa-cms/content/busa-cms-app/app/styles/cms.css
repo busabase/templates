@@ -1,0 +1,736 @@
+/*
+ * Everything specific to a content desk: the rows, the rendered preview, the
+ * schema-health list, and the draft sheet.
+ *
+ * Only tokens from base-ui.css are used — no raw color, size or radius. That is
+ * what makes the dark-mode block in base-ui.css work here without one rule being
+ * duplicated for it, and what makes the accent picker reach these surfaces.
+ */
+
+@layer cms {
+  /*
+   * The workspace fills the window.
+   *
+   * The shell's row template assumes three children (top bar, a banner, content).
+   * This app has two, and on desktop the top bar is `display: none` — which takes
+   * it out of the grid entirely — so `.content` landed in an `auto` row and the
+   * panes collapsed to the height of whatever was in them. State the rows this
+   * app actually has instead.
+   */
+  .main {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  @media (max-width: 720px) {
+    .main {
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+  }
+
+  .content {
+    height: 100%;
+    min-height: 0;
+  }
+
+  /*
+   * The shell labels its nav "Views", which is right when the nav is a set of
+   * filters over one list. Here it is the content type — the same choice a
+   * WordPress admin menu offers — so it gets that word instead.
+   */
+  .filters::before {
+    content: "Content";
+  }
+
+  html[lang="zh-CN"] .filters::before {
+    content: "内容";
+  }
+
+  /* ── list ──────────────────────────────────────────────────────────────── */
+
+  /* Head and actions stay put; only the rows scroll. */
+  .list-panel {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  /*
+   * Re-assert the phone shell's hide.
+   *
+   * `list-detail` hides the list with `display: none` while the detail is open;
+   * this layer is declared after it, so the unconditional `display: grid` above
+   * silently won and the phone showed both panes stacked. A `display` rule in a
+   * later layer has to restate every state the earlier one expressed.
+   */
+  @media (max-width: 720px) {
+    body.mobile-detail-open .list-panel {
+      display: none;
+    }
+  }
+
+  .list-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .list-head-filters {
+    display: inline-flex;
+    padding: 2px;
+    gap: 2px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-soft);
+  }
+
+  .list-head-filters button {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--muted);
+    font-size: var(--text-sm);
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: background var(--ease), color var(--ease);
+  }
+
+  .list-head-filters button.active {
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .list-head-select {
+    font-size: var(--text-sm);
+    padding: 4px 8px;
+  }
+
+  .list-head-count {
+    margin-left: auto;
+    font-size: var(--text-sm);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .list-actions {
+    display: flex;
+    gap: 8px;
+    padding: 0 12px 10px;
+    flex-wrap: wrap;
+  }
+
+  .message-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 12px 14px;
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1;
+  }
+
+  .row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    /* The severity stripe is the only place a status color touches the row, so a
+       list of twenty never reads as a bag of highlighters. */
+    border-left: 3px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: none;
+    color: inherit;
+    cursor: pointer;
+    transition: background var(--ease), border-color var(--ease);
+  }
+
+  .row:hover {
+    background: var(--surface-hover);
+    border-color: var(--line-strong);
+  }
+
+  .row.is-selected {
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+  }
+
+  .row--danger {
+    border-left-color: var(--danger);
+  }
+
+  .row--warn {
+    border-left-color: var(--warning);
+  }
+
+  .row--muted {
+    border-left-color: var(--line-strong);
+  }
+
+  .row-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .row-title {
+    font-size: var(--text-md);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .row-meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    font-size: var(--text-sm);
+    color: var(--muted);
+  }
+
+  .row-meta code {
+    overflow-wrap: anywhere;
+  }
+
+  .row-dot {
+    opacity: 0.5;
+  }
+
+  .row-excerpt {
+    font-size: var(--text-base);
+    color: var(--muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .row-chips {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .empty-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    text-align: center;
+    padding: 40px 16px;
+    color: var(--muted);
+    font-size: var(--text-base);
+  }
+
+  .empty-list strong {
+    color: var(--text);
+    font-size: var(--text-lg);
+  }
+
+  /* ── badges and chips ──────────────────────────────────────────────────── */
+
+  .badge,
+  .chip {
+    display: inline-block;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  /* A ~9% wash is the ceiling: past that, a screen of rows stops being scannable. */
+  .badge--plain {
+    background: var(--surface-soft);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+
+  .badge--live {
+    background: color-mix(in srgb, var(--ok) 9%, var(--surface));
+    color: var(--ok);
+  }
+
+  .chip--danger {
+    background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+    color: var(--danger);
+  }
+
+  .chip--warn {
+    background: color-mix(in srgb, var(--warning) 12%, var(--surface));
+    color: var(--warning);
+  }
+
+  .chip--muted {
+    background: var(--surface-soft);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+
+  /* ── detail ────────────────────────────────────────────────────────────── */
+
+  .detail-actions-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .detail-hint {
+    font-size: var(--text-sm);
+    color: var(--muted);
+  }
+
+  .preview-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .preview-title {
+    margin: 0 0 4px;
+    font-size: var(--text-xl);
+    letter-spacing: -0.015em;
+    overflow-wrap: anywhere;
+  }
+
+  .preview-subhead {
+    margin: 22px 0 8px;
+    font-size: var(--text-md);
+  }
+
+  .preview-path {
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+
+  .preview-issues {
+    list-style: none;
+    margin: 14px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .note {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.55;
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+  }
+
+  .note--danger {
+    background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+    color: var(--danger);
+  }
+
+  .note--warn {
+    background: color-mix(in srgb, var(--warning) 12%, var(--surface));
+    color: var(--warning);
+  }
+
+  .note--muted {
+    background: var(--surface-soft);
+    color: var(--muted);
+  }
+
+  .preview-body {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    overflow-wrap: anywhere;
+  }
+
+  .preview-body :is(h1, h2, h3, h4) {
+    letter-spacing: -0.012em;
+    line-height: 1.3;
+    margin: 1.4em 0 0.5em;
+  }
+
+  .preview-body h1 {
+    font-size: var(--text-xl);
+  }
+
+  .preview-body h2 {
+    font-size: var(--text-lg);
+  }
+
+  .preview-body h3 {
+    font-size: var(--text-md);
+  }
+
+  .preview-body :is(p, ul, ol) {
+    margin: 0 0 0.9em;
+  }
+
+  .preview-body :is(ul, ol) {
+    padding-left: 1.3em;
+  }
+
+  .preview-body pre {
+    background: var(--surface-soft);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    overflow-x: auto;
+  }
+
+  .preview-body code {
+    background: var(--surface-soft);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .preview-body pre code {
+    background: none;
+    padding: 0;
+  }
+
+  .preview-body blockquote {
+    margin: 0 0 0.9em;
+    padding-left: 14px;
+    border-left: 3px solid var(--line-strong);
+    color: var(--muted);
+  }
+
+  .preview-body table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1em;
+  }
+
+  .preview-body :is(th, td) {
+    border: 1px solid var(--line);
+    padding: 6px 10px;
+    text-align: left;
+  }
+
+  .preview-body th {
+    background: var(--surface-soft);
+  }
+
+  .preview-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+  }
+
+  .preview-meta {
+    margin: 20px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 6px;
+  }
+
+  .meta-row {
+    display: grid;
+    grid-template-columns: 140px minmax(0, 1fr);
+    gap: 10px;
+    font-size: var(--text-base);
+  }
+
+  .meta-row dt {
+    color: var(--muted);
+  }
+
+  .meta-row dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .preview-note {
+    margin: 16px 0 0;
+    font-size: var(--text-sm);
+    color: var(--muted);
+  }
+
+  .term-users {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .term-users li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .term-users button {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    color: var(--accent-text);
+    font-size: var(--text-base);
+    text-align: left;
+  }
+
+  @media (max-width: 720px) {
+    .meta-row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2px;
+    }
+  }
+
+  /* ── Help & Settings content ───────────────────────────────────────────── */
+
+  .settings-lead,
+  .settings-note {
+    font-size: var(--text-base);
+    color: var(--muted);
+    max-width: 62ch;
+  }
+
+  .code-wrap {
+    position: relative;
+  }
+
+  .code-wrap pre {
+    background: var(--surface-soft);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 0 0 12px;
+    line-height: 1.6;
+    font-size: var(--text-sm);
+  }
+
+  .code-copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: var(--text-sm);
+    padding: 3px 9px;
+  }
+
+  .health-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .health {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+
+  .health--ok {
+    border-left-color: var(--ok);
+  }
+
+  .health--warn {
+    border-left-color: var(--warning);
+  }
+
+  .health--danger {
+    border-left-color: var(--danger);
+  }
+
+  .health-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .health-name {
+    font-weight: 600;
+    font-size: var(--text-md);
+  }
+
+  .health-slug {
+    color: var(--muted);
+    font-size: var(--text-sm);
+  }
+
+  .health-problems {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+  }
+
+  /* Two columns at 390px, not three — a third clips the number. */
+  @media (max-width: 480px) {
+    .stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    background: var(--surface);
+  }
+
+  .stat-value {
+    font-size: var(--text-2xl);
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+
+  .stat-label {
+    font-size: var(--text-sm);
+    color: var(--muted);
+  }
+
+  /* ── draft sheet ───────────────────────────────────────────────────────── */
+
+  /*
+   * `[open]` is load-bearing, not decoration. The UA sheet hides a closed dialog
+   * with `dialog:not([open]) { display: none }`, and any author `display` rule
+   * beats it — so styling `.sheet` unconditionally leaves a closed dialog laid
+   * out and swallowing every click behind it. It looks fine in a screenshot; only
+   * a click test finds it.
+   */
+  .sheet[open] {
+    /* Head / body / foot, with only the body scrolling — the same bounded shape
+       the help modal and setup gate use, so nothing here can grow past the
+       viewport and hide its own submit button. */
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    width: min(680px, 92vw);
+    max-height: 86dvh;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-modal);
+  }
+
+  .sheet::backdrop {
+    background: var(--scrim);
+  }
+
+  .sheet-form {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    min-height: 0;
+  }
+
+  .sheet-head,
+  .sheet-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    flex-wrap: wrap;
+  }
+
+  .sheet-head {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sheet-head h2 {
+    margin: 0;
+    font-size: var(--text-lg);
+  }
+
+  .sheet-foot {
+    border-top: 1px solid var(--line);
+  }
+
+  .sheet-body {
+    display: grid;
+    gap: 12px;
+    padding: 16px 18px;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  .sheet-note {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--muted);
+    max-width: 44ch;
+  }
+
+  .sheet-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .field-label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .field-hint {
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+
+  .field textarea.field-input {
+    resize: vertical;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: var(--text-base);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 720px) {
+    .sheet[open] {
+      width: 100%;
+      max-width: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
+      border-width: 0;
+      border-radius: 0;
+      margin: 0;
+    }
+
+    .sheet-actions {
+      width: 100%;
+    }
+
+    .sheet-actions button {
+      flex: 1;
+    }
+  }
+}

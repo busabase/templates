@@ -1,0 +1,29 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-cms",
+  "description": "A WordPress-style admin for a website's Posts, Pages, Categories, and Tags — the exact four Bases the busabase-cms SDK reads.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "tags": ["cms", "blog", "website", "content", "nextjs", "seo"],
+  "template": {
+    "category": "content",
+    "schemaVersion": 1,
+    "airapp": "busa-cms-app",
+    "tags": ["cms", "blog", "pages", "posts", "nextjs", "busabase-cms"],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/posts.webp",
+      "assets/screenshots/post-detail.webp",
+      "assets/screenshots/editor.webp",
+      "assets/screenshots/connect.webp"
+    ],
+    "agentPrompts": [
+      "Write a post announcing this week's release and publish it.",
+      "Which pages are published without an SEO description?",
+      "Move the pricing page back to draft until finance confirms the numbers.",
+      "Give me the snippet for wiring my Next.js site to this Folder."
+    ],
+    "secrets": [],
+    "requires": { "airapp": true }
+  }
+}

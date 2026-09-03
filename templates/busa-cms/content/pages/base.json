@@ -1,0 +1,294 @@
+{
+  "name": "Pages / 页面",
+  "description": "Publishable HTML pages / 可发布的 HTML 页面",
+  "position": 3,
+  "fields": [
+    {
+      "slug": "path",
+      "name": {
+        "en": "Path",
+        "zh-CN": "网址"
+      },
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "title",
+      "name": {
+        "en": "Title",
+        "zh-CN": "标题"
+      },
+      "type": "text",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "slug",
+      "name": {
+        "en": "Slug",
+        "zh-CN": "标识"
+      },
+      "type": "text",
+      "required": true,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "locale",
+      "name": {
+        "en": "Locale",
+        "zh-CN": "语言"
+      },
+      "type": "select",
+      "required": true,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "en",
+            "name": "English / 英文"
+          },
+          {
+            "id": "zh-CN",
+            "name": "Simplified Chinese / 简体中文"
+          },
+          {
+            "id": "zh-TW",
+            "name": "Traditional Chinese / 繁體中文"
+          },
+          {
+            "id": "ja",
+            "name": "Japanese / 日文"
+          },
+          {
+            "id": "pt",
+            "name": "Portuguese / 葡萄牙文"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "status",
+      "name": {
+        "en": "Status",
+        "zh-CN": "状态"
+      },
+      "type": "select",
+      "required": true,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "draft",
+            "name": "Draft / 草稿"
+          },
+          {
+            "id": "in-review",
+            "name": "In review / 审核中"
+          },
+          {
+            "id": "published",
+            "name": "Published / 已发布"
+          },
+          {
+            "id": "archived",
+            "name": "Archived / 已归档"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "template",
+      "name": {
+        "en": "Template",
+        "zh-CN": "模板"
+      },
+      "type": "select",
+      "required": true,
+      "position": 5,
+      "options": {
+        "choices": [
+          {
+            "id": "standard",
+            "name": "Standard / 标准"
+          },
+          {
+            "id": "landing",
+            "name": "Landing / 落地页"
+          },
+          {
+            "id": "product",
+            "name": "Product / 产品"
+          },
+          {
+            "id": "use-case",
+            "name": "Use case / 使用场景"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "body",
+      "name": {
+        "en": "Body",
+        "zh-CN": "正文"
+      },
+      "type": "html",
+      "required": true,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "hero",
+      "name": {
+        "en": "Hero",
+        "zh-CN": "首屏"
+      },
+      "type": "json",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "features",
+      "name": {
+        "en": "Features",
+        "zh-CN": "功能"
+      },
+      "type": "json",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "faqs",
+      "name": {
+        "en": "FAQs",
+        "zh-CN": "常见问题"
+      },
+      "type": "json",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "canonical-url",
+      "name": {
+        "en": "Canonical URL",
+        "zh-CN": "规范网址"
+      },
+      "type": "url",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "legacy-paths",
+      "name": {
+        "en": "Legacy paths",
+        "zh-CN": "旧网址"
+      },
+      "type": "json",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "seo-title",
+      "name": {
+        "en": "SEO title",
+        "zh-CN": "SEO 标题"
+      },
+      "type": "text",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "seo-description",
+      "name": {
+        "en": "SEO description",
+        "zh-CN": "SEO 描述"
+      },
+      "type": "longtext",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "schema-version",
+      "name": {
+        "en": "Schema version",
+        "zh-CN": "结构版本"
+      },
+      "type": "number",
+      "required": true,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "updated-at",
+      "name": {
+        "en": "Updated at",
+        "zh-CN": "更新时间"
+      },
+      "type": "updated_time",
+      "required": false,
+      "position": 15,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "site-map",
+      "name": "Site pages / 站点页面",
+      "type": "table",
+      "config": {
+        "visibleFieldSlugs": [
+          "title",
+          "path",
+          "template",
+          "locale",
+          "status",
+          "updated-at"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "path",
+            "direction": "asc"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "published-pages",
+      "name": "Published / 已发布",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "published"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "path",
+          "template",
+          "locale",
+          "updated-at"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "path",
+            "direction": "asc"
+          }
+        ]
+      }
+    }
+  ]
+}

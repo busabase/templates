@@ -1,0 +1,107 @@
+{
+  "name": "Categories / 分类",
+  "description": "Reusable content categories / 可复用的内容分类",
+  "position": 0,
+  "fields": [
+    {
+      "slug": "name",
+      "name": {
+        "en": "Name",
+        "zh-CN": "名称"
+      },
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "slug",
+      "name": {
+        "en": "Slug",
+        "zh-CN": "标识"
+      },
+      "type": "text",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "locale",
+      "name": {
+        "en": "Locale",
+        "zh-CN": "语言"
+      },
+      "type": "select",
+      "required": true,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "en",
+            "name": "English / 英文"
+          },
+          {
+            "id": "zh-CN",
+            "name": "Simplified Chinese / 简体中文"
+          },
+          {
+            "id": "zh-TW",
+            "name": "Traditional Chinese / 繁體中文"
+          },
+          {
+            "id": "ja",
+            "name": "Japanese / 日文"
+          },
+          {
+            "id": "pt",
+            "name": "Portuguese / 葡萄牙文"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "description",
+      "name": {
+        "en": "Description",
+        "zh-CN": "描述"
+      },
+      "type": "longtext",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "updated-at",
+      "name": {
+        "en": "Updated at",
+        "zh-CN": "更新时间"
+      },
+      "type": "updated_time",
+      "required": false,
+      "position": 4,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all-categories",
+      "name": "All Categories / 全部分类",
+      "type": "table",
+      "config": {
+        "visibleFieldSlugs": [
+          "name",
+          "slug",
+          "locale",
+          "description",
+          "updated-at"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "name",
+            "direction": "asc"
+          }
+        ]
+      }
+    }
+  ]
+}

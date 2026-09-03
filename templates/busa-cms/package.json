@@ -1,0 +1,17 @@
+{
+  "name": "busa-cms-template",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Repository tooling for the busa-cms template. Not the installed app; that is content/busa-cms-app.",
+  "engines": {
+    "node": ">=24.18.0"
+  },
+  "scripts": {
+    "sync": "node scripts/sync-content.mjs",
+    "check": "node scripts/sync-content.mjs --check && node scripts/check-sdk-contract.mjs"
+  },
+  "devDependencies": {
+    "busabase-cms": "0.1.1"
+  }
+}

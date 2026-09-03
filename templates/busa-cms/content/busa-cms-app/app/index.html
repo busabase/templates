@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Busa CMS</title>
+    <link rel="stylesheet" href="./styles/base-ui.css" />
+    <link rel="stylesheet" href="./styles/layers.css" />
+    <link rel="stylesheet" href="./styles/base.css" />
+    <link rel="stylesheet" href="./styles/components.css" />
+    <link rel="stylesheet" href="./styles/shell.css" />
+    <link rel="stylesheet" href="./styles/setup-wizard.css" />
+    <link rel="stylesheet" href="./styles/help-modal.css" />
+    <link rel="stylesheet" href="./styles/list-detail.css" />
+    <link rel="stylesheet" href="./styles/cms.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="appSidebar">
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true">CM</div>
+          <div class="brand-copy">
+            <div class="brand-title">Busa CMS</div>
+            <div class="brand-subtitle" data-i18n="brand.subtitle">Website content</div>
+          </div>
+          <button
+            id="sidebarToggle"
+            class="sidebar-toggle"
+            type="button"
+            aria-controls="appSidebar"
+            aria-expanded="true"
+            title="Toggle sidebar"
+            aria-label="Toggle sidebar"
+          ><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
+        </div>
+
+        <div class="search sidebar-search">
+          <input id="searchInput" data-i18n-placeholder="search.placeholder" placeholder="Search…" />
+        </div>
+
+        <nav class="filters" id="filters" data-i18n-aria-label="nav.aria" aria-label="Content types">
+          <button data-mode="posts" class="active has-tooltip" data-i18n-tooltip="nav.posts.tooltip">
+            <span data-i18n="nav.posts">Posts</span> <span id="count-posts">0</span>
+          </button>
+          <button data-mode="pages" class="has-tooltip" data-i18n-tooltip="nav.pages.tooltip">
+            <span data-i18n="nav.pages">Pages</span> <span id="count-pages">0</span>
+          </button>
+          <button data-mode="categories" class="has-tooltip" data-i18n-tooltip="nav.categories.tooltip">
+            <span data-i18n="nav.categories">Categories</span> <span id="count-categories">0</span>
+          </button>
+          <button data-mode="tags" class="has-tooltip" data-i18n-tooltip="nav.tags.tooltip">
+            <span data-i18n="nav.tags">Tags</span> <span id="count-tags">0</span>
+          </button>
+        </nav>
+
+        <div class="help-box">
+          <button id="helpButton" class="help-button has-tooltip" data-i18n-tooltip="help.open.tooltip" data-i18n="help.title">Help &amp; Settings</button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="mobile-topbar">
+          <button
+            id="mobileSidebarToggle"
+            class="mobile-sidebar-toggle"
+            type="button"
+            aria-controls="appSidebar"
+            aria-label="Open sidebar"
+            title="Open sidebar"
+          ><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
+          <div class="mobile-topbar-copy">
+            <div id="mobileViewTitle" class="mobile-view-title">Posts</div>
+            <div id="mobileViewMeta" class="mobile-view-meta">0 items</div>
+          </div>
+          <button id="mobileHelpButton" class="mobile-help-button" type="button" data-i18n="help.title" aria-label="Help & Settings">Help &amp; Settings</button>
+        </div>
+
+        <section class="content">
+          <div class="list-panel">
+            <div class="list-head">
+              <div class="list-head-filters" id="statusTabs" role="group" data-i18n-aria-label="filter.status_aria" aria-label="Status">
+                <button type="button" data-status-filter="all" class="active" data-i18n="filter.all">All</button>
+                <button type="button" data-status-filter="published" data-i18n="filter.published">Published</button>
+                <button type="button" data-status-filter="draft" data-i18n="filter.draft">Drafts</button>
+              </div>
+              <select id="localeFilter" class="list-head-select" data-i18n-aria-label="filter.all_locales" aria-label="Locale"></select>
+              <span id="listCount" class="list-head-count">0 items</span>
+            </div>
+            <div class="list-actions">
+              <button type="button" id="addNew" class="primary has-tooltip" data-i18n-tooltip="action.add.tooltip" data-i18n="action.add_post">Add new post</button>
+            </div>
+            <div id="contentList" class="message-list"></div>
+          </div>
+
+          <aside class="detail-panel" id="detailPanel">
+            <div class="empty-detail" data-i18n="empty.select">Select something on the left to see it.</div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <div id="sidebarScrim" class="sidebar-scrim" hidden></div>
+
+    <dialog class="sheet" id="editorSheet" aria-labelledby="editorTitle">
+      <form class="sheet-form" id="editorForm">
+        <header class="sheet-head">
+          <h2 id="editorTitle" data-i18n="editor.new_post">New post</h2>
+          <button type="button" class="icon-button" data-close-sheet data-i18n="common.close">Close</button>
+        </header>
+        <div class="sheet-body" id="editorFields"></div>
+        <footer class="sheet-foot">
+          <p class="sheet-note" data-i18n="editor.note">Saved as a draft. Publish it when you are ready.</p>
+          <div class="sheet-actions">
+            <button type="button" data-close-sheet data-i18n="common.cancel">Cancel</button>
+            <button type="submit" class="primary" id="editorSubmit" data-i18n="editor.save">Save</button>
+          </div>
+        </footer>
+      </form>
+    </dialog>
+
+    <div id="helpModal" class="modal-backdrop is-hidden" aria-hidden="true">
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+        <div class="modal-head">
+          <div>
+            <div id="helpTitle" class="modal-title" data-i18n="help.title">Help &amp; Settings</div>
+            <div class="modal-subtitle" data-i18n="brand.subtitle">Website content</div>
+          </div>
+          <button id="closeHelp" class="icon-button" data-i18n-aria-label="help.close" data-i18n="common.close" aria-label="Close help">Close</button>
+        </div>
+        <nav class="modal-tabs" data-i18n-aria-label="help.tabs_aria" aria-label="Help and settings tabs">
+          <button class="active" data-help-tab="guide" data-i18n="tab.guide">Guide</button>
+          <button data-help-tab="connect" data-i18n="tab.connect">Connect</button>
+          <button data-help-tab="resources" data-i18n="tab.resources">Resources</button>
+          <button data-help-tab="appearance" data-i18n="tab.appearance">Appearance</button>
+        </nav>
+        <div class="modal-body">
+          <section class="help-tab-panel active" data-help-panel="guide">
+            <h2 data-i18n="guide.how_title">How this works</h2>
+            <p data-i18n-html="guide.how_body"></p>
+            <h2 data-i18n="guide.state_title">What the site is serving</h2>
+            <div id="helpStats"></div>
+          </section>
+          <section class="help-tab-panel" data-help-panel="connect">
+            <h2 data-i18n="tab.connect">Connect</h2>
+            <div id="helpConnect"></div>
+          </section>
+          <section class="help-tab-panel" data-help-panel="resources">
+            <h2 data-i18n="tab.resources">Resources</h2>
+            <div id="helpResources"></div>
+          </section>
+          <section class="help-tab-panel" data-help-panel="appearance">
+            <h2 data-i18n="language.title">Language</h2>
+            <p id="languageSummary">Auto follows your browser language.</p>
+            <div class="language-options" data-language-switcher data-language-name="uiLanguageSettings" role="radiogroup" data-i18n-aria-label="language.title" aria-label="Language"></div>
+            <h2 data-i18n="theme.title">Accent color</h2>
+            <p id="themeSummary">Purple is selected.</p>
+            <div id="themeOptions" class="theme-options" role="radiogroup" aria-label="Accent color"></div>
+          </section>
+        </div>
+      </section>
+    </div>
+
+    <div id="providerGate" class="provider-gate is-hidden" role="alert" aria-live="assertive">
+      <section class="provider-gate-panel" aria-labelledby="providerGateTitle">
+        <div class="provider-gate-head">
+          <div class="provider-gate-kicker">Busa CMS</div>
+          <div class="setup-language-switch" data-language-switcher data-language-name="uiLanguageSetup" data-language-title="true" role="radiogroup" data-i18n-aria-label="language.title" aria-label="Language"></div>
+        </div>
+        <div class="provider-gate-body" id="providerGateBody">
+          <div id="setupStepReady" class="setup-step">
+            <h1 id="providerGateTitle" data-i18n="setup.ready_title">Busa CMS</h1>
+            <p id="providerGateMessageReady"></p>
+            <dl class="provider-gate-meta help-paths">
+              <dt data-i18n="provider.mode">Mode</dt>
+              <dd id="providerGateMode">Not loaded</dd>
+              <dt data-i18n="provider.base_url">Base URL</dt>
+              <dd id="providerGateBaseUrl">Not loaded</dd>
+              <dt data-i18n="provider.folder_id">Folder id</dt>
+              <dd id="providerGateFolderId">Not loaded</dd>
+            </dl>
+            <div id="setupChecklist" class="setup-checklist"></div>
+            <p id="providerGateAction" class="provider-gate-action"></p>
+            <div class="setup-prompt-box">
+              <div id="setupPromptTitle" class="setup-prompt-title" data-i18n="setup.prompt_title">Suggested prompt</div>
+              <pre><code id="setupPromptText"></code></pre>
+            </div>
+          </div>
+        </div>
+        <div id="setupActionsReady" class="setup-actions is-hidden">
+          <button id="setupCopyPrompt" type="button" class="primary" data-i18n="setup.copy_prompt">Copy prompt</button>
+          <button id="providerGateHelpButton" type="button" data-i18n="provider.banner.action">Open Settings</button>
+        </div>
+      </section>
+    </div>
+
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
