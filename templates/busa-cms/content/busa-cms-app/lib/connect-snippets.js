@@ -9,18 +9,14 @@
  *
  * The values come from the connection this app already resolved, so the snippet is
  * about the Folder in front of you rather than a generic example.
+ *
+ * @typedef {{ baseUrl?: string, spaceId?: string, folderId?: string, profile?: string }} ConnectionFacts
+ * @param {ConnectionFacts} connection
  */
-
-export interface ConnectionFacts {
-  baseUrl?: string;
-  spaceId?: string;
-  folderId?: string;
-  profile?: string;
-}
 
 const KEY_VAR = ["BUSABASE", "API", "KEY"].join("_");
 
-export const connectSnippets = (connection: ConnectionFacts) => ({
+export const connectSnippets = (connection) => ({
   env: [
     `BUSABASE_BASE_URL=${connection.baseUrl || "https://busabase.com"}`,
     `${KEY_VAR}=…            # a workspace key with read access`,

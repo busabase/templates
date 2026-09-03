@@ -151,6 +151,30 @@ if (jsonFieldProblems.length > 0) {
 }
 
 /**
+ * An empty string is a value, not an absence.
+ *
+ * The SDK's DTOs require several optional fields to be non-empty *when present*, so
+ * a seeded `description: ""` makes the reader reject the entire row — the post
+ * installs, publishes, and never appears on the site, with only a console warning.
+ * Omit the key instead.
+ */
+const blanks = [];
+for (const base of appConfig.schema.bases) {
+  for (const row of sampleRecords[base.key] ?? []) {
+    for (const [slug, value] of Object.entries(row.fields)) {
+      if (value === "") blanks.push(`${base.key}/${row.key}.${slug}`);
+    }
+  }
+}
+if (blanks.length > 0) {
+  console.error(
+    `Seed rows carry empty strings, which the reader rejects:\n${blanks.map((b) => `  ${b}`).join("\n")}\n\n` +
+      "Leave the field out instead of setting it to \"\".",
+  );
+  process.exit(1);
+}
+
+/**
  * A relation value in a seed row is the package-local `key` of a row in the target
  * Base. A typo here installs cleanly and silently drops the link, so it is checked
  * rather than trusted.
