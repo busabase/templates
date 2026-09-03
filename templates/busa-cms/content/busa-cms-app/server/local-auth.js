@@ -11,11 +11,6 @@ const AIRAPP_CLIENT_ID = "busabase-airapp";
 
 export function installLocalBusabaseAuth(app, { appId }) {
   const spaceCookie = `${appId}-space`;
-  // Filled in below so the app's own server-side SDK calls can reach the same
-  // credential and the same validated Space the gate established. Exported through
-  // `localBusabaseTarget` rather than through the request, because a browser-supplied
-  // Space header is untrusted and must never decide which workspace is read.
-  installLocalBusabaseAuth.resolve = null;
   const pendingOAuth = new Map();
   const requestOrigin = (context) => new URL(context.req.url).origin;
 
@@ -102,21 +97,6 @@ export function installLocalBusabaseAuth(app, { appId }) {
       throw new Error("This Busabase server has not enabled local AirApp OAuth.");
     }
     throw new Error(`Busabase OAuth is unavailable (HTTP ${response.status}).`);
-  };
-
-  /**
-   * What the app's own SDK client should use when Busabase is not hosting it.
-   *
-   * Standalone there is no ambient session: the credential lives server-side (an
-   * env key, or the OAuth token this gateway stored), and the Space is whichever
-   * one the operator confirmed — read from `BUSABASE_SPACE_ID` or the HttpOnly
-   * cookie this gateway wrote, never from anything the browser sent.
-   */
-  installLocalBusabaseAuth.resolve = async (context) => {
-    const target = await authTarget();
-    if (!target) return null;
-    const spaceId = process.env.BUSABASE_SPACE_ID || cookieValue(context, spaceCookie) || "";
-    return { baseUrl: target.baseUrl, accessToken: target.accessToken, spaceId };
   };
 
   app.get("/auth/status", async (context) => {

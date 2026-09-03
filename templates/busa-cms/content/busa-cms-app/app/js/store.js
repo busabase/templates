@@ -75,4 +75,6 @@ export const store = {
   localeFilter: "all",
   statusFilter: "all",
   refreshTimer: null,
+  /** Resolved once on boot: the real workspace, or the deterministic demo. */
+  provider: null,
 };

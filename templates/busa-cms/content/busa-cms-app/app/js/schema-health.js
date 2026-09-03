@@ -1,4 +1,4 @@
-import { CMS_BASES } from "../app/js/schema.js";
+import { CMS_BASES } from "./schema.js";
 
 /**
  * Would `createBusabaseCms({ folderId })` accept this Folder?
@@ -6,26 +6,19 @@ import { CMS_BASES } from "../app/js/schema.js";
  * The same comparison the SDK runs before it will read a Folder, run early and
  * reported as advice instead of as a thrown error on the website's first render.
  * Codes rather than sentences: the browser owns the wording, in both languages.
+ *
+ * @typedef {{ code: "base-missing"|"field-missing"|"field-type"|"field-required",
+ *             tone: "danger"|"warn", base: string, field?: string,
+ *             expected?: string, actual?: string }} SchemaProblem
  */
 
-type LiveField = { slug: string; type: string; required?: boolean };
-type LiveBase = { key: string; slug: string; name: string; fields: LiveField[] | null };
-
-export type SchemaProblem = {
-  code: "base-missing" | "field-missing" | "field-type" | "field-required";
-  tone: "danger" | "warn";
-  base: string;
-  field?: string;
-  expected?: string;
-  actual?: string;
-};
-
-export function diffSchema(live: LiveBase[]) {
+export function diffSchema(live) {
   return CMS_BASES.map((expected) => {
     const actual = live.find((candidate) => candidate.key === expected.role);
-    const problems: SchemaProblem[] = [];
+    /** @type {SchemaProblem[]} */
+    const problems = [];
 
-    if (!actual || actual.fields === null) {
+    if (!actual || actual.fields === null || actual.fields === undefined) {
       problems.push({ code: "base-missing", tone: "danger", base: expected.role });
     } else {
       const bySlug = new Map(actual.fields.map((field) => [field.slug, field]));
@@ -77,5 +70,4 @@ export function diffSchema(live: LiveBase[]) {
   });
 }
 
-export const schemaIsClean = (health: ReturnType<typeof diffSchema>) =>
-  health.every((base) => base.tone === "ok");
+export const schemaIsClean = (health) => health.every((base) => base.tone === "ok");

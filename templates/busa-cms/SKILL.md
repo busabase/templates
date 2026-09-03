@@ -79,6 +79,10 @@ Rules the site depends on, in the order they bite:
 - **`path` is also a promise.** Changing it breaks every existing link. Put the old
   value in `legacy-paths` before you change it, not after the traffic drops.
 - **`schema-version` is required and is `1`.** Write it on every row you create.
+- **An empty string is a value, not an absence.** The reader requires several
+  optional fields to be non-empty *when present*, so `description: ""` on a
+  published post makes it reject the whole row — the post is live in the workspace
+  and absent from the site, with only a console warning. Omit the field instead.
 - **A `json` field holds JSON *text*.** `legacy-paths`, `hero`, `features` and
   `faqs` are stored raw and validated to parse, so write `JSON.stringify(value)`,
   not the value. The SDK reader accepts either form, so the mistake only surfaces

@@ -16,12 +16,37 @@ const walk = async (dir) => {
   return out;
 };
 
-const appFiles = await walk(path.join(root, "app"));
+const allAppFiles = await walk(path.join(root, "app"));
+/**
+ * `vendor/` is the busabase-sdk bundle — a dependency, not this app's code. It
+ * necessarily contains `apiKey`, an Authorization header builder and Busabase's
+ * own default URL, and scanning it would only ever report the SDK to itself. Every
+ * rule below is about the code this app actually wrote.
+ */
+const appFiles = allAppFiles.filter((file) => !file.split(path.sep).includes("vendor"));
 const joinFiles = async (files) =>
   (await Promise.all(files.map((file) => readFile(file, "utf8")))).join("\n");
 
+/**
+ * The modules that decide runtime and data behaviour — what the shared contract's
+ * runtime/credential/URL rules are about. The connect gate is deliberately not in
+ * here: offering "Busabase Cloud" as a server choice means naming its URL, which
+ * is a label on a radio button, not a hard-coded API endpoint.
+ */
+const LOGIC_BASENAMES = new Set([
+  "app.js",
+  "config.js",
+  "schema.js",
+  "busabase-client.js",
+  "runtime.js",
+  "content-model.js",
+]);
 const browserLogic = await joinFiles(
-  appFiles.filter((file) => file.endsWith(".js") && file.includes(`${path.sep}js${path.sep}`)),
+  appFiles.filter(
+    (file) =>
+      LOGIC_BASENAMES.has(path.basename(file)) ||
+      file.endsWith(path.join("providers", "busabase-provider.js")),
+  ),
 );
 const browserDownloads = await joinFiles(appFiles.filter((file) => /\.(?:js|html)$/.test(file)));
 const serverFiles = [path.join(root, "server.js"), ...(await walk(path.join(root, "server")))];
@@ -29,6 +54,8 @@ const serverSource = (await Promise.all(serverFiles.map(readIfExists)))
   .filter((text) => text !== undefined)
   .join("\n");
 const packageJson = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
+/** Everything the install ships — vendor bundle included, since it has to boot too. */
+const shippedFiles = [...allAppFiles, ...serverFiles, ...(await walk(path.join(root, "lib")))];
 const index = await readFile(path.join(root, "app", "index.html"), "utf8");
 
 // ── busabase-sdk/airapp-check: the versioned AirApp runtime contract ──────────
@@ -114,7 +141,7 @@ const assertions = [
     // Matches a passed option (`autoMerge:` / `autoMerge =`), not the word in the
     // comment that explains why it is deliberately absent.
     ok: !/\bautoMerge\s*[:=]/.test(
-      await readFile(path.join(root, "lib", "busabase-client.ts"), "utf8"),
+      await readFile(path.join(root, "app", "js", "providers", "busabase-provider.js"), "utf8"),
     ),
     message:
       "Writes must leave autoMerge unset so Busabase's permission-aware default decides, " +
@@ -129,6 +156,22 @@ const assertions = [
       await readFile(path.join(root, "app", "js", "list-detail.js"), "utf8"),
     ),
     message: "The editor must offer the locales the schema declares, not a hardcoded list",
+  },
+  {
+    /*
+     * Plain JavaScript everywhere, no TypeScript.
+     *
+     * Node 24 strips types natively, so a `.ts` server runs fine under `npm run
+     * dev` on a real Node — and then dies with `SyntaxError: Unexpected token ':'`
+     * inside Nodepod, the browser sandbox that is the DEFAULT engine for an
+     * installed AirApp. This app passed every local check and every static rule,
+     * installed cleanly, and failed to boot on the one runtime an installer
+     * actually gets.
+     */
+    ok: !shippedFiles.some((file) => file.endsWith(".ts")),
+    message:
+      "Ship .js, not .ts — the default AirApp engine is a browser sandbox that does " +
+      "not strip TypeScript types, so a .ts server fails to boot after install",
   },
 ];
 

@@ -44,6 +44,9 @@ export const I18N = {
     "detail.live_at": "Live at {path}",
     "detail.not_live": "Not published, so visitors cannot see it.",
 
+    "issue.blank-field.label": "A field is blank, not empty",
+    "issue.blank-field.hint":
+      "One field holds an empty string. The reader treats that as invalid and drops the whole item — clear the field completely instead of leaving it blank.",
     "issue.bad-path.label": "Path is not a route",
     "issue.bad-path.hint":
       "A path has to start with “/” — the SDK rejects this row rather than serving it.",
@@ -263,6 +266,9 @@ export const I18N = {
     "detail.live_at": "线上地址 {path}",
     "detail.not_live": "未发布，访客看不到。",
 
+    "issue.blank-field.label": "有字段是空串",
+    "issue.blank-field.hint":
+      "某个字段存的是空字符串。读取端视其为无效并丢掉整条内容 —— 要么写内容，要么把字段整个清掉，不要留空串。",
     "issue.bad-path.label": "网址不是路由",
     "issue.bad-path.hint": "路径必须以「/」开头 —— SDK 会拒绝这一行，而不是提供它。",
     "issue.duplicate-path.label": "网址重复",
