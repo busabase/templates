@@ -1,0 +1,5 @@
+{"key":"tag-launch","fields":{"name":"Launch","slug":"launch","locale":"en","description":"Announcements for something newly available."}}
+{"key":"tag-nextjs","fields":{"name":"Next.js","slug":"nextjs","locale":"en","description":"Content about the Next.js integration."}}
+{"key":"tag-seo","fields":{"name":"SEO","slug":"seo","locale":"en","description":"Search, canonical URLs, and metadata."}}
+{"key":"tag-migration","fields":{"name":"Migration","slug":"migration","locale":"en","description":"Moving content in from somewhere else."}}
+{"key":"tag-launch-zh","fields":{"name":"发布","slug":"launch","locale":"zh-CN","description":"新功能上线公告。"}}
