@@ -3,8 +3,8 @@
  * Regenerate `content/` from the app's own declaration, or check it is current.
  *
  * The app declares its tables once, in `content/busa-cms-app/app/js/config.js`
- * (fields from `schema.js`, seed rows from `sample-content.js`) — the files its
- * runtime already reads. The package's `content/_folder.json`,
+ * (fields from `app/js/schema.js`, seed rows from `lib/sample-content.js`) — the
+ * files its runtime already reads. The package's `content/_folder.json`,
  * `content/<base>/base.json` and `content/<base>/records.ndjson` are DERIVED from
  * that declaration, never hand-edited.
  *
@@ -26,10 +26,22 @@ const check = process.argv.includes("--check");
 
 const appDir = path.join(root, "content/busa-cms-app/app/js");
 const { appConfig } = await import(path.join(appDir, "config.js"));
-const { sampleRecords } = await import(path.join(appDir, "sample-content.js"));
+const { sampleRecords } = await import(path.join(root, "content/busa-cms-app/lib/sample-content.js"));
 
 /** The validator's ceiling; a template seeds a demo, it does not ship a dataset. */
 const MAX_SAMPLE_ROWS = 50;
+
+/**
+ * The package format carries table views and nothing else (`PackageViewSchema`'s
+ * `type` is `z.literal("table")`).
+ *
+ * This is checked here because of how it fails: a kanban view in `base.json` makes
+ * `readPackageTree` throw, and the catalog indexer *skips* a package it cannot
+ * read — it is not listed and not reported as rejected either. The template simply
+ * vanishes from the gallery with no message anywhere. Ask for a board in the app's
+ * own UI instead; a Base view has to be a table.
+ */
+const PACKAGE_VIEW_TYPES = new Set(["table"]);
 
 const stale = [];
 
@@ -57,6 +69,18 @@ await emit(
 
 let position = 0;
 for (const base of appConfig.schema.bases) {
+  // Checked before the write, not after: a guard that emits the bad file and then
+  // refuses leaves content/ stale, which is a second problem to debug.
+  for (const view of base.views ?? []) {
+    if (!PACKAGE_VIEW_TYPES.has(view.type)) {
+      console.error(
+        `content/${base.key}: view "${view.key}" is a ${view.type} view. The package format only\n` +
+          "carries table views, and the catalog indexer silently skips a package it cannot read.",
+      );
+      process.exit(1);
+    }
+  }
+
   await emit(
     `content/${base.key}/base.json`,
     json({

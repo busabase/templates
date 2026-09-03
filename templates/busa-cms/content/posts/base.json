@@ -280,35 +280,14 @@
   ],
   "views": [
     {
-      "slug": "editorial-pipeline",
-      "name": "Editorial Pipeline / 内容流水线",
-      "type": "kanban",
-      "config": {
-        "stackByFieldSlug": "status",
-        "visibleFieldSlugs": [
-          "title",
-          "locale",
-          "author",
-          "published-at",
-          "path"
-        ],
-        "sorts": [
-          {
-            "fieldSlug": "published-at",
-            "direction": "desc"
-          }
-        ]
-      }
-    },
-    {
-      "slug": "live-posts",
-      "name": "Live on the site / 线上文章",
+      "slug": "published-posts",
+      "name": "Published / 已发布",
       "type": "table",
       "config": {
         "filters": [
           {
             "fieldSlug": "status",
-            "operator": "is",
+            "operator": "equals",
             "value": "published"
           }
         ],
@@ -319,6 +298,27 @@
           "author",
           "categories",
           "tags",
+          "published-at"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "published-at",
+            "direction": "desc"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "all-posts",
+      "name": "All Posts / 全部文章",
+      "type": "table",
+      "config": {
+        "visibleFieldSlugs": [
+          "title",
+          "path",
+          "status",
+          "locale",
+          "author",
           "published-at"
         ],
         "sorts": [

@@ -41,33 +41,24 @@ const views = {
   ],
   posts: [
     {
-      // Stacked by `status`, so the board mirrors the only state the SDK reads:
-      // everything left of "Published" is invisible to the live site.
-      key: "editorial-pipeline",
-      name: "Editorial Pipeline / 内容流水线",
-      type: "kanban",
+      // Filtered on `status`, because that is the only state the SDK reads:
+      // anything not "published" is invisible to the live site.
+      key: "published-posts",
+      name: "Published / 已发布",
+      type: "table",
       config: {
-        stackByFieldSlug: "status",
-        visibleFieldSlugs: ["title", "locale", "author", "published-at", "path"],
+        filters: [{ fieldSlug: "status", operator: "equals", value: "published" }],
+        visibleFieldSlugs: ["title", "path", "locale", "author", "categories", "tags", "published-at"],
         sorts: [{ fieldSlug: "published-at", direction: "desc" }],
       },
       viewId: "",
     },
     {
-      key: "live-posts",
-      name: "Live on the site / 线上文章",
+      key: "all-posts",
+      name: "All Posts / 全部文章",
       type: "table",
       config: {
-        filters: [{ fieldSlug: "status", operator: "is", value: "published" }],
-        visibleFieldSlugs: [
-          "title",
-          "path",
-          "locale",
-          "author",
-          "categories",
-          "tags",
-          "published-at",
-        ],
+        visibleFieldSlugs: ["title", "path", "status", "locale", "author", "published-at"],
         sorts: [{ fieldSlug: "published-at", direction: "desc" }],
       },
       viewId: "",
@@ -77,14 +68,7 @@ const views = {
       name: "SEO review / SEO 检查",
       type: "table",
       config: {
-        visibleFieldSlugs: [
-          "title",
-          "path",
-          "seo-title",
-          "seo-description",
-          "canonical-url",
-          "cover-image",
-        ],
+        visibleFieldSlugs: ["title", "path", "seo-title", "seo-description", "canonical-url", "cover-image"],
         sorts: [{ fieldSlug: "path", direction: "asc" }],
       },
       viewId: "",
@@ -102,12 +86,12 @@ const views = {
       viewId: "",
     },
     {
-      key: "page-pipeline",
-      name: "Page Pipeline / 页面流水线",
-      type: "kanban",
+      key: "published-pages",
+      name: "Published / 已发布",
+      type: "table",
       config: {
-        stackByFieldSlug: "status",
-        visibleFieldSlugs: ["title", "path", "template", "locale"],
+        filters: [{ fieldSlug: "status", operator: "equals", value: "published" }],
+        visibleFieldSlugs: ["title", "path", "template", "locale", "updated-at"],
         sorts: [{ fieldSlug: "path", direction: "asc" }],
       },
       viewId: "",
@@ -268,6 +252,7 @@ export const appConfig = {
   permissions: {
     read_procedures: [
       "nodes.list",
+      "bases.get",
       "nodes.get",
       "records.listPaged",
       "records.search",

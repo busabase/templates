@@ -89,7 +89,7 @@ const resolveBaseDefinition = async () => {
 
 const { CMS_BASES } = await import(path.join(root, "content/busa-cms-app/app/js/schema.js"));
 const { sampleRecords } = await import(
-  path.join(root, "content/busa-cms-app/app/js/sample-content.js")
+  path.join(root, "content/busa-cms-app/lib/sample-content.js")
 );
 
 const problems = [];

@@ -264,16 +264,23 @@
       }
     },
     {
-      "slug": "page-pipeline",
-      "name": "Page Pipeline / 页面流水线",
-      "type": "kanban",
+      "slug": "published-pages",
+      "name": "Published / 已发布",
+      "type": "table",
       "config": {
-        "stackByFieldSlug": "status",
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "published"
+          }
+        ],
         "visibleFieldSlugs": [
           "title",
           "path",
           "template",
-          "locale"
+          "locale",
+          "updated-at"
         ],
         "sorts": [
           {
