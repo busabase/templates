@@ -22,7 +22,7 @@
  *
  *   npm install && node scripts/check-sdk-contract.mjs
  */
-import { readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -49,43 +49,19 @@ const sdkVersion = await readFile(path.join(sdkDir, "package.json"), "utf8")
 
 /**
  * `getBusabaseCmsBaseDefinition` is the SDK's own answer to "what does a CMS Base
- * look like" — the single thing worth diffing against. Up to busabase-cms@0.1.1 it
- * is *built* into the published bundle but never re-exported, so a consumer cannot
- * reach it.
+ * look like" — the single thing worth diffing against, and exported since
+ * busabase-cms@0.1.2.
  *
- * Rather than quietly downgrade to a weaker check on those versions, the bundle's
- * own chunk is re-emitted beside itself with that one symbol exported, imported,
- * and deleted. Writing the probe *inside* `dist/` is deliberate: the chunk's own
- * relative and bare imports then resolve exactly as they normally would.
- *
- * This branch is a workaround for a gap in the SDK, not a design. The moment
- * busabase-cms exports the symbol, the first branch wins and this one stops
- * running — no change needed here.
+ * 0.1.1 built it into the bundle without re-exporting it, and this script used to
+ * carry a workaround that re-emitted the chunk to reach it. That is gone: the
+ * template pins a version that exports it, so the workaround only added a second
+ * path nobody takes. If the export ever disappears again, this fails loudly rather
+ * than silently checking less.
  */
-const resolveBaseDefinition = async () => {
-  if (typeof sdk.getBusabaseCmsBaseDefinition === "function") {
-    return { fn: sdk.getBusabaseCmsBaseDefinition, via: "package export" };
-  }
-  const dist = path.join(sdkDir, "dist");
-  for (const entry of await readdir(dist).catch(() => [])) {
-    if (!entry.startsWith("chunk-") || !entry.endsWith(".js")) continue;
-    const source = await readFile(path.join(dist, entry), "utf8");
-    if (!/\bgetBusabaseCmsBaseDefinition\s*=/.test(source)) continue;
-    const probe = path.join(dist, `__busa-cms-contract-probe-${entry}`);
-    try {
-      await writeFile(probe, `${source}\nexport { getBusabaseCmsBaseDefinition };\n`);
-      const chunk = await import(probe);
-      if (typeof chunk?.getBusabaseCmsBaseDefinition === "function") {
-        return { fn: chunk.getBusabaseCmsBaseDefinition, via: `unexported symbol in dist/${entry}` };
-      }
-    } catch {
-      // Try the next chunk; an unreadable one is not a contract failure.
-    } finally {
-      await rm(probe, { force: true });
-    }
-  }
-  return null;
-};
+const resolveBaseDefinition = () =>
+  typeof sdk.getBusabaseCmsBaseDefinition === "function"
+    ? { fn: sdk.getBusabaseCmsBaseDefinition, via: "package export" }
+    : null;
 
 const { CMS_BASES } = await import(path.join(root, "content/busa-cms-app/app/js/schema.js"));
 const { sampleRecords } = await import(
@@ -97,11 +73,12 @@ const show = (value) => JSON.stringify(value);
 
 // ── schema ───────────────────────────────────────────────────────────────────
 
-const definition = await resolveBaseDefinition();
+const definition = resolveBaseDefinition();
 if (!definition) {
   console.error(
-    `busabase-cms@${sdkVersion} exposes no Base definitions, so the schema half of\n` +
-      "this check cannot run. Refusing to pass on the content check alone.",
+    `busabase-cms@${sdkVersion} does not export getBusabaseCmsBaseDefinition, so the\n` +
+      "schema half of this check cannot run. Refusing to pass on the content check\n" +
+      "alone — pin a version that exports it (>= 0.1.2).",
   );
   process.exit(2);
 }
