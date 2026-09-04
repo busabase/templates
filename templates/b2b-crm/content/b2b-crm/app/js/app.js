@@ -4,13 +4,23 @@ import { getProvider } from "./providers/index.js";
 import { buildOverviewModel, localDateKey, renderOverviewMarkup } from "./overview.js";
 import { playOverviewEntrance } from "./overview-motion.js";
 import { formatMoney, pipelineMetrics, renderPipelineBoard } from "./pipeline.js";
-import { renderIcons } from "../vendor/lucide-icons.js";
+import { renderIcons } from "../vendor/lucide-icons.js?v=recording-ui-2";
 
+const routeFromHash = (hash = window.location.hash) => {
+  const route = hash.replace(/^#\/?/, "");
+  if (route === "pipeline") return { screen: "pipeline", tab: "companies" };
+  if (route === "activities") return { screen: "activities", tab: "companies" };
+  if (route === "directory/contacts") return { screen: "directory", tab: "contacts" };
+  if (route === "directory/companies") return { screen: "directory", tab: "companies" };
+  return { screen: "overview", tab: "companies" };
+};
+
+const initialRoute = routeFromHash();
 const state = {
   provider: null,
   payload: null,
-  screen: "overview",
-  directoryTab: "companies",
+  screen: initialRoute.screen,
+  directoryTab: initialRoute.tab,
   selectedRecordId: null,
   query: "",
   filter: "",
@@ -701,16 +711,65 @@ async function submitDeal() {
 }
 
 const closeStageModal = () => {
+  setStageMenu(false);
   byId("stageModal").hidden = true;
   state.stageDraft = null;
 };
+
+const stageOptions = () => [...byId("stageSelectMenu").querySelectorAll(".stage-select-option")];
+
+function syncStageSelect(value) {
+  const options = stageOptions();
+  const selected = options.find((option) => option.dataset.value === value) || options[0];
+  byId("stageValue").value = selected.dataset.value;
+  setText("stageSelectValue", selected.textContent.trim());
+  options.forEach((option) => option.setAttribute("aria-selected", String(option === selected)));
+}
+
+function positionStageMenu() {
+  const menu = byId("stageSelectMenu");
+  const trigger = byId("stageSelectTrigger").getBoundingClientRect();
+  const viewportGap = 12;
+  const controlGap = 6;
+  const width = Math.min(trigger.width, window.innerWidth - viewportGap * 2);
+  menu.style.width = `${width}px`;
+  const menuHeight = menu.offsetHeight;
+  const spaceBelow = window.innerHeight - trigger.bottom - viewportGap;
+  const spaceAbove = trigger.top - viewportGap;
+  const openUp = menuHeight > spaceBelow && spaceAbove > spaceBelow;
+  const top = openUp
+    ? Math.max(viewportGap, trigger.top - controlGap - menuHeight)
+    : Math.min(trigger.bottom + controlGap, window.innerHeight - viewportGap - menuHeight);
+  const left = Math.min(
+    Math.max(viewportGap, trigger.left),
+    window.innerWidth - viewportGap - width,
+  );
+  menu.style.top = `${top}px`;
+  menu.style.left = `${left}px`;
+}
+
+function setStageMenu(open, focusSelected = false) {
+  const menu = byId("stageSelectMenu");
+  menu.hidden = !open;
+  byId("stageSelectTrigger").setAttribute("aria-expanded", String(open));
+  if (open && focusSelected) {
+    positionStageMenu();
+    (stageOptions().find((option) => option.getAttribute("aria-selected") === "true") || stageOptions()[0]).focus();
+  }
+}
+
+function moveStageOptionFocus(direction) {
+  const options = stageOptions();
+  const current = Math.max(0, options.indexOf(document.activeElement));
+  options[(current + direction + options.length) % options.length].focus();
+}
 
 function openStageModal() {
   const deal = selectedDeal();
   if (!deal) return;
   const form = byId("stageForm");
   form.reset();
-  form.elements.stage.value = deal.fields?.stage || "qualification";
+  syncStageSelect(deal.fields?.stage || "qualification");
   setText("stageContext", `${recordTitle(deal)} / Current: ${choiceLabel("deals", "stage", deal.fields?.stage)}`);
   byId("stageFields").hidden = false;
   byId("stagePreview").hidden = true;
@@ -721,13 +780,13 @@ function openStageModal() {
   byId("stageReview").hidden = false;
   byId("stageSubmit").hidden = true;
   byId("stageModal").hidden = false;
-  form.elements.stage.focus();
+  byId("stageSelectTrigger").focus();
 }
 
 function reviewStage() {
   const deal = selectedDeal();
   if (!deal || !byId("stageForm").reportValidity()) return;
-  const stage = byId("stageForm").elements.stage.value;
+  const stage = byId("stageValue").value;
   state.stageDraft = { recordId: deal.id, baseCommitId: deal.headCommitId, stage };
   const rows = [
     ["Deal", recordTitle(deal)],
@@ -766,7 +825,7 @@ async function submitStage() {
   }
 }
 
-function switchContext({ screen = state.screen, tab = state.directoryTab, filter = "" }) {
+function switchContext({ screen = state.screen, tab = state.directoryTab, filter = "", updateHistory = true }) {
   state.screen = screen;
   state.directoryTab = tab;
   state.selectedRecordId = null;
@@ -777,14 +836,24 @@ function switchContext({ screen = state.screen, tab = state.directoryTab, filter
   byId("searchInput").value = "";
   setMobileSidebar(false);
   setDetailOpen(false);
-  window.location.hash = screen === "overview"
+  const nextHash = screen === "overview"
     ? "#/overview"
     : screen === "activities"
       ? "#/activities"
       : screen === "pipeline"
         ? "#/pipeline"
         : `#/directory/${tab}`;
+  if (updateHistory && window.location.hash !== nextHash) {
+    window.history.pushState(null, "", nextHash);
+  }
   render();
+  const resetScroll = () => {
+    document.querySelector(".main").scrollTop = 0;
+    byId("overviewPage").scrollTop = 0;
+    byId("listPanel").scrollTop = 0;
+  };
+  resetScroll();
+  window.setTimeout(resetScroll, 180);
 }
 
 byId("mainNav").addEventListener("click", (event) => {
@@ -915,6 +984,42 @@ byId("dealModal").addEventListener("click", (event) => {
 
 byId("stageChangeOpen").addEventListener("click", openStageModal);
 byId("stageForm").addEventListener("submit", (event) => event.preventDefault());
+byId("stageSelectTrigger").addEventListener("click", () => {
+  const open = byId("stageSelectTrigger").getAttribute("aria-expanded") !== "true";
+  setStageMenu(open, open);
+});
+byId("stageSelectTrigger").addEventListener("keydown", (event) => {
+  if (!["ArrowDown", "ArrowUp", "Enter", " "].includes(event.key)) return;
+  event.preventDefault();
+  setStageMenu(true, true);
+});
+byId("stageSelectMenu").addEventListener("click", (event) => {
+  const option = event.target.closest(".stage-select-option");
+  if (!option) return;
+  syncStageSelect(option.dataset.value);
+  setStageMenu(false);
+  byId("stageSelectTrigger").focus();
+});
+byId("stageSelectMenu").addEventListener("keydown", (event) => {
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    event.preventDefault();
+    moveStageOptionFocus(event.key === "ArrowDown" ? 1 : -1);
+  } else if (event.key === "Home" || event.key === "End") {
+    event.preventDefault();
+    const options = stageOptions();
+    options[event.key === "Home" ? 0 : options.length - 1].focus();
+  } else if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    document.activeElement.click();
+  } else if (event.key === "Escape") {
+    event.preventDefault();
+    event.stopPropagation();
+    setStageMenu(false);
+    byId("stageSelectTrigger").focus();
+  } else if (event.key === "Tab") {
+    setStageMenu(false);
+  }
+});
 byId("stageReview").addEventListener("click", reviewStage);
 byId("stageSubmit").addEventListener("click", submitStage);
 byId("stageBack").addEventListener("click", () => {
@@ -927,6 +1032,7 @@ byId("stageBack").addEventListener("click", () => {
 byId("stageCancel").addEventListener("click", closeStageModal);
 byId("stageModalClose").addEventListener("click", closeStageModal);
 byId("stageModal").addEventListener("click", (event) => {
+  if (!event.target.closest("#stageSelect")) setStageMenu(false);
   if (event.target === byId("stageModal")) closeStageModal();
 });
 
@@ -942,7 +1048,16 @@ window.addEventListener("keydown", (event) => {
 window.addEventListener("resize", () => {
   if (!window.matchMedia("(max-width: 720px)").matches) setMobileSidebar(false);
   else setDesktopSidebar(false);
+  if (!byId("stageSelectMenu").hidden) positionStageMenu();
 });
+const syncRouteFromLocation = () => {
+  const route = routeFromHash();
+  if (route.screen !== state.screen || route.tab !== state.directoryTab) {
+    switchContext({ ...route, updateHistory: false });
+  }
+};
+window.addEventListener("popstate", syncRouteFromLocation);
+window.addEventListener("hashchange", syncRouteFromLocation);
 
 renderIcons();
 load();
