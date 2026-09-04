@@ -144,7 +144,7 @@ if (contents["app/index.html"].includes("panel-icon") || />[xi]<\/button>/.test(
   throw new Error("Legacy hand-drawn or character button icon found.");
 if (contents["app/js/app.js"].includes("&#10003;") || contents["app/js/overview.js"].includes("&#10003;"))
   throw new Error("Legacy character success icon found.");
-if (!/from "\.\.\/vendor\/lucide-icons\.js(?:\?[^\"]+)?"/.test(contents["app/js/app.js"]))
+if (!/from ['"]\.\.\/vendor\/lucide-icons\.js(?:\?[^'"]+)?['"]/.test(contents["app/js/app.js"]))
   throw new Error("AirApp must hydrate icons from the local Lucide vendor bundle.");
 if (/https?:\/\/(?:unpkg|cdn\.jsdelivr)\.com\/lucide/i.test(contents["app/index.html"] + contents["app/js/app.js"]))
   throw new Error("Runtime Lucide CDN reference found; icons must remain locally bundled.");
