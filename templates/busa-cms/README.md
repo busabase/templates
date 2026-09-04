@@ -1,6 +1,6 @@
 # busa-cms
 
-A WordPress-style admin for the four Bases the [`busabase-cms`](https://www.npmjs.com/package/busabase-cms)
+A WordPress-style admin for the four Bases the [`busabase-cms-sdk`](https://www.npmjs.com/package/busabase-cms-sdk)
 SDK reads: **Posts**, **Pages**, **Categories**, **Tags**.
 
 ```bash
@@ -12,7 +12,7 @@ busabase-cli install ./templates/busa-cms --auto-merge
 Then write in it, and point a Next.js site at the Folder:
 
 ```ts
-import { createBusabaseCms } from "busabase-cms";
+import { createBusabaseCms } from "busabase-cms-sdk";
 
 export const cms = createBusabaseCms({
   config: { baseUrl: …, apiKey: …, spaceId: … },
@@ -37,7 +37,7 @@ npm install
 node scripts/check-sdk-contract.mjs
 ```
 
-That resolves the real published `busabase-cms`, asks it for the same four Base
+That resolves the real published `busabase-cms-sdk`, asks it for the same four Base
 definitions, and fails on any difference in a field, type, required flag, select
 choice, attachment policy or relation target. It also parses every published seed
 row through the SDK's own DTO schemas, which is what catches a demo that installs
@@ -51,7 +51,7 @@ busa-cms/
 ├── busabase.json                manifest + catalog entry
 ├── scripts/
 │   ├── sync-content.mjs         content/ ← the app's declaration (never hand-edit content/)
-│   └── check-sdk-contract.mjs   this template ↔ the published busabase-cms
+│   └── check-sdk-contract.mjs   this template ↔ the published busabase-cms-sdk
 ├── content/
 │   ├── _folder.json             generated
 │   ├── {categories,tags,posts,pages}/   base.json + records.ndjson, generated

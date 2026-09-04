@@ -9,7 +9,7 @@ import { CMS_BASES, CMS_SCHEMA_PROFILE, CMS_SCHEMA_VERSION } from "./schema.js";
  * on the app side and the package side is derived from it.
  *
  * The field definitions themselves come from `schema.js`, which mirrors the
- * busabase-cms SDK's standard profile.
+ * busabase-cms-sdk SDK's standard profile.
  */
 
 const readLimits = { categories: 100, tags: 100, posts: 50, pages: 50 };
@@ -105,7 +105,7 @@ export const appConfig = {
   appName: "Busa CMS",
   appSlug: "busa-cms-app",
   description:
-    "A website CMS desk for the standard busabase-cms Posts, Pages, Categories, and Tags Bases.",
+    "A website CMS desk for the standard busabase-cms-sdk Posts, Pages, Categories, and Tags Bases.",
   locale: "en",
   deployment: "cloud",
   spaceId: "",
@@ -115,8 +115,8 @@ export const appConfig = {
     profile: CMS_SCHEMA_PROFILE,
     metadataSchemaVersion: CMS_SCHEMA_VERSION,
     /** The npm package this schema is the counterpart of. */
-    sdkPackage: "busabase-cms",
-    docs: "https://www.npmjs.com/package/busabase-cms",
+    sdkPackage: "busabase-cms-sdk",
+    docs: "https://www.npmjs.com/package/busabase-cms-sdk",
   },
   brand: {
     mode: "inferred",
@@ -128,7 +128,7 @@ export const appConfig = {
       name: "Busa CMS",
       slug: "busa-cms",
       description:
-        "Website content the busabase-cms SDK reads: Markdown posts, HTML pages, and their taxonomy.",
+        "Website content the busabase-cms-sdk SDK reads: Markdown posts, HTML pages, and their taxonomy.",
       nodeId: "",
     },
     bases: CMS_BASES.map((base) => ({
@@ -194,7 +194,7 @@ export const appConfig = {
         id: "connect",
         name: "Connect",
         purpose:
-          "Show the Folder id, the schema health, and the exact busabase-cms snippet for the site.",
+          "Show the Folder id, the schema health, and the exact busabase-cms-sdk snippet for the site.",
         data_sources: ["posts", "pages", "categories", "tags"],
       },
     ],

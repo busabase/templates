@@ -135,7 +135,7 @@ const assertions = [
     ok: /CMS_SCHEMA_VERSION\s*=\s*1\b/.test(
       await readFile(path.join(root, "app", "js", "schema.js"), "utf8"),
     ),
-    message: "schema.js must declare the busabase-cms metadata schema version it mirrors",
+    message: "schema.js must declare the busabase-cms-sdk metadata schema version it mirrors",
   },
   {
     // Matches a passed option (`autoMerge:` / `autoMerge =`), not the word in the

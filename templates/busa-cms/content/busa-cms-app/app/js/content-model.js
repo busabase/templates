@@ -7,7 +7,7 @@
  * between the two sides.
  */
 
-/** The one status the busabase-cms reader serves. Everything else is invisible online. */
+/** The one status the busabase-cms-sdk reader serves. Everything else is invisible online. */
 export const LIVE_STATUS = "published";
 
 /** Busabase sends a relation as one id or an array of them; the app wants an array. */
