@@ -45,7 +45,7 @@
     {
       "subdir": "templates/busa-cms",
       "name": "busa-cms",
-      "description": "A WordPress-style admin for a website's Posts, Pages, Categories, and Tags — the exact four Bases the busabase-cms SDK reads.",
+      "description": "A WordPress-style admin for a website's Posts, Pages, Categories, and Tags — the exact four Bases the busabase-cms-sdk SDK reads.",
       "category": "content",
       "tags": [
         "cms",
@@ -56,7 +56,7 @@
         "seo",
         "pages",
         "posts",
-        "busabase-cms"
+        "busabase-cms-sdk"
       ],
       "screenshots": [
         "assets/screenshots/cover.webp",

@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light dark">
     <title>B2B CRM</title>
     <link rel="stylesheet" href="./base-ui.css">
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./styles.css?v=recording-ui-9">
   </head>
   <body>
     <div class="app-shell">
@@ -53,7 +53,7 @@
             <button class="active" type="button" data-directory-tab="companies">Companies</button>
             <button type="button" data-directory-tab="contacts">Contacts</button>
           </div>
-          <label class="filter-control"><span id="filterLabel">Relationship</span><select id="recordFilter" aria-label="Filter records"></select></label>
+          <label class="filter-control"><span id="filterLabel">Relationship</span><select id="recordFilter" aria-label="Filter records"></select><span class="select-chevron" aria-hidden="true"></span></label>
           <button class="primary-button control-action" id="addDealOpen" type="button" hidden><i data-lucide="plus"></i><span>Add Deal</span></button>
           <span class="window-note" id="windowNote">Showing one bounded data window</span>
         </section>
@@ -68,7 +68,7 @@
             <button class="back-button" id="backButton" type="button"><i data-lucide="arrow-left"></i><span>Back to list</span></button>
             <div class="detail-empty" id="detailEmpty"><strong>Select a company</strong><span>Relationship details and recent activity will appear here.</span></div>
             <article id="detailContent" hidden>
-              <header class="detail-header"><div><span class="eyebrow" id="detailEyebrow">Company</span><h2 id="detailTitle"></h2></div><div class="detail-actions"><button class="secondary-button" id="stageChangeOpen" type="button" hidden><i data-lucide="arrow-right-left"></i><span>Change Stage</span></button><button class="primary-button" id="logActivityOpen" type="button" hidden><i data-lucide="notebook-pen"></i><span>Log Activity</span></button></div></header>
+              <header class="detail-header"><div><span class="eyebrow" id="detailEyebrow">Company</span><h2 id="detailTitle"></h2></div><div class="detail-actions"><button class="secondary-button" id="stageChangeOpen" type="button" hidden><i data-lucide="pencil"></i><span>Change Stage</span></button><button class="primary-button" id="logActivityOpen" type="button" hidden><i data-lucide="plus"></i><span>Log Activity</span></button></div></header>
               <div class="audit-line" id="auditLine"></div>
               <div class="detail-fields" id="detailFields"></div>
               <section class="related-section" id="relatedContactsSection" hidden><div class="section-heading"><h3>Contacts</h3><span id="relatedContactsCount"></span></div><div class="related-list" id="relatedContacts"></div></section>
@@ -142,13 +142,32 @@
         <header class="modal-header"><div><span class="eyebrow">ChangeRequest</span><h2 id="stageModalTitle">Request Stage Change</h2></div><button class="icon-button" id="stageModalClose" type="button" aria-label="Close stage form" title="Close stage form"><i data-lucide="x"></i></button></header>
         <form id="stageForm">
           <div class="form-context" id="stageContext"></div>
-          <div class="form-grid single-column" id="stageFields"><label><span>New Stage</span><select name="stage" required><option value="qualification">Qualification</option><option value="discovery">Discovery</option><option value="proposal">Proposal</option><option value="negotiation">Negotiation</option><option value="closed-won">Closed Won</option><option value="closed-lost">Closed Lost</option></select></label></div>
+          <div class="form-grid single-column" id="stageFields">
+            <label class="stage-select-field">
+              <span id="stageSelectLabel">New Stage</span>
+              <input id="stageValue" name="stage" type="hidden" value="qualification">
+              <div class="stage-select" id="stageSelect">
+                <button class="stage-select-trigger" id="stageSelectTrigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="stageSelectMenu" aria-labelledby="stageSelectLabel stageSelectValue">
+                  <span id="stageSelectValue">Qualification</span>
+                  <span class="select-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="stage-select-menu" id="stageSelectMenu" role="listbox" aria-labelledby="stageSelectLabel" hidden>
+                  <button class="stage-select-option" type="button" role="option" data-value="qualification" aria-selected="true" tabindex="-1">Qualification</button>
+                  <button class="stage-select-option" type="button" role="option" data-value="discovery" aria-selected="false" tabindex="-1">Discovery</button>
+                  <button class="stage-select-option" type="button" role="option" data-value="proposal" aria-selected="false" tabindex="-1">Proposal</button>
+                  <button class="stage-select-option" type="button" role="option" data-value="negotiation" aria-selected="false" tabindex="-1">Negotiation</button>
+                  <button class="stage-select-option" type="button" role="option" data-value="closed-won" aria-selected="false" tabindex="-1">Closed Won</button>
+                  <button class="stage-select-option" type="button" role="option" data-value="closed-lost" aria-selected="false" tabindex="-1">Closed Lost</button>
+                </div>
+              </div>
+            </label>
+          </div>
           <section class="request-preview" id="stagePreview" hidden><span class="eyebrow">Review before submitting</span><dl id="stagePreviewFields"></dl><p>This proposes a stage update. The deal remains unchanged until a human merges the ChangeRequest.</p></section>
           <div class="form-result" id="stageResult" role="status" hidden></div>
           <footer class="modal-actions"><button class="secondary-button" id="stageBack" type="button" hidden><i data-lucide="arrow-left"></i><span>Back</span></button><button class="secondary-button" id="stageCancel" type="button">Cancel</button><button class="primary-button" id="stageReview" type="button"><i data-lucide="eye"></i><span>Review request</span></button><button class="primary-button" id="stageSubmit" type="button" hidden><i data-lucide="send"></i><span class="button-label">Submit request</span></button></footer>
         </form>
       </section>
     </div>
-    <script type="module" src="./js/app.js"></script>
+    <script type="module" src="./js/app.js?v=recording-ui-9"></script>
   </body>
 </html>

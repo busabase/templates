@@ -144,7 +144,7 @@ if (contents["app/index.html"].includes("panel-icon") || />[xi]<\/button>/.test(
   throw new Error("Legacy hand-drawn or character button icon found.");
 if (contents["app/js/app.js"].includes("&#10003;") || contents["app/js/overview.js"].includes("&#10003;"))
   throw new Error("Legacy character success icon found.");
-if (!contents["app/js/app.js"].includes('from "../vendor/lucide-icons.js"'))
+if (!/from "\.\.\/vendor\/lucide-icons\.js(?:\?[^\"]+)?"/.test(contents["app/js/app.js"]))
   throw new Error("AirApp must hydrate icons from the local Lucide vendor bundle.");
 if (/https?:\/\/(?:unpkg|cdn\.jsdelivr)\.com\/lucide/i.test(contents["app/index.html"] + contents["app/js/app.js"]))
   throw new Error("Runtime Lucide CDN reference found; icons must remain locally bundled.");
@@ -158,6 +158,10 @@ if (/mobile-detail-open/.test(contents["app/js/app.js"]) || /body\.mobile-detail
   throw new Error("Legacy split-pane mobile detail state found.");
 if (!contents["app/js/app.js"].includes("Request submitted") || !contents["app/js/app.js"].includes("Ready for human review"))
   throw new Error("ChangeRequest success state hierarchy is missing.");
+if (!contents["app/js/app.js"].includes("routeFromHash") ||
+    !contents["app/js/app.js"].includes('addEventListener("popstate"') ||
+    !contents["app/js/app.js"].includes('addEventListener("hashchange"'))
+  throw new Error("Hash routes must survive reloads and browser history navigation.");
 if (!contents["app/styles.css"].includes(".result-copy code"))
   throw new Error("ChangeRequest success id styling is missing.");
 const stylesSource = contents["app/styles.css"];
