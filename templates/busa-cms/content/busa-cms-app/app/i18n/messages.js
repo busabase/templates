@@ -119,7 +119,7 @@ export const I18N = {
 
     "guide.how_title": "How this works",
     "guide.how_body":
-      "Your website reads these four Bases through the <code>busabase-cms</code> SDK. Only rows whose status is <code>published</code> are served, so a draft is invisible to visitors by construction — you do not need a staging site to keep unfinished work off the internet.",
+      "Your website reads these four Bases through the <code>busabase-cms-sdk</code> SDK. Only rows whose status is <code>published</code> are served, so a draft is invisible to visitors by construction — you do not need a staging site to keep unfinished work off the internet.",
     "guide.state_title": "What the site is serving",
 
     "stats.live_posts": "posts on the site",
@@ -136,11 +136,11 @@ export const I18N = {
     "connect.environment": "Environment",
     "connect.server_code": "Server code",
     "connect.security_note":
-      "Install with npm i busabase-cms. The key is read server-side only — this app never holds one, and neither should your browser bundle.",
+      "Install with npm i busabase-cms-sdk. The key is read server-side only — this app never holds one, and neither should your browser bundle.",
     "connect.no_folder": "No Folder id yet.",
 
     "resources.lead":
-      "The Bases as they exist right now, compared against what busabase-cms expects to adopt.",
+      "The Bases as they exist right now, compared against what busabase-cms-sdk expects to adopt.",
     "resources.fields_match": "{count} fields match",
     "resources.to_fix": "{count} to fix",
     "resources.unavailable": "The schema could not be read in this mode.",
@@ -164,7 +164,7 @@ export const I18N = {
     "setup.check.connection": "Busabase connection",
     "setup.check.folder": "Content Folder",
     "setup.check.bases": "Posts, Pages, Categories, Tags",
-    "setup.check.schema": "Schema matches busabase-cms",
+    "setup.check.schema": "Schema matches busabase-cms-sdk",
     "setup.check.published": "Published rows",
     "setup.schema_matches": "Matches the standard profile",
     "setup.schema_drift": "Differs from the standard profile",
@@ -337,7 +337,7 @@ export const I18N = {
 
     "guide.how_title": "它是怎么工作的",
     "guide.how_body":
-      "你的网站通过 <code>busabase-cms</code> SDK 读取这四个 Base。只有状态为 <code>published</code> 的行会被提供，所以草稿天然对访客不可见 —— 不需要一套 staging 站点来挡住没写完的东西。",
+      "你的网站通过 <code>busabase-cms-sdk</code> SDK 读取这四个 Base。只有状态为 <code>published</code> 的行会被提供，所以草稿天然对访客不可见 —— 不需要一套 staging 站点来挡住没写完的东西。",
     "guide.state_title": "站点现在提供什么",
 
     "stats.live_posts": "篇线上文章",
@@ -353,10 +353,10 @@ export const I18N = {
     "connect.environment": "环境变量",
     "connect.server_code": "服务端代码",
     "connect.security_note":
-      "用 npm i busabase-cms 安装。密钥只在服务端读取 —— 这个应用从不持有密钥，你的浏览器包也不该持有。",
+      "用 npm i busabase-cms-sdk 安装。密钥只在服务端读取 —— 这个应用从不持有密钥，你的浏览器包也不该持有。",
     "connect.no_folder": "还没有 Folder id。",
 
-    "resources.lead": "这些 Base 此刻的真实结构，与 busabase-cms 期望接管的结构做对比。",
+    "resources.lead": "这些 Base 此刻的真实结构，与 busabase-cms-sdk 期望接管的结构做对比。",
     "resources.fields_match": "{count} 个字段一致",
     "resources.to_fix": "{count} 处待修",
     "resources.unavailable": "当前模式下读不到结构。",
@@ -379,7 +379,7 @@ export const I18N = {
     "setup.check.connection": "Busabase 连接",
     "setup.check.folder": "内容 Folder",
     "setup.check.bases": "Posts、Pages、Categories、Tags",
-    "setup.check.schema": "结构与 busabase-cms 一致",
+    "setup.check.schema": "结构与 busabase-cms-sdk 一致",
     "setup.check.published": "已发布的行",
     "setup.schema_matches": "与 standard profile 一致",
     "setup.schema_drift": "与 standard profile 不一致",

@@ -25,7 +25,7 @@ export const connectSnippets = (connection) => ({
   ].join("\n"),
 
   server: [
-    'import { createBusabaseCms } from "busabase-cms";',
+    'import { createBusabaseCms } from "busabase-cms-sdk";',
     "",
     "export const cms = createBusabaseCms({",
     "  config: {",

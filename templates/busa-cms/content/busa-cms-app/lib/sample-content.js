@@ -165,7 +165,7 @@ export const sampleRecords = {
           "Here is the whole connection.",
           "",
           "```ts",
-          'import { createBusabaseCms } from "busabase-cms";',
+          'import { createBusabaseCms } from "busabase-cms-sdk";',
           "",
           "const cms = createBusabaseCms({",
           "  config: {",
@@ -204,7 +204,7 @@ export const sampleRecords = {
         "canonical-url": "https://tidepool.example/blog/publish-with-nextjs",
         "seo-title": "Publish a Next.js blog from a Busabase Folder",
         "seo-description":
-          "Wire busabase-cms to a Busabase Folder and render posts from a Next.js route.",
+          "Wire busabase-cms-sdk to a Busabase Folder and render posts from a Next.js route.",
         "schema-version": 1,
       },
     },

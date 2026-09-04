@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Prove this template still matches the busabase-cms SDK.
+ * Prove this template still matches the busabase-cms-sdk SDK.
  *
  * `app/js/schema.js` is a hand-kept copy of the SDK's `standard` profile — it has
  * to be a copy, because an installed AirApp is a self-contained Node project and
  * cannot resolve a package only the consuming website has. A copy nobody checks is
- * just undetected drift, so this script resolves the real `busabase-cms` and
+ * just undetected drift, so this script resolves the real `busabase-cms-sdk` and
  * compares against it in two independent ways:
  *
  *   schema  — the four Base definitions the SDK would provision, field for field
@@ -30,10 +30,10 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 let sdk;
 try {
-  sdk = await import("busabase-cms");
+  sdk = await import("busabase-cms-sdk");
 } catch (cause) {
   console.error(
-    "busabase-cms is not resolvable from this template.\n" +
+    "busabase-cms-sdk is not resolvable from this template.\n" +
       "Run `npm install` in templates/busa-cms first — the check needs the real\n" +
       "package to compare against, and refusing to run beats reporting a pass it\n" +
       "never made.\n",
@@ -42,21 +42,22 @@ try {
   process.exit(2);
 }
 
-const sdkDir = path.join(root, "node_modules/busabase-cms");
+const sdkDir = path.join(root, "node_modules/busabase-cms-sdk");
 const sdkVersion = await readFile(path.join(sdkDir, "package.json"), "utf8")
   .then((raw) => JSON.parse(raw).version)
   .catch(() => "unknown");
 
 /**
  * `getBusabaseCmsBaseDefinition` is the SDK's own answer to "what does a CMS Base
- * look like" — the single thing worth diffing against, and exported since
- * busabase-cms@0.1.2.
+ * look like" — the single thing worth diffing against. Every published
+ * `busabase-cms-sdk` exports it.
  *
- * 0.1.1 built it into the bundle without re-exporting it, and this script used to
- * carry a workaround that re-emitted the chunk to reach it. That is gone: the
- * template pins a version that exports it, so the workaround only added a second
- * path nobody takes. If the export ever disappears again, this fails loudly rather
- * than silently checking less.
+ * The SDK was called `busabase-cms` before 0.1.3, and its 0.1.1 built this into
+ * the bundle without re-exporting it; this script used to carry a workaround that
+ * re-emitted the chunk to reach it. That is gone: the template pins a version that
+ * exports it, so the workaround only added a second path nobody takes. If the
+ * export ever disappears again, this fails loudly rather than silently checking
+ * less.
  */
 const resolveBaseDefinition = () =>
   typeof sdk.getBusabaseCmsBaseDefinition === "function"
@@ -76,9 +77,9 @@ const show = (value) => JSON.stringify(value);
 const definition = resolveBaseDefinition();
 if (!definition) {
   console.error(
-    `busabase-cms@${sdkVersion} does not export getBusabaseCmsBaseDefinition, so the\n` +
+    `busabase-cms-sdk@${sdkVersion} does not export getBusabaseCmsBaseDefinition, so the\n` +
       "schema half of this check cannot run. Refusing to pass on the content check\n" +
-      "alone — pin a version that exports it (>= 0.1.2).",
+      "alone — pin a busabase-cms-sdk that exports it.",
   );
   process.exit(2);
 }
@@ -191,7 +192,7 @@ for (const [baseKey, rows] of Object.entries(sampleRecords)) {
 // ── report ───────────────────────────────────────────────────────────────────
 
 if (problems.length > 0) {
-  console.error(`busa-cms does not match busabase-cms@${sdkVersion}:\n`);
+  console.error(`busa-cms does not match busabase-cms-sdk@${sdkVersion}:\n`);
   for (const problem of problems) console.error(`  - ${problem}`);
   console.error(
     "\nFix content/busa-cms-app/app/js/schema.js (or sample-content.js), then run\n" +
@@ -202,7 +203,7 @@ if (problems.length > 0) {
 
 const fieldCount = CMS_BASES.reduce((total, base) => total + base.fields.length, 0);
 console.log(
-  `busa-cms matches busabase-cms@${sdkVersion} (definitions via ${definition.via}):\n` +
+  `busa-cms matches busabase-cms-sdk@${sdkVersion} (definitions via ${definition.via}):\n` +
     `  schema   ${CMS_BASES.length} Bases, ${fieldCount} fields, identical\n` +
     `  content  ${parsed} live rows parse against the SDK's own DTO schemas`,
 );

@@ -1,6 +1,6 @@
 ---
 name: busa-cms
-description: A website's Posts, Pages, Categories, and Tags, in the exact shape the busabase-cms SDK reads. Use when the user wants to run a blog or marketing site's content out of Busabase, asks to write/edit/publish a post or page, wants their Next.js site wired to a Busabase Folder, or asks why something they wrote is not showing up on the site.
+description: A website's Posts, Pages, Categories, and Tags, in the exact shape the busabase-cms-sdk SDK reads. Use when the user wants to run a blog or marketing site's content out of Busabase, asks to write/edit/publish a post or page, wants their Next.js site wired to a Busabase Folder, or asks why something they wrote is not showing up on the site.
 metadata:
   category: content
   tags:
@@ -24,11 +24,11 @@ into them. Posts are Markdown, Pages are HTML, and Categories and Tags are share
 between them.
 
 The point of this template is that the schema is **not its own invention**. It is
-the `standard` profile of the [`busabase-cms`](https://www.npmjs.com/package/busabase-cms)
+the `standard` profile of the [`busabase-cms-sdk`](https://www.npmjs.com/package/busabase-cms-sdk)
 npm SDK, mirrored field for field, so a site can do this and it works:
 
 ```ts
-import { createBusabaseCms } from "busabase-cms";
+import { createBusabaseCms } from "busabase-cms-sdk";
 
 export const cms = createBusabaseCms({
   config: {
@@ -105,7 +105,7 @@ Two things the tables cannot tell you, which the app does:
 - **Help & Settings › Connect** — the Folder id and the exact env and server code
   for the consuming site.
 - **Help & Settings › Resources** — the live Bases diffed against what
-  `busabase-cms` expects to adopt, so drift shows up here rather than as a
+  `busabase-cms-sdk` expects to adopt, so drift shows up here rather than as a
   `BusabaseCmsSchemaDriftError` on the site's first render.
 
 ## Where you are allowed to go
@@ -132,12 +132,12 @@ What you must not do:
 ```bash
 node scripts/sync-content.mjs           # regenerate content/ from the app's declaration
 node scripts/sync-content.mjs --check   # verify it is current
-npm install && node scripts/check-sdk-contract.mjs   # diff against the real busabase-cms
+npm install && node scripts/check-sdk-contract.mjs   # diff against the real busabase-cms-sdk
 cd content/busa-cms-app && node scripts/check.mjs    # AirApp contract checks
 ```
 
 `content/*/base.json` and `records.ndjson` are **generated** — edit
 `content/busa-cms-app/app/js/{schema,config}.js` and `content/busa-cms-app/lib/sample-content.js`
 instead. `check-sdk-contract.mjs` is what keeps the claim in the first paragraph
-true: it resolves the published `busabase-cms` and fails if a single field, type,
+true: it resolves the published `busabase-cms-sdk` and fails if a single field, type,
 required flag, select choice, attachment policy or relation target has drifted.

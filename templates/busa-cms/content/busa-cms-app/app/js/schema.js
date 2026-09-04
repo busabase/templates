@@ -1,7 +1,7 @@
 /**
- * The busabase-cms "standard" profile, mirrored field for field.
+ * The busabase-cms-sdk "standard" profile, mirrored field for field.
  *
- * This file is a deliberate copy of `busabase-cms`'s own `src/schema.ts`
+ * This file is a deliberate copy of `busabase-cms-sdk`'s own `src/schema.ts`
  * (`getBusabaseCmsBaseDefinition`, profile `standard`, schemaVersion 1). It is a
  * copy rather than an import because an installed AirApp is a self-contained
  * Node project served from a Busabase node: it cannot resolve an npm package
@@ -9,7 +9,7 @@
  *
  * That makes drift the real risk, so it is checked rather than trusted:
  * `node scripts/check-sdk-contract.mjs` (run from the template root) resolves the
- * published `busabase-cms` and asserts every Base, field, type, required flag,
+ * published `busabase-cms-sdk` and asserts every Base, field, type, required flag,
  * select choice, attachment policy and relation target here is identical to what
  * the SDK would provision. If the SDK changes its contract, that check fails and
  * this file — not the SDK — is what has to move.

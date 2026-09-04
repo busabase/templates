@@ -152,7 +152,7 @@ export function setupPrompt() {
   if (status.ok === false || onboarding.state === "needs_resources") {
     return "Install the busa-cms template into this Space so the Posts, Pages, Categories, and Tags Bases exist.";
   }
-  return "Write the first post for this site, then wire my Next.js app to this Folder with busabase-cms.";
+  return "Write the first post for this site, then wire my Next.js app to this Folder with busabase-cms-sdk.";
 }
 
 export function setupChecklistHtml() {
