@@ -1,0 +1,21 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-expo-leads",
+  "description": "Trade-show lead capture desk: an SLA countdown board and a multilingual follow-up review queue",
+  "version": "0.1.0",
+  "license": "MIT",
+  "tags": ["sales-crm", "industry:ecommerce", "surface:whatsapp", "surface:busabase", "risk:gated-write"],
+  "template": {
+    "category": "sales-crm",
+    "schemaVersion": 1,
+    "airapp": "busa-expo-leads-app",
+    "tags": ["sales-crm", "industry:ecommerce", "surface:whatsapp", "surface:busabase", "risk:gated-write"],
+    "agentPrompts": [
+      "Show me which leads are about to blow past the 24-hour follow-up window.",
+      "Open Busa Expo Leads and show me the follow-ups that need review."
+    ],
+    "requires": {
+      "airapp": true
+    }
+  }
+}

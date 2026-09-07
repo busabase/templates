@@ -1,0 +1,161 @@
+{
+  "name": "Follow-ups",
+  "description": "The review queue: drafted multilingual follow-ups awaiting a human decision before send",
+  "position": 2,
+  "fields": [
+    {
+      "slug": "lead",
+      "name": "Lead",
+      "type": "relation",
+      "required": false,
+      "position": 0,
+      "options": {
+        "targetBaseSlug": "leads",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "language",
+      "name": "Language",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "draft-text",
+      "name": "Draft text",
+      "type": "longtext",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "channel",
+      "name": "Channel",
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "whatsapp",
+            "name": "WhatsApp"
+          },
+          {
+            "id": "email",
+            "name": "Email"
+          },
+          {
+            "id": "wechat",
+            "name": "WeChat"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "needs_review",
+            "name": "Needs review"
+          },
+          {
+            "id": "approved",
+            "name": "Approved"
+          },
+          {
+            "id": "sent",
+            "name": "Sent"
+          }
+        ],
+        "default": "needs_review"
+      }
+    },
+    {
+      "slug": "decision-action",
+      "name": "Decision action",
+      "type": "select",
+      "required": false,
+      "position": 5,
+      "options": {
+        "choices": [
+          {
+            "id": "approve",
+            "name": "Approve"
+          },
+          {
+            "id": "request_changes",
+            "name": "Request changes"
+          },
+          {
+            "id": "block",
+            "name": "Block"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "decision-comment",
+      "name": "Decision comment",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "decided-at",
+      "name": "Decided at",
+      "type": "text",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "execution-status",
+      "name": "Execution status",
+      "type": "text",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "execution-detail",
+      "name": "Execution detail",
+      "type": "longtext",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "executed-at",
+      "name": "Executed at",
+      "type": "text",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "created-at",
+      "name": "Created at",
+      "type": "text",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "updated-at",
+      "name": "Updated at",
+      "type": "text",
+      "required": false,
+      "position": 12,
+      "options": {}
+    }
+  ],
+  "views": []
+}
