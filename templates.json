@@ -502,6 +502,36 @@
       }
     },
     {
+      "subdir": "templates/busa-product-hub",
+      "name": "busa-product-hub",
+      "description": "Product & certification hub for export/trade sellers: catalog/SKU master data, pricing, inventory, channel status (Amazon/Shopify/TikTok Shop/eBay), content readiness, compliance notes, lifecycle state, a certificate expiry tracker (CE/FCC/RoHS/UN38.3/UKCA), and an approval-gated review queue (channel publish approvals, price-change review, quality holds, lifecycle decisions, and unsourced spec claims). The AirApp itself only ever decides on a review item (approve/request_changes/block) directly onto its own record -- it never creates a product, channel, inventory, or certificate row.",
+      "category": "ecommerce",
+      "risk": "local-write",
+      "tags": [
+        "ecommerce",
+        "risk:local-write",
+        "industry:ecommerce",
+        "surface:busabase"
+      ],
+      "screenshots": [],
+      "agentPrompts": [
+        "Show me which certificates are expiring soon or already expired.",
+        "Summarize the latest products and flag what needs my attention.",
+        "Open Busa Product Hub and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 8,
+        "files": 34,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-radar",
       "name": "busa-radar",
       "description": "Market-intelligence desk: competitor signals, research briefs/reports, trend movers/opportunities, and a triage review queue",

@@ -1,0 +1,106 @@
+{
+  "name": "Certificates",
+  "description": "One row per product certificate (CE/FCC/RoHS/UN38.3/UKCA/Other): issuer, certificate number, issued/expiry dates, the certificate file itself, and a source note. There is no stored status field -- expiring_soon/expired/valid is always derived client-side from expiry-date vs now, the same derived-not-stored pattern as this app's own SLA/status badges (see product-hub-model.js's certStatusFor).",
+  "position": 5,
+  "fields": [
+    {
+      "slug": "product",
+      "name": "Product",
+      "type": "relation",
+      "required": false,
+      "position": 0,
+      "options": {
+        "targetBaseSlug": "products",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "cert-type",
+      "name": "Certificate type",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "CE",
+            "name": "CE"
+          },
+          {
+            "id": "FCC",
+            "name": "FCC"
+          },
+          {
+            "id": "RoHS",
+            "name": "RoHS"
+          },
+          {
+            "id": "UN38.3",
+            "name": "UN38.3"
+          },
+          {
+            "id": "UKCA",
+            "name": "UKCA"
+          },
+          {
+            "id": "Other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "issuer",
+      "name": "Issuer",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "cert-number",
+      "name": "Certificate number",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "issued-date",
+      "name": "Issued date",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "expiry-date",
+      "name": "Expiry date",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "file",
+      "name": "Certificate file",
+      "type": "attachment",
+      "required": false,
+      "position": 6,
+      "options": {
+        "attachment": {
+          "maxFiles": 1
+        }
+      }
+    },
+    {
+      "slug": "source-note",
+      "name": "Source note",
+      "type": "text",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": []
+}
