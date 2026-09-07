@@ -481,7 +481,7 @@ export function demoInvoices() {
       total: 1360.8,
       amount_due: 1360.8,
       payment_terms: "Net 15",
-      bill_to: "Kelly Labs",
+      bill_to: "Acme Labs",
       purchase_order: "PO-5521",
       confidence: 0.94,
       field_confidence: {
@@ -534,7 +534,7 @@ export function demoInvoices() {
       total: 2400,
       amount_due: 0,
       payment_terms: "Paid by ACH",
-      bill_to: "Kelly Labs",
+      bill_to: "Acme Labs",
       confidence: 0.79,
       field_confidence: {
         invoice_number: { confidence: 0.72, source_text: "R-884?1" },
@@ -576,7 +576,7 @@ export function demoInvoices() {
       tax: -33.44,
       total: -451.44,
       amount_due: -451.44,
-      bill_to: "Kelly Labs",
+      bill_to: "Acme Labs",
       confidence: 0.88,
       risk: ["credit_note", "missing_original_invoice"],
       warnings: ["Original invoice reference was not found in the source file."],

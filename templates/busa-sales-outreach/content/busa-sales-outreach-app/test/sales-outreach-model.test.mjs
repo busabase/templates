@@ -13,10 +13,10 @@ import {
 
 const record = (id, baseKey, fields) => ({ id, baseKey, fields });
 const profileRecord = record("profile-self", "profile", {
-  seller_name: "Kelly",
+  seller_name: "You",
   offer_name: "AI 客服质检",
   offer_summary: "全量分析客服会话并给出改进项。",
-  from_email: "kelly@example.com",
+  from_email: "you@example.com",
 });
 const sample = [
   profileRecord,
@@ -117,12 +117,12 @@ test("approval enforces contact, draft, duplicate-send, and opt-out boundaries",
 test("profile writes use the declared sales schema", () => {
   assert.deepEqual(
     buildProfileFields(
-      { sellerName: "Kelly", offerName: " AI 质检 ", offerSummary: "全量分析", targetIndustries: "电商" },
+      { sellerName: "You", offerName: " AI 质检 ", offerSummary: "全量分析", targetIndustries: "电商" },
       "2026-08-12",
       { onboardingVersion: 1 },
     ),
     {
-      "seller-name": "Kelly",
+      "seller-name": "You",
       "offer-name": "AI 质检",
       "offer-summary": "全量分析",
       "value-proposition": "",

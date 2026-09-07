@@ -10,7 +10,9 @@ const state = {
   route: parseRoute(),
   query: "",
   lang: normalizeLang(
-    new URLSearchParams(location.search).get("lang") || localStorage.getItem("busa-ecommerce-intel-language") || "auto",
+    new URLSearchParams(location.search).get("lang") ||
+      localStorage.getItem("busa-ecommerce-intel-language") ||
+      "auto",
   ),
   demo: new URLSearchParams(location.search).get("demo") || "",
   saving: false,

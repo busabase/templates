@@ -197,7 +197,7 @@ async function main() {
         return {
           message_id: message.message_id,
           direction: message.direction,
-          sender: String(message.sender || (message.direction === "outgoing" ? "Kelly" : "unknown")),
+          sender: String(message.sender || (message.direction === "outgoing" ? "You" : "unknown")),
           text: message.text,
           sent_at: message.sent_at,
           attachment: String(message.attachment || ""),

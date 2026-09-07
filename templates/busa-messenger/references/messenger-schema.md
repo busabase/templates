@@ -70,7 +70,7 @@ payloads, or raw session tokens.
 | `message-id` | `message_id` | text | stable id, globally unique, required |
 | `conversation-id` | `conversation_id` | text | |
 | `direction` | `direction` | text | `incoming\|outgoing` |
-| `sender` | `sender` | text | display name (`Kelly` for own messages) |
+| `sender` | `sender` | text | display name (`the operator` for own messages) |
 | `text` | `text` | longtext | message body |
 | `sent-at` | `sent_at` | text | ISO timestamp |
 | `attachment` | `attachment` | text | optional short note, e.g. `file: report.csv` |
@@ -165,7 +165,7 @@ A single row, `record-id: "config"`.
       "title": "Lena Ortiz",
       "kind": "dm",
       "channel": "",
-      "participants": ["Lena Ortiz", "Kelly"],
+      "participants": ["Lena Ortiz", "You"],
       "provider_conversation_id": "55119990001@wa",
       "suggested_reply": "",
       "messages": [

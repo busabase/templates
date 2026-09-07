@@ -46,7 +46,7 @@ metadata:
 
 ## Overview
 
-Use this skill as Kelly's ad-campaign command desk. It aggregates spend and
+Use this skill as the operator's ad-campaign command desk. It aggregates spend and
 performance from Amazon Ads, Meta (FB/IG), TikTok Ads, and Google Ads into
 one Busabase-backed App-in-Skill board (spend, impressions, clicks,
 conversions, revenue, ROAS, ACOS per campaign), detects anomalies

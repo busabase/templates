@@ -83,7 +83,7 @@ export const messages = {
     },
   },
   zh: {
-    appTitle: "Kelly 电商情报中心",
+    appTitle: "Busa 电商情报中心",
     brandInitial: "E",
     overview: "总览",
     signals: "信号",

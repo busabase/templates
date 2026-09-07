@@ -146,7 +146,7 @@ export function normalizeTicket({
   csat_score = "",
   csat_comment = "",
   csat_rated_at = "",
-  owner = "Kelly",
+  owner = "You",
   unread = "",
   created_at = "",
   provider_conversation_id = "",
@@ -196,7 +196,7 @@ export function normalizeTicket({
         ? { score: Number(csat_score) || 0, comment: csat_comment || "", rated_at: csat_rated_at || "" }
         : null,
     quality_gate: null,
-    owner: owner || "Kelly",
+    owner: owner || "You",
     unread: toBool(unread),
     created_at,
     last_message_at: "",

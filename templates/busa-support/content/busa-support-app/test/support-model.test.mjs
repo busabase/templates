@@ -54,7 +54,7 @@ test("refreshTicketDerived: SLA breach is derived from due_by vs the reference t
     sla: { policy: "first_response", due_by: "", breached: false },
     messages: [
       { direction: "incoming", sender: "A", text: "hi", sent_at: "2026-07-06T05:00:00.000Z" },
-      { direction: "outgoing", sender: "Kelly", text: "hello", sent_at: "2026-07-06T05:05:00.000Z" },
+      { direction: "outgoing", sender: "You", text: "hello", sent_at: "2026-07-06T05:05:00.000Z" },
     ],
   };
   refreshTicketDerived(withMessages, reference);

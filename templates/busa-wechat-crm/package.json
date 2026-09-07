@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "version": "0.3.0",
-  "description": "Kelly WeChat CRM: trusted local sync from wechat-cli-rs into a Busabase follow-up desk.",
+  "description": "Busa WeChat CRM: trusted local sync from wechat-cli-rs into a Busabase follow-up desk.",
   "scripts": {
     "wechat:safe": "node scripts/wechat-safe.mjs",
     "sync": "node scripts/sync_wechat.mjs",

@@ -1,6 +1,6 @@
 // Deterministic, explicitly-labeled, read-only demo data. Never reads or
 // writes Busabase, never claims a real connection, and never persists
-// anything — matches the ?demo=1 contract used across Kelly App-in-Skills.
+// anything — matches the ?demo=1 contract used across Busa App-in-Skills.
 // demoSources/demoTrendItems/demoCandidates/demoProposals/source/trendItem/
 // candidate/competition/evidenceLink/demoConfigSummary/localizeSnapshotZh/
 // localizeConfigZh below are ported verbatim (same ids, same copy, same
@@ -844,7 +844,7 @@ function demoProposals() {
       brief: "Drop. Price umbrella belongs to Dash; entering means funding a discount war with no review base.",
       review: {
         comment:
-          "Kelly (2026-07-02): re-run the margin card with the consolidated sea-freight quote first — if it stays under 22%, I'll approve the drop.",
+          "Reviewer (2026-07-02): re-run the margin card with the consolidated sea-freight quote first — if it stays under 22%, I'll approve the drop.",
         decided_at: "2026-07-02T09:10:00.000Z",
       },
     },
@@ -1209,7 +1209,7 @@ function localizeSnapshotZh(snapshot) {
       title: "放弃：迷你煮蛋器",
       reason: "Dash 占 73% 评论份额，中位价两周跌 $3。毛利 18.1% 低于红线——建议在样品支出前放弃。",
       brief: "放弃。价格伞属于 Dash；入场等于在没有评论基础的情况下资助一场折扣战。",
-      reviewComment: "Kelly（2026-07-02）：先用合并后的海运报价重算利润卡——若仍低于 22%，我就批准放弃。",
+      reviewComment: "评审人（2026-07-02）：先用合并后的海运报价重算利润卡——若仍低于 22%，我就批准放弃。",
     },
     "prop-organizer": {
       title: "观察：竹制抽屉收纳套装",

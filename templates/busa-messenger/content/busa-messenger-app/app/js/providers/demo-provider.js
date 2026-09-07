@@ -1,6 +1,6 @@
 // Deterministic, explicitly-labeled, read-only demo data. Never reads or
 // writes Busabase, never claims a real connection, and never persists
-// anything — matches the ?demo=1 contract used across Kelly App-in-Skills.
+// anything — matches the ?demo=1 contract used across Busa App-in-Skills.
 // demoSnapshot/demoAccounts/demoConversations/demoOutbox/demoAgentTasks/
 // demoExecutionReport/localizeSnapshotZh/localizeOutboxZh/conversation/msg/
 // reply/sync below are ported verbatim (same ids, same copy, same order of
@@ -125,7 +125,7 @@ function demoConversations() {
       "Lena Ortiz",
       "",
       "Nimbus Forms",
-      ["Lena Ortiz", "Kelly"],
+      ["Lena Ortiz", "You"],
       true,
       true,
       "55119990001@wa",
@@ -140,7 +140,7 @@ function demoConversations() {
         msg(
           "wa-lena-2",
           "outgoing",
-          "Kelly",
+          "You",
           "Hey Lena, great to hear! How's the trial going so far?",
           "2026-07-02T09:18:00.000Z",
         ),
@@ -161,7 +161,7 @@ function demoConversations() {
         msg(
           "wa-lena-5",
           "outgoing",
-          "Kelly",
+          "You",
           "Good question — viewers are free, only editors count as seats.",
           "2026-07-02T09:31:00.000Z",
         ),
@@ -198,7 +198,7 @@ function demoConversations() {
       "Tomas Rivera · webhook 429s",
       "#support",
       "nimbusforms.slack.com",
-      ["Tomas Rivera", "Kelly"],
+      ["Tomas Rivera", "You"],
       true,
       true,
       "C0SUPPORT/1751439720.000100",
@@ -221,7 +221,7 @@ function demoConversations() {
         msg(
           "sl-web-3",
           "outgoing",
-          "Kelly",
+          "You",
           "Looking into it — did anything change on the receiving endpoint?",
           "2026-07-02T07:20:00.000Z",
         ),
@@ -235,7 +235,7 @@ function demoConversations() {
         msg(
           "sl-web-5",
           "outgoing",
-          "Kelly",
+          "You",
           "Very likely. Our retries come from a small IP range, so CF may throttle the bursts.",
           "2026-07-02T07:33:00.000Z",
         ),
@@ -264,7 +264,7 @@ function demoConversations() {
       "devkota · API rate limits",
       "#help",
       "Nimbus Forms Community",
-      ["devkota", "Kelly"],
+      ["devkota", "You"],
       true,
       true,
       "chan/998811772233",
@@ -280,7 +280,7 @@ function demoConversations() {
         msg(
           "dc-api-3",
           "outgoing",
-          "Kelly",
+          "You",
           "60 req/min per token on the free tier — are you polling for new submissions?",
           "2026-07-02T06:05:00.000Z",
         ),
@@ -305,7 +305,7 @@ function demoConversations() {
       "Ash (moderator)",
       "",
       "Nimbus Forms Community",
-      ["Ash", "Kelly"],
+      ["Ash", "You"],
       false,
       true,
       "dm/440055660011",
@@ -327,7 +327,7 @@ function demoConversations() {
         msg(
           "dc-mod-3",
           "outgoing",
-          "Kelly",
+          "You",
           "Thanks for jumping on it. Where are the invites coming from?",
           "2026-07-01T19:30:00.000Z",
         ),
@@ -356,7 +356,7 @@ function demoConversations() {
       "Pricing page feedback",
       "#launch-feedback",
       "indiemakershq.slack.com",
-      ["Priya Nair", "Ben Okafor", "Kelly"],
+      ["Priya Nair", "Ben Okafor", "You"],
       true,
       true,
       "C0LAUNCH/1751382120.000200",
@@ -386,7 +386,7 @@ function demoConversations() {
         msg(
           "sl-mk-4",
           "outgoing",
-          "Kelly",
+          "You",
           "This is gold, thank you both. Digging into our funnel data before I respond properly.",
           "2026-07-01T16:05:00.000Z",
         ),
@@ -408,7 +408,7 @@ function demoConversations() {
       "Nimbus Beta Testers",
       "",
       "@NimbusFormsBot",
-      ["Sofia", "Marek", "Kelly"],
+      ["Sofia", "Marek", "You"],
       true,
       true,
       "-100200300400",
@@ -438,7 +438,7 @@ function demoConversations() {
         msg(
           "tg-beta-4",
           "outgoing",
-          "Kelly",
+          "You",
           "Ouch — reproduced. Escaping bug in the exporter. Logging it now.",
           "2026-07-01T21:40:00.000Z",
         ),
@@ -455,7 +455,7 @@ function demoConversations() {
       "Dana Whitfield · SAML SSO",
       "#support",
       "nimbusforms.slack.com",
-      ["Dana Whitfield", "Kelly"],
+      ["Dana Whitfield", "You"],
       true,
       true,
       "C0SUPPORT/1751355660.000300",
@@ -477,7 +477,7 @@ function demoConversations() {
         msg(
           "sl-sso-3",
           "outgoing",
-          "Kelly",
+          "You",
           "Hi Dana! SSO is on the Business plan — both SAML and OIDC. Audit logs shipped last month.",
           "2026-07-01T07:58:00.000Z",
         ),
@@ -506,7 +506,7 @@ function demoConversations() {
       "Marco · Printvo",
       "",
       "Nimbus Forms",
-      ["Marco", "Kelly"],
+      ["Marco", "You"],
       false,
       false,
       "39337770002@wa",
@@ -515,14 +515,14 @@ function demoConversations() {
           "wa-prv-1",
           "incoming",
           "Marco",
-          "Ciao Kelly! Sticker proofs for the meetup swag are ready.",
+          "Ciao You! Sticker proofs for the meetup swag are ready.",
           "2026-07-01T11:02:00.000Z",
         ),
         msg("wa-prv-2", "incoming", "Marco", "Here's the v2 proof.", "2026-07-01T11:03:00.000Z", "file: proof_v2.pdf"),
         msg(
           "wa-prv-3",
           "outgoing",
-          "Kelly",
+          "You",
           "Love the holo version. How long for 500 units to Lisbon?",
           "2026-07-01T11:30:00.000Z",
         ),
@@ -536,7 +536,7 @@ function demoConversations() {
         msg(
           "wa-prv-5",
           "outgoing",
-          "Kelly",
+          "You",
           "Perfect, go ahead with 500 holo. Send the invoice to billing@nimbusforms.com.",
           "2026-07-01T12:04:00.000Z",
         ),
@@ -551,7 +551,7 @@ function demoConversations() {
       "June dunning recap",
       "#billing-alerts",
       "nimbusforms.slack.com",
-      ["Priya Shah", "Kelly"],
+      ["Priya Shah", "You"],
       false,
       false,
       "C0BILLING/1751388000.000400",
@@ -573,7 +573,7 @@ function demoConversations() {
         msg(
           "sl-bil-3",
           "outgoing",
-          "Kelly",
+          "You",
           "Give them the 7-day grace and I'll ping their founder directly.",
           "2026-07-01T17:05:00.000Z",
         ),
@@ -589,7 +589,7 @@ function demoConversations() {
       "Carlos Mendes",
       "",
       "Nimbus Forms",
-      ["Carlos Mendes", "Kelly"],
+      ["Carlos Mendes", "You"],
       false,
       false,
       "55119994821@wa",
@@ -605,7 +605,7 @@ function demoConversations() {
         msg(
           "wa-car-3",
           "outgoing",
-          "Kelly",
+          "You",
           "Welcome Carlos! Yes — Settings → Import → Typeform handles questions, logic, and themes.",
           "2026-06-30T15:02:00.000Z",
         ),
@@ -613,7 +613,7 @@ function demoConversations() {
         msg(
           "wa-car-5",
           "outgoing",
-          "Kelly",
+          "You",
           "That's the free-tier import cap. I bumped your workspace so all 30 will import — try again and ping me if anything looks off.",
           "2026-07-01T09:16:00.000Z",
         ),
@@ -629,7 +629,7 @@ function demoConversations() {
       "Igor",
       "",
       "@NimbusFormsBot",
-      ["Igor", "Kelly"],
+      ["Igor", "You"],
       false,
       false,
       "700800900",
@@ -644,7 +644,7 @@ function demoConversations() {
         msg(
           "tg-igr-2",
           "outgoing",
-          "Kelly",
+          "You",
           "No self-hosted yet, but all data can be pinned to our Frankfurt region — GDPR processor terms included.",
           "2026-06-30T19:01:00.000Z",
         ),
@@ -658,7 +658,7 @@ function demoConversations() {
         msg(
           "tg-igr-4",
           "outgoing",
-          "Kelly",
+          "You",
           "Workspace Settings → Data Region, before you create your first form.",
           "2026-06-30T19:26:00.000Z",
         ),
@@ -673,7 +673,7 @@ function demoConversations() {
       "File upload fields?",
       "#feature-requests",
       "Nimbus Forms Community",
-      ["mira.dev", "leo_p", "Kelly"],
+      ["mira.dev", "leo_p", "You"],
       false,
       false,
       "thread/112233445566",
@@ -689,7 +689,7 @@ function demoConversations() {
         msg(
           "dc-upl-3",
           "outgoing",
-          "Kelly",
+          "You",
           "It's on the Q3 roadmap — uploads with scanning + 100MB limit. I'll post progress here.",
           "2026-06-29T14:10:00.000Z",
         ),
@@ -737,7 +737,7 @@ function demoOutbox() {
         "discord",
         "Ash (moderator)",
         "Great work containing it, Ash. Let's rotate the public invite and enable member screening tonight. I'd hold off on phone verification unless the wave continues.",
-        "Moderator proposed anti-spam measures and needs Kelly's call before acting.",
+        "Moderator proposed anti-spam measures and needs the operator's call before acting.",
         "changes_requested",
         {
           action: "request_changes",
@@ -792,7 +792,7 @@ function demoOutbox() {
         "slack",
         "Pricing page feedback",
         "Thanks Priya and Ben — this matches what our funnel data hints at. We're testing a flatter Business tier and clearer self-serve enterprise. I'll share the before/after numbers here once we decide.",
-        "Community feedback on pricing; the response depends on a pricing decision only Kelly can make.",
+        "Community feedback on pricing; the response depends on a pricing decision only the operator can make.",
         "blocked",
         {
           action: "block",
@@ -880,10 +880,10 @@ function localizeOutboxZh(outbox) {
   const reasons = {
     1: "客户被阻塞，需要 IP 段和重放说明；IP 段已对照连接器文档核实。",
     2: "两位内测用户被已确认的 CSV 转义 bug 阻塞；修复已排进 v1.42。",
-    3: "版主提出了反垃圾措施，需要 Kelly 拍板后再执行。",
+    3: "版主提出了反垃圾措施，需要你拍板后再执行。",
     4: "企业客户评估中，约 80 个席位；需要 SCIM 路线图、安全联系人和 IdP 沙箱。",
     5: "新客户在导入上限处被卡住，影响入门体验。",
-    6: "社区里的定价反馈；回复取决于只有 Kelly 能做的定价决策。",
+    6: "社区里的定价反馈；回复取决于只有你能做的定价决策。",
   };
   outbox.replies = outbox.replies.map((item) => ({
     ...item,

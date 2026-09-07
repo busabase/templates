@@ -8,11 +8,11 @@ const mail = (company, signal) => `您好，
 
 方便下周用 20 分钟看看是否值得继续吗？
 
-Kelly`;
+The operator`;
 
 const records = [
   record("profile-self", "profile", {
-    seller_name: "Kelly",
+    seller_name: "You",
     offer_name: "澄明 AI 客服质检",
     offer_summary:
       "面向客服团队的全量会话质检与改进工作台，自动识别合规、服务和转化问题，并把证据与改进项交给运营负责人。",
@@ -24,7 +24,7 @@ const records = [
     ideal_customer: "200 人以上、客服团队 20-300 人、已有在线客服或呼叫中心、正经历增长或合规压力的企业。",
     research_channels: "公司官网、招聘页、新闻、行业目录、公开案例与活动名录",
     collateral_file: "澄明-AI客服质检-one-pager.pdf",
-    from_email: "kelly@example.com",
+    from_email: "you@example.com",
     smtp_vault_key: "SMTP_HOST,SMTP_PORT,SMTP_USER,SMTP_PASS",
     updated_at: "2026-08-12",
     onboarding_version: 1,

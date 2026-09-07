@@ -1,7 +1,7 @@
 import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 // Deterministic, explicitly-labeled, read-only demo data. Never reads or
 // writes Busabase, never claims a real connection, and never persists
-// anything — matches the ?demo=1 contract used across Kelly App-in-Skills.
+// anything — matches the ?demo=1 contract used across Busa App-in-Skills.
 // Ported verbatim (same ids, same figures) from the retired
 // scripts/generate_demo_batch.ts, routed through invoice-model.js's
 // assembleBatch() so the demo path exercises the exact same

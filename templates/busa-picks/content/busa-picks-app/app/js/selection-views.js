@@ -505,7 +505,7 @@ async function submitDecision(payload) {
   try {
     if (state.settings?.demo) {
       // Demo mode never reaches Busabase — mirror the write in memory only,
-      // matching the read-only ?demo=1 contract used across Kelly App-in-Skills.
+      // matching the read-only ?demo=1 contract used across Busa App-in-Skills.
       applyLocalDecision(payload);
       render();
       return;

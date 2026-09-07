@@ -30,7 +30,7 @@ metadata:
 Busa Support is a Busabase Cloud App-in-Skill. Its canonical product
 surface is the AirApp in Busabase, not a separate local-data product. The
 same Hono source supports an explicitly requested local preview with OAuth
-connection bootstrap. Use this skill as Kelly's post-sales customer-support
+connection bootstrap. Use this skill as the operator's post-sales customer-support
 desk. Support tickets arrive over email, WhatsApp, in-app web chat, a
 contact form, and WeChat; the agent triages each one, drafts a reply
 grounded in a knowledge base, and proposes an action (send a reply,
@@ -172,7 +172,7 @@ logic.
 1. Ground every reply in the knowledge base: cite the `kb_refs` used. If no article fits, keep the reply a short acknowledgement or draft a new KB article — do not invent facts.
 2. Set `proposed_action`: `send_reply` for a normal answer, `escalate` (with a tier) for anything beyond L1, `refund` (approval-required) for eligible refunds, `close` to resolve without a reply, `no_action` for spam or FYI.
 3. Write the ticket to Busabase with `status: "needs_review"`. The `support-qa` gate (`runQualityGate`) is computed live on every read — never stored — so an edited reply always reflects the current verdict.
-4. Give Kelly the AirApp URL (or local preview URL) to review the queue, gate verdicts, and SLA board.
+4. Give the operator the AirApp URL (or local preview URL) to review the queue, gate verdicts, and SLA board.
 
 ## The Quality Gate — `support-qa` ⛩
 

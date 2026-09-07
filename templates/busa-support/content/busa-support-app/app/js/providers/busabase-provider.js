@@ -170,7 +170,7 @@ function ticketFields(row) {
     csat_score: row.csat_score ?? "",
     csat_comment: row.csat_comment || "",
     csat_rated_at: row.csat_rated_at || "",
-    owner: row.owner || "Kelly",
+    owner: row.owner || "You",
     unread: row.unread || "false",
     created_at: row.created_at || "",
     provider_conversation_id: row.provider_conversation_id || "",

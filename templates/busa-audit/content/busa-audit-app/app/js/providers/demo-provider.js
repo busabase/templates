@@ -1,6 +1,6 @@
 // Deterministic, explicitly-labeled, read-only demo data. Never reads or
 // writes Busabase, never claims a real connection, and never persists
-// anything — matches the ?demo=1 contract used across Kelly App-in-Skills.
+// anything — matches the ?demo=1 contract used across Busa App-in-Skills.
 // ORDER_ROWS/INVOICE_ROWS/PAYMENT_ROWS/demoAnomalies/demoImportLog/
 // CHASE_DRAFT_EN/CHASE_DRAFT_ZH/CUSTOMER_ZH/ANOMALY_ZH/localizeSnapshotZh
 // below are ported verbatim (same ids, same copy, same numbers) from the

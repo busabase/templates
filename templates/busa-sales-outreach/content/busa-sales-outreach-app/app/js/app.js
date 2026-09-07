@@ -313,7 +313,7 @@ const renderSidebar = () => {
     ? `<button class="human-work-primary" type="button" data-view="to-send"><span><strong>${attention.toSend}</strong><span>待你审核首触达</span></span></button>`
     : `<button class="human-work-primary warn" type="button" data-view="profile"><span><strong>${attention.profileMissing.length}</strong><span>请先录入产品</span></span></button>`;
   return `<aside class="sidebar ${sidebarCollapsed ? "collapsed" : ""}" id="appSidebar">
-    <div class="brand"><div class="brand-icon" aria-hidden="true">KS</div><div class="brand-copy"><div class="brand-title">Kelly 销售拓客</div><div class="brand-subtitle">目标客户工作台</div></div><button class="sidebar-toggle" type="button" data-sidebar-toggle aria-controls="appSidebar" aria-expanded="${!sidebarCollapsed}" aria-label="切换侧栏" title="切换侧栏"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button></div>
+    <div class="brand"><div class="brand-icon" aria-hidden="true">KS</div><div class="brand-copy"><div class="brand-title">Busa 销售拓客</div><div class="brand-subtitle">目标客户工作台</div></div><button class="sidebar-toggle" type="button" data-sidebar-toggle aria-controls="appSidebar" aria-expanded="${!sidebarCollapsed}" aria-label="切换侧栏" title="切换侧栏"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button></div>
     <section class="human-work" aria-labelledby="humanWorkTitle"><div class="human-work-eyebrow">需要你</div><div id="humanWorkTitle" class="human-work-title">今天的拓客</div>${primary}<div class="human-work-secondary"><button type="button" data-view="all" title="缺业务邮箱或草稿，需要 Agent 补线索"><strong>${attention.blocked}</strong><span>被阻塞</span></button><button type="button" data-view="sent" title="已完成首触达"><strong>${desk.counts.sent}</strong><span>已触达</span></button></div></section>
     ${renderNextStep()}
     <div class="sidebar-separator"></div>
@@ -329,7 +329,7 @@ const renderSidebar = () => {
 
 const renderHelp =
   () => `<div class="modal-backdrop" id="helpModal" aria-hidden="false"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
-  <div class="modal-head"><div><div id="helpTitle" class="modal-title">帮助与设置</div><div class="modal-subtitle">Kelly 销售拓客 · 目标客户工作台</div></div><button class="icon-button" type="button" data-close-help aria-label="关闭帮助">关闭</button></div>
+  <div class="modal-head"><div><div id="helpTitle" class="modal-title">帮助与设置</div><div class="modal-subtitle">Busa 销售拓客 · 目标客户工作台</div></div><button class="icon-button" type="button" data-close-help aria-label="关闭帮助">关闭</button></div>
   <nav class="modal-tabs" aria-label="帮助与设置标签"><button class="${helpTab === "commands" ? "active" : ""}" type="button" data-help-tab="commands">命令</button><button class="${helpTab === "guide" ? "active" : ""}" type="button" data-help-tab="guide">指南</button><button class="${helpTab === "resources" ? "active" : ""}" type="button" data-help-tab="resources">资源</button><button class="${helpTab === "connection" ? "active" : ""}" type="button" data-help-tab="connection">连接</button></nav>
   <div class="modal-body">
     <section class="help-tab-panel ${helpTab === "commands" ? "active" : ""}"><h2>回到对话框能做什么</h2>

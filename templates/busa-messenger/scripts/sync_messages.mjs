@@ -143,7 +143,7 @@ async function syncSlack(account) {
       .map((message) => ({
         message_id: `slack-${channelId}-${message.ts}`,
         direction: message.user === selfId ? "outgoing" : "incoming",
-        sender: message.user === selfId ? "Kelly" : message.username || message.user || "unknown",
+        sender: message.user === selfId ? "You" : message.username || message.user || "unknown",
         text: message.text,
         sent_at: new Date(Number.parseFloat(message.ts) * 1000).toISOString(),
         attachment: message.files?.length ? `file: ${message.files[0].name}` : "",
@@ -180,7 +180,7 @@ async function syncDiscord(account) {
         message_id: `discord-${channelId}-${message.id}`,
         direction: message.author?.id === me.id ? "outgoing" : "incoming",
         sender:
-          message.author?.id === me.id ? "Kelly" : message.author?.global_name || message.author?.username || "unknown",
+          message.author?.id === me.id ? "You" : message.author?.global_name || message.author?.username || "unknown",
         text: message.content,
         sent_at: message.timestamp,
         attachment: message.attachments?.length ? `file: ${message.attachments[0].filename}` : "",
@@ -216,7 +216,7 @@ async function syncTelegram(account) {
     byChat.get(key).messages.push({
       message_id: `telegram-${chat.id}-${message.message_id}`,
       direction: message.from?.id === me.result.id ? "outgoing" : "incoming",
-      sender: message.from?.id === me.result.id ? "Kelly" : message.from?.first_name || chat.title || "unknown",
+      sender: message.from?.id === me.result.id ? "You" : message.from?.first_name || chat.title || "unknown",
       text: message.text,
       sent_at: new Date(message.date * 1000).toISOString(),
       attachment: "",

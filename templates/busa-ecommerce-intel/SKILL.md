@@ -24,7 +24,7 @@ metadata:
 
 ## Overview
 
-Use this skill as Kelly's daily industry-intelligence operator for **e-commerce and cross-border sellers**.
+Use this skill as the operator's daily industry-intelligence operator for **e-commerce and cross-border sellers**.
 
 It turns current news sources, trend signals, competitor movement, customer questions, and buyer-intent clues into a small reviewable batch, held in Busabase:
 
@@ -37,7 +37,7 @@ It turns current news sources, trend signals, competitor movement, customer ques
 Signal/action/draft collection is a genuine external operation a browser
 cannot perform (web browsing, source reading, buyer-intent judgment). The
 AirApp itself only reads and writes Busabase — it never browses, posts
-anywhere, or performs an external handoff; Kelly writes today's batch
+anywhere, or performs an external handoff; the operator writes today's batch
 directly into Busabase through `busabase-sdk` as part of the normal
 workflow below, then reviews and decides inside the app.
 
@@ -149,7 +149,7 @@ Demo mode:
 
 ## Decisions Workflow
 
-1. Kelly's verdicts write directly onto the item record (`status`,
+1. The operator's verdicts write directly onto the item record (`status`,
    `decision-verdict`, `decision-comment`, `decided-at`) through
    `busabase-sdk`. From a standalone local preview the write merges
    immediately (trusted operator); from the deployed AirApp it creates a
@@ -160,7 +160,7 @@ Demo mode:
    `handoff_content_pack` for an `approve` verdict; `queue_agent_revision`
    for `request_changes`; `mark_blocked` for `block`; `save_human_revision`
    for a draft's `revise`.
-3. After Kelly confirms the dry-run and performs the handoff somewhere
+3. After the operator confirms the dry-run and performs the handoff somewhere
    outside this script, run `node scripts/execute_decisions.mjs --apply` to
    mark the approved items `done`. `request_changes`/`block` verdicts are
    left exactly as decided — there is nothing further for the script to do.

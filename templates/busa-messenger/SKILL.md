@@ -49,7 +49,7 @@ metadata:
 
 ## Overview
 
-Use this skill as Kelly's unified chat inbox operator: WhatsApp, Discord,
+Use this skill as the operator's unified chat inbox operator: WhatsApp, Discord,
 Slack, and Telegram (extensible to WeChat, iMessage, LINE, Messenger)
 aggregated into one place, with one composer that queues replies for review
 instead of sending them. The AirApp shows a command-desk overview, a unified
@@ -152,7 +152,7 @@ requested.
 Required app views (hash routes):
 
 - `#/overview`: messaging command desk. Human-attention numbers (conversations needing a reply decision, approved replies waiting for send, blocked), oldest-waiting indicator, per-platform account cards (unread, conversations, last sync, connector method), and recent activity.
-- `#/inbox` and `#/inbox/<conversation_id>`: the unified inbox. Left: conversations across all platforms sorted by latest activity with platform badge, title, preview, unread dot, and waiting time. Right: chat transcript (incoming left, Kelly's outgoing right, sender names, timestamps, channel/workspace metadata) plus a reply composer with an agent-`suggested_reply` prefill when present, a note field, and a `Queue reply` button. Queued replies appear as dashed "queued" bubbles.
+- `#/inbox` and `#/inbox/<conversation_id>`: the unified inbox. Left: conversations across all platforms sorted by latest activity with platform badge, title, preview, unread dot, and waiting time. Right: chat transcript (incoming left, the operator's outgoing right, sender names, timestamps, channel/workspace metadata) plus a reply composer with an agent-`suggested_reply` prefill when present, a note field, and a `Queue reply` button. Queued replies appear as dashed "queued" bubbles.
 - `#/outbox`: review queue over outgoing replies with workflow states `needs_review` / `changes_requested` / `approved` / `done` / `blocked`, stable refs (`Reply #1`), editable draft text, reason/context, and decision buttons (approve / request changes / save edit / block) that write the verdict directly onto the reply record through `busabase-sdk`.
 - `#/accounts`: connected accounts with platform, workspace, connector method, env readiness boolean, last sync, conversation/unread counts, and warnings.
 - `#/settings`: sanitized config summary (reply style, sync cadence, accounts with env readiness booleans), sync log, and last execution report. Never secrets.

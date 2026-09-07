@@ -8,7 +8,7 @@ export const appConfig = {
   schemaVersion: 1,
   onboardingVersion: 1,
   folder: {
-    name: "Kelly 销售拓客",
+    name: "Busa 销售拓客",
     description: "Product positioning, ideal-customer profile, target accounts, contacts, and reviewed outreach",
     slug: "busa-sales-outreach",
   },

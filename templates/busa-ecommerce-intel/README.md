@@ -13,7 +13,7 @@ Busa Ecommerce Intel is a Busabase App-in-Skill cockpit for turning marketplace,
 ## How It Flows
 
 1. The agent browses current public sources and writes only business-relevant movement directly into Busabase as signal/action/draft/source records.
-2. The app lets Kelly review signals, approve or block actions, and request changes to drafts — every decision writes straight onto the item's own Busabase record.
+2. The app lets the operator review signals, approve or block actions, and request changes to drafts — every decision writes straight onto the item's own Busabase record.
 3. `scripts/execute_decisions.mjs` dry-runs approved handoffs, then marks approved items done with `--apply` after the agent performs the real handoff outside the script.
 
 ## App UI Screenshots

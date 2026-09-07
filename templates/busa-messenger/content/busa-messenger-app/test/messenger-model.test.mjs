@@ -31,11 +31,11 @@ test("normalizeAccount/normalizeConversation/normalizeMessage/normalizeReply par
 
   const conversation = normalizeConversation({
     conversation_id: "wa-lena",
-    participants: '["Lena","Kelly"]',
+    participants: '["Lena","You"]',
     unread: "true",
     awaiting_reply: "false",
   });
-  assert.deepEqual(conversation.participants, ["Lena", "Kelly"]);
+  assert.deepEqual(conversation.participants, ["Lena", "You"]);
   assert.equal(conversation.unread, true);
   assert.equal(conversation.awaiting_reply, false);
 

@@ -1,6 +1,6 @@
 // Deterministic, explicitly-labeled, offline demo data. Never reads or writes
 // Busabase, never claims a real connection, and never persists anything —
-// matches the ?demo=1 contract used across Kelly App-in-Skills.
+// matches the ?demo=1 contract used across Busa App-in-Skills.
 //
 // The signal/action/draft/source content below is ported verbatim (same
 // copy, same field values, same index-based rotation) from the retired

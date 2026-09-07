@@ -65,7 +65,7 @@ marker.
 | `csat-score` | `csat_score` | number | 1-5, present only on rated tickets |
 | `csat-comment` | `csat_comment` | longtext | |
 | `csat-rated-at` | `csat_rated_at` | text | ISO timestamp |
-| `owner` | `owner` | text | default `Kelly` |
+| `owner` | `owner` | text | default `the operator` |
 | `unread` | `unread` | text | `"true"\|"false"` |
 | `created-at` | `created_at` | text | ISO timestamp |
 | `provider-conversation-id` | `provider_conversation_id` | text | send target — email address, `<msisdn>@wa`, `wc:<session>`, `wx:<user>` |
@@ -99,7 +99,7 @@ One row per conversation message, joined onto its ticket by `ticket-id`.
 | `message-id` | `message_id` | text | stable per-ticket id, required |
 | `ticket-id` | `ticket_id` | text | |
 | `direction` | `direction` | text | `incoming\|outgoing` |
-| `sender` | `sender` | text | display name (`Kelly` for own messages) |
+| `sender` | `sender` | text | display name (`the operator` for own messages) |
 | `text` | `text` | longtext | message body |
 | `sent-at` | `sent_at` | text | ISO timestamp |
 | `attachment` | `attachment` | text | optional short note, e.g. `file: screenshot.png` |

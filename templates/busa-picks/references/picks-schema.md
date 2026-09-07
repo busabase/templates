@@ -41,7 +41,7 @@ separate one.
 | `why-it-matters` | `why_it_matters` | longtext | the agent's note: demand, wedge, margin, window |
 | `first-seen` | `first_seen` | text | ISO timestamp |
 | `last-updated` | `last_updated` | text | ISO timestamp |
-| `verdict-action` | `verdict_action` | text | `develop\|watch\|drop`, unset until Kelly verdicts |
+| `verdict-action` | `verdict_action` | text | `develop\|watch\|drop`, unset until the operator verdicts |
 | `verdict-comment` | `verdict_comment` | longtext | written with the verdict |
 | `verdict-decided-at` | `verdict_decided_at` | text | written with the verdict |
 

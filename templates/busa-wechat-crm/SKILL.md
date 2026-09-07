@@ -20,7 +20,7 @@ metadata:
     risk: local-write
 ---
 
-# Kelly WeChat Relationship Strategy
+# Busa WeChat Relationship Strategy
 
 ## Outcome
 
