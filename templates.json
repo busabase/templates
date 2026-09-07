@@ -47,6 +47,7 @@
       "name": "busa-cms",
       "description": "A WordPress-style admin for a website's Posts, Pages, Categories, and Tags — the exact four Bases the busabase-cms-sdk reads.",
       "category": "content",
+      "risk": "local-write",
       "tags": [
         "cms",
         "blog",
@@ -84,10 +85,44 @@
       }
     },
     {
+      "subdir": "templates/busa-crm",
+      "name": "busa-crm",
+      "description": "Contacts, companies, deals, and follow-up review workspace",
+      "category": "sales-crm",
+      "risk": "gated-write",
+      "tags": [
+        "sales-crm",
+        "risk:gated-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/contacts.webp",
+        "assets/screenshots/deals.webp",
+        "assets/screenshots/followups.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest 公司 and flag what needs my attention.",
+        "Open Busa CRM and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 25,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-email",
       "name": "busa-email",
       "description": "Inbox triage, human review, and trusted execution — an approval-first email desk.",
       "category": "email",
+      "risk": "gated-write",
       "tags": [
         "email",
         "triage",
@@ -116,6 +151,113 @@
         "bases": 3,
         "records": 7,
         "files": 52,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-ideas",
+      "name": "busa-ideas",
+      "description": "An idea vault with a business consultant attached — interrogate a vague idea, then carry it through BRD, MRD, and PRD.",
+      "category": "product-strategy",
+      "risk": "gated-write",
+      "tags": [
+        "product-strategy",
+        "risk:gated-write",
+        "surface:busabase",
+        "ideas",
+        "brd-mrd-prd",
+        "consultant"
+      ],
+      "screenshots": [
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/idea-detail.webp",
+        "assets/screenshots/questions.webp",
+        "assets/screenshots/documents.webp"
+      ],
+      "agentPrompts": [
+        "我有个想法但说不太清楚，帮我理一理。",
+        "打开灵感库，看看哪些还等着我回答问题。",
+        "把这条灵感推进到 PRD，缺什么先问我。"
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 0,
+        "files": 27,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-jobhunt",
+      "name": "busa-jobhunt",
+      "description": "Job-search profile, target companies, and outreach state",
+      "category": "comms",
+      "risk": "gated-write",
+      "tags": [
+        "comms",
+        "risk:gated-write",
+        "surface:busabase",
+        "surface:smtp"
+      ],
+      "screenshots": [
+        "assets/screenshots/blocked.webp",
+        "assets/screenshots/mobile-detail.webp",
+        "assets/screenshots/mobile-list.webp",
+        "assets/screenshots/profile.webp",
+        "assets/screenshots/sent.webp",
+        "assets/screenshots/to-send.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest 求职档案 and flag what needs my attention.",
+        "Open Busa JobHunt and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 3,
+        "records": 3,
+        "files": 18,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-radar",
+      "name": "busa-radar",
+      "description": "Market-intelligence desk: competitor signals, research briefs/reports, trend movers/opportunities, and a triage review queue",
+      "category": "growth",
+      "risk": "local-write",
+      "tags": [
+        "growth",
+        "risk:local-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/research.webp",
+        "assets/screenshots/signals.webp",
+        "assets/screenshots/trends.webp",
+        "assets/screenshots/watchlist.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Watchlist and flag what needs my attention.",
+        "Open Busa Radar and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 9,
+        "records": 3,
+        "files": 26,
         "airapps": 1,
         "skill": true
       }
