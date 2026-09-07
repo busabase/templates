@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Expo Leads"
+  short_description: "Trade-show lead capture desk with an SLA countdown and a follow-up review queue"
+  default_prompt: "Use $busa-expo-leads to open my trade-show lead desk and show me which leads are about to blow past the 24-hour follow-up window."
