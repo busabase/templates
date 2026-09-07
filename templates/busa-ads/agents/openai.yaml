@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Ads"
+  short_description: "Ad-campaign command desk for Amazon, Meta, TikTok, and Google Ads"
+  default_prompt: "Use $busa-ads to open my ads command desk and review the adjustment queue."

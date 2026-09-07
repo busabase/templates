@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>AirApp</title>
+    <link rel="stylesheet" href="./base-ui.css">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand-row">
+          <div class="brand-mark" aria-hidden="true">A</div>
+          <div class="brand-copy">
+            <strong id="brandName">AirApp</strong>
+            <span id="brandDescription"></span>
+          </div>
+          <button class="icon-button panel-button" id="sidebarClose" type="button" aria-label="Close navigation" title="Close navigation">
+            <span class="panel-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <section class="attention" aria-labelledby="attentionTitle">
+          <span class="eyebrow" id="attentionTitle"></span>
+          <strong id="attentionValue">0</strong>
+          <span id="attentionCopy"></span>
+        </section>
+        <nav class="base-nav" id="baseNav" aria-label="Data views"></nav>
+        <button class="settings-button" id="settingsOpen" type="button"></button>
+      </aside>
+
+      <main class="main">
+        <header class="mobile-bar">
+          <button class="icon-button" id="sidebarOpen" type="button" aria-label="Open navigation" title="Open navigation">
+            <span class="panel-icon" aria-hidden="true"></span>
+          </button>
+          <strong id="mobileTitle">AirApp</strong>
+          <button class="icon-button" id="mobileSettings" type="button" aria-label="Open settings" title="Open settings">i</button>
+        </header>
+        <section class="workspace-header">
+          <div>
+            <div class="view-meta"><span class="eyebrow" id="viewEyebrow"></span><span class="mode-badge" id="modeBadge" hidden></span></div>
+            <h1 id="viewTitle"></h1>
+            <p id="viewSummary"></p>
+          </div>
+          <div class="workspace-tools">
+            <button class="goal-open" id="goalOpen" type="button" title="设置新目标" hidden><span aria-hidden="true">+</span> 新目标</button>
+            <button class="goal-open" id="discoverOpen" type="button" title="从本机通讯录选择" hidden><span aria-hidden="true">+</span> 选择联系人</button>
+            <label class="search">
+              <span class="sr-only" id="searchLabel"></span>
+              <input id="searchInput" type="search" autocomplete="off">
+            </label>
+          </div>
+        </section>
+        <section class="connector-status" id="wechatConnector" aria-live="polite" hidden>
+          <div class="connector-copy">
+            <span class="connector-indicator" id="wechatIndicator" aria-hidden="true"></span>
+            <div>
+              <span class="eyebrow">Local connector</span>
+              <h2 id="wechatStatusTitle"></h2>
+              <p id="wechatStatusSummary"></p>
+            </div>
+          </div>
+          <div class="connector-actions">
+            <code id="wechatInitCommand" hidden>wechat-cli-rs init</code>
+            <code id="wechatLocalCommand" hidden>npm run start:local</code>
+            <a id="wechatInstallLink" href="https://wechat-cli.com/" target="_blank" rel="noreferrer" hidden>打开官网</a>
+            <button id="wechatRecheck" type="button">重新检测</button>
+          </div>
+        </section>
+        <section class="app-notice" id="appNotice" role="status" hidden>
+          <span id="appNoticeText"></span>
+          <button id="appNoticeClose" type="button" aria-label="关闭提示" title="关闭">x</button>
+        </section>
+        <section class="metrics" id="metrics" aria-label="Summary metrics"></section>
+        <section class="content-split" id="contentSplit">
+          <section class="list-panel" id="listPanel">
+            <div class="panel-heading">
+              <div><span class="eyebrow" id="listEyebrow"></span><h2 id="listTitle"></h2></div>
+              <span class="count" id="recordCount"></span>
+            </div>
+            <div class="action-filters" id="actionFilters" role="tablist" aria-label="行动状态" hidden></div>
+            <div class="state-message" id="loadingState" role="status"></div>
+            <div class="state-message error" id="errorState" role="alert" hidden></div>
+            <div class="record-list" id="recordList"></div>
+            <button class="load-more" id="loadMore" type="button" hidden></button>
+          </section>
+          <aside class="detail-panel" id="detailPanel">
+            <button class="back-button" id="backButton" type="button"></button>
+            <div class="detail-empty" id="detailEmpty"></div>
+            <article id="detailContent" hidden>
+              <span class="eyebrow" id="detailEyebrow"></span>
+              <h2 id="detailTitle"></h2>
+              <section class="detail-actions" id="detailActions" aria-label="跟进处理" hidden></section>
+              <div class="detail-fields" id="detailFields"></div>
+            </article>
+          </aside>
+        </section>
+      </main>
+    </div>
+    <button class="sidebar-scrim" id="sidebarScrim" type="button" aria-label="Close navigation" hidden></button>
+    <div class="modal-backdrop" id="settingsModal" hidden>
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <header class="modal-header">
+          <div><span class="eyebrow" id="settingsEyebrow"></span><h2 id="settingsTitle"></h2></div>
+          <button class="icon-button" id="settingsClose" type="button" aria-label="Close settings" title="Close settings">x</button>
+        </header>
+        <div class="modal-tabs" role="tablist" aria-label="帮助与设置">
+          <button class="modal-tab active" type="button" role="tab" aria-selected="true" data-settings-tab="guide">使用说明</button>
+          <button class="modal-tab" type="button" role="tab" aria-selected="false" data-settings-tab="resources">资源</button>
+        </div>
+        <div class="settings-grid" id="settingsGrid"></div>
+      </section>
+    </div>
+    <div class="modal-backdrop" id="goalModal" hidden>
+      <form class="modal goal-modal" id="goalForm" role="dialog" aria-modal="true" aria-labelledby="goalTitle">
+        <header class="modal-header">
+          <div><span class="eyebrow">Goal</span><h2 id="goalTitle">设置新目标</h2></div>
+          <button class="icon-button" id="goalClose" type="button" aria-label="关闭目标表单" title="关闭">x</button>
+        </header>
+        <div class="goal-form-body">
+          <label><span>目标名称</span><input name="title" required maxlength="120" placeholder="例如：找到 5 个适合试用产品的人"></label>
+          <label><span>想实现什么</span><textarea name="objective" required rows="4" placeholder="描述结果，而不是操控对方的方式"></textarea></label>
+          <div class="goal-form-row">
+            <label><span>范围</span><select name="scope" id="goalScope"><option value="global">全局</option><option value="person">某个人</option><option value="segment">一类关系</option></select></label>
+            <label id="goalTargetWrap" hidden><span>关联对象</span><select name="target" id="goalTarget"></select></label>
+          </div>
+          <div class="goal-form-row">
+            <label><span>成功标准</span><input name="success_metric" placeholder="例如：5 人愿意试用"></label>
+            <label><span>期限</span><input name="deadline" type="date"></label>
+          </div>
+          <div class="goal-form-row">
+            <label><span>优先级</span><select name="priority"><option value="high">高</option><option value="medium" selected>中</option><option value="low">低</option></select></label>
+            <label><span>状态</span><select name="status"><option value="active">进行中</option><option value="paused">暂停</option></select></label>
+          </div>
+          <label><span>边界与约束</span><textarea name="constraints" rows="3" placeholder="例如：不群发、不欺骗、尊重拒绝"></textarea></label>
+          <p class="goal-form-status" id="goalFormStatus" role="status"></p>
+        </div>
+        <footer class="goal-form-footer">
+          <button type="button" id="goalCancel">取消</button>
+          <button class="primary-action" type="submit">保存目标</button>
+        </footer>
+      </form>
+    </div>
+    <div class="modal-backdrop" id="candidateModal" hidden>
+      <section class="modal candidate-modal" role="dialog" aria-modal="true" aria-labelledby="candidateTitle">
+        <header class="modal-header">
+          <div><span class="eyebrow">Local discovery</span><h2 id="candidateTitle">选择重点联系人</h2></div>
+          <button class="icon-button" id="candidateClose" type="button" aria-label="关闭联系人选择" title="关闭">x</button>
+        </header>
+        <form class="candidate-search" id="candidateSearchForm">
+          <label>
+            <span>对应目标</span>
+            <select id="candidateGoal" name="goal" required></select>
+          </label>
+          <label>
+            <span>搜索本机通讯录</span>
+            <div class="candidate-search-row">
+              <input id="candidateQuery" name="query" type="search" minlength="1" required autocomplete="off" placeholder="输入姓名、微信备注或 wxid">
+              <button type="submit">搜索</button>
+            </div>
+          </label>
+        </form>
+        <div class="candidate-results" id="candidateResults">
+          <p>搜索结果只在本页临时显示，不会自动写入 Busabase。</p>
+        </div>
+        <footer class="goal-form-footer">
+          <p class="goal-form-status" id="candidateStatus" role="status"></p>
+          <button class="primary-action" id="candidatePromote" type="button" disabled>加入重点联系人</button>
+        </footer>
+      </section>
+    </div>
+    <div class="modal-backdrop" id="outcomeModal" hidden>
+      <form class="modal outcome-modal" id="outcomeForm" role="dialog" aria-modal="true" aria-labelledby="outcomeTitle">
+        <header class="modal-header">
+          <div><span class="eyebrow">Outcome</span><h2 id="outcomeTitle">记录执行结果</h2></div>
+          <button class="icon-button" id="outcomeClose" type="button" aria-label="关闭执行结果表单" title="关闭">x</button>
+        </header>
+        <div class="goal-form-body">
+          <label><span>实际发生了什么</span><textarea name="outcome" required rows="5" placeholder="记录已经执行的动作和可观察到的结果，不要写计划或猜测。"></textarea></label>
+          <label><span>结果类型</span><select name="outcome_type" required><option value="sent-awaiting-reply">已发出，等待回复</option><option value="positive-reply">收到积极回复</option><option value="negative-reply">收到拒绝或负面回复</option><option value="no-reply">到期仍无回复</option><option value="completed-other">其他已完成结果</option></select></label>
+          <p class="outcome-hint">记录后会写入工作日志；“等待回复”会另外创建一条等待行动。</p>
+          <p class="goal-form-status" id="outcomeFormStatus" role="status"></p>
+        </div>
+        <footer class="goal-form-footer">
+          <button type="button" id="outcomeCancel">取消</button>
+          <button class="primary-action" type="submit">保存执行结果</button>
+        </footer>
+      </form>
+    </div>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

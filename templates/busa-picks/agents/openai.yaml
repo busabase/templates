@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Picks"
+  short_description: "Local product-research desk for e-commerce sourcing"
+  default_prompt: "Use $busa-picks to open my product-research desk and review this week's candidates."

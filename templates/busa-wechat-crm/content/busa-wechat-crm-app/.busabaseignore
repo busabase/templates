@@ -1,0 +1,10 @@
+# Files kept for development and CI but excluded from the running AirApp node.
+# package.json and server.js must always remain installable.
+test/
+scripts/check.mjs
+pnpm-lock.yaml
+pnpm-workspace.yaml
+package-lock.json
+.gitignore
+__pycache__/
+*.pyc

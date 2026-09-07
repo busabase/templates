@@ -1,0 +1,19 @@
+{
+  "name": "busa-messenger",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Busa Messenger Busabase Cloud skill and trusted connector sync/ingest/send scripts.",
+  "scripts": {
+    "sync": "node scripts/sync_messages.mjs",
+    "ingest": "node scripts/ingest_messages.mjs",
+    "send": "node scripts/send_outbox.mjs",
+    "app:check": "pnpm --dir content/busa-messenger-app check"
+  },
+  "dependencies": {
+    "busabase-sdk": "0.30.1"
+  },
+  "engines": {
+    "node": ">=24.18.0"
+  }
+}

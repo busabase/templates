@@ -1,0 +1,270 @@
+{
+  "name": "下一步",
+  "description": "Agent 根据目标和关系证据提出的可审核行动；微信发送始终由用户手动完成。",
+  "position": 3,
+  "fields": [
+    {
+      "slug": "title",
+      "name": "行动",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "goal",
+      "name": "对应目标",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "goals"
+      }
+    },
+    {
+      "slug": "person",
+      "name": "对象（人）",
+      "type": "relation",
+      "required": false,
+      "position": 2,
+      "options": {
+        "targetBaseSlug": "people"
+      }
+    },
+    {
+      "slug": "action-type",
+      "name": "行动类型",
+      "type": "select",
+      "required": true,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "organize-note",
+            "name": "整理备注"
+          },
+          {
+            "id": "send-message",
+            "name": "建议发微信"
+          },
+          {
+            "id": "reconnect",
+            "name": "重新联系"
+          },
+          {
+            "id": "follow-up",
+            "name": "跟进承诺"
+          },
+          {
+            "id": "learn-more",
+            "name": "进一步了解"
+          },
+          {
+            "id": "wait",
+            "name": "暂时等待"
+          },
+          {
+            "id": "record-outcome",
+            "name": "记录结果"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "rationale",
+      "name": "为什么现在做",
+      "type": "longtext",
+      "required": true,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "suggested-message",
+      "name": "建议微信文案",
+      "type": "longtext",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "evidence-summary",
+      "name": "依据摘要",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "due-at",
+      "name": "建议时间",
+      "type": "date",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "priority",
+      "name": "优先级",
+      "type": "select",
+      "required": true,
+      "position": 8,
+      "options": {
+        "choices": [
+          {
+            "id": "high",
+            "name": "高"
+          },
+          {
+            "id": "medium",
+            "name": "中"
+          },
+          {
+            "id": "low",
+            "name": "低"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "confidence",
+      "name": "置信度",
+      "type": "number",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "状态",
+      "type": "select",
+      "required": true,
+      "position": 10,
+      "options": {
+        "choices": [
+          {
+            "id": "needs-review",
+            "name": "待判断"
+          },
+          {
+            "id": "changes-requested",
+            "name": "待修改"
+          },
+          {
+            "id": "approved",
+            "name": "准备执行"
+          },
+          {
+            "id": "awaiting-result",
+            "name": "等待结果"
+          },
+          {
+            "id": "snoozed",
+            "name": "已延后"
+          },
+          {
+            "id": "done",
+            "name": "已完成"
+          },
+          {
+            "id": "blocked",
+            "name": "已阻止"
+          },
+          {
+            "id": "dismissed",
+            "name": "已忽略"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "decision-comment",
+      "name": "处理备注",
+      "type": "longtext",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "decided-at",
+      "name": "处理时间",
+      "type": "date",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "decided-by",
+      "name": "处理人",
+      "type": "text",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "outcome-type",
+      "name": "结果类型",
+      "type": "select",
+      "required": false,
+      "position": 14,
+      "options": {
+        "choices": [
+          {
+            "id": "sent-awaiting-reply",
+            "name": "已发送，等待回复"
+          },
+          {
+            "id": "positive-reply",
+            "name": "积极回复"
+          },
+          {
+            "id": "negative-reply",
+            "name": "拒绝或不合适"
+          },
+          {
+            "id": "no-reply",
+            "name": "暂未回复"
+          },
+          {
+            "id": "completed-other",
+            "name": "其他已完成结果"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "outcome",
+      "name": "实际结果",
+      "type": "longtext",
+      "required": false,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "outcome-at",
+      "name": "结果时间",
+      "type": "date",
+      "required": false,
+      "position": 16,
+      "options": {}
+    },
+    {
+      "slug": "operation-key",
+      "name": "操作键",
+      "type": "text",
+      "required": false,
+      "position": 17,
+      "options": {}
+    },
+    {
+      "slug": "parent-action",
+      "name": "上一行动",
+      "type": "relation",
+      "required": false,
+      "position": 18,
+      "options": {
+        "targetBaseSlug": "actions"
+      }
+    }
+  ],
+  "views": []
+}

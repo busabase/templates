@@ -43,10 +43,78 @@
       }
     },
     {
+      "subdir": "templates/busa-ads",
+      "name": "busa-ads",
+      "description": "Ad-campaign command desk: Amazon/Meta/TikTok/Google spend and performance, deterministic anomaly detection, and an adjustment-card review queue",
+      "category": "ecommerce",
+      "risk": "gated-write",
+      "tags": [
+        "ecommerce",
+        "risk:gated-write",
+        "industry:ecommerce",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/adjustments.webp",
+        "assets/screenshots/alerts.webp",
+        "assets/screenshots/campaigns.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Platforms and flag what needs my attention.",
+        "Open Busa Ads and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 26,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-audit",
+      "name": "busa-audit",
+      "description": "Finance anomaly review desk: imported orders/invoices/payments, deterministic anomaly rules, and a human review queue",
+      "category": "finance",
+      "risk": "gated-write",
+      "tags": [
+        "finance",
+        "risk:gated-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/anomalies.webp",
+        "assets/screenshots/invoices.webp",
+        "assets/screenshots/orders.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Orders and flag what needs my attention.",
+        "Open Busa Audit and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 25,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-cms",
       "name": "busa-cms",
       "description": "A WordPress-style admin for a website's Posts, Pages, Categories, and Tags — the exact four Bases the busabase-cms-sdk reads.",
       "category": "content",
+      "risk": "local-write",
       "tags": [
         "cms",
         "blog",
@@ -84,10 +152,45 @@
       }
     },
     {
+      "subdir": "templates/busa-ecommerce-intel",
+      "name": "busa-ecommerce-intel",
+      "description": "Daily industry-intelligence cockpit for e-commerce and cross-border sellers: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (listing copy / ad angle / customer reply) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
+      "category": "industry-intel",
+      "risk": "gated-write",
+      "tags": [
+        "industry-intel",
+        "risk:gated-write",
+        "industry:ecommerce",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/actions.webp",
+        "assets/screenshots/drafts.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/signals.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Signals and flag what needs my attention.",
+        "Open Busa Ecommerce Intel and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 5,
+        "records": 3,
+        "files": 21,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-email",
       "name": "busa-email",
       "description": "Inbox triage, human review, and trusted execution — an approval-first email desk.",
       "category": "email",
+      "risk": "gated-write",
       "tags": [
         "email",
         "triage",
@@ -116,6 +219,259 @@
         "bases": 3,
         "records": 7,
         "files": 52,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-invoice-sheet",
+      "name": "busa-invoice-sheet",
+      "description": "Busa Invoice Sheet: invoice/receipt/credit-note/statement extraction batches under human review, with field confidence, line items, and export-ready approved rows",
+      "category": "finance",
+      "risk": "local-write",
+      "tags": [
+        "finance",
+        "risk:local-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/detail-mobile.webp",
+        "assets/screenshots/detail.webp",
+        "assets/screenshots/extract-data.webp",
+        "assets/screenshots/overview-mobile.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Invoices and flag what needs my attention.",
+        "Open Busa Invoice Sheet and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 2,
+        "records": 3,
+        "files": 24,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-listing",
+      "name": "busa-listing",
+      "description": "Listing factory desk: product library, platform drafts, compliance checks, claims registry, and a review queue",
+      "category": "ecommerce",
+      "risk": "gated-write",
+      "tags": [
+        "ecommerce",
+        "risk:gated-write",
+        "industry:ecommerce",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/checks.webp",
+        "assets/screenshots/claims.webp",
+        "assets/screenshots/drafts.webp",
+        "assets/screenshots/needs-review.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/products.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Products and flag what needs my attention.",
+        "Open Busa Listing and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 25,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-messenger",
+      "name": "busa-messenger",
+      "description": "Unified chat inbox: WhatsApp/Discord/Slack/Telegram accounts, conversations, messages, and a reply outbox",
+      "category": "comms",
+      "risk": "gated-write",
+      "tags": [
+        "comms",
+        "risk:gated-write",
+        "surface:busabase",
+        "surface:whatsapp",
+        "surface:discord",
+        "surface:slack",
+        "surface:telegram"
+      ],
+      "screenshots": [
+        "assets/screenshots/accounts.webp",
+        "assets/screenshots/chat.webp",
+        "assets/screenshots/inbox.webp",
+        "assets/screenshots/outbox.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Accounts and flag what needs my attention.",
+        "Open Busa Messenger and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 25,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-picks",
+      "name": "busa-picks",
+      "description": "Product-research (选品) desk: trend sweeps, margin cards, competition reads, and a develop/watch/drop review queue",
+      "category": "ecommerce",
+      "risk": "local-write",
+      "tags": [
+        "ecommerce",
+        "risk:local-write",
+        "industry:ecommerce",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/candidates.webp",
+        "assets/screenshots/decisions.webp",
+        "assets/screenshots/detail.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Candidates and flag what needs my attention.",
+        "Open Busa Picks and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 28,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-sales-outreach",
+      "name": "busa-sales-outreach",
+      "description": "Product positioning, ideal-customer profile, target accounts, contacts, and reviewed outreach",
+      "category": "sales-crm",
+      "risk": "gated-write",
+      "tags": [
+        "sales-crm",
+        "risk:gated-write",
+        "surface:busabase",
+        "surface:smtp"
+      ],
+      "screenshots": [
+        "assets/screenshots/blocked.webp",
+        "assets/screenshots/profile.webp",
+        "assets/screenshots/sent.webp",
+        "assets/screenshots/to-send.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest 产品与 ICP and flag what needs my attention.",
+        "Open Busa Sales Outreach and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 3,
+        "records": 3,
+        "files": 18,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-support",
+      "name": "busa-support",
+      "description": "Customer-support desk: tickets, knowledge base, and the support-qa quality gate",
+      "category": "sales-crm",
+      "risk": "gated-write",
+      "tags": [
+        "sales-crm",
+        "risk:gated-write",
+        "surface:busabase",
+        "surface:whatsapp",
+        "surface:wechat",
+        "surface:webchat"
+      ],
+      "screenshots": [
+        "assets/screenshots/knowledge.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/sla.webp",
+        "assets/screenshots/tickets.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Accounts and flag what needs my attention.",
+        "Open Busa Support and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 28,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-wechat-crm",
+      "name": "busa-wechat-crm",
+      "description": "Goal-first WeChat relationship desk that promotes only selected contacts into focused People workflows.",
+      "category": "sales-crm",
+      "risk": "local-write",
+      "tags": [
+        "sales-crm",
+        "wechat",
+        "relationship-strategy",
+        "risk:local-write",
+        "surface:busabase",
+        "goals",
+        "relationship-analysis",
+        "next-actions",
+        "agent-worklog"
+      ],
+      "screenshots": [
+        "assets/screenshots/actions.webp",
+        "assets/screenshots/people.webp",
+        "assets/screenshots/snapshots.webp",
+        "assets/screenshots/goals.webp",
+        "assets/screenshots/mobile-actions.webp"
+      ],
+      "agentPrompts": [
+        "先创建一个目标，再从本机通讯录选择要重点关注的人。",
+        "我想为一款产品找到合适的试用者，请建立目标并提出下一步行动。",
+        "分析我和指定联系人最近一个月的关系变化，生成快照和建议。"
+      ],
+      "version": "0.3.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 45,
+        "files": 21,
         "airapps": 1,
         "skill": true
       }

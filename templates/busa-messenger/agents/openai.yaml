@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Messenger"
+  short_description: "Unified local inbox for WhatsApp, Discord, Slack, and Telegram"
+  default_prompt: "Use $busa-messenger to open my unified chat inbox and review what needs a reply."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Audit"
+  short_description: "Finance anomaly review desk for orders, invoices, and payments"
+  default_prompt: "Use $busa-audit to open my finance audit desk and review flagged anomalies."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Ecommerce Intel"
+  short_description: "Product trend, competitor price, platform policy, and listing intelligence"
+  default_prompt: "Use $busa-ecommerce-intel to prepare today's ecommerce seller intelligence batch and open the review cockpit."
