@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Product Hub"
+  short_description: "Product & certification hub with a certificate-expiry tracker and an approval-gated review queue"
+  default_prompt: "Use $busa-product-hub to open my product hub and show me which certificates are expiring soon or already expired."
