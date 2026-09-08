@@ -1,6 +1,6 @@
 ---
 name: busa-listing
-description: Listing factory (上架工作台, Busabase App-in-Skill) for a cross-border e-commerce seller. Use when the user invokes $busa-listing or /busa-listing, mentions 上架, listing, Amazon title bullets, A+ content, flat file, TikTok Shop listing, listing compliance, 禁用词, multi-locale listings, wants platform listings drafted from product source material or a kelly-picks brief, deterministic compliance checks against per-platform rule sets, a review queue for approving drafts, or approved listings exported as Markdown/CSV for upload.
+description: Listing factory (上架工作台, Busabase App-in-Skill) for a cross-border e-commerce seller. Use when the user invokes $busa-listing or /busa-listing, mentions 上架, listing, Amazon title bullets, A+ content, flat file, TikTok Shop listing, listing compliance, 禁用词, multi-locale listings, wants platform listings drafted from product source material or a busa-picks brief, deterministic compliance checks against per-platform rule sets, a review queue for approving drafts, or approved listings exported as Markdown/CSV for upload.
 metadata:
   category: ecommerce
   tags:
@@ -25,7 +25,7 @@ metadata:
 
 ## Overview
 
-Use this skill as the cross-border seller's listing operator (上架工作台). The agent ingests product source material — specs, features, an image checklist, target keywords, possibly a kelly-picks handoff brief — and drafts platform-specific listings: Amazon (title / 5 bullets / description / backend search terms / A+ outline), Shopify (title / description / SEO meta), TikTok Shop (punchy title + selling points), eBay (title / subtitle / description / item specifics), plus locale variants (US/DE/JP). Deterministic compliance checks run against per-platform rule sets and the claims/compliance registry, and the seller reviews drafts in a Busabase-backed App-in-Skill review queue (approve / request changes / block) before an approval-gated export. Reading product source material is a genuine external operation a browser cannot perform: `scripts/ingest_drafts.mjs` is the only place a product or draft enters the system, `scripts/run_checks.mjs` runs the compliance rules, and `scripts/execute_decisions.mjs` records the planned follow-up for approved/changes-requested drafts. The AirApp itself only reads Busabase and writes review decisions; export happens through `scripts/export_listings.mjs`, and publishing to marketplaces is delegated to the agent outside the app after explicit approval.
+Use this skill as the cross-border seller's listing operator (上架工作台). The agent ingests product source material — specs, features, an image checklist, target keywords, possibly a busa-picks handoff brief — and drafts platform-specific listings: Amazon (title / 5 bullets / description / backend search terms / A+ outline), Shopify (title / description / SEO meta), TikTok Shop (punchy title + selling points), eBay (title / subtitle / description / item specifics), plus locale variants (US/DE/JP). Deterministic compliance checks run against per-platform rule sets and the claims/compliance registry, and the seller reviews drafts in a Busabase-backed App-in-Skill review queue (approve / request changes / block) before an approval-gated export. Reading product source material is a genuine external operation a browser cannot perform: `scripts/ingest_drafts.mjs` is the only place a product or draft enters the system, `scripts/run_checks.mjs` runs the compliance rules, and `scripts/execute_decisions.mjs` records the planned follow-up for approved/changes-requested drafts. The AirApp itself only reads Busabase and writes review decisions; export happens through `scripts/export_listings.mjs`, and publishing to marketplaces is delegated to the agent outside the app after explicit approval.
 
 Default behavior is AirApp-first. Unless the user explicitly asks only for explanation, ingest/check what's due and give the user the clickable AirApp URL (or the local preview URL when local preview is explicitly requested). Use chat-only mode only when the user says "纯聊天", "chat only", "不要打开 UI", or similar; then present numbered drafts (`Draft #1`) and take verdicts in conversation.
 
@@ -60,7 +60,7 @@ If a dependency is unavailable, preserve this skill's local artifact and product
 
 ## Boundary
 
-- Ingesting a product or draft is a local-file-only operation: `scripts/ingest_drafts.mjs` reads a JSON payload file the agent prepares (from product source material or a kelly-picks brief) and writes it to Busabase. It never fetches anything from remote systems on its own.
+- Ingesting a product or draft is a local-file-only operation: `scripts/ingest_drafts.mjs` reads a JSON payload file the agent prepares (from product source material or a busa-picks brief) and writes it to Busabase. It never fetches anything from remote systems on its own.
 - The AirApp reads and writes Busabase records only. It never publishes to a marketplace, uploads a flat file, or performs any other external side effect.
 - Publishing to marketplaces (Amazon flat file upload, Shopify admin, TikTok Shop, eBay) is approval-required and happens outside the app, after the seller approves in the review queue; `scripts/execute_decisions.mjs` never performs the publish itself — it only writes an execution marker.
 - Never write claims the checks would flag (banned words, competitor brands, invented certifications); fix the copy, don't weaken the rules.
@@ -70,7 +70,7 @@ If a dependency is unavailable, preserve this skill's local artifact and product
 
 Six Bases under one application Folder (`busa-listing`), declared in `content/busa-listing-app/app/js/config.js` and the generated template sidecars under `content/`:
 
-- `products`: the product source-material library — SKU, category, source (`manual`/`kelly_picks` handoff), specs, feature list, target keywords, and the image checklist.
+- `products`: the product source-material library — SKU, category, source (`manual`/`busa_picks` handoff), specs, feature list, target keywords, and the image checklist.
 - `drafts`: the draft workbench and review queue in one — per-platform fields (title/bullets/description/search terms/SEO meta/selling points/A+ outline/item specifics), workflow status, compliance score, and the human decision + execution marker on the same row.
 - `checks`: per-draft, per-rule compliance check results (required fields, title length, banned words, competitor brands, bullet/selling-point counts, SEO meta length, all-caps noise, keyword stuffing, image checklist, claims-registry violations).
 - `claims`: the compliance registry's approved marketing claims and rejected claims.
@@ -113,7 +113,7 @@ UI language: English and Chinese chrome with `Auto` default. Keep real listing c
 
 ## Ingest Workflow
 
-1. Collect inputs: product specs, feature facts, target keywords, the image checklist, and any kelly-picks handoff brief (set product `source: "kelly_picks"` and note the pick reference in `notes`).
+1. Collect inputs: product specs, feature facts, target keywords, the image checklist, and any busa-picks handoff brief (set product `source: "busa_picks"` and note the pick reference in `notes`).
 2. Draft each platform's listing as a structured ingest payload in the marketplace language of the target locale — Amazon needs exactly 5 benefit-led bullets and backend search terms under 249 bytes; keep the tone from the seller profile; never invent certifications or use words from the banned list.
 3. For locale variants, localize for the market (keyword habits, units, register), don't translate word-for-word; variants share a `variant_group` so the workbench shows locale tabs.
 4. Record the reasoning in each draft's `keyword_strategy` so the reviewer sees why the title reads the way it does.

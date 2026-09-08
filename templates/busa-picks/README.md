@@ -15,7 +15,7 @@ Busa Picks is a Busabase App-in-Skill product-research (选品) desk for a cross
 1. The agent sweeps sources (browser skills, exports, pasted research) and files everything through `node scripts/ingest_trends.mjs <payload.json>` — the single write path, which validates, dedupes (source + external id, content-hash fallback), and merges into the `candidates`/`trend-items`/`sources` Bases.
 2. `node scripts/compute_margins.mjs` deterministically recomputes every margin card from the `settings` fee tables and flags candidates below the margin floor. It is idempotent.
 3. The operator verdicts candidates and reviews proposals in the app — writes go straight to the candidate/proposal record through `busabase-sdk`; a standalone local preview merges immediately, a deployed AirApp creates a pending ChangeRequest.
-4. `node scripts/execute_decisions.mjs` (dry-run by default) prints the plan for approved proposals: `create_sourcing_brief` (export path), `handoff_listing_brief` (→ kelly-listing), `add_watch` (re-check criteria), `drop_candidate` (stage update). The agent performs the handoffs, then re-runs with `--apply` to mark them done.
+4. `node scripts/execute_decisions.mjs` (dry-run by default) prints the plan for approved proposals: `create_sourcing_brief` (export path), `handoff_listing_brief` (→ busa-listing), `add_watch` (re-check criteria), `drop_candidate` (stage update). The agent performs the handoffs, then re-runs with `--apply` to mark them done.
 
 ## App UI Screenshots
 
@@ -120,4 +120,4 @@ node skills/busa-picks/scripts/execute_decisions.mjs --apply
 
 ## Boundary
 
-Collection is read-only over public data — respect each platform's terms of service and robots.txt, throttle politely, and never scrape private or personal data. The AirApp reads and writes Busabase records only; it never fetches a trend source, scrapes a listing, or performs a handoff itself. Handoffs (sourcing brief exports, listing briefs → kelly-listing) require the operator's approval in the app first; `execute_decisions.mjs` is dry-run by default.
+Collection is read-only over public data — respect each platform's terms of service and robots.txt, throttle politely, and never scrape private or personal data. The AirApp reads and writes Busabase records only; it never fetches a trend source, scrapes a listing, or performs a handoff itself. Handoffs (sourcing brief exports, listing briefs → busa-listing) require the operator's approval in the app first; `execute_decisions.mjs` is dry-run by default.

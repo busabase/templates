@@ -8,7 +8,7 @@ Busa Radar is a Busabase App-in-Skill market-intelligence desk. One app merges c
 - Signals: the radar feed — pricing/changelog/launch/review/news/hiring changes per watch target, with severity, before→after diff highlights, evidence links, and Act / Watch / Ignore / Needs-info triage.
 - Watchlist: monitored competitors, categories, keywords, and communities, with per-source method and last-check freshness.
 - Research: questions moving through brief approval → researching → cited report → annotations, confidence ratings, and follow-up questions.
-- Trends: rising keywords/topics with momentum sparklines and opportunity cards that hand off to kelly-writer (content briefs) or kelly-feedback (roadmap candidates).
+- Trends: rising keywords/topics with momentum sparklines and opportunity cards that hand off to busa-writer (content briefs) or busa-feedback (roadmap candidates).
 - Help & Settings: sanitized config summary — watchlist, research defaults, trend sources.
 
 ## How It Flows

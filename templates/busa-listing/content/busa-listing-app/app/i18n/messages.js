@@ -153,7 +153,7 @@ export const messages = {
       },
       source: {
         manual: "manual",
-        kelly_picks: "kelly-picks",
+        busa_picks: "busa-picks",
       },
       platform: {
         amazon: "Amazon",
@@ -344,7 +344,7 @@ export const messages = {
       },
       source: {
         manual: "手动录入",
-        kelly_picks: "kelly-picks",
+        busa_picks: "busa-picks",
       },
       platform: {
         amazon: "Amazon",

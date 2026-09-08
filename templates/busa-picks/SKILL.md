@@ -1,6 +1,6 @@
 ---
 name: busa-picks
-description: Product-research (选品) desk (Busabase App-in-Skill) for a cross-border e-commerce seller. The agent sweeps trend sources — Amazon BSR movers, TikTok viral product videos, Temu/AliExpress rising items, Google Trends terms, competitor new launches — and files product candidates with margin cards (landed cost, fees, breakeven ACOS) and competition reads; the operator verdicts them develop / watch / drop, and develop items become sourcing and listing briefs handed to kelly-listing. Use when the user invokes $busa-picks or /busa-picks, or asks for 选品, product research, a product sourcing radar, BSR movers, TikTok viral products, a margin calculator, breakeven ACOS, competition reads, or product candidate triage.
+description: Product-research (选品) desk (Busabase App-in-Skill) for a cross-border e-commerce seller. The agent sweeps trend sources — Amazon BSR movers, TikTok viral product videos, Temu/AliExpress rising items, Google Trends terms, competitor new launches — and files product candidates with margin cards (landed cost, fees, breakeven ACOS) and competition reads; the operator verdicts them develop / watch / drop, and develop items become sourcing and listing briefs handed to busa-listing. Use when the user invokes $busa-picks or /busa-picks, or asks for 选品, product research, a product sourcing radar, BSR movers, TikTok viral products, a margin calculator, breakeven ACOS, competition reads, or product candidate triage.
 metadata:
   category: ecommerce
   tags:
@@ -50,13 +50,13 @@ Use this skill as the operator's product-research (选品) desk. The agent sweep
 
 1. **Trend feed**: raw source-tagged signals — a viral TikTok with view velocity, a BSR jump, a Temu/AliExpress riser, a rising search query, a competitor launch — each linkable to a candidate.
 2. **Candidates**: products under research, each with a **margin card** (estimated price − landed cost − freight − platform fees − est. ad cost → gross margin %, breakeven ACOS) and a **competition read** (top-10 review-count distribution, head-seller dominance, new-entrant velocity).
-3. **Decisions**: the review queue — the agent proposes a verdict per candidate (develop with sourcing + listing brief draft, drop with reason, keep watching with re-check criteria); the operator approves, edits the brief, requests changes, or blocks. Approved develop items become concrete handoffs: a sourcing brief export and a listing brief for kelly-listing.
+3. **Decisions**: the review queue — the agent proposes a verdict per candidate (develop with sourcing + listing brief draft, drop with reason, keep watching with re-check criteria); the operator approves, edits the brief, requests changes, or blocks. Approved develop items become concrete handoffs: a sourcing brief export and a listing brief for busa-listing.
 
 Real network sweeps (browsing TikTok/Amazon/Temu/AliExpress/Google Trends, reading competitor listings) are genuine external operations the AirApp browser cannot perform: `scripts/ingest_trends.mjs` is the single write path for sweep payloads, `scripts/compute_margins.mjs` deterministically recomputes every margin card from the fee tables, and `scripts/execute_decisions.mjs` prints the plan for approved proposals (and, after the agent performs the real handoff, marks it done). The AirApp itself only reads Busabase and writes review decisions.
 
 Default behavior is AirApp-first. Unless the user explicitly asks only for explanation, sweep the configured sources, ingest the payload, recompute margins, and give the user the clickable AirApp URL (or the local preview URL when local preview is explicitly requested). Use chat-only mode only when the user says "纯聊天", "chat only", "不要打开 UI", or similar; then present numbered candidates/proposals and take verdicts in chat.
 
-**The AirApp itself never browses a trend source, scrapes a listing, or performs a handoff.** It reads and writes Busabase records only. All external collection and execution is genuinely trusted-process-only: `scripts/ingest_trends.mjs` is the only place trend/candidate data enters the system, and `scripts/execute_decisions.mjs` never performs the sourcing-brief export or the kelly-listing handoff itself — it only prints the plan.
+**The AirApp itself never browses a trend source, scrapes a listing, or performs a handoff.** It reads and writes Busabase records only. All external collection and execution is genuinely trusted-process-only: `scripts/ingest_trends.mjs` is the only place trend/candidate data enters the system, and `scripts/execute_decisions.mjs` never performs the sourcing-brief export or the busa-listing handoff itself — it only prints the plan.
 
 ## Mandatory Dependencies
 
@@ -70,7 +70,7 @@ If a dependency is unavailable, preserve this skill's local artifact and product
 
 - Collection is read-only over public data (rankings, public videos, public listings, public trends). Respect robots.txt and each platform's terms of service, throttle politely, and never scrape private, gated, or personal data.
 - The AirApp reads and writes Busabase records only. It must not fetch remote trend pages, place orders, message suppliers, export files, or mutate remote systems.
-- Handoffs (listing brief → kelly-listing, sourcing brief exports) are approval-required: the operator approves the proposal in the app, then `scripts/execute_decisions.mjs` prints the concrete operation for the agent to carry out; only after that does `--apply` mark the proposal done.
+- Handoffs (listing brief → busa-listing, sourcing brief exports) are approval-required: the operator approves the proposal in the app, then `scripts/execute_decisions.mjs` prints the concrete operation for the agent to carry out; only after that does `--apply` mark the proposal done.
 - Margin data, supplier quotes, and fee tables are the operator's business data. Never commit payload JSON files fed to `scripts/ingest_trends.mjs`, env files, or raw export files.
 
 ## Busabase Resources
@@ -132,8 +132,8 @@ Sweeps run on demand — when the operator asks for a sweep or invokes the skill
 
 1. The agent proposes verdicts as proposals in the `proposals` Base (via `ingest_trends.mjs` payloads, or seeded directly): `develop` with a drafted sourcing + listing brief, `drop` with the reason, `watch` with re-check criteria.
 2. The operator reviews in `#/decisions` (or `#/candidates/<id>` for direct verdicts) — writes go straight to the proposal/candidate record through `busabase-sdk`.
-3. Before executing anything, run `node scripts/execute_decisions.mjs` (dry-run). It prints the concrete operation for each approved proposal: `create_sourcing_brief` → export path under `exports/`, `handoff_listing_brief` → kelly-listing, `add_watch` → candidate id with re-check criteria, `drop_candidate` → stage update. No external side effects.
-4. After the operator confirms the dry-run, perform the handoffs (write the sourcing brief export, invoke kelly-listing with the listing brief), then run `node scripts/execute_decisions.mjs --apply` to mark the proposals done, update candidate stages, and log the run.
+3. Before executing anything, run `node scripts/execute_decisions.mjs` (dry-run). It prints the concrete operation for each approved proposal: `create_sourcing_brief` → export path under `exports/`, `handoff_listing_brief` → busa-listing, `add_watch` → candidate id with re-check criteria, `drop_candidate` → stage update. No external side effects.
+4. After the operator confirms the dry-run, perform the handoffs (write the sourcing brief export, invoke busa-listing with the listing brief), then run `node scripts/execute_decisions.mjs --apply` to mark the proposals done, update candidate stages, and log the run.
 
 ## Safety Defaults
 

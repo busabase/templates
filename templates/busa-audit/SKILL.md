@@ -26,7 +26,7 @@ metadata:
 
 Use this skill as the operator's finance anomaly review desk for a finance lead, small-business owner, or bookkeeping team. It imports the three business tables — orders, invoices, and payments/receipts (回款) — from local CSV/JSON exports, cross-checks them with deterministic rules plus agent judgment, and surfaces anomalies in a Busabase-backed App-in-Skill review queue. Reading local export files is a genuine external operation a browser cannot perform: `scripts/import_tables.mjs` is the only place a document enters the system, `scripts/run_checks.mjs` re-derives statuses and runs the anomaly rules, and `scripts/execute_decisions.mjs` prints the plan for approved anomalies. The AirApp itself only reads Busabase and writes review decisions; approved items become concrete follow-up actions (chase a receivable, reissue an invoice, flag to the accountant) executed by the agent outside the app.
 
-This is different from kelly-money, which watches the operator's own provider accounts: busa-audit audits imported business documents against each other.
+This is different from busa-money, which watches the operator's own provider accounts: busa-audit audits imported business documents against each other.
 
 Default behavior is AirApp-first. Unless the user explicitly asks only for explanation, import/check what's due and give the user the clickable AirApp URL (or the local preview URL when local preview is explicitly requested). Use chat-only mode only when the user says "纯聊天", "chat only", "不要打开 UI", or similar; then present numbered anomaly cards (`Anomaly #1`) and take verdicts in chat.
 
@@ -63,7 +63,7 @@ If a dependency is unavailable, preserve this skill's local artifact and product
 
 - Imports are local files only: `scripts/import_tables.mjs` reads CSV/JSON exports the user provides, normalizes them, and writes them to Busabase. It never fetches business documents from remote systems on its own.
 - The AirApp reads and writes Busabase records only. It must not send emails, change ERP/bookkeeping records, move money, or mutate remote systems.
-- Any outbound follow-up (a receivable-chasing email, a message to the accountant, a billing task) is approval-required through the anomaly queue and executed by the agent OUTSIDE the app via other skills (e.g. kelly-email), with the real result recorded back onto the anomaly. `scripts/execute_decisions.mjs` never performs these operations itself — it only writes an execution marker.
+- Any outbound follow-up (a receivable-chasing email, a message to the accountant, a billing task) is approval-required through the anomaly queue and executed by the agent OUTSIDE the app via other skills (e.g. busa-email), with the real result recorded back onto the anomaly. `scripts/execute_decisions.mjs` never performs these operations itself — it only writes an execution marker.
 - Treat all order/invoice/payment data as sensitive business data. Never commit local export files, env files, or generated reports.
 
 ## Busabase Resources

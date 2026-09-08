@@ -31,7 +31,7 @@ It keeps a Busabase-backed dashboard over contacts, companies, deals, and
 interactions, plus a review queue of agent-drafted follow-up messages. The
 skill gathers and updates CRM data from whatever the operator feeds it — emails,
 meeting notes, chat asks — drafts follow-ups, and hands off an approved
-follow-up to another channel skill (for example `kelly-email`) only after
+follow-up to another channel skill (for example `busa-email`) only after
 explicit approval.
 
 Default behavior is AirApp-first. Unless the user explicitly asks only for
@@ -83,7 +83,7 @@ the exact missing dependency. Do not invent a second data backend.
   human decisions only through Busabase writes. It must never send emails or
   messages, call external APIs, or perform any external side effect.
 - Outbound follow-up messages are always approval-required. Sending is
-  delegated to other skills (for example `kelly-email`) and happens only
+  delegated to other skills (for example `busa-email`) and happens only
   after the user approves the specific follow-up. `scripts/execute_decisions.mjs`
   only marks an approved followup `done` with handoff metadata; it performs no
   sending itself.
@@ -147,7 +147,7 @@ AirApp boundary in `$busabase-app-creator`.
    `node scripts/execute_decisions.mjs --apply` to re-read approved
    followups from Busabase and mark them `done` with handoff metadata, then
    perform the actual send only through the corresponding skill (for example
-   `$kelly-email`) with the approved, possibly user-edited draft, one
+   `$busa-email`) with the approved, possibly user-edited draft, one
    follow-up at a time.
 5. Never send anything for a followup without an explicit `approve` decision,
    and never re-send a followup already `done`.

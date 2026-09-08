@@ -1,11 +1,11 @@
 # Busa Listing
 
-Busa Listing is a Busabase App-in-Skill listing factory (上架工作台) for a cross-border e-commerce seller: the agent turns product source material — or a kelly-picks handoff brief — into platform-specific listing drafts (Amazon, Shopify, TikTok Shop, eBay, with US/DE/JP locale variants), deterministic compliance checks run against per-platform rule sets and the claims registry, and the seller reviews, edits, approves, and exports upload-ready files through the App-in-Skill review queue.
+Busa Listing is a Busabase App-in-Skill listing factory (上架工作台) for a cross-border e-commerce seller: the agent turns product source material — or a busa-picks handoff brief — into platform-specific listing drafts (Amazon, Shopify, TikTok Shop, eBay, with US/DE/JP locale variants), deterministic compliance checks run against per-platform rule sets and the claims registry, and the seller reviews, edits, approves, and exports upload-ready files through the App-in-Skill review queue.
 
 ## What It Shows
 
 - Overview: KPI cards (products, drafts with per-platform badges, compliance pass rate, exported this week), a product × platform status matrix (none/draft/approved/exported), review-queue preview, recent activity.
-- Products: the source-material library — SKU, category, source badge (manual / kelly-picks handoff), specs, feature list, target keywords, image checklist with status ticks, linked drafts.
+- Products: the source-material library — SKU, category, source badge (manual / busa-picks handoff), specs, feature list, target keywords, image checklist with status ticks, linked drafts.
 - Drafts: the workbench — every platform field editable with live character counts against the caps (and a byte counter for Amazon backend search terms), the compliance panel alongside, and locale tabs for variants.
 - Checks: rule × draft results with pass/warn/fail badges and evidence, filterable by rule, platform, product, and result.
 - Claims: the compliance registry — approved marketing claims, rejected claims, and banned-word/restricted-phrase rules.
@@ -76,7 +76,7 @@ Use `lang=zh` for Chinese screenshots — the desk chrome and agent meta content
       "name": "Collapsible Silicone Lunch Box",
       "sku": "NH-LB-01",
       "category": "Kitchen & Dining",
-      "source": "kelly_picks",
+      "source": "busa_picks",
       "platforms": ["amazon", "tiktok_shop"],
       "keywords": ["collapsible lunch box", "silicone bento box"],
       "specs": [{ "name": "Capacity", "value": "1.2 L" }],

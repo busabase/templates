@@ -180,7 +180,7 @@ function demoProducts(zh) {
       name: l("Collapsible Silicone Lunch Box", "可折叠硅胶饭盒"),
       sku: "NH-LB-01",
       category: l("Kitchen & Dining", "厨房餐饮"),
-      source: "kelly_picks",
+      source: "busa_picks",
       platforms: ["amazon", "tiktok_shop", "shopify"],
       locales: ["US", "DE"],
       specs: [
@@ -254,7 +254,7 @@ function demoProducts(zh) {
       name: l("Foldable Laundry Basket", "可折叠洗衣篮"),
       sku: "NH-FB-03",
       category: l("Home Organization", "家居收纳"),
-      source: "kelly_picks",
+      source: "busa_picks",
       platforms: ["amazon", "tiktok_shop"],
       locales: ["US", "DE"],
       specs: [

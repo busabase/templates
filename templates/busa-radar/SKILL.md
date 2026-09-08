@@ -65,7 +65,7 @@ watchlist, and the review model:
    and asks follow-ups in the app.
 3. **Trends (demand signals)**: keyword/topic trend movers — rising search
    queries, community topic volume, category interest — collected by the
-   agent (optionally cross-read from a kelly-seo snapshot) and filed via
+   agent (optionally cross-read from a busa-seo snapshot) and filed via
    `scripts/ingest_trends.mjs`, turned into opportunity cards the operator approves
    or ignores.
 
@@ -102,7 +102,7 @@ the exact missing dependency. Do not invent a second data backend.
   politely, and never scrape private, gated, or personal data.
 - The AirApp reads and writes Busabase records only. It must not fetch
   remote pages, post anywhere, or mutate remote systems.
-- Handoffs to sibling skills (kelly-writer content briefs, kelly-feedback
+- Handoffs to sibling skills (busa-writer content briefs, busa-feedback
   roadmap candidates) and any outbound artifacts are approval-required:
   The operator approves in the app, then `scripts/execute_decisions.mjs` prints the
   concrete operation for the agent to carry out. It performs no external
@@ -122,7 +122,7 @@ Nine Bases under one application Folder (`busa-radar`), declared in
 - `briefs`: agent-drafted research briefs (scope, planned sources, expected deliverable) awaiting approval. A question's status is derived client-side from its linked brief's status — approved → `researching`, blocked → `closed` — never written back separately.
 - `reports`: cited research reports — sections with citation chips, sources, annotations, and the operator's 0-5 confidence rating.
 - `movers`: rising keyword/topic trend movers with a momentum series for the sparkline.
-- `opportunities`: opportunity cards turned from sustained movers, with a proposed next-step handoff (`handoff_content_brief` → kelly-writer, `handoff_roadmap_candidate` → kelly-feedback) and the human verdict.
+- `opportunities`: opportunity cards turned from sustained movers, with a proposed next-step handoff (`handoff_content_brief` → busa-writer, `handoff_roadmap_candidate` → busa-feedback) and the human verdict.
 - `sync-log`: append-only history of ingest/file-report/execute-decisions runs.
 - `settings`: one row (`record-id: "config"`) with product profile, cadence, research defaults, and trend sources.
 
@@ -191,9 +191,9 @@ UI language: English and Chinese chrome with `Auto` default (`navigator.language
 ## Trends Workflow
 
 1. Cadence from `settings.cadence_trends` (default weekly). Collect keyword/topic movers from the configured trend sources: rising search queries, community topic volume, category interest.
-2. Optionally cross-read a kelly-seo snapshot (read-only): `node scripts/ingest_trends.mjs <payload.json> /path/to/kelly-seo/content/busa-radar-app/.data/<snapshot>.json` imports rising queries when present and degrades gracefully when absent.
+2. Optionally cross-read a busa-seo snapshot (read-only): `node scripts/ingest_trends.mjs <payload.json> /path/to/busa-seo/content/busa-radar-app/.data/<snapshot>.json` imports rising queries when present and degrades gracefully when absent.
 3. `ingest_trends.mjs` dedupes movers by keyword+source, updates volume/delta/momentum for existing movers, and can add opportunity cards.
-4. Turn sustained movers into opportunity cards with a `proposed_next_step` (content brief → kelly-writer, roadmap candidate → kelly-feedback). The operator approves or ignores each card in `#/trends`.
+4. Turn sustained movers into opportunity cards with a `proposed_next_step` (content brief → busa-writer, roadmap candidate → busa-feedback). The operator approves or ignores each card in `#/trends`.
 
 ## Decisions Workflow
 
@@ -204,8 +204,8 @@ UI language: English and Chinese chrome with `Auto` default (`navigator.language
    pending ChangeRequest for the trusted process to merge.
 2. Before executing anything, run `node scripts/execute_decisions.mjs`
    (dry-run). It prints the concrete operation for every approved
-   signal/brief/opportunity: `handoff_content_brief` → kelly-writer,
-   `handoff_roadmap_candidate` → kelly-feedback, `add_watch_source` →
+   signal/brief/opportunity: `handoff_content_brief` → busa-writer,
+   `handoff_roadmap_candidate` → busa-feedback, `add_watch_source` →
    watchlist target id, `start_research` → question id. No external side
    effects.
 3. After the operator confirms the dry-run, perform the handoffs (invoke the

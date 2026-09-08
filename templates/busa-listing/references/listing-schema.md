@@ -14,7 +14,7 @@ Workflow statuses: `needs_review`, `changes_requested`, `approved`, `done`, `blo
 
 Decision actions: `approve`, `request_changes`, `block`, `revise`.
 
-Product sources: `manual`, `kelly_picks`.
+Product sources: `manual`, `busa_picks`.
 
 Platforms: `amazon`, `shopify`, `tiktok_shop`, `ebay`.
 
@@ -29,7 +29,7 @@ Check results: `pass`, `warn`, `fail`.
 | `name` | `name` | text | product display name |
 | `sku` | `sku` | text | SKU |
 | `category` | `category` | text | product category |
-| `source` | `source` | text | `manual\|kelly_picks` |
+| `source` | `source` | text | `manual\|busa_picks` |
 | `platforms` | `platforms` | longtext | JSON array of platforms, e.g. `["amazon"]` |
 | `locales` | `locales` | longtext | JSON array of locales, e.g. `["US","DE"]` |
 | `specs` | `specs` | longtext | JSON array of `{name, value}` specifications |
@@ -225,7 +225,7 @@ Accepts a single draft object or:
       "name": "required",
       "sku": "required",
       "category": "optional",
-      "source": "manual|kelly_picks",
+      "source": "manual|busa_picks",
       "platforms": ["amazon"],
       "locales": ["US"],
       "specs": [{ "name": "…", "value": "…" }],

@@ -38,7 +38,7 @@ Without --apply this is a dry run that only prints what would be written.`);
 
 // ---- Ported verbatim from the retired scripts/ingest_drafts.ts ----
 
-const SOURCES = new Set(["manual", "kelly_picks"]);
+const SOURCES = new Set(["manual", "busa_picks"]);
 const STATUSES = new Set(["needs_review", "changes_requested", "approved", "done", "blocked"]);
 const IMAGE_STATUSES = new Set(["ready", "missing", "needs_edit"]);
 
@@ -58,7 +58,7 @@ function validateProduct(input, index) {
   for (const key of ["name", "sku"]) {
     if (typeof input[key] !== "string" || !input[key].trim()) errors.push(`${where}.${key} must be a non-empty string`);
   }
-  if (input.source && !SOURCES.has(input.source)) errors.push(`${where}.source must be manual or kelly_picks`);
+  if (input.source && !SOURCES.has(input.source)) errors.push(`${where}.source must be manual or busa_picks`);
   if (input.platforms !== undefined) {
     if (!Array.isArray(input.platforms)) errors.push(`${where}.platforms must be an array`);
     else

@@ -47,7 +47,6 @@
       "name": "busa-ads",
       "description": "Ad-campaign command desk: Amazon/Meta/TikTok/Google spend and performance, deterministic anomaly detection, and an adjustment-card review queue",
       "category": "ecommerce",
-      "risk": "gated-write",
       "tags": [
         "ecommerce",
         "risk:gated-write",
@@ -81,7 +80,6 @@
       "name": "busa-ai-newsroom",
       "description": "Daily industry-intelligence cockpit for AI/news-source intelligence: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (sales opener / LinkedIn post / client memo) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
       "category": "industry-intel",
-      "risk": "gated-write",
       "tags": [
         "industry-intel",
         "risk:gated-write",
@@ -114,7 +112,6 @@
       "name": "busa-audit",
       "description": "Finance anomaly review desk: imported orders/invoices/payments, deterministic anomaly rules, and a human review queue",
       "category": "finance",
-      "risk": "gated-write",
       "tags": [
         "finance",
         "risk:gated-write",
@@ -147,7 +144,6 @@
       "name": "busa-brand",
       "description": "Brand-narrative single source of truth built on the TALE discipline",
       "category": "marketing",
-      "risk": "local-write",
       "tags": [
         "marketing",
         "risk:local-write",
@@ -180,7 +176,6 @@
       "name": "busa-campaigns",
       "description": "Outbound email-marketing desk built on the SEND discipline",
       "category": "marketing",
-      "risk": "gated-write",
       "tags": [
         "marketing",
         "risk:gated-write",
@@ -213,7 +208,6 @@
       "name": "busa-clm",
       "description": "Lightweight contract lifecycle desk: contract inventory, lifecycle stage, owners, obligations, renewal/notice dates, and a simple approval reminder queue. Not a legal redline/clause-review product -- see kelly-legal-contracts for that. Contract records, obligation status, renewal acknowledgements, and approval decisions are all direct writes made by the operator in the browser, not a review/approval pipeline.",
       "category": "legal",
-      "risk": "gated-write",
       "tags": [
         "legal",
         "risk:gated-write",
@@ -248,7 +242,6 @@
       "name": "busa-cms",
       "description": "A WordPress-style admin for a website's Posts, Pages, Categories, and Tags — the exact four Bases the busabase-cms-sdk reads.",
       "category": "content",
-      "risk": "local-write",
       "tags": [
         "cms",
         "blog",
@@ -290,7 +283,6 @@
       "name": "busa-creators",
       "description": "Influencer/creator marketing command desk — discovery, outreach, briefs, contracts, and ROI",
       "category": "marketing",
-      "risk": "gated-write",
       "tags": [
         "marketing",
         "risk:gated-write",
@@ -323,7 +315,6 @@
       "name": "busa-crm",
       "description": "Contacts, companies, deals, and follow-up review workspace",
       "category": "sales-crm",
-      "risk": "gated-write",
       "tags": [
         "sales-crm",
         "risk:gated-write",
@@ -356,7 +347,6 @@
       "name": "busa-demo-video-factory",
       "description": "Demo/marketing video planning pipeline: idea -> storyboard -> verified claims -> recording -> post-production.",
       "category": "production",
-      "risk": "read-only",
       "tags": [
         "production",
         "risk:read-only",
@@ -387,7 +377,6 @@
       "name": "busa-devops",
       "description": "Product-fleet ops desk: service health, SSL/domain/key expiries, cloud spend, and an action review queue",
       "category": "platform",
-      "risk": "gated-write",
       "tags": [
         "platform",
         "risk:gated-write",
@@ -422,7 +411,6 @@
       "name": "busa-digital-human",
       "description": "Digital-human solution desk: a fast 2D vendor-service path and a high-control 3D UE/Unity path, plus a launch QA gate. The project overview, personas, pipeline routes, vendor comparison, and QA checklist are curated reference content, not per-user data -- the only genuinely dynamic state is the human review verdict (approve / request changes / block) recorded against each QA gate check, written as a direct field write on its own record, mirroring kelly-clm's approvals.",
       "category": "production",
-      "risk": "local-write",
       "tags": [
         "production",
         "risk:local-write",
@@ -455,7 +443,6 @@
       "name": "busa-drama",
       "description": "Short-drama workspace: series bible, characters, relationships, episodes, and storyboard shots",
       "category": "production",
-      "risk": "local-write",
       "tags": [
         "production",
         "risk:local-write",
@@ -490,7 +477,6 @@
       "name": "busa-ecommerce-intel",
       "description": "Daily industry-intelligence cockpit for e-commerce and cross-border sellers: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (listing copy / ad angle / customer reply) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
       "category": "industry-intel",
-      "risk": "gated-write",
       "tags": [
         "industry-intel",
         "risk:gated-write",
@@ -524,7 +510,6 @@
       "name": "busa-email",
       "description": "Inbox triage, human review, and trusted execution — an approval-first email desk.",
       "category": "email",
-      "risk": "gated-write",
       "tags": [
         "email",
         "triage",
@@ -562,7 +547,6 @@
       "name": "busa-expo-leads",
       "description": "Trade-show lead capture desk: an SLA countdown board and a multilingual follow-up review queue",
       "category": "sales-crm",
-      "risk": "gated-write",
       "tags": [
         "sales-crm",
         "industry:ecommerce",
@@ -592,7 +576,6 @@
       "name": "busa-family-fund",
       "description": "Household pooled-pension / elder-care fund ledger and fairness dashboard",
       "category": "invest",
-      "risk": "read-only",
       "tags": [
         "invest",
         "risk:read-only",
@@ -626,7 +609,6 @@
       "name": "busa-family-office",
       "description": "Multi-entity family-office consolidation dashboard",
       "category": "invest",
-      "risk": "read-only",
       "tags": [
         "invest",
         "risk:read-only",
@@ -661,7 +643,6 @@
       "name": "busa-feedback",
       "description": "Voice-of-customer desk: raw feedback, clustered feature requests, and the roadmap decision queue",
       "category": "sales-crm",
-      "risk": "gated-write",
       "tags": [
         "sales-crm",
         "risk:gated-write",
@@ -694,7 +675,6 @@
       "name": "busa-finance",
       "description": "Busa Finance: a review workspace for a three-statement financial model — the current model snapshot (company/currency/periods/workbook), its model-quality check queue (balance-sheet ties, cash roll-forward, formula reviews), and sanitized settings",
       "category": "finance",
-      "risk": "local-write",
       "tags": [
         "finance",
         "risk:local-write",
@@ -726,7 +706,6 @@
       "name": "busa-followups",
       "description": "会后跟进提醒：谁、跟进什么事、什么时候该完成，打开就看到今天该做什么",
       "category": "productivity",
-      "risk": "gated-write",
       "tags": [
         "followups",
         "reminder"
@@ -755,7 +734,6 @@
       "name": "busa-homework-coach",
       "description": "Busa Homework Coach: a child-friendly homework desk — questions the agent explained (with the gentle step-by-step explanation), the mistake notebook, practice papers, the parent/teacher review queue, and sanitized settings",
       "category": "education",
-      "risk": "local-write",
       "tags": [
         "education",
         "risk:local-write",
@@ -789,7 +767,6 @@
       "name": "busa-ideas",
       "description": "An idea vault with a business consultant attached — interrogate a vague idea, then carry it through BRD, MRD, and PRD.",
       "category": "product-strategy",
-      "risk": "gated-write",
       "tags": [
         "product-strategy",
         "risk:gated-write",
@@ -826,7 +803,6 @@
       "name": "busa-insure-data",
       "description": "Insurance-industry App-in-Skill for read-only data governance, backed by an operator-provisioned Busabase workspace (one Drive node for the file drive plus four Bases for QA pairs, featured information, insurer notices, and user feedback) and trusted export/restore/PDF-text-backfill scripts. Use when the user invokes $busa-insure-data or /busa-insure-data, wants an insurance data workspace with UI, needs to review insurance files, metadata completeness, QA pairs, featured information, insurer notices, or user feedback, wants to back up or restore a Busa Insure Data Busabase workspace from local PDFs, or wants Busabase Drive/Base data surfaced for data quality review and ongoing data governance.",
       "category": "industry-intel",
-      "risk": "read-only",
       "tags": [
         "industry-intel",
         "risk:read-only",
@@ -860,7 +836,6 @@
       "name": "busa-invest-webull",
       "description": "Read-only Webull brokerage portfolio dashboard (accounts, positions, insights)",
       "category": "invest",
-      "risk": "read-only",
       "tags": [
         "invest",
         "risk:read-only",
@@ -894,7 +869,6 @@
       "name": "busa-invoice-sheet",
       "description": "Busa Invoice Sheet: invoice/receipt/credit-note/statement extraction batches under human review, with field confidence, line items, and export-ready approved rows",
       "category": "finance",
-      "risk": "local-write",
       "tags": [
         "finance",
         "risk:local-write",
@@ -928,7 +902,6 @@
       "name": "busa-jobhunt",
       "description": "Job-search profile, target companies, and outreach state",
       "category": "comms",
-      "risk": "gated-write",
       "tags": [
         "comms",
         "risk:gated-write",
@@ -964,7 +937,6 @@
       "name": "busa-launch",
       "description": "Product-launch command desk built on the RAMP discipline",
       "category": "marketing",
-      "risk": "gated-write",
       "tags": [
         "marketing",
         "risk:gated-write",
@@ -997,7 +969,6 @@
       "name": "busa-lead-funnel",
       "description": "Deal sourcing pipeline for a BD/sourcing team triaging merchant and business financing leads: a kanban board across new/data-verified/scored/term-sheet-ready/rejected stages with deterministic rule-based lead scoring, notes, and stage history — never outreach, term sheets, or money movement",
       "category": "rbf",
-      "risk": "local-write",
       "tags": [
         "rbf",
         "risk:local-write",
@@ -1029,7 +1000,6 @@
       "name": "busa-legal-casebase-ingest",
       "description": "Casebase intake and anonymization QA desk for law-firm judgment and arbitral award documents: agent-prepared case records, canonical case-library groupings, deterministic QA checks, and a review queue (approve / request changes / revise / block) before a record becomes a searchable knowledge asset",
       "category": "legal",
-      "risk": "local-write",
       "tags": [
         "legal",
         "risk:local-write",
@@ -1065,7 +1035,6 @@
       "name": "busa-legal-contracts",
       "description": "Legal-contract review desk: contract library, clause issues, risk checks, clause playbook, and a review queue",
       "category": "legal",
-      "risk": "gated-write",
       "tags": [
         "legal",
         "risk:gated-write",
@@ -1101,7 +1070,6 @@
       "name": "busa-legal-firm-radar",
       "description": "Firm-level radar desk over anonymized casebase analytics: practice-area mix, case-quality indicators, lawyer capability profiles, brand proof points, and approval-gated management insights (approve / request changes / revise / block) before a report becomes a management or brand handoff",
       "category": "legal",
-      "risk": "local-write",
       "tags": [
         "legal",
         "risk:local-write",
@@ -1136,7 +1104,6 @@
       "name": "busa-legal-matter-strategy",
       "description": "Matter-strategy desk over new-case strategy, issue trees, evidence checklists, risk analysis, pleading outlines, and approval-gated drafting packs grounded in internal precedents (approve / request changes / revise / block) before a strategy pack becomes a drafting handoff",
       "category": "legal",
-      "risk": "local-write",
       "tags": [
         "legal",
         "risk:local-write",
@@ -1171,7 +1138,6 @@
       "name": "busa-legal-precedent-desk",
       "description": "Precedent-research desk over internal casebase search, local court-pattern analysis, similar-case packs, citations, and approval-gated research exports (approve / request changes / revise / block) before a research pack becomes a matter-strategy input",
       "category": "legal",
-      "risk": "local-write",
       "tags": [
         "legal",
         "risk:local-write",
@@ -1206,7 +1172,6 @@
       "name": "busa-lesson",
       "description": "Lesson-plan generation and compliance-check desk: plan library, compliance checks, and a review queue",
       "category": "education",
-      "risk": "gated-write",
       "tags": [
         "education",
         "risk:gated-write",
@@ -1240,7 +1205,6 @@
       "name": "busa-listing",
       "description": "Listing factory desk: product library, platform drafts, compliance checks, claims registry, and a review queue",
       "category": "ecommerce",
-      "risk": "gated-write",
       "tags": [
         "ecommerce",
         "risk:gated-write",
@@ -1276,7 +1240,6 @@
       "name": "busa-local-model-lab",
       "description": "Busabase-backed control plane for local Apple Silicon fine-tuning, locked evaluation, and LoRA adapter governance.",
       "category": "platform",
-      "risk": "local-write",
       "tags": [
         "platform",
         "risk:local-write",
@@ -1310,7 +1273,6 @@
       "name": "busa-messenger",
       "description": "Unified chat inbox: WhatsApp/Discord/Slack/Telegram accounts, conversations, messages, and a reply outbox",
       "category": "comms",
-      "risk": "gated-write",
       "tags": [
         "comms",
         "risk:gated-write",
@@ -1348,7 +1310,6 @@
       "name": "busa-money",
       "description": "Aggregated money ledger across Mercury, Stripe, Airwallex, and Creem",
       "category": "finance",
-      "risk": "read-only",
       "tags": [
         "finance",
         "risk:read-only",
@@ -1386,7 +1347,6 @@
       "name": "busa-mv",
       "description": "Music-video workspace: song, concept, cast reference cards, and storyboard shots",
       "category": "production",
-      "risk": "local-write",
       "tags": [
         "production",
         "risk:local-write",
@@ -1420,7 +1380,6 @@
       "name": "busa-picks",
       "description": "Product-research (选品) desk: trend sweeps, margin cards, competition reads, and a develop/watch/drop review queue",
       "category": "ecommerce",
-      "risk": "local-write",
       "tags": [
         "ecommerce",
         "risk:local-write",
@@ -1454,7 +1413,6 @@
       "name": "busa-portfolio-health",
       "description": "Read-mostly dashboard over a revenue-based-financing (RBF) fund or private-credit book of many small SME contracts: portfolio health, AUM, repayment progress, industry/city concentration risk, and a watchlist of contracts with declining revenue. The only human action — flag a contract for review, clear a flag, or leave a note — is written directly onto the contract's own record; there is no separate approval queue and no transaction path. Generic and brand-free.",
       "category": "rbf",
-      "risk": "local-write",
       "tags": [
         "rbf",
         "risk:local-write",
@@ -1486,7 +1444,6 @@
       "name": "busa-portrait-retouch",
       "description": "Natural portrait retouch jobs, reviewable candidates, and non-secret workflow settings",
       "category": "production",
-      "risk": "local-write",
       "tags": [
         "production",
         "risk:local-write",
@@ -1517,7 +1474,6 @@
       "name": "busa-ppt-factory",
       "description": "Project-based PPTX production desk — project, deck, slide card, style system, QA checks, and generated exports, with a review queue (approve / request changes / block / revise) gating PPTX generation",
       "category": "production",
-      "risk": "local-write",
       "tags": [
         "production",
         "risk:local-write",
@@ -1553,7 +1509,6 @@
       "name": "busa-pr-review",
       "description": "GitHub pull request review desk backed by the gh CLI",
       "category": "platform",
-      "risk": "gated-write",
       "tags": [
         "platform",
         "risk:gated-write",
@@ -1589,7 +1544,6 @@
       "name": "busa-product-hub",
       "description": "Product & certification hub for export/trade sellers: catalog/SKU master data, pricing, inventory, channel status (Amazon/Shopify/TikTok Shop/eBay), content readiness, compliance notes, lifecycle state, a certificate expiry tracker (CE/FCC/RoHS/UN38.3/UKCA), and an approval-gated review queue (channel publish approvals, price-change review, quality holds, lifecycle decisions, and unsourced spec claims). The AirApp itself only ever decides on a review item (approve/request_changes/block) directly onto its own record -- it never creates a product, channel, inventory, or certificate row.",
       "category": "ecommerce",
-      "risk": "local-write",
       "tags": [
         "ecommerce",
         "risk:local-write",
@@ -1619,7 +1573,6 @@
       "name": "busa-radar",
       "description": "Market-intelligence desk: competitor signals, research briefs/reports, trend movers/opportunities, and a triage review queue",
       "category": "growth",
-      "risk": "local-write",
       "tags": [
         "growth",
         "risk:local-write",
@@ -1653,7 +1606,6 @@
       "name": "busa-retail-intel",
       "description": "Daily industry-intelligence cockpit for retail stores and consumer brands: source-backed signals, buyer-intent interpretation, approved sales/merchandising actions, and channel drafts (staff brief / IG story / store sign) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
       "category": "industry-intel",
-      "risk": "gated-write",
       "tags": [
         "industry-intel",
         "risk:gated-write",
@@ -1687,7 +1639,6 @@
       "name": "busa-sales-outreach",
       "description": "Product positioning, ideal-customer profile, target accounts, contacts, and reviewed outreach",
       "category": "sales-crm",
-      "risk": "gated-write",
       "tags": [
         "sales-crm",
         "risk:gated-write",
@@ -1721,7 +1672,6 @@
       "name": "busa-seo",
       "description": "SEO + GEO (AI-search) + brand-entity desk: Search Console analytics, an SEO opportunities review queue, an AI-visibility tracker, a geo-qa-gated GEO content queue, and an entity/knowledge-panel readiness checklist",
       "category": "growth",
-      "risk": "local-write",
       "tags": [
         "growth",
         "risk:local-write",
@@ -1759,7 +1709,6 @@
       "name": "busa-social",
       "description": "Social media command desk: cross-platform monitoring plus an ECHO publishing desk",
       "category": "marketing",
-      "risk": "gated-write",
       "tags": [
         "marketing",
         "risk:gated-write",
@@ -1797,7 +1746,6 @@
       "name": "busa-standup",
       "description": "Team standup board: check-ins, blockers, and missing-check-in reminders",
       "category": "comms",
-      "risk": "local-write",
       "tags": [
         "comms",
         "risk:local-write",
@@ -1831,7 +1779,6 @@
       "name": "busa-support",
       "description": "Customer-support desk: tickets, knowledge base, and the support-qa quality gate",
       "category": "sales-crm",
-      "risk": "gated-write",
       "tags": [
         "sales-crm",
         "risk:gated-write",
@@ -1867,7 +1814,6 @@
       "name": "busa-tickets",
       "description": "Complaint/ticket triage-and-dispatch desk: intake stream, ticket board, and a dispatch review queue",
       "category": "sales-crm",
-      "risk": "gated-write",
       "tags": [
         "sales-crm",
         "risk:gated-write",
@@ -1902,7 +1848,6 @@
       "name": "busa-wechat-crm",
       "description": "Goal-first WeChat relationship desk that promotes only selected contacts into focused People workflows.",
       "category": "sales-crm",
-      "risk": "local-write",
       "tags": [
         "sales-crm",
         "wechat",
@@ -1943,7 +1888,6 @@
       "name": "busa-writer",
       "description": "Channel-ready content drafting and review desk",
       "category": "marketing",
-      "risk": "gated-write",
       "tags": [
         "marketing",
         "risk:gated-write",

@@ -9,7 +9,7 @@ contacts, companies, deals, and agent-drafted follow-ups.
 - Deals: pipeline table with stage, amount, probability, next step, and owner; per-deal timeline and agent-suggested next action.
 - Contacts: relationship list with strength, tags, last touch, and next follow-up; per-contact timeline and open deals.
 - Follow-ups: review queue of agent-drafted messages with editable drafts, risk badges, review notes, and Approve / Request changes / Block decisions.
-- The app never sends anything. Approved follow-ups are executed by the skill through other channels (for example kelly-email) only after explicit approval.
+- The app never sends anything. Approved follow-ups are executed by the skill through other channels (for example busa-email) only after explicit approval.
 
 ## App UI Screenshots
 
