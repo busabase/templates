@@ -18871,7 +18871,7 @@ function date4(params) {
   return _coercedDate(ZodDate, params);
 }
 
-// node_modules/.pnpm/busabase-sdk@0.42.0/node_modules/busabase-sdk/dist/airapp.js
+// node_modules/.pnpm/busabase-sdk@0.30.1/node_modules/busabase-sdk/dist/airapp.js
 var SkillFrontmatterSchema$1 = external_exports.object({
   /** Identity. For a Skill inside a package this must equal the package name. */
   name: external_exports.string().min(1),

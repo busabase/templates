@@ -5,7 +5,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// node_modules/.pnpm/busabase-sdk@0.42.0/node_modules/busabase-sdk/dist/url-B8GMXalA.js
+// node_modules/.pnpm/busabase-sdk@0.30.1/node_modules/busabase-sdk/dist/url-B8GMXalA.js
 function normalizeBaseUrl(raw) {
   return raw.replace(/\/+$/, "").replace(/\/api\/v1$/, "");
 }
@@ -20801,7 +20801,7 @@ function date4(params) {
   return _coercedDate(ZodDate, params);
 }
 
-// node_modules/.pnpm/busabase-sdk@0.42.0/node_modules/busabase-sdk/dist/index.js
+// node_modules/.pnpm/busabase-sdk@0.30.1/node_modules/busabase-sdk/dist/index.js
 var normalizeOrigin = (raw) => raw.trim().replace(/\/+$/, "").replace(/\/api\/v1$/, "");
 function nodeWebUrl({ webOrigin, spaceId, nodeType, nodeSlug, extraSegments = [] }) {
   const origin = normalizeOrigin(webOrigin);
@@ -21022,8 +21022,8 @@ var LocaleSchema = external_exports.enum({
   ]
 }.locales);
 var iStringRecordSchema = external_exports.partialRecord(LocaleSchema, external_exports.string());
-var iStringSchema = external_exports.union([external_exports.string(), iStringRecordSchema]).describe("i18n string");
-var destructiveAutoMerge = (undoNote) => external_exports.boolean().optional().describe(`Whether to approve and merge this change immediately. Omitted defaults to merging immediately if the actor has write access on the target node, otherwise falling back to a pending Change Request; pass explicit false to force review even with write access. ${undoNote}`);
+external_exports.union([external_exports.string(), iStringRecordSchema]).describe("i18n string");
+var autoMergeNotAccepted = (reason) => external_exports.literal(false, { error: `\`autoMerge: true\` is not accepted here: ${reason}` }).optional().describe(`Only \`false\` (or omitted) is accepted. ${reason}`);
 var fieldNameSchema = external_exports.union([external_exports.string().min(1), iStringRecordSchema.refine((record2) => Object.values(record2).some((value2) => value2 && value2.trim().length > 0), "field name must have at least one non-empty locale value")]);
 var fieldTypeSchema = external_exports.enum([
   "text",
@@ -21153,7 +21153,7 @@ var createBaseFieldInputSchema = external_exports.object({
   required: external_exports.boolean().optional().default(false),
   options: fieldOptionsSchema.optional().default({})
 });
-var fieldAutoMergeSchema = external_exports.boolean().optional().describe("Whether to approve and merge this field change immediately. Omitted defaults to merging immediately if the actor has write access on the Base's node, otherwise falling back to a pending Change Request; pass explicit false to force review even with write access.");
+var fieldAutoMergeSchema = external_exports.boolean().optional().describe("Whether to approve and merge this field change immediately. Omitted defaults to merging immediately if the actor has write access on the Base's node, otherwise falling back to a pending Change Request; pass explicit false to force review even with write access. Not accepted by the delete and convert operations, which always require review.");
 var createFieldChangeRequestInputSchema = createBaseFieldInputSchema.extend({
   message: external_exports.string().optional().default("Add field"),
   submittedBy: external_exports.string().optional().default("local-editor"),
@@ -21163,7 +21163,7 @@ var deleteFieldChangeRequestInputSchema = external_exports.object({
   fieldId: external_exports.string().min(1),
   message: external_exports.string().optional(),
   submittedBy: external_exports.string().optional().default("local-editor"),
-  autoMerge: destructiveAutoMerge("A deleted field is soft-deleted with its stored values and is brought back by the `restore` operation.")
+  autoMerge: autoMergeNotAccepted("deleting a field soft-deletes its stored values with it, so it always requires review. Omit the flag.")
 });
 var updateFieldChangeRequestInputSchema = external_exports.object({
   fieldId: external_exports.string().min(1),
@@ -21178,15 +21178,7 @@ var updateFieldChangeRequestInputSchema = external_exports.object({
 });
 var previewFieldConversionInputSchema = external_exports.object({
   fieldId: external_exports.string().min(1),
-  newType: fieldTypeSchema,
-  /**
-  * Mirrors `convertFieldChangeRequest.selectChoiceMode` so the dry run models the
-  * conversion the caller is actually going to submit. Under `auto_create` a value with
-  * no matching choice is not a conflict — the merge mints a choice for it — while under
-  * `null_on_missing` the same value is dropped. Defaults to `null_on_missing`, matching
-  * the mutation's own default.
-  */
-  selectChoiceMode: external_exports.enum(["auto_create", "null_on_missing"]).default("null_on_missing")
+  newType: fieldTypeSchema
 });
 var previewFieldConversionOutputSchema = external_exports.object({
   totalCount: external_exports.number(),
@@ -21203,7 +21195,7 @@ var convertFieldChangeRequestInputSchema = external_exports.object({
   selectChoiceMode: external_exports.enum(["auto_create", "null_on_missing"]).default("null_on_missing"),
   message: external_exports.string().optional(),
   submittedBy: external_exports.string().optional().default("local-editor"),
-  autoMerge: destructiveAutoMerge("A convert can drop values that do not fit the new type \u2014 call `previewFieldConversion` first to see exactly which, and pass `autoMerge: false` if you want a human to sign off on that preview.")
+  autoMerge: autoMergeNotAccepted("converting a field's type can drop values, so it always requires review. Run previewFieldConversion first to see what would change, then omit the flag.")
 });
 var reorderFieldsChangeRequestInputSchema = external_exports.object({
   fieldIds: external_exports.array(external_exports.string()).min(1),
@@ -21214,7 +21206,7 @@ var reorderFieldsChangeRequestInputSchema = external_exports.object({
 var archiveBaseInputSchema = external_exports.object({
   message: external_exports.string().optional(),
   submittedBy: external_exports.string().optional().default("local-editor"),
-  autoMerge: destructiveAutoMerge('Archiving takes the Base and every record in it out of every listing at once. That is reversible via `operation: "restore"`, but it is the widest-blast-radius write in this family \u2014 pass `autoMerge: false` when it should stop for a human.')
+  autoMerge: autoMergeNotAccepted("archiving a Base removes it and every record in it from every listing at once, so it always requires review. Omit the flag.")
 });
 var restoreBaseInputSchema = external_exports.object({
   message: external_exports.string().optional(),
@@ -21581,45 +21573,6 @@ var NodeIconSchema = external_exports.discriminatedUnion("type", [external_expor
     zoom: external_exports.number()
   }).optional()
 })]);
-var CUSTOM_AGENT_PROMPT_LIMITS = {
-  /** Max custom prompts per node. */
-  maxPrompts: 50,
-  /** Max characters per localized `label` value. */
-  maxLabelChars: 80,
-  /** Max bytes (UTF-8) per localized `body` value. */
-  maxBodyBytes: 8192
-};
-var customPromptIntentSchema = external_exports.enum(["read-only", "change"]);
-var iStringLocaleValues = (value2) => typeof value2 === "string" ? [value2] : Object.values(value2);
-var utf8ByteLength = (value2) => new TextEncoder().encode(value2).length;
-var customPromptLabelSchema = iStringSchema.refine((value2) => iStringLocaleValues(value2).every((v) => v.length <= CUSTOM_AGENT_PROMPT_LIMITS.maxLabelChars), { message: `label must be at most ${CUSTOM_AGENT_PROMPT_LIMITS.maxLabelChars} characters per locale` });
-var customPromptBodySchema = iStringSchema.refine((value2) => iStringLocaleValues(value2).every((v) => utf8ByteLength(v) <= CUSTOM_AGENT_PROMPT_LIMITS.maxBodyBytes), { message: `body must be at most ${CUSTOM_AGENT_PROMPT_LIMITS.maxBodyBytes} bytes (UTF-8) per locale` });
-var customPromptDefSchema = external_exports.object({
-  /** Stable id, unique within this node's custom list. */
-  key: external_exports.string().trim().min(1, { message: "key must not be empty" }),
-  /** Defaults to `change` (same default the curated prompts use) so a prompt
-  * cannot silently bypass the approval-first policy by omission. */
-  intent: customPromptIntentSchema.optional(),
-  /** Short title shown in the dialog's left list. */
-  label: customPromptLabelSchema,
-  /** Template text; "{target}" is substituted with the rendered target line. */
-  body: customPromptBodySchema
-});
-var customAgentPromptsSchema = external_exports.array(customPromptDefSchema).max(CUSTOM_AGENT_PROMPT_LIMITS.maxPrompts, { message: `at most ${CUSTOM_AGENT_PROMPT_LIMITS.maxPrompts} custom prompts per node` }).superRefine((prompts, ctx) => {
-  const firstIndexByKey = /* @__PURE__ */ new Map();
-  prompts.forEach((prompt, index) => {
-    const firstIndex = firstIndexByKey.get(prompt.key);
-    if (firstIndex === void 0) {
-      firstIndexByKey.set(prompt.key, index);
-      return;
-    }
-    ctx.addIssue({
-      code: "custom",
-      path: [index, "key"],
-      message: `duplicate key "${prompt.key}" \u2014 already used at entry ${firstIndex + 1}`
-    });
-  });
-});
 var nodeSchema = external_exports.lazy(() => external_exports.object({
   id: external_exports.string(),
   parentId: external_exports.string().nullable(),
@@ -21628,7 +21581,6 @@ var nodeSchema = external_exports.lazy(() => external_exports.object({
   name: external_exports.string(),
   description: external_exports.string(),
   metadata: external_exports.object({ version: external_exports.string().optional() }).catchall(external_exports.unknown()).default({}),
-  settings: nodeSettingsSchema.default({}),
   explicitVisibility: external_exports.enum([
     "private",
     "workspace",
@@ -21640,8 +21592,7 @@ var nodeSchema = external_exports.lazy(() => external_exports.object({
   updatedAt: external_exports.string(),
   baseId: external_exports.string().nullable(),
   children: external_exports.array(nodeSchema),
-  hasChildren: external_exports.boolean().optional(),
-  shared: external_exports.boolean().optional()
+  hasChildren: external_exports.boolean().optional()
 }));
 var nodePrincipalSchema = external_exports.object({
   id: external_exports.string(),
@@ -21712,36 +21663,6 @@ var isDescendantOutputSchema = external_exports.object({ isDescendant: external_
 var updateNodeMetadataInputSchema = external_exports.object({
   nodeId: external_exports.string(),
   metadata: external_exports.record(external_exports.string(), external_exports.unknown())
-});
-var nodeSettingsSchema = external_exports.strictObject({
-  /**
-  * Which engine an AirApp runs on, when a human has chosen.
-  *
-  * `undefined` means "follow the app" — `airapp.json`'s `preferredEngine`
-  * decides, or the default does. A value means somebody overrode it in the
-  * node settings dialog, and it outranks the manifest from then on. So absence
-  * must stay distinguishable from any particular value; `null` clears an
-  * override and returns the node to following the app.
-  */
-  airappEngine: external_exports.enum([
-    "browser",
-    "local",
-    "remote"
-  ]).nullish()
-});
-var updateNodeSettingsInputSchema = external_exports.object({
-  nodeId: external_exports.string(),
-  settings: nodeSettingsSchema
-});
-var getNodeAgentPromptsInputSchema = external_exports.object({ nodeId: external_exports.string() });
-var nodeAgentPromptsSchema = external_exports.object({
-  nodeId: external_exports.string(),
-  agentPrompts: customAgentPromptsSchema.nullable()
-});
-var updateNodeAgentPromptsInputSchema = external_exports.object({
-  nodeId: external_exports.string(),
-  /** Replaces the whole list — this is not a merge. Send `null` to clear. */
-  agentPrompts: customAgentPromptsSchema.nullable()
 });
 var searchNodesByNameInputSchema = external_exports.object({
   query: external_exports.string().min(1),
@@ -21838,32 +21759,6 @@ var commentSubjectTypeSchema = external_exports.enum([
   "operation",
   "commit"
 ]);
-var commentMentionTargetTypeSchema = external_exports.enum(["member", "agent"]);
-var commentMentionDispatchStatusSchema = external_exports.enum([
-  "not_applicable",
-  "queued",
-  "linked",
-  "failed"
-]);
-var commentMentionInputSchema = external_exports.object({
-  type: commentMentionTargetTypeSchema,
-  /** Member/actor id, or launchable agent slug (`claude-acp`, `buda:<agentId>`). */
-  id: external_exports.string().min(1),
-  start: external_exports.number().int().min(0),
-  end: external_exports.number().int().min(0)
-});
-var commentMentionSchema = external_exports.object({
-  id: external_exports.string(),
-  type: commentMentionTargetTypeSchema,
-  targetId: external_exports.string(),
-  /** Server-resolved display name. Falls back to the raw target id. */
-  label: external_exports.string(),
-  start: external_exports.number().int(),
-  end: external_exports.number().int(),
-  dispatchStatus: commentMentionDispatchStatusSchema,
-  sessionId: external_exports.string().nullable(),
-  error: external_exports.string().nullable()
-});
 var commentSchema = external_exports.object({
   id: external_exports.string(),
   subjectType: commentSubjectTypeSchema,
@@ -21875,47 +21770,9 @@ var commentSchema = external_exports.object({
   authorId: external_exports.string(),
   author: userRefSchema.nullable().optional().default(null),
   body: external_exports.string(),
-  mentions: external_exports.array(commentMentionSchema).default([]),
+  mentionsAi: external_exports.boolean(),
   createdAt: external_exports.string(),
   updatedAt: external_exports.string()
-});
-var mentionInboxItemSchema = external_exports.object({
-  commentId: external_exports.string(),
-  subjectType: commentSubjectTypeSchema,
-  /** Comment body, for the row's preview line. */
-  body: external_exports.string(),
-  authorId: external_exports.string(),
-  author: userRefSchema.nullable().optional().default(null),
-  createdAt: external_exports.string(),
-  /** Null once read. The newest unread stamp across this comment's mentions. */
-  unread: external_exports.boolean(),
-  /**
-  * Dashboard-relative path to the comment's context, or null when the subject
-  * has no page of its own (a `commit`-scoped comment on a comment that is not
-  * attached to a change request — the repo has no commit detail route).
-  * A null href still renders a row: swallowing the notification because we
-  * cannot link it would leave the recipient never knowing they were mentioned.
-  */
-  href: external_exports.string().nullable()
-});
-var mentionInboxPageSchema = external_exports.object({
-  items: external_exports.array(mentionInboxItemSchema),
-  total: external_exports.number().int(),
-  /** Distinct unread comments — what the tab badge shows. */
-  unreadCount: external_exports.number().int()
-});
-var listMentionInboxInputSchema = external_exports.object({
-  page: external_exports.number().int().min(1).optional().default(1),
-  pageSize: external_exports.number().int().min(1).max(100).optional().default(50)
-});
-var markMentionsReadInputSchema = external_exports.object({
-  /** Stamps every unread mention row this caller has on that comment. */
-  commentId: external_exports.string()
-});
-var markMentionsReadOutputSchema = external_exports.object({
-  /** How many rows were stamped; 0 when it was already read. */
-  marked: external_exports.number().int(),
-  unreadCount: external_exports.number().int()
 });
 var changeRequestStatusSchema = external_exports.enum([
   "in_review",
@@ -22002,8 +21859,7 @@ var liveEventSchema = external_exports.object({
     "change_request.reviewed",
     "change_request.merged",
     "change_request.pending_review",
-    "node.metadata_updated",
-    "node.settings_updated"
+    "node.metadata_updated"
   ]),
   spaceId: external_exports.string(),
   actorId: external_exports.string(),
@@ -22034,8 +21890,6 @@ var auditActionSchema = external_exports.enum([
   "asset.text_written",
   "asset.text_marked_none",
   "node.metadata_updated",
-  "node.settings_updated",
-  "node.agent_prompts_updated",
   "node.purged"
 ]);
 var auditEventSchema = external_exports.object({
@@ -22132,7 +21986,7 @@ var createDeleteChangeRequestInputSchema = external_exports.object({
   message: external_exports.string().optional().default("Delete record").describe('Explanation shown to the human reviewer. Say what is being removed and why, e.g. "Archive duplicate contact \u2014 merged into Acme Corp".'),
   submittedBy: external_exports.string().optional().default("local-producer"),
   deleteMode: external_exports.enum(["archive"]).optional().default("archive"),
-  autoMerge: destructiveAutoMerge('Archiving is reversible: the record leaves every listing but is restored intact by `operation: "restore"`.')
+  autoMerge: autoMergeNotAccepted("archiving a record removes user content from every listing, so it always requires review. Omit the flag.")
 });
 var reviseOperationInputSchema = external_exports.object({
   fields: external_exports.record(external_exports.string(), external_exports.unknown()).describe("Updated field values keyed by field slug. If you set the base's PRIMARY field (its first field), keep it a short human-readable name \u2014 it is the record's display title everywhere."),
@@ -22151,12 +22005,7 @@ var commentSubjectInputSchema = external_exports.object({
 var createCommentInputSchema = commentSubjectInputSchema.extend({
   authorId: external_exports.string().optional().default("local-admin"),
   body: external_exports.string().trim().min(1),
-  /**
-  * Structured mentions, owned by the composer. Never inferred from the body by
-  * regex: display names contain spaces and collide with ordinary prose, so
-  * "ask codex about this" must not invoke Codex.
-  */
-  mentions: external_exports.array(commentMentionInputSchema).optional().default([])
+  mentionsAi: external_exports.boolean().optional().default(false)
 });
 var listInputSchema = external_exports.object({ limit: external_exports.coerce.number().int().min(1).max(100).optional().default(50) }).optional().default({ limit: 50 });
 var listByStatusInputSchema = external_exports.object({ status: external_exports.enum(["active", "archived"]).optional().default("active") });
@@ -22374,7 +22223,7 @@ var createFileTreeChangeRequestInputSchema = external_exports.object({
   message: external_exports.string().optional().default("Update file tree").describe('Explanation shown to the human reviewer. Write a conventional-commit style subject \u2014 imperative verb + what + why, e.g. "Rewrite README.md quickstart for the new auth flow".'),
   submittedBy: external_exports.string().optional().default("local-producer"),
   operations: external_exports.array(fileTreeFileOperationInputSchema).min(1),
-  autoMerge: external_exports.boolean().optional().describe("Whether to approve and merge these file changes immediately. Omitted defaults to merging immediately if the actor has write access on the node, otherwise falling back to a pending Change Request; pass explicit false to force review even with write access. Applies to every operation kind, deletes included.")
+  autoMerge: external_exports.boolean().optional().describe("Whether to approve and merge these file changes immediately. Omitted defaults to merging immediately if the actor has write access on the node, otherwise falling back to a pending Change Request; pass explicit false to force review even with write access. IGNORED when any operation is a delete \u2014 those batches always require review.")
 });
 var fileTreeNodeTypeSchema = external_exports.enum([
   "skill",
@@ -22441,14 +22290,8 @@ var airAppRunLocalInputSchema = external_exports.object({
   /** Where the server should run it. `"local"` spawns a bare process on the
   *  Busabase host (previewable, data bridge via reverse proxy, NOT isolated);
   *  `"remote"` runs the same lifecycle on a provisioned machine elsewhere.
-  *  `"browser"` never reaches this endpoint — it runs entirely in the tab.
-  *
-  *  Required, deliberately. This used to default to `"local"`, so a call that
-  *  simply omitted the field asked the server to spawn a host process — the
-  *  most privileged of the two options, reached by saying nothing. Naming the
-  *  engine is now the caller's job, and the handler independently refuses one
-  *  this deployment does not offer. */
-  engine: external_exports.enum(["local", "remote"])
+  *  `"browser"` never reaches this endpoint — it runs entirely in the tab. */
+  engine: external_exports.enum(["local", "remote"]).default("local")
 });
 var airAppRuntimeEventSchema = external_exports.discriminatedUnion("type", [
   external_exports.object({
@@ -22695,7 +22538,7 @@ var EditAssetContentInputSchema = external_exports.object({
   edits: external_exports.array(AssetContentEditSchema).min(1),
   message: external_exports.string().optional().default("Edit file content").describe('Explanation shown to the human reviewer. Write a conventional-commit style subject \u2014 imperative verb + what + why, e.g. "Fix typo in setup instructions".'),
   submittedBy: external_exports.string().optional().default("agent"),
-  autoMerge: destructiveAutoMerge("This rewrites the real mounted file bytes; the previous content stays in the Change Request history, so it is recoverable but not one-click undoable.")
+  autoMerge: autoMergeNotAccepted("editContent rewrites the real mounted file bytes, so it always requires review. Omit the flag.")
 });
 var AssetDownloadInputSchema = external_exports.object({ assetId: external_exports.string() });
 var AssetDownloadVOSchema = external_exports.object({
@@ -22787,7 +22630,7 @@ var assetsContract = {
     path: "/assets/{assetId}/edit-content",
     tags: ["Assets", "Change Requests"],
     summary: "Edit an asset's file content via string-replace edits, as a ChangeRequest",
-    successDescription: 'Applied the string-replace edits (coding-agent Edit-tool semantics: unique-match or replaceAll) to the asset\'s current mounted Drive/Skill file content and recorded the result as a ChangeRequest \u2014 merged immediately when the actor has write access on the mounting node, left "in_review" otherwise or when `autoMerge: false` is passed. Reuses the existing filetree update-via-CR pipeline end to end, including baseContentHash optimistic-concurrency conflict protection at merge time. Requires the asset to be mounted in exactly one editable Drive/Skill location.'
+    successDescription: `Applied the string-replace edits (coding-agent Edit-tool semantics: unique-match or replaceAll) to the asset's current mounted Drive/Skill file content and proposed the result as a ChangeRequest (status "in_review") for human review. Reuses the existing filetree update-via-CR pipeline end to end, including baseContentHash optimistic-concurrency conflict protection at merge time. Requires the asset to be mounted in exactly one editable Drive/Skill location.`
   }).input(EditAssetContentInputSchema).output(changeRequestSchema)
 };
 var viewFilterOperatorSchema = external_exports.enum([
@@ -22956,41 +22799,6 @@ var listRecordsResponseSchema = external_exports.object({
 var listRecordsPageInputSchema = external_exports.object({
   baseId: external_exports.string().min(1),
   viewId: external_exports.string().min(1).optional(),
-  /**
-  * Extra conditions ANDed with the View's own filters — "this View, further
-  * narrowed". The motivating case is one board column: the saved View's
-  * filters plus `stackField equals <choice>`, paged independently of the
-  * other columns.
-  *
-  * Unlike `records.list`'s `filters` (a SUPERSET push-down the client then
-  * narrows), these are applied with the same authority as a saved View's:
-  * every returned page is exactly what the client's own matcher would keep.
-  * That distinction is the whole point — a *superset* page can be missing
-  * records, and a board column that silently drops cards reads as data loss.
-  */
-  filters: external_exports.array(listRecordsFilterSchema).optional(),
-  /**
-  * Scope the page to records whose `date`/`created_time`/`updated_time` field
-  * falls in `[gte, lt)` — an absolute UTC instant range, not a `filters`
-  * condition. It is deliberately NOT an operator on `listRecordsFilterSchema`:
-  * that model mirrors the client's label-based view-filter matching (see
-  * `recordMatchesViewFilter`), which for a date renders via
-  * `toLocaleDateString()` — meaningless without knowing the viewer's
-  * timezone, which the server never has. A UTC instant range has no such
-  * ambiguity, so it is resolved once here, by the caller (who DOES know the
-  * viewer's timezone), and applied as a real timestamp comparison.
-  *
-  * The motivating case is a Calendar month grid: the client computes the UTC
-  * bounds of its own local 42-day grid and asks for only that slice, instead
-  * of every record in the Base.
-  */
-  dateRange: external_exports.object({
-    fieldSlug: external_exports.string().min(1),
-    /** Inclusive lower bound, ISO 8601 UTC instant. */
-    gte: external_exports.string(),
-    /** Exclusive upper bound, ISO 8601 UTC instant. */
-    lt: external_exports.string()
-  }).optional(),
   page: external_exports.coerce.number().int().min(1).optional().default(1),
   pageSize: external_exports.coerce.number().int().min(1).max(100).optional().default(50)
 });
@@ -23034,42 +22842,6 @@ var countRecordsInputSchema = external_exports.object({
 }).optional().default({});
 var countRecordsResponseSchema = external_exports.object({
   /** Total active records in the space (optionally scoped to a base). */
-  total: external_exports.number().int().nonnegative()
-});
-var groupRecordsInputSchema = external_exports.object({
-  /** Group within exactly one Base — a field slug is only unambiguous there. */
-  baseId: external_exports.string().min(1),
-  /**
-  * The field to group by. Restricted to `select` and `checkbox`: their stored
-  * value IS the grouping key (a choice id / a boolean), so a SQL GROUP BY
-  * returns exactly the buckets a client would build. Text/number keys would
-  * be truncated at the projection limit, and date keys would bucket by the
-  * server's timezone rather than the viewer's — both would report a
-  * confidently wrong split, so they're rejected instead of approximated.
-  */
-  fieldSlug: external_exports.string().min(1),
-  /** Group only the rows a saved View would display (its filters; sort ignored). */
-  viewId: external_exports.string().min(1).optional(),
-  /** Ad-hoc filters, ANDed with the View's own when both are given. */
-  filters: external_exports.array(listRecordsFilterSchema).optional()
-});
-var groupRecordsResponseSchema = external_exports.object({
-  groups: external_exports.array(external_exports.object({
-    /**
-    * The raw stored key: a `select` choice id, or `"true"`/`"false"` for a
-    * checkbox. For a select, `null` is the bucket of records with no value
-    * (what a Kanban board shows as its "Uncategorized" column). A checkbox
-    * never reports `null` — an unset checkbox counts as `"false"`, matching
-    * how view filters already treat it (`is_false` covers null/undefined).
-    *
-    * Choice LABELS are deliberately not resolved here — the client already
-    * holds the Base's field definitions and renders labels itself, and
-    * returning ids keeps this response stable across a choice rename.
-    */
-    value: external_exports.string().nullable(),
-    count: external_exports.number().int().nonnegative()
-  })),
-  /** Sum of every group's count — the same number `records.count` would return. */
   total: external_exports.number().int().nonnegative()
 });
 var createChangeRequestInputSchema = external_exports.object({
@@ -23128,7 +22900,7 @@ var recordGetInputSchema = external_exports.union([external_exports.object({ rec
 var restoreRecordInputSchema = external_exports.object({
   message: external_exports.string().optional(),
   submittedBy: external_exports.string().optional().default("local-editor"),
-  autoMerge: destructiveAutoMerge('Restoring is itself the undo of an archive, and is undone again by `operation: "delete"`.')
+  autoMerge: autoMergeNotAccepted("restoring a record brings archived content back into every listing, so it always requires review. Omit the flag.")
 });
 var withRecordId = { recordId: external_exports.string().min(1) };
 var recordChangeRequestInputSchema = external_exports.discriminatedUnion("operation", [
@@ -23258,7 +23030,7 @@ var recordContract = {
     path: "/records/page",
     tags: ["Records"],
     summary: "List a numbered record page",
-    successDescription: "A random-access page of active records. When viewId is supplied, the saved view is authoritatively filtered and sorted before total and page slicing are calculated. `dateRange` additionally scopes to a `[gte, lt)` UTC instant window on a date/created_time/updated_time field."
+    successDescription: "A random-access page of active records. When viewId is supplied, the saved view is authoritatively filtered and sorted before total and page slicing are calculated."
   }).input(listRecordsPageInputSchema).output(listRecordsPageResponseSchema),
   count: oc.route({
     method: "GET",
@@ -23268,23 +23040,6 @@ var recordContract = {
     description: "A real SQL COUNT \u2014 always the exact total, never a partial or capped number, so it's safe to render as a canonical figure (e.g. a dashboard summary tile). Plain `baseId` scoping is always cheap. Adding `viewId` and/or `filters` is exact too \u2014 provably-exact conditions (e.g. text equals/contains, not_empty/is_empty, checkbox is_true/is_false) stay a cheap SQL COUNT; everything else falls back to evaluating every matching row server-side, which is exact but not free on a large Base. Both `viewId` and `filters` require `baseId`.",
     successDescription: "Total active records matching the scope: the whole space, one Base, a saved View, an ad-hoc filter set, or a combination."
   }).input(countRecordsInputSchema).output(countRecordsResponseSchema),
-  groupBy: oc.route({
-    method: "GET",
-    path: "/records/group-by",
-    tags: ["Records"],
-    summary: "Count records per group",
-    description: "One SQL GROUP BY returning every bucket's exact count \u2014 the split a board column header or a summary tile needs, without reading the records themselves. `fieldSlug` must name a `select` or `checkbox` field: their stored value IS the grouping key, so the buckets are exactly the ones a client would build. Grouping by a text, number or date field is rejected rather than approximated (text keys are truncated at the projection limit; date keys would bucket by the server's timezone, not the viewer's). `viewId` and `filters` narrow the set first, with the same exactness rules as `records.count`: provably-exact conditions stay a cheap SQL aggregate, anything else falls back to evaluating every matching row server-side \u2014 exact, but not free on a large Base. Groups come back keyed by raw choice id (or `\"true\"`/`\"false\"`), with `null` for records that have no value; labels are the client's to render.",
-    successDescription: "Every group's exact count, plus the total across all groups. Groups with zero records are omitted \u2014 a Base's full choice list lives in its field definition, so the client already knows which buckets to render empty."
-  }).errors({
-    BAD_REQUEST: {
-      status: 400,
-      message: "Field is not groupable"
-    },
-    NOT_FOUND: {
-      status: 404,
-      message: "Base or field not found"
-    }
-  }).input(groupRecordsInputSchema).output(groupRecordsResponseSchema),
   get: oc.route({
     method: "GET",
     path: "/records/get",
@@ -23314,7 +23069,7 @@ var recordContract = {
     path: "/records/{recordId}/change-requests",
     tags: ["Records", "Change Requests"],
     summary: "Create record change request",
-    successDescription: "Creates a record change request selected by `operation`. All three operations are permission-aware: they merge immediately when the actor has write access on the Base's node, and land as a pending Change Request otherwise or when `autoMerge: false` is passed."
+    successDescription: "Creates a record change request selected by `operation`. Updates auto-merge when the actor has write access unless `autoMerge: false`; delete and restore remain review-first."
   }).input(recordChangeRequestInputSchema).output(external_exports.union([recordSchema.extend({ materialized: external_exports.literal(true) }), changeRequestSchema.extend({ materialized: external_exports.literal(false) })])),
   listChangeRequests: oc.route({
     method: "GET",
@@ -23413,20 +23168,6 @@ var ExportAssetTextVOSchema = external_exports.object({
   textContentHash: external_exports.string().nullable(),
   byteCount: external_exports.number().int().nonnegative()
 });
-var ExportDocBodiesInputSchema = external_exports.object({ nodeIds: external_exports.array(external_exports.string()).min(1).max(25) });
-var ExportDocBodiesVOSchema = external_exports.object({
-  /**
-  * One entry per requested node that is a Doc in this space. A node id that
-  * does not resolve is simply absent (not an error): the caller asked for a
-  * batch, and one bad id must not cost it the other 24. A Doc that exists but
-  * has no body object yet yields `markdown: ""`, matching what a read through
-  * the Doc domain would return.
-  */
-  bodies: external_exports.array(external_exports.object({
-    nodeId: external_exports.string(),
-    markdown: external_exports.string()
-  }))
-});
 var ImportBeginInputSchema = external_exports.object({
   /**
   * The space id the archive was ORIGINALLY exported from (`manifest.spaceId`
@@ -23439,29 +23180,7 @@ var ImportBeginInputSchema = external_exports.object({
   * guarantee once a space has more nodes than one page. See the matching
   * comment in `import-logic.ts`.
   */
-  sourceSpaceId: external_exports.string(),
-  /**
-  * Continue a restore that was interrupted partway through, instead of
-  * requiring an empty space.
-  *
-  * A restore that FAILS rolls itself back (`importAbort`), so the target is
-  * left clean and a plain re-run works. What cannot roll itself back is a
-  * restore whose process died — Ctrl-C, OOM, a dropped connection, the
-  * machine rebooting. That leaves the space holding however many of the
-  * archive's rows had landed, and every subsequent attempt is refused
-  * ("requires an empty target space") with no way forward except wiping it.
-  *
-  * In this mode the empty-space guard is skipped and inserts become
-  * `ON CONFLICT DO NOTHING`, so replaying the same archive re-lands only what
-  * is missing. Blobs and doc bodies are content-addressed writes to object
-  * storage and were already idempotent.
-  *
-  * DANGEROUS if pointed at the wrong space: rows that collide are silently
-  * skipped rather than reported, so restoring archive A into a space holding
-  * archive B's data would interleave the two instead of refusing. Only pass
-  * it to continue the SAME archive into the SAME space.
-  */
-  resume: external_exports.boolean().optional().default(false)
+  sourceSpaceId: external_exports.string()
 });
 var ImportBeginVOSchema = external_exports.object({ sessionId: external_exports.string() });
 var ImportTablesInputSchema = external_exports.object({
@@ -23496,13 +23215,6 @@ var dumpContract = {
     summary: "Resolve the download URL for one asset's extracted-text object",
     successDescription: "A resolved download URL for the asset's DERIVED text blob (`asset-texts/blobs/sha256/\u2026`) plus its `textStorageKey` and `textContentHash`, so a backup can archive the exact bytes and verify them. `downloadUrl` is null when the row owns no separate object (auto-registered text-kind rows point at their attachment's own key, already covered by the attachment blobs; `status: \"none\"` rows have no text at all)."
   }).input(ExportAssetTextInputSchema).output(ExportAssetTextVOSchema),
-  exportDocBodies: oc.route({
-    method: "POST",
-    path: "/dump/export/doc-bodies",
-    tags: ["Dump"],
-    summary: "Read the raw markdown for a batch of Doc nodes",
-    successDescription: "The raw body behind each requested Doc, read straight from object storage \u2014 archived Docs included, which the ordinary `nodes.get` deliberately refuses. Ids that do not resolve to a Doc in this space are omitted rather than failing the batch."
-  }).input(ExportDocBodiesInputSchema).output(ExportDocBodiesVOSchema),
   importBegin: oc.route({
     method: "POST",
     path: "/dump/import/begin",
@@ -23673,7 +23385,7 @@ var formContract = {
     path: "/forms/{nodeId}/submit",
     tags: ["Forms"],
     summary: "Submit a filled-in form",
-    successDescription: "Creates a review-first record-create ChangeRequest on the target Base \u2014 a form submission always waits for a human, whoever submitted it."
+    successDescription: "Creates an approval-first record-create ChangeRequest on the target Base."
   }).input(SubmitFormInputSchema.extend({ nodeId: external_exports.string() })).output(FormSubmitResultSchema)
 };
 var GuideKindSchema = external_exports.enum(["reference", "walkthrough"]);
@@ -24615,22 +24327,6 @@ var getNodeInputSchema = external_exports.object({
 });
 var NodeIconUploadUrlInputSchema = RequestUploadUrlInputSchema.extend({ nodeId: external_exports.string() });
 var NodeIconConfirmInputSchema = ConfirmUploadInputSchema.extend({ nodeId: external_exports.string() });
-var NodeRouteStateVOSchema = external_exports.discriminatedUnion("status", [
-  external_exports.object({
-    status: external_exports.literal("active"),
-    nodeId: external_exports.string()
-  }),
-  external_exports.object({
-    status: external_exports.literal("archived"),
-    nodeId: external_exports.string(),
-    type: external_exports.enum(NODE_TYPES),
-    name: external_exports.string(),
-    slug: external_exports.string(),
-    archivedAt: external_exports.string(),
-    canRestore: external_exports.boolean()
-  }),
-  external_exports.object({ status: external_exports.literal("unavailable") })
-]);
 var changeRequestBatchFailureSchema = external_exports.object({
   changeRequestId: external_exports.string(),
   ok: external_exports.literal(false),
@@ -24749,13 +24445,6 @@ var busabaseContractRoutes = {
       summary: "List a node's ancestor ids",
       successDescription: "The node's ancestor ids, root-first, excluding the node itself (`[]` directly under the workspace root). `nodeId` accepts an id or a slug, same as `nodes.get`; pass `type` when a slug exists under more than one type. Lets a depth-bounded, lazily-expanded tree open straight to a deep node on a cold load (a refresh, a bookmark, a shared link) without one round trip per level."
     }).input(getNodeInputSchema).output(nodeAncestorsVOSchema),
-    resolveRouteState: oc.route({
-      method: "GET",
-      path: "/nodes/route-state/{nodeId}",
-      tags: ["Nodes"],
-      summary: "Resolve whether a dashboard node route is active, archived, or unavailable",
-      successDescription: "A lightweight route state. Archived nodes return only tombstone metadata, never node content. Hidden, deleted, ambiguous, and anonymous archived nodes are all unavailable."
-    }).input(getNodeInputSchema).output(NodeRouteStateVOSchema),
     createChangeRequest: oc.route({
       method: "POST",
       path: "/nodes/change-requests",
@@ -24777,27 +24466,6 @@ var busabaseContractRoutes = {
       summary: "Update node metadata",
       successDescription: "Shallow-merged the supplied top-level keys into the active node's existing metadata. Requires write access on the node. Node CONTENT (a Doc body, or a whiteboard/workflow/html document) does not go through here \u2014 use PUT /nodes/{nodeId}/content instead."
     }).input(updateNodeMetadataInputSchema).output(nodeSchema),
-    updateSettings: oc.route({
-      method: "PATCH",
-      path: "/nodes/{nodeId}/settings",
-      tags: ["Nodes"],
-      summary: "Update node system settings",
-      successDescription: "Replaced the node's system settings. Unlike metadata this is a closed set of keys Busabase itself acts on, so an unknown key is rejected rather than stored. Send a key as null to clear it \u2014 for an AirApp's engine that returns the node to following its airapp.json. Requires write access on the node."
-    }).input(updateNodeSettingsInputSchema).output(nodeSchema),
-    getAgentPrompts: oc.route({
-      method: "GET",
-      path: "/nodes/{nodeId}/agent-prompts",
-      tags: ["Nodes"],
-      summary: "Get node custom agent prompts",
-      successDescription: "This node's custom scenario prompts, which replace the node type's default prompts in the Ask-agent dialog. `null` means the node has never had any set, which is not the same as an empty list. Read separately from the node itself because the list is large enough (50 prompts x 8 KiB per locale) that carrying it on every node listing would be its own problem. Requires read access on the node."
-    }).input(getNodeAgentPromptsInputSchema).output(nodeAgentPromptsSchema),
-    updateAgentPrompts: oc.route({
-      method: "PUT",
-      path: "/nodes/{nodeId}/agent-prompts",
-      tags: ["Nodes"],
-      summary: "Replace node custom agent prompts",
-      successDescription: "Replaced this node's custom scenario prompts \u2014 the whole list, not a merge. Send `null` to clear them and return the node to its type's default prompts. Requires write access on the node."
-    }).input(updateNodeAgentPromptsInputSchema).output(nodeAgentPromptsSchema),
     updateContent: oc.route({
       method: "PUT",
       path: "/nodes/{nodeId}/content",
@@ -24990,28 +24658,7 @@ var busabaseContractRoutes = {
       tags: ["Comments"],
       summary: "Create comment",
       successDescription: "Created comment attached to a Busabase subject."
-    }).input(createCommentInputSchema).output(commentSchema),
-    /**
-    * The Inbox's Mentions tab: comments this caller was `@`-mentioned in.
-    *
-    * Scoped to the caller — there is no "whose mentions" input, because a
-    * mention inbox that could be pointed at somebody else would be a way to
-    * read comments across the workspace by proxy.
-    */
-    listMentions: oc.route({
-      method: "GET",
-      path: "/comments/mentions",
-      tags: ["Comments"],
-      summary: "List comments that mention me",
-      successDescription: "One entry per comment the caller is mentioned in, newest first, with the unread count for the tab badge."
-    }).input(listMentionInboxInputSchema).output(mentionInboxPageSchema),
-    markMentionsRead: oc.route({
-      method: "POST",
-      path: "/comments/mentions/read",
-      tags: ["Comments"],
-      summary: "Mark my mentions on a comment as read",
-      successDescription: "Stamps every unread mention this caller has on that comment, and returns the remaining unread count."
-    }).input(markMentionsReadInputSchema).output(markMentionsReadOutputSchema)
+    }).input(createCommentInputSchema).output(commentSchema)
   },
   agent: { listTasks: oc.route({
     method: "GET",
