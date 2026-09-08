@@ -43,6 +43,207 @@
       }
     },
     {
+      "subdir": "templates/busa-ads",
+      "name": "busa-ads",
+      "description": "Ad-campaign command desk: Amazon/Meta/TikTok/Google spend and performance, deterministic anomaly detection, and an adjustment-card review queue",
+      "category": "ecommerce",
+      "tags": [
+        "ecommerce",
+        "risk:gated-write",
+        "industry:ecommerce",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/adjustments.webp",
+        "assets/screenshots/alerts.webp",
+        "assets/screenshots/campaigns.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Platforms and flag what needs my attention.",
+        "Open Busa Ads and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 23,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-ai-newsroom",
+      "name": "busa-ai-newsroom",
+      "description": "Daily industry-intelligence cockpit for AI/news-source intelligence: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (sales opener / LinkedIn post / client memo) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
+      "category": "industry-intel",
+      "tags": [
+        "industry-intel",
+        "risk:gated-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/actions.webp",
+        "assets/screenshots/drafts.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/signals.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Signals and flag what needs my attention.",
+        "Open Busa AI Newsroom and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 5,
+        "records": 3,
+        "files": 21,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-audit",
+      "name": "busa-audit",
+      "description": "Finance anomaly review desk: imported orders/invoices/payments, deterministic anomaly rules, and a human review queue",
+      "category": "finance",
+      "tags": [
+        "finance",
+        "risk:gated-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/anomalies.webp",
+        "assets/screenshots/invoices.webp",
+        "assets/screenshots/orders.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Orders and flag what needs my attention.",
+        "Open Busa Audit and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-brand",
+      "name": "busa-brand",
+      "description": "Brand-narrative single source of truth built on the TALE discipline",
+      "category": "marketing",
+      "tags": [
+        "marketing",
+        "risk:local-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/drift.webp",
+        "assets/screenshots/narrative.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/stories.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Narrative Items and flag what needs my attention.",
+        "Open Busa Brand and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 3,
+        "records": 3,
+        "files": 21,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-campaigns",
+      "name": "busa-campaigns",
+      "description": "Outbound email-marketing desk built on the SEND discipline",
+      "category": "marketing",
+      "tags": [
+        "marketing",
+        "risk:gated-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/campaigns.webp",
+        "assets/screenshots/deliverability.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/performance.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Segments and flag what needs my attention.",
+        "Open Busa Campaigns and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 3,
+        "files": 24,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-clm",
+      "name": "busa-clm",
+      "description": "Lightweight contract lifecycle desk: contract inventory, lifecycle stage, owners, obligations, renewal/notice dates, and a simple approval reminder queue. Not a legal redline/clause-review product -- see busa-legal-contracts for that. Contract records, obligation status, renewal acknowledgements, and approval decisions are all direct writes made by the operator in the browser, not a review/approval pipeline.",
+      "category": "legal",
+      "tags": [
+        "legal",
+        "risk:gated-write",
+        "industry:legal",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/approvals.webp",
+        "assets/screenshots/contracts.webp",
+        "assets/screenshots/obligations.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/renewals.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Contracts and flag what needs my attention.",
+        "Open Busa CLM and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 3,
+        "records": 3,
+        "files": 21,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-cms",
       "name": "busa-cms",
       "description": "A WordPress-style admin for a website's Posts, Pages, Categories, and Tags — the exact four Bases the busabase-cms-sdk reads.",
@@ -84,6 +285,240 @@
       }
     },
     {
+      "subdir": "templates/busa-creators",
+      "name": "busa-creators",
+      "description": "Influencer/creator marketing command desk — discovery, outreach, briefs, contracts, and ROI",
+      "category": "marketing",
+      "tags": [
+        "marketing",
+        "risk:gated-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/creators.webp",
+        "assets/screenshots/outreach.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/roi.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Creator Engagements and flag what needs my attention.",
+        "Open Busa Creators and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 2,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-crm",
+      "name": "busa-crm",
+      "description": "Contacts, companies, deals, and follow-up review workspace",
+      "category": "sales-crm",
+      "tags": [
+        "sales-crm",
+        "risk:gated-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/contacts.webp",
+        "assets/screenshots/deals.webp",
+        "assets/screenshots/followups.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest 公司 and flag what needs my attention.",
+        "Open Busa CRM and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-demo-video-factory",
+      "name": "busa-demo-video-factory",
+      "description": "Demo/marketing video planning pipeline: idea -> storyboard -> verified claims -> recording -> post-production.",
+      "category": "production",
+      "tags": [
+        "production",
+        "risk:read-only",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/video-shots.webp",
+        "assets/screenshots/videos.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the videos in production and flag which claims still need verification.",
+        "Open Busa Demo Video Factory and show me the shots that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 2,
+        "records": 3,
+        "files": 18,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-devops",
+      "name": "busa-devops",
+      "description": "Product-fleet ops desk: service health, SSL/domain/key expiries, cloud spend, and an action review queue",
+      "category": "platform",
+      "tags": [
+        "platform",
+        "risk:gated-write",
+        "surface:busabase",
+        "surface:sendgrid"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/actions.webp",
+        "assets/screenshots/expiries.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/services.webp",
+        "assets/screenshots/spend.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Services and flag what needs my attention.",
+        "Open Busa DevOps and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 7,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-digital-human",
+      "name": "busa-digital-human",
+      "description": "Digital-human solution desk: a fast 2D vendor-service path and a high-control 3D UE/Unity path, plus a launch QA gate. The project overview, personas, pipeline routes, vendor comparison, and QA checklist are curated reference content, not per-user data -- the only genuinely dynamic state is the human review verdict (approve / request changes / block) recorded against each QA gate check, written as a direct field write on its own record, mirroring busa-clm's approvals.",
+      "category": "production",
+      "tags": [
+        "production",
+        "risk:local-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/qa.webp",
+        "assets/screenshots/studio.webp",
+        "assets/screenshots/vendors.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest QA Decisions and flag what needs my attention.",
+        "Open Busa Digital Human and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 1,
+        "records": 3,
+        "files": 19,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-drama",
+      "name": "busa-drama",
+      "description": "Short-drama workspace: series bible, characters, relationships, episodes, and storyboard shots",
+      "category": "production",
+      "tags": [
+        "production",
+        "risk:local-write",
+        "surface:busabase",
+        "surface:moonrouter",
+        "surface:byteplus-ark"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/characters.webp",
+        "assets/screenshots/episodes.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/relationships.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Project and flag what needs my attention.",
+        "Open Busa Drama and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 7,
+        "records": 3,
+        "files": 49,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-ecommerce-intel",
+      "name": "busa-ecommerce-intel",
+      "description": "Daily industry-intelligence cockpit for e-commerce and cross-border sellers: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (listing copy / ad angle / customer reply) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
+      "category": "industry-intel",
+      "tags": [
+        "industry-intel",
+        "risk:gated-write",
+        "industry:ecommerce",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/actions.webp",
+        "assets/screenshots/drafts.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/signals.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Signals and flag what needs my attention.",
+        "Open Busa Ecommerce Intel and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 5,
+        "records": 3,
+        "files": 21,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-email",
       "name": "busa-email",
       "description": "Inbox triage, human review, and trusted execution — an approval-first email desk.",
@@ -115,7 +550,1432 @@
         "docs": 0,
         "bases": 3,
         "records": 7,
-        "files": 52,
+        "files": 49,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-expo-leads",
+      "name": "busa-expo-leads",
+      "description": "Trade-show lead capture desk: an SLA countdown board and a multilingual follow-up review queue",
+      "category": "sales-crm",
+      "tags": [
+        "sales-crm",
+        "industry:ecommerce",
+        "surface:whatsapp",
+        "surface:busabase",
+        "risk:gated-write"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/leads.webp",
+        "assets/screenshots/followups.webp"
+      ],
+      "agentPrompts": [
+        "Show me which leads are about to blow past the 24-hour follow-up window.",
+        "Open Busa Expo Leads and show me the follow-ups that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 18,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-family-fund",
+      "name": "busa-family-fund",
+      "description": "Household pooled-pension / elder-care fund ledger and fairness dashboard",
+      "category": "invest",
+      "tags": [
+        "invest",
+        "risk:read-only",
+        "industry:family",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/category.webp",
+        "assets/screenshots/family.webp",
+        "assets/screenshots/ledger.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Beneficiaries and flag what needs my attention.",
+        "Open Busa Family Fund and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 5,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-family-office",
+      "name": "busa-family-office",
+      "description": "Multi-entity family-office consolidation dashboard",
+      "category": "invest",
+      "tags": [
+        "invest",
+        "risk:read-only",
+        "industry:family",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/assets.webp",
+        "assets/screenshots/entities.webp",
+        "assets/screenshots/institutions.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/performance.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Entities and flag what needs my attention.",
+        "Open Busa Family Office and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-feedback",
+      "name": "busa-feedback",
+      "description": "Voice-of-customer desk: raw feedback, clustered feature requests, and the roadmap decision queue",
+      "category": "sales-crm",
+      "tags": [
+        "sales-crm",
+        "risk:gated-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/inbox.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/requests.webp",
+        "assets/screenshots/roadmap.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Products and flag what needs my attention.",
+        "Open Busa Feedback and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 8,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-finance",
+      "name": "busa-finance",
+      "description": "Busa Finance: a review workspace for a three-statement financial model — the current model snapshot (company/currency/periods/workbook), its model-quality check queue (balance-sheet ties, cash roll-forward, formula reviews), and sanitized settings",
+      "category": "finance",
+      "tags": [
+        "finance",
+        "risk:local-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/checks.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/workbook.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Model and flag what needs my attention.",
+        "Open Busa Finance and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 3,
+        "records": 3,
+        "files": 21,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-followups",
+      "name": "busa-followups",
+      "description": "会后跟进提醒：谁、跟进什么事、什么时候该完成，打开就看到今天该做什么",
+      "category": "productivity",
+      "tags": [
+        "followups",
+        "reminder"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/today.webp"
+      ],
+      "agentPrompts": [
+        "帮我记一条跟进：跟进谁、跟进什么事",
+        "今天该跟进哪些人和事"
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 1,
+        "records": 4,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-homework-coach",
+      "name": "busa-homework-coach",
+      "description": "Busa Homework Coach: a child-friendly homework desk — questions the agent explained (with the gentle step-by-step explanation), the mistake notebook, practice papers, the parent/teacher review queue, and sanitized settings",
+      "category": "education",
+      "tags": [
+        "education",
+        "risk:local-write",
+        "industry:education",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/mistakes.webp",
+        "assets/screenshots/papers.webp",
+        "assets/screenshots/review.webp",
+        "assets/screenshots/student.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Questions and flag what needs my attention.",
+        "Open Busa Homework Coach and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 5,
+        "records": 3,
+        "files": 21,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-ideas",
+      "name": "busa-ideas",
+      "description": "An idea vault with a business consultant attached — interrogate a vague idea, then carry it through BRD, MRD, and PRD.",
+      "category": "product-strategy",
+      "tags": [
+        "product-strategy",
+        "risk:gated-write",
+        "surface:busabase",
+        "ideas",
+        "brd-mrd-prd",
+        "consultant"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/idea-detail.webp",
+        "assets/screenshots/questions.webp",
+        "assets/screenshots/documents.webp"
+      ],
+      "agentPrompts": [
+        "我有个想法但说不太清楚，帮我理一理。",
+        "打开灵感库，看看哪些还等着我回答问题。",
+        "把这条灵感推进到 PRD，缺什么先问我。"
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 35,
+        "files": 27,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-insure-data",
+      "name": "busa-insure-data",
+      "description": "Insurance-industry App-in-Skill for read-only data governance, backed by an operator-provisioned Busabase workspace (one Drive node for the file drive plus four Bases for QA pairs, featured information, insurer notices, and user feedback) and trusted export/restore/PDF-text-backfill scripts. Use when the user invokes $busa-insure-data or /busa-insure-data, wants an insurance data workspace with UI, needs to review insurance files, metadata completeness, QA pairs, featured information, insurer notices, or user feedback, wants to back up or restore a Busa Insure Data Busabase workspace from local PDFs, or wants Busabase Drive/Base data surfaced for data quality review and ongoing data governance.",
+      "category": "industry-intel",
+      "tags": [
+        "industry-intel",
+        "risk:read-only",
+        "industry:insurance",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/files.webp",
+        "assets/screenshots/news.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/qa.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest 资讯精选 and flag what needs my attention.",
+        "Open Busa Insure Data and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 3,
+        "files": 20,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-invest-webull",
+      "name": "busa-invest-webull",
+      "description": "Read-only Webull brokerage portfolio dashboard (accounts, positions, insights)",
+      "category": "invest",
+      "tags": [
+        "invest",
+        "risk:read-only",
+        "surface:busabase",
+        "surface:webull"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/accounts.webp",
+        "assets/screenshots/detail.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/positions.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Accounts and flag what needs my attention.",
+        "Open Busa Invest (Webull) and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 3,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-invoice-sheet",
+      "name": "busa-invoice-sheet",
+      "description": "Busa Invoice Sheet: invoice/receipt/credit-note/statement extraction batches under human review, with field confidence, line items, and export-ready approved rows",
+      "category": "finance",
+      "tags": [
+        "finance",
+        "risk:local-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/detail-mobile.webp",
+        "assets/screenshots/detail.webp",
+        "assets/screenshots/extract-data.webp",
+        "assets/screenshots/overview-mobile.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Invoices and flag what needs my attention.",
+        "Open Busa Invoice Sheet and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 2,
+        "records": 3,
+        "files": 21,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-jobhunt",
+      "name": "busa-jobhunt",
+      "description": "Job-search profile, target companies, and outreach state",
+      "category": "comms",
+      "tags": [
+        "comms",
+        "risk:gated-write",
+        "surface:busabase",
+        "surface:smtp"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/blocked.webp",
+        "assets/screenshots/mobile-detail.webp",
+        "assets/screenshots/mobile-list.webp",
+        "assets/screenshots/profile.webp",
+        "assets/screenshots/sent.webp",
+        "assets/screenshots/to-send.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest 求职档案 and flag what needs my attention.",
+        "Open Busa JobHunt and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 3,
+        "records": 3,
+        "files": 18,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-launch",
+      "name": "busa-launch",
+      "description": "Product-launch command desk built on the RAMP discipline",
+      "category": "marketing",
+      "tags": [
+        "marketing",
+        "risk:gated-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/assets.webp",
+        "assets/screenshots/checklist.webp",
+        "assets/screenshots/launchday.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Launch Items and flag what needs my attention.",
+        "Open Busa Launch and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 3,
+        "files": 21,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-lead-funnel",
+      "name": "busa-lead-funnel",
+      "description": "Deal sourcing pipeline for a BD/sourcing team triaging merchant and business financing leads: a kanban board across new/data-verified/scored/term-sheet-ready/rejected stages with deterministic rule-based lead scoring, notes, and stage history — never outreach, term sheets, or money movement",
+      "category": "rbf",
+      "tags": [
+        "rbf",
+        "risk:local-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/kanban.webp",
+        "assets/screenshots/lead-detail.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Leads and flag what needs my attention.",
+        "Open Busa Lead Funnel and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 2,
+        "records": 3,
+        "files": 21,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-legal-casebase-ingest",
+      "name": "busa-legal-casebase-ingest",
+      "description": "Casebase intake and anonymization QA desk for law-firm judgment and arbitral award documents: agent-prepared case records, canonical case-library groupings, deterministic QA checks, and a review queue (approve / request changes / revise / block) before a record becomes a searchable knowledge asset",
+      "category": "legal",
+      "tags": [
+        "legal",
+        "risk:local-write",
+        "industry:legal",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/checks.webp",
+        "assets/screenshots/entities.webp",
+        "assets/screenshots/mobile-detail.webp",
+        "assets/screenshots/needs-review.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/workbench.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Case Records and flag what needs my attention.",
+        "Open Legal Casebase Ingest and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-legal-contracts",
+      "name": "busa-legal-contracts",
+      "description": "Legal-contract review desk: contract library, clause issues, risk checks, clause playbook, and a review queue",
+      "category": "legal",
+      "tags": [
+        "legal",
+        "risk:gated-write",
+        "industry:legal",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/checks.webp",
+        "assets/screenshots/contracts.webp",
+        "assets/screenshots/issues.webp",
+        "assets/screenshots/needs-review.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/playbook.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Contracts and flag what needs my attention.",
+        "Open Busa Legal Contracts and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 24,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-legal-firm-radar",
+      "name": "busa-legal-firm-radar",
+      "description": "Firm-level radar desk over anonymized casebase analytics: practice-area mix, case-quality indicators, lawyer capability profiles, brand proof points, and approval-gated management insights (approve / request changes / revise / block) before a report becomes a management or brand handoff",
+      "category": "legal",
+      "tags": [
+        "legal",
+        "risk:local-write",
+        "industry:legal",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/checks.webp",
+        "assets/screenshots/entities.webp",
+        "assets/screenshots/needs-review.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/workbench.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Management Insights and flag what needs my attention.",
+        "Open Legal Firm Radar and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-legal-matter-strategy",
+      "name": "busa-legal-matter-strategy",
+      "description": "Matter-strategy desk over new-case strategy, issue trees, evidence checklists, risk analysis, pleading outlines, and approval-gated drafting packs grounded in internal precedents (approve / request changes / revise / block) before a strategy pack becomes a drafting handoff",
+      "category": "legal",
+      "tags": [
+        "legal",
+        "risk:local-write",
+        "industry:legal",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/checks.webp",
+        "assets/screenshots/entities.webp",
+        "assets/screenshots/needs-review.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/workbench.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Strategy Packs and flag what needs my attention.",
+        "Open Legal Matter Strategy and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-legal-precedent-desk",
+      "name": "busa-legal-precedent-desk",
+      "description": "Precedent-research desk over internal casebase search, local court-pattern analysis, similar-case packs, citations, and approval-gated research exports (approve / request changes / revise / block) before a research pack becomes a matter-strategy input",
+      "category": "legal",
+      "tags": [
+        "legal",
+        "risk:local-write",
+        "industry:legal",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/checks.webp",
+        "assets/screenshots/entities.webp",
+        "assets/screenshots/needs-review.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/workbench.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Research Packs and flag what needs my attention.",
+        "Open Legal Precedent Desk and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-lesson",
+      "name": "busa-lesson",
+      "description": "Lesson-plan generation and compliance-check desk: plan library, compliance checks, and a review queue",
+      "category": "education",
+      "tags": [
+        "education",
+        "risk:gated-write",
+        "industry:education",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/checks.webp",
+        "assets/screenshots/needs-review.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/plans.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Teachers and flag what needs my attention.",
+        "Open Busa Lesson and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-listing",
+      "name": "busa-listing",
+      "description": "Listing factory desk: product library, platform drafts, compliance checks, claims registry, and a review queue",
+      "category": "ecommerce",
+      "tags": [
+        "ecommerce",
+        "risk:gated-write",
+        "industry:ecommerce",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/checks.webp",
+        "assets/screenshots/claims.webp",
+        "assets/screenshots/drafts.webp",
+        "assets/screenshots/needs-review.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/products.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Products and flag what needs my attention.",
+        "Open Busa Listing and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-local-model-lab",
+      "name": "busa-local-model-lab",
+      "description": "Busabase-backed control plane for local Apple Silicon fine-tuning, locked evaluation, and LoRA adapter governance.",
+      "category": "platform",
+      "tags": [
+        "platform",
+        "risk:local-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/dataset.webp",
+        "assets/screenshots/evaluations.webp",
+        "assets/screenshots/registry.webp"
+      ],
+      "agentPrompts": [
+        "Open Busa Local Model Lab and show me which examples need review.",
+        "Prepare a reproducible local QLoRA run from the approved Busabase dataset.",
+        "Compare the latest adapter with its untouched baseline on locked cases."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 5,
+        "records": 6,
+        "files": 25,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-messenger",
+      "name": "busa-messenger",
+      "description": "Unified chat inbox: WhatsApp/Discord/Slack/Telegram accounts, conversations, messages, and a reply outbox",
+      "category": "comms",
+      "tags": [
+        "comms",
+        "risk:gated-write",
+        "surface:busabase",
+        "surface:whatsapp",
+        "surface:discord",
+        "surface:slack",
+        "surface:telegram"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/accounts.webp",
+        "assets/screenshots/chat.webp",
+        "assets/screenshots/inbox.webp",
+        "assets/screenshots/outbox.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Accounts and flag what needs my attention.",
+        "Open Busa Messenger and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-money",
+      "name": "busa-money",
+      "description": "Aggregated money ledger across Mercury, Stripe, Airwallex, and Creem",
+      "category": "finance",
+      "tags": [
+        "finance",
+        "risk:read-only",
+        "surface:busabase",
+        "surface:mercury",
+        "surface:stripe",
+        "surface:airwallex",
+        "surface:creem"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/accounts.webp",
+        "assets/screenshots/detail.webp",
+        "assets/screenshots/invoices.webp",
+        "assets/screenshots/ledger.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Accounts and flag what needs my attention.",
+        "Open Busa Money and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 5,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-mv",
+      "name": "busa-mv",
+      "description": "Music-video workspace: song, concept, cast reference cards, and storyboard shots",
+      "category": "production",
+      "tags": [
+        "production",
+        "risk:local-write",
+        "surface:busabase",
+        "surface:moonrouter"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/cast.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/song.webp",
+        "assets/screenshots/storyboard.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Project and flag what needs my attention.",
+        "Open Busa MV and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 3,
+        "files": 25,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-picks",
+      "name": "busa-picks",
+      "description": "Product-research (选品) desk: trend sweeps, margin cards, competition reads, and a develop/watch/drop review queue",
+      "category": "ecommerce",
+      "tags": [
+        "ecommerce",
+        "risk:local-write",
+        "industry:ecommerce",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/candidates.webp",
+        "assets/screenshots/decisions.webp",
+        "assets/screenshots/detail.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Candidates and flag what needs my attention.",
+        "Open Busa Picks and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 25,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-portfolio-health",
+      "name": "busa-portfolio-health",
+      "description": "Read-mostly dashboard over a revenue-based-financing (RBF) fund or private-credit book of many small SME contracts: portfolio health, AUM, repayment progress, industry/city concentration risk, and a watchlist of contracts with declining revenue. The only human action — flag a contract for review, clear a flag, or leave a note — is written directly onto the contract's own record; there is no separate approval queue and no transaction path. Generic and brand-free.",
+      "category": "rbf",
+      "tags": [
+        "rbf",
+        "risk:local-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/concentration.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/watchlist.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Contracts and flag what needs my attention.",
+        "Open Busa Portfolio Health and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 2,
+        "records": 3,
+        "files": 24,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-portrait-retouch",
+      "name": "busa-portrait-retouch",
+      "description": "Natural portrait retouch jobs, reviewable candidates, and non-secret workflow settings",
+      "category": "production",
+      "tags": [
+        "production",
+        "risk:local-write",
+        "industry:beauty",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the retouch batches and flag what needs my approval.",
+        "Open Busa Portrait Retouch and show me the edits waiting for review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 3,
+        "records": 3,
+        "files": 23,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-ppt-factory",
+      "name": "busa-ppt-factory",
+      "description": "Project-based PPTX production desk — project, deck, slide card, style system, QA checks, and generated exports, with a review queue (approve / request changes / block / revise) gating PPTX generation",
+      "category": "production",
+      "tags": [
+        "production",
+        "risk:local-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/decks.webp",
+        "assets/screenshots/exports.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/projects.webp",
+        "assets/screenshots/review.webp",
+        "assets/screenshots/slides.webp",
+        "assets/screenshots/style.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Projects and flag what needs my attention.",
+        "Open Busa PPT Factory and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 7,
+        "records": 3,
+        "files": 21,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-pr-review",
+      "name": "busa-pr-review",
+      "description": "GitHub pull request review desk backed by the gh CLI",
+      "category": "platform",
+      "tags": [
+        "platform",
+        "risk:gated-write",
+        "surface:busabase",
+        "surface:github"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/blocked-security.webp",
+        "assets/screenshots/needs-review.webp",
+        "assets/screenshots/needs-test.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/ready.webp",
+        "assets/screenshots/tested.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Reviews and flag what needs my attention.",
+        "Open Busa PR Review and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 2,
+        "records": 3,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-product-hub",
+      "name": "busa-product-hub",
+      "description": "Product & certification hub for export/trade sellers: catalog/SKU master data, pricing, inventory, channel status (Amazon/Shopify/TikTok Shop/eBay), content readiness, compliance notes, lifecycle state, a certificate expiry tracker (CE/FCC/RoHS/UN38.3/UKCA), and an approval-gated review queue (channel publish approvals, price-change review, quality holds, lifecycle decisions, and unsourced spec claims). The AirApp itself only ever decides on a review item (approve/request_changes/block) directly onto its own record -- it never creates a product, channel, inventory, or certificate row.",
+      "category": "ecommerce",
+      "tags": [
+        "ecommerce",
+        "risk:local-write",
+        "industry:ecommerce",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/products.webp",
+        "assets/screenshots/certificates.webp",
+        "assets/screenshots/review.webp",
+        "assets/screenshots/inventory.webp",
+        "assets/screenshots/channels.webp"
+      ],
+      "agentPrompts": [
+        "Show me which certificates are expiring soon or already expired.",
+        "Summarize the latest products and flag what needs my attention.",
+        "Open Busa Product Hub and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 8,
+        "files": 32,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-radar",
+      "name": "busa-radar",
+      "description": "Market-intelligence desk: competitor signals, research briefs/reports, trend movers/opportunities, and a triage review queue",
+      "category": "growth",
+      "tags": [
+        "growth",
+        "risk:local-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/research.webp",
+        "assets/screenshots/signals.webp",
+        "assets/screenshots/trends.webp",
+        "assets/screenshots/watchlist.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Watchlist and flag what needs my attention.",
+        "Open Busa Radar and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 9,
+        "records": 3,
+        "files": 23,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-retail-intel",
+      "name": "busa-retail-intel",
+      "description": "Daily industry-intelligence cockpit for retail stores and consumer brands: source-backed signals, buyer-intent interpretation, approved sales/merchandising actions, and channel drafts (staff brief / IG story / store sign) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
+      "category": "industry-intel",
+      "tags": [
+        "industry-intel",
+        "risk:gated-write",
+        "industry:retail",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/actions.webp",
+        "assets/screenshots/drafts.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/signals.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Signals and flag what needs my attention.",
+        "Open Busa Retail Intel and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 5,
+        "records": 3,
+        "files": 21,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-sales-outreach",
+      "name": "busa-sales-outreach",
+      "description": "Product positioning, ideal-customer profile, target accounts, contacts, and reviewed outreach",
+      "category": "sales-crm",
+      "tags": [
+        "sales-crm",
+        "risk:gated-write",
+        "surface:busabase",
+        "surface:smtp"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/blocked.webp",
+        "assets/screenshots/profile.webp",
+        "assets/screenshots/sent.webp",
+        "assets/screenshots/to-send.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest 产品与 ICP and flag what needs my attention.",
+        "Open Busa Sales Outreach and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 3,
+        "records": 3,
+        "files": 18,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-seo",
+      "name": "busa-seo",
+      "description": "SEO + GEO (AI-search) + brand-entity desk: Search Console analytics, an SEO opportunities review queue, an AI-visibility tracker, a geo-qa-gated GEO content queue, and an entity/knowledge-panel readiness checklist",
+      "category": "growth",
+      "tags": [
+        "growth",
+        "risk:local-write",
+        "surface:busabase",
+        "surface:gsc"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/entity.webp",
+        "assets/screenshots/geo.webp",
+        "assets/screenshots/opportunities.webp",
+        "assets/screenshots/optimize.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/pages.webp",
+        "assets/screenshots/queries.webp",
+        "assets/screenshots/sites.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Sites and flag what needs my attention.",
+        "Open Busa SEO and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 8,
+        "records": 3,
+        "files": 26,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-social",
+      "name": "busa-social",
+      "description": "Social media command desk: cross-platform monitoring plus an ECHO publishing desk",
+      "category": "marketing",
+      "tags": [
+        "marketing",
+        "risk:gated-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/accounts.webp",
+        "assets/screenshots/calendar.webp",
+        "assets/screenshots/compose.webp",
+        "assets/screenshots/crisis.webp",
+        "assets/screenshots/detail.webp",
+        "assets/screenshots/engagement.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/shorts.webp",
+        "assets/screenshots/timeline.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Accounts and flag what needs my attention.",
+        "Open Busa Social and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 8,
+        "records": 3,
+        "files": 25,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-standup",
+      "name": "busa-standup",
+      "description": "Team standup board: check-ins, blockers, and missing-check-in reminders",
+      "category": "comms",
+      "tags": [
+        "comms",
+        "risk:local-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/blockers.webp",
+        "assets/screenshots/history.webp",
+        "assets/screenshots/members.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/reminders.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Members and flag what needs my attention.",
+        "Open Busa Standup and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 25,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-support",
+      "name": "busa-support",
+      "description": "Customer-support desk: tickets, knowledge base, and the support-qa quality gate",
+      "category": "sales-crm",
+      "tags": [
+        "sales-crm",
+        "risk:gated-write",
+        "surface:busabase",
+        "surface:whatsapp",
+        "surface:wechat",
+        "surface:webchat"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/knowledge.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/sla.webp",
+        "assets/screenshots/tickets.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Accounts and flag what needs my attention.",
+        "Open Busa Support and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 25,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-tickets",
+      "name": "busa-tickets",
+      "description": "Complaint/ticket triage-and-dispatch desk: intake stream, ticket board, and a dispatch review queue",
+      "category": "sales-crm",
+      "tags": [
+        "sales-crm",
+        "risk:gated-write",
+        "industry:property-management",
+        "surface:busabase",
+        "surface:wechat"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/board.webp",
+        "assets/screenshots/dispatch.webp",
+        "assets/screenshots/intake.webp",
+        "assets/screenshots/overview.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Crews and flag what needs my attention.",
+        "Open Busa Tickets and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 3,
+        "files": 23,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-wechat-crm",
+      "name": "busa-wechat-crm",
+      "description": "Goal-first WeChat relationship desk that promotes only selected contacts into focused People workflows.",
+      "category": "sales-crm",
+      "tags": [
+        "sales-crm",
+        "wechat",
+        "relationship-strategy",
+        "risk:local-write",
+        "surface:busabase",
+        "goals",
+        "relationship-analysis",
+        "next-actions",
+        "agent-worklog"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/actions.webp",
+        "assets/screenshots/people.webp",
+        "assets/screenshots/snapshots.webp",
+        "assets/screenshots/goals.webp",
+        "assets/screenshots/mobile-actions.webp"
+      ],
+      "agentPrompts": [
+        "先创建一个目标，再从本机通讯录选择要重点关注的人。",
+        "我想为一款产品找到合适的试用者，请建立目标并提出下一步行动。",
+        "分析我和指定联系人最近一个月的关系变化，生成快照和建议。"
+      ],
+      "version": "0.3.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 45,
+        "files": 21,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-writer",
+      "name": "busa-writer",
+      "description": "Channel-ready content drafting and review desk",
+      "category": "marketing",
+      "tags": [
+        "marketing",
+        "risk:gated-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/distribution.webp",
+        "assets/screenshots/main.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/topics.webp"
+      ],
+      "agentPrompts": [
+        "Summarize the latest Drafts and flag what needs my attention.",
+        "Open Busa Writer and show me the items that need review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 2,
+        "records": 3,
+        "files": 22,
         "airapps": 1,
         "skill": true
       }

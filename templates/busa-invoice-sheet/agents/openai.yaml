@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Invoice Sheet"
+  short_description: "Turn invoices into reviewable export tables"
+  default_prompt: "Use $busa-invoice-sheet to extract invoice files into a clean review table and export CSV or JSON."

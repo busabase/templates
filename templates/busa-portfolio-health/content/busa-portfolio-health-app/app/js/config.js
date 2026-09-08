@@ -1,0 +1,67 @@
+export const appConfig = {
+  appId: "busa-portfolio-health",
+  appName: "Busa Portfolio Health",
+  deployment: "cloud",
+  locale: "auto",
+  readOnly: false,
+  spaceId: "",
+  schemaVersion: 1,
+  folder: {
+    name: "Busa Portfolio Health",
+    description:
+      "Read-mostly dashboard over a revenue-based-financing (RBF) fund or private-credit book of many small SME contracts: portfolio health, AUM, repayment progress, industry/city concentration risk, and a watchlist of contracts with declining revenue. The only human action — flag a contract for review, clear a flag, or leave a note — is written directly onto the contract's own record; there is no separate approval queue and no transaction path. Generic and brand-free.",
+    slug: "busa-portfolio-health",
+  },
+  airApp: {
+    name: "Busa Portfolio Health",
+    slug: "busa-portfolio-health-app",
+    resourceKey: "busa-portfolio-health-app",
+  },
+  bases: [
+    {
+      key: "contracts",
+      name: "Contracts",
+      slug: "busa-portfolio-health-contracts",
+      description:
+        "One row per RBF/private-credit contract: funding terms, cumulative repayment, a 6-month monthly-revenue series (JSON array), status, and the human review flag/note/decision timestamp written directly onto the same row. Totals, repayment lag, concentration, and the revenue-decline watchlist are never stored — they are pure/derived from these rows and recomputed on every read.",
+      readLimit: 50,
+      fields: [
+        { slug: "contract-id", name: "Contract ID", type: "text", required: true },
+        { slug: "business-name", name: "Business name", type: "text", required: true },
+        { slug: "category", name: "Category", type: "text", required: false },
+        { slug: "city", name: "City", type: "text", required: false },
+        { slug: "origination-date", name: "Origination date", type: "text", required: false },
+        { slug: "months-since-origination", name: "Months since origination", type: "number", required: false },
+        { slug: "expected-term-months", name: "Expected term (months)", type: "number", required: false },
+        { slug: "funding-amount", name: "Funding amount", type: "number", required: false },
+        { slug: "cap-multiple", name: "Cap multiple", type: "number", required: false },
+        { slug: "cap-amount", name: "Cap amount", type: "number", required: false },
+        { slug: "cumulative-repayment", name: "Cumulative repayment", type: "number", required: false },
+        { slug: "monthly-revenue", name: "Monthly revenue (JSON array)", type: "longtext", required: false },
+        { slug: "status", name: "Status", type: "text", required: false },
+        { slug: "currency", name: "Currency", type: "text", required: false },
+        { slug: "flagged", name: "Flagged for review", type: "text", required: false },
+        { slug: "note", name: "Review note", type: "longtext", required: false },
+        { slug: "decision-updated-at", name: "Decision updated at", type: "text", required: false },
+      ],
+    },
+    {
+      key: "settings",
+      name: "Settings",
+      slug: "busa-portfolio-health-settings",
+      description: "Sanitized config summary (fund name, base currency, risk-policy thresholds), one row keyed by kind",
+      readLimit: 20,
+      fields: [
+        { slug: "record-id", name: "Record ID", type: "text", required: true },
+        { slug: "kind", name: "Kind", type: "text", required: true },
+        { slug: "payload", name: "Payload (JSON object)", type: "longtext", required: false },
+        { slug: "updated-at", name: "Updated at", type: "text", required: false },
+      ],
+    },
+  ],
+  permissions: {
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
+    writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
+  },
+};

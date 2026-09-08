@@ -1,0 +1,198 @@
+{
+  "name": "重点联系人",
+  "description": "经用户确认从本机通讯录晋升的重点联系人，不是完整微信通讯录镜像。",
+  "position": 0,
+  "fields": [
+    {
+      "slug": "display-name",
+      "name": "昵称",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "username",
+      "name": "微信 ID (wxid)",
+      "type": "text",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "wechat-remark",
+      "name": "微信原备注",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "relationship-note",
+      "name": "关系记录",
+      "type": "longtext",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "suggested-wechat-remark",
+      "name": "建议微信备注",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "relationship-type",
+      "name": "关系类型",
+      "type": "select",
+      "required": false,
+      "position": 5,
+      "options": {
+        "choices": [
+          {
+            "id": "customer",
+            "name": "客户"
+          },
+          {
+            "id": "prospect",
+            "name": "潜在客户"
+          },
+          {
+            "id": "friend",
+            "name": "朋友"
+          },
+          {
+            "id": "romantic-interest",
+            "name": "希望进一步了解"
+          },
+          {
+            "id": "family",
+            "name": "家人"
+          },
+          {
+            "id": "other",
+            "name": "其他"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "relationship-strength",
+      "name": "关系强度",
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "relationship-trend",
+      "name": "关系趋势",
+      "type": "select",
+      "required": false,
+      "position": 7,
+      "options": {
+        "choices": [
+          {
+            "id": "warming",
+            "name": "升温"
+          },
+          {
+            "id": "stable",
+            "name": "稳定"
+          },
+          {
+            "id": "cooling",
+            "name": "降温"
+          },
+          {
+            "id": "unknown",
+            "name": "未知"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "relationship-analysis",
+      "name": "关系分析",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "open-loops",
+      "name": "未完成事项",
+      "type": "longtext",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "last-message-at",
+      "name": "最近消息时间",
+      "type": "date",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "last-message-summary",
+      "name": "最近消息摘要",
+      "type": "text",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "unread-count",
+      "name": "未读数",
+      "type": "number",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "current-goal-summary",
+      "name": "当前目标",
+      "type": "text",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "next-action-summary",
+      "name": "下一步建议",
+      "type": "text",
+      "required": false,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "analysis-confidence",
+      "name": "分析置信度",
+      "type": "number",
+      "required": false,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "last-analyzed-at",
+      "name": "上次分析时间",
+      "type": "date",
+      "required": false,
+      "position": 16,
+      "options": {}
+    },
+    {
+      "slug": "last-synced-at",
+      "name": "上次同步时间",
+      "type": "date",
+      "required": false,
+      "position": 17,
+      "options": {}
+    }
+  ],
+  "views": []
+}

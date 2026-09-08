@@ -1,0 +1,165 @@
+{
+  "name": "Leads",
+  "description": "Booth leads captured the moment a buyer is met",
+  "position": 1,
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "company",
+      "name": "Company",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "country",
+      "name": "Country",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "language",
+      "name": "Language",
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "en",
+            "name": "English"
+          },
+          {
+            "id": "es",
+            "name": "Spanish"
+          },
+          {
+            "id": "ar",
+            "name": "Arabic"
+          },
+          {
+            "id": "zh",
+            "name": "Chinese"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "batch",
+      "name": "Batch",
+      "type": "relation",
+      "required": false,
+      "position": 4,
+      "options": {
+        "targetBaseSlug": "batches",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "card-photo",
+      "name": "Card photo",
+      "type": "attachment",
+      "required": false,
+      "position": 5,
+      "options": {
+        "attachment": {
+          "maxFiles": 1
+        }
+      }
+    },
+    {
+      "slug": "product-interest",
+      "name": "Product interest",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "contact-channel",
+      "name": "Contact channel",
+      "type": "select",
+      "required": false,
+      "position": 7,
+      "options": {
+        "choices": [
+          {
+            "id": "whatsapp",
+            "name": "WhatsApp"
+          },
+          {
+            "id": "email",
+            "name": "Email"
+          },
+          {
+            "id": "wechat",
+            "name": "WeChat"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "contact-handle",
+      "name": "Contact handle",
+      "type": "text",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "met-at",
+      "name": "Met at",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "stage",
+      "name": "Stage",
+      "type": "select",
+      "required": false,
+      "position": 10,
+      "options": {
+        "choices": [
+          {
+            "id": "new",
+            "name": "New"
+          },
+          {
+            "id": "contacted",
+            "name": "Contacted"
+          },
+          {
+            "id": "replied",
+            "name": "Replied"
+          },
+          {
+            "id": "qualified",
+            "name": "Qualified"
+          },
+          {
+            "id": "lost",
+            "name": "Lost"
+          }
+        ],
+        "default": "new"
+      }
+    }
+  ],
+  "views": []
+}

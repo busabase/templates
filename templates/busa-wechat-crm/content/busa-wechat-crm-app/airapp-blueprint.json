@@ -1,0 +1,1711 @@
+{
+  "schema_version": 4,
+  "app": {
+    "name": "微信关系攻略",
+    "slug": "busa-wechat-crm",
+    "airapp_slug": "busa-wechat-crm-app",
+    "description": "先设定目标，再从本机微信发现并晋升值得持续关注的人。",
+    "locale": "zh-CN",
+    "deployment": "desktop",
+    "space_id": "",
+    "read_only": false,
+    "brand": {
+      "mode": "inferred",
+      "accent": "#07C160",
+      "logo_path": ""
+    }
+  },
+  "workspace": {
+    "folder": {
+      "name": "微信关系攻略",
+      "description": "目标、重点联系人、关系快照、行动建议和 Agent 工作日志",
+      "slug": "busa-wechat-crm"
+    },
+    "bases": [
+      {
+        "key": "people",
+        "name": "重点联系人",
+        "slug": "busa-wechat-crm-people",
+        "read_limit": 50,
+        "description": "经用户确认从本机通讯录晋升的重点联系人，不是完整微信通讯录镜像。",
+        "fields": [
+          {
+            "slug": "display-name",
+            "name": "昵称",
+            "type": "text",
+            "required": true
+          },
+          {
+            "slug": "username",
+            "name": "微信 ID (wxid)",
+            "type": "text",
+            "required": true
+          },
+          {
+            "slug": "wechat-remark",
+            "name": "微信原备注",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "relationship-note",
+            "name": "关系记录",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "suggested-wechat-remark",
+            "name": "建议微信备注",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "relationship-type",
+            "name": "关系类型",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "customer",
+                  "name": "客户"
+                },
+                {
+                  "id": "prospect",
+                  "name": "潜在客户"
+                },
+                {
+                  "id": "friend",
+                  "name": "朋友"
+                },
+                {
+                  "id": "romantic-interest",
+                  "name": "希望进一步了解"
+                },
+                {
+                  "id": "family",
+                  "name": "家人"
+                },
+                {
+                  "id": "other",
+                  "name": "其他"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "relationship-strength",
+            "name": "关系强度",
+            "type": "number",
+            "required": false
+          },
+          {
+            "slug": "relationship-trend",
+            "name": "关系趋势",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "warming",
+                  "name": "升温"
+                },
+                {
+                  "id": "stable",
+                  "name": "稳定"
+                },
+                {
+                  "id": "cooling",
+                  "name": "降温"
+                },
+                {
+                  "id": "unknown",
+                  "name": "未知"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "relationship-analysis",
+            "name": "关系分析",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "open-loops",
+            "name": "未完成事项",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "last-message-at",
+            "name": "最近消息时间",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "last-message-summary",
+            "name": "最近消息摘要",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "unread-count",
+            "name": "未读数",
+            "type": "number",
+            "required": false
+          },
+          {
+            "slug": "current-goal-summary",
+            "name": "当前目标",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "next-action-summary",
+            "name": "下一步建议",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "analysis-confidence",
+            "name": "分析置信度",
+            "type": "number",
+            "required": false
+          },
+          {
+            "slug": "last-analyzed-at",
+            "name": "上次分析时间",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "last-synced-at",
+            "name": "上次同步时间",
+            "type": "date",
+            "required": false
+          }
+        ],
+        "seed_records": [
+          {
+            "display-name": "小雨",
+            "username": "wxid_demo_xiaoyu",
+            "wechat-remark": "小雨（摄影）",
+            "relationship-note": "朋友聚会认识，会聊摄影和展览；她明确说忙的时候不喜欢连环消息。",
+            "suggested-wechat-remark": "小雨｜胶片摄影｜周末展览",
+            "relationship-type": "romantic-interest",
+            "relationship-strength": 67,
+            "relationship-trend": "warming",
+            "relationship-analysis": "互动轻松且有共同兴趣，但样本还少；适合提出一次具体、容易拒绝的邀请。",
+            "open-loops": "她提过想看新开的胶片摄影展。",
+            "last-message-at": "2026-08-24T13:20:00.000Z",
+            "last-message-summary": "那个胶片展看起来有点意思。",
+            "unread-count": 1,
+            "current-goal-summary": "在尊重边界的前提下约一次双方都期待的周末咖啡或展览",
+            "next-action-summary": "邀请她周六一起看摄影展，并明确不方便也没关系",
+            "analysis-confidence": 0.66,
+            "last-analyzed-at": "2026-08-25T03:10:00.000Z",
+            "last-synced-at": "2026-08-25T03:00:00.000Z"
+          },
+          {
+            "display-name": "张三",
+            "username": "wxid_demo_zhangsan",
+            "wechat-remark": "老同学",
+            "relationship-note": "认识多年，最近在关注团队协作工具。",
+            "suggested-wechat-remark": "张三｜老同学｜SaaS",
+            "relationship-type": "prospect",
+            "relationship-strength": 72,
+            "relationship-trend": "cooling",
+            "relationship-analysis": "信任基础不错，但近九天没有互动；适合先恢复交流，不宜直接推销。",
+            "open-loops": "上次提到下次到台北约咖啡。",
+            "last-message-at": "2026-08-16T09:30:00.000Z",
+            "last-message-summary": "下次到台北再约咖啡。",
+            "unread-count": 0,
+            "current-goal-summary": "了解他是否需要团队知识库产品",
+            "next-action-summary": "先问候近况，再自然确认台北行程",
+            "analysis-confidence": 0.78,
+            "last-analyzed-at": "2026-08-25T02:35:00.000Z",
+            "last-synced-at": "2026-08-25T02:30:00.000Z"
+          },
+          {
+            "display-name": "陈老板",
+            "username": "wxid_demo_chen",
+            "wechat-remark": "陈总｜连锁餐饮",
+            "relationship-note": "经营 12 家门店，最近在评估客服和会员运营自动化。",
+            "suggested-wechat-remark": "陈总｜12 店｜客服自动化",
+            "relationship-type": "prospect",
+            "relationship-strength": 75,
+            "relationship-trend": "stable",
+            "relationship-analysis": "有明确业务问题，也愿意看案例；下一步应给针对门店场景的短 demo，而不是通用产品介绍。",
+            "open-loops": "答应补一份门店客服排班成本测算。",
+            "last-message-at": "2026-08-23T08:40:00.000Z",
+            "last-message-summary": "你把那个门店版 demo 发我看看。",
+            "unread-count": 0,
+            "current-goal-summary": "把 AI 客服产品卖给 10 个真正匹配的客户",
+            "next-action-summary": "发送两分钟门店版 demo 和成本测算，约 20 分钟反馈",
+            "analysis-confidence": 0.86,
+            "last-analyzed-at": "2026-08-25T03:12:00.000Z",
+            "last-synced-at": "2026-08-25T03:00:00.000Z"
+          },
+          {
+            "display-name": "林顾问",
+            "username": "wxid_demo_lin_insurance",
+            "wechat-remark": "林顾问｜企业保险",
+            "relationship-note": "去年主动介绍过团体医疗险，熟悉中小企业主，也愿意交换服务商资源。",
+            "suggested-wechat-remark": "林顾问｜企业保险｜渠道合作",
+            "relationship-type": "prospect",
+            "relationship-strength": 54,
+            "relationship-trend": "stable",
+            "relationship-analysis": "对方不是当前产品的直接买家，但客户群与我们高度重合，更适合验证互荐合作而不是硬推产品。",
+            "open-loops": "他说可以找时间交换各自服务的典型客户画像。",
+            "last-message-at": "2026-08-20T06:45:00.000Z",
+            "last-message-summary": "你们现在主要服务什么规模的企业？",
+            "unread-count": 0,
+            "current-goal-summary": "把曾向我推销的服务商发展成互相介绍机会的合作伙伴",
+            "next-action-summary": "发一页客户画像，先确认双方有没有真实互荐空间",
+            "analysis-confidence": 0.71,
+            "last-analyzed-at": "2026-08-25T04:10:00.000Z",
+            "last-synced-at": "2026-08-25T04:00:00.000Z"
+          },
+          {
+            "display-name": "Kevin 周",
+            "username": "wxid_demo_kevin_cloud",
+            "wechat-remark": "Kevin｜云服务",
+            "relationship-note": "曾连续跟进云迁移和续费方案；现在负责创业公司客户，近期问过 AI 应用交付能力。",
+            "suggested-wechat-remark": "Kevin｜云服务｜AI 交付合作",
+            "relationship-type": "prospect",
+            "relationship-strength": 61,
+            "relationship-trend": "warming",
+            "relationship-analysis": "过去是供应商销售关系，但他手上的客户可能需要 AI 自动化落地；应先了解客户问题，再介绍我们的能力。",
+            "open-loops": "他提到有两个客户在找知识库和客服自动化方案。",
+            "last-message-at": "2026-08-24T10:15:00.000Z",
+            "last-message-summary": "你们现在还接企业 AI 落地项目吗？",
+            "unread-count": 2,
+            "current-goal-summary": "从曾向我推销的人中找到适合反向介绍产品与服务的对象",
+            "next-action-summary": "确认两个客户的行业和决策阶段，再给对应案例",
+            "analysis-confidence": 0.82,
+            "last-analyzed-at": "2026-08-25T04:18:00.000Z",
+            "last-synced-at": "2026-08-25T04:00:00.000Z"
+          },
+          {
+            "display-name": "Sophia 吴",
+            "username": "wxid_demo_sophia_hr",
+            "wechat-remark": "Sophia｜HR SaaS",
+            "relationship-note": "曾演示招聘 SaaS，最近在研究 AI 面试纪要和候选人知识库。",
+            "suggested-wechat-remark": "Sophia｜HR 科技｜AI 场景",
+            "relationship-type": "prospect",
+            "relationship-strength": 58,
+            "relationship-trend": "warming",
+            "relationship-analysis": "有明确行业场景和产品经验，适合从联合方案切入，不适合直接推通用 Agent。",
+            "open-loops": "答应交换一份 HR Agent 评测清单。",
+            "last-message-at": "2026-08-22T07:30:00.000Z",
+            "last-message-summary": "你们有没有做过面试纪要准确率评测？",
+            "unread-count": 1,
+            "current-goal-summary": "在专业服务行业找到 5 个可落地的 AI 自动化场景",
+            "next-action-summary": "分享评测框架并了解她的客户试点范围",
+            "analysis-confidence": 0.77,
+            "last-analyzed-at": "2026-08-25T04:25:00.000Z",
+            "last-synced-at": "2026-08-25T04:00:00.000Z"
+          },
+          {
+            "display-name": "阿杰",
+            "username": "wxid_demo_ajie",
+            "wechat-remark": "阿杰｜攀岩",
+            "relationship-note": "认识六年的朋友，常组织户外活动；最近因为双方出差两个月没见。",
+            "suggested-wechat-remark": "阿杰｜老朋友｜攀岩",
+            "relationship-type": "friend",
+            "relationship-strength": 81,
+            "relationship-trend": "cooling",
+            "relationship-analysis": "关系基础强，降温主要来自日程而非冲突；一次具体邀约足够，不需要过度解释。",
+            "open-loops": "说好天气凉一点去龙洞攀岩。",
+            "last-message-at": "2026-07-18T12:10:00.000Z",
+            "last-message-summary": "九月回来约龙洞。",
+            "unread-count": 0,
+            "current-goal-summary": "恢复与三位重要老朋友的稳定联系",
+            "next-action-summary": "给两个可选周末，约一次攀岩或晚饭",
+            "analysis-confidence": 0.88,
+            "last-analyzed-at": "2026-08-25T04:30:00.000Z",
+            "last-synced-at": "2026-08-25T04:00:00.000Z"
+          },
+          {
+            "display-name": "王律师",
+            "username": "wxid_demo_wang_lawyer",
+            "wechat-remark": "王律师｜商事合同",
+            "relationship-note": "曾提供合同审查服务，律所正在评估知识检索和案件资料整理工具。",
+            "suggested-wechat-remark": "王律师｜合同｜法律 AI",
+            "relationship-type": "prospect",
+            "relationship-strength": 64,
+            "relationship-trend": "warming",
+            "relationship-analysis": "有真实文档工作量和内部推动意愿；必须先处理保密与引用准确性，再谈效率。",
+            "open-loops": "需要一份不上传客户原文的本地演示方案。",
+            "last-message-at": "2026-08-23T03:40:00.000Z",
+            "last-message-summary": "如果不上云，能不能先用脱敏合同试？",
+            "unread-count": 0,
+            "current-goal-summary": "在专业服务行业找到 5 个可落地的 AI 自动化场景",
+            "next-action-summary": "准备脱敏合同演示和数据边界说明",
+            "analysis-confidence": 0.84,
+            "last-analyzed-at": "2026-08-25T04:35:00.000Z",
+            "last-synced-at": "2026-08-25T04:00:00.000Z"
+          },
+          {
+            "display-name": "May 陈",
+            "username": "wxid_demo_may_property",
+            "wechat-remark": "May｜商业地产",
+            "relationship-note": "两年前介绍过办公室，手上有大量企业租户线索，但跟进主要靠个人微信。",
+            "suggested-wechat-remark": "May｜商业地产｜线索自动化",
+            "relationship-type": "prospect",
+            "relationship-strength": 49,
+            "relationship-trend": "stable",
+            "relationship-analysis": "可能有线索整理需求，但当前证据只是行业推断；必须先验证她是否真的被跟进工作困扰。",
+            "open-loops": "她说月底可以聊聊客户跟进流程。",
+            "last-message-at": "2026-08-19T09:05:00.000Z",
+            "last-message-summary": "我客户都在微信里，整理起来挺麻烦。",
+            "unread-count": 0,
+            "current-goal-summary": "在专业服务行业找到 5 个可落地的 AI 自动化场景",
+            "next-action-summary": "用五个问题确认线索量、重复工作和合规边界",
+            "analysis-confidence": 0.62,
+            "last-analyzed-at": "2026-08-25T04:40:00.000Z",
+            "last-synced-at": "2026-08-25T04:00:00.000Z"
+          },
+          {
+            "display-name": "周老师",
+            "username": "wxid_demo_mentor_zhou",
+            "wechat-remark": "周老师｜前主管",
+            "relationship-note": "职业早期的主管和导师，关键转型时给过直接建议；不喜欢只在有事时被联系。",
+            "suggested-wechat-remark": "周老师｜导师｜产品战略",
+            "relationship-type": "friend",
+            "relationship-strength": 87,
+            "relationship-trend": "stable",
+            "relationship-analysis": "高信任、低频关系。联系应以真诚近况和感谢为主，不把导师关系工具化。",
+            "open-loops": "答应产品方向稳定后分享一次复盘。",
+            "last-message-at": "2026-06-30T11:20:00.000Z",
+            "last-message-summary": "方向比速度重要，先想清楚你不做什么。",
+            "unread-count": 0,
+            "current-goal-summary": "恢复与三位重要老朋友和导师的稳定联系",
+            "next-action-summary": "发一页近况复盘，单纯汇报，不索取资源",
+            "analysis-confidence": 0.91,
+            "last-analyzed-at": "2026-08-25T04:45:00.000Z",
+            "last-synced-at": "2026-08-25T04:00:00.000Z"
+          },
+          {
+            "display-name": "安安表姐",
+            "username": "wxid_demo_cousin_an",
+            "wechat-remark": "安安姐｜杭州",
+            "relationship-note": "家族里最常联系的人，最近照顾长辈很忙；不适合把家庭聊天变成任务管理。",
+            "suggested-wechat-remark": "安安姐｜家人｜杭州",
+            "relationship-type": "family",
+            "relationship-strength": 92,
+            "relationship-trend": "stable",
+            "relationship-analysis": "关系健康，当前重点是分担而不是提高互动频率。",
+            "open-loops": "确认中秋返程时间，分担长辈复诊安排。",
+            "last-message-at": "2026-08-24T14:00:00.000Z",
+            "last-message-summary": "复诊我先约，你帮忙看下返程票就好。",
+            "unread-count": 1,
+            "current-goal-summary": "让家庭协作更轻松，不把关心变成催促",
+            "next-action-summary": "确认返程票并回复具体可承担的事项",
+            "analysis-confidence": 0.93,
+            "last-analyzed-at": "2026-08-25T04:50:00.000Z",
+            "last-synced-at": "2026-08-25T04:00:00.000Z"
+          },
+          {
+            "display-name": "Nina",
+            "username": "wxid_demo_nina_ecommerce",
+            "wechat-remark": "Nina｜跨境电商",
+            "relationship-note": "现有客户，使用内容工作流三个月；团队采用不错，但管理层还没看到量化结果。",
+            "suggested-wechat-remark": "Nina｜客户｜跨境内容",
+            "relationship-type": "customer",
+            "relationship-strength": 84,
+            "relationship-trend": "cooling",
+            "relationship-analysis": "使用活跃但价值沟通不足，续约风险来自成果不可见，而不是产品使用问题。",
+            "open-loops": "补一份三个月节省工时和上新速度对比。",
+            "last-message-at": "2026-08-21T05:55:00.000Z",
+            "last-message-summary": "老板问这个季度到底省了多少时间。",
+            "unread-count": 0,
+            "current-goal-summary": "在续约前让现有客户清楚看到已实现的价值",
+            "next-action-summary": "整理前后对比并约一次季度复盘",
+            "analysis-confidence": 0.89,
+            "last-analyzed-at": "2026-08-25T04:55:00.000Z",
+            "last-synced-at": "2026-08-25T04:00:00.000Z"
+          },
+          {
+            "display-name": "刘老师",
+            "username": "wxid_demo_teacher_liu",
+            "wechat-remark": "刘老师｜国际学校",
+            "relationship-note": "负责教师发展，关注 AI 教案质量和学生隐私；曾参加我们的线上分享。",
+            "suggested-wechat-remark": "刘老师｜教育｜AI 教案",
+            "relationship-type": "prospect",
+            "relationship-strength": 57,
+            "relationship-trend": "warming",
+            "relationship-analysis": "需求明确但采购周期长；应先提供小规模教师试用和评价标准。",
+            "open-loops": "她希望看一份中文课程的质量评估样例。",
+            "last-message-at": "2026-08-20T02:20:00.000Z",
+            "last-message-summary": "我们最担心老师省时间但内容质量下降。",
+            "unread-count": 0,
+            "current-goal-summary": "在专业服务行业找到 5 个可落地的 AI 自动化场景",
+            "next-action-summary": "发送质量评估样例，不提前承诺全校部署",
+            "analysis-confidence": 0.76,
+            "last-analyzed-at": "2026-08-25T05:00:00.000Z",
+            "last-synced-at": "2026-08-25T04:00:00.000Z"
+          },
+          {
+            "display-name": "Tony 何",
+            "username": "wxid_demo_tony_recruiter",
+            "wechat-remark": "Tony｜猎头",
+            "relationship-note": "过去推过高管候选人，沟通直接；现在想把候选人跟进和职位匹配做得更系统。",
+            "suggested-wechat-remark": "Tony｜猎头｜招聘自动化",
+            "relationship-type": "prospect",
+            "relationship-strength": 52,
+            "relationship-trend": "warming",
+            "relationship-analysis": "可能同时是渠道伙伴和产品用户，应先区分他自己的运营需求与客户转介机会。",
+            "open-loops": "约定交换一次招聘工作流和我们的适用边界。",
+            "last-message-at": "2026-08-23T12:35:00.000Z",
+            "last-message-summary": "你们这个能不能自动整理候选人的跟进状态？",
+            "unread-count": 1,
+            "current-goal-summary": "把曾向我推销的服务商发展成互荐伙伴",
+            "next-action-summary": "用他的真实流程做 30 分钟需求拆解",
+            "analysis-confidence": 0.74,
+            "last-analyzed-at": "2026-08-25T05:05:00.000Z",
+            "last-synced-at": "2026-08-25T04:00:00.000Z"
+          },
+          {
+            "display-name": "方总",
+            "username": "wxid_demo_fang_manufacturing",
+            "wechat-remark": "方总｜精密制造",
+            "relationship-note": "朋友介绍的制造业负责人，设备知识依赖老师傅，正在考虑维修知识库。",
+            "suggested-wechat-remark": "方总｜制造｜维修知识库",
+            "relationship-type": "prospect",
+            "relationship-strength": 46,
+            "relationship-trend": "unknown",
+            "relationship-analysis": "问题有价值但关系和需求证据都较弱，需要先确认数据形态和一线使用意愿。",
+            "open-loops": "等待一份脱敏维修单样例。",
+            "last-message-at": "2026-08-18T08:15:00.000Z",
+            "last-message-summary": "很多故障只有老师傅知道怎么处理。",
+            "unread-count": 0,
+            "current-goal-summary": "把 AI 客服产品卖给 10 个合适客户",
+            "next-action-summary": "先看维修单样例，不急着安排正式 demo",
+            "analysis-confidence": 0.55,
+            "last-analyzed-at": "2026-08-25T05:10:00.000Z",
+            "last-synced-at": "2026-08-25T04:00:00.000Z"
+          }
+        ]
+      },
+      {
+        "key": "goals",
+        "name": "目标",
+        "slug": "busa-wechat-crm-goals",
+        "read_limit": 30,
+        "description": "用户动态设置的销售、关系维护或进一步了解某人的目标。",
+        "fields": [
+          {
+            "slug": "title",
+            "name": "目标",
+            "type": "text",
+            "required": true
+          },
+          {
+            "slug": "objective",
+            "name": "想实现什么",
+            "type": "longtext",
+            "required": true
+          },
+          {
+            "slug": "scope",
+            "name": "范围",
+            "type": "select",
+            "required": true,
+            "options": {
+              "choices": [
+                {
+                  "id": "global",
+                  "name": "全局"
+                },
+                {
+                  "id": "person",
+                  "name": "某个人"
+                },
+                {
+                  "id": "segment",
+                  "name": "一类关系"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "people",
+            "name": "关联的人",
+            "type": "relation",
+            "required": false,
+            "options": {
+              "targetBaseSlug": "busa-wechat-crm-people"
+            }
+          },
+          {
+            "slug": "success-metric",
+            "name": "成功标准",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "deadline",
+            "name": "目标期限",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "priority",
+            "name": "优先级",
+            "type": "select",
+            "required": true,
+            "options": {
+              "choices": [
+                {
+                  "id": "high",
+                  "name": "高"
+                },
+                {
+                  "id": "medium",
+                  "name": "中"
+                },
+                {
+                  "id": "low",
+                  "name": "低"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "status",
+            "name": "状态",
+            "type": "select",
+            "required": true,
+            "options": {
+              "choices": [
+                {
+                  "id": "active",
+                  "name": "进行中"
+                },
+                {
+                  "id": "paused",
+                  "name": "暂停"
+                },
+                {
+                  "id": "achieved",
+                  "name": "已达成"
+                },
+                {
+                  "id": "abandoned",
+                  "name": "已放弃"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "constraints",
+            "name": "边界与约束",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "operation-key",
+            "name": "操作键",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "created-at",
+            "name": "创建时间",
+            "type": "date",
+            "required": true
+          }
+        ],
+        "seed_records": [
+          {
+            "title": "把 AI 客服产品卖给 10 个合适客户",
+            "objective": "从已有微信关系中识别真的有客服人效问题的人，先确认痛点，再给场景化 demo 和试用。",
+            "scope": "global",
+            "success-metric": "10 个付费客户，且没有一单来自骚扰式群发",
+            "deadline": "2026-09-30T00:00:00.000Z",
+            "priority": "high",
+            "status": "active",
+            "constraints": "不群发、不伪造熟人感、不把私人关系当销售许可、拒绝后不继续打扰。",
+            "created-at": "2026-08-25T02:32:00.000Z"
+          },
+          {
+            "title": "和小雨自然发展到一次双方都期待的约会",
+            "objective": "在尊重她节奏和拒绝权的前提下，确认彼此是否愿意从朋友进一步了解。",
+            "scope": "person",
+            "people": ["wechat-person-xiaoyu"],
+            "success-metric": "完成一次双方主动确认、过程轻松的单独咖啡或展览",
+            "deadline": "2026-09-15T00:00:00.000Z",
+            "priority": "medium",
+            "status": "active",
+            "constraints": "不测试服从、不套路、不制造亏欠；一次邀请没有回应就等待，不连环追问。",
+            "created-at": "2026-08-25T03:05:00.000Z"
+          },
+          {
+            "title": "把服务商销售变成互荐伙伴",
+            "objective": "从曾向我销售云、保险和企业服务的人中，找到客户群互补、愿意互相介绍真实机会的合作伙伴。",
+            "scope": "segment",
+            "people": ["wechat-person-lin-insurance", "wechat-person-kevin-cloud"],
+            "success-metric": "确认 5 位合作意愿明确的伙伴，并产生 3 次双方认可的有效引荐",
+            "deadline": "2026-10-15T00:00:00.000Z",
+            "priority": "high",
+            "status": "active",
+            "constraints": "不群发、不交换未授权联系人、不以曾被推销作为骚扰许可；先验证需求和互补性，拒绝后停止跟进。",
+            "created-at": "2026-08-25T04:05:00.000Z"
+          },
+          {
+            "title": "恢复三段重要的长期关系",
+            "objective": "和因忙碌而减少联系的老朋友与导师恢复自然、稳定、没有功利目的的互动。",
+            "scope": "segment",
+            "people": ["wechat-person-ajie", "wechat-person-mentor-zhou", "wechat-person-cousin-an"],
+            "success-metric": "一个月内完成 3 次有来有回的交流，其中至少 1 次线下见面",
+            "deadline": "2026-09-30T00:00:00.000Z",
+            "priority": "medium",
+            "status": "active",
+            "constraints": "不在需要资源时才联系；不以频率衡量亲密；尊重对方日程，不连续催促。",
+            "created-at": "2026-08-25T04:20:00.000Z"
+          },
+          {
+            "title": "让现有客户清楚看到已经实现的价值",
+            "objective": "在续约或扩展讨论前，用客户认可的数据复盘实际成果、风险和下一阶段机会。",
+            "scope": "person",
+            "people": ["wechat-person-nina-ecommerce"],
+            "success-metric": "完成 3 份季度价值复盘，并得到客户对成果数据和下一阶段优先级的确认",
+            "deadline": "2026-09-20T00:00:00.000Z",
+            "priority": "high",
+            "status": "active",
+            "constraints": "不夸大归因；数据由客户确认；复盘先讨论价值和问题，不把会议变成续费施压。",
+            "created-at": "2026-08-25T04:50:00.000Z"
+          }
+        ]
+      },
+      {
+        "key": "relationship-snapshots",
+        "name": "关系快照",
+        "slug": "busa-wechat-crm-relationship-snapshots",
+        "read_limit": 50,
+        "description": "Agent 在一个明确时间窗内形成的关系判断、证据与建议，用于比较关系变化。",
+        "fields": [
+          {
+            "slug": "title",
+            "name": "快照标题",
+            "type": "text",
+            "required": true
+          },
+          {
+            "slug": "person",
+            "name": "关联的人",
+            "type": "relation",
+            "required": false,
+            "options": {
+              "targetBaseSlug": "busa-wechat-crm-people"
+            }
+          },
+          {
+            "slug": "goal",
+            "name": "对应目标",
+            "type": "relation",
+            "required": false,
+            "options": {
+              "targetBaseSlug": "busa-wechat-crm-goals"
+            }
+          },
+          {
+            "slug": "window-start",
+            "name": "分析开始",
+            "type": "date",
+            "required": true
+          },
+          {
+            "slug": "window-end",
+            "name": "分析结束",
+            "type": "date",
+            "required": true
+          },
+          {
+            "slug": "relationship-strength",
+            "name": "关系强度",
+            "type": "number",
+            "required": false
+          },
+          {
+            "slug": "relationship-trend",
+            "name": "关系趋势",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "warming",
+                  "name": "升温"
+                },
+                {
+                  "id": "stable",
+                  "name": "稳定"
+                },
+                {
+                  "id": "cooling",
+                  "name": "降温"
+                },
+                {
+                  "id": "unknown",
+                  "name": "未知"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "interaction-frequency",
+            "name": "互动频率",
+            "type": "number",
+            "required": false
+          },
+          {
+            "slug": "reciprocity",
+            "name": "互动互惠度",
+            "type": "number",
+            "required": false
+          },
+          {
+            "slug": "open-loops",
+            "name": "未完成事项",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "evidence-summary",
+            "name": "证据摘要",
+            "type": "longtext",
+            "required": true
+          },
+          {
+            "slug": "analysis",
+            "name": "关系判断",
+            "type": "longtext",
+            "required": true
+          },
+          {
+            "slug": "recommendation-summary",
+            "name": "建议摘要",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "confidence",
+            "name": "置信度",
+            "type": "number",
+            "required": false
+          },
+          {
+            "slug": "analyzed-at",
+            "name": "分析时间",
+            "type": "date",
+            "required": true
+          }
+        ],
+        "seed_records": [
+          {
+            "title": "小雨关系快照｜不靠套路，先看双方意愿",
+            "person": ["wechat-person-xiaoyu"],
+            "goal": ["wechat-goal-xiaoyu"],
+            "window-start": "2026-08-01T00:00:00.000Z",
+            "window-end": "2026-08-25T00:00:00.000Z",
+            "relationship-strength": 67,
+            "relationship-trend": "warming",
+            "interaction-frequency": 1.8,
+            "reciprocity": 0.72,
+            "open-loops": "她提过想看胶片摄影展，还没有约具体日期。",
+            "evidence-summary": "最近三次对话双方都有发起；她主动提到摄影展，但没有表达确定邀约。",
+            "analysis": "有共同兴趣和基本互惠，可以提出一次低压力的具体邀请；不能把友好直接推断成喜欢。",
+            "recommendation-summary": "周六摄影展邀请一次，给明确退出空间；未回应则等待。",
+            "confidence": 0.66,
+            "analyzed-at": "2026-08-25T03:10:00.000Z"
+          },
+          {
+            "title": "张三关系快照｜2026-08-25",
+            "person": ["wechat-person-zhangsan"],
+            "goal": ["wechat-goal-sales"],
+            "window-start": "2026-07-26T00:00:00.000Z",
+            "window-end": "2026-08-25T00:00:00.000Z",
+            "relationship-strength": 72,
+            "relationship-trend": "cooling",
+            "interaction-frequency": 0.7,
+            "reciprocity": 0.8,
+            "open-loops": "下次来台北约咖啡。",
+            "evidence-summary": "最近一次对话停在台北咖啡邀约，之后九天没有新互动。",
+            "analysis": "信任基础仍在，但互动正在降温；应优先恢复自然交流。",
+            "recommendation-summary": "围绕上次咖啡话题问候，不要直接推销。",
+            "confidence": 0.78,
+            "analyzed-at": "2026-08-25T02:35:00.000Z"
+          },
+          {
+            "title": "陈老板销售快照｜需求明确，别再发通用介绍",
+            "person": ["wechat-person-chen"],
+            "goal": ["wechat-goal-sales"],
+            "window-start": "2026-07-25T00:00:00.000Z",
+            "window-end": "2026-08-25T00:00:00.000Z",
+            "relationship-strength": 75,
+            "relationship-trend": "stable",
+            "interaction-frequency": 1.2,
+            "reciprocity": 0.83,
+            "open-loops": "补门店客服排班成本测算和两分钟场景 demo。",
+            "evidence-summary": "陈老板主动索要门店版 demo，并两次提到转人工与排班成本。",
+            "analysis": "需求和购买角色都较明确；推进关键是证明门店场景价值，不是增加触达频率。",
+            "recommendation-summary": "发送场景化 demo，附三个可验证指标，再约短反馈。",
+            "confidence": 0.86,
+            "analyzed-at": "2026-08-25T03:12:00.000Z"
+          },
+          {
+            "title": "林顾问合作快照｜先验证互荐，不急着反推销",
+            "person": ["wechat-person-lin-insurance"],
+            "goal": ["wechat-goal-partner-network"],
+            "window-start": "2026-05-01T00:00:00.000Z",
+            "window-end": "2026-08-25T00:00:00.000Z",
+            "relationship-strength": 54,
+            "relationship-trend": "stable",
+            "interaction-frequency": 0.4,
+            "reciprocity": 0.63,
+            "open-loops": "交换双方客户画像，并确认不适合转介的边界。",
+            "evidence-summary": "他曾介绍企业保险，也主动询问我们的客户规模；尚未出现明确采购需求。",
+            "analysis": "更像潜在渠道伙伴而非买家。先交换客户画像可以低成本验证互补性，避免把每个销售联系人都当潜客。",
+            "recommendation-summary": "发送一页客户画像，约 20 分钟讨论互荐条件与禁区。",
+            "confidence": 0.71,
+            "analyzed-at": "2026-08-25T04:10:00.000Z"
+          },
+          {
+            "title": "王律师需求快照｜保密边界先于效率承诺",
+            "person": ["wechat-person-wang-lawyer"],
+            "goal": ["wechat-goal-sales"],
+            "window-start": "2026-07-01T00:00:00.000Z",
+            "window-end": "2026-08-25T00:00:00.000Z",
+            "relationship-strength": 64,
+            "relationship-trend": "warming",
+            "interaction-frequency": 0.9,
+            "reciprocity": 0.78,
+            "open-loops": "准备脱敏合同、本地运行说明和引用准确率口径。",
+            "evidence-summary": "他主动询问不上云的试用方式，并愿意提供脱敏合同；保密和引用准确性是明确门槛。",
+            "analysis": "需求真实、试点路径清晰。成交关键不是功能数量，而是证明数据不外流且每个结论可回溯。",
+            "recommendation-summary": "用一份脱敏合同做 20 分钟现场演示，先展示边界和引用。",
+            "confidence": 0.84,
+            "analyzed-at": "2026-08-25T04:35:00.000Z"
+          },
+          {
+            "title": "周老师关系快照｜低频但高信任",
+            "person": ["wechat-person-mentor-zhou"],
+            "goal": ["wechat-goal-reconnect-core"],
+            "window-start": "2026-01-01T00:00:00.000Z",
+            "window-end": "2026-08-25T00:00:00.000Z",
+            "relationship-strength": 87,
+            "relationship-trend": "stable",
+            "interaction-frequency": 0.25,
+            "reciprocity": 0.91,
+            "open-loops": "分享产品取舍复盘，兑现上次说的阶段汇报。",
+            "evidence-summary": "半年内只交流三次，但每次都有实质回应；对方多次强调不要为了速度牺牲方向。",
+            "analysis": "这是典型高信任低频关系，不需要人为提高频率。一次认真、无索取的阶段复盘比寒暄更合适。",
+            "recommendation-summary": "发送一页近况和三项取舍，不附资源请求。",
+            "confidence": 0.91,
+            "analyzed-at": "2026-08-25T04:45:00.000Z"
+          },
+          {
+            "title": "Nina 客户快照｜使用活跃，价值表达不足",
+            "person": ["wechat-person-nina-ecommerce"],
+            "goal": ["wechat-goal-customer-value"],
+            "window-start": "2026-05-01T00:00:00.000Z",
+            "window-end": "2026-08-25T00:00:00.000Z",
+            "relationship-strength": 84,
+            "relationship-trend": "cooling",
+            "interaction-frequency": 2.4,
+            "reciprocity": 0.86,
+            "open-loops": "确认节省工时、上新周期和返工率的共同口径。",
+            "evidence-summary": "团队持续使用，但管理层追问季度价值；最近两次对话都集中在成果如何量化。",
+            "analysis": "产品采用没有明显问题，关系降温来自价值叙事缺失。复盘应让客户共同确认数据，而不是单方面报喜。",
+            "recommendation-summary": "先发数据草稿请 Nina 校正，再约季度复盘。",
+            "confidence": 0.89,
+            "analyzed-at": "2026-08-25T04:55:00.000Z"
+          },
+          {
+            "title": "May 需求快照｜有痛点信号，尚未证明购买意愿",
+            "person": ["wechat-person-may-property"],
+            "goal": ["wechat-goal-sales"],
+            "window-start": "2026-06-01T00:00:00.000Z",
+            "window-end": "2026-08-25T00:00:00.000Z",
+            "relationship-strength": 49,
+            "relationship-trend": "stable",
+            "interaction-frequency": 0.3,
+            "reciprocity": 0.52,
+            "open-loops": "月底了解她的线索量、遗漏率和团队协作方式。",
+            "evidence-summary": "她明确说微信客户难整理，但没有提出采购、预算或试用需求。",
+            "analysis": "只能判断存在运营摩擦，不能推断她想买产品。下一步是需求访谈，不是 demo 或报价。",
+            "recommendation-summary": "用五个问题验证问题频率、成本和现有替代方案。",
+            "confidence": 0.62,
+            "analyzed-at": "2026-08-25T04:40:00.000Z"
+          }
+        ]
+      },
+      {
+        "key": "actions",
+        "name": "下一步",
+        "slug": "busa-wechat-crm-actions",
+        "read_limit": 50,
+        "description": "Agent 根据目标和关系证据提出的可审核行动；微信发送始终由用户手动完成。",
+        "fields": [
+          {
+            "slug": "title",
+            "name": "行动",
+            "type": "text",
+            "required": true
+          },
+          {
+            "slug": "goal",
+            "name": "对应目标",
+            "type": "relation",
+            "required": false,
+            "options": {
+              "targetBaseSlug": "busa-wechat-crm-goals"
+            }
+          },
+          {
+            "slug": "person",
+            "name": "对象（人）",
+            "type": "relation",
+            "required": false,
+            "options": {
+              "targetBaseSlug": "busa-wechat-crm-people"
+            }
+          },
+          {
+            "slug": "action-type",
+            "name": "行动类型",
+            "type": "select",
+            "required": true,
+            "options": {
+              "choices": [
+                {
+                  "id": "organize-note",
+                  "name": "整理备注"
+                },
+                {
+                  "id": "send-message",
+                  "name": "建议发微信"
+                },
+                {
+                  "id": "reconnect",
+                  "name": "重新联系"
+                },
+                {
+                  "id": "follow-up",
+                  "name": "跟进承诺"
+                },
+                {
+                  "id": "learn-more",
+                  "name": "进一步了解"
+                },
+                {
+                  "id": "wait",
+                  "name": "暂时等待"
+                },
+                {
+                  "id": "record-outcome",
+                  "name": "记录结果"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "rationale",
+            "name": "为什么现在做",
+            "type": "longtext",
+            "required": true
+          },
+          {
+            "slug": "suggested-message",
+            "name": "建议微信文案",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "evidence-summary",
+            "name": "依据摘要",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "due-at",
+            "name": "建议时间",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "priority",
+            "name": "优先级",
+            "type": "select",
+            "required": true,
+            "options": {
+              "choices": [
+                {
+                  "id": "high",
+                  "name": "高"
+                },
+                {
+                  "id": "medium",
+                  "name": "中"
+                },
+                {
+                  "id": "low",
+                  "name": "低"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "confidence",
+            "name": "置信度",
+            "type": "number",
+            "required": false
+          },
+          {
+            "slug": "status",
+            "name": "状态",
+            "type": "select",
+            "required": true,
+            "options": {
+              "choices": [
+                {
+                  "id": "needs-review",
+                  "name": "待判断"
+                },
+                {
+                  "id": "changes-requested",
+                  "name": "待修改"
+                },
+                {
+                  "id": "approved",
+                  "name": "准备执行"
+                },
+                {
+                  "id": "awaiting-result",
+                  "name": "等待结果"
+                },
+                {
+                  "id": "snoozed",
+                  "name": "已延后"
+                },
+                {
+                  "id": "done",
+                  "name": "已完成"
+                },
+                {
+                  "id": "blocked",
+                  "name": "已阻止"
+                },
+                {
+                  "id": "dismissed",
+                  "name": "已忽略"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "decision-comment",
+            "name": "处理备注",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "decided-at",
+            "name": "处理时间",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "decided-by",
+            "name": "处理人",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "outcome-type",
+            "name": "结果类型",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "sent-awaiting-reply",
+                  "name": "已发送，等待回复"
+                },
+                {
+                  "id": "positive-reply",
+                  "name": "积极回复"
+                },
+                {
+                  "id": "negative-reply",
+                  "name": "拒绝或不合适"
+                },
+                {
+                  "id": "no-reply",
+                  "name": "暂未回复"
+                },
+                {
+                  "id": "completed-other",
+                  "name": "其他已完成结果"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "outcome",
+            "name": "实际结果",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "outcome-at",
+            "name": "结果时间",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "operation-key",
+            "name": "操作键",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "parent-action",
+            "name": "上一行动",
+            "type": "relation",
+            "required": false,
+            "options": {
+              "targetBaseSlug": "busa-wechat-crm-actions"
+            }
+          }
+        ],
+        "seed_records": [
+          {
+            "title": "邀请小雨看胶片摄影展",
+            "goal": ["wechat-goal-xiaoyu"],
+            "person": ["wechat-person-xiaoyu"],
+            "action-type": "send-message",
+            "rationale": "她主动提过摄影展，最近互动有来有回；一次具体且低压力的邀请比暧昧试探更尊重双方。",
+            "suggested-message": "你上次说的胶片展我查了，周六下午要不要一起去？不方便也完全没关系。",
+            "evidence-summary": "过去 24 天双方都有发起对话；她主动提到摄影展，未表达确定邀约。",
+            "due-at": "2026-08-27T11:30:00.000Z",
+            "priority": "medium",
+            "confidence": 0.66,
+            "status": "needs-review"
+          },
+          {
+            "title": "先恢复与张三的交流",
+            "goal": ["wechat-goal-sales"],
+            "person": ["wechat-person-zhangsan"],
+            "action-type": "reconnect",
+            "rationale": "你们有多年信任基础，但已九天没有互动；先兑现咖啡话题比直接介绍产品自然。",
+            "suggested-message": "最近怎么样？你上次说来台北，到时候一起喝杯咖啡。",
+            "evidence-summary": "最近消息：下次到台北再约咖啡；9 天未联系。",
+            "due-at": "2026-08-27T10:00:00.000Z",
+            "priority": "high",
+            "confidence": 0.78,
+            "status": "needs-review"
+          },
+          {
+            "title": "给陈老板发门店版两分钟 demo",
+            "goal": ["wechat-goal-sales"],
+            "person": ["wechat-person-chen"],
+            "action-type": "follow-up",
+            "rationale": "对方已经主动索要 demo；现在需要兑现承诺并围绕门店排班成本回答，而不是再讲一遍产品愿景。",
+            "suggested-message": "陈总，按你说的 12 家门店场景，我做了个两分钟 demo，也把转人工率和排班成本放进去了。你看完我再占你 20 分钟听反馈？",
+            "evidence-summary": "最近消息：你把那个门店版 demo 发我看看。",
+            "due-at": "2026-08-26T09:00:00.000Z",
+            "priority": "high",
+            "confidence": 0.86,
+            "status": "needs-review"
+          },
+          {
+            "title": "向 Kevin 确认两个 AI 项目的真实需求",
+            "goal": ["wechat-goal-partner-network"],
+            "person": ["wechat-person-kevin-cloud"],
+            "action-type": "learn-more",
+            "rationale": "他已经主动问过企业 AI 落地能力，也提到两个客户；先补齐行业、预算和决策阶段，再决定是否介绍案例。",
+            "suggested-message": "Kevin，你上次提到两个客户在看知识库和客服自动化。方便说下他们的行业、现在卡在哪一步吗？如果场景匹配，我整理两个最接近的案例给你，不匹配也不耽误你时间。",
+            "evidence-summary": "最近消息：你们现在还接企业 AI 落地项目吗？未读 2 条。",
+            "due-at": "2026-08-27T02:30:00.000Z",
+            "priority": "high",
+            "confidence": 0.82,
+            "status": "needs-review"
+          },
+          {
+            "title": "给 Sophia 分享 HR Agent 评测框架",
+            "goal": ["wechat-goal-sales"],
+            "person": ["wechat-person-sophia-hr"],
+            "action-type": "follow-up",
+            "rationale": "她主动询问面试纪要准确率，说明评测方法比通用产品介绍更有价值。",
+            "suggested-message": "Sophia，我们把面试纪要拆成事实完整性、归因准确和敏感信息三层评测。我整理一页框架给你，也想听听你们客户最容易出错的是哪一层。",
+            "evidence-summary": "最近消息：你们有没有做过面试纪要准确率评测？",
+            "due-at": "2026-08-28T03:00:00.000Z",
+            "priority": "medium",
+            "confidence": 0.77,
+            "status": "needs-review"
+          },
+          {
+            "title": "准备王律师的脱敏合同本地演示",
+            "goal": ["wechat-goal-sales"],
+            "person": ["wechat-person-wang-lawyer"],
+            "action-type": "follow-up",
+            "rationale": "对方已经给出明确试点条件：不上云、使用脱敏合同、结论可引用回原文。",
+            "suggested-message": "王律师，可以。我们先用一份脱敏合同在本地跑，演示时重点看数据边界和每条结论的原文引用。您发一份样例，我按 20 分钟流程准备。",
+            "evidence-summary": "最近消息：如果不上云，能不能先用脱敏合同试？",
+            "due-at": "2026-08-27T06:00:00.000Z",
+            "priority": "high",
+            "confidence": 0.84,
+            "status": "needs-review"
+          },
+          {
+            "title": "访谈 May 的微信线索跟进流程",
+            "goal": ["wechat-goal-sales"],
+            "person": ["wechat-person-may-property"],
+            "action-type": "learn-more",
+            "rationale": "目前只确认了整理麻烦，尚未确认问题频率、团队规模或购买意愿。",
+            "suggested-message": "May，你上次说客户都在微信里不好整理。我先不讲产品，想用 20 分钟了解一下你现在怎么记跟进、最容易漏在哪一步，看看这是不是值得解决的问题。",
+            "evidence-summary": "最近消息：我客户都在微信里，整理起来挺麻烦。",
+            "due-at": "2026-08-30T08:00:00.000Z",
+            "priority": "low",
+            "confidence": 0.62,
+            "status": "needs-review"
+          },
+          {
+            "title": "向周老师分享一页产品取舍复盘",
+            "goal": ["wechat-goal-reconnect-core"],
+            "person": ["wechat-person-mentor-zhou"],
+            "action-type": "reconnect",
+            "rationale": "这是兑现过去承诺的阶段汇报，不需要附带资源请求或制造紧迫感。",
+            "suggested-message": "周老师，之前您提醒我先想清楚不做什么。我最近终于把三项取舍写明白了，发您一页近况汇报，不急着回复，也没有资源请求。",
+            "evidence-summary": "上次建议：方向比速度重要；开放事项：产品稳定后分享复盘。",
+            "due-at": "2026-08-29T02:00:00.000Z",
+            "priority": "medium",
+            "confidence": 0.91,
+            "status": "approved",
+            "decision-comment": "保持为近况汇报，不在同一条消息里请教或求介绍。",
+            "decided-at": "2026-08-25T05:15:00.000Z",
+            "decided-by": "operator"
+          },
+          {
+            "title": "和 Nina 校准季度价值数据",
+            "goal": ["wechat-goal-customer-value"],
+            "person": ["wechat-person-nina-ecommerce"],
+            "action-type": "follow-up",
+            "rationale": "续约讨论前应先共同确认成果口径，避免把相关性写成产品单方面贡献。",
+            "suggested-message": "Nina，我先把三个月的上新周期、返工次数和估算工时做成草稿，你帮我挑错和补充。数据对齐后我们再一起给管理层做季度复盘。",
+            "evidence-summary": "最近消息：老板问这个季度到底省了多少时间。",
+            "due-at": "2026-09-02T03:00:00.000Z",
+            "priority": "high",
+            "confidence": 0.89,
+            "status": "snoozed",
+            "decision-comment": "等待客户团队周五导出上新数据后再做。",
+            "decided-at": "2026-08-25T05:18:00.000Z",
+            "decided-by": "operator"
+          },
+          {
+            "title": "拆解 Tony 的候选人跟进工作流",
+            "goal": ["wechat-goal-partner-network"],
+            "person": ["wechat-person-tony-recruiter"],
+            "action-type": "learn-more",
+            "rationale": "他可能既是用户也是渠道伙伴，但两种机会需要不同价值主张，先用真实流程区分。",
+            "suggested-message": "Tony，可以先不谈完整产品。你挑一个最近在做的职位，我们一起走一遍候选人从推荐到回访的流程，看看真正卡在记录、提醒还是匹配。",
+            "evidence-summary": "最近消息：你们这个能不能自动整理候选人的跟进状态？",
+            "due-at": "2026-08-28T09:30:00.000Z",
+            "priority": "medium",
+            "confidence": 0.74,
+            "status": "needs-review"
+          }
+        ]
+      },
+      {
+        "key": "worklog",
+        "name": "Agent 工作日志",
+        "slug": "busa-wechat-crm-worklog",
+        "read_limit": 50,
+        "description": "用户与 Agent 围绕目标、分析、决定和结果产生的工作记录，不是拜访记录。",
+        "fields": [
+          {
+            "slug": "title",
+            "name": "日志标题",
+            "type": "text",
+            "required": true
+          },
+          {
+            "slug": "goal",
+            "name": "对应目标",
+            "type": "relation",
+            "required": false,
+            "options": {
+              "targetBaseSlug": "busa-wechat-crm-goals"
+            }
+          },
+          {
+            "slug": "person",
+            "name": "关联的人",
+            "type": "relation",
+            "required": false,
+            "options": {
+              "targetBaseSlug": "busa-wechat-crm-people"
+            }
+          },
+          {
+            "slug": "action",
+            "name": "关联行动",
+            "type": "relation",
+            "required": false,
+            "options": {
+              "targetBaseSlug": "busa-wechat-crm-actions"
+            }
+          },
+          {
+            "slug": "entry-type",
+            "name": "日志类型",
+            "type": "select",
+            "required": true,
+            "options": {
+              "choices": [
+                {
+                  "id": "user-request",
+                  "name": "用户请求"
+                },
+                {
+                  "id": "agent-analysis",
+                  "name": "Agent 分析"
+                },
+                {
+                  "id": "decision",
+                  "name": "人工决定"
+                },
+                {
+                  "id": "outcome",
+                  "name": "执行结果"
+                },
+                {
+                  "id": "sync",
+                  "name": "同步记录"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "user-context",
+            "name": "用户上下文",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "agent-summary",
+            "name": "Agent 结论",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "tasks-created",
+            "name": "生成的任务",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "outcome",
+            "name": "结果",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "status",
+            "name": "处理状态",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "pending-agent",
+                  "name": "等待 Agent"
+                },
+                {
+                  "id": "complete",
+                  "name": "已处理"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "operation-key",
+            "name": "操作键",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "created-at",
+            "name": "记录时间",
+            "type": "date",
+            "required": true
+          }
+        ],
+        "seed_records": [
+          {
+            "title": "Day 1｜别给我海王话术，先判断有没有双向兴趣",
+            "goal": ["wechat-goal-xiaoyu"],
+            "person": ["wechat-person-xiaoyu"],
+            "entry-type": "user-request",
+            "user-context": "用户要求分析和小雨的关系，但明确不要套路、PUA 或批量复制的暧昧话术。",
+            "agent-summary": "确认分析范围为最近 24 天；把友好和兴趣分开，不从单条消息推断感情。",
+            "tasks-created": "wechat-snapshot-xiaoyu-20260825",
+            "created-at": "2026-08-25T03:08:00.000Z"
+          },
+          {
+            "title": "Day 2｜销售目标从 47 个联系人缩到 12 个候选",
+            "goal": ["wechat-goal-sales"],
+            "entry-type": "agent-analysis",
+            "user-context": "目标是卖给 10 个客户，但不要伤害私人关系，也不要群发。",
+            "agent-summary": "从需求证据、购买角色和近期互动筛出 12 个候选；排除 8 个只有私人关系但没有业务需求的人。",
+            "tasks-created": "wechat-action-chen-demo",
+            "created-at": "2026-08-25T03:15:00.000Z"
+          },
+          {
+            "title": "Day 4｜今天没发消息也是一个决定",
+            "goal": ["wechat-goal-xiaoyu"],
+            "person": ["wechat-person-xiaoyu"],
+            "entry-type": "outcome",
+            "user-context": "小雨今天工作很忙，用户问是否应该再补一句。",
+            "agent-summary": "没有新信息需要补充；等待比连续追问更尊重她的节奏。",
+            "outcome": "选择等待 48 小时，不创建新的发送行动。",
+            "created-at": "2026-08-26T13:00:00.000Z"
+          },
+          {
+            "title": "反向销售筛选｜不是每个销售都值得反推销",
+            "goal": ["wechat-goal-partner-network"],
+            "entry-type": "agent-analysis",
+            "user-context": "用户希望从曾向自己推销云、保险和企业服务的人中寻找合作机会。",
+            "agent-summary": "把候选分成直接买家、渠道伙伴和仅有推销历史三类；只有前两类且存在真实匹配证据时才进入重点联系人。",
+            "tasks-created": "wechat-action-kevin-cloud, wechat-action-tony-recruiter",
+            "outcome": "保留 3 位有明确互补信号的人，排除 11 位只有群发广告记录的联系人。",
+            "created-at": "2026-08-25T05:20:00.000Z"
+          },
+          {
+            "title": "导师关系复盘｜低频不等于需要修复",
+            "goal": ["wechat-goal-reconnect-core"],
+            "person": ["wechat-person-mentor-zhou"],
+            "entry-type": "decision",
+            "user-context": "用户担心两个月没联系周老师是不是关系降温。",
+            "agent-summary": "历史交流低频但持续高质量，没有冲突或回避证据；建议兑现阶段汇报，不人为提高联系频率。",
+            "tasks-created": "wechat-action-mentor-zhou",
+            "outcome": "决定只分享一页近况，不在同一条消息里求建议或资源。",
+            "created-at": "2026-08-25T05:25:00.000Z"
+          },
+          {
+            "title": "客户价值复盘｜先让客户校准数据",
+            "goal": ["wechat-goal-customer-value"],
+            "person": ["wechat-person-nina-ecommerce"],
+            "entry-type": "agent-analysis",
+            "user-context": "Nina 的管理层要求说明本季度节省了多少时间，用户准备续约汇报。",
+            "agent-summary": "将上新周期、返工次数和估算工时分开，标注数据来源与不确定性；先让客户团队挑错再对管理层汇报。",
+            "tasks-created": "wechat-action-nina-value-review",
+            "outcome": "等待客户导出数据，行动延后到下周二。",
+            "created-at": "2026-08-25T05:30:00.000Z"
+          }
+        ]
+      },
+      {
+        "key": "settings",
+        "name": "系统状态",
+        "slug": "busa-wechat-crm-settings",
+        "read_limit": 20,
+        "description": "wechat-cli readiness、同步状态、分析范围和 Agent 锁。",
+        "fields": [
+          {
+            "slug": "kind",
+            "name": "状态项",
+            "type": "text",
+            "required": true
+          },
+          {
+            "slug": "status",
+            "name": "状态",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "value",
+            "name": "安全配置",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "cli-version",
+            "name": "CLI 版本",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "last-sync-at",
+            "name": "上次同步时间",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "people-count",
+            "name": "重点联系人数",
+            "type": "number",
+            "required": false
+          },
+          {
+            "slug": "locked-by",
+            "name": "锁定人",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "locked-at",
+            "name": "锁定时间",
+            "type": "date",
+            "required": false
+          }
+        ],
+        "seed_records": [
+          {
+            "kind": "sync-state",
+            "status": "ready",
+            "value": "演示数据：contacts、sessions、history、stats 均可按目标读取",
+            "cli-version": "0.2-demo",
+            "last-sync-at": "2026-08-25T03:00:00.000Z",
+            "people-count": 47
+          }
+        ]
+      }
+    ],
+    "relations": [
+      {
+        "source": "relationship-snapshots.person",
+        "target": "people"
+      },
+      {
+        "source": "relationship-snapshots.goal",
+        "target": "goals"
+      },
+      {
+        "source": "goals.people",
+        "target": "people"
+      },
+      {
+        "source": "actions.goal",
+        "target": "goals"
+      },
+      {
+        "source": "actions.person",
+        "target": "people"
+      },
+      {
+        "source": "actions.parent-action",
+        "target": "actions"
+      },
+      {
+        "source": "worklog.goal",
+        "target": "goals"
+      },
+      {
+        "source": "worklog.person",
+        "target": "people"
+      },
+      {
+        "source": "worklog.action",
+        "target": "actions"
+      }
+    ],
+    "docs": [],
+    "drives": [],
+    "whiteboards": [],
+    "forms": [],
+    "workflows": [],
+    "html": []
+  },
+  "onboarding": {
+    "version": 4,
+    "required_fields": [],
+    "completion_resource": "settings",
+    "rationale": "Busabase 与 WeChat CLI 就绪后，用户必须先创建目标，再从本机通讯录晋升重点联系人。"
+  },
+  "ui": {
+    "primary_base": "goals",
+    "summary": "先确定目标，再从本机通讯录选择值得持续关注的人。",
+    "screens": [
+      {
+        "id": "people",
+        "name": "重点联系人",
+        "purpose": "经用户确认从本机通讯录晋升的重点联系人，不是完整微信通讯录镜像。",
+        "data_sources": ["people"]
+      },
+      {
+        "id": "goals",
+        "name": "目标",
+        "purpose": "用户动态设置的销售、关系维护或进一步了解某人的目标。",
+        "data_sources": ["goals"]
+      },
+      {
+        "id": "relationship-snapshots",
+        "name": "关系快照",
+        "purpose": "Agent 在一个明确时间窗内形成的关系判断、证据与建议，用于比较关系变化。",
+        "data_sources": ["relationship-snapshots"]
+      },
+      {
+        "id": "actions",
+        "name": "下一步",
+        "purpose": "Agent 根据目标和关系证据提出的可审核行动；微信发送始终由用户手动完成。",
+        "data_sources": ["actions"]
+      },
+      {
+        "id": "worklog",
+        "name": "Agent 工作日志",
+        "purpose": "用户与 Agent 围绕目标、分析、决定和结果产生的工作记录，不是拜访记录。",
+        "data_sources": ["worklog"]
+      },
+      {
+        "id": "settings",
+        "name": "系统状态",
+        "purpose": "wechat-cli readiness、同步状态、分析范围和 Agent 锁。",
+        "data_sources": ["settings"]
+      }
+    ],
+    "attention_states": ["needs-review", "blocked"],
+    "actions": [
+      {
+        "id": "create-goal",
+        "label": "设置新目标",
+        "kind": "direct_write",
+        "base": "goals"
+      },
+      {
+        "id": "promote-person",
+        "label": "加入重点联系人",
+        "kind": "direct_write",
+        "base": "people"
+      },
+      {
+        "id": "decide-action",
+        "label": "审核下一步",
+        "kind": "direct_write",
+        "base": "actions",
+        "fields": ["status", "decision-comment", "decided-at", "decided-by"]
+      }
+    ]
+  },
+  "permissions": {
+    "read_procedures": ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.getByField"],
+    "setup_procedures": ["nodes.createChangeRequest", "nodes.updateMetadata"],
+    "change_request_procedures": ["bases.createChangeRequest", "records.changeRequest"]
+  },
+  "vault_requirements": [],
+  "integrations": [
+    {
+      "key": "wechat-me",
+      "name": "wechat-cli-rs",
+      "execution": "trusted_local_agent",
+      "purpose": "Read the operator's local WeChat data without modifying WeChat.",
+      "vault_refs": []
+    }
+  ]
+}

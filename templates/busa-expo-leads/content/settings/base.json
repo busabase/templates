@@ -1,0 +1,56 @@
+{
+  "name": "Settings",
+  "description": "SLA thresholds, default reply templates, and the channel accounts used to send follow-ups, one row",
+  "position": 3,
+  "fields": [
+    {
+      "slug": "record-id",
+      "name": "Record ID",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "sla-24h-hours",
+      "name": "SLA 24h hours",
+      "type": "number",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "sla-72h-hours",
+      "name": "SLA 72h hours",
+      "type": "number",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "reply-templates",
+      "name": "Reply templates",
+      "type": "longtext",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "whatsapp-account-env",
+      "name": "WhatsApp account env",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "email-account-env",
+      "name": "Email account env",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    }
+  ],
+  "views": []
+}

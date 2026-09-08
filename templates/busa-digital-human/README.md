@@ -1,0 +1,37 @@
+# Busa Digital Human
+
+Digital-human implementation and demo desk for choosing between a fast 2D service integration and a high-control 3D UE/Unity build.
+
+## App UI Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="assets/screenshots/overview.webp" alt="Busa Digital Human overview"></td>
+    <td width="50%"><img src="assets/screenshots/studio.webp" alt="Busa Digital Human live studio"></td>
+  </tr>
+  <tr>
+    <td><strong>Solution overview</strong><br>Side-by-side 2D fast-launch and 3D custom-build paths, with readiness score, latency targets, and launch blockers.</td>
+    <td><strong>Multimodal studio</strong><br>Animated avatar stream with lip motion, waveform, transcript, provider mode, route latency, and stream events.</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="assets/screenshots/vendors.webp" alt="Busa Digital Human vendor architecture"></td>
+    <td width="50%"><img src="assets/screenshots/qa.webp" alt="Busa Digital Human QA gate"></td>
+  </tr>
+  <tr>
+    <td><strong>Vendor and architecture desk</strong><br>Compares 2D service integration, real-time RTC rendering, and UE/Unity 3D architecture with cost, speed, and control tradeoffs.</td>
+    <td><strong>Launch QA gate</strong><br>Checks lip sync, stream latency, consent, script safety, fallback behavior, and production handoff state before launch.</td>
+  </tr>
+</table>
+
+## Run
+
+This is a Busabase Cloud App-in-Skill. The AirApp is the canonical surface; a
+local preview is available for explicit debugging:
+
+```bash
+pnpm --dir skills/busa-digital-human/content/busa-digital-human-app dev
+```
+
+Views: overview, QA review queue, studio, vendors, and settings. `?demo=1`
+opens a deterministic, fully offline tour that never calls Busabase or any
+external digital-human provider or engine.

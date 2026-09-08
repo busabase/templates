@@ -1,0 +1,17 @@
+{
+  "name": "busa-support",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Busa Support Busabase Cloud skill and trusted execution-report writer.",
+  "scripts": {
+    "execute": "node scripts/execute_decisions.mjs",
+    "app:check": "pnpm --dir content/busa-support-app check"
+  },
+  "dependencies": {
+    "busabase-sdk": "0.30.1"
+  },
+  "engines": {
+    "node": ">=24.18.0"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "type": "airapp",
+  "name": "Busa Product Hub",
+  "description": "Product & certification hub for export/trade sellers: catalog/SKU master data, pricing, inventory, channel status (Amazon/Shopify/TikTok Shop/eBay), content readiness, compliance notes, lifecycle state, a certificate expiry tracker (CE/FCC/RoHS/UN38.3/UKCA), and an approval-gated review queue (channel publish approvals, price-change review, quality holds, lifecycle decisions, and unsourced spec claims). The AirApp itself only ever decides on a review item (approve/request_changes/block) directly onto its own record -- it never creates a product, channel, inventory, or certificate row."
+}

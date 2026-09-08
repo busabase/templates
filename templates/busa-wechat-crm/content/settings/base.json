@@ -1,0 +1,72 @@
+{
+  "name": "系统状态",
+  "description": "wechat-cli readiness、同步状态、分析范围和 Agent 锁。",
+  "position": 5,
+  "fields": [
+    {
+      "slug": "kind",
+      "name": "状态项",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "状态",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "value",
+      "name": "安全配置",
+      "type": "longtext",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "cli-version",
+      "name": "CLI 版本",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "last-sync-at",
+      "name": "上次同步时间",
+      "type": "date",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "people-count",
+      "name": "重点联系人数",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "locked-by",
+      "name": "锁定人",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "locked-at",
+      "name": "锁定时间",
+      "type": "date",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": []
+}

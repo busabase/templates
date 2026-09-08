@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Money"
+  short_description: "Busabase-backed ledger for money accounts"
+  default_prompt: "Use $busa-money to open my money ledger AirApp and review total cashflow."

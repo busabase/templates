@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Drama"
+  short_description: "Drama planning UI with HyperFrame-linked episode production."
+  default_prompt: "Use busa-drama to plan a drama or product-video project, manage the story bible, beats, storyboard shots, and review state in the local app, with each project linked to a HyperFrame project and each episode linked to a HyperFrame composition for final tuning."

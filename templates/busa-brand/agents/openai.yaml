@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Brand"
+  short_description: "Brand-narrative single source of truth (TALE) with a local review desk"
+  default_prompt: "Use $busa-brand to open my brand narrative workbench and review the message house, story bank, and drift alerts."

@@ -1,0 +1,28 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-wechat-crm",
+  "description": "Goal-first WeChat relationship desk that promotes only selected contacts into focused People workflows.",
+  "version": "0.3.0",
+  "license": "MIT",
+  "tags": ["sales-crm", "wechat", "relationship-strategy", "risk:local-write", "surface:busabase"],
+  "template": {
+    "category": "sales-crm",
+    "schemaVersion": 4,
+    "airapp": "busa-wechat-crm-app",
+    "tags": ["wechat", "goals", "relationship-analysis", "next-actions", "agent-worklog"],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/actions.webp",
+      "assets/screenshots/people.webp",
+      "assets/screenshots/snapshots.webp",
+      "assets/screenshots/goals.webp",
+      "assets/screenshots/mobile-actions.webp"
+    ],
+    "agentPrompts": [
+      "先创建一个目标，再从本机通讯录选择要重点关注的人。",
+      "我想为一款产品找到合适的试用者，请建立目标并提出下一步行动。",
+      "分析我和指定联系人最近一个月的关系变化，生成快照和建议。"
+    ],
+    "requires": { "airapp": true }
+  }
+}

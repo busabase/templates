@@ -1,0 +1,20 @@
+{
+  "name": "busa-lesson",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Busa Lesson Busabase App-in-Skill and trusted ingest/checks/execute/export scripts.",
+  "scripts": {
+    "ingest": "node scripts/ingest_plan.mjs",
+    "checks": "node scripts/run_checks.mjs",
+    "execute": "node scripts/execute_decisions.mjs",
+    "export": "node scripts/export_plans.mjs",
+    "app:check": "pnpm --dir content/busa-lesson-app check"
+  },
+  "dependencies": {
+    "busabase-sdk": "0.30.1"
+  },
+  "engines": {
+    "node": ">=24.18.0"
+  }
+}

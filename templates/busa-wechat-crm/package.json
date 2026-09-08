@@ -1,0 +1,24 @@
+{
+  "name": "busa-wechat-crm",
+  "private": true,
+  "type": "module",
+  "version": "0.3.0",
+  "description": "Busa WeChat CRM: trusted local sync from wechat-cli-rs into a Busabase follow-up desk.",
+  "scripts": {
+    "wechat:safe": "node scripts/wechat-safe.mjs",
+    "sync": "node scripts/sync_wechat.mjs",
+    "sync:content": "node scripts/sync-content.mjs",
+    "sync:content:check": "node scripts/sync-content.mjs --check",
+    "sync:blueprint": "node scripts/sync-blueprint.mjs",
+    "sync:blueprint:check": "node scripts/sync-blueprint.mjs --check",
+    "setup": "node scripts/setup.mjs",
+    "publish:airapp": "node scripts/publish_airapp.mjs",
+    "app:check": "pnpm --dir content/busa-wechat-crm-app check"
+  },
+  "dependencies": {
+    "busabase-sdk": "0.30.1"
+  },
+  "engines": {
+    "node": ">=24.18.0"
+  }
+}

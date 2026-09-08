@@ -1,0 +1,13 @@
+{
+  "name": "busa-portfolio-health",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Trusted scripts for busa-portfolio-health: workspace setup and AirApp publish.",
+  "dependencies": {
+    "busabase-sdk": "0.30.1"
+  },
+  "engines": {
+    "node": ">=24.18.0"
+  }
+}

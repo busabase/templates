@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa CLM"
+  short_description: "Lightweight contract lifecycle desk"
+  default_prompt: "Use $busa-clm to open my lightweight contract lifecycle desk."

@@ -1,0 +1,17 @@
+{
+  "name": "busa-retail-intel",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Busa Retail Intel Busabase Cloud skill and the trusted decision-execution script.",
+  "scripts": {
+    "execute-decisions": "node scripts/execute_decisions.mjs",
+    "app:check": "pnpm --dir content/busa-retail-intel-app check"
+  },
+  "dependencies": {
+    "busabase-sdk": "0.30.1"
+  },
+  "engines": {
+    "node": ">=24.18.0"
+  }
+}

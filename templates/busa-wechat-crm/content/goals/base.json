@@ -1,0 +1,147 @@
+{
+  "name": "目标",
+  "description": "用户动态设置的销售、关系维护或进一步了解某人的目标。",
+  "position": 1,
+  "fields": [
+    {
+      "slug": "title",
+      "name": "目标",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "objective",
+      "name": "想实现什么",
+      "type": "longtext",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "scope",
+      "name": "范围",
+      "type": "select",
+      "required": true,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "global",
+            "name": "全局"
+          },
+          {
+            "id": "person",
+            "name": "某个人"
+          },
+          {
+            "id": "segment",
+            "name": "一类关系"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "people",
+      "name": "关联的人",
+      "type": "relation",
+      "required": false,
+      "position": 3,
+      "options": {
+        "targetBaseSlug": "people"
+      }
+    },
+    {
+      "slug": "success-metric",
+      "name": "成功标准",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "deadline",
+      "name": "目标期限",
+      "type": "date",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "priority",
+      "name": "优先级",
+      "type": "select",
+      "required": true,
+      "position": 6,
+      "options": {
+        "choices": [
+          {
+            "id": "high",
+            "name": "高"
+          },
+          {
+            "id": "medium",
+            "name": "中"
+          },
+          {
+            "id": "low",
+            "name": "低"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "status",
+      "name": "状态",
+      "type": "select",
+      "required": true,
+      "position": 7,
+      "options": {
+        "choices": [
+          {
+            "id": "active",
+            "name": "进行中"
+          },
+          {
+            "id": "paused",
+            "name": "暂停"
+          },
+          {
+            "id": "achieved",
+            "name": "已达成"
+          },
+          {
+            "id": "abandoned",
+            "name": "已放弃"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "constraints",
+      "name": "边界与约束",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "operation-key",
+      "name": "操作键",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "created-at",
+      "name": "创建时间",
+      "type": "date",
+      "required": true,
+      "position": 10,
+      "options": {}
+    }
+  ],
+  "views": []
+}

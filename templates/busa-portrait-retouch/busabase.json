@@ -1,0 +1,25 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-portrait-retouch",
+  "description": "Natural portrait retouch jobs, reviewable candidates, and non-secret workflow settings",
+  "version": "0.1.0",
+  "license": "MIT",
+  "tags": ["production", "risk:local-write", "industry:beauty", "surface:busabase"],
+  "template": {
+    "category": "production",
+    "schemaVersion": 1,
+    "airapp": "busa-portrait-retouch-app",
+    "tags": ["production", "risk:local-write", "industry:beauty", "surface:busabase"],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp"
+    ],
+    "agentPrompts": [
+      "Summarize the retouch batches and flag what needs my approval.",
+      "Open Busa Portrait Retouch and show me the edits waiting for review."
+    ],
+    "requires": {
+      "airapp": true
+    }
+  }
+}

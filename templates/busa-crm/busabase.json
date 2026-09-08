@@ -1,0 +1,28 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-crm",
+  "description": "Contacts, companies, deals, and follow-up review workspace",
+  "version": "0.1.0",
+  "license": "MIT",
+  "tags": ["sales-crm", "risk:gated-write", "surface:busabase"],
+  "template": {
+    "category": "sales-crm",
+    "schemaVersion": 1,
+    "airapp": "busa-crm-app",
+    "tags": ["sales-crm", "risk:gated-write", "surface:busabase"],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/contacts.webp",
+      "assets/screenshots/deals.webp",
+      "assets/screenshots/followups.webp",
+      "assets/screenshots/overview.webp"
+    ],
+    "agentPrompts": [
+      "Summarize the latest 公司 and flag what needs my attention.",
+      "Open Busa CRM and show me the items that need review."
+    ],
+    "requires": {
+      "airapp": true
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "busa-sales-outreach",
+  "private": true,
+  "type": "module",
+  "description": "Trusted scripts for Busa Sales Outreach: account import and approved first-touch sending.",
+  "dependencies": {
+    "busabase-sdk": "0.30.1",
+    "nodemailer": "9.0.3"
+  },
+  "engines": {
+    "node": ">=24.18.0"
+  }
+}

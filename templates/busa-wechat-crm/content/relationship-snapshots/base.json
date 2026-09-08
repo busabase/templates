@@ -1,0 +1,151 @@
+{
+  "name": "关系快照",
+  "description": "Agent 在一个明确时间窗内形成的关系判断、证据与建议，用于比较关系变化。",
+  "position": 2,
+  "fields": [
+    {
+      "slug": "title",
+      "name": "快照标题",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "person",
+      "name": "关联的人",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "people"
+      }
+    },
+    {
+      "slug": "goal",
+      "name": "对应目标",
+      "type": "relation",
+      "required": false,
+      "position": 2,
+      "options": {
+        "targetBaseSlug": "goals"
+      }
+    },
+    {
+      "slug": "window-start",
+      "name": "分析开始",
+      "type": "date",
+      "required": true,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "window-end",
+      "name": "分析结束",
+      "type": "date",
+      "required": true,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "relationship-strength",
+      "name": "关系强度",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "relationship-trend",
+      "name": "关系趋势",
+      "type": "select",
+      "required": false,
+      "position": 6,
+      "options": {
+        "choices": [
+          {
+            "id": "warming",
+            "name": "升温"
+          },
+          {
+            "id": "stable",
+            "name": "稳定"
+          },
+          {
+            "id": "cooling",
+            "name": "降温"
+          },
+          {
+            "id": "unknown",
+            "name": "未知"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "interaction-frequency",
+      "name": "互动频率",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "reciprocity",
+      "name": "互动互惠度",
+      "type": "number",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "open-loops",
+      "name": "未完成事项",
+      "type": "longtext",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "evidence-summary",
+      "name": "证据摘要",
+      "type": "longtext",
+      "required": true,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "analysis",
+      "name": "关系判断",
+      "type": "longtext",
+      "required": true,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "recommendation-summary",
+      "name": "建议摘要",
+      "type": "longtext",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "confidence",
+      "name": "置信度",
+      "type": "number",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "analyzed-at",
+      "name": "分析时间",
+      "type": "date",
+      "required": true,
+      "position": 14,
+      "options": {}
+    }
+  ],
+  "views": []
+}

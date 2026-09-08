@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Portrait Retouch"
+  short_description: "Natural portrait retouching with reviewable local exports"
+  default_prompt: "Use $busa-portrait-retouch to make this portrait look naturally polished without changing identity."

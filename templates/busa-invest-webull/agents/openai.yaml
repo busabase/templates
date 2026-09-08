@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Invest (Webull)"
+  short_description: "Busabase-backed, read-only Webull portfolio dashboard"
+  default_prompt: "Use $busa-invest-webull to open my Webull portfolio app and review my holdings."
