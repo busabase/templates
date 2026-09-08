@@ -101,6 +101,10 @@ for (const base of appConfig.schema.bases) {
         type: view.type,
         config: view.config,
       })),
+      // What a person actually asks for with this Base — the "installed it, now
+      // what?" answer. Carried through from `config.js`'s own declaration so it
+      // survives a regen instead of the hand-edit it used to be.
+      ...(base.agentPrompts?.length ? { agentPrompts: base.agentPrompts } : {}),
     }),
   );
 

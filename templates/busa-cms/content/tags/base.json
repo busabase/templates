@@ -112,8 +112,8 @@
     },
     {
       "key": "list-tags",
-      "label": "What tags exist?",
       "intent": "read-only",
+      "label": "What tags exist?",
       "body": "{target}\n\nRead the `busa-cms` skill in this folder, then list the current tags with their slug and locale, so I can pick the right id for a post or page."
     }
   ]
