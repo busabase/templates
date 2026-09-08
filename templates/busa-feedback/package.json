@@ -1,0 +1,19 @@
+{
+  "name": "busa-feedback",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Busa Feedback Busabase Cloud skill and trusted connector ingest/cluster/execute scripts.",
+  "scripts": {
+    "ingest": "node scripts/ingest_feedback.mjs",
+    "cluster": "node scripts/apply_clusters.mjs",
+    "execute": "node scripts/execute_decisions.mjs",
+    "app:check": "pnpm --dir content/busa-feedback-app check"
+  },
+  "dependencies": {
+    "busabase-sdk": "0.30.1"
+  },
+  "engines": {
+    "node": ">=24.18.0"
+  }
+}

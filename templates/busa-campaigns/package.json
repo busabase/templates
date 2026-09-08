@@ -1,0 +1,17 @@
+{
+  "name": "busa-campaigns",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Busa Campaigns Busabase Cloud skill and trusted send-handoff operator.",
+  "scripts": {
+    "execute": "node scripts/execute_decisions.mjs",
+    "app:check": "pnpm --dir content/busa-campaigns-app check"
+  },
+  "dependencies": {
+    "busabase-sdk": "0.30.1"
+  },
+  "engines": {
+    "node": ">=24.18.0"
+  }
+}

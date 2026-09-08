@@ -1,0 +1,19 @@
+{
+  "name": "busa-ppt-factory",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Busa PPT Factory Busabase App-in-Skill and trusted generate/execute scripts.",
+  "scripts": {
+    "generate:pptx": "node scripts/generate_pptx.mjs",
+    "execute": "node scripts/execute_decisions.mjs",
+    "app:check": "pnpm --dir content/busa-ppt-factory-app check"
+  },
+  "dependencies": {
+    "busabase-sdk": "0.30.1",
+    "pptxgenjs": "^3.12.0"
+  },
+  "engines": {
+    "node": ">=24.18.0"
+  }
+}

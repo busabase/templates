@@ -1,0 +1,23 @@
+{
+  "name": "busa-drama",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Busa Drama trusted skill-root scripts: AI generation dispatcher, HyperFrame status cache, sample-project seed, shot-readiness validation, story-bible export.",
+  "scripts": {
+    "generate": "node scripts/execute_generation_requests.mjs",
+    "generate:apply": "node scripts/execute_generation_requests.mjs --apply",
+    "hyperframe-status": "node scripts/read_hyperframe_status.mjs",
+    "hyperframe-status:apply": "node scripts/read_hyperframe_status.mjs --apply",
+    "seed:dry-run": "node scripts/create_sample_project.mjs",
+    "seed": "node scripts/create_sample_project.mjs --apply",
+    "validate": "node scripts/validate_shot_readiness.mjs",
+    "export": "node scripts/export_story_bible.mjs"
+  },
+  "dependencies": {
+    "busabase-sdk": "0.30.1"
+  },
+  "engines": {
+    "node": ">=24.18.0"
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Tickets"
+  short_description: "Local complaint triage and dispatch desk"
+  default_prompt: "Use $busa-tickets to open my ticket desk, triage new complaints, and review dispatch proposals."

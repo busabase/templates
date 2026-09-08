@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa DevOps"
+  short_description: "Ops desk for the product fleet"
+  default_prompt: "Use $busa-devops to open my ops desk, run the health and expiry checks, and review pending action cards."

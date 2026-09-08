@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deal Sourcing Funnel"
+  short_description: "BD/sourcing pipeline kanban for merchant financing leads"
+  default_prompt: "Use $busa-lead-funnel to open the deal sourcing funnel and review this week's leads."

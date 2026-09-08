@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa PR Review"
+  short_description: "GitHub pull request review desk (gh CLI ingestion + AirApp approval + gh CLI execution)"
+  default_prompt: "Use $busa-pr-review to open my GitHub PR review desk AirApp and review the pull request queue."

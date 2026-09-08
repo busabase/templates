@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa SEO"
+  short_description: "Local GSC dashboard and SEO opportunities review queue"
+  default_prompt: "Use $busa-seo to open my SEO desk and review search performance and opportunities."

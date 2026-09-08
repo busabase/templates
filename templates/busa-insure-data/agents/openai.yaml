@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Insure Data"
+  short_description: "Insurance files, QA, news, and feedback workspace"
+  default_prompt: "Use $busa-insure-data to open my insurance data workspace."

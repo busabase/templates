@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Family Office"
+  short_description: "Consolidated investment dashboard for a family office"
+  default_prompt: "Use $busa-family-office to open my consolidated family office dashboard and review total AUM."

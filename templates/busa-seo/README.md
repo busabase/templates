@@ -1,0 +1,116 @@
+# Busa SEO
+
+Busa SEO is a Busabase App-in-Skill desk covering **SEO + GEO (AI-search) + brand entity**: a dashboard over Google Search Console search analytics and an agent-prepared SEO opportunities review queue, plus an AI-visibility tracker, a GEO content-optimization queue, and an entity / knowledge-panel readiness checklist.
+
+## How It Flows
+
+1. Pulling Search Console data is a trusted-script-only operation: `scripts/sync_gsc.mjs` authenticates with a service-account key or OAuth token, pulls Search Analytics, and upserts `sites`/`queries`/`pages` into Busabase. The AirApp itself only reads and writes Busabase — it never touches the GSC API.
+2. The agent analyzes synced analytics and writes proposed SEO/GEO opportunities and entity signals straight into Busabase (via `busabase-sdk`). The operator reviews and decides (approve / request changes / block / revise) in the app; verdicts write directly onto the item record.
+3. `scripts/execute_decisions.mjs` (dry-run by default) prints the concrete follow-up operation for every approved SEO opportunity; the agent performs it in the site's repo/CMS, then `--apply` marks it `ready_for_agent` and the agent marks it `done` after the real edit ships.
+
+## What It Shows
+
+- Overview: per-site KPI cards with 28d vs previous 28d deltas, a daily clicks/impressions trend, top movers, site freshness, and what needs review.
+- Queries: top queries with clicks, impressions, CTR, position, deltas, and opportunity badges; per-query detail with trend and top pages.
+- Pages: top pages with the same metrics plus indexing/canonical warnings; per-page detail with trend and top queries.
+- Opportunities: agent-proposed SEO actions (title/meta rewrites, internal links, content briefs, page fixes) with editable drafts and approve / request changes / block decisions.
+- AI visibility (GEO): an engines × prompts matrix showing whether AI answer engines (ChatGPT / Perplexity / Gemini / Claude / Copilot) cite the brand for a set of tracked prompts, at what answer position and sentiment, plus an overall visibility score and trend.
+- GEO optimizer: an agent-proposed content-optimization queue (citable rewrites, quotable stats, Q&A blocks, schema) reviewed with the same five states — each change scored by the `geo-qa` gate (SHIP / FIX / BLOCK), with a fabricated stat BLOCKed before it can ship.
+- Entity readiness: a brand-entity / knowledge-panel checklist (Wikidata, Wikipedia/notability, schema.org Organization, sameAs, consistent NAP, founder entity) with present / partial / missing status and an agent-proposed fix per gap.
+- Sites: configured properties with verification type, last sync, and 28d totals.
+
+## App UI Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="assets/screenshots/overview.webp" alt="Busa SEO overview"></td>
+    <td width="50%"><img src="assets/screenshots/queries.webp" alt="Busa SEO queries"></td>
+  </tr>
+  <tr>
+    <td><strong>Overview</strong><br>Search Console KPI cards with daily clicks/impressions chart, top movers, and per-site freshness.</td>
+    <td><strong>Queries</strong><br>Top queries with clicks, impressions, CTR, position, period deltas, and opportunity badges.</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="assets/screenshots/pages.webp" alt="the operator seo pages"></td>
+    <td width="50%"><img src="assets/screenshots/opportunities.webp" alt="the operator seo opportunities"></td>
+  </tr>
+  <tr>
+    <td><strong>Pages</strong><br>Page-level click and impression table with top growth and decline movers for prioritizing content updates.</td>
+    <td><strong>Opportunities</strong><br>Ranked SEO opportunity queue with impact, effort, evidence, and recommended next actions.</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="assets/screenshots/geo.webp" alt="Busa SEO AI visibility"></td>
+    <td width="50%"><img src="assets/screenshots/optimize.webp" alt="Busa SEO GEO optimizer"></td>
+  </tr>
+  <tr>
+    <td><strong>AI visibility (GEO)</strong><br>An engines×prompts matrix of where the brand is cited across ChatGPT, Perplexity, Gemini, Claude, and Copilot, with an overall visibility score and trend.</td>
+    <td><strong>GEO optimizer</strong><br>Agent-proposed rewrites that make pages more citable by AI engines, gated by geo-qa — one blocked for a fabricated stat.</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="assets/screenshots/entity.webp" alt="the operator seo entity readiness"></td>
+    <td width="50%"><img src="assets/screenshots/sites.webp" alt="Busa SEO sites"></td>
+  </tr>
+  <tr>
+    <td><strong>Entity readiness</strong><br>Entity readiness checklist showing schema coverage, citation signals, and blocked/ready status for AI answer engines.</td>
+    <td><strong>Sites</strong><br>Configured Search Console properties with verification type, last sync, and 28-day click and impression totals.</td>
+  </tr>
+</table>
+
+## Demo Mode
+
+Run the AirApp locally and open a safe mock-data scene:
+
+```bash
+cd skills/busa-seo/content/busa-seo-app && node server.js
+```
+
+Then add one of these demo paths:
+
+```text
+/?demo=overview&lang=en#/overview
+/?demo=queries&lang=en#/queries
+/?demo=pages&lang=en#/pages
+/?demo=opportunities&lang=en#/opportunities
+/?demo=geo&lang=en#/geo
+/?demo=optimize&lang=en#/optimize
+/?demo=entity&lang=en#/entity
+/?demo=detail&lang=en#/queries/q-featherlog-app-release-notes-vs-changelog
+```
+
+Demo mode never reads or writes Busabase. The GEO demo uses an invented brand (Featherlog); the `#/optimize` scene includes one change the `geo-qa` gate BLOCKs for a fabricated stat.
+
+## GSC Auth Setup
+
+Both methods use the read-only scope `https://www.googleapis.com/auth/webmasters.readonly`.
+
+Service account (recommended):
+
+1. In Google Cloud, create a service account and download its JSON key file.
+2. In Search Console, open each property → Settings → Users and permissions → Add user, and add the service account's email address (read access is enough).
+3. In a local env file (for example `skills/busa-seo/.env.local`), set `KELLY_SEO_GSC_SERVICE_ACCOUNT_FILE=/absolute/path/to/key.json`.
+
+Plain access token (quick manual runs):
+
+1. Obtain a short-lived OAuth access token with the read-only webmasters scope (for example via `gcloud auth print-access-token` on an authorized account, or the OAuth playground).
+2. Set `KELLY_SEO_GSC_ACCESS_TOKEN=<token>` and run `node skills/busa-seo/scripts/sync_gsc.mjs`.
+
+## Private Config
+
+Create `config.local.json` (or `~/.config/busa-seo/config.json`) and list your site properties — see `SKILL.md`'s First Run And Onboarding section for the exact shape. Secrets live only in local env files referenced by name (`KELLY_SEO_GSC_SERVICE_ACCOUNT_FILE`, `KELLY_SEO_GSC_ACCESS_TOKEN`). Never commit keys, tokens, or `config.local.json`.
+
+## Boundary
+
+GSC access is read-only, pulled only by the trusted `scripts/sync_gsc.mjs`. The AirApp itself never calls the GSC API or edits site content; approved opportunities are executed by the agent outside the app (in the site's repo/CMS) after `scripts/execute_decisions.mjs` marks them `ready_for_agent`. GEO content changes follow the same rule (approved in `#/optimize`, published by the agent outside the app). AI-visibility data is observational — the skill never fabricates a citation, an answer position, or a stat; the `geo-qa` gate BLOCKs ungrounded claims so no invented number reaches AI answer engines.
+
+---
+
+## 中文说明
+
+Busa SEO 是一个 Busabase App-in-Skill 桌面，覆盖 **SEO + GEO（AI 搜索）+ 品牌实体**：
+
+- **SEO 分析**：基于 Google Search Console 的点击、曝光、CTR、排名仪表盘，以及代理准备的 SEO 优化项审核队列（标题/描述改写、内链、内容简报、页面修复），可批准 / 要求修改 / 拦截。
+- **AI 可见度（GEO）**：一个「引擎 × 提问」矩阵，展示 ChatGPT / Perplexity / Gemini / Claude / Copilot 是否为一组追踪提问引用了本品牌、在答案中的位置与情感，以及总体可见度得分和趋势。
+- **GEO 内容优化**：代理提议让页面更易被 AI 引擎引用的改写（可引用改写、可引用数据、问答块、结构化数据），用同一套五状态审核；每项由 `geo-qa` 质量门评为 SHIP / FIX / BLOCK——编造数据会在发布前被拦截。
+- **实体就绪度**：品牌实体 / 知识面板清单（Wikidata、维基百科/知名度、schema.org Organization、sameAs、名称一致性 NAP、创始人实体），每项标注已具备 / 部分 / 缺失并给出建议修复。
+
+演示模式（`?demo=geo` / `?demo=optimize` / `?demo=entity`，可加 `lang=zh`）使用虚构品牌，不读取或写入任何真实 Busabase 数据。GEO 内容变更同样只在 App 外由代理发布；本技能绝不编造引用、答案位置或数据。

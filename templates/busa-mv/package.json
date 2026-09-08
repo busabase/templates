@@ -1,0 +1,21 @@
+{
+  "name": "busa-mv",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Busa MV trusted skill-root scripts: AI generation dispatcher, sample-project seed, shot-readiness validation, story-bible export.",
+  "scripts": {
+    "generate": "node scripts/execute_generation_requests.mjs",
+    "generate:apply": "node scripts/execute_generation_requests.mjs --apply",
+    "seed:dry-run": "node scripts/create_sample_project.mjs",
+    "seed": "node scripts/create_sample_project.mjs --apply",
+    "validate": "node scripts/validate_shot_readiness.mjs",
+    "export": "node scripts/export_story_bible.mjs"
+  },
+  "dependencies": {
+    "busabase-sdk": "0.30.1"
+  },
+  "engines": {
+    "node": ">=24.18.0"
+  }
+}
