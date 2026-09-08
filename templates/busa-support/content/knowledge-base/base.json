@@ -60,5 +60,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "find-article",
+      "label": "Find a KB article or macro",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder, then find the knowledge-base article or canned macro that covers the topic I describe.",
+      "intent": "read-only"
+    },
+    {
+      "key": "add-article",
+      "label": "Add a KB article or macro",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder and follow its workflow, then add a new knowledge-base article or canned macro with the title, body, tags, and category I give."
+    }
+  ]
 }

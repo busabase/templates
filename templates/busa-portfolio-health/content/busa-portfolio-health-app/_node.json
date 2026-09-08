@@ -1,5 +1,25 @@
 {
-  "type": "airapp",
-  "name": "Busa Portfolio Health",
-  "description": "Read-mostly dashboard over a revenue-based-financing (RBF) fund or private-credit book of many small SME contracts: portfolio health, AUM, repayment progress, industry/city concentration risk, and a watchlist of contracts with declining revenue. The only human action — flag a contract for review, clear a flag, or leave a note — is written directly onto the contract's own record; there is no separate approval queue and no transaction path. Generic and brand-free."
+    "type": "airapp",
+    "name": "Busa Portfolio Health",
+    "description": "Read-mostly dashboard over a revenue-based-financing (RBF) fund or private-credit book of many small SME contracts: portfolio health, AUM, repayment progress, industry/city concentration risk, and a watchlist of contracts with declining revenue. The only human action — flag a contract for review, clear a flag, or leave a note — is written directly onto the contract's own record; there is no separate approval queue and no transaction path. Generic and brand-free.",
+    "agentPrompts": [
+        {
+            "key": "portfolio-overview",
+            "label": "Show me the portfolio health overview",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-portfolio-health` skill in this folder, then summarize total AUM, total collected, weighted-average repayment progress, at-risk contract count, and category allocation."
+        },
+        {
+            "key": "concentration-risk",
+            "label": "What's our concentration risk?",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-portfolio-health` skill in this folder, then summarize funding-amount concentration by industry/category and by city, and flag anything that looks over-concentrated."
+        },
+        {
+            "key": "watchlist-attention",
+            "label": "Which contracts need attention this week?",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-portfolio-health` skill in this folder, then list the contracts on the watchlist for a recent revenue decline or high repayment lag, ranked by severity."
+        }
+    ]
 }

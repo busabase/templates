@@ -1,5 +1,24 @@
 {
-  "type": "airapp",
-  "name": "Busa Picks",
-  "description": "Product-research (选品) desk: trend sweeps, margin cards, competition reads, and a develop/watch/drop review queue"
+    "type": "airapp",
+    "name": "Busa Picks",
+    "description": "Product-research (选品) desk: trend sweeps, margin cards, competition reads, and a develop/watch/drop review queue",
+    "agentPrompts": [
+        {
+            "key": "research-overview",
+            "label": "Show me the product-research overview",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-picks` skill in this folder, then summarize the desk: candidates to review, develop-approved candidates awaiting handoff, stale watches, this week's KPIs, and top movers."
+        },
+        {
+            "key": "sweep-sources",
+            "label": "Sweep sources for fresh trends",
+            "body": "{target}\n\nRead the `busa-picks` skill in this folder and follow its workflow, then sweep the configured sources for new signals, ingest the payload through the single write path, and recompute margins. Collection stays read-only over public data — never place orders, message suppliers, or scrape gated content."
+        },
+        {
+            "key": "decision-queue",
+            "label": "What's waiting in the decision queue?",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-picks` skill in this folder, then summarize what is in the decision queue across develop/watch/drop proposals, and flag anything blocked."
+        }
+    ]
 }

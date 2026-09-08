@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa PR Review",
-  "description": "GitHub pull request review desk backed by the gh CLI"
+  "description": "GitHub pull request review desk backed by the gh CLI",
+  "agentPrompts": [
+    {
+      "key": "refresh-queue",
+      "label": "Refresh the review queue from GitHub",
+      "body": "{target}\n\nRead the `busa-pr-review` skill in this folder and follow its workflow, then run `generate_review_batch.mjs --apply` to gather my open PRs with `gh` and refresh the review queue, and give me the AirApp URL to review it."
+    },
+    {
+      "key": "execute-approved",
+      "label": "Submit my approved reviews to GitHub",
+      "body": "{target}\n\nRead the `busa-pr-review` skill in this folder and follow its workflow, then run `execute_decisions.mjs --apply` to re-read approved items and submit the real `gh pr review` call for each — never merge, close, push, or touch anything not marked approved."
+    },
+    {
+      "key": "status-overview",
+      "label": "How is the review queue looking?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-pr-review` skill in this folder, then give me a status overview of the review queue — counts for needs_review, to_approve, approved, done, and blocked."
+    }
+  ]
 }

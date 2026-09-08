@@ -1,5 +1,19 @@
 {
-  "type": "airapp",
-  "name": "Busa PPT Factory",
-  "description": "Project-based PPTX production desk — project, deck, slide card, style system, QA checks, and generated exports, with a review queue (approve / request changes / block / revise) gating PPTX generation"
+    "type": "airapp",
+    "name": "Busa PPT Factory",
+    "description": "Project-based PPTX production desk — project, deck, slide card, style system, QA checks, and generated exports, with a review queue (approve / request changes / block / revise) gating PPTX generation",
+    "agentPrompts": [
+        {
+            "key": "factory-overview",
+            "label": "Show me the PPT factory overview",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-ppt-factory` skill in this folder, then summarize project/deck/slide totals, the human-attention summary, and the style-kit preview."
+        },
+        {
+            "key": "review-queue-summary",
+            "label": "What's waiting in the review queue?",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-ppt-factory` skill in this folder, then summarize the decks and slide cards waiting in the review queue, grouped by workflow state, and flag anything blocked."
+        }
+    ]
 }

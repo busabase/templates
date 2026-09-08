@@ -1,6 +1,19 @@
 {
   "name": "Accounts",
   "description": "Custodian/institution accounts held by each entity",
+  "agentPrompts": [
+    {
+      "key": "add-account",
+      "label": "Add a custodian account",
+      "body": "{target}\n\nRead the `busa-family-office` skill in this folder and follow its workflow, then add the account I describe — institution, account type, currency, and the entity it belongs to. Write it through the trusted import process, never a direct Base write."
+    },
+    {
+      "key": "accounts-by-institution",
+      "label": "Which institutions hold our assets?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-family-office` skill in this folder, then show me the accounts grouped by custodian/institution, with their currency and the entity each belongs to."
+    }
+  ],
   "position": 1,
   "fields": [
     {

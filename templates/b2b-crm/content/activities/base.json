@@ -2,6 +2,24 @@
   "name": "Activities",
   "description": "Calls, emails, meetings, notes, and next follow-up dates.",
   "position": 0,
+  "agentPrompts": [
+    {
+      "key": "log-interaction",
+      "label": "Log a customer interaction",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder and follow its workflow, then log the call, email, meeting, or note I describe with the canonical Company (and Contact or Deal, if given) relation and a factual summary. Do not claim an email was sent or a call occurred unless I told you it did."
+    },
+    {
+      "key": "schedule-follow-up",
+      "label": "Log an interaction and set the next follow-up",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder and follow its workflow, then record the interaction I describe and set its Next Follow-Up Date to the date I give. Leave Next Follow-Up Date empty if I did not mention one."
+    },
+    {
+      "key": "review-follow-ups",
+      "label": "What follow-ups are due?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder, then show me the activities with a Next Follow-Up Date, split into overdue and upcoming, stating when the summary covers only the loaded page."
+    }
+  ],
   "fields": [
     {
       "slug": "activity-subject",

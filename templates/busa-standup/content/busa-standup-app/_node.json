@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Standup",
-  "description": "Team standup board: check-ins, blockers, and missing-check-in reminders"
+  "description": "Team standup board: check-ins, blockers, and missing-check-in reminders",
+  "agentPrompts": [
+    {
+      "key": "today-board",
+      "label": "Show today's standup board",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder, then open today's board and summarize who has and hasn't checked in, the team digest, and any blockers or reminders waiting on me.",
+      "intent": "read-only"
+    },
+    {
+      "key": "collect-updates",
+      "label": "Collect today's updates",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder and follow its workflow, then collect today's standup updates from wherever the team posted them (Slack, WeCom, Discord, WhatsApp, a shared doc, or pasted text) and get today's board ready for me to review."
+    },
+    {
+      "key": "review-reminders",
+      "label": "Review drafted reminders",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder and follow its workflow, then walk me through the drafted reminders for missing check-ins or aging blockers so I can approve, edit, or block each one before anything is sent."
+    }
+  ]
 }

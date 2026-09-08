@@ -52,5 +52,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "recent-activity",
+      "label": "What happened recently?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder, then summarize the most recent check runs, incidents, expiry warnings, spend anomalies, and action decisions from the events feed."
+    },
+    {
+      "key": "service-history",
+      "label": "Show me the history for one service",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder, then show me every event related to the service I name, newest first, so I can see its incident and check history."
+    }
+  ]
 }

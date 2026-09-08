@@ -1,6 +1,19 @@
 {
   "name": "Entities",
   "description": "The individuals, trusts, companies, funds, and foundations being consolidated",
+  "agentPrompts": [
+    {
+      "key": "add-entity",
+      "label": "Add an entity",
+      "body": "{target}\n\nRead the `busa-family-office` skill in this folder and follow its workflow, then add the entity I describe — individual, trust, company, fund, or foundation — with its member and type. Write it through the trusted `scripts/import_csv.mjs` process, never a direct Base write."
+    },
+    {
+      "key": "list-entities",
+      "label": "What entities are being consolidated?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-family-office` skill in this folder, then list the entities on record with their type and member."
+    }
+  ],
   "position": 0,
   "fields": [
     {

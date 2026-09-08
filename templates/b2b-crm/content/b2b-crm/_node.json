@@ -2,5 +2,24 @@
   "type": "airapp",
   "name": "B2B CRM",
   "description": "A shared account, contact, activity, and review-first sales pipeline workspace.",
-  "position": 0
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "daily-overview",
+      "label": "Give me today's CRM overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder, then give me today's overview: follow-ups due, deals by stage with exact counts, and accounts by Relationship Type. State when a metric is bounded by a loaded page rather than a full scan."
+    },
+    {
+      "key": "account-brief",
+      "label": "Brief me on an account before I reach out",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder, then brief me on the company I name: its Relationship Type, primary contacts, most recent activities, and any open deals, so I have context before a call or email."
+    },
+    {
+      "key": "propose-crm-update",
+      "label": "Log a change to a company, contact, activity, or deal",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder and follow its workflow, then propose the company, contact, activity, or deal change I describe as a ChangeRequest, reusing canonical record ids for any relation fields, and give me the ChangeRequest id to review."
+    }
+  ]
 }

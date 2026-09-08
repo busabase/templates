@@ -2,5 +2,19 @@
   "type": "drive",
   "name": "港险资料库 Drive",
   "description": "Hong Kong insurance documents and source material",
-  "position": 4
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "missing-metadata",
+      "label": "Which files are missing governance metadata?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-insure-data` skill in this folder, then list the files in this drive with incomplete governance metadata — missing policy_type, carrier, region, effective_date, or status — so I know what still needs backfilling."
+    },
+    {
+      "key": "find-document",
+      "label": "Find a document by carrier or policy type",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-insure-data` skill in this folder, then find the files in this drive matching the carrier or policy type I name, and show their governance metadata and status."
+    }
+  ]
 }

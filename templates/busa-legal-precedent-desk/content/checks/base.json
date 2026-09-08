@@ -52,5 +52,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "failing-precedent-checks",
+      "label": "What precedent QA checks are failing right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-precedent-desk` skill in this folder, then show me the precedent QA checks that are currently failing — citation traceability, similarity rationale, jurisdiction fit, or confidentiality limits — grouped by severity, with the research pack each one blocks."
+    },
+    {
+      "key": "explain-check-failure",
+      "label": "Why did this check fail?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-precedent-desk` skill in this folder, then explain why the check I name failed for its research pack and what citation or rationale is needed before it can be approved."
+    }
+  ]
 }

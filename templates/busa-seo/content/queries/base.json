@@ -100,5 +100,24 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "striking-distance",
+      "label": "Which queries are close to breaking through?",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder, then show me the queries sitting at position 8-15 (striking distance) and the ones whose CTR is below what's expected for their position.",
+      "intent": "read-only"
+    },
+    {
+      "key": "declining-queries",
+      "label": "Which queries are losing clicks?",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder, then show me the queries with the biggest click or impression losses versus the previous period.",
+      "intent": "read-only"
+    },
+    {
+      "key": "note-query-change",
+      "label": "Note why a query moved",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder and follow its workflow, then add an agent note on the query I name explaining why its clicks or position changed."
+    }
+  ]
 }

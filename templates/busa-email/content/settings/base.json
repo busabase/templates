@@ -1,6 +1,19 @@
 {
   "name": "Email Settings",
   "description": "Account configuration, Vault references, locks, and scan state",
+  "agentPrompts": [
+    {
+      "key": "configure-mailbox",
+      "label": "Add or update a mailbox account",
+      "body": "{target}\n\nRead the `busa-email` skill in this folder and follow its workflow, then create or update the `busa-email-config` record with the non-secret account details I give — mailbox address, aliases, IMAP/SMTP host/port/security, folders, mailbox group, and outbound identities. Never write secret values here; name the Vault reference instead and tell me which Vault keys still need to be added."
+    },
+    {
+      "key": "onboarding-check",
+      "label": "Is my mailbox setup ready to scan?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-email` skill in this folder, then check whether the Folder, Reviews/Contacts/Settings Bases, and Drive exist, whether Email Settings has a configured mailbox, and whether every IMAP/SMTP endpoint names a resolvable Vault reference. Tell me exactly what is missing, if anything."
+    }
+  ],
   "position": 2,
   "fields": [
     {

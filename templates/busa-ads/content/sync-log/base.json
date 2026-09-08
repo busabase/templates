@@ -2,6 +2,20 @@
   "name": "Sync Log",
   "description": "Append-only feed: ingest runs, anomaly checks, and execution plans",
   "position": 4,
+  "agentPrompts": [
+    {
+      "key": "latest-sync-activity",
+      "label": "What happened in the most recent sync?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder, then summarize the most recent ingest runs, anomaly checks, and execution plans from the sync log."
+    },
+    {
+      "key": "sync-history-for-platform",
+      "label": "Show me the sync history for a platform",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder, then show me the sync-log entries for the platform I name, so I know when it was last ingested and what changed."
+    }
+  ],
   "fields": [
     {
       "slug": "sync-id",

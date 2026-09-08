@@ -124,5 +124,29 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-company-and-approve",
+      "label": "Review a company and approve the send",
+      "body": "{target}\n\nRead the `busa-jobhunt` skill in this folder and follow its workflow, then walk me through the company I name — its match evidence, drafted email, and the address it would send to — and if I approve it, write `status: queued` with the chosen `sent-to` address and `approved-at`. The human approves every send; never send on your own initiative."
+    },
+    {
+      "key": "edit-draft-email",
+      "label": "Edit and tailor a drafted email",
+      "body": "{target}\n\nRead the `busa-jobhunt` skill in this folder and follow its workflow, then revise the email subject and body for the company I name so the opening paragraph speaks to that company's specific evidence, keeping the rest consistent with my profile's highlights. Plain text only — no HTML, no tracking pixel."
+    },
+    {
+      "key": "whats-ready-to-send",
+      "label": "What's ready to send?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-jobhunt` skill in this folder, then list companies sorted the way the desk sorts them — evidence type (official-site above aggregator above business-match) first, match score only breaking ties — and show their status."
+    },
+    {
+      "key": "check-evidence-freshness",
+      "label": "Check evidence freshness before sending",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-jobhunt` skill in this folder, then flag companies whose evidence type is blank or whose evidence date is older than 30 days — both mean 未标注/check before sending, not that the role is confirmed open."
+    }
+  ]
 }

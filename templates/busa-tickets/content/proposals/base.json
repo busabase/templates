@@ -180,5 +180,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-proposals",
+      "label": "Review pending dispatch proposals",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder and follow its workflow, then walk me through the pending dispatch proposals so I can approve, request changes, or block each one."
+    },
+    {
+      "key": "pending-proposals",
+      "label": "What's waiting on my decision?",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder, then show me the proposals waiting on my decision, with the proposed crew, priority, and SLA target.",
+      "intent": "read-only"
+    }
+  ]
 }

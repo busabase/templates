@@ -1,6 +1,19 @@
 {
   "name": "Families",
   "description": "The sibling families that share the fund surplus",
+  "agentPrompts": [
+    {
+      "key": "add-family",
+      "label": "Add a sibling family",
+      "body": "{target}\n\nRead the `busa-family-fund` skill in this folder and follow its workflow, then add the sibling family I describe — name, head, and member count — so it can share in the fund's surplus. Write it through the trusted import process, never a direct Base write."
+    },
+    {
+      "key": "fairness-by-family",
+      "label": "Show each family's cumulative benefit and fairness",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-family-fund` skill in this folder, then show me each sibling family's cumulative benefit, share percentage, and deviation from the average — care cost excluded, shared costs split equally — so it's clear who is above or below the fairness threshold. Present this as a neutral fact, never advice on who should pay."
+    }
+  ],
   "position": 1,
   "fields": [
     {

@@ -2,6 +2,19 @@
   "name": "Watchlist",
   "description": "Monitored competitors, categories, keywords, and communities, with per-source method",
   "position": 0,
+  "agentPrompts": [
+    {
+      "key": "add-watch-target",
+      "label": "Add a competitor or keyword to watch",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder and follow its workflow, then add the competitor, category, keyword, or community I describe to the watchlist, with its monitored source URLs and collection method (browser_agent or manual)."
+    },
+    {
+      "key": "watchlist-freshness",
+      "label": "Which watch targets are going stale?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder, then show me the watchlist with last-check time and 7-day signal counts, and flag any target that hasn't been checked on its expected cadence."
+    }
+  ],
   "fields": [
     {
       "slug": "target-id",

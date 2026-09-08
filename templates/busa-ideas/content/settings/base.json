@@ -44,5 +44,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-profile",
+      "label": "更新操作者画像和偏好",
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能并按照其流程执行，然后更新我指定的设置——操作者画像、语言、口吻，或 agent lock；不要在这里存放任何密钥或凭证。"
+    },
+    {
+      "key": "view-profile",
+      "label": "查看当前的画像和偏好设置",
+      "intent": "read-only",
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能，然后展示当前的操作者画像、语言、口吻和 agent lock 设置。"
+    }
+  ]
 }

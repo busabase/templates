@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Finance",
-  "description": "Busa Finance: a review workspace for a three-statement financial model — the current model snapshot (company/currency/periods/workbook), its model-quality check queue (balance-sheet ties, cash roll-forward, formula reviews), and sanitized settings"
+  "description": "Busa Finance: a review workspace for a three-statement financial model — the current model snapshot (company/currency/periods/workbook), its model-quality check queue (balance-sheet ties, cash roll-forward, formula reviews), and sanitized settings",
+  "agentPrompts": [
+    {
+      "key": "build-model",
+      "label": "Build a new financial model",
+      "body": "{target}\n\nRead the `busa-finance` skill in this folder and follow its workflow, then build a three-statement starter model for the company I describe and load the result into this workspace. Never invent forecast figures beyond the deterministic demo data or numbers you actually read from a real workbook."
+    },
+    {
+      "key": "review-status",
+      "label": "What needs my review right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-finance` skill in this folder, then summarize the current model's KPIs (revenue CAGR, ending cash, free cash flow, balance check) and list the model-quality checks still needing review, grouped by severity."
+    },
+    {
+      "key": "run-decisions",
+      "label": "Execute my approved review decisions",
+      "body": "{target}\n\nRead the `busa-finance` skill in this folder and follow its workflow, then run the decision-execution step for every check I have approved, and report which checks are now ready for the next step. This performs no external side effect — no export, filing, or transmission to investors or a source-of-truth system."
+    }
+  ]
 }

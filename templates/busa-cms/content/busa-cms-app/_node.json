@@ -2,5 +2,19 @@
   "type": "airapp",
   "name": "Busa CMS",
   "description": "The editorial desk for the website content busabase-cms-sdk serves.",
-  "position": 0
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "content-overview",
+      "label": "Summarize what's published and what's still draft",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-cms` skill in this folder, then summarize the posts and pages by status (draft/in-review/published/archived) and flag published rows missing SEO fields, remembering that only `published` rows are ever served to the site."
+    },
+    {
+      "key": "connect-my-site",
+      "label": "Give me the snippet to connect my site",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-cms` skill in this folder, then give me this install's Folder id and the busabase-cms-sdk env/code snippet for wiring a Next.js site to it, as shown in Help & Settings \u203a Connect."
+    }
+  ]
 }

@@ -2,6 +2,20 @@
   "name": "Campaigns",
   "description": "One row per campaign: budget, targets, and the daily spend/impressions/clicks/conversions/revenue series",
   "position": 1,
+  "agentPrompts": [
+    {
+      "key": "campaign-performance",
+      "label": "How is this campaign performing?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder, then show me the campaign I name: spend, ROAS, ACOS against its target, budget pace, and trend. Campaign data is only ever written by the ingest script, so do not propose editing it directly."
+    },
+    {
+      "key": "worst-offenders",
+      "label": "Show me the worst-offending campaigns",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder, then show me the highest-spend zero-conversion campaigns and any campaigns at risk of exhausting their daily budget."
+    }
+  ],
   "fields": [
     {
       "slug": "campaign-id",

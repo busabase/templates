@@ -1,5 +1,18 @@
 {
   "type": "airapp",
   "name": "Busa Ads",
-  "description": "Ad-campaign command desk: Amazon/Meta/TikTok/Google spend and performance, deterministic anomaly detection, and an adjustment-card review queue"
+  "description": "Ad-campaign command desk: Amazon/Meta/TikTok/Google spend and performance, deterministic anomaly detection, and an adjustment-card review queue",
+  "agentPrompts": [
+    {
+      "key": "daily-attention",
+      "label": "What needs my attention today?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder, then give me today's command-desk view: critical anomalies, adjustment cards awaiting review, and any budget at risk of exhausting today, across Amazon, Meta, TikTok, and Google Ads."
+    },
+    {
+      "key": "review-and-decide",
+      "label": "Walk me through the adjustment queue",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder and follow its workflow, then walk me through the adjustment cards awaiting review one at a time with their evidence and expected impact, and record the verdict I give for each — approve, request changes, or block. Never call a platform API or execute a change yourself."
+    }
+  ]
 }

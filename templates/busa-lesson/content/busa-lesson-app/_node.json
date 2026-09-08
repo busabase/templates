@@ -1,5 +1,28 @@
 {
   "type": "airapp",
   "name": "Busa Lesson",
-  "description": "Lesson-plan generation and compliance-check desk: plan library, compliance checks, and a review queue"
+  "description": "Lesson-plan generation and compliance-check desk: plan library, compliance checks, and a review queue",
+  "agentPrompts": [
+    {
+      "key": "quality-overview",
+      "label": "What's the state of lesson-plan compliance?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-lesson` skill in this folder, then give me the teaching-quality overview — compliance pass rate, coverage by grade and subject, per-teacher status, and what's waiting in the review queue."
+    },
+    {
+      "key": "draft-and-check",
+      "label": "Draft a plan and run compliance checks",
+      "body": "{target}\n\nRead the `busa-lesson` skill in this folder and follow its workflow, then draft a lesson plan from the curriculum materials I give you, run the compliance checks, and give me the review-queue link for it."
+    },
+    {
+      "key": "import-teacher-draft",
+      "label": "Import and check a teacher's draft",
+      "body": "{target}\n\nRead the `busa-lesson` skill in this folder and follow its workflow, then parse the teacher's document I give you into a plan (source: teacher_import), run compliance checks, and surface any deficiencies via the checks — do not silently fix their content."
+    },
+    {
+      "key": "export-approved-plans",
+      "label": "Export the approved plans",
+      "body": "{target}\n\nRead the `busa-lesson` skill in this folder and follow its workflow, then export the plans with status approved or done to Markdown, and tell me the concrete file paths — this never writes back to Busabase."
+    }
+  ]
 }

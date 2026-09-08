@@ -1,6 +1,24 @@
 {
   "name": "Requests",
   "description": "Clustered feature requests (frequency/weighted score are derived, not stored)",
+  "agentPrompts": [
+    {
+      "key": "cluster-feedback",
+      "label": "Cluster new feedback into requests",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder and follow its workflow, then dedupe and cluster the `triage: new` feedback into request drafts — title, problem statement, proposed spec summary, and representative feedback ids — and write the cluster assignment via `scripts/apply_clusters.mjs`. Never write `frequency` or `weighted-score` directly; they always recompute client-side from linked feedback."
+    },
+    {
+      "key": "set-effort",
+      "label": "Set the effort estimate for a request",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder and follow its workflow, then set the effort estimate I give for the request I name."
+    },
+    {
+      "key": "top-requests",
+      "label": "What are people asking for the most?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder, then show me the requests with the highest frequency and weighted score, their trend, and status, with representative quotes. Never invent or inflate a count — it must derive from real linked feedback."
+    }
+  ],
   "position": 3,
   "fields": [
     {

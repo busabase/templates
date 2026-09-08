@@ -108,5 +108,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "baseline-vs-adapter",
+      "label": "Show me the baseline vs adapter comparison",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder, then show me the locked-evaluation delta between the untouched baseline and its adapter for the run I name — JSON validity, schema validity, exact-field accuracy, and latency, all on the identical locked test cases."
+    },
+    {
+      "key": "pending-promotion-decisions",
+      "label": "Which evaluations are ready for a promotion decision?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder, then list the evaluations that have a completed baseline/adapter comparison but no recorded promotion verdict yet."
+    }
+  ]
 }

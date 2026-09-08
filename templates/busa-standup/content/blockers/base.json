@@ -68,5 +68,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "open-blockers",
+      "label": "Show open blockers",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder, then show me all open blockers across the team, sorted by severity and age, with the agent-suggested next action for each.",
+      "intent": "read-only"
+    },
+    {
+      "key": "resolve-blocker",
+      "label": "Mark a blocker resolved",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder and follow its workflow, then record that the blocker I describe has been resolved and update the board."
+    }
+  ]
 }

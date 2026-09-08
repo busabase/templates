@@ -1,6 +1,19 @@
 {
   "name": "Email Contacts",
   "description": "Contact observations derived from reviewed mail",
+  "agentPrompts": [
+    {
+      "key": "contact-history",
+      "label": "Look up a contact's email history",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-email` skill in this folder, then show me what we know about the contact I name — message count, last subject, category counts, risk tags, and notes. Do not expose unrelated thread contents beyond what is already summarized here."
+    },
+    {
+      "key": "note-contact",
+      "label": "Add a note or default action for a contact",
+      "body": "{target}\n\nRead the `busa-email` skill in this folder and follow its workflow, then add the note or default handling action I describe for the contact I name, so future reviews of this sender are triaged consistently."
+    }
+  ],
   "position": 1,
   "fields": [
     {

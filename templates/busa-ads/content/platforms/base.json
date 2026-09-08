@@ -2,6 +2,20 @@
   "name": "Platforms",
   "description": "Connected ad platform roster: Amazon Ads, Meta, TikTok Ads, Google Ads",
   "position": 0,
+  "agentPrompts": [
+    {
+      "key": "platform-roster",
+      "label": "Show me our connected ad platforms",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder, then list the connected ad platforms with their status, currency, and last sync time. Do not show account tokens or credentials — Busabase never stores them."
+    },
+    {
+      "key": "stale-platforms",
+      "label": "Which platforms haven't synced recently?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder, then flag any connected platform whose last sync is stale, so I know which report pull to run next."
+    }
+  ],
   "fields": [
     {
       "slug": "platform-id",

@@ -124,5 +124,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-contract",
+      "label": "Log a new contract into the library",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder and follow its workflow, then add the contract I describe — counterparty, matter type, workstreams, jurisdictions, key obligations, watch terms, and the required-document checklist — so clause issues can be raised against it."
+    },
+    {
+      "key": "contract-status",
+      "label": "What is the status across contracts and workstreams?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder, then show me the contract × workstream status matrix, and flag any contract with open or blocked clause issues."
+    }
+  ]
 }

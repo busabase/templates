@@ -92,5 +92,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-claim",
+      "label": "Add an approved fallback clause or rejected position",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder and follow its workflow, then add the clause or position I describe to the playbook, marked as an approved fallback or a rejected position, with when to use it and its source."
+    },
+    {
+      "key": "claims-for-category",
+      "label": "What fallback clauses do we have for this category?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder, then list the approved fallback clauses and rejected positions for the category I name, with when to use each one."
+    }
+  ]
 }

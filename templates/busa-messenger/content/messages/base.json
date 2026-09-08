@@ -60,5 +60,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "conversation-history",
+      "label": "Show me this conversation's message history",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder, then show me the message history for the conversation I name, in order, with sender and timestamp."
+    },
+    {
+      "key": "summarize-thread",
+      "label": "Summarize what's been said in this thread",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder, then summarize what's been discussed in the conversation I name, including any open question the other side is waiting on."
+    }
+  ]
 }

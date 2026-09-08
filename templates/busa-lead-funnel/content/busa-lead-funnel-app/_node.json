@@ -1,5 +1,24 @@
 {
   "type": "airapp",
   "name": "Busa Lead Funnel",
-  "description": "Deal sourcing pipeline for a BD/sourcing team triaging merchant and business financing leads: a kanban board across new/data-verified/scored/term-sheet-ready/rejected stages with deterministic rule-based lead scoring, notes, and stage history — never outreach, term sheets, or money movement"
+  "description": "Deal sourcing pipeline for a BD/sourcing team triaging merchant and business financing leads: a kanban board across new/data-verified/scored/term-sheet-ready/rejected stages with deterministic rule-based lead scoring, notes, and stage history — never outreach, term sheets, or money movement",
+  "agentPrompts": [
+    {
+      "key": "funnel-overview",
+      "label": "Show me the funnel overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-lead-funnel` skill in this folder, then show the funnel summary — per-stage lead counts, conversion rates between stages, and the rejection rate."
+    },
+    {
+      "key": "whats-new-to-review",
+      "label": "What's new or freshly scored to review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-lead-funnel` skill in this folder, then list the leads sitting in New or Scored with their score and suggested next action, so I know which ones need a stage decision."
+    },
+    {
+      "key": "triage-a-lead",
+      "label": "Help me triage a lead",
+      "body": "{target}\n\nRead the `busa-lead-funnel` skill in this folder and follow its workflow, then open the lead I name, walk me through its score breakdown and suggested next action, and carry out the stage move, rejection with reason, or note I decide on. Never send outreach, sign a term sheet, or move money — this board only ever writes stage, rejection reason, and notes."
+    }
+  ]
 }

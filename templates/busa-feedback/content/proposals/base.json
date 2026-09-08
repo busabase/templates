@@ -1,6 +1,24 @@
 {
   "name": "Proposals",
   "description": "Agent-proposed roadmap changes: promote / decline / merge / publish changelog",
+  "agentPrompts": [
+    {
+      "key": "decide-proposal",
+      "label": "Approve, request changes, or block a proposal",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder and follow its workflow, then record my verdict — approve, request changes, or block — plus a review note for the proposal I name. This writes the decision onto the proposal record; nothing is published or sent until I separately confirm execution."
+    },
+    {
+      "key": "revise-proposal",
+      "label": "Revise a proposal's draft",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder and follow its workflow, then revise the draft for the proposal I name per its review note, and move it back to `needs_review`."
+    },
+    {
+      "key": "queue-status",
+      "label": "What proposals are waiting on my decision?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder, then list the proposals still `needs_review`, with type, reason, and evidence for each."
+    }
+  ],
   "position": 5,
   "fields": [
     {

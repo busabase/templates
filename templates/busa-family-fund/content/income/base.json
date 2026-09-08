@@ -1,6 +1,19 @@
 {
   "name": "Income",
   "description": "Monthly pension inflow per beneficiary",
+  "agentPrompts": [
+    {
+      "key": "record-income",
+      "label": "Record a month's pension income",
+      "body": "{target}\n\nRead the `busa-family-fund` skill in this folder and follow its workflow, then record the pension income I describe for the month and beneficiary I name. Write it through the trusted `scripts/import_csv.mjs` process, never a direct Base write."
+    },
+    {
+      "key": "income-this-month",
+      "label": "How much income came in this month?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-family-fund` skill in this folder, then show me this month's pooled pension income by beneficiary and the running total."
+    }
+  ],
   "position": 2,
   "fields": [
     {

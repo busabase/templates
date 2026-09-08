@@ -252,5 +252,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "draft-platform-listing",
+      "label": "Draft a listing for a platform",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder and follow its workflow, then draft the listing for the product and platform I name, in the marketplace language of the target locale — Amazon needs exactly 5 benefit-led bullets and backend search terms under 249 bytes. Never use words from the banned list or invent certifications, and record the reasoning in keyword_strategy."
+    },
+    {
+      "key": "record-review-decision",
+      "label": "Record a review decision",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder and follow its workflow, then record my decision (approve, request changes, or block) on the draft I name, with my review note. Never fabricate a verdict on my behalf."
+    },
+    {
+      "key": "needs-review",
+      "label": "What still needs review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder, then list the drafts still in needs_review or changes_requested, with their compliance score and a one-line summary of what's failing."
+    }
+  ]
 }

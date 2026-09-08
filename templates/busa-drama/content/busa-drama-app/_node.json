@@ -1,5 +1,24 @@
 {
   "type": "airapp",
   "name": "Busa Drama",
-  "description": "Short-drama workspace: series bible, characters, relationships, episodes, and storyboard shots"
+  "description": "Short-drama workspace: series bible, characters, relationships, episodes, and storyboard shots",
+  "agentPrompts": [
+    {
+      "key": "production-health",
+      "label": "Show me the production health dashboard",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder, then open the overview and summarize the series health, execution timeline, and per-episode script/storyboard/shot readiness stats."
+    },
+    {
+      "key": "generation-readiness-gate",
+      "label": "What needs my attention before generating more assets?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder, then tell me which characters are missing reference cards and which shots fail the video-ready Definition of Done, so I know what to fix before spending on image or video generation."
+    },
+    {
+      "key": "seed-sample-project",
+      "label": "Seed a starter project to explore the workspace",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder and follow its workflow, then, if the workspace is empty, seed it with the bundled sample project so I can explore the series bible, characters, episodes, and shots before starting my own."
+    }
+  ]
 }

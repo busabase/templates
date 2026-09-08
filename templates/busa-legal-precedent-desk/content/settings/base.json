@@ -92,5 +92,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-precedent-settings",
+      "label": "Update the firm profile or search policy",
+      "body": "{target}\n\nRead the `busa-legal-precedent-desk` skill in this folder and follow its workflow, then update the settings row with the firm profile, default jurisdiction, minimum similarity score, quote limit, and source-case-id requirements I give you."
+    },
+    {
+      "key": "settings-readiness",
+      "label": "Is the precedent desk ready for a real research request?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-precedent-desk` skill in this folder, then check the settings row and tell me what onboarding — jurisdictions, similarity threshold, quote and citation policy, export preferences — is still missing before a real research pack should be prepared."
+    }
+  ]
 }

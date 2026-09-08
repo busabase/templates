@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Radar",
-  "description": "Market-intelligence desk: competitor signals, research briefs/reports, trend movers/opportunities, and a triage review queue"
+  "description": "Market-intelligence desk: competitor signals, research briefs/reports, trend movers/opportunities, and a triage review queue",
+  "agentPrompts": [
+    {
+      "key": "overview-brief",
+      "label": "Give me the intel desk overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder, then give me the command-desk overview: signals to triage, briefs awaiting approval, reports ready to read, follow-ups running, watchlist freshness, and top trend movers."
+    },
+    {
+      "key": "run-monitoring",
+      "label": "Run a monitoring pass now",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder and follow its workflow, then run a monitoring pass over the due watchlist sources, file any changes as normalized signals via `ingest_signals.mjs`, and give me the AirApp URL to triage them."
+    },
+    {
+      "key": "execute-approved",
+      "label": "Carry out my approved decisions",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder and follow its workflow, then run `execute_decisions.mjs` (dry-run) to list the concrete handoffs for my approved signals/briefs/opportunities, and after I confirm, perform them and run `execute_decisions.mjs --apply` to mark them done."
+    }
+  ]
 }

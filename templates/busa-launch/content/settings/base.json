@@ -44,5 +44,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "check-launch-profile",
+      "label": "Check the launch profile and readiness policy",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-launch` skill in this folder, then show the sanitized config summary — product/launch profile, readiness policy, press lists, and configured channels. Never expose secret values, only whether a token is configured."
+    },
+    {
+      "key": "update-launch-profile",
+      "label": "Set up or update the launch profile",
+      "body": "{target}\n\nRead the `busa-launch` skill in this folder and follow its workflow, then take the non-secret setup details I give you — product profile, launch target date and timezone, channels, press list names, readiness policy, and style/tone — and write the launch profile. Never ask me to paste a secret value into chat."
+    }
+  ]
 }

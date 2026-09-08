@@ -1,5 +1,19 @@
 {
   "type": "airapp",
   "name": "Legal Precedent Desk",
-  "description": "Precedent-research desk over internal casebase search, local court-pattern analysis, similar-case packs, citations, and approval-gated research exports (approve / request changes / revise / block) before a research pack becomes a matter-strategy input"
+  "description": "Precedent-research desk over internal casebase search, local court-pattern analysis, similar-case packs, citations, and approval-gated research exports (approve / request changes / revise / block) before a research pack becomes a matter-strategy input",
+  "agentPrompts": [
+    {
+      "key": "precedent-desk-overview",
+      "label": "Show me the precedent research desk",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-precedent-desk` skill in this folder, then summarize the precedent desk: packs awaiting review, high-match cases, approved packs, and recent activity."
+    },
+    {
+      "key": "review-queue-summary",
+      "label": "What needs my review or approval?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-precedent-desk` skill in this folder, then summarize the review queue of research packs, flagging anything with thin similar-case support, missing citations, or a jurisdiction mismatch."
+    }
+  ]
 }

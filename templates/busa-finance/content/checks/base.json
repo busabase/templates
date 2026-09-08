@@ -124,5 +124,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "log-finding",
+      "label": "Log a model-review finding",
+      "body": "{target}\n\nRead the `busa-finance` skill in this folder and follow its workflow, then record the issue I describe as a new check — title, summary, severity, check type, and the evidence supporting it — so the reviewer can work through it in the app."
+    },
+    {
+      "key": "decide-check",
+      "label": "Approve, request changes, block, or dismiss a check",
+      "body": "{target}\n\nRead the `busa-finance` skill in this folder and follow its workflow, then record my decision on the check I name — write the decision action and my note directly onto that check's decision-action, decision-comment, and decided-at fields."
+    },
+    {
+      "key": "needs-review",
+      "label": "What still needs review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-finance` skill in this folder, then list the checks still in needs_review status, grouped by severity, with each check's summary and proposed action."
+    }
+  ]
 }

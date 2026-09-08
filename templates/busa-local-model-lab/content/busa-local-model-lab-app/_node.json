@@ -1,5 +1,29 @@
 {
   "type": "airapp",
   "name": "Busa Local Model Lab",
-  "description": "Review training examples, monitor local MLX fine-tunes, compare locked evaluations, and govern LoRA adapters with Busabase as the source of truth."
+  "description": "Review training examples, monitor local MLX fine-tunes, compare locked evaluations, and govern LoRA adapters with Busabase as the source of truth.",
+  "agentPrompts": [
+    {
+      "key": "lab-overview",
+      "label": "What's the lab's current state?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder, then give me the lab overview — readiness, approved split counts, active runs, candidate adapters, and the latest baseline/adapter delta."
+    },
+    {
+      "key": "prepare-reproducible-run",
+      "label": "Prepare a reproducible training run",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder and follow its workflow, then export only approved examples into a locked, hashed dataset snapshot on Drive and create a ready training run referencing it — never from a mutable live query."
+    },
+    {
+      "key": "compare-adapter-baseline",
+      "label": "Compare the latest adapter with its baseline",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder, then compare the latest adapter with its untouched baseline on the identical locked test cases and decoding settings, and summarize the delta."
+    },
+    {
+      "key": "review-example-queue",
+      "label": "Review the example queue",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder and follow its workflow, then walk me through the pending training examples one by one and record approve, request_changes, or block with my notes for each."
+    }
+  ]
 }

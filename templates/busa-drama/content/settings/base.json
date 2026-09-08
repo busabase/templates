@@ -148,5 +148,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "update-generation-settings",
+      "label": "Update the generation backend settings",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder and follow its workflow, then update the image/video/TTS backend settings I give you (base URL, model, size, resolution, ratio) on the single config row. Never store an API key here \u2014 those stay in env vars read only by the trusted scripts."
+    },
+    {
+      "key": "current-generation-settings",
+      "label": "What generation backend am I using?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder, then show me the current image, video, and TTS backend settings from the config row."
+    }
+  ]
 }

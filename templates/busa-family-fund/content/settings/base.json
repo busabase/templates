@@ -1,6 +1,19 @@
 {
   "name": "Settings",
   "description": "Fund meta, fairness threshold, and onboarding marker",
+  "agentPrompts": [
+    {
+      "key": "setup-fund",
+      "label": "Set up or update the fund",
+      "body": "{target}\n\nRead the `busa-family-fund` skill in this folder and follow its workflow, then create or update the `fund-meta` settings row with the non-secret details I give — fund name, steward, base currency, and fairness deviation threshold percentage. Never ask me to paste a secret into chat."
+    },
+    {
+      "key": "current-setup",
+      "label": "What's the current fund setup?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-family-fund` skill in this folder, then show me the fund's current name, steward, base currency, and fairness deviation threshold."
+    }
+  ],
   "position": 4,
   "fields": [
     {

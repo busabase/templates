@@ -60,5 +60,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-suppression-entry",
+      "label": "Suppress an address or segment",
+      "body": "{target}\n\nRead the `busa-campaigns` skill in this folder and follow its workflow, then add the address (or whole segment) I name to the suppression list with the reason \u2014 unsubscribe, hard bounce, or complaint."
+    },
+    {
+      "key": "check-suppression",
+      "label": "Is this address suppressed?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-campaigns` skill in this folder, then check whether the address or segment I name is on the suppression list, and why, before it gets included in a send."
+    }
+  ]
 }

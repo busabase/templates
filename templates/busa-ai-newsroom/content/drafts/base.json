@@ -2,6 +2,24 @@
   "name": "Drafts",
   "description": "Editable channel drafts (sales opener / LinkedIn post / client memo) tied to an approved action, kept behind a review gate until approved.",
   "position": 2,
+  "agentPrompts": [
+    {
+      "key": "drafts-awaiting-review",
+      "label": "What drafts are waiting on me?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ai-newsroom` skill in this folder, then show me the sales-opener, LinkedIn post, and client-memo drafts still awaiting a decision, with their linked action and any risk badges."
+    },
+    {
+      "key": "revise-draft",
+      "label": "Save my edit to this draft",
+      "body": "{target}\n\nRead the `busa-ai-newsroom` skill in this folder and follow its workflow, then write the revised wording I give as the `edited-body` on the draft I name, without creating a separate file or record."
+    },
+    {
+      "key": "decide-draft",
+      "label": "Record my decision on this draft",
+      "body": "{target}\n\nRead the `busa-ai-newsroom` skill in this folder and follow its workflow, then write the verdict I give — approve, request changes with a comment, or block — directly onto the draft I name. Approving here never posts or sends it anywhere by itself."
+    }
+  ],
   "fields": [
     {
       "slug": "draft-id",

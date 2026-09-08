@@ -60,5 +60,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "latest-notices",
+      "label": "Summarize the latest 保司通知",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-insure-data` skill in this folder, then summarize the latest carrier notices and operational announcements, grouped by carrier, and flag any without a source URL."
+    },
+    {
+      "key": "notices-by-carrier",
+      "label": "Find notices from a specific carrier",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-insure-data` skill in this folder, then show me the carrier notices matching the carrier or category I name, with their publish date and status."
+    }
+  ]
 }

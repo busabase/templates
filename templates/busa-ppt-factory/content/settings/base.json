@@ -1,88 +1,101 @@
 {
-  "name": "Settings",
-  "description": "Default client profile, style default, and export preferences — a single settings row",
-  "position": 6,
-  "fields": [
-    {
-      "slug": "record-id",
-      "name": "Record ID",
-      "type": "text",
-      "required": true,
-      "position": 0,
-      "options": {}
-    },
-    {
-      "slug": "default-brand-id",
-      "name": "Default brand ID",
-      "type": "text",
-      "required": false,
-      "position": 1,
-      "options": {}
-    },
-    {
-      "slug": "brand-name",
-      "name": "Brand name",
-      "type": "text",
-      "required": false,
-      "position": 2,
-      "options": {}
-    },
-    {
-      "slug": "brand-audience",
-      "name": "Brand audience",
-      "type": "text",
-      "required": false,
-      "position": 3,
-      "options": {}
-    },
-    {
-      "slug": "brand-language-mode",
-      "name": "Brand language mode",
-      "type": "text",
-      "required": false,
-      "position": 4,
-      "options": {}
-    },
-    {
-      "slug": "brand-style-system-id",
-      "name": "Brand default style system ID",
-      "type": "text",
-      "required": false,
-      "position": 5,
-      "options": {}
-    },
-    {
-      "slug": "export-out-dir",
-      "name": "Export out dir",
-      "type": "text",
-      "required": false,
-      "position": 6,
-      "options": {}
-    },
-    {
-      "slug": "export-render-dir",
-      "name": "Export render dir",
-      "type": "text",
-      "required": false,
-      "position": 7,
-      "options": {}
-    },
-    {
-      "slug": "export-pptx-template",
-      "name": "Export PPTX template",
-      "type": "text",
-      "required": false,
-      "position": 8,
-      "options": {}
-    },
-    {
-      "slug": "export-require-render-qa",
-      "name": "Export require render QA",
-      "type": "text",
-      "required": false,
-      "position": 9,
-      "options": {}
-    }
-  ],
-  "views": []
+    "name": "Settings",
+    "description": "Default client profile, style default, and export preferences — a single settings row",
+    "position": 6,
+    "fields": [
+        {
+            "slug": "record-id",
+            "name": "Record ID",
+            "type": "text",
+            "required": true,
+            "position": 0,
+            "options": {}
+        },
+        {
+            "slug": "default-brand-id",
+            "name": "Default brand ID",
+            "type": "text",
+            "required": false,
+            "position": 1,
+            "options": {}
+        },
+        {
+            "slug": "brand-name",
+            "name": "Brand name",
+            "type": "text",
+            "required": false,
+            "position": 2,
+            "options": {}
+        },
+        {
+            "slug": "brand-audience",
+            "name": "Brand audience",
+            "type": "text",
+            "required": false,
+            "position": 3,
+            "options": {}
+        },
+        {
+            "slug": "brand-language-mode",
+            "name": "Brand language mode",
+            "type": "text",
+            "required": false,
+            "position": 4,
+            "options": {}
+        },
+        {
+            "slug": "brand-style-system-id",
+            "name": "Brand default style system ID",
+            "type": "text",
+            "required": false,
+            "position": 5,
+            "options": {}
+        },
+        {
+            "slug": "export-out-dir",
+            "name": "Export out dir",
+            "type": "text",
+            "required": false,
+            "position": 6,
+            "options": {}
+        },
+        {
+            "slug": "export-render-dir",
+            "name": "Export render dir",
+            "type": "text",
+            "required": false,
+            "position": 7,
+            "options": {}
+        },
+        {
+            "slug": "export-pptx-template",
+            "name": "Export PPTX template",
+            "type": "text",
+            "required": false,
+            "position": 8,
+            "options": {}
+        },
+        {
+            "slug": "export-require-render-qa",
+            "name": "Export require render QA",
+            "type": "text",
+            "required": false,
+            "position": 9,
+            "options": {}
+        }
+    ],
+    "views": [],
+    "agentPrompts": [
+        {
+            "key": "update-default-settings",
+            "label": "Update the default brand, style kit, or export preferences",
+            "body": "{target}\n\nRead the `busa-ppt-factory` skill in this folder and follow its workflow, then update the settings row's default brand/audience/language mode, default style system, or export preferences (output dir, render dir, PPTX template, render-QA requirement) with the values I give you."
+        },
+        {
+            "key": "current-default-settings",
+            "label": "What are the current default settings?",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-ppt-factory` skill in this folder, then show me the current default brand profile, style kit, and export preferences from the settings row."
+        }
+    ]
 }

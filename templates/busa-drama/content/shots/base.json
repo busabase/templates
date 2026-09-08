@@ -324,5 +324,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "storyboard-shot",
+      "label": "Storyboard a shot",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder and follow its workflow, then write the shot I describe to the video-ready Definition of Done \u2014 identity/timing, camera spec, motion (action), generation prompts, audio/dialogue, timed SRT cues at or below ~8 characters per second, transitions, and continuity anchors \u2014 before it is ever considered ready to generate."
+    },
+    {
+      "key": "request-shot-generation",
+      "label": "Request a shot's image or video generation",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder and follow its workflow, then mark the named shot's image-status and/or video-status as requested only after it passes shot-readiness validation, so the trusted generation script can fulfill it."
+    },
+    {
+      "key": "shots-ready-to-generate",
+      "label": "Which shots are ready to generate?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder, then list which shots meet the video-ready Definition of Done and which are blocked, flagging overdense dialogue and characters still missing a reference card."
+    }
+  ]
 }

@@ -1,6 +1,14 @@
 {
   "name": "Sync Log",
   "description": "Append-only history of ingest/cluster/execute runs",
+  "agentPrompts": [
+    {
+      "key": "recent-syncs",
+      "label": "What happened in recent syncs?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder, then show me the recent ingest/cluster/execute runs — actor, action, and count — newest first."
+    }
+  ],
   "position": 6,
   "fields": [
     {

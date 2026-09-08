@@ -2,6 +2,20 @@
   "name": "Sync Log",
   "description": "Append-only history of ingest/file-report/execute-decisions runs",
   "position": 7,
+  "agentPrompts": [
+    {
+      "key": "recent-runs",
+      "label": "What did the last few sync runs do?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder, then show me the most recent ingest/file-report/execute-decisions runs, with actor, action, and detail for each."
+    },
+    {
+      "key": "history-for-target",
+      "label": "When was this target or question last touched?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder, then show me the sync-log history for the watch target or research question I name, so I can see when it was last checked or updated."
+    }
+  ],
   "fields": [
     {
       "slug": "log-id",

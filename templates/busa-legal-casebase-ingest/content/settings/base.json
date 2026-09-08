@@ -108,5 +108,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-casebase-settings",
+      "label": "Update the firm profile or ingestion policy",
+      "body": "{target}\n\nRead the `busa-legal-casebase-ingest` skill in this folder and follow its workflow, then update the settings row with the firm profile, allowed document types, anonymization standard, reviewer sample rate, and required taxonomy fields I give you."
+    },
+    {
+      "key": "settings-readiness",
+      "label": "Is the casebase ready for real ingest?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-casebase-ingest` skill in this folder, then check the settings row and tell me what onboarding — jurisdictions, anonymization policy, reviewer sampling, required taxonomy — is still missing before real documents should be ingested."
+    }
+  ]
 }

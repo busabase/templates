@@ -52,5 +52,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-launch-day-runbook",
+      "label": "Review the launch-day runbook",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-launch` skill in this folder, then show the ordered launch-day timeline — each step's time offset, title, owner, and war-room note — in order."
+    },
+    {
+      "key": "build-runbook",
+      "label": "Build the launch-day runbook",
+      "body": "{target}\n\nRead the `busa-launch` skill in this folder and follow its workflow, then assemble an ordered launch-day runbook (T-60m through T+8h) with an owner and a war-room note per step, based on the channels and assets already in the checklist."
+    }
+  ]
 }

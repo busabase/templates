@@ -52,5 +52,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "team-config",
+      "label": "Show the team profile",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder, then show me the team profile — name, timezone, workdays, standup questions, and digest style.",
+      "intent": "read-only"
+    },
+    {
+      "key": "update-team-settings",
+      "label": "Update the team profile",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder and follow its workflow, then update the team profile or standup questions I describe, such as changing the workdays, digest style, or the standup questions themselves."
+    }
+  ]
 }

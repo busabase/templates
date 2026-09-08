@@ -76,5 +76,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "log-interaction",
+      "label": "Log an interaction",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder and follow its workflow, then log the email, meeting, call, chat, or note I describe, linked to the right contact, company, and deal by their canonical ids, with a short summary."
+    },
+    {
+      "key": "interaction-history",
+      "label": "What's our history with this contact or deal?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder, then show me the interaction timeline for the contact or deal I name, most recent first."
+    }
+  ]
 }

@@ -68,5 +68,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "roster-status",
+      "label": "Show the team roster",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder, then show me the team roster with each member's check-in streak, 30-day participation, and open blocker count.",
+      "intent": "read-only"
+    },
+    {
+      "key": "add-member",
+      "label": "Add a member to the roster",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder and follow its workflow, then add a new member to the roster — name, role, timezone, channel, and which env var holds their contact for reminders."
+    }
+  ]
 }

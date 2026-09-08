@@ -2,6 +2,30 @@
   "name": "Narrative Items",
   "description": "Positioning, message pillars, story bank, proof points, vocabulary and guardrails under review",
   "position": 0,
+  "agentPrompts": [
+    {
+      "key": "items-needing-review",
+      "label": "What narrative items need my review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-brand` skill in this folder, then show me the positioning, pillar, story, proof-point, vocabulary, or guardrail items awaiting review, with their TALE phase and NQS gate (SHIP/FIX/BLOCK)."
+    },
+    {
+      "key": "explain-item",
+      "label": "Explain this item's NQS score",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-brand` skill in this folder, then explain the narrative item I name: its draft, TALE phase, sub-skill, NQS score and gate, and — for a proof point — its evidence source and stat."
+    },
+    {
+      "key": "revise-item",
+      "label": "Re-draft an item per review feedback",
+      "body": "{target}\n\nRead the `busa-brand` skill in this folder and follow its workflow, then re-draft the narrative item I name per the review comment I give, and write it back to `needs_review`."
+    },
+    {
+      "key": "decide-item",
+      "label": "Record my decision on this narrative item",
+      "body": "{target}\n\nRead the `busa-brand` skill in this folder and follow its workflow, then write the verdict I give — approve (adopt as canonical), request changes with a note, or block — directly onto the item I name. Never adopt a proof point that is missing its evidence source."
+    }
+  ],
   "fields": [
     {
       "slug": "item-id",

@@ -2,6 +2,19 @@
   "name": "Opportunities",
   "description": "Opportunity cards turned from sustained trend movers, with a proposed next-step handoff",
   "position": 6,
+  "agentPrompts": [
+    {
+      "key": "opportunities-queue",
+      "label": "What opportunities are waiting on me?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder, then list the opportunity cards awaiting a decision, with the rationale and proposed next step (content brief or roadmap candidate) for each."
+    },
+    {
+      "key": "decide-opportunity",
+      "label": "Approve or ignore an opportunity",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder and follow its workflow, then record my decision and comment on the opportunity card I name. Approving queues the handoff (to busa-writer or busa-feedback) — it does not perform the handoff itself; that still needs `execute_decisions.mjs --apply`."
+    }
+  ],
   "fields": [
     {
       "slug": "opportunity-id",

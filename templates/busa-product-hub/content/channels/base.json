@@ -2,6 +2,25 @@
   "name": "Channels",
   "description": "One row per product x marketplace channel (Amazon/Shopify/TikTok Shop/eBay): listing id, status, price, buybox, content score, and channel issue note.",
   "position": 1,
+  "agentPrompts": [
+    {
+      "key": "channel-status",
+      "label": "How is a product doing across channels?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder, then show me the status, buybox, price, and content score across Amazon/Shopify/TikTok Shop/eBay for the product I name, and call out any open channel issues."
+    },
+    {
+      "key": "log-channel-issue",
+      "label": "Log a channel issue and next step",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder and follow its workflow, then record the channel issue and next step I describe for the product x platform row I name. Do not change price or publish status here — a price change or a new channel publish needs a review item and human approval first."
+    },
+    {
+      "key": "publish-readiness",
+      "label": "Is this product ready to publish on a new channel?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder, then check whether the product I name has the content readiness and compliance data a new channel listing needs, and tell me what's missing before I request a publish review item."
+    }
+  ],
   "fields": [
     {
       "slug": "channel-id",

@@ -324,5 +324,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-queue",
+      "label": "Review the approval queue",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder and follow its workflow, then walk me through the tickets waiting on my decision so I can save the reply, approve, request changes, or block each one — approval is refused while the reply's support-qa verdict is BLOCK."
+    },
+    {
+      "key": "breaching-sla",
+      "label": "Which tickets are breaching SLA?",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder, then show me the tickets that are breaching or about to breach their SLA due-by.",
+      "intent": "read-only"
+    },
+    {
+      "key": "reschedule-sla",
+      "label": "Reschedule a ticket's SLA",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder and follow its workflow, then reschedule the SLA due-by for the ticket I name to the time I give."
+    }
+  ]
 }

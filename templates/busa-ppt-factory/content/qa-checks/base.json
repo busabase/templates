@@ -1,64 +1,77 @@
 {
-  "name": "QA Checks",
-  "description": "Deterministic or human QA evidence for a deck, slide, or export",
-  "position": 4,
-  "fields": [
-    {
-      "slug": "check-id",
-      "name": "Check ID",
-      "type": "text",
-      "required": true,
-      "position": 0,
-      "options": {}
-    },
-    {
-      "slug": "target-id",
-      "name": "Target ID",
-      "type": "text",
-      "required": false,
-      "position": 1,
-      "options": {}
-    },
-    {
-      "slug": "target-type",
-      "name": "Target type",
-      "type": "text",
-      "required": false,
-      "position": 2,
-      "options": {}
-    },
-    {
-      "slug": "rule",
-      "name": "Rule",
-      "type": "text",
-      "required": false,
-      "position": 3,
-      "options": {}
-    },
-    {
-      "slug": "result",
-      "name": "Result",
-      "type": "text",
-      "required": false,
-      "position": 4,
-      "options": {}
-    },
-    {
-      "slug": "evidence",
-      "name": "Evidence",
-      "type": "longtext",
-      "required": false,
-      "position": 5,
-      "options": {}
-    },
-    {
-      "slug": "checked-at",
-      "name": "Checked at",
-      "type": "text",
-      "required": false,
-      "position": 6,
-      "options": {}
-    }
-  ],
-  "views": []
+    "name": "QA Checks",
+    "description": "Deterministic or human QA evidence for a deck, slide, or export",
+    "position": 4,
+    "fields": [
+        {
+            "slug": "check-id",
+            "name": "Check ID",
+            "type": "text",
+            "required": true,
+            "position": 0,
+            "options": {}
+        },
+        {
+            "slug": "target-id",
+            "name": "Target ID",
+            "type": "text",
+            "required": false,
+            "position": 1,
+            "options": {}
+        },
+        {
+            "slug": "target-type",
+            "name": "Target type",
+            "type": "text",
+            "required": false,
+            "position": 2,
+            "options": {}
+        },
+        {
+            "slug": "rule",
+            "name": "Rule",
+            "type": "text",
+            "required": false,
+            "position": 3,
+            "options": {}
+        },
+        {
+            "slug": "result",
+            "name": "Result",
+            "type": "text",
+            "required": false,
+            "position": 4,
+            "options": {}
+        },
+        {
+            "slug": "evidence",
+            "name": "Evidence",
+            "type": "longtext",
+            "required": false,
+            "position": 5,
+            "options": {}
+        },
+        {
+            "slug": "checked-at",
+            "name": "Checked at",
+            "type": "text",
+            "required": false,
+            "position": 6,
+            "options": {}
+        }
+    ],
+    "views": [],
+    "agentPrompts": [
+        {
+            "key": "record-qa-check",
+            "label": "Record a QA check on a deck, slide, or export",
+            "body": "{target}\n\nRead the `busa-ppt-factory` skill in this folder and follow its workflow, then record the QA check I describe — rule, result, and evidence — against the deck, slide, or export I name. Treat render QA as required before a client-facing deck ships."
+        },
+        {
+            "key": "outstanding-qa-issues",
+            "label": "What QA issues are outstanding?",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-ppt-factory` skill in this folder, then list the failed or unresolved QA checks across decks, slides, and exports."
+        }
+    ]
 }

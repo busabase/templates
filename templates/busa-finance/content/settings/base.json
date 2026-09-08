@@ -36,5 +36,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-defaults",
+      "label": "Update the default model assumptions",
+      "body": "{target}\n\nRead the `busa-finance` skill in this folder and follow its workflow, then update the sanitized default assumptions used for the next model build — company name, base currency, forecast horizon, and growth/margin assumptions I specify. Never store secrets or credentials here."
+    },
+    {
+      "key": "view-defaults",
+      "label": "What are the current default assumptions?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-finance` skill in this folder, then show me the current default company, base currency, and model assumptions (horizon, base revenue, growth, margins) stored in settings."
+    }
+  ]
 }

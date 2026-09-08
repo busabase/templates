@@ -140,5 +140,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-contract",
+      "label": "Add a new contract",
+      "body": "{target}\n\nRead the `busa-clm` skill in this folder and follow its workflow, then add the contract I describe to the inventory \u2014 counterparty, type, owner, value, start/end dates, and renewal/notice dates \u2014 and leave anything I did not tell you empty."
+    },
+    {
+      "key": "advance-contract-stage",
+      "label": "Move a contract to its next lifecycle stage",
+      "body": "{target}\n\nRead the `busa-clm` skill in this folder and follow its workflow, then move the contract I name to its next lifecycle stage and update its next action and risk."
+    },
+    {
+      "key": "renewals-due",
+      "label": "What renewals or notice deadlines are coming up?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-clm` skill in this folder, then list the contracts with an upcoming renewal date or notice deadline, with owner and current stage."
+    }
+  ]
 }

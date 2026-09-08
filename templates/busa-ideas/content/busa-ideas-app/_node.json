@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Ideas",
-  "description": "灵感库：左边是你的想法，右边是它被问清楚的过程和三份文档。"
+  "description": "灵感库：左边是你的想法，右边是它被问清楚的过程和三份文档。",
+  "agentPrompts": [
+    {
+      "key": "capture-and-interrogate",
+      "label": "记一条新想法并开始追问",
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能并按照其流程执行，然后记下我这条新想法，接着像顾问一样一次问一个问题，把它往梯子上推——模糊的答案指出问题所在并只多追问一次，绝不替我编造数字或市场规模。"
+    },
+    {
+      "key": "ladder-status",
+      "label": "灵感库总览",
+      "intent": "read-only",
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能，然后总览整个灵感库——每条想法在哪一档、清晰度如何、还有几个问题没回答。"
+    },
+    {
+      "key": "handoff-to-build",
+      "label": "把一条想法交给 app-skill-creator 去构建",
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能并按照其流程执行，然后检查我指定的想法：只有 PRD 已完善且 gaps 为空才能交接。明确向我确认要不要现在交给 kelly-app-skill-creator 构建，不要不打招呼就执行；如果还有 gap，说清楚是哪些 gap 挡住了。"
+    }
+  ]
 }

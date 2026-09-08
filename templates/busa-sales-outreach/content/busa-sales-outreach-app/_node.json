@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Sales Outreach",
-  "description": "Product positioning, ideal-customer profile, target accounts, contacts, and reviewed outreach"
+  "description": "Product positioning, ideal-customer profile, target accounts, contacts, and reviewed outreach",
+  "agentPrompts": [
+    {
+      "key": "desk-overview",
+      "label": "What's my next step on the desk?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-sales-outreach` skill in this folder, then open the desk and report the current bounded next step — how many accounts are to-send, sent, and opted-out."
+    },
+    {
+      "key": "run-research",
+      "label": "Find new target accounts",
+      "body": "{target}\n\nRead the `busa-sales-outreach` skill in this folder and follow its `research` subcommand, then run one bounded round (20-30 accounts) to find companies with observable pain/buying signals against my ICP, identify one public contact per company, and draft a personalized first-touch email grounded in that evidence for each — never guess an email address or overwrite an existing company row."
+    },
+    {
+      "key": "send-approved",
+      "label": "Send my approved first touches",
+      "body": "{target}\n\nRead the `busa-sales-outreach` skill in this folder and follow its `send` subcommand, then send only the individually approved, `queued` first-touch emails — re-check each account's status immediately before sending and skip anything already sent or opted-out. One company gets one initial email."
+    }
+  ]
 }

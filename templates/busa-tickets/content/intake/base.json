@@ -156,5 +156,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "unclassified-intake",
+      "label": "What complaints still need classifying?",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder, then show me the raw complaints that haven't been classified or converted to a ticket yet.",
+      "intent": "read-only"
+    },
+    {
+      "key": "convert-to-ticket",
+      "label": "Convert a complaint into a ticket",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder and follow its workflow, then classify the complaint I name — category, urgency, unit or location — and convert it into a ticket."
+    }
+  ]
 }

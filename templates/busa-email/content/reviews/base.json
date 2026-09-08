@@ -1,6 +1,24 @@
 {
   "name": "Email Reviews",
   "description": "Mailbox review items, human decisions, and execution outcomes",
+  "agentPrompts": [
+    {
+      "key": "needs-review-queue",
+      "label": "What's still waiting on my review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-email` skill in this folder and follow its workflow, then list the review items still in Needs Review, newest first, with the background, why it needs review, and the recommended next step for each. Do not include items already Approved, Done, or Blocked."
+    },
+    {
+      "key": "record-decision",
+      "label": "Record my decision on a review item",
+      "body": "{target}\n\nRead the `busa-email` skill in this folder and follow its workflow, then record the decision I give for the review item I name — archive, mark read, keep unread, draft reply, send reply, or no action. A send decision always needs a non-empty approved draft; broad cleanup approval never authorizes sending, and only the trusted process executes the mailbox change after this decision is recorded."
+    },
+    {
+      "key": "draft-reply",
+      "label": "Draft or revise a reply",
+      "body": "{target}\n\nRead the `busa-email` skill in this folder and follow its workflow, then draft or revise the reply for the review item I name, choosing the outbound identity from the original recipient, thread history, and customer language. Keep routine support replies to 60-120 words and lead with the answer; return the item to Needs Review for wording approval rather than sending it."
+    }
+  ],
   "position": 0,
   "fields": [
     {

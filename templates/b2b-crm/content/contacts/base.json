@@ -2,6 +2,24 @@
   "name": "Contacts",
   "description": "People connected to tracked companies.",
   "position": 0,
+  "agentPrompts": [
+    {
+      "key": "add-contact",
+      "label": "Add a new contact",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder and follow its workflow, then add the contact I describe, linked to the canonical Company record id rather than a written company name. Do not infer an email address, phone number, or buying role — leave anything I did not tell you empty."
+    },
+    {
+      "key": "update-contact",
+      "label": "Update a contact's role or status",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder and follow its workflow, then update the contact I name — job title, buying role, or Contact Status — to reflect the change I describe, without touching their linked company."
+    },
+    {
+      "key": "contacts-at-account",
+      "label": "Who are the contacts at this account?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder, then list the contacts linked to the company I name, with their job title and buying role, so I know who to reach out to."
+    }
+  ],
   "fields": [
     {
       "slug": "full-name",

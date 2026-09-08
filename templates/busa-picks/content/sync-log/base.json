@@ -1,48 +1,56 @@
 {
-  "name": "Sync Log",
-  "description": "Append-only history of ingest/compute/execute runs",
-  "position": 4,
-  "fields": [
-    {
-      "slug": "log-id",
-      "name": "Log ID",
-      "type": "text",
-      "required": true,
-      "position": 0,
-      "options": {}
-    },
-    {
-      "slug": "at",
-      "name": "At",
-      "type": "text",
-      "required": false,
-      "position": 1,
-      "options": {}
-    },
-    {
-      "slug": "actor",
-      "name": "Actor",
-      "type": "text",
-      "required": false,
-      "position": 2,
-      "options": {}
-    },
-    {
-      "slug": "action",
-      "name": "Action",
-      "type": "text",
-      "required": false,
-      "position": 3,
-      "options": {}
-    },
-    {
-      "slug": "detail",
-      "name": "Detail",
-      "type": "longtext",
-      "required": false,
-      "position": 4,
-      "options": {}
-    }
-  ],
-  "views": []
+    "name": "Sync Log",
+    "description": "Append-only history of ingest/compute/execute runs",
+    "position": 4,
+    "fields": [
+        {
+            "slug": "log-id",
+            "name": "Log ID",
+            "type": "text",
+            "required": true,
+            "position": 0,
+            "options": {}
+        },
+        {
+            "slug": "at",
+            "name": "At",
+            "type": "text",
+            "required": false,
+            "position": 1,
+            "options": {}
+        },
+        {
+            "slug": "actor",
+            "name": "Actor",
+            "type": "text",
+            "required": false,
+            "position": 2,
+            "options": {}
+        },
+        {
+            "slug": "action",
+            "name": "Action",
+            "type": "text",
+            "required": false,
+            "position": 3,
+            "options": {}
+        },
+        {
+            "slug": "detail",
+            "name": "Detail",
+            "type": "longtext",
+            "required": false,
+            "position": 4,
+            "options": {}
+        }
+    ],
+    "views": [],
+    "agentPrompts": [
+        {
+            "key": "recent-activity",
+            "label": "What happened in recent sweep and decision runs?",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-picks` skill in this folder, then summarize the recent ingest/compute/execute history from the sync log — what ran, when, and what it changed."
+        }
+    ]
 }

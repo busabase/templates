@@ -116,5 +116,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "setup-school-profile",
+      "label": "Set up or update the school profile",
+      "body": "{target}\n\nRead the `busa-lesson` skill in this folder and follow its workflow, then walk me through the school profile, template sections, compliance rules, subjects/grades in scope, and export preferences, and write my answers onto this settings row."
+    },
+    {
+      "key": "show-config",
+      "label": "Show me the current configuration",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-lesson` skill in this folder, then summarize the current school profile, template sections, compliance rules, and export/feedback preferences from this settings row."
+    }
+  ]
 }

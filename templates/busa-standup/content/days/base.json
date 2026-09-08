@@ -28,5 +28,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "digest-history",
+      "label": "Show recent daily digests",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder, then show me the recent daily digests and who was marked on leave each day.",
+      "intent": "read-only"
+    },
+    {
+      "key": "day-detail",
+      "label": "Show a specific day's board",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder, then show me the full standup board for the date I name, in the same layout as today's board.",
+      "intent": "read-only"
+    }
+  ]
 }

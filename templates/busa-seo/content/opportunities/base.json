@@ -180,5 +180,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-queue",
+      "label": "Review pending SEO opportunities",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder and follow its workflow, then walk me through the pending SEO opportunities so I can approve, edit, or block each one; the actual site edit only happens after I approve and only outside this app."
+    },
+    {
+      "key": "needs-review-summary",
+      "label": "What's waiting on my review?",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder, then summarize the opportunities in needs_review, grouped by type (title/meta rewrite, internal links, content brief, page-issue fix) with their expected impact.",
+      "intent": "read-only"
+    },
+    {
+      "key": "propose-from-data",
+      "label": "Draft new SEO opportunities from the latest data",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder and follow its workflow, then analyze the latest queries and pages data for striking-distance queries, CTR gaps, declining pages, and page issues, and draft new opportunities into the queue for me to review."
+    }
+  ]
 }

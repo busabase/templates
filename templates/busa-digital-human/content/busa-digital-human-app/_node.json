@@ -1,5 +1,24 @@
 {
   "type": "airapp",
   "name": "Busa Digital Human",
-  "description": "Digital-human solution desk: a fast 2D vendor-service path and a high-control 3D UE/Unity path, plus a launch QA gate. The project overview, personas, pipeline routes, vendor comparison, and QA checklist are curated reference content, not per-user data -- the only genuinely dynamic state is the human review verdict (approve / request changes / block) recorded against each QA gate check, written as a direct field write on its own record, mirroring busa-clm's approvals."
+  "description": "Digital-human solution desk: a fast 2D vendor-service path and a high-control 3D UE/Unity path, plus a launch QA gate. The project overview, personas, pipeline routes, vendor comparison, and QA checklist are curated reference content, not per-user data -- the only genuinely dynamic state is the human review verdict (approve / request changes / block) recorded against each QA gate check, written as a direct field write on its own record, mirroring busa-clm's approvals.",
+  "agentPrompts": [
+    {
+      "key": "choose-path",
+      "label": "Which path should I choose, 2D or 3D?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-digital-human` skill in this folder, then recommend the fast 2D vendor-service path or the high-control 3D UE/Unity path for the scene I describe, using the vendor/architecture comparison's cost, speed, and control tradeoffs."
+    },
+    {
+      "key": "launch-readiness",
+      "label": "Show me today's launch readiness",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-digital-human` skill in this folder, then open the overview and QA gate and summarize the readiness score, latency/lip-sync/stability metrics, and which QA checks are still blocking launch."
+    },
+    {
+      "key": "draft-persona-pipeline",
+      "label": "Draft the persona bible and pipeline for this scene",
+      "body": "{target}\n\nRead the `busa-digital-human` skill in this folder and follow its workflow, then draft the persona bible (appearance, voice, tone, forbidden claims, languages, consent requirements) and the multimodal pipeline (input, cognition, voice, renderer, transport) for the scene I describe. Never call a real vendor, TTS/STT, camera, or microphone, and never upload identity or voice assets without my explicit approval."
+    }
+  ]
 }

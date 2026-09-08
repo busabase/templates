@@ -2,6 +2,20 @@
   "name": "Trend Movers",
   "description": "Rising keyword/topic demand signals: search queries, community topic volume, category interest",
   "position": 5,
+  "agentPrompts": [
+    {
+      "key": "top-movers",
+      "label": "What's trending this week?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder, then show me the top rising keyword/topic movers this week, with their source, volume proxy, and delta."
+    },
+    {
+      "key": "mover-history",
+      "label": "Show the momentum history for a keyword",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder, then show me the momentum series and first-seen/last-updated dates for the keyword mover I name, and whether it already has a linked opportunity card."
+    }
+  ],
   "fields": [
     {
       "slug": "mover-id",

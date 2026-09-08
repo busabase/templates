@@ -2,6 +2,19 @@
   "name": "Actions",
   "description": "Approved/blocked/reviewable store briefing notes, hero-product picks, signage copy, staff scripts, or replenishment checks linked to today's signals, with owner, priority, reason, and the concrete next step.",
   "position": 1,
+  "agentPrompts": [
+    {
+      "key": "today-actions",
+      "label": "What sales/operating actions are ready today?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-retail-intel` skill in this folder, then show me today's store briefing notes, hero-product picks, signage copy, staff scripts, and replenishment checks, with owner, priority, and next step."
+    },
+    {
+      "key": "decide-action",
+      "label": "Record my decision on an action",
+      "body": "{target}\n\nRead the `busa-retail-intel` skill in this folder and follow its workflow, then record my decision (approve / request_changes / block) and comment on the action I name. Never promise inventory, a discount, or a supplier claim in this decision unless I explicitly gave it to you."
+    }
+  ],
   "fields": [
     {
       "slug": "action-id",

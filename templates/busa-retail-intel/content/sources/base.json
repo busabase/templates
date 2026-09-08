@@ -2,6 +2,19 @@
   "name": "Sources",
   "description": "Configured news/weather/event/competitor/trend source categories, freshness, and coverage gaps.",
   "position": 3,
+  "agentPrompts": [
+    {
+      "key": "source-coverage",
+      "label": "Which sources are stale or missing?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-retail-intel` skill in this folder, then show me the configured news/weather/event/competitor/trend sources with their freshness and coverage, and flag any gap."
+    },
+    {
+      "key": "update-source",
+      "label": "Update a source's status or coverage note",
+      "body": "{target}\n\nRead the `busa-retail-intel` skill in this folder and follow its workflow, then update the status, freshness, or coverage note for the source I name with what I tell you changed."
+    }
+  ],
   "fields": [
     {
       "slug": "source-id",

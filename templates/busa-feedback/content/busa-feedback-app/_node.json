@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Feedback",
-  "description": "Voice-of-customer desk: raw feedback, clustered feature requests, and the roadmap decision queue"
+  "description": "Voice-of-customer desk: raw feedback, clustered feature requests, and the roadmap decision queue",
+  "agentPrompts": [
+    {
+      "key": "needs-attention",
+      "label": "What needs my attention right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder, then open the overview and summarize roadmap decisions waiting, new uncategorized feedback, and requests needing more info."
+    },
+    {
+      "key": "triage-inbox",
+      "label": "Triage the inbox",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder and follow its workflow, then work through the new feedback in the inbox — assign each item to a request, ignore it, or mark it insight."
+    },
+    {
+      "key": "review-roadmap-proposals",
+      "label": "Review roadmap proposals",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder and follow its workflow, then walk me through the roadmap decision queue one proposal at a time so I can approve, request changes, or block each. Any outbound reply or changelog publish only happens after I approve and stays `handoff_ready` until I separately confirm execution."
+    }
+  ]
 }

@@ -1,64 +1,77 @@
 {
-  "name": "Exports",
-  "description": "Generated PPTX output records — path, render path, generation status, and QA summary",
-  "position": 5,
-  "fields": [
-    {
-      "slug": "export-id",
-      "name": "Export ID",
-      "type": "text",
-      "required": true,
-      "position": 0,
-      "options": {}
-    },
-    {
-      "slug": "deck-id",
-      "name": "Deck ID",
-      "type": "text",
-      "required": false,
-      "position": 1,
-      "options": {}
-    },
-    {
-      "slug": "status",
-      "name": "Status",
-      "type": "text",
-      "required": false,
-      "position": 2,
-      "options": {}
-    },
-    {
-      "slug": "format",
-      "name": "Format",
-      "type": "text",
-      "required": false,
-      "position": 3,
-      "options": {}
-    },
-    {
-      "slug": "path",
-      "name": "Path",
-      "type": "text",
-      "required": false,
-      "position": 4,
-      "options": {}
-    },
-    {
-      "slug": "generated-at",
-      "name": "Generated at",
-      "type": "text",
-      "required": false,
-      "position": 5,
-      "options": {}
-    },
-    {
-      "slug": "qa-summary",
-      "name": "QA summary",
-      "type": "longtext",
-      "required": false,
-      "position": 6,
-      "options": {}
-    }
-  ],
-  "views": []
+    "name": "Exports",
+    "description": "Generated PPTX output records — path, render path, generation status, and QA summary",
+    "position": 5,
+    "fields": [
+        {
+            "slug": "export-id",
+            "name": "Export ID",
+            "type": "text",
+            "required": true,
+            "position": 0,
+            "options": {}
+        },
+        {
+            "slug": "deck-id",
+            "name": "Deck ID",
+            "type": "text",
+            "required": false,
+            "position": 1,
+            "options": {}
+        },
+        {
+            "slug": "status",
+            "name": "Status",
+            "type": "text",
+            "required": false,
+            "position": 2,
+            "options": {}
+        },
+        {
+            "slug": "format",
+            "name": "Format",
+            "type": "text",
+            "required": false,
+            "position": 3,
+            "options": {}
+        },
+        {
+            "slug": "path",
+            "name": "Path",
+            "type": "text",
+            "required": false,
+            "position": 4,
+            "options": {}
+        },
+        {
+            "slug": "generated-at",
+            "name": "Generated at",
+            "type": "text",
+            "required": false,
+            "position": 5,
+            "options": {}
+        },
+        {
+            "slug": "qa-summary",
+            "name": "QA summary",
+            "type": "longtext",
+            "required": false,
+            "position": 6,
+            "options": {}
+        }
+    ],
+    "views": [],
+    "agentPrompts": [
+        {
+            "key": "generate-pptx",
+            "label": "Generate the PPTX for an approved deck",
+            "body": "{target}\n\nRead the `busa-ppt-factory` skill in this folder and follow its workflow, then generate the PPTX for the deck I name using the trusted generation script. Only proceed if the deck carries a genuine `approve` decision from the review queue — never generate from bare status alone."
+        },
+        {
+            "key": "export-status",
+            "label": "What decks have been exported?",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-ppt-factory` skill in this folder, then list the generated PPTX exports with their status, output path, render path, and QA summary."
+        }
+    ]
 }

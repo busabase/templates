@@ -44,5 +44,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-campaigns-profile",
+      "label": "Update the brand, ESP, or sending policy",
+      "body": "{target}\n\nRead the `busa-campaigns` skill in this folder and follow its workflow, then update the busa-campaigns-profile settings row with the operator/brand/from-identity/sending-policy details I give you. Never ask me to paste secret values into chat; only track boolean readiness for credentials."
+    },
+    {
+      "key": "check-setup-readiness",
+      "label": "Is the campaigns profile ready?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-campaigns` skill in this folder, then check the busa-campaigns-profile settings row and tell me what onboarding is still missing before real marketing work can start."
+    }
+  ]
 }

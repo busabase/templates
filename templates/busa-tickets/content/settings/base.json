@@ -68,5 +68,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "property-config",
+      "label": "Show the property configuration",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder, then show me the property profile, channels, categories, and SLA rules.",
+      "intent": "read-only"
+    },
+    {
+      "key": "update-sla-rules",
+      "label": "Update an SLA rule",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder and follow its workflow, then update the SLA rule for the category and urgency I describe."
+    }
+  ]
 }

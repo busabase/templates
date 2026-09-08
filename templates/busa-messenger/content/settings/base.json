@@ -44,5 +44,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-messenger-settings",
+      "label": "Update the reply style and sync cadence",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder and follow its workflow, then update the reply tone/language and sync cadence I describe on this settings row."
+    },
+    {
+      "key": "show-messenger-settings",
+      "label": "Show me the current settings",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder, then summarize the current reply style and sync cadence from this settings row."
+    }
+  ]
 }

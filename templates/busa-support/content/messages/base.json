@@ -60,5 +60,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "conversation-history",
+      "label": "Show a ticket's conversation",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder, then show me the full message transcript for the ticket I name.",
+      "intent": "read-only"
+    },
+    {
+      "key": "find-mentions",
+      "label": "Find messages about a topic",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder, then find messages across tickets that mention the topic or keyword I give.",
+      "intent": "read-only"
+    }
+  ]
 }

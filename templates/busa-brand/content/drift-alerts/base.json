@@ -2,6 +2,19 @@
   "name": "Drift Alerts",
   "description": "Cross-channel off-brand usage flagged by the narrative-drift-monitor",
   "position": 1,
+  "agentPrompts": [
+    {
+      "key": "open-drift-alerts",
+      "label": "What off-brand usage was flagged?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-brand` skill in this folder, then show me the open drift alerts: the offending usage versus the canonical guardrail, channel, and severity."
+    },
+    {
+      "key": "decide-drift-alert",
+      "label": "Record my decision on this drift alert",
+      "body": "{target}\n\nRead the `busa-brand` skill in this folder and follow its workflow, then write the verdict I give — resolve the fix or dismiss — directly onto the drift alert I name."
+    }
+  ],
   "fields": [
     {
       "slug": "alert-id",

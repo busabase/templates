@@ -60,5 +60,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-hard-stop-rule",
+      "label": "Add a hard-stop or restricted-phrase rule",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder and follow its workflow, then add the hard-stop or restricted-phrase rule I describe, with its severity, why it matters, and the fallback language a drafter should reach for instead."
+    },
+    {
+      "key": "hard-stop-overview",
+      "label": "What terms will block a contract right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder, then list the current hard-stop and restricted-phrase rules with their severity, so I know what will block a clause issue from being approved."
+    }
+  ]
 }

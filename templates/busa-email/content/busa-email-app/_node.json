@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Email",
-  "description": "The review desk: triage queue, editable drafts, and approve / request-changes / block decisions."
+  "description": "The review desk: triage queue, editable drafts, and approve / request-changes / block decisions.",
+  "agentPrompts": [
+    {
+      "key": "start-triage-batch",
+      "label": "Triage my inbox",
+      "body": "{target}\n\nRead the `busa-email` skill in this folder and follow its workflow, then propose a bounded batch plan for the accounts and scope I describe and wait for my explicit approval before scanning any live mail."
+    },
+    {
+      "key": "review-queue-status",
+      "label": "What's still waiting on my review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-email` skill in this folder, then open the review desk and summarize the items still in Needs Review, newest first, with a short reason for each."
+    },
+    {
+      "key": "execute-approved",
+      "label": "Execute my approved decisions",
+      "body": "{target}\n\nRead the `busa-email` skill in this folder and follow its workflow, then execute only the decisions that are already materialized and explicitly approved in the review desk — never a decision still sitting in an unmerged change request — and report what was executed, blocked, or failed."
+    }
+  ]
 }

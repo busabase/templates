@@ -92,5 +92,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-example",
+      "label": "Review a training example",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder and follow its workflow, then review the example I name and record approve, request_changes, or block with my note — preserve the reviewer, timestamp, source, and content hash."
+    },
+    {
+      "key": "export-readiness",
+      "label": "What's ready to export?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder, then tell me how many examples are approved per split (train/valid/test) and whether there's enough to build a leakage-resistant snapshot."
+    }
+  ]
 }

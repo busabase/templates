@@ -2,6 +2,19 @@
   "name": "Research Briefs",
   "description": "Agent-drafted research briefs awaiting approval before deep research starts",
   "position": 3,
+  "agentPrompts": [
+    {
+      "key": "review-brief",
+      "label": "Show me a research brief to review",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder, then show me the drafted brief for the question I name — scope, planned sources, depth, and expected deliverable — so I can decide on it."
+    },
+    {
+      "key": "decide-brief",
+      "label": "Approve, request changes, or block a brief",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder and follow its workflow, then record my decision (approve / request_changes / block) and comment on the brief I name. Approving moves the question to researching; the deep research itself still has to be run and filed as a report afterward."
+    }
+  ],
   "fields": [
     {
       "slug": "brief-id",

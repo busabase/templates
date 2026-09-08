@@ -2,6 +2,14 @@
   "name": "Settings",
   "description": "Sanitized batch metadata (schema version, batch id, generated-at, buyer, offer), one row keyed by kind",
   "position": 4,
+  "agentPrompts": [
+    {
+      "key": "batch-summary",
+      "label": "Show me the current batch info",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ai-newsroom` skill in this folder, then show me the current batch's metadata — batch id, generated-at time, vertical, buyer, and offer — from the settings row. This row is refreshed by the agent's own batch workflow, not edited by hand."
+    }
+  ],
   "fields": [
     {
       "slug": "record-id",

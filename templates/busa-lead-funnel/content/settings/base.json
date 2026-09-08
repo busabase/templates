@@ -36,5 +36,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "check-fund-profile",
+      "label": "Check fund profile and scoring criteria",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-lead-funnel` skill in this folder, then show the sanitized fund profile and current scoring criteria — the ideal store-count band, ideal monthly-revenue band, and category risk tiers. Never expose secret values."
+    },
+    {
+      "key": "update-scoring-criteria",
+      "label": "Update the scoring criteria",
+      "body": "{target}\n\nRead the `busa-lead-funnel` skill in this folder and follow its workflow, then update the scoring criteria I give you — ideal store-count band, ideal monthly-revenue band, or category risk tiers. Scores are never stored; they recompute live on every read, so this change applies to every lead immediately."
+    }
+  ]
 }

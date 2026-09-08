@@ -68,5 +68,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-precedent-grouping",
+      "label": "Update an issue cluster or court-pattern group",
+      "body": "{target}\n\nRead the `busa-legal-precedent-desk` skill in this folder and follow its workflow, then update or add the issue cluster, court-pattern group, or precedent collection I describe, grouped by issue, court, outcome, and lawyer."
+    },
+    {
+      "key": "precedent-library-overview",
+      "label": "What does the precedent library look like?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-precedent-desk` skill in this folder, then summarize the issue clusters and court-pattern groups in the precedent library, with their current metrics and review state."
+    }
+  ]
 }

@@ -156,5 +156,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "explain-question",
+      "label": "Explain a homework question",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder and follow its workflow, then explain the question from the photo or pasted text I give you — a friendly one-line summary, 2-5 short steps, one key concept, one self-check, and a next hint. Do not reveal the full answer first if the configured answer policy is hint_first, and never write the raw photo into a field, only a short photo_label."
+    },
+    {
+      "key": "show-explanation",
+      "label": "Show a question's explanation",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder, then show me the child-facing explanation for the question I name — the steps, key concept, self-check, and next hint."
+    }
+  ]
 }

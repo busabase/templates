@@ -108,5 +108,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "connect-account",
+      "label": "Connect a new account",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder and follow its workflow, then register the account I describe — platform, connector, channels to watch, and the env-var names holding its tokens. Never store a secret value, only the env-var name, and never ask me to paste a token into chat."
+    },
+    {
+      "key": "account-health",
+      "label": "Which accounts need attention?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder, then list the accounts with their status, last sync time, and env-var readiness, and flag anything that looks broken or unsynced."
+    }
+  ]
 }

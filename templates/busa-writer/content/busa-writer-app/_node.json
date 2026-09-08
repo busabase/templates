@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Writer",
-  "description": "Channel-ready content drafting and review desk"
+  "description": "Channel-ready content drafting and review desk",
+  "agentPrompts": [
+    {
+      "key": "start-content-batch",
+      "label": "Turn a source into a review-ready content batch",
+      "body": "{target}\n\nRead the `busa-writer` skill in this folder and follow its workflow, then take the source I give you — blog post, transcript, outline, or announcement — and produce a fresh batch of channel drafts in Busabase, then give me the AirApp URL to review them."
+    },
+    {
+      "key": "review-queue-overview",
+      "label": "What needs review across all drafts?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-writer` skill in this folder, then summarize the drafts still needing review or approval, grouped by channel, and flag anything blocked or missing proof from the source."
+    },
+    {
+      "key": "export-approved",
+      "label": "Export the approved drafts into a publish-ready pack",
+      "body": "{target}\n\nRead the `busa-writer` skill in this folder and follow its workflow, then run `export_decisions.mjs --apply` to package every `approved` draft into a channel-ready Markdown+ZIP pack and mark each one `done`. Never export a draft without an explicit approval, and never re-export one already `done`."
+    }
+  ]
 }

@@ -1,5 +1,19 @@
 {
   "type": "airapp",
   "name": "Busa CLM",
-  "description": "Lightweight contract lifecycle desk: contract inventory, lifecycle stage, owners, obligations, renewal/notice dates, and a simple approval reminder queue. Not a legal redline/clause-review product -- see busa-legal-contracts for that. Contract records, obligation status, renewal acknowledgements, and approval decisions are all direct writes made by the operator in the browser, not a review/approval pipeline."
+  "description": "Lightweight contract lifecycle desk: contract inventory, lifecycle stage, owners, obligations, renewal/notice dates, and a simple approval reminder queue. Not a legal redline/clause-review product -- see busa-legal-contracts for that. Contract records, obligation status, renewal acknowledgements, and approval decisions are all direct writes made by the operator in the browser, not a review/approval pipeline.",
+  "agentPrompts": [
+    {
+      "key": "lifecycle-overview",
+      "label": "Show me the contract lifecycle overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-clm` skill in this folder, then summarize the lifecycle pipeline by stage, upcoming renewals, and at-risk obligations."
+    },
+    {
+      "key": "attention-summary",
+      "label": "What needs my attention today?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-clm` skill in this folder, then summarize what needs attention: overdue obligations, upcoming renewal notice deadlines, and pending approval decisions."
+    }
+  ]
 }

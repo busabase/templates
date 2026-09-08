@@ -2,6 +2,25 @@
   "name": "Signals",
   "description": "Source-backed weather, event, holiday, traffic, mall/neighborhood, competitor promotion, product trend, and customer review signals: evidence link, why-it-matters, buyer-intent interpretation, confidence, risk badges, and a suggested action. Created by the agent's own workflow, decided (approve/request_changes/block) directly on this row.",
   "position": 0,
+  "agentPrompts": [
+    {
+      "key": "today-signals",
+      "label": "What's today's top signals?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-retail-intel` skill in this folder, then summarize today's signals in priority order — weather/event/traffic first, then competitor promotions, then review/social themes, then supplier or inventory notices — with why each one matters to the buyer."
+    },
+    {
+      "key": "explain-signal",
+      "label": "Explain a signal's buyer intent",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-retail-intel` skill in this folder, then show me the evidence link, buyer-intent interpretation, confidence, and any risk badge for the signal I name."
+    },
+    {
+      "key": "decide-signal",
+      "label": "Record my decision on a signal",
+      "body": "{target}\n\nRead the `busa-retail-intel` skill in this folder and follow its workflow, then record my decision (approve / request_changes / block) and review note on the signal I name."
+    }
+  ],
   "fields": [
     {
       "slug": "signal-id",

@@ -2,6 +2,20 @@
   "name": "Sources",
   "description": "Configured news/source categories, freshness, and coverage gaps.",
   "position": 3,
+  "agentPrompts": [
+    {
+      "key": "sources-overview",
+      "label": "Show our configured sources",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ai-newsroom` skill in this folder, then show me the configured news/source categories with their freshness and any coverage gaps."
+    },
+    {
+      "key": "stale-or-gap-sources",
+      "label": "Which sources are stale or have coverage gaps?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ai-newsroom` skill in this folder, then flag any source category that is stale or has a coverage gap, so I know what to add or refresh."
+    }
+  ],
   "fields": [
     {
       "slug": "source-id",

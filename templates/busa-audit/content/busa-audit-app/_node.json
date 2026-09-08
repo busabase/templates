@@ -1,5 +1,18 @@
 {
   "type": "airapp",
   "name": "Busa Audit",
-  "description": "Finance anomaly review desk: imported orders/invoices/payments, deterministic anomaly rules, and a human review queue"
+  "description": "Finance anomaly review desk: imported orders/invoices/payments, deterministic anomaly rules, and a human review queue",
+  "agentPrompts": [
+    {
+      "key": "daily-overview",
+      "label": "Give me today's audit desk overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder, then give me today's overview: anomalies needing a decision, high-risk amount at stake, overdue receivable total, and the recent import log."
+    },
+    {
+      "key": "review-queue",
+      "label": "Walk me through the anomaly queue",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder and follow its workflow, then walk me through the anomalies awaiting review one at a time with their evidence, and record the verdict I give for each. Never send an email or touch a bookkeeping system yourself."
+    }
+  ]
 }

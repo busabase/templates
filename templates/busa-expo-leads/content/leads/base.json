@@ -1,6 +1,24 @@
 {
   "name": "Leads",
   "description": "Booth leads captured the moment a buyer is met",
+  "agentPrompts": [
+    {
+      "key": "log-lead",
+      "label": "Log a lead I just met at the booth",
+      "body": "{target}\n\nRead the `busa-expo-leads` skill in this folder and follow its workflow, then capture the lead I describe — name, company, country, language, contact channel and handle, product interest, and the batch it belongs to — with `met-at` set to now unless I say otherwise."
+    },
+    {
+      "key": "update-stage",
+      "label": "Update a lead's stage",
+      "body": "{target}\n\nRead the `busa-expo-leads` skill in this folder and follow its workflow, then move the lead I name to the stage I give (new, contacted, replied, qualified, or lost). Remember a `qualified` or `lost` lead drops out of the SLA countdown."
+    },
+    {
+      "key": "sla-at-risk",
+      "label": "Which leads are about to blow the SLA window?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-expo-leads` skill in this folder, then compute each open lead's SLA bucket from `met-at` against the settings thresholds and show me the amber and red ones first. Exclude any lead whose follow-up is already sent or whose stage is qualified or lost."
+    }
+  ],
   "position": 1,
   "fields": [
     {

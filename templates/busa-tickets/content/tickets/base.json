@@ -148,5 +148,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "board-status",
+      "label": "Show the ticket board",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder, then show me tickets grouped by status with their SLA indicator, flagging anything at risk or breached.",
+      "intent": "read-only"
+    },
+    {
+      "key": "resolve-ticket",
+      "label": "Resolve a ticket",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder and follow its workflow, then record the resolution for the ticket I name, with a resolution note, and update its status."
+    }
+  ]
 }

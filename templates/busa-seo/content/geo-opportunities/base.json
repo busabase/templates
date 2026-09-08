@@ -204,5 +204,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-geo-decisions",
+      "label": "Review pending GEO opportunities",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder and follow its workflow, then walk me through the pending GEO opportunities so I can approve, request changes, or block each one — anything the geo-qa gate scores BLOCK cannot be approved until it's fixed."
+    },
+    {
+      "key": "blocked-by-gate",
+      "label": "What is geo-qa blocking, and why?",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder, then show me the GEO opportunities currently blocked by the geo-qa gate and the specific check each one is failing, such as a fabricated or ungrounded stat.",
+      "intent": "read-only"
+    },
+    {
+      "key": "draft-geo-rewrite",
+      "label": "Draft a new citable rewrite",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder and follow its workflow, then propose a new GEO content rewrite for the target page and prompt I describe, grounded with real claims and sources so it can pass the geo-qa gate."
+    }
+  ]
 }

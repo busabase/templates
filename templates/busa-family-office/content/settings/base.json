@@ -1,6 +1,19 @@
 {
   "name": "Settings",
   "description": "Base currency, FX rates, target allocation, and onboarding marker",
+  "agentPrompts": [
+    {
+      "key": "setup-office",
+      "label": "Set up the family office",
+      "body": "{target}\n\nRead the `busa-family-office` skill in this folder and follow its workflow, then create or update the `office-meta` settings row with the non-secret details I give — base currency, FX rates for each non-base currency held, and optional target allocation per asset class. Never ask me to paste a secret into chat."
+    },
+    {
+      "key": "current-setup",
+      "label": "What's the current FX and base currency setup?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-family-office` skill in this folder, then show me the current base currency, FX rates, and target allocation, and flag any rate that looks stale."
+    }
+  ],
   "position": 3,
   "fields": [
     {

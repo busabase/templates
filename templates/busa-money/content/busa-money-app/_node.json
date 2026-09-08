@@ -1,5 +1,30 @@
 {
   "type": "airapp",
   "name": "Busa Money",
-  "description": "Aggregated money ledger across Mercury, Stripe, Airwallex, and Creem"
+  "description": "Aggregated money ledger across Mercury, Stripe, Airwallex, and Creem",
+  "agentPrompts": [
+    {
+      "key": "money-overview",
+      "label": "Give me the money overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-money` skill in this folder, then give me the money command-desk view — account health, top-level inflow/outflow/fees/net, and recent money movement."
+    },
+    {
+      "key": "sync-all-accounts",
+      "label": "Sync all my accounts",
+      "body": "{target}\n\nRead the `busa-money` skill in this folder and follow its workflow, then propose a read-only sync scope across Mercury, Stripe, Airwallex, and Creem for my approval, and after I approve, fetch, normalize, and write the ledger into Busabase."
+    },
+    {
+      "key": "account-detail",
+      "label": "Show me this account in detail",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-money` skill in this folder, then show me the account I name in detail — balances, recent transactions, counterparties, statuses, and sync health."
+    },
+    {
+      "key": "reconciliation-status",
+      "label": "What needs reconciliation?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-money` skill in this folder, then open the invoice reconciliation desk and summarize what's missing a match, mismatched in amount, or waiting on my review."
+    }
+  ]
 }

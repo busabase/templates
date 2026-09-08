@@ -2,6 +2,19 @@
   "name": "Actions",
   "description": "Approved/blocked/reviewable sales or operating actions linked to today's signals, with owner, priority, reason, and the concrete next step.",
   "position": 1,
+  "agentPrompts": [
+    {
+      "key": "actions-ready",
+      "label": "What actions are approved and ready?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ai-newsroom` skill in this folder, then show me today's approved sales or operating actions with owner, priority, reason, and next step."
+    },
+    {
+      "key": "decide-action",
+      "label": "Record my decision on this action",
+      "body": "{target}\n\nRead the `busa-ai-newsroom` skill in this folder and follow its workflow, then write the verdict I give — approve, request changes with a comment, or block — directly onto the action I name."
+    }
+  ],
   "fields": [
     {
       "slug": "action-id",

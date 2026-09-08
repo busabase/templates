@@ -1,5 +1,18 @@
 {
-  "type": "airapp",
-  "name": "Busa Portrait Retouch",
-  "description": "Natural portrait retouch jobs, reviewable candidates, and non-secret workflow settings"
+    "type": "airapp",
+    "name": "Busa Portrait Retouch",
+    "description": "Natural portrait retouch jobs, reviewable candidates, and non-secret workflow settings",
+    "agentPrompts": [
+        {
+            "key": "queue-overview",
+            "label": "What's waiting for my review?",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-portrait-retouch` skill in this folder, then summarize the review queue: candidates awaiting a decision, and recent jobs with their status."
+        },
+        {
+            "key": "retouch-and-review",
+            "label": "Retouch a portrait and prepare it for review",
+            "body": "{target}\n\nRead the `busa-portrait-retouch` skill in this folder and follow its workflow, then process the portrait I give you, keep the original file intact, and sync the candidate into Busabase so it's ready for me to approve, request changes on, or block."
+        }
+    ]
 }

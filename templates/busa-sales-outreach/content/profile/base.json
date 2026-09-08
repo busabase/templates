@@ -2,6 +2,24 @@
   "name": "产品与 ICP",
   "description": "One offer profile and the ideal-customer hypothesis that drives research and messaging",
   "position": 0,
+  "agentPrompts": [
+    {
+      "key": "show-profile",
+      "label": "What's my current offer and ICP?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-sales-outreach` skill in this folder, then show me the current offer summary, value proposition, proof points, target industries/regions, buyer roles, and ideal-customer hypothesis."
+    },
+    {
+      "key": "update-profile",
+      "label": "Update my offer or ICP hypothesis",
+      "body": "{target}\n\nRead the `busa-sales-outreach` skill in this folder and follow its `profile` subcommand, then update the offer summary, value proposition, proof points, target industries/regions, buyer roles, or ideal-customer hypothesis with what I tell you — keep facts I stated separate from hypotheses you inferred, and never fabricate proof."
+    },
+    {
+      "key": "build-one-pager",
+      "label": "Build a one-page collateral PDF",
+      "body": "{target}\n\nRead the `busa-sales-outreach` skill in this folder, then build the factual one-page PDF from the stored offer profile using `scripts/build_one_pager.mjs --apply`, using only claims already on file."
+    }
+  ],
   "fields": [
     {
       "slug": "seller-name",

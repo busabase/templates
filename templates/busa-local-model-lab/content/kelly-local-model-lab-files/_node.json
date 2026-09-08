@@ -2,5 +2,19 @@
   "type": "drive",
   "name": "Model Lab Files",
   "description": "Immutable dataset snapshots, LoRA adapters, evaluation reports, and model cards.",
-  "position": 5
+  "position": 5,
+  "agentPrompts": [
+    {
+      "key": "find-run-files",
+      "label": "Find the files for a run",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder, then locate the dataset snapshot, adapter, and evaluation report for the run or adapter I name, and give me their SHA-256 hashes."
+    },
+    {
+      "key": "whats-stored",
+      "label": "What's stored here?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder, then summarize what's in this drive — dataset snapshots, adapters, evaluation reports, and model cards — and flag anything that looks orphaned or unreferenced by a run record."
+    }
+  ]
 }

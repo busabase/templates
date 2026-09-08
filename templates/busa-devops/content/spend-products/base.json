@@ -52,5 +52,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "ingest-product-spend",
+      "label": "Record this period's per-product spend allocation",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder and follow its workflow, then ingest the per-product spend allocation I give you for this billing period through the spend ingestion script, keyed to the product names already in the fleet."
+    },
+    {
+      "key": "spend-by-product",
+      "label": "How is spend allocated across products?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder, then show me month-to-date spend per product compared to last month, and call out which products grew the most."
+    }
+  ]
 }

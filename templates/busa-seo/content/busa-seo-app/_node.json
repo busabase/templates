@@ -1,5 +1,29 @@
 {
   "type": "airapp",
   "name": "Busa SEO",
-  "description": "SEO + GEO (AI-search) + brand-entity desk: Search Console analytics, an SEO opportunities review queue, an AI-visibility tracker, a geo-qa-gated GEO content queue, and an entity/knowledge-panel readiness checklist"
+  "description": "SEO + GEO (AI-search) + brand-entity desk: Search Console analytics, an SEO opportunities review queue, an AI-visibility tracker, a geo-qa-gated GEO content queue, and an entity/knowledge-panel readiness checklist",
+  "agentPrompts": [
+    {
+      "key": "overview-summary",
+      "label": "Summarize what needs my attention",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder, then open the overview and summarize the search-performance KPI deltas, the biggest query and page movers, and how many items are waiting in the opportunities, GEO, and entity-readiness queues.",
+      "intent": "read-only"
+    },
+    {
+      "key": "review-opportunities",
+      "label": "Review the SEO opportunities queue",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder and follow its workflow, then walk me through the pending SEO opportunities so I can approve, edit, or block each one — do not touch live site content yourself."
+    },
+    {
+      "key": "review-geo-queue",
+      "label": "Review the GEO optimization queue",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder and follow its workflow, then walk me through the pending GEO opportunities queue, calling out anything the geo-qa gate is blocking and why, before I decide."
+    },
+    {
+      "key": "ai-visibility-check",
+      "label": "Are we cited by AI answer engines?",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder, then show me which AI answer engines (ChatGPT, Perplexity, Gemini, Claude, Copilot) currently cite the brand for the tracked prompts, and the overall AI-visibility trend.",
+      "intent": "read-only"
+    }
+  ]
 }

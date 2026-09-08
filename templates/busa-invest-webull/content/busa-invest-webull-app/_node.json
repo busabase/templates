@@ -1,5 +1,19 @@
 {
   "type": "airapp",
   "name": "Busa Invest (Webull)",
-  "description": "Read-only Webull brokerage portfolio dashboard (accounts, positions, insights)"
+  "description": "Read-only Webull brokerage portfolio dashboard (accounts, positions, insights)",
+  "agentPrompts": [
+    {
+      "key": "portfolio-overview",
+      "label": "Give me a portfolio overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-invest-webull` skill in this folder and follow its workflow, then open the Overview view and summarize total market value, unrealized P/L, day change, cash, and the asset-type allocation, plus any insights flagged. This is a monitoring dashboard with no trading path — never place, modify, or cancel orders, and never move money."
+    },
+    {
+      "key": "whats-changed-today",
+      "label": "What changed in my portfolio today?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-invest-webull` skill in this folder and follow its workflow, then summarize today's day change, top movers, and any new insights (concentration, allocation drift, cash drag) surfaced since the last sync."
+    }
+  ]
 }

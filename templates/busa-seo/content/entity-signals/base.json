@@ -52,5 +52,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "readiness-summary",
+      "label": "Show entity/knowledge-panel readiness",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder, then show me the brand-entity readiness checklist with each signal's present/partial/missing status and the overall readiness score.",
+      "intent": "read-only"
+    },
+    {
+      "key": "resolve-signal",
+      "label": "Mark a readiness signal as fixed",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder and follow its workflow, then mark the entity signal I name as resolved with the detail of what I did outside the app (for example creating the Wikidata item or adding a sameAs link)."
+    }
+  ]
 }

@@ -108,5 +108,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-radar-settings",
+      "label": "Update the firm profile or analytics policy",
+      "body": "{target}\n\nRead the `busa-legal-firm-radar` skill in this folder and follow its workflow, then update the settings row with the firm profile, practice taxonomy, minimum sample size for a claim, and whether external brand claims require approval, per what I give you."
+    },
+    {
+      "key": "settings-readiness",
+      "label": "Is the firm radar ready for real metrics?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-firm-radar` skill in this folder, then check the settings row and tell me what onboarding — practice taxonomy, anonymization policy, sample-size threshold, export preferences — is still missing before real metrics should be imported."
+    }
+  ]
 }

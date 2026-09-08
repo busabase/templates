@@ -132,5 +132,29 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-and-approve-asset",
+      "label": "Review and approve a launch asset",
+      "body": "{target}\n\nRead the `busa-launch` skill in this folder and follow its workflow, then walk me through the item I name — its draft, readiness, and risk — and write my decision (approve, request changes, or block) with a review note directly onto that record. Never treat a public submission or press pitch as sent just because it was approved here; sending happens separately, only after approval."
+    },
+    {
+      "key": "draft-launch-checklist",
+      "label": "Assemble the RAMP checklist from my launch material",
+      "body": "{target}\n\nRead the `busa-launch` skill in this folder and follow its workflow, then read the product docs, positioning notes, and target date I give you, and write RAMP checklist items — phase, per-item readiness (SHIP/FIX/BLOCK), proposed action, and an editable draft for each asset or submission."
+    },
+    {
+      "key": "whats-blocking-launch",
+      "label": "What's blocking the launch right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-launch` skill in this folder, then list the items marked BLOCK and FIX across all phases, with their reason, so I know what has to clear before we can ship."
+    },
+    {
+      "key": "checklist-by-phase",
+      "label": "Show the checklist by RAMP phase",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-launch` skill in this folder, then show the checklist grouped by phase — Research, Assemble, Mobilize, Prove — with each item's status, readiness, and owner."
+    }
+  ]
 }

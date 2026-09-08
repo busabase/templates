@@ -116,5 +116,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "top-posts",
+      "label": "Show the best-performing posts",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder, then show me the posts with the highest engagement rate this week across all connected platforms.",
+      "intent": "read-only"
+    },
+    {
+      "key": "note-post-performance",
+      "label": "Note why a post performed the way it did",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder and follow its workflow, then add an agent note on the post I name explaining why it over- or under-performed."
+    }
+  ]
 }

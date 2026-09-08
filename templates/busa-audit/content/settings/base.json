@@ -2,6 +2,19 @@
   "name": "Settings",
   "description": "Company profile, tolerance rules, and import column mappings, a single settings row",
   "position": 5,
+  "agentPrompts": [
+    {
+      "key": "settings-summary",
+      "label": "Show our current tolerance rules",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder, then show me the company profile, tolerance rules (days-to-invoice, amount tolerance, aging buckets, duplicate window), and import column mappings. Never expose a full customer dataset here — this view is sanitized."
+    },
+    {
+      "key": "update-tolerance-rules",
+      "label": "Update a tolerance rule or company profile field",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder and follow its workflow, then update the tolerance rule or company-profile field I describe (for example amount-tolerance-pct, days-to-invoice, or an aging bucket) directly on the settings row."
+    }
+  ],
   "fields": [
     {
       "slug": "record-id",

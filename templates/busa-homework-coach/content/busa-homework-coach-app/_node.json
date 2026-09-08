@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Homework Coach",
-  "description": "Busa Homework Coach: a child-friendly homework desk — questions the agent explained (with the gentle step-by-step explanation), the mistake notebook, practice papers, the parent/teacher review queue, and sanitized settings"
+  "description": "Busa Homework Coach: a child-friendly homework desk — questions the agent explained (with the gentle step-by-step explanation), the mistake notebook, practice papers, the parent/teacher review queue, and sanitized settings",
+  "agentPrompts": [
+    {
+      "key": "explain-question",
+      "label": "Explain a homework question",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder and follow its workflow, then explain the question from the photo or pasted text the student gives you, and record the question (plus a mistake card and a matching review entry if the answer was wrong) so a parent or teacher can review it in the app."
+    },
+    {
+      "key": "review-queue",
+      "label": "What needs parent/teacher review right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder, then summarize what is waiting in the parent/teacher review queue across questions, mistakes, and papers, so they know what to look at first."
+    },
+    {
+      "key": "run-decisions",
+      "label": "Execute my approved review decisions",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder and follow its workflow, then run the decision-execution step for every review I have decided on, and report the local-only follow-up action for each (such as add_to_mistake_book, mark_understood, queue_practice_paper, or export_paper_plan). This never exports, files, or sends anything outside this app."
+    }
+  ]
 }

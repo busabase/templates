@@ -44,5 +44,24 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "crisis-status",
+      "label": "Show the current crisis status",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder, then show me the current incident status (calm / watch / active) and whether publishing is currently paused.",
+      "intent": "read-only"
+    },
+    {
+      "key": "update-crisis",
+      "label": "Update the crisis playbook status",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder and follow its workflow, then update the incident status and, if needed, toggle the publishing pause for the crisis I describe."
+    },
+    {
+      "key": "share-of-voice",
+      "label": "Show share-of-voice vs competitors",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder, then show me the current share-of-voice comparison against competitors.",
+      "intent": "read-only"
+    }
+  ]
 }

@@ -1,5 +1,19 @@
 {
   "type": "airapp",
   "name": "Busa CRM",
-  "description": "Contacts, companies, deals, and follow-up review workspace"
+  "description": "Contacts, companies, deals, and follow-up review workspace",
+  "agentPrompts": [
+    {
+      "key": "pipeline-overview",
+      "label": "Show me the pipeline overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder, then summarize pipeline totals by stage, follow-ups due, and recent activity across contacts, companies, and deals."
+    },
+    {
+      "key": "followups-due",
+      "label": "What follow-ups need my attention?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder, then summarize the follow-up queue \u2014 what's waiting for review, past due, or flagged as risky."
+    }
+  ]
 }

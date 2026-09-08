@@ -60,5 +60,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "log-review-task",
+      "label": "Log a review task or follow-up",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder and follow its workflow, then log the follow-up or `@ai` note I describe against the character or shot it belongs to, so it shows up in the review queue."
+    },
+    {
+      "key": "open-tasks",
+      "label": "What's outstanding?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder, then list the open review tasks and follow-ups, grouped by the character or shot they target."
+    }
+  ]
 }

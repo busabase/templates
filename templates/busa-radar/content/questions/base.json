@@ -2,6 +2,24 @@
   "name": "Research Questions",
   "description": "Research questions moving through brief_needs_review -> researching -> report_ready -> closed",
   "position": 2,
+  "agentPrompts": [
+    {
+      "key": "ask-question",
+      "label": "Queue a new research question",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder and follow its workflow, then queue the research question I ask and draft a brief for it (scope, planned sources, depth, expected deliverable) for my approval before any research runs."
+    },
+    {
+      "key": "research-status",
+      "label": "Where is my research pipeline at?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder, then show me every research question and its stage — brief_needs_review, researching, report_ready, or closed."
+    },
+    {
+      "key": "add-followup",
+      "label": "Ask a follow-up on a finished report",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder and follow its workflow, then append the follow-up question I ask onto the report_ready question I name, so it can start another research round."
+    }
+  ],
   "fields": [
     {
       "slug": "question-id",

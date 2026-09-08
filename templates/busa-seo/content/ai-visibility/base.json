@@ -52,5 +52,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "visibility-summary",
+      "label": "Show the AI-visibility matrix",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder, then show me the tracked prompts against each AI answer engine, which ones cite the brand, at what position and sentiment, and the overall visibility trend.",
+      "intent": "read-only"
+    },
+    {
+      "key": "record-observation",
+      "label": "Record what I found when I checked an AI engine",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder and follow its workflow, then record the citation, position, sentiment, and cited page I observed when I checked an AI engine for a tracked prompt — never fabricate a citation or a stat that I didn't actually observe."
+    }
+  ]
 }

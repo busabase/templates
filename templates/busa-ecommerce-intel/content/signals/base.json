@@ -132,5 +132,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "collect-todays-signals",
+      "label": "Collect today's signals",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder and follow its workflow, then browse current public sources for signals affecting this seller (platform policy/fee/ranking changes, competitor price/bundle/ad movement, search/trend shifts, seasonality), and write each one with its evidence link, why-it-matters, buyer-intent interpretation, confidence, and risk badges. Mark anything without solid evidence blocked instead of guessing."
+    },
+    {
+      "key": "decide-signal",
+      "label": "Decide on a signal",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder and follow its workflow, then write my verdict (approve / request changes / block) and review note directly onto the signal I name."
+    },
+    {
+      "key": "signals-needing-review",
+      "label": "What needs review right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder, then list today's signals still awaiting a decision, ordered by risk and confidence, with why each one matters to the buyer."
+    }
+  ]
 }

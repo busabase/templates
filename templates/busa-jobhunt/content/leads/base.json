@@ -44,5 +44,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-leads-for-company",
+      "label": "Review candidate addresses for a company",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-jobhunt` skill in this folder, then list the candidate addresses found for the company I name, with each one's role, source link, and confidence grade (high/medium/low), so I can pick which one to use."
+    },
+    {
+      "key": "check-address-sources",
+      "label": "Check where an address came from",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-jobhunt` skill in this folder, then show the source URL behind the address I name. An address with no recorded source is a guess and must not be used — the desk should show 未找到邮箱 instead."
+    }
+  ]
 }

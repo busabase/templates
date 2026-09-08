@@ -60,5 +60,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "ingest-provider-spend",
+      "label": "Record this month's spend for a provider",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder and follow its workflow, then ingest the month-to-date and last-month spend I give you for the named provider through the spend ingestion script \u2014 never write billing numbers directly, and never store provider credentials."
+    },
+    {
+      "key": "spend-anomalies",
+      "label": "Which providers show a spend anomaly?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder, then show me which providers' month-to-date spend is anomalously above last month relative to the configured threshold, with the delta percentage for each."
+    }
+  ]
 }

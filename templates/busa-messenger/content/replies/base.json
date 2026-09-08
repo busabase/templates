@@ -172,5 +172,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "queue-reply",
+      "label": "Queue a reply",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder and follow its workflow, then draft and queue a reply for the conversation I name, honoring the configured reply style. This queues it as needs_review — it never sends."
+    },
+    {
+      "key": "record-reply-decision",
+      "label": "Record a reply decision",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder and follow its workflow, then record my decision (approve, request changes, save an edit, or block) on the reply I name, with my comment. Never send without an approved status recorded here."
+    },
+    {
+      "key": "ready-to-send",
+      "label": "What's waiting to be sent?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder, then list the replies with status approved, oldest first, with their target conversation."
+    }
+  ]
 }

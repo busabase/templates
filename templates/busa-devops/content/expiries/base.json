@@ -84,5 +84,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "track-expiry",
+      "label": "Add a domain, key rotation, or plan renewal to track",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder and follow its workflow, then register the item I describe in the expiry ledger \u2014 registrar and auto-renew flag for a domain, or rotation policy (env var name, rotate-every-days, last rotation) for an API key \u2014 using the roster + sync scripts, never by guessing values."
+    },
+    {
+      "key": "whats-expiring",
+      "label": "What's expiring soon?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder, then list the domains, SSL certificates, key rotations, and plan renewals expiring soon, ordered by days-left, and flag anything inside the critical window."
+    }
+  ]
 }

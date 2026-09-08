@@ -44,5 +44,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "find-answer",
+      "label": "Find the reviewed answer to an insurance question",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-insure-data` skill in this folder, then find the QA pair that answers the question I ask, and show its answer, carrier, source path, and review status. If nothing matches, say so instead of guessing an answer."
+    },
+    {
+      "key": "qa-needs-review",
+      "label": "Which QA pairs still need review or a source?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-insure-data` skill in this folder, then list the QA pairs that are unreviewed or missing a source_path, grouped by carrier."
+    }
+  ]
 }

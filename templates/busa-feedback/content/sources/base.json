@@ -1,6 +1,19 @@
 {
   "name": "Sources",
   "description": "Feedback channels: email, Discord, Slack, X, app-store, survey, interview",
+  "agentPrompts": [
+    {
+      "key": "register-source",
+      "label": "Register a feedback channel",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder and follow its workflow, then register the feedback source I describe — channel (email/discord/slack/x/appstore/survey/interview), name, and collection method. Name only the env var for any token; never write a secret value."
+    },
+    {
+      "key": "stale-sources",
+      "label": "Which sources are stale or need re-ingest?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder, then show me each source's last ingest time, item count, and status, and flag any that look stale."
+    }
+  ],
   "position": 1,
   "fields": [
     {

@@ -1,5 +1,18 @@
 {
   "type": "airapp",
   "name": "Busa AI Newsroom",
-  "description": "Daily industry-intelligence cockpit for AI/news-source intelligence: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (sales opener / LinkedIn post / client memo) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only."
+  "description": "Daily industry-intelligence cockpit for AI/news-source intelligence: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (sales opener / LinkedIn post / client memo) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
+  "agentPrompts": [
+    {
+      "key": "daily-overview",
+      "label": "Give me today's newsroom overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ai-newsroom` skill in this folder, then give me today's overview: needs-review, approved, and blocked counts, the top signals, and the ready actions."
+    },
+    {
+      "key": "review-queue",
+      "label": "Walk me through today's review queue",
+      "body": "{target}\n\nRead the `busa-ai-newsroom` skill in this folder and follow its workflow, then walk me through today's signals, actions, and drafts awaiting a decision one at a time, and record the verdict I give for each. Never post, publish, or hand anything off outside Busabase yourself."
+    }
+  ]
 }

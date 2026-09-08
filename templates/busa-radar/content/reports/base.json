@@ -2,6 +2,19 @@
   "name": "Research Reports",
   "description": "Cited research reports with sections, sources, annotations, and the operator's confidence rating",
   "position": 4,
+  "agentPrompts": [
+    {
+      "key": "read-report",
+      "label": "Show me a research report",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder, then show me the cited report for the question I name — sections, sources, and any existing annotations. Every claim that matters should carry a citation; flag any that don't."
+    },
+    {
+      "key": "rate-confidence",
+      "label": "Annotate and rate a report's confidence",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder and follow its workflow, then add the annotation I give you and set the confidence rating (0-5) on the report I name."
+    }
+  ],
   "fields": [
     {
       "slug": "report-id",

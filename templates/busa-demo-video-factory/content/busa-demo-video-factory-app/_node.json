@@ -1,5 +1,19 @@
 {
   "type": "airapp",
   "name": "Busa Demo Video Factory",
-  "description": "Demo/marketing video planning pipeline: idea -> storyboard -> verified claims -> recording -> post-production."
+  "description": "Demo/marketing video planning pipeline: idea -> storyboard -> verified claims -> recording -> post-production.",
+  "agentPrompts": [
+    {
+      "key": "pipeline-overview",
+      "label": "Show me the video pipeline",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-demo-video-factory` skill in this folder, then open this app and summarize every planned video with its status, shot count, and per-status recording progress."
+    },
+    {
+      "key": "open-video-detail",
+      "label": "Open a video's storyboard detail",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-demo-video-factory` skill in this folder, then open the detail view for the video I name and walk me through its purpose/hook/pain-point/concept, the verified-claims table, and the full shot-by-shot storyboard with recording status."
+    }
+  ]
 }

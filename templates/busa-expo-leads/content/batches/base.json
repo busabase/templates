@@ -1,6 +1,19 @@
 {
   "name": "Batches",
   "description": "One row per trade show attended",
+  "agentPrompts": [
+    {
+      "key": "start-batch",
+      "label": "Start a new trade show batch",
+      "body": "{target}\n\nRead the `busa-expo-leads` skill in this folder and follow its workflow, then create a new batch for the trade show I name, with its location and start/end dates, so leads captured there can be linked to it."
+    },
+    {
+      "key": "list-batches",
+      "label": "Which shows am I tracking?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-expo-leads` skill in this folder, then list the trade show batches on record with their dates and location, most recent first."
+    }
+  ],
   "position": 0,
   "fields": [
     {

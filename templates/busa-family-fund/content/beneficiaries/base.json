@@ -1,6 +1,19 @@
 {
   "name": "Beneficiaries",
   "description": "The elders whose pensions are pooled",
+  "agentPrompts": [
+    {
+      "key": "add-beneficiary",
+      "label": "Add a beneficiary",
+      "body": "{target}\n\nRead the `busa-family-fund` skill in this folder and follow its workflow, then add the elder I describe as a beneficiary whose pension is pooled into the fund, with their monthly pension amount. Write it through the trusted `scripts/import_csv.mjs` process, never a direct Base write."
+    },
+    {
+      "key": "pension-by-elder",
+      "label": "How much pension comes from each elder?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-family-fund` skill in this folder, then show me each beneficiary's monthly pension amount and relation to the family."
+    }
+  ],
   "position": 0,
   "fields": [
     {

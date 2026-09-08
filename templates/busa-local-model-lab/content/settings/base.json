@@ -36,5 +36,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-lab-config",
+      "label": "Update the lab configuration",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder and follow its workflow, then update the lab configuration I describe on this settings row — never place a credential value here, only named requirements the Vault resolves."
+    },
+    {
+      "key": "show-lab-config",
+      "label": "Show me the current lab configuration",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder, then summarize the current lab configuration stored on this settings row."
+    }
+  ]
 }

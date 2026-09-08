@@ -60,5 +60,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "sync-history",
+      "label": "Show recent ticket-collection runs",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder, then show me the recent ticket-collection runs per account and how many new messages each brought in.",
+      "intent": "read-only"
+    },
+    {
+      "key": "failed-syncs",
+      "label": "Which collections failed?",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder, then show me any collection runs that failed and which account was involved.",
+      "intent": "read-only"
+    }
+  ]
 }

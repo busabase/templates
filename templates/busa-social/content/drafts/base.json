@@ -108,5 +108,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-drafts",
+      "label": "Review pending drafts",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder and follow its workflow, then walk me through the pending drafts so I can approve, edit, or block each one, respecting the social-qa gate."
+    },
+    {
+      "key": "blocked-drafts",
+      "label": "What is social-qa blocking, and why?",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder, then show me the drafts the social-qa gate is currently blocking and the specific check each one failed, such as a banned claim.",
+      "intent": "read-only"
+    },
+    {
+      "key": "draft-post",
+      "label": "Draft a new post",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder and follow its workflow, then draft a new post for the channels and theme pillar I describe — hook, body, hashtags, and CTA — and put it in the review queue; do not publish it yourself."
+    }
+  ]
 }

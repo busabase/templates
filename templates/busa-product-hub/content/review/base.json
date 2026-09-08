@@ -2,6 +2,24 @@
   "name": "Review",
   "description": "Approval-gated review queue: channel publish approvals, price-change review, quality holds, lifecycle/archive decisions, and spec-claim citations, linked to a product. The operator's decision (approve/request_changes/block) is written directly onto this row -- there is no separate decisions.json-equivalent bucket. Execution fields record the agent's follow-up outside the app after approval. `type: \"spec_claim\"` (see product-hub-model.js) flags a specification claim the agent extracted from an uploaded document without a clear page/section citation -- any products field or certificates row whose source-note doesn't cite a specific document+location should get one of these before it is trusted on a customer-facing quote.",
   "position": 3,
+  "agentPrompts": [
+    {
+      "key": "triage-queue",
+      "label": "What's waiting for my review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder, then summarize the open review items — group by type (channel publish, price change, quality hold, lifecycle/archive, spec_claim) and flag the riskiest ones first."
+    },
+    {
+      "key": "decide-review-item",
+      "label": "Record my decision on a review item",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder and follow its workflow, then record my decision (approve / request_changes / block) and note on the review item I name. This only records the decision in Busabase — publishing a channel, changing a price, lifting a hold, or archiving a SKU still happens as a separate follow-up outside the app after approval."
+    },
+    {
+      "key": "flag-spec-claim",
+      "label": "Flag an unsourced spec claim",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder and follow its workflow, then create a `spec_claim` review item for the product fact or certificate I describe that lacks a clear document + page/section citation, so it isn't trusted on a customer-facing quote until verified."
+    }
+  ],
   "fields": [
     {
       "slug": "item-id",

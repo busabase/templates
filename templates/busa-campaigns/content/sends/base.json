@@ -196,5 +196,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "draft-send",
+      "label": "Draft a new campaign, newsletter, or sequence step",
+      "body": "{target}\n\nRead the `busa-campaigns` skill in this folder and follow its workflow, then draft the send I describe into this queue with status \"needs_review\", the correct type and SEND phase, subject/preview/body, the target segment, and run the email-quality-auditor gate to attach its EQS score and SHIP/FIX/BLOCK verdict. Never mark it approved or scheduled yourself \u2014 that is a human decision."
+    },
+    {
+      "key": "revise-after-feedback",
+      "label": "Revise a send that got changes requested",
+      "body": "{target}\n\nRead the `busa-campaigns` skill in this folder, then revise the send I name per its review comment, re-run the quality gate, and set it back to \"needs_review\"."
+    },
+    {
+      "key": "review-queue-status",
+      "label": "What is waiting for review right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-campaigns` skill in this folder, then show me the sends waiting for review, grouped by SEND phase, with their quality-gate verdict and deliverability risk. Flag any that are BLOCK or high risk."
+    }
+  ]
 }

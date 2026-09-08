@@ -2,6 +2,25 @@
   "name": "Adjustments",
   "description": "Agent-proposed adjustment cards: negative keyword, bid down/up, pause target, budget shift, creative refresh",
   "position": 3,
+  "agentPrompts": [
+    {
+      "key": "adjustments-needing-review",
+      "label": "What adjustments need my review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder, then show me the adjustment cards awaiting review — negative keyword, bid down/up, pause target, budget shift, or creative refresh — with reason, evidence, and expected impact."
+    },
+    {
+      "key": "explain-adjustment",
+      "label": "Explain this adjustment card's evidence",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder, then explain the adjustment card I name: what triggered it, the current value versus the proposed value, and the expected impact, so I understand it before deciding."
+    },
+    {
+      "key": "record-verdict",
+      "label": "Record my decision on this adjustment card",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder and follow its workflow, then write the verdict I give — approve, request changes with my note, or block — directly onto the adjustment card I name. This only records the decision; it never calls the ad platform or executes the change itself."
+    }
+  ],
   "fields": [
     {
       "slug": "adjustment-id",
