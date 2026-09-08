@@ -6,8 +6,6 @@ import { buildSnapshot } from "../campaigns-model.js?v=0.1.0";
 // values, same copy) — only the suppression numbers are no longer hardcoded:
 // they now come from campaigns-model.js's real checkSuppression(), computed
 // the same way buildSnapshot() computes it for the busabase provider.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
-
 const NOW = "2026-07-02T09:30:00.000Z";
 
 // Phase is Aaron's SEND discipline facet: Setup -> Engage -> Nurture -> Deliver.
@@ -564,8 +562,7 @@ export const demoProvider = {
       },
       decisions: {},
       suppression: { updated_at: "2026-07-01T12:00:00.000Z", entries: demoSuppression() },
-      demo_visuals: demoVisualsForApp("busa-campaigns"),
-      snapshot: { ...snapshot, demo_visuals: demoVisualsForApp("busa-campaigns") },
+      snapshot,
     };
   },
 

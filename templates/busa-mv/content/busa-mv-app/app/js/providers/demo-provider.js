@@ -4,9 +4,7 @@
 // app/server/demo.ts's demoProject(). Binary media are synthetic in-memory
 // placeholders (a tiny silent WAV data URL for the song, hash-tinted SVG data
 // URLs for character/shot images) generated in the browser — never a real
-// generated/uploaded asset, matching the existing demo-visuals pattern used
-// across every converted skill.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
+// generated/uploaded asset.
 import { attention, completeness, countBy, nextStep } from "../mv-model.js?v=0.1.0";
 
 const DEMO_UPDATED_AT = "2026-06-30T09:30:00.000Z";
@@ -422,7 +420,6 @@ export const demoProvider = {
     const params = new URLSearchParams(window.location.search);
     const scenario = String(params.get("demo") || "overview");
     const project = demoProject(activeLangIsZh());
-    const visuals = demoVisualsForApp("busa-mv");
     return {
       demo: true,
       demo_scenario: scenario,
@@ -431,8 +428,7 @@ export const demoProvider = {
       onboarding: { completed: true, config_version: "demo" },
       lock: { locked: false },
       config_summary: { config_path: "demo://busa-mv/config.json", is_example: false },
-      demo_visuals: visuals,
-      project: { ...project, demo_visuals: visuals },
+      project,
       projects: [{ id: project.project_id, title: project.song.title, artist: project.song.artist, mode: "" }],
       active_project_id: project.project_id,
       counts: { characters: countBy(project.characters), shots: countBy(project.shots), tasks: {} },

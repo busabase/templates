@@ -1,4 +1,3 @@
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 // Deterministic, fully offline demo payload for documentation/screenshots.
 // Never reads or writes Busabase, never persists anything -- matches the
 // ?demo=1 contract used across Busa App-in-Skills. The project, personas,
@@ -24,8 +23,7 @@ export const demoProvider = {
       app: "busa-digital-human",
       demo: true,
       generated_at: NOW,
-      snapshot: { ...snapshot, demo_visuals: demoVisualsForApp("busa-digital-human") },
-      demo_visuals: demoVisualsForApp("busa-digital-human"),
+      snapshot,
       decisions: {},
       data_provider: "demo",
       onboarding: { completed: true, completed_at: NOW, config_version: "demo" },

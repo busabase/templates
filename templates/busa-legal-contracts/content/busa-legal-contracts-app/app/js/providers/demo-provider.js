@@ -8,8 +8,6 @@
 // (same as the retired demo.ts did through rules.ts), so the blocked DPA
 // issue really fails the playbook / hard-stop checks.
 import { assembleSnapshot, evaluateIssue, scoreChecks } from "../contracts-model.js?v=0.1.0";
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
-
 const NOW = "2026-07-03T08:30:00.000Z";
 const FEATURED_ISSUE_ID = "d-msa-liability-us";
 
@@ -529,7 +527,6 @@ export const demoProvider = {
     const scenario = String(params.get("demo") || "overview");
     const zh = activeLangIsZh();
     const { snapshot, configSummary, claims } = buildDemoSnapshot(zh, scenario);
-    const visuals = demoVisualsForApp("busa-legal-contracts");
     return {
       demo: true,
       demo_scenario: scenario,
@@ -539,8 +536,7 @@ export const demoProvider = {
       lock: null,
       config_summary: configSummary,
       claims,
-      demo_visuals: visuals,
-      snapshot: { ...snapshot, demo_visuals: visuals },
+      snapshot,
     };
   },
 

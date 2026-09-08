@@ -8,7 +8,6 @@
 // (badgesFor/ratio/round1/expectedCtr/evaluateGeoGate/aiVisibilityScore/
 // entityReadinessScore) is imported from seo-model.js and used identically
 // by the real GSC sync path.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 import { assembleSnapshot, badgesFor, evaluateGeoGate, ratio, round1, slugify } from "../seo-model.js?v=0.1.0";
 
 const NOW = "2026-07-01T08:00:00.000Z";
@@ -1305,7 +1304,6 @@ export const demoProvider = {
     const scenario = String(params.get("demo") || "overview");
     const zh = activeLangIsZh();
     const snapshot = buildSnapshotForLang(zh);
-    const visuals = demoVisualsForApp("busa-seo");
     return {
       demo: true,
       demo_scenario: scenario,
@@ -1320,7 +1318,7 @@ export const demoProvider = {
         locale: zh ? "zh" : "en",
         sync: { window_days: 28, compare_previous_period: true, row_limit: 250, read_only: true },
       },
-      snapshot: { ...snapshot, demo_visuals: visuals },
+      snapshot,
     };
   },
 

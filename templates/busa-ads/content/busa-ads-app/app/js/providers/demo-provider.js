@@ -10,8 +10,6 @@ import { recomputeDerived, round1, round2 } from "../ads-model.js?v=0.1.0";
 // Google Ads. Only the metrics/rollup computation now goes through
 // ads-model.js's recomputeDerived() (the same formula demo.ts called) so the
 // two never drift apart.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
-
 const now = "2026-07-02T09:30:00.000Z";
 const START = "2026-06-19";
 
@@ -874,7 +872,6 @@ export const demoProvider = {
     const scenario = String(params.get("demo") || "overview");
     const zh = activeLangIsZh();
     const snapshot = zh ? localizeSnapshotZh(demoSnapshot(scenario)) : demoSnapshot(scenario);
-    const visuals = demoVisualsForApp("busa-ads");
     return {
       demo: true,
       demo_scenario: scenario,
@@ -900,8 +897,7 @@ export const demoProvider = {
           account_id: platform.account_id,
         })),
       },
-      demo_visuals: visuals,
-      snapshot: { ...snapshot, demo_visuals: visuals },
+      snapshot,
     };
   },
 

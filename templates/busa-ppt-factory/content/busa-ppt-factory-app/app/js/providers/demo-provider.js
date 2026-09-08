@@ -1,4 +1,3 @@
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 // Deterministic, explicitly-labeled, read-only demo data. Never reads or
 // writes Busabase, never claims a real connection, and never persists
 // anything — matches the ?demo=1 contract used across Busa App-in-Skills.
@@ -516,7 +515,6 @@ export const demoProvider = {
     const scenario = String(params.get("demo") || "overview");
     const isZh = zhFrom(params);
     const { snapshot, configSummary } = demoSnapshot(isZh);
-    const visuals = demoVisualsForApp(APP_ID);
     return {
       app: APP_ID,
       demo: true,
@@ -525,8 +523,7 @@ export const demoProvider = {
       onboarding: { completed: true, completed_at: NOW, config_version: "demo" },
       lock: null,
       config_summary: configSummary,
-      demo_visuals: visuals,
-      snapshot: { ...snapshot, demo_visuals: visuals },
+      snapshot,
     };
   },
 

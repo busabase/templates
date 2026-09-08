@@ -234,10 +234,6 @@ button:focus-visible {
   min-height: 0;
 }
 
-.main > .demo-visuals-panel {
-  margin: 12px 12px 0;
-}
-
 .mobile-topbar {
   display: none;
 }

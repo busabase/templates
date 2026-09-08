@@ -2,7 +2,6 @@
 // writes Busabase, never claims a real connection, and never persists
 // anything — matches the ?demo=1 contract used across Busa App-in-Skills.
 // Ported verbatim from the retired app/server/demo.ts dataset.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 import { buildSnapshot, computeInsights } from "../office-model.js?v=0.1.0";
 
 const NOW = "2026-06-30T09:30:00.000Z";
@@ -330,8 +329,7 @@ export const demoProvider = {
         })),
         institutions: [...new Set(snapshot.accounts.map((item) => item.institution))],
       },
-      demo_visuals: demoVisualsForApp("busa-family-office"),
-      snapshot: { ...snapshot, demo_visuals: demoVisualsForApp("busa-family-office") },
+      snapshot,
     };
   },
 

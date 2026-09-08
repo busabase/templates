@@ -6,7 +6,6 @@
 // original local-mode fixture), reusing js/insure-model.js's governance()
 // scorer so the completeness math matches the Busabase-backed provider
 // exactly.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 import { governance } from "../insure-model.js?v=0.1.0";
 
 const NOW = "2026-07-08T10:30:00.000Z";
@@ -361,8 +360,7 @@ export const demoProvider = {
           feedback: snapshot.bases.feedback.slug,
         },
       },
-      demo_visuals: demoVisualsForApp("busa-insure-data"),
-      snapshot: { ...snapshot, demo_visuals: demoVisualsForApp("busa-insure-data") },
+      snapshot,
     };
   },
 

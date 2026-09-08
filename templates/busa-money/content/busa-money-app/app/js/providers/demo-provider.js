@@ -1,8 +1,6 @@
 // Deterministic, explicitly-labeled, read-only demo data. Never reads or
 // writes Busabase, never claims a real connection, and never persists
 // anything — matches the ?demo=1 contract used across Busa App-in-Skills.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
-
 const NOW = "2026-06-30T09:30:00.000Z";
 
 function account(account_id, provider, display_name, entity, currency, available, pending, status) {
@@ -537,8 +535,7 @@ export const demoProvider = {
           secrets_ready: true,
         })),
       },
-      demo_visuals: demoVisualsForApp("busa-money"),
-      snapshot: { ...snapshot, demo_visuals: demoVisualsForApp("busa-money") },
+      snapshot,
     };
   },
 

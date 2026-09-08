@@ -7,7 +7,6 @@
 // operations) from the retired app/server/demo.ts; only the metrics
 // computation now goes through messenger-model.js's recomputeMetrics (the
 // same formula demo.ts inlined) so the two never drift apart.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 import { recomputeMetrics } from "../messenger-model.js?v=0.1.0";
 
 const now = "2026-07-02T10:30:00.000Z";
@@ -984,7 +983,6 @@ export const demoProvider = {
     const zh = activeLangIsZh();
     const snapshot = zh ? localizeSnapshotZh(demoSnapshot()) : demoSnapshot();
     const outbox = zh ? localizeOutboxZh(demoOutbox()) : demoOutbox();
-    const visuals = demoVisualsForApp("busa-messenger");
     return {
       demo: true,
       demo_scenario: scenario,
@@ -1012,8 +1010,7 @@ export const demoProvider = {
       },
       agent_tasks: demoAgentTasks(),
       execution_report: demoExecutionReport(),
-      demo_visuals: visuals,
-      snapshot: { ...snapshot, demo_visuals: visuals },
+      snapshot,
       outbox,
     };
   },

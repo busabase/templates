@@ -5,7 +5,6 @@ import { type Context, Hono } from "hono";
 import { createProvider } from "../lib/data-provider/index.ts";
 import { withRuntimeRequest } from "../lib/runtime-context.ts";
 import { updateDetail, updateItems } from "./decisions.ts";
-import { attachDemoVisuals } from "./demo-visuals.ts";
 import { demoDecisionResponse, demoStatePayload, isDemoQuery } from "./demo.ts";
 import { installLocalBusabaseAuth } from "./local-auth.js";
 import { lockPayload } from "./lock.ts";
@@ -54,7 +53,6 @@ app.use("*", async (c, next) => {
   }
   return withRuntimeRequest({ origin: new URL(c.req.url).origin, headers }, next);
 });
-app.use("/api/state", attachDemoVisuals);
 
 // The SDK owns the runtime vocabulary and, critically, decides hosting from
 // presence of BUSABASE_AIRAPP_RUNTIME rather than membership in a stale list.
@@ -93,8 +91,6 @@ app.post("/api/reload", async (c) => {
 // ---- Static (vanilla frontend) ----
 app.get("/", (c) => sendFile(c, path.join(APP_DIR, "index.html")));
 app.get("/app.js", (c) => sendFile(c, path.join(APP_DIR, "app.js")));
-app.get("/demo-visuals.js", (c) => sendFile(c, path.join(APP_DIR, "demo-visuals.js")));
-app.get("/demo-visuals.css", (c) => sendFile(c, path.join(APP_DIR, "demo-visuals.css")));
 // Split into cascade-layered files (base/components/shell/setup-wizard/
 // help-modal/list-detail) — see frontend-modules.md. @layer precedence
 // makes the <link> order below irrelevant to which rule wins.

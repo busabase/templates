@@ -6,7 +6,6 @@
 // (request frequency/weighted_score, metrics) are no longer hardcoded/
 // duplicated here — they come from the same ported recomputeDerived() the
 // busabase provider uses, computed the same way for both.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 import { recomputeDerived } from "../feedback-model.js?v=0.1.0";
 
 const NOW = "2026-07-02T09:30:00.000Z";
@@ -988,7 +987,6 @@ export const demoProvider = {
     const scenario = String(params.get("demo") || "overview");
     const zh = activeLangIsZh();
     const snapshot = zh ? localizeSnapshotZh(demoSnapshot()) : demoSnapshot();
-    const visuals = demoVisualsForApp("busa-feedback");
     return {
       demo: true,
       demo_scenario: scenario,
@@ -1015,8 +1013,7 @@ export const demoProvider = {
         },
         roadmap_lanes: ["now", "next", "later"],
       },
-      demo_visuals: visuals,
-      snapshot: { ...snapshot, demo_visuals: visuals },
+      snapshot,
     };
   },
 

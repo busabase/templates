@@ -5,8 +5,6 @@ import { buildSnapshot } from "../brand-model.js?v=0.1.0";
 // row format buildSnapshot() expects (matching what busabase-provider.js
 // reads off a live Base) and with the old decisions.json / agent_tasks.json
 // verdicts folded directly onto the item that carries them.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
-
 const NOW = "2026-07-02T09:30:00.000Z";
 
 function item(
@@ -451,8 +449,7 @@ export const demoProvider = {
         ],
       },
       decisions: {},
-      demo_visuals: demoVisualsForApp("busa-brand"),
-      snapshot: { ...snapshot, demo_visuals: demoVisualsForApp("busa-brand") },
+      snapshot,
     };
   },
 

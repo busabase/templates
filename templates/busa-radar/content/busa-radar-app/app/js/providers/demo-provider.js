@@ -7,7 +7,6 @@
 // retired app/server/demo.ts; only the metrics computation now goes through
 // radar-model.js's computeMetrics() (the same formula demo.ts inlined) so
 // the two never drift apart.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 import { computeMetrics } from "../radar-model.js?v=0.1.0";
 
 const now = "2026-07-02T08:30:00.000Z";
@@ -973,7 +972,6 @@ export const demoProvider = {
     const scenario = String(params.get("demo") || "overview");
     const zh = activeLangIsZh();
     const snapshot = zh ? localizeSnapshotZh(demoSnapshot(scenario)) : demoSnapshot(scenario);
-    const visuals = demoVisualsForApp("busa-radar");
     return {
       demo: true,
       demo_scenario: scenario,
@@ -982,8 +980,7 @@ export const demoProvider = {
       onboarding: { completed: true, completed_at: now, config_version: "demo" },
       lock: null,
       config_summary: demoConfigSummary(),
-      demo_visuals: visuals,
-      snapshot: { ...snapshot, demo_visuals: visuals },
+      snapshot,
     };
   },
 

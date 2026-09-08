@@ -2,8 +2,6 @@
 // writes Busabase, never claims a real connection, and never persists
 // anything — matches the ?demo=1 contract used across Busa App-in-Skills.
 import { PIPELINE_STAGES, decisionsFromSnapshot } from "../crm-model.js?v=0.1.0";
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
-
 const NOW = "2026-07-02T09:30:00.000Z";
 
 const company = (company_id, name, domain, industry, size, location) => ({
@@ -800,8 +798,7 @@ export const demoProvider = {
       decisions: decisionsFromSnapshot(snapshot),
       agent_tasks: { updated_at: "", tasks: [] },
       execution_report: null,
-      demo_visuals: demoVisualsForApp("busa-crm"),
-      snapshot: { ...snapshot, demo_visuals: demoVisualsForApp("busa-crm") },
+      snapshot,
     };
   },
 

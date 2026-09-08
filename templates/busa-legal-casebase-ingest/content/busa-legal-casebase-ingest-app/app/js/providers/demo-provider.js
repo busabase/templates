@@ -11,8 +11,6 @@ import {
   APP_TITLE_ZH,
   recomputeMetrics,
 } from "../casebase-model.js?v=0.1.0";
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
-
 const RAW_SNAPSHOT = {
   schema_version: "1",
   generated_at: "2026-07-07T09:00:00.000Z",
@@ -194,7 +192,6 @@ export const demoProvider = {
     const params = new URLSearchParams(window.location.search);
     const scenario = String(params.get("demo") || "overview");
     const snapshot = demoSnapshot();
-    const visuals = demoVisualsForApp(APP_ID);
     return {
       app: APP_ID,
       demo: true,
@@ -203,8 +200,7 @@ export const demoProvider = {
       onboarding: { completed: true, completed_at: RAW_SNAPSHOT.generated_at, config_version: "demo" },
       lock: null,
       config_summary: demoConfigSummary(),
-      demo_visuals: visuals,
-      snapshot: { ...snapshot, demo_visuals: visuals },
+      snapshot,
     };
   },
 

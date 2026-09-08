@@ -3,8 +3,6 @@
 // anything — matches the ?demo=1 contract used across Busa App-in-Skills.
 // All companies and people below are entirely fictional.
 import { buildSnapshot } from "../expo-leads-model.js?v=0.1.0";
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
-
 const NOW = "2026-09-08T12:00:00.000Z";
 
 const batch = (id, name, location, start_date, end_date, notes = "") => ({
@@ -320,8 +318,7 @@ export const demoProvider = {
         whatsapp_account_env: "EXPO_LEADS_WHATSAPP_TOKEN",
         email_account_env: "EXPO_LEADS_EMAIL_SMTP",
       },
-      demo_visuals: demoVisualsForApp("busa-expo-leads"),
-      snapshot: { ...snapshot, demo_visuals: demoVisualsForApp("busa-expo-leads") },
+      snapshot,
     };
   },
 

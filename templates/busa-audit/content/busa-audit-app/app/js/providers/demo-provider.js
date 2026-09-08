@@ -9,8 +9,6 @@
 // deriveSnapshot(), so demo and Busabase mode always share the same linking/
 // aging/metrics math.
 import { deriveSnapshot } from "../audit-model.js?v=0.1.0";
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
-
 const NOW = "2026-07-02T09:00:00.000Z";
 const RANGE = { start: "2026-04-01", end: "2026-06-30" };
 const RULES = { days_to_invoice: 14, amount_tolerance_pct: 1, aging_buckets: [30, 60, 90], duplicate_window_days: 7 };
@@ -718,7 +716,6 @@ export const demoProvider = {
     const scenario = String(params.get("demo") || "overview");
     const zh = activeLangIsZh();
     const snapshot = zh ? localizeSnapshotZh(buildDemoSnapshot()) : buildDemoSnapshot();
-    const visuals = demoVisualsForApp("busa-audit");
     return {
       demo: true,
       demo_scenario: scenario,
@@ -769,8 +766,7 @@ export const demoProvider = {
           },
         },
       },
-      demo_visuals: visuals,
-      snapshot: { ...snapshot, demo_visuals: visuals },
+      snapshot,
     };
   },
 

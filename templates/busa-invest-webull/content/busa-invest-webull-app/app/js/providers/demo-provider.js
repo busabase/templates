@@ -4,7 +4,6 @@
 // Ported verbatim from the retired app/server/demo.ts dataset; totals/
 // allocation/weights are computed with the same assembleSnapshot used by
 // the real Busabase-backed provider so both paths share one math path.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 import { DEFAULT_TARGET_ALLOCATION, assembleSnapshot, computeInsights, round2 } from "../webull-model.js?v=0.1.0";
 
 const NOW = "2026-06-30T20:00:00.000Z";
@@ -170,8 +169,7 @@ export const demoProvider = {
           secrets_ready: true,
         },
       },
-      demo_visuals: demoVisualsForApp("busa-invest-webull"),
-      snapshot: { ...snapshot, demo_visuals: demoVisualsForApp("busa-invest-webull") },
+      snapshot,
     };
   },
 

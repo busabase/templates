@@ -7,7 +7,6 @@
 // are no longer hardcoded/duplicated here — they come from the same ported
 // model functions (refreshTicketDerived/runQualityGate/recomputeMetrics) the
 // busabase provider uses, computed the same way for both.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 import { recomputeMetrics, refreshTicketDerived, runQualityGate } from "../support-model.js?v=0.1.0";
 
 const NOW = "2026-07-06T09:00:00.000Z";
@@ -915,7 +914,6 @@ export const demoProvider = {
     const scenario = String(params.get("demo") || "overview");
     const zh = activeLangIsZh();
     const snapshot = zh ? localizeSnapshotZh(demoSnapshot()) : demoSnapshot();
-    const visuals = demoVisualsForApp("busa-support");
     return {
       demo: true,
       demo_scenario: scenario,
@@ -946,8 +944,7 @@ export const demoProvider = {
         })),
       },
       execution_report: demoExecutionReport(),
-      demo_visuals: visuals,
-      snapshot: { ...snapshot, demo_visuals: visuals },
+      snapshot,
     };
   },
 

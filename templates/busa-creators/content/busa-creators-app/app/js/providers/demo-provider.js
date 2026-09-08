@@ -7,8 +7,6 @@
 // that carries them (decision_note / decided_at), now that reads are always
 // live and there is no more decided_at-vs-generated_at staleness check.
 import { buildSnapshot } from "../creators-model.js?v=0.1.0";
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
-
 const NOW = "2026-07-02T09:30:00.000Z";
 
 function creator(input = {}) {
@@ -38,7 +36,7 @@ function demoCreators() {
         "Beauty/skincare vertical with strong sensitive-skin audience overlap, 6.2% engagement, and a rate inside our per-post ceiling.",
       audience_note: "78% women 24-40, US + UK, high skincare intent.",
       suggested_reply:
-        "Hi Lena! Your barrier-repair routine reels are exactly the kind of honest, science-first content we love. I'm with Aurelia Skincare — dermatologist-backed ceramide care for sensitive skin. We'd love to send you our Barrier Repair set and explore a paid collab (1-2 reels). Would a quick call this week work? — the operator",
+        "Hi Lena! Your barrier-repair routine reels are exactly the kind of honest, science-first content we love. I'm with Aurelia Skincare — dermatologist-backed ceramide care for sensitive skin. We'd love to send you our Barrier Repair set and explore a paid collab (1-2 reels). Would a quick call this week work? — Jordan Lee",
       est_value: 5200,
       spend: 0,
       decision_note: "Great fit and the draft nails our barrier-repair angle. Send it.",
@@ -65,7 +63,7 @@ function demoCreators() {
         "Board-certified dermatologist — very high credibility. First draft over-indexed on the discount; revise to lead with the ceramide clinical result.",
       audience_note: "Clinician-trusting audience; values efficacy claims over promo codes.",
       suggested_reply:
-        "Hi Dr. Rivas — our ceramide-3 complex showed a 41% improvement in TEWL barrier function in an 8-week study. As a dermatologist your audience trusts, we'd value your independent take. We can share the full data and provide product for an honest review. Open to a paid partnership. — the operator, Aurelia Skincare",
+        "Hi Dr. Rivas — our ceramide-3 complex showed a 41% improvement in TEWL barrier function in an 8-week study. As a dermatologist your audience trusts, we'd value your independent take. We can share the full data and provide product for an honest review. Open to a paid partnership. — Jordan Lee, Aurelia Skincare",
       est_value: 4100,
       spend: 0,
       decision_note: "Lead with the ceramide clinical result, not the discount. He cares about efficacy, not coupons.",
@@ -92,7 +90,7 @@ function demoCreators() {
         "High-velocity TikTok skincare creator; her 30-second routine format maps cleanly to our hero-product seeding.",
       audience_note: "Gen-Z + young millennial, strong save/share rate on routine videos.",
       suggested_reply:
-        "hi Suki! obsessed with your 30-sec routine format 🙌 Aurelia Skincare here — we make derm-backed barrier repair for sensitive skin. would love to gift our set + set up a paid TikTok collab if it fits your calendar. can I send details? — the operator",
+        "hi Suki! obsessed with your 30-sec routine format 🙌 Aurelia Skincare here — we make derm-backed barrier repair for sensitive skin. would love to gift our set + set up a paid TikTok collab if it fits your calendar. can I send details? — Jordan Lee",
       est_value: 6800,
       spend: 0,
     }),
@@ -117,7 +115,7 @@ function demoCreators() {
         "Clean-beauty niche with a loyal, high-trust following open to long-term partnerships at a reasonable rate.",
       audience_note: "Ingredient-conscious, repeat-purchase audience.",
       suggested_reply:
-        "Hi Noor! Your clean-beauty breakdowns are so thoughtful. Aurelia Skincare is fragrance-free, dermatologist-backed barrier care — I think it would genuinely fit your standards. Could we gift you the line and discuss a paid, ongoing collab? — the operator",
+        "Hi Noor! Your clean-beauty breakdowns are so thoughtful. Aurelia Skincare is fragrance-free, dermatologist-backed barrier care — I think it would genuinely fit your standards. Could we gift you the line and discuss a paid, ongoing collab? — Jordan Lee",
       est_value: 2600,
       spend: 0,
     }),
@@ -142,7 +140,7 @@ function demoCreators() {
         "Premium lifestyle aesthetic that fits our launch visuals, but the deal needs usage-rights and exclusivity terms — approval required before drafting a contract.",
       audience_note: "Aspirational lifestyle audience; skincare is adjacent, not core.",
       suggested_reply:
-        "Hi Bella — thanks for the rate card. To move forward we'd want 6 months of paid-usage rights for one hero image and a 30-day category exclusivity window. Could you confirm those terms fit within the $4,200 quote before I send a contract? — the operator, Aurelia Skincare",
+        "Hi Bella — thanks for the rate card. To move forward we'd want 6 months of paid-usage rights for one hero image and a 30-day category exclusivity window. Could you confirm those terms fit within the $4,200 quote before I send a contract? — Jordan Lee, Aurelia Skincare",
       est_value: 5900,
       spend: 0,
     }),
@@ -167,7 +165,7 @@ function demoCreators() {
         "Objective long-form reviewer with real purchase influence. Quote includes a usage-rights buyout — contract review required.",
       audience_note: "Research-driven buyers who watch full reviews before purchasing.",
       suggested_reply:
-        "Hi Theo — we'd love an honest long-form review of the Barrier Repair line, no scripting. Your quote of $3,600 including a 12-month usage buyout works on our side pending contract. Shall I send the agreement and a product kit this week? — the operator, Aurelia Skincare",
+        "Hi Theo — we'd love an honest long-form review of the Barrier Repair line, no scripting. Your quote of $3,600 including a 12-month usage buyout works on our side pending contract. Shall I send the agreement and a product kit this week? — Jordan Lee, Aurelia Skincare",
       est_value: 7400,
       spend: 0,
     }),
@@ -192,7 +190,7 @@ function demoCreators() {
         "Signed a flat-fee agreement; the collab ran and is now measured — 2 reels + 3 stories drove strong barrier-serum conversions against a $2,000 flat fee.",
       audience_note: "Core sensitive-skin audience, high conversion history.",
       suggested_reply:
-        "Hi Jade — here's the campaign brief: 2 in-feed reels + 3 stories over 3 weeks, honest before/after, #ad disclosure, hero product is the Barrier Repair Serum. Flat fee $2,000, product kit shipping today. Full brief PDF attached. Excited to work together! — the operator",
+        "Hi Jade — here's the campaign brief: 2 in-feed reels + 3 stories over 3 weeks, honest before/after, #ad disclosure, hero product is the Barrier Repair Serum. Flat fee $2,000, product kit shipping today. Full brief PDF attached. Excited to work together! — Jordan Lee",
       est_value: 8200,
       spend: 2000,
       decision_note: "Approved campaign brief after Jade countersigned the flat-fee agreement.",
@@ -219,7 +217,7 @@ function demoCreators() {
         "Niche ASMR night-routine content with unusually high conversion and a low rate — approved for a test brief.",
       audience_note: "Sleep + skincare crossover, strong watch-through.",
       suggested_reply:
-        "Hi Yuki! Your night-routine ASMR is so calming — perfect for our evening Barrier Repair ritual. Approved for a paid test: 1 TikTok, honest, #ad. Brief and kit coming your way. Fee $700. — the operator, Aurelia Skincare",
+        "Hi Yuki! Your night-routine ASMR is so calming — perfect for our evening Barrier Repair ritual. Approved for a paid test: 1 TikTok, honest, #ad. Brief and kit coming your way. Fee $700. — Jordan Lee, Aurelia Skincare",
       est_value: 3100,
       spend: 700,
     }),
@@ -244,7 +242,7 @@ function demoCreators() {
         "Parenting/sensitive-skin niche with high trust; a strong fit for gentle barrier care. Outreach draft ready for review.",
       audience_note: "Parents buying for eczema-prone and sensitive skin.",
       suggested_reply:
-        "Hi Cara! Sensitive, fragrance-free skincare that's gentle enough for the whole family is exactly what Aurelia makes. We'd love to gift the line and set up a paid collab if it fits your family's routine. Could I share details? — the operator",
+        "Hi Cara! Sensitive, fragrance-free skincare that's gentle enough for the whole family is exactly what Aurelia makes. We'd love to gift the line and set up a paid collab if it fits your family's routine. Could I share details? — Jordan Lee",
       est_value: 2400,
       spend: 0,
     }),
@@ -342,7 +340,7 @@ function demoCreators() {
         "Wellness creator whose self-care narrative fits our barrier-repair ritual story; awaiting review before first outreach.",
       audience_note: "Holistic self-care audience receptive to skincare rituals.",
       suggested_reply:
-        "Hi Hana! Your evening wind-down content is beautiful. Aurelia Skincare's Barrier Repair ritual would slot right into that self-care moment. We'd love to gift the set and explore a paid collab. Could I send the details? — the operator",
+        "Hi Hana! Your evening wind-down content is beautiful. Aurelia Skincare's Barrier Repair ritual would slot right into that self-care moment. We'd love to gift the set and explore a paid collab. Could I send the details? — Jordan Lee",
       est_value: 3300,
       spend: 0,
     }),
@@ -367,7 +365,7 @@ function demoCreators() {
         "Fitness creator with a promising post-workout skincare angle; verify his conversion data before committing spend.",
       audience_note: "Active-lifestyle audience; sweat + barrier-care angle untested.",
       suggested_reply:
-        "Hi Owen! Post-workout skin takes a beating — sweat, friction, sun. Aurelia's barrier repair is a natural fit for your recovery content. Want to test a paid collab? I can share a product kit and details. — the operator, Aurelia Skincare",
+        "Hi Owen! Post-workout skin takes a beating — sweat, friction, sun. Aurelia's barrier repair is a natural fit for your recovery content. Want to test a paid collab? I can share a product kit and details. — Jordan Lee, Aurelia Skincare",
       est_value: 2900,
       spend: 0,
     }),
@@ -396,7 +394,7 @@ function demoCreators() {
         "Content-reviewer gate on Jade's reel #1 draft before it publishes: the #ad disclosure is buried below the fold and one line reads 'clinically proven to cure eczema' — an unsupported claim. Recommend FIX before ship.",
       audience_note: "Live collab; this is the pre-publication quality gate, not new outreach.",
       suggested_reply:
-        "Hi Jade — the reel looks great! Two required fixes before it can go live:\n1) FTC: move '#ad' into the first line of the caption, not below 'more'.\n2) Claim: change 'clinically proven to cure eczema' to 'helps support the skin barrier' — we can't make a cure claim. Once those two are in, you're clear to publish. — the operator",
+        "Hi Jade — the reel looks great! Two required fixes before it can go live:\n1) FTC: move '#ad' into the first line of the caption, not below 'more'.\n2) Claim: change 'clinically proven to cure eczema' to 'helps support the skin barrier' — we can't make a cure claim. Once those two are in, you're clear to publish. — Jordan Lee",
       gate_verdict: "fix",
       gate_checks: [
         { check: "ftc_disclosure", result: "fix", note: "#ad must be above the fold in the first caption line." },
@@ -527,8 +525,7 @@ export const demoProvider = {
         ],
       },
       decisions: {},
-      demo_visuals: demoVisualsForApp("busa-creators"),
-      snapshot: { ...snapshot, demo_visuals: demoVisualsForApp("busa-creators") },
+      snapshot,
     };
   },
 

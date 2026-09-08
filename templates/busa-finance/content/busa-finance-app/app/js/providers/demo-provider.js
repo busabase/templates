@@ -5,7 +5,6 @@
 // retired app/server/demo.ts, now sharing demoSnapshot() with the live
 // Busabase provider's model/checks shape so both always agree on the
 // snapshot format.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 import { demoSnapshot } from "../finance-model.js?v=0.1.0";
 
 function activeLang() {
@@ -21,7 +20,6 @@ export const demoProvider = {
   async getState() {
     const lang = activeLang();
     const snapshot = demoSnapshot(lang);
-    const visuals = demoVisualsForApp("busa-finance");
     return {
       app: "busa-finance",
       demo: true,
@@ -34,8 +32,7 @@ export const demoProvider = {
         company: { name: snapshot.company, base_currency: snapshot.currency },
         secrets_required: false,
       },
-      snapshot: { ...snapshot, demo_visuals: visuals },
-      demo_visuals: visuals,
+      snapshot,
     };
   },
 

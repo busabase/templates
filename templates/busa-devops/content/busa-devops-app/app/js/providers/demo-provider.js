@@ -8,7 +8,6 @@
 // ssl_cert-from-services synthesis now go through devops-model.js's
 // recomputeMetrics()/certExpiriesFromServices() (the same formulas demo.ts
 // inlined) so the two never drift apart.
-import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 import { certExpiriesFromServices, recomputeMetrics } from "../devops-model.js?v=0.1.0";
 
 const now = "2026-07-02T09:30:00.000Z";
@@ -704,7 +703,6 @@ export const demoProvider = {
     const scenario = String(params.get("demo") || "overview");
     const zh = activeLangIsZh();
     const snapshot = zh ? localizeSnapshotZh(demoSnapshot(scenario)) : demoSnapshot(scenario);
-    const visuals = demoVisualsForApp("busa-devops");
     return {
       demo: true,
       demo_scenario: scenario,
@@ -739,8 +737,7 @@ export const demoProvider = {
           .filter((item) => item.type === "api_key_rotation")
           .map((item) => ({ key_id: item.expiry_id, name: item.item, env: item.item, detail: item.detail })),
       },
-      demo_visuals: visuals,
-      snapshot: { ...snapshot, demo_visuals: visuals },
+      snapshot,
     };
   },
 
