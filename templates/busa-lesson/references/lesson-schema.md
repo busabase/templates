@@ -111,7 +111,7 @@ A single row, `record-id: "config"`:
 | `export-format` | `export_format` | text | `markdown` |
 | `export-out-dir` | `export_out_dir` | text | default `exports` |
 | `docx-via-agent` | `docx_via_agent` | text | `"true"\|"false"` |
-| `feedback-handoff-skill` | `feedback_handoff_skill` | text | e.g. `kelly-email` |
+| `feedback-handoff-skill` | `feedback_handoff_skill` | text | e.g. `busa-email` |
 | `feedback-requires-approval` | `feedback_requires_approval` | text | `"true"\|"false"` |
 
 ## Deterministic Compliance Rules
@@ -146,7 +146,7 @@ The trusted handoff step. Reads plans with `decision-action: "approve"` or
 `execution-operation`/`execution-target`/`execution-detail`/`executed-at`
 back onto each — it never changes `status` itself. Operations:
 
-- `publish_plan` (from `approve`) → the agent runs `scripts/export_plans.mjs` to write the Markdown, then sends `feedback-draft` to the teacher via other channels (e.g. `kelly-email`) per SKILL.md's Boundary.
+- `publish_plan` (from `approve`) → the agent runs `scripts/export_plans.mjs` to write the Markdown, then sends `feedback-draft` to the teacher via other channels (e.g. `busa-email`) per SKILL.md's Boundary.
 - `request_revision` (from `request_changes`) → the agent redrafts the plan per `decision-note`, re-ingests with `scripts/ingest_plan.mjs`, and re-runs `scripts/run_checks.mjs`.
 
 ## Export (`scripts/export_plans.mjs`)

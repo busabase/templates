@@ -211,8 +211,8 @@ function demoProducts(zh) {
         { name: l("Video cover", "视频封面"), status: "ready" },
       ],
       notes: l(
-        "Handoff brief from kelly-picks (pick #2, June batch).",
-        "来自 kelly-picks 的交接简报（6 月批次选品 #2）。",
+        "Handoff brief from busa-picks (pick #2, June batch).",
+        "来自 busa-picks 的交接简报（6 月批次选品 #2）。",
       ),
       created_at: "2026-06-24T03:10:00.000Z",
       updated_at: "2026-07-02T09:40:00.000Z",
@@ -274,8 +274,8 @@ function demoProducts(zh) {
         { name: l("Lifestyle: dorm room", "场景图：宿舍"), status: "ready" },
       ],
       notes: l(
-        "Handoff brief from kelly-picks (pick #5, June batch).",
-        "来自 kelly-picks 的交接简报（6 月批次选品 #5）。",
+        "Handoff brief from busa-picks (pick #5, June batch).",
+        "来自 busa-picks 的交接简报（6 月批次选品 #5）。",
       ),
       created_at: "2026-06-24T03:10:00.000Z",
       updated_at: "2026-07-01T10:00:00.000Z",

@@ -11,6 +11,7 @@
     "airapp": "busa-feedback-app",
     "tags": ["sales-crm", "risk:gated-write", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/inbox.webp",
       "assets/screenshots/overview.webp",
       "assets/screenshots/requests.webp",

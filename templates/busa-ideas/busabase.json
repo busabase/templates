@@ -11,6 +11,7 @@
     "airapp": "busa-ideas-app",
     "tags": ["ideas", "brd-mrd-prd", "consultant"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",
       "assets/screenshots/idea-detail.webp",
       "assets/screenshots/questions.webp",

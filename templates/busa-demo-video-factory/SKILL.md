@@ -35,7 +35,7 @@ not an editor (see Boundary).
 Default interaction mode: App UI. Start it with `pnpm --dir content/busa-demo-video-factory-app start` (or `node
 content/busa-demo-video-factory-app/server.js`) and report the actual local URL — the first run on a fresh machine needs
 `pnpm --dir content/busa-demo-video-factory-app install && pnpm --dir content/busa-demo-video-factory-app run build:sdk` first. All record writes
-(proposing videos/shots, marking recording status) go through `scripts/*.mjs`, not the
+(proposing videos/shots, marking recording status) go through the trusted scripts under `scripts/`, not the
 app.
 
 ## App UI Screenshots
@@ -58,7 +58,7 @@ app.
   instruction.
 - The app (`content/busa-demo-video-factory-app/`) is read-only: it renders `videos`/`video-shots` from Busabase for
   human review and has no write API (`readOnly: true`, empty `writeProcedures` in
-  `content/busa-demo-video-factory-app/app/js/config.js`). All writes go through `scripts/*.mjs` (or the human editing
+  `content/busa-demo-video-factory-app/app/js/config.js`). All writes go through the trusted scripts under `scripts/` (or the human editing
   directly in the Busabase web app), never through the browser.
 - The skill never merges a records ChangeRequest on its own initiative. Every
   `videos`/`video-shots` record write is a ChangeRequest; merging requires either an

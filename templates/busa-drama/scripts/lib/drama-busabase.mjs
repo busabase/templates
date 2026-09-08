@@ -2,7 +2,7 @@
 // script. Uses the real `busabase-sdk` npm package directly (Node import,
 // not the browser vendor bundle) with the trusted operator's own credentials
 // (BUSABASE_BASE_URL / BUSABASE_API_KEY / BUSABASE_SPACE_ID) — never the
-// AirApp's ambient session. Mirrors the operator MV's scripts/lib/mv-busabase.mjs
+// AirApp's ambient session. Mirrors Busa MV's scripts/lib/mv-busabase.mjs
 // (this skill's closest architectural twin) one-for-one: import appConfig +
 // inspectProvisionedResources straight from content/busa-drama-app/app/js/ (pure ESM, no
 // `window` global, safe in Node), construct the client via busabase-sdk's

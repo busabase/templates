@@ -11,6 +11,7 @@
     "airapp": "busa-social-app",
     "tags": ["marketing", "risk:gated-write", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/accounts.webp",
       "assets/screenshots/calendar.webp",
       "assets/screenshots/compose.webp",

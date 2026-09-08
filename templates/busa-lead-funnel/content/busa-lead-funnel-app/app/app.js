@@ -454,7 +454,7 @@ function renderLeadDetail() {
 }
 
 // Direct kanban writes: go straight through the active provider (Busabase or
-// demo), the same way kelly-crm's kanban stage moves work — there is no
+// demo), the same way busa-crm's kanban stage moves work — there is no
 // separate approval step, since this is a direct-manipulation control panel.
 async function moveLeadStage(id, stage, reason) {
   try {

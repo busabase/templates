@@ -11,6 +11,7 @@
     "airapp": "busa-invest-webull-app",
     "tags": ["invest", "risk:read-only", "surface:busabase", "surface:webull"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/accounts.webp",
       "assets/screenshots/detail.webp",
       "assets/screenshots/overview.webp",

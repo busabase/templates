@@ -1,7 +1,7 @@
 // Browser-side helpers for Busa Drama's binary media (character reference-
 // card images, character reference-voice samples, shot storyboard images/
 // videos), built on busabase-sdk's real `assets` client
-// (createUploadUrl -> PUT bytes -> confirm), same as the operator MV's mv-client.js
+// (createUploadUrl -> PUT bytes -> confirm), same as Busa MV's mv-client.js
 // (this skill's closest architectural twin) — see that module's header
 // comment for the full trace of how `client.assets.*` was verified against
 // busabase-sdk@0.11.0 and Busabase's own product usage (the Doc editor's

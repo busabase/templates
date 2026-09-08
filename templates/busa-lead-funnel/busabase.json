@@ -11,6 +11,7 @@
     "airapp": "busa-lead-funnel-app",
     "tags": ["rbf", "risk:local-write", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/kanban.webp",
       "assets/screenshots/lead-detail.webp",
       "assets/screenshots/overview.webp"

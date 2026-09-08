@@ -133,7 +133,7 @@ function buildWorkspace(settings) {
 // a raw row (it also carries __recordId/__headCommitId bookkeeping keys that
 // must not be sent as Busabase fields). The review UI here never edits the
 // structured `fields{}` (cause/court/procedure/...) directly (unlike
-// kelly-legal-contracts' issue workbench) — only draft/review-note/status
+// busa-legal-contracts' issue workbench) — only draft/review-note/status
 // change through a decision, so this is a pass-through of the row's current
 // raw values plus the decision fields.
 function baseItemFields(row) {

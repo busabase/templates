@@ -4,7 +4,7 @@
 // this script is the process authorized to act on that verdict. Per
 // SKILL.md, outbound outreach, briefs, and contracts are always
 // approval-required and sending is delegated to other skills (for example
-// instagram-outreach, tiktok-outreach, kelly-email) after the user approves
+// instagram-outreach, tiktok-outreach, busa-email) after the user approves
 // the specific item — this script performs NO sending, publishing, or
 // contract execution itself. It only re-reads Busabase, marks each approved
 // engagement `done`, and reports what still needs to be handed off, so

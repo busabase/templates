@@ -8,7 +8,7 @@ const mail = (company, signal) => `您好，
 
 方便下周用 20 分钟看看是否值得继续吗？
 
-The operator`;
+Jordan Lee`;
 
 const records = [
   record("profile-self", "profile", {

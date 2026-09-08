@@ -1,4 +1,4 @@
-// Shared state loader. Factored out of app.js (unlike the operator MV's single-file
+// Shared state loader. Factored out of app.js (unlike Busa MV's single-file
 // app.js, this skill keeps its original modular js/ split — see SKILL.md /
 // the migration notes) so actions.js, settings.js, and app.js can all reload
 // state after a write without an import cycle through app.js itself.

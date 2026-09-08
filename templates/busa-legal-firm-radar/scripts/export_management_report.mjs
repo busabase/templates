@@ -7,7 +7,7 @@
 // retired scripts/export_management_report.ts.
 //
 // Departure from the retired script (matching
-// kelly-legal-casebase-ingest's export_case_records.mjs precedent, applied
+// busa-legal-casebase-ingest's export_case_records.mjs precedent, applied
 // here too): an insight is exportable only when its decision_action is a
 // genuine "approve" (written exclusively by the review queue's
 // decideItem()) — not merely because status happens to read

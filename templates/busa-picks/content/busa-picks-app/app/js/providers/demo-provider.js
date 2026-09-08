@@ -771,7 +771,7 @@ function demoProposals() {
       reason:
         "TikTok demand is compounding while the Amazon shelf is still shallow (head: 214 reviews, 11% share). Margin card clears the floor at 38.2% with breakeven ACOS 54.5%. Window: 6-8 weeks before the shelf fills.",
       brief:
-        "SOURCING BRIEF\n- Product: fold-flat silicone lunch box, 2-compartment, steam vent, food-grade LFGB silicone\n- Target COGS: ≤ $4.60 @ 1,000 units; molds exist (no tooling cost) — confirm with 2 suppliers from the quote sheet\n- Samples: 3 colorways (sage, cream, terracotta); test dishwasher + microwave + drop\n- Freight: sea, target ≤ $2.10/unit landed to US warehouse\n\nLISTING BRIEF (→ kelly-listing)\n- Title angle: 'Collapsible Lunch Box — folds to 1 inch, steam vent, leakproof'\n- Main image: folded vs open side-by-side; lifestyle set around desk lunches\n- Price: $21.99 launch with 15% intro coupon; anchor against $24.99 rigid bento\n- Keywords: collapsible lunch box, silicone bento, fold flat lunch container\n- Video: re-cut of the folding demo (license or recreate — do not rip the creator's cut)",
+        "SOURCING BRIEF\n- Product: fold-flat silicone lunch box, 2-compartment, steam vent, food-grade LFGB silicone\n- Target COGS: ≤ $4.60 @ 1,000 units; molds exist (no tooling cost) — confirm with 2 suppliers from the quote sheet\n- Samples: 3 colorways (sage, cream, terracotta); test dishwasher + microwave + drop\n- Freight: sea, target ≤ $2.10/unit landed to US warehouse\n\nLISTING BRIEF (→ busa-listing)\n- Title angle: 'Collapsible Lunch Box — folds to 1 inch, steam vent, leakproof'\n- Main image: folded vs open side-by-side; lifestyle set around desk lunches\n- Price: $21.99 launch with 15% intro coupon; anchor against $24.99 rigid bento\n- Keywords: collapsible lunch box, silicone bento, fold flat lunch container\n- Video: re-cut of the folding demo (license or recreate — do not rip the creator's cut)",
       review: null,
     },
     {
@@ -784,7 +784,7 @@ function demoProposals() {
       reason:
         "Second demand wave with a desk-setup angle; TikTok Shop lane nearly empty. 42.1% margin leaves room for 15% creator commission.",
       brief:
-        "SOURCING BRIEF\n- Cloud-shaped ultrasonic humidifier, 300ml, warm LED, USB-C\n- Target COGS ≤ $6.80 @ 500 units; existing supplier relationship (Nimbus order #88)\n\nLISTING BRIEF (→ kelly-listing)\n- TikTok Shop first, Amazon second\n- Hook: 'the desk cloud that went viral again' — position for desk-setup, not nursery\n- Price $27.99, creator commission 15%, seed 20 units to mid-tier desk-setup creators",
+        "SOURCING BRIEF\n- Cloud-shaped ultrasonic humidifier, 300ml, warm LED, USB-C\n- Target COGS ≤ $6.80 @ 500 units; existing supplier relationship (Nimbus order #88)\n\nLISTING BRIEF (→ busa-listing)\n- TikTok Shop first, Amazon second\n- Hook: 'the desk cloud that went viral again' — position for desk-setup, not nursery\n- Price $27.99, creator commission 15%, seed 20 units to mid-tier desk-setup creators",
       review: {
         comment: "Approved 2026-06-27 — proceed to sourcing; cap first PO at 500 units.",
         decided_at: "2026-06-27T09:00:00.000Z",
@@ -800,9 +800,9 @@ function demoProposals() {
       reason:
         "Best margin structure on the board (45.6%) and speed-sensitive: no TikTok Shop listing above 300 sales yet.",
       brief:
-        "SOURCING BRIEF\n- Self-cleaning-base roller, ABS shell, target COGS ≤ $2.10 @ 2,000 units\n\nLISTING BRIEF (→ kelly-listing) — handed off 2026-06-29\n- Lead with the before/after couch shot; $14.99 vs ChomChom $24.95 anchor\n- Bundle idea: mini travel roller as an upsell",
+        "SOURCING BRIEF\n- Self-cleaning-base roller, ABS shell, target COGS ≤ $2.10 @ 2,000 units\n\nLISTING BRIEF (→ busa-listing) — handed off 2026-06-29\n- Lead with the before/after couch shot; $14.99 vs ChomChom $24.95 anchor\n- Bundle idea: mini travel roller as an upsell",
       review: {
-        comment: "Handed off to kelly-listing 2026-06-29; sourcing brief exported.",
+        comment: "Handed off to busa-listing 2026-06-29; sourcing brief exported.",
         decided_at: "2026-06-29T09:00:00.000Z",
       },
     },
@@ -1176,21 +1176,21 @@ function localizeSnapshotZh(snapshot) {
       reason:
         "TikTok 需求在复利式增长，而亚马逊货架仍然很浅（头部 214 条评论、11% 份额）。利润卡过线：毛利 38.2%、保本 ACOS 54.5%。窗口期约 6-8 周。",
       brief:
-        "采购简报\n- 产品：折叠硅胶饭盒，双格，蒸汽阀，LFGB 食品级硅胶\n- 目标 COGS：1,000 件 ≤ $4.60；现有模具（无开模费）——报价表中两家供应商各自确认\n- 样品：3 个配色（鼠尾草绿、奶油白、陶土橘）；洗碗机 + 微波炉 + 跌落测试\n- 运费：海运，目标到美仓 ≤ $2.10/件\n\nListing 简报（→ kelly-listing）\n- 标题角度：『可折叠饭盒——折后 1 英寸薄，带蒸汽阀，防漏』\n- 主图：折叠 vs 展开对比；办公桌午餐场景组图\n- 定价：$21.99 首发 + 15% 新品券；对标 $24.99 硬壳便当盒\n- 关键词：collapsible lunch box、silicone bento、fold flat lunch container\n- 视频：重拍折叠演示（获授权或自拍——不得盗剪达人素材）",
+        "采购简报\n- 产品：折叠硅胶饭盒，双格，蒸汽阀，LFGB 食品级硅胶\n- 目标 COGS：1,000 件 ≤ $4.60；现有模具（无开模费）——报价表中两家供应商各自确认\n- 样品：3 个配色（鼠尾草绿、奶油白、陶土橘）；洗碗机 + 微波炉 + 跌落测试\n- 运费：海运，目标到美仓 ≤ $2.10/件\n\nListing 简报（→ busa-listing）\n- 标题角度：『可折叠饭盒——折后 1 英寸薄，带蒸汽阀，防漏』\n- 主图：折叠 vs 展开对比；办公桌午餐场景组图\n- 定价：$21.99 首发 + 15% 新品券；对标 $24.99 硬壳便当盒\n- 关键词：collapsible lunch box、silicone bento、fold flat lunch container\n- 视频：重拍折叠演示（获授权或自拍——不得盗剪达人素材）",
     },
     "prop-humidifier": {
       title: "开发：云朵小夜灯加湿器",
       reason: "第二波需求叠加桌面搭建角度；TikTok Shop 赛道几乎空白。毛利 42.1%，留得出 15% 达人佣金。",
       brief:
-        "采购简报\n- 云朵造型超声波加湿器，300ml，暖光 LED，USB-C\n- 目标 COGS ≤ $6.80（500 件）；现有供应商（Nimbus 订单 #88）\n\nListing 简报（→ kelly-listing）\n- 先 TikTok Shop 后亚马逊\n- 钩子：『再次爆火的桌面云朵』——定位桌面搭建而非母婴\n- 定价 $27.99，达人佣金 15%，向中腰部桌搭达人寄样 20 件",
+        "采购简报\n- 云朵造型超声波加湿器，300ml，暖光 LED，USB-C\n- 目标 COGS ≤ $6.80（500 件）；现有供应商（Nimbus 订单 #88）\n\nListing 简报（→ busa-listing）\n- 先 TikTok Shop 后亚马逊\n- 钩子：『再次爆火的桌面云朵』——定位桌面搭建而非母婴\n- 定价 $27.99，达人佣金 15%，向中腰部桌搭达人寄样 20 件",
       reviewComment: "2026-06-27 已批准——进入采购；首单不超过 500 件。",
     },
     "prop-roller": {
       title: "开发：可重复用宠物除毛滚筒",
       reason: "全场最好的利润结构（45.6%）且拼速度：TikTok Shop 还没有超过 300 单的链接。",
       brief:
-        "采购简报\n- 自清洁底座滚筒，ABS 外壳，目标 COGS ≤ $2.10（2,000 件）\n\nListing 简报（→ kelly-listing）——2026-06-29 已交接\n- 主打沙发前后对比图；$14.99 对标 ChomChom $24.95\n- 组合思路：迷你旅行装作为加购",
-      reviewComment: "2026-06-29 已交接 kelly-listing；采购简报已导出。",
+        "采购简报\n- 自清洁底座滚筒，ABS 外壳，目标 COGS ≤ $2.10（2,000 件）\n\nListing 简报（→ busa-listing）——2026-06-29 已交接\n- 主打沙发前后对比图；$14.99 对标 ChomChom $24.95\n- 组合思路：迷你旅行装作为加购",
+      reviewComment: "2026-06-29 已交接 busa-listing；采购简报已导出。",
     },
     "prop-led-strip": {
       title: "放弃：RGB LED 灯带",

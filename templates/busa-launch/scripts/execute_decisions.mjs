@@ -2,7 +2,7 @@
 // Trusted hand-off step. Busa Launch's AirApp only ever proposes a review
 // decision on a launch item; this script is the process authorized to act
 // on an `approved` verdict. It performs NO public submission or send itself
-// — that is delegated to another skill (kelly-email for press/launch email,
+// — that is delegated to another skill (busa-email for press/launch email,
 // a channel connector for Product Hunt/HN) per SKILL.md. It only re-reads
 // Busabase, marks the item `done`, and reports what still needs to be sent.
 //

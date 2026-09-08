@@ -1,7 +1,7 @@
 {
   "format": "busabase-package@1",
   "name": "busa-clm",
-  "description": "Lightweight contract lifecycle desk: contract inventory, lifecycle stage, owners, obligations, renewal/notice dates, and a simple approval reminder queue. Not a legal redline/clause-review product -- see kelly-legal-contracts for that. Contract records, obligation status, renewal acknowledgements, and approval decisions are all direct writes made by the operator in the browser, not a review/approval pipeline.",
+  "description": "Lightweight contract lifecycle desk: contract inventory, lifecycle stage, owners, obligations, renewal/notice dates, and a simple approval reminder queue. Not a legal redline/clause-review product -- see busa-legal-contracts for that. Contract records, obligation status, renewal acknowledgements, and approval decisions are all direct writes made by the operator in the browser, not a review/approval pipeline.",
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["legal", "risk:gated-write", "industry:legal", "surface:busabase"],
@@ -11,6 +11,7 @@
     "airapp": "busa-clm-app",
     "tags": ["legal", "risk:gated-write", "industry:legal", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/approvals.webp",
       "assets/screenshots/contracts.webp",
       "assets/screenshots/obligations.webp",

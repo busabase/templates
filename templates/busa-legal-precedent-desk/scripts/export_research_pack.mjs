@@ -6,9 +6,9 @@
 // preserving the exact document format (headings, field order, CSV
 // columns) from the retired scripts/export_research_pack.ts.
 //
-// Departure from the retired script (matching kelly-legal-casebase-ingest's
-// export_case_records.mjs, kelly-legal-firm-radar's
-// export_management_report.mjs, and kelly-legal-matter-strategy's
+// Departure from the retired script (matching busa-legal-casebase-ingest's
+// export_case_records.mjs, busa-legal-firm-radar's
+// export_management_report.mjs, and busa-legal-matter-strategy's
 // export_strategy_pack.mjs precedent, applied here too): a research pack is
 // exportable only when its decision_action is a genuine "approve" (written
 // exclusively by the review queue's decideItem()) — not merely because

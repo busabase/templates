@@ -92,7 +92,7 @@ function demoSnapshot(scenario = "overview") {
         at: "2026-07-01T21:10:00.000Z",
         actor: "busa-radar-agent",
         action: "ingest_trends",
-        detail: "8 trend movers refreshed; 2 rising queries imported from kelly-seo snapshot.",
+        detail: "8 trend movers refreshed; 2 rising queries imported from busa-seo snapshot.",
       },
       {
         at: "2026-07-01T09:40:00.000Z",
@@ -273,7 +273,7 @@ function demoSignals() {
       proposed_action: "act",
       handoff: {
         operation: "handoff_content_brief",
-        target: "kelly-writer",
+        target: "busa-writer",
         summary: "Comparison page: Formlet vs Formora after the price increase.",
       },
       diff: {
@@ -347,14 +347,14 @@ function demoSignals() {
       proposed_action: "act",
       handoff: {
         operation: "handoff_content_brief",
-        target: "kelly-writer",
+        target: "busa-writer",
         summary: "Migration guide targeting Formora editor complaints, with importer CTA.",
       },
       triage: {
         kind: "signal",
         action: "approve",
         status: "approved",
-        comment: "Yes — brief kelly-writer, lead with the conditional-logic loss.",
+        comment: "Yes — brief busa-writer, lead with the conditional-logic loss.",
         decided_at: "2026-06-29T10:02:00.000Z",
       },
       evidence: [
@@ -789,7 +789,7 @@ function demoTrends() {
         "Search interest up 64% in 8 weeks and three AI-native launches this month. The comparison/alternatives surface is still winnable; in two quarters it will not be.",
       proposed_next_step: {
         operation: "handoff_content_brief",
-        target: "kelly-writer",
+        target: "busa-writer",
         summary: "Content brief: 'best AI form builders 2026' hub page + Formlet AI positioning refresh.",
       },
     },
@@ -803,7 +803,7 @@ function demoTrends() {
         "Steady 41% rise from health/wellness solo practices. Competitors gate HIPAA behind $99+ tiers; a $29 HIPAA add-on would undercut the category.",
       proposed_next_step: {
         operation: "handoff_roadmap_candidate",
-        target: "kelly-feedback",
+        target: "busa-feedback",
         summary: "Roadmap candidate: HIPAA-compliant forms add-on (BAA, encrypted storage, audit log).",
       },
       triage: {

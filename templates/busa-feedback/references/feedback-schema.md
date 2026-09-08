@@ -36,7 +36,7 @@ Proposal statuses: `needs_review`, `changes_requested`, `approved`, `done`,
 | `source-id` | `source_id` | text | stable domain id, required |
 | `channel` | `channel` | text | see Channels above |
 | `name` | `name` | text | |
-| `collection` | `collection` | text | e.g. `kelly-email handoff`, `manual export` |
+| `collection` | `collection` | text | e.g. `busa-email handoff`, `manual export` |
 | `secret-envs` | `secret_envs` | longtext | JSON array of env var *names* (never values) |
 | `last-ingest-at` | `last_ingest_at` | text | ISO timestamp |
 | `item-count` | `item_count` | number | |
@@ -166,7 +166,7 @@ separate decisions file:
     "source_id": "support-email",
     "channel": "email",
     "name": "Support inbox",
-    "collection": "kelly-email handoff"
+    "collection": "busa-email handoff"
   },
   "products": [
     { "product_id": "pulseboard", "display_name": "PulseBoard", "tagline": "..." }
@@ -187,7 +187,7 @@ separate decisions file:
 ```
 
 `products[]` is optional — include it to register or update product catalog
-entries (mirrors kelly-messenger's `ingest_messages.mjs` optional `account`
+entries (mirrors busa-messenger's `ingest_messages.mjs` optional `account`
 onboarding field). Feedback ids are derived as `fb-<source_id>-<external_id>`;
 re-ingesting the same payload is idempotent.
 
@@ -229,7 +229,7 @@ Without `--apply` it only prints the plan; with `--apply`:
 - `publish_changelog_note` and `send_decline_reply` are **always**
   `handoff_ready` — this script never publishes a changelog, edits a roadmap
   doc, or sends a reply itself. Real delivery happens through the
-  corresponding skill (`kelly-messenger`/`kelly-email`/docs edits) as a
+  corresponding skill (`busa-messenger`/`busa-email`/docs edits) as a
   separate, explicitly authorized step.
 
 Every processed proposal (local or handoff-only) is marked `status: "done"`

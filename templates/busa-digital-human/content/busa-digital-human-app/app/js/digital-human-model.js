@@ -12,7 +12,7 @@
 // "qa-decisions" Base and providers/busabase-provider.js).
 
 export const PROJECT = {
-  name: "the operator AI Product Host",
+  name: "Busa AI Product Host",
   target_scene: "product_demo",
   recommended_path: "2d_fast",
   secondary_path: "3d_custom",
@@ -37,7 +37,7 @@ export const METRICS_STATIC = {
 export const PERSONAS = [
   {
     id: "kelly-host-cn",
-    name: "the operator AI Host",
+    name: "Busa AI Host",
     path: "2d_fast",
     language: "zh-CN",
     voice: "warm product narrator",
@@ -191,7 +191,7 @@ export const EVENTS = [
 ];
 
 // ---- Decision record helpers (the one dynamic piece), mirroring
-// kelly-clm's buildApproval/approvalToFields/normalizeApprovalRow. ----
+// busa-clm's buildApproval/approvalToFields/normalizeApprovalRow. ----
 
 export const DECISION_ACTIONS = ["approve", "request_changes", "block"];
 

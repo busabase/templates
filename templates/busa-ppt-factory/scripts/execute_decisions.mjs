@@ -7,8 +7,8 @@
 // directly onto the decided row and NEVER flips workflow `status` itself
 // (the decision write already did that via
 // content/busa-ppt-factory-app/app/js/providers/busabase-provider.js's decideItem()), matching
-// kelly-legal-precedent-desk's, kelly-legal-casebase-ingest's, and
-// kelly-legal-firm-radar's execute_decisions.mjs precedent. The retired
+// busa-legal-precedent-desk's, busa-legal-casebase-ingest's, and
+// busa-legal-firm-radar's execute_decisions.mjs precedent. The retired
 // scripts/execute_decisions.ts only ever wrote a local
 // execution_report.json summary and likewise never touched workflow
 // status; this script keeps that same safety boundary, now writing the

@@ -11,7 +11,7 @@
   "pain_point": "痛点场景描述",
   "concept": "核心概念/产品揭晓",
   "verified_claims": "| 原草稿说法 | 核实结果 |\n| --- | --- |\n| ... | ... |",
-  "owner": "kelly",
+  "owner": "you",
   "shots": [
     {
       "timecode": "0:00-0:05",

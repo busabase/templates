@@ -2,7 +2,7 @@
 // shape used across this batch of conversions. Ported verbatim (same copy)
 // from the retired app/i18n usage inside app/app.js — that runtime-inline
 // English-only chrome is now bilingual and lives here as a static object
-// literal, following the shared en/zh + enum pattern kelly-radar established.
+// literal, following the shared en/zh + enum pattern busa-radar established.
 export const messages = {
   en: {
     appTitle: "Busa AI Newsroom",
@@ -83,7 +83,7 @@ export const messages = {
     },
   },
   zh: {
-    appTitle: "the operator AI 新闻编辑室",
+    appTitle: "Busa AI 新闻编辑室",
     brandInitial: "N",
     overview: "总览",
     signals: "信号",

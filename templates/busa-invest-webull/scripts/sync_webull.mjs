@@ -149,7 +149,7 @@ async function fetchWebullPortfolio(credentials, fixturePath) {
 }
 
 // ── Busabase write layer, same upsert shape as the other trusted sync
-// scripts in this repo (kelly-seo's sync_gsc.mjs). ──────────────────────────
+// scripts in this repo (busa-seo's sync_gsc.mjs). ──────────────────────────
 
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));

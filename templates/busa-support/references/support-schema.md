@@ -186,5 +186,5 @@ and performs **no external side effect** — no email send, no WhatsApp/WeChat
 API call, no refund. Idempotency is checked live off each ticket's own
 `execution-status` field (no separate report file). Real
 sends/escalations/refunds are performed by the configured channel connectors
-(kelly-email, WhatsApp Cloud API, the web-chat widget, WeChat Work), a
+(busa-email, WhatsApp Cloud API, the web-chat widget, WeChat Work), a
 separate, explicitly authorized step.

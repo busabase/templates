@@ -11,6 +11,7 @@
     "airapp": "busa-standup-app",
     "tags": ["comms", "risk:local-write", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/blockers.webp",
       "assets/screenshots/history.webp",
       "assets/screenshots/members.webp",

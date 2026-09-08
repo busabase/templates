@@ -10,10 +10,14 @@
     "schemaVersion": 1,
     "airapp": "busa-demo-video-factory-app",
     "tags": ["production", "risk:read-only", "surface:busabase"],
-    "screenshots": ["assets/screenshots/video-shots.webp", "assets/screenshots/videos.webp"],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/video-shots.webp",
+      "assets/screenshots/videos.webp"
+    ],
     "agentPrompts": [
-      "Summarize the latest Videos and flag what needs my attention.",
-      "Open Busa Demo Video Factory and show me the items that need review."
+      "Summarize the videos in production and flag which claims still need verification.",
+      "Open Busa Demo Video Factory and show me the shots that need review."
     ],
     "requires": {
       "airapp": true

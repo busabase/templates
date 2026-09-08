@@ -9,7 +9,7 @@
 // app/.data/decisions.json handoff bucket for review verdicts
 // (applyDecision()); this Busabase-only shape replaces that with a direct
 // field write onto the review item's own record (status/decision-note/
-// decided-at), matching the kelly-legal-contracts/kelly-crm precedent. Since
+// decided-at), matching the busa-legal-contracts/busa-crm precedent. Since
 // Busabase reads are always live, the retired app.js's
 // effectiveReviewStatus() "compare decided_at vs generated_at staleness"
 // overlay is gone entirely -- a review item's `status` field is always the
@@ -459,7 +459,7 @@ export function statusForVerdict(action, currentStatus = "needs_review") {
 // New orchestration (not a port): derives a recent-activity feed from each
 // product's and review item's own timestamps instead of reading a persisted
 // activity_log.json, since Busabase reads are always live and there is no
-// staleness to paper over (mirrors kelly-legal-contracts'
+// staleness to paper over (mirrors busa-legal-contracts'
 // deriveActivityLog()). The retired app/server/demo.ts's hand-authored
 // demoActivity() narrative strings are kept verbatim in the demo provider
 // instead, since they reference specific facts (inventory cover falling

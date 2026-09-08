@@ -510,7 +510,7 @@ function demoTickets() {
         connector: "email_agent",
         channel: "email",
         target: "thandi@mbeki.co.za",
-        detail: "Sent via kelly-email.",
+        detail: "Sent via busa-email.",
         executed_at: "2026-07-05T10:12:00.000Z",
       },
       [
@@ -744,7 +744,7 @@ function demoSyncLog() {
       "email_agent",
       "2026-07-06T08:40:00.000Z",
       "ok",
-      "4 new email tickets ingested from kelly-email.",
+      "4 new email tickets ingested from busa-email.",
       4,
     ),
     sync(
@@ -820,7 +820,7 @@ function demoExecutionReport() {
         connector: "email_agent",
         channel: "email",
         target: "thandi@mbeki.co.za",
-        detail: "Sent via kelly-email.",
+        detail: "Sent via busa-email.",
       },
     ],
   };
@@ -892,7 +892,7 @@ function localizeSnapshotZh(snapshot) {
     ...entry,
     message:
       {
-        "sync-email-0840": "从 kelly-email 导入 4 个新邮件工单。",
+        "sync-email-0840": "从 busa-email 导入 4 个新邮件工单。",
         "sync-chat-0852": "已从网页聊天组件同步会话记录。",
         "sync-wa-0845": "已导入 WhatsApp Business webhook 积压。",
       }[entry.sync_id] || entry.message,

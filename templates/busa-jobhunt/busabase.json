@@ -11,6 +11,7 @@
     "airapp": "busa-jobhunt-app",
     "tags": ["comms", "risk:gated-write", "surface:busabase", "surface:smtp"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/blocked.webp",
       "assets/screenshots/mobile-detail.webp",
       "assets/screenshots/mobile-list.webp",

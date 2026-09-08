@@ -468,7 +468,7 @@ function demoAnomalies() {
         operation: "chase_receivable",
         target: "inv-2026-039",
         detail:
-          "Reminder email sent to Pinewave AP on 2026-06-16 via kelly-email. Payment RCP-5502 received 2026-06-20; invoice paid in full.",
+          "Reminder email sent to Pinewave AP on 2026-06-16 via busa-email. Payment RCP-5502 received 2026-06-20; invoice paid in full.",
         executed_at: "2026-06-16T14:05:00.000Z",
       },
     },
@@ -660,7 +660,7 @@ const ANOMALY_ZH = {
     agent_notes: "",
     decision_note: "发吧——松涛电子一般提醒一次就会付。",
     execution_detail:
-      "已于 2026-06-16 通过 kelly-email 向松涛电子应付组发送催款邮件。回款 RCP-5502 于 2026-06-20 到账，发票已全额结清。",
+      "已于 2026-06-16 通过 busa-email 向松涛电子应付组发送催款邮件。回款 RCP-5502 于 2026-06-20 到账，发票已全额结清。",
   },
 };
 

@@ -14,7 +14,7 @@ Use this reference when changing `busa-clm`.
 - simple approval/reminder queue
 - direct handoff decisions written onto the record itself
 
-Do not turn it into a legal redline or clause-playbook product. Use `kelly-legal-contracts` for detailed legal review.
+Do not turn it into a legal redline or clause-playbook product. Use `busa-legal-contracts` for detailed legal review.
 
 ## Product Research Signals
 

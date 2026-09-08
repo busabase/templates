@@ -11,6 +11,7 @@
     "airapp": "busa-ppt-factory-app",
     "tags": ["production", "risk:local-write", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/decks.webp",
       "assets/screenshots/exports.webp",
       "assets/screenshots/overview.webp",

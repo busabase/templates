@@ -2,7 +2,7 @@
 // reference-card images, shot images/videos), built on busabase-sdk's real
 // `assets` client (verified present in the pinned busabase-sdk@0.11.0 — see
 // the header comment on js/config.js). Unlike a prior skill in this
-// migration (kelly-insure-data) which had to hand-roll raw `/api/v1/*` fetch
+// migration (busa-insure-data) which had to hand-roll raw `/api/v1/*` fetch
 // calls because its vendored SDK version had no `assets` surface, this skill
 // found `client.assets.{createUploadUrl,confirm,get,download}` fully typed
 // and already used by Busabase's own product code (the Doc image-paste

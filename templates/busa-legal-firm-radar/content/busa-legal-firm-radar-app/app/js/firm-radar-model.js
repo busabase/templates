@@ -13,7 +13,7 @@
 // Reviewer decisions are no longer a separate decisions.json bucket: the
 // verdict (`decision_action`/`decision_note`/`decided_at`) is written
 // directly onto the item's own Busabase row, mirroring
-// kelly-legal-casebase-ingest's items Base. `agent_tasks.json` (queued
+// busa-legal-casebase-ingest's items Base. `agent_tasks.json` (queued
 // "revise_review_item" work created by a `request_changes` decision) is
 // dropped entirely — nothing in the UI ever read it, so there is no Busabase
 // equivalent to preserve.
@@ -244,7 +244,7 @@ export function recomputeMetrics(items = [], checks = [], extra = {}) {
 // New orchestration (not a port): derives a recent-activity feed from each
 // item's own timestamps instead of reading a persisted activity_log.json,
 // since Busabase reads are always live — same technique as
-// kelly-legal-casebase-ingest's deriveActivityLog.
+// busa-legal-casebase-ingest's deriveActivityLog.
 export function deriveActivityLog(items = [], { limit = 50 } = {}) {
   const entries = [];
   for (const item of items) {
@@ -292,7 +292,7 @@ export function deriveActivityLog(items = [], { limit = 50 } = {}) {
 // operation the agent must perform outside the app, and the target the
 // operation acts on. The retired script wrote item.status = "done" directly
 // when --apply was passed; this Busabase-only shape follows
-// kelly-legal-casebase-ingest's more conservative precedent instead — it
+// busa-legal-casebase-ingest's more conservative precedent instead — it
 // never flips workflow status itself, only records an execution marker
 // directly on the item record (execution_status/operation/target/detail/executed_at).
 export function itemExecution(item, action, { apply = false } = {}) {

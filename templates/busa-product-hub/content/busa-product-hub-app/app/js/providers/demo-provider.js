@@ -43,7 +43,7 @@ function demoConfigSummary(zh) {
     },
     sync: {
       last_import_at: "2026-07-07T07:30:00.000Z",
-      sources: ["amazon", "shopify", "tiktok_shop", "inventory_csv", "kelly-listing"],
+      sources: ["amazon", "shopify", "tiktok_shop", "inventory_csv", "busa-listing"],
     },
   };
 }
@@ -97,7 +97,7 @@ function demoProducts(zh) {
         hero_images_ready: 5,
         hero_images_required: 6,
         video_ready: false,
-        listing_source: "kelly-listing",
+        listing_source: "busa-listing",
         copy_status: "ready",
       },
       compliance: {
@@ -148,7 +148,7 @@ function demoProducts(zh) {
         hero_images_ready: 7,
         hero_images_required: 6,
         video_ready: true,
-        listing_source: "kelly-listing",
+        listing_source: "busa-listing",
         copy_status: "approved",
       },
       compliance: {
@@ -247,7 +247,7 @@ function demoProducts(zh) {
         hero_images_ready: 6,
         hero_images_required: 6,
         video_ready: true,
-        listing_source: "kelly-picks",
+        listing_source: "busa-picks",
         copy_status: "draft",
       },
       compliance: {
@@ -645,7 +645,7 @@ function demoActivity(zh) {
     {
       id: "act-2",
       at: "2026-07-07T07:50:00.000Z",
-      actor: "kelly-listing",
+      actor: "busa-listing",
       text: l(
         "Amazon US copy for Aurora Lamp marked ready for publish approval.",
         "极光灯 Amazon US 文案已标记为可发布审批。",

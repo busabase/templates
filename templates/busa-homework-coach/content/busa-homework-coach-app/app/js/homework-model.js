@@ -1,7 +1,7 @@
 // Domain model for Busa Homework Coach's child-friendly homework desk,
 // ported verbatim where a matching function already existed (same variable
 // names, same order of operations, only TS types stripped) from the retired
-// lib/types.ts and lib/data-provider/local-file-provider.ts. The operator Homework
+// lib/types.ts and lib/data-provider/local-file-provider.ts. Busa Homework
 // Coach never had a busabase-provider.ts to carry forward, so this Base
 // design (questions / mistakes / papers / reviews / settings) is new.
 //
@@ -9,7 +9,7 @@
 // decision now lives directly on the review's own Busabase record (decision
 // fields alongside the raw review fields) instead of a separate
 // decisions.json bucket keyed by review id — same pattern used across this
-// batch of Busabase-only conversions (see kelly-finance, kelly-disclosure-
+// batch of Busabase-only conversions (see busa-finance, kelly-disclosure-
 // tracker). The retired agent_tasks.json queue is gone too: a "task" was
 // always just a review whose status is changes_requested, so it is derived
 // on read (pendingAgentTasks()) instead of stored separately — reads are
@@ -32,7 +32,7 @@ export function statusForAction(action = "") {
 // Only known field slugs are ever written back — never spread a raw row (it
 // also carries __recordId/__headCommitId bookkeeping keys that must not be
 // sent as Busabase fields). One helper per Base, mirroring
-// baseCheckFields() in kelly-finance's finance-model.js.
+// baseCheckFields() in busa-finance's finance-model.js.
 export function baseQuestionFields({
   question_id = "",
   ref = 0,
@@ -329,7 +329,7 @@ export function computePaperFromRow({
 
 // Normalizes a Busabase `reviews` row into the structured ReviewItem shape,
 // with the decision assembled from decision_action/decision_comment/
-// decided_at (mirrors computeCheckFromRow() in kelly-finance's
+// decided_at (mirrors computeCheckFromRow() in busa-finance's
 // finance-model.js).
 export function computeReviewFromRow({
   review_id = "",

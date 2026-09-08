@@ -1,6 +1,6 @@
 // Synthetic placeholder images for screenshot/demo tooling. Pure string
 // generation, no network or storage — safe to run in the browser. Ported
-// from kelly-money's app/app/js/demo-visuals-data.js (same generic
+// from busa-money's app/app/js/demo-visuals-data.js (same generic
 // SVG-motif generator), re-themed for Busa Insure Data's file/QA/news
 // governance domain.
 const SKILL_NAME = "busa-insure-data";

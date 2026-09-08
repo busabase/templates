@@ -35,7 +35,7 @@ One row per RBF (revenue-based-financing) / private-credit contract.
 Contracts enter Busabase through an external portfolio-sync process — the
 AirApp never creates a contract record, only updates an existing one's
 `flagged`/`note`/`decision-updated-at` fields, the same way
-`kelly-llm-gateway`'s routes and `kelly-lead-funnel`'s leads enter through an
+`kelly-llm-gateway`'s routes and `busa-lead-funnel`'s leads enter through an
 upstream process the app doesn't control.
 
 ## Settings (`busa-portfolio-health-settings`)

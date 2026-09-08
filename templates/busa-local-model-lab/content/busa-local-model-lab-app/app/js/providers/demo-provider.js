@@ -8,7 +8,7 @@ let examples = [
     task: "app_spec",
     prompt: "做一个读取 GA4 流量数据的增长分析台，只读，不修改外部数据。",
     ideal_response:
-      '{"name":"kelly-ga-insights","category":"growth","risk":"read-only","surface":["busabase","ga4"],"app_type":"research-desk"}',
+      '{"name":"busa-ga-insights","category":"growth","risk":"read-only","surface":["busabase","ga4"],"app_type":"research-desk"}',
     split: "train",
     status: "approved",
     source: "smoke-fixture",
@@ -20,7 +20,7 @@ let examples = [
     task: "app_spec",
     prompt: "我要一个合同审阅队列，律师确认修改意见后再交给 agent 更新草案。",
     ideal_response:
-      '{"name":"kelly-contract-review","category":"legal","risk":"local-write","surface":["busabase"],"app_type":"review-queue"}',
+      '{"name":"busa-contract-review","category":"legal","risk":"local-write","surface":["busabase"],"app_type":"review-queue"}',
     split: "train",
     status: "approved",
     source: "smoke-fixture",
@@ -32,7 +32,7 @@ let examples = [
     task: "app_spec",
     prompt: "做跨境商品上架文案，人工批准后由另一个 skill 发布到店铺。",
     ideal_response:
-      '{"name":"kelly-listing-studio","category":"ecommerce","risk":"gated-write","surface":["busabase"],"app_type":"review-queue"}',
+      '{"name":"busa-listing-studio","category":"ecommerce","risk":"gated-write","surface":["busabase"],"app_type":"review-queue"}',
     split: "valid",
     status: "needs_review",
     source: "smoke-fixture",
@@ -54,7 +54,7 @@ let examples = [
     task: "app_spec",
     prompt: "给老师做课程备课工作台，只保存教案到 Busabase。",
     ideal_response:
-      '{"name":"kelly-lesson-planner","category":"education","risk":"local-write","surface":["busabase"],"app_type":"planner"}',
+      '{"name":"busa-lesson-planner","category":"education","risk":"local-write","surface":["busabase"],"app_type":"planner"}',
     split: "train",
     status: "blocked",
     source: "smoke-fixture",

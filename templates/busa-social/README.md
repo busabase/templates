@@ -98,7 +98,7 @@ Use the printed URL, then add one of these demo paths:
 /?demo=overview&lang=en#/overview
 /?demo=timeline&lang=en#/timeline
 /?demo=accounts&lang=en#/accounts
-/?demo=detail&lang=en#/accounts/x-kelly
+/?demo=detail&lang=en#/accounts/x-atlas
 /?demo=calendar&lang=en#/calendar
 /?demo=compose&lang=en#/compose
 /?demo=shorts&lang=en#/shorts

@@ -9,7 +9,7 @@
 // Bases. The retired script's source registration is now folded into this
 // script's `payload.source` field (always present, upserted first); an
 // optional `payload.products[]` field additionally upserts product catalog
-// entries, mirroring kelly-messenger's ingest_messages.mjs optional
+// entries, mirroring busa-messenger's ingest_messages.mjs optional
 // `payload.account` onboarding field (there is no local config.local.json
 // left to hold products/sources, so ingest is also how they get registered).
 //

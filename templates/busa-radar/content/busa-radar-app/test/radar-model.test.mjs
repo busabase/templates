@@ -34,10 +34,10 @@ test("normalizeSignal parses JSON-encoded evidence/handoff/diff and builds triag
     summary: "Pro tier price increased.",
     evidence: JSON.stringify([{ title: "Formora pricing page", url: "https://formora.example.com/pricing" }]),
     proposed_action: "act",
-    handoff: JSON.stringify({ operation: "handoff_content_brief", target: "kelly-writer", summary: "Comparison page" }),
+    handoff: JSON.stringify({ operation: "handoff_content_brief", target: "busa-writer", summary: "Comparison page" }),
     diff: JSON.stringify({ lines: [{ type: "added", text: "Pro — $15/mo" }] }),
     decision_verdict: "approve",
-    decision_comment: "Yes, brief kelly-writer.",
+    decision_comment: "Yes, brief busa-writer.",
     decided_at: "2026-06-29T10:02:00.000Z",
   });
   assert.equal(signal.evidence.length, 1);
@@ -47,7 +47,7 @@ test("normalizeSignal parses JSON-encoded evidence/handoff/diff and builds triag
     kind: "signal",
     action: "approve",
     status: "approved",
-    comment: "Yes, brief kelly-writer.",
+    comment: "Yes, brief busa-writer.",
     decided_at: "2026-06-29T10:02:00.000Z",
   });
 });

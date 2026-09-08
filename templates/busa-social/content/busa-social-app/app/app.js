@@ -201,7 +201,7 @@ function applyDemoRoute() {
   const scenario = state.settings.demo_scenario || "overview";
   const scenarioRoutes = {
     accounts: "#/accounts",
-    detail: "#/accounts/x-kelly",
+    detail: "#/accounts/x-atlas",
     timeline: "#/timeline",
     calendar: "#/calendar",
     compose: "#/compose",

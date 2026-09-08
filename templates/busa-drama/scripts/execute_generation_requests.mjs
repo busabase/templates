@@ -12,7 +12,7 @@
 // (queueAgentTask -> scripts/execute_agent_tasks.ts) one-for-one, just
 // reading requests off Busabase record fields instead of a local
 // agent_tasks.json — there is no separate decisions/tasks bucket, per the
-// migration recipe. Also mirrors the operator MV's scripts/execute_generation_requests.mjs
+// migration recipe. Also mirrors Busa MV's scripts/execute_generation_requests.mjs
 // (this skill's closest architectural twin) for the image-generation half;
 // the voice (Qwen3-TTS/mlx-audio) and video (Seedance/Ark cloud + LTX-Video
 // local draft) halves are Busa Drama-specific, ported from the retired

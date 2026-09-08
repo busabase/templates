@@ -145,8 +145,8 @@ export const messages = {
         request_changes: "changes requested",
       },
       operation: {
-        handoff_content_brief: "content brief → kelly-writer",
-        handoff_roadmap_candidate: "roadmap candidate → kelly-feedback",
+        handoff_content_brief: "content brief → busa-writer",
+        handoff_roadmap_candidate: "roadmap candidate → busa-feedback",
         add_watch_source: "add watch source",
         start_research: "start research",
       },
@@ -292,8 +292,8 @@ export const messages = {
       depth: { quick: "快速", standard: "标准", deep: "深度" },
       action: { approve: "行动", watch: "观察", ignore: "忽略", block: "需补充", request_changes: "待修改" },
       operation: {
-        handoff_content_brief: "内容简报 → kelly-writer",
-        handoff_roadmap_candidate: "路线图候选 → kelly-feedback",
+        handoff_content_brief: "内容简报 → busa-writer",
+        handoff_roadmap_candidate: "路线图候选 → busa-feedback",
         add_watch_source: "新增监控源",
         start_research: "启动研究",
       },

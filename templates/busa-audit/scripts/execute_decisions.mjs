@@ -8,7 +8,7 @@
 // wrote execution_report.json entries (status "planned"/"ready_for_agent")
 // and NEVER flipped an anomaly's workflow `status` to "done" itself — the
 // real follow-up (chase_receivable/reissue_invoice/flag_to_accountant) is
-// performed by the agent OUTSIDE the app (e.g. via kelly-email) only after
+// performed by the agent OUTSIDE the app (e.g. via busa-email) only after
 // explicit user approval, and the real result is recorded back onto the
 // anomaly afterward.
 //

@@ -11,6 +11,7 @@
     "airapp": "busa-family-office-app",
     "tags": ["invest", "risk:read-only", "industry:family", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/assets.webp",
       "assets/screenshots/entities.webp",
       "assets/screenshots/institutions.webp",

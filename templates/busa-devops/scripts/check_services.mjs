@@ -10,7 +10,7 @@ import { readFile } from "node:fs/promises";
 // The service (and key-rotation) roster used to live in config.local.json;
 // in the Busabase-only shape the roster IS the Services/Expiries Bases
 // themselves (config fields and live check results share one row, mirroring
-// kelly-messenger's accounts Base). To register a NEW service or key
+// busa-messenger's accounts Base). To register a NEW service or key
 // rotation policy, pass a roster JSON file as the first argument — existing
 // rows are always re-checked whether or not a roster file is given:
 //

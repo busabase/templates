@@ -46,7 +46,7 @@ const AUTO_REFRESH_MS = 15_000;
 export const STATUS_ROUTES = new Set(["approved", "done", "blocked"]);
 const PROFILE_CLASS_PREFIX = "legal-profile-";
 const BUSINESS_PROFILES = {
-  "kelly-legal-casebase-ingest": {
+  "busa-legal-casebase-ingest": {
     id: "casebase",
     icon: "IN",
     lane: { en: "Ingest QA", zh: "入库质检" },
@@ -55,7 +55,7 @@ const BUSINESS_PROFILES = {
     spotlight: { en: "Document intake line", zh: "文书入库流水线" },
     reviewTitle: { en: "Records waiting for anonymization QA", zh: "等待脱敏质检的记录" },
   },
-  "kelly-legal-precedent-desk": {
+  "busa-legal-precedent-desk": {
     id: "precedent",
     icon: "PR",
     lane: { en: "Precedent Research", zh: "类案研究" },
@@ -64,7 +64,7 @@ const BUSINESS_PROFILES = {
     spotlight: { en: "Research pack assembly", zh: "类案包组装" },
     reviewTitle: { en: "Research packs waiting for lawyer review", zh: "等待律师复核的类案包" },
   },
-  "kelly-legal-matter-strategy": {
+  "busa-legal-matter-strategy": {
     id: "matter",
     icon: "MS",
     lane: { en: "Matter Strategy", zh: "案件策略" },
@@ -127,7 +127,7 @@ function l10n(value) {
 
 export function currentProfile() {
   const source = state.snapshot?.source || state.settings?.app || "";
-  return BUSINESS_PROFILES[source] || BUSINESS_PROFILES["kelly-legal-casebase-ingest"];
+  return BUSINESS_PROFILES[source] || BUSINESS_PROFILES["busa-legal-casebase-ingest"];
 }
 
 function isMobileLayout() {

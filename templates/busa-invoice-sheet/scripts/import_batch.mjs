@@ -15,7 +15,7 @@
 // Connects with the trusted process's own credentials (BUSABASE_BASE_URL,
 // BUSABASE_API_KEY, BUSABASE_SPACE_ID), never the AirApp's ambient session.
 // Writes are gated behind --apply (default dry run), the same convention as
-// kelly-writer's generate_batch.mjs and kelly-family-fund's importer.
+// busa-writer's generate_batch.mjs and busa-family-fund's importer.
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createBusabaseClient } from "busabase-sdk";

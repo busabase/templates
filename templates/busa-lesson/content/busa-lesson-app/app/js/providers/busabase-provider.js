@@ -224,7 +224,7 @@ export const busabaseProvider = {
   // action (including "revise") maps through
   // statusForVerdict()'s table and is recorded literally as decision_action
   // — this simplifies away the retired local-file provider's "revise
-  // preserves the prior real verdict" special case (matching kelly-audit's
+  // preserves the prior real verdict" special case (matching busa-audit's
   // decideAnomaly), since Busabase reads are always live and there is no
   // staleness left to paper over.
   async decidePlan({ plan_id, action, note = "", draft } = {}) {

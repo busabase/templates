@@ -2,12 +2,12 @@
 // script. Uses the real `busabase-sdk` npm package directly (Node import,
 // not the browser vendor bundle) with the trusted operator's own credentials
 // (BUSABASE_BASE_URL / BUSABASE_API_KEY / BUSABASE_SPACE_ID) — never the
-// AirApp's ambient session. Mirrors kelly-crm's scripts/execute_decisions.mjs
+// AirApp's ambient session. Mirrors busa-crm's scripts/execute_decisions.mjs
 // pattern: import appConfig + inspectProvisionedResources straight from
 // content/busa-mv-app/app/js/ (pure ESM, no `window` global, safe in Node), construct the
 // client via busabase-sdk's own createBusabaseClient.
 //
-// Unlike kelly-insure-data's trusted scripts (whose vendored SDK snapshot
+// Unlike busa-insure-data's trusted scripts (whose vendored SDK snapshot
 // predated a usable `assets` client and so hand-rolled raw fetch), this
 // module uses `client.assets.{createUploadUrl,confirm,download}` directly —
 // see content/busa-mv-app/app/js/config.js's header comment for how that was verified.

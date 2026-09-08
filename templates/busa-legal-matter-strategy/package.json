@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "version": "0.1.0",
-  "description": "the operator Legal Matter Strategy Busabase App-in-Skill and trusted create/execute/export scripts.",
+  "description": "Busa Legal Matter Strategy Busabase App-in-Skill and trusted create/execute/export scripts.",
   "scripts": {
     "create": "node scripts/create_strategy_batch.mjs",
     "execute": "node scripts/execute_decisions.mjs",

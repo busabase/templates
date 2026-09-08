@@ -11,6 +11,7 @@
     "airapp": "busa-writer-app",
     "tags": ["marketing", "risk:gated-write", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/distribution.webp",
       "assets/screenshots/main.webp",
       "assets/screenshots/overview.webp",

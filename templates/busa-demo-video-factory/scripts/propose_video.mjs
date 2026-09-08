@@ -50,7 +50,7 @@ async function main() {
       concept: outline.concept,
       status: "needs_review",
       "verified-claims": outline.verified_claims ?? "",
-      owner: outline.owner ?? "kelly",
+      owner: outline.owner ?? "you",
     },
     `Add video — ${outline.title}`,
   );
@@ -107,7 +107,7 @@ async function main() {
         concept: outline.concept,
         status: "needs_review",
         "verified-claims": outline.verified_claims ?? "",
-        owner: outline.owner ?? "kelly",
+        owner: outline.owner ?? "you",
         shots: shotRecordIds,
       },
       "Backfill inverse Shots relation for browsing",

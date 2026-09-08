@@ -22,7 +22,7 @@ test("statusFromDecision maps every decision action, ported from lib/common.ts",
   assert.equal(statusFromDecision("approve"), "approved");
   assert.equal(statusFromDecision("request_changes"), "changes_requested");
   assert.equal(statusFromDecision("block"), "blocked");
-  // Unlike kelly-legal-contracts' statusForVerdict, "revise" here maps back
+  // Unlike busa-legal-contracts' statusForVerdict, "revise" here maps back
   // to needs_review (the retired app's actual behavior), not "unchanged".
   assert.equal(statusFromDecision("revise"), "needs_review");
   assert.equal(statusFromDecision("unknown"), null);

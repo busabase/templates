@@ -109,7 +109,7 @@ export const messages = {
         wechat: "WeChat",
       },
       connector: {
-        email_agent: "kelly-email handoff",
+        email_agent: "busa-email handoff",
         whatsapp_cloud: "WhatsApp Cloud API",
         webchat_widget: "Web-chat widget",
         form_intake: "Contact form",
@@ -268,7 +268,7 @@ export const messages = {
         wechat: "微信",
       },
       connector: {
-        email_agent: "kelly-email 移交",
+        email_agent: "busa-email 移交",
         whatsapp_cloud: "WhatsApp Cloud API",
         webchat_widget: "网页聊天组件",
         form_intake: "联系表单",

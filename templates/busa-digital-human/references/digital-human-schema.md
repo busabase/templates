@@ -18,7 +18,7 @@ check. The retired local app wrote this to a separate
 `content/busa-digital-human-app/.data/decisions.json` handoff bucket, keyed by check id. This Busabase
 shape replaces that bucket with one Busabase record per decided check --
 a direct field write on the decision's own row, the same pattern
-`kelly-clm`'s approval queue uses. A check with no decision yet simply has no
+`busa-clm`'s approval queue uses. A check with no decision yet simply has no
 row.
 
 ## Busabase Schema
@@ -75,7 +75,7 @@ by both `providers/busabase-provider.js` and `providers/demo-provider.js`:
   check's curated `status` (`pass` → `approved`, anything else →
   `needs_review`). Ported verbatim from the retired `content/busa-digital-human-app/app.js`.
 - `buildDecision`/`decisionToFields`/`normalizeDecisionRow`: build, write,
-  and read a decision record, mirroring `kelly-clm`'s
+  and read a decision record, mirroring `busa-clm`'s
   `buildApproval`/`approvalToFields`/`normalizeApprovalRow`.
 - `decisionsToMap(decisions)`: turns the list of Busabase decision rows into
   a sparse `check_id -> decision` map, matching the shape of the retired

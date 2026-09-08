@@ -2,8 +2,8 @@
 // writes Busabase, never claims a real connection, and never persists
 // anything — matches the ?demo=1 contract used across Busa App-in-Skills.
 //
-// The vault deliberately holds ideas that became real the operator skills, so a
-// classroom can point at kelly-email and say "this is the conversation that
+// The vault deliberately holds ideas that became real Busa skills, so a
+// classroom can point at busa-email and say "this is the conversation that
 // produced it", plus one still-vague idea mid-interrogation and one honestly
 // parked idea.
 import { buildSnapshot } from "../ideas-model.js?v=0.1.0";
@@ -74,8 +74,8 @@ const IDEAS = [
     stage: "prd",
     status: "已落地",
     source: "第二期第 4 课备用课",
-    tags: ["邮件", "审批", "已成为 kelly-email"],
-    agent_next_action: "已交付为 kelly-email，可作为课堂范例",
+    tags: ["邮件", "审批", "已成为 busa-email"],
+    agent_next_action: "已交付为 busa-email，可作为课堂范例",
   }),
   idea("idea-wechat", "微信好友那么多，不知道今天该找谁", {
     one_liner: "把已经认识的人变成看得见的关系快照，告诉我今天该找谁",
@@ -85,7 +85,7 @@ const IDEAS = [
     stage: "mrd",
     status: "打磨中",
     source: "第二期第 6 课",
-    tags: ["微信", "关系", "已成为 kelly-wechat-crm"],
+    tags: ["微信", "关系", "已成为 busa-wechat-crm"],
   }),
   idea("idea-parked", "做一个 AI 相亲平台", {
     one_liner: "用 AI 给人配对，比现有相亲软件更准",

@@ -11,6 +11,7 @@
     "airapp": "busa-brand-app",
     "tags": ["marketing", "risk:local-write", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/drift.webp",
       "assets/screenshots/narrative.webp",
       "assets/screenshots/overview.webp",

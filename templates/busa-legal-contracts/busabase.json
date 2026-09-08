@@ -11,6 +11,7 @@
     "airapp": "busa-legal-contracts-app",
     "tags": ["legal", "risk:gated-write", "industry:legal", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/checks.webp",
       "assets/screenshots/contracts.webp",
       "assets/screenshots/issues.webp",

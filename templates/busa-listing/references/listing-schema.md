@@ -36,7 +36,7 @@ Check results: `pass`, `warn`, `fail`.
 | `features` | `features` | longtext | JSON array of feature-list facts |
 | `keywords` | `keywords` | longtext | JSON array of target keywords (used by the `keyword_stuffing` check) |
 | `images` | `images` | longtext | JSON array of `{name, status}` image checklist entries (`ready\|missing\|needs_edit`) |
-| `notes` | `notes` | longtext | freeform note, e.g. kelly-picks handoff reference |
+| `notes` | `notes` | longtext | freeform note, e.g. busa-picks handoff reference |
 | `created-at` | `created_at` | text | ISO timestamp |
 | `updated-at` | `updated_at` | text | ISO timestamp |
 

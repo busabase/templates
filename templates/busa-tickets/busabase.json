@@ -11,6 +11,7 @@
     "airapp": "busa-tickets-app",
     "tags": ["sales-crm", "risk:gated-write", "industry:property-management", "surface:busabase", "surface:wechat"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/board.webp",
       "assets/screenshots/dispatch.webp",
       "assets/screenshots/intake.webp",

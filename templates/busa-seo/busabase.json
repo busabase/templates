@@ -11,6 +11,7 @@
     "airapp": "busa-seo-app",
     "tags": ["growth", "risk:local-write", "surface:busabase", "surface:gsc"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/entity.webp",
       "assets/screenshots/geo.webp",
       "assets/screenshots/opportunities.webp",

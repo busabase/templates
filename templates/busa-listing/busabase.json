@@ -11,6 +11,7 @@
     "airapp": "busa-listing-app",
     "tags": ["ecommerce", "risk:gated-write", "industry:ecommerce", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/checks.webp",
       "assets/screenshots/claims.webp",
       "assets/screenshots/drafts.webp",

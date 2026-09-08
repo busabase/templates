@@ -155,8 +155,8 @@ async function requireRecord(key, idFieldSlug, id, label) {
 // browsing-and-writing workflow (see SKILL.md) — the AirApp never creates
 // new signal/action/draft rows, it only reads them and writes a human
 // verdict directly onto the item's own record. This mirrors the
-// review-queue pattern used across this batch of conversions (kelly-radar,
-// kelly-picks): the decision is a direct field write, not a separate
+// review-queue pattern used across this batch of conversions (busa-radar,
+// busa-picks): the decision is a direct field write, not a separate
 // decisions.json-equivalent bucket.
 export const busabaseProvider = {
   kind: "busabase",

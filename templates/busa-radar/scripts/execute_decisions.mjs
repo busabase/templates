@@ -5,8 +5,8 @@
 // operationForSignal/operationForBrief/operationForOpportunity are ported
 // verbatim (same variable names, same order of operations) from the retired
 // lib/data-provider/local-file-provider.ts's executeDecisions() loops. No
-// external side effects: this script never posts to kelly-writer/
-// kelly-feedback, never edits watchlist config, and never starts research
+// external side effects: this script never posts to busa-writer/
+// busa-feedback, never edits watchlist config, and never starts research
 // itself — it only prints the plan (default) or, with --apply, marks the
 // approved signal/opportunity status "done" after the agent has actually
 // performed the handoff (matches the original stub's safety boundary

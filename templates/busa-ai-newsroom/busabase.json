@@ -11,6 +11,7 @@
     "airapp": "busa-ai-newsroom-app",
     "tags": ["industry-intel", "risk:gated-write", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/actions.webp",
       "assets/screenshots/drafts.webp",
       "assets/screenshots/overview.webp",

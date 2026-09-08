@@ -11,6 +11,7 @@
     "airapp": "busa-homework-coach-app",
     "tags": ["education", "risk:local-write", "industry:education", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/mistakes.webp",
       "assets/screenshots/papers.webp",
       "assets/screenshots/review.webp",

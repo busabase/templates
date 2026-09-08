@@ -119,11 +119,11 @@ function crisisStep(step_id, label, detail, owner, done) {
 function demoAccounts(scenario) {
   return [
     account({
-      account_id: "x-kelly",
+      account_id: "x-atlas",
       platform: "x",
-      handle: "@kellyships",
-      display_name: "the operator Ships",
-      profile_url: "https://x.com/kellyships",
+      handle: "@atlasships",
+      display_name: "Atlas Ships",
+      profile_url: "https://x.com/atlasships",
       collection: "browser_agent",
       status: "ok",
       metrics: {
@@ -148,11 +148,11 @@ function demoAccounts(scenario) {
       last_sync_at: "2026-07-02T08:45:00.000Z",
     }),
     account({
-      account_id: "ig-kelly",
+      account_id: "ig-atlas",
       platform: "instagram",
-      handle: "@kelly.ships",
-      display_name: "the operator Ships Studio",
-      profile_url: "https://instagram.com/kelly.ships",
+      handle: "@atlas.ships",
+      display_name: "Atlas Ships Studio",
+      profile_url: "https://instagram.com/atlas.ships",
       collection: "manual_export",
       status: scenario === "detail" ? "warning" : "ok",
       notes:
@@ -181,11 +181,11 @@ function demoAccounts(scenario) {
       last_sync_at: "2026-07-01T21:10:00.000Z",
     }),
     account({
-      account_id: "fb-kelly",
+      account_id: "fb-atlas",
       platform: "facebook",
-      handle: "the operator Ships Studio",
-      display_name: "the operator Ships Studio Page",
-      profile_url: "https://facebook.com/kellyshipsstudio",
+      handle: "Atlas Ships Studio",
+      display_name: "Atlas Ships Studio Page",
+      profile_url: "https://facebook.com/atlasshipsstudio",
       collection: "api",
       status: "ok",
       metrics: {
@@ -216,12 +216,12 @@ function demoPosts() {
     post(
       "x-2074",
       "x",
-      "x-kelly",
+      "x-atlas",
       "2026-07-02T08:05:00.000Z",
       "Morning rule: ship one visible thing before checking metrics. Today it's platform badges.",
       "none",
       0,
-      "https://x.com/kellyships/status/2074",
+      "https://x.com/atlasships/status/2074",
       { likes: 68, replies: 9, reposts: 4, views: 8900, saves: 0, clicks: 12 },
       "post",
       "",
@@ -229,12 +229,12 @@ function demoPosts() {
     post(
       "x-2071",
       "x",
-      "x-kelly",
+      "x-atlas",
       "2026-07-01T15:42:00.000Z",
       "Shipped: the local dashboard now renders follower trends without a single chart library. Inline SVG, 14 lines. Zero deps stays zero deps.",
       "image",
       1,
-      "https://x.com/kellyships/status/2071",
+      "https://x.com/atlasships/status/2071",
       { likes: 214, replies: 31, reposts: 24, views: 30400, saves: 0, clicks: 86 },
       "post",
       "",
@@ -242,12 +242,12 @@ function demoPosts() {
     post(
       "x-2066",
       "x",
-      "x-kelly",
+      "x-atlas",
       "2026-06-30T13:05:00.000Z",
       "I quit my job 18 months ago to build tiny local-first tools. Here's everything that made money — and everything that didn't. 🧵 (1/14)",
       "none",
       0,
-      "https://x.com/kellyships/status/2066",
+      "https://x.com/atlasships/status/2066",
       { likes: 4820, replies: 342, reposts: 1205, views: 402000, saves: 0, clicks: 1840 },
       "thread",
       "Viral thread — drove ~78% of this week's impressions. Followers +286 on Jun 30 alone.",
@@ -255,12 +255,12 @@ function demoPosts() {
     post(
       "x-2064",
       "x",
-      "x-kelly",
+      "x-atlas",
       "2026-06-29T18:20:00.000Z",
-      "the operator Money v0.4 is live: invoice matching desk, audit trails, CN/EN UI. Built in public, as always. Demo in the reply.",
+      "Atlas Money v0.4 is live: invoice matching desk, audit trails, CN/EN UI. Built in public, as always. Demo in the reply.",
       "image",
       2,
-      "https://x.com/kellyships/status/2064",
+      "https://x.com/atlasships/status/2064",
       { likes: 386, replies: 44, reposts: 58, views: 51300, saves: 0, clicks: 412 },
       "post",
       "Launch post. 412 link clicks, 9.4% conversion to the docs page.",
@@ -268,12 +268,12 @@ function demoPosts() {
     post(
       "x-2060",
       "x",
-      "x-kelly",
+      "x-atlas",
       "2026-06-29T09:12:00.000Z",
       "Build-in-public update, week 26: MRR $4,210 (+6%), churn 1.8%, one enterprise trial. The boring middle is where compounding hides.",
       "none",
       0,
-      "https://x.com/kellyships/status/2060",
+      "https://x.com/atlasships/status/2060",
       { likes: 298, replies: 27, reposts: 19, views: 38900, saves: 0, clicks: 34 },
       "post",
       "",
@@ -281,12 +281,12 @@ function demoPosts() {
     post(
       "x-2055",
       "x",
-      "x-kelly",
+      "x-atlas",
       "2026-06-28T11:30:00.000Z",
       "Hot take: your side project doesn't need auth, billing, or a landing page. It needs one user who isn't you.",
       "none",
       0,
-      "https://x.com/kellyships/status/2055",
+      "https://x.com/atlasships/status/2055",
       { likes: 512, replies: 63, reposts: 87, views: 64800, saves: 0, clicks: 0 },
       "post",
       "",
@@ -294,12 +294,12 @@ function demoPosts() {
     post(
       "x-2049",
       "x",
-      "x-kelly",
+      "x-atlas",
       "2026-06-27T16:44:00.000Z",
       "Screen recording of the review queue flow. 38 emails triaged in 4 minutes. This is what App-in-Skill patterns are for.",
       "video",
       1,
-      "https://x.com/kellyships/status/2049",
+      "https://x.com/atlasships/status/2049",
       { likes: 176, replies: 12, reposts: 21, views: 22700, saves: 0, clicks: 58 },
       "post",
       "",
@@ -307,12 +307,12 @@ function demoPosts() {
     post(
       "x-2043",
       "x",
-      "x-kelly",
+      "x-atlas",
       "2026-06-26T08:55:00.000Z",
       "Asked my agent to reconcile 3 months of Stripe payouts against Mercury. It found a $680 mismatch I'd been ignoring since April.",
       "none",
       0,
-      "https://x.com/kellyships/status/2043",
+      "https://x.com/atlasships/status/2043",
       { likes: 341, replies: 38, reposts: 44, views: 41200, saves: 0, clicks: 22 },
       "post",
       "",
@@ -320,12 +320,12 @@ function demoPosts() {
     post(
       "x-2038",
       "x",
-      "x-kelly",
+      "x-atlas",
       "2026-06-25T14:10:00.000Z",
       "New blog post: 'Zero-dependency is a feature.' Why I keep shipping tools with no package.json.",
       "link",
       1,
-      "https://x.com/kellyships/status/2038",
+      "https://x.com/atlasships/status/2038",
       { likes: 152, replies: 18, reposts: 26, views: 19800, saves: 0, clicks: 240 },
       "post",
       "",
@@ -333,12 +333,12 @@ function demoPosts() {
     post(
       "x-2031",
       "x",
-      "x-kelly",
+      "x-atlas",
       "2026-06-24T10:26:00.000Z",
       "Poll results are in: 71% of you want the aggregator to support Xiaohongshu next. Noted.",
       "none",
       0,
-      "https://x.com/kellyships/status/2031",
+      "https://x.com/atlasships/status/2031",
       { likes: 96, replies: 22, reposts: 5, views: 14100, saves: 0, clicks: 0 },
       "post",
       "",
@@ -346,7 +346,7 @@ function demoPosts() {
     post(
       "ig-914",
       "instagram",
-      "ig-kelly",
+      "ig-atlas",
       "2026-07-01T12:00:00.000Z",
       "Studio tour: the standing desk, the plant graveyard, and the sticky-note wall where roadmaps go to die. 🌿",
       "video",
@@ -359,9 +359,9 @@ function demoPosts() {
     post(
       "ig-911",
       "instagram",
-      "ig-kelly",
+      "ig-atlas",
       "2026-06-29T17:30:00.000Z",
-      "the operator Money v0.4 launch carousel — 6 slides on how the invoice matcher works.",
+      "Atlas Money v0.4 launch carousel — 6 slides on how the invoice matcher works.",
       "carousel",
       6,
       "https://instagram.com/p/ig911",
@@ -372,7 +372,7 @@ function demoPosts() {
     post(
       "ig-907",
       "instagram",
-      "ig-kelly",
+      "ig-atlas",
       "2026-06-27T09:15:00.000Z",
       "Desk setup refresh. The second monitor is exclusively for logs, and honestly, it sparks joy.",
       "image",
@@ -385,7 +385,7 @@ function demoPosts() {
     post(
       "ig-902",
       "instagram",
-      "ig-kelly",
+      "ig-atlas",
       "2026-06-25T19:40:00.000Z",
       "Day in the life of a solo founder: 40% coding, 30% support emails, 30% convincing myself the metrics dip is seasonal.",
       "video",
@@ -398,12 +398,12 @@ function demoPosts() {
     post(
       "fb-448",
       "facebook",
-      "fb-kelly",
+      "fb-atlas",
       "2026-06-30T10:00:00.000Z",
-      "the operator Money v0.4 is out! Full changelog and download link below. Thanks to the 14 beta testers in this group.",
+      "Atlas Money v0.4 is out! Full changelog and download link below. Thanks to the 14 beta testers in this group.",
       "link",
       1,
-      "https://facebook.com/kellyshipsstudio/posts/448",
+      "https://facebook.com/atlasshipsstudio/posts/448",
       { likes: 84, replies: 12, reposts: 9, views: 2310, saves: 0, clicks: 96 },
       "post",
       "",
@@ -411,12 +411,12 @@ function demoPosts() {
     post(
       "fb-445",
       "facebook",
-      "fb-kelly",
+      "fb-atlas",
       "2026-06-27T15:20:00.000Z",
       "Community question: which platform's analytics export is the most painful? Building an importer and picking the first three.",
       "none",
       0,
-      "https://facebook.com/kellyshipsstudio/posts/445",
+      "https://facebook.com/atlasshipsstudio/posts/445",
       { likes: 46, replies: 28, reposts: 3, views: 1870, saves: 0, clicks: 0 },
       "post",
       "",
@@ -424,12 +424,12 @@ function demoPosts() {
     post(
       "fb-441",
       "facebook",
-      "fb-kelly",
+      "fb-atlas",
       "2026-06-24T12:45:00.000Z",
       "Weekly office hours this Friday, 4pm HKT. Bring your gnarliest spreadsheet.",
       "image",
       1,
-      "https://facebook.com/kellyshipsstudio/posts/441",
+      "https://facebook.com/atlasshipsstudio/posts/441",
       { likes: 39, replies: 8, reposts: 4, views: 1480, saves: 0, clicks: 0 },
       "post",
       "",
@@ -441,7 +441,7 @@ function demoSyncLog() {
   return [
     syncEntry(
       "sync-x-20260702",
-      "x-kelly",
+      "x-atlas",
       "browser_agent",
       "2026-07-02T08:40:00.000Z",
       "2026-07-02T08:45:00.000Z",
@@ -451,7 +451,7 @@ function demoSyncLog() {
     ),
     syncEntry(
       "sync-fb-20260702",
-      "fb-kelly",
+      "fb-atlas",
       "api",
       "2026-07-02T08:48:00.000Z",
       "2026-07-02T08:50:00.000Z",
@@ -461,7 +461,7 @@ function demoSyncLog() {
     ),
     syncEntry(
       "sync-ig-20260701",
-      "ig-kelly",
+      "ig-atlas",
       "manual_export",
       "2026-07-01T21:05:00.000Z",
       "2026-07-01T21:10:00.000Z",
@@ -471,7 +471,7 @@ function demoSyncLog() {
     ),
     syncEntry(
       "sync-ig-20260624",
-      "ig-kelly",
+      "ig-atlas",
       "manual_export",
       "2026-06-24T20:00:00.000Z",
       "2026-06-24T20:04:00.000Z",
@@ -493,7 +493,7 @@ function demoCalendar() {
     }),
     cal("cal-3", "2026-07-05", "x", "teaching", "Zero-deps thread part 2", "planned"),
     cal("cal-4", "2026-07-07", "facebook", "community", "Office hours announcement", "planned"),
-    cal("cal-5", "2026-07-08", "instagram", "launch", "the operator Money v0.5 teaser carousel", "drafting", {
+    cal("cal-5", "2026-07-08", "instagram", "launch", "Atlas Money v0.5 teaser carousel", "drafting", {
       draft_id: "draft-3",
     }),
     cal("cal-6", "2026-07-09", "x", "launch", "v0.5 launch post", "planned", { draft_id: "draft-5" }),
@@ -532,7 +532,7 @@ function demoDrafts() {
       channels: ["instagram"],
       pillar: "launch",
       hook: "Something new is matching your invoices while you sleep.",
-      body: "the operator Money v0.5 teaser. 6-slide carousel: the new auto-match, the audit trail, and the CN/EN toggle. Swipe through.",
+      body: "Atlas Money v0.5 teaser. 6-slide carousel: the new auto-match, the audit trail, and the CN/EN toggle. Swipe through.",
       hashtags: ["#saas", "#buildinpublic", "#fintech"],
       cta: "Join the v0.5 beta — link in bio.",
       status: "approved",
@@ -554,7 +554,7 @@ function demoDrafts() {
       channels: ["x", "instagram"],
       pillar: "launch",
       // This one trips the gate: an unverifiable absolute claim + undisclosed promo.
-      hook: "the operator Money v0.5 is the #1 in the world, GUARANTEED to be 100% secure.",
+      hook: "Atlas Money v0.5 is the #1 in the world, GUARANTEED to be 100% secure.",
       body: "Sponsored launch push: the best invoicing tool ever made, risk-free, guaranteed results. Sign up now.",
       hashtags: ["#ad"],
       cta: "Buy now.",
@@ -632,7 +632,7 @@ function demoShorts() {
       hook: "It matched the invoice before I finished my coffee.",
       status: "approved",
       duration_s: 20,
-      caption: "the operator Money v0.5 auto-match. Beta link in bio.",
+      caption: "Atlas Money v0.5 auto-match. Beta link in bio.",
       hashtags: ["#saas", "#fintech"],
       shots: [
         shot(1, "Coffee pour, laptop waking up", "Morning. One unmatched invoice.", 6),
@@ -649,7 +649,7 @@ function demoEngagement() {
     eng(
       "eng-1",
       "x",
-      "x-kelly",
+      "x-atlas",
       "comment",
       "@devtaro",
       "This zero-deps sparkline is exactly what I needed. Is the code open?",
@@ -661,10 +661,10 @@ function demoEngagement() {
     eng(
       "eng-2",
       "x",
-      "x-kelly",
+      "x-atlas",
       "mention",
       "@buildwithana",
-      "Comparing @kellyships aggregator with FeedForge — anyone used both?",
+      "Comparing @atlasships aggregator with FeedForge — anyone used both?",
       "2026-07-02T07:55:00.000Z",
       "question",
       "high",
@@ -673,7 +673,7 @@ function demoEngagement() {
     eng(
       "eng-3",
       "instagram",
-      "ig-kelly",
+      "ig-atlas",
       "comment",
       "@quietbuilder",
       "The studio tour made me want to reorganize my whole setup 😂",
@@ -685,7 +685,7 @@ function demoEngagement() {
     eng(
       "eng-4",
       "facebook",
-      "fb-kelly",
+      "fb-atlas",
       "comment",
       "@ledger_liam",
       "Export from Meta broke again for me. Is your importer handling the new format?",
@@ -697,7 +697,7 @@ function demoEngagement() {
     eng(
       "eng-5",
       "x",
-      "x-kelly",
+      "x-atlas",
       "reply",
       "@saas_skeptic",
       "$4k MRR after 18 months isn't a business, it's a hobby.",
@@ -713,7 +713,7 @@ function demoCrisis() {
   return {
     status: "calm",
     publishing_paused: false,
-    spokesperson: "the operator (founder)",
+    spokesperson: "Jordan Lee (founder)",
     updated_at: "2026-07-02T08:00:00.000Z",
     steps: [
       crisisStep(
@@ -757,7 +757,7 @@ function demoCrisis() {
 
 function demoShareOfVoice() {
   const entries = [
-    { name: "the operator Ships (you)", is_self: true, mentions_7d: 214 },
+    { name: "Atlas Ships (you)", is_self: true, mentions_7d: 214 },
     { name: "FeedForge", is_self: false, mentions_7d: 356 },
     { name: "PostPilot", is_self: false, mentions_7d: 142 },
   ];
@@ -774,12 +774,12 @@ function demoShareOfVoice() {
 // copy — only the human display strings are swapped, exactly as the retired
 // app/server/demo.ts's localizeSnapshotZh/localizeEchoZh did.
 function localizeSnapshotZh(snapshot) {
-  const accountNames = { "x-kelly": "the operator 造物日志", "ig-kelly": "the operator 工作室", "fb-kelly": "the operator 工作室主页" };
+  const accountNames = { "x-atlas": "Atlas 造物日志", "ig-atlas": "Atlas 工作室", "fb-atlas": "Atlas 工作室主页" };
   const postText = {
     "x-2074": "早晨规则：先发布一个看得见的东西，再看数据。今天是平台徽章。",
     "x-2071": "上线了：本地仪表盘现在不用任何图表库就能渲染粉丝趋势。内联 SVG，14 行。零依赖就是零依赖。",
     "x-2066": "18 个月前我辞职去做小型 local-first 工具。这条线程讲清楚哪些赚到了钱、哪些没有。🧵 (1/14)",
-    "x-2064": "the operator Money v0.4 上线：发票匹配台、审计轨迹、中英双语界面。一如既往 build in public。演示在回复里。",
+    "x-2064": "Atlas Money v0.4 上线：发票匹配台、审计轨迹、中英双语界面。一如既往 build in public。演示在回复里。",
     "x-2060":
       "Build in public 周报（第 26 周）：MRR $4,210（+6%），流失率 1.8%，一个企业试用。无聊的中段才是复利藏身的地方。",
     "x-2055": "暴论：你的副业项目不需要登录、计费和落地页。它需要一个不是你自己的用户。",
@@ -788,10 +788,10 @@ function localizeSnapshotZh(snapshot) {
     "x-2038": "新博客：《零依赖本身就是功能》。为什么我坚持发布没有 package.json 的工具。",
     "x-2031": "投票结果出炉：71% 的人希望聚合器下一个支持小红书。收到。",
     "ig-914": "工作室巡礼：升降桌、植物坟场，还有路线图安息的便利贴墙。🌿",
-    "ig-911": "the operator Money v0.4 发布图集——6 张图讲清发票匹配器怎么工作。",
+    "ig-911": "Atlas Money v0.4 发布图集——6 张图讲清发票匹配器怎么工作。",
     "ig-907": "桌面焕新。第二块显示器专门看日志，说真的，很治愈。",
     "ig-902": "独立开发者的一天：40% 写代码，30% 回支持邮件，30% 说服自己数据下滑只是季节性的。",
-    "fb-448": "the operator Money v0.4 发布！完整更新日志和下载链接见下方。感谢群里的 14 位内测用户。",
+    "fb-448": "Atlas Money v0.4 发布！完整更新日志和下载链接见下方。感谢群里的 14 位内测用户。",
     "fb-445": "社区提问：哪个平台的数据导出最折磨人？我在做导入器，先挑三个平台。",
     "fb-441": "本周五下午 4 点（香港时间）例行答疑。带上你最离谱的表格来。",
   };
@@ -834,7 +834,7 @@ function localizeEchoZh(snapshot) {
     "cal-2": "工作室整理 Reel",
     "cal-3": "零依赖线程 第二篇",
     "cal-4": "答疑时间预告",
-    "cal-5": "the operator Money v0.5 预热图集",
+    "cal-5": "Atlas Money v0.5 预热图集",
     "cal-6": "v0.5 上线帖",
     "cal-7": "60 秒讲清什么是审批队列",
     "cal-8": "周五暴论",
@@ -860,7 +860,7 @@ function localizeEchoZh(snapshot) {
     },
     "draft-3": {
       hook: "有个新东西正在你睡觉时帮你对账发票。",
-      body: "the operator Money v0.5 预热。6 张图集：全新自动匹配、审计轨迹、中英切换。左滑查看。",
+      body: "Atlas Money v0.5 预热。6 张图集：全新自动匹配、审计轨迹、中英切换。左滑查看。",
       cta: "加入 v0.5 内测——链接在简介。",
     },
     "draft-4": {
@@ -869,7 +869,7 @@ function localizeEchoZh(snapshot) {
       cta: "",
     },
     "draft-5": {
-      hook: "the operator Money v0.5 是全球第一，保证 100% 安全。",
+      hook: "Atlas Money v0.5 是全球第一，保证 100% 安全。",
       body: "赞助上线推广：史上最好的开票工具，零风险，效果保证。立即注册。",
       cta: "立即购买。",
     },
@@ -890,7 +890,7 @@ function localizeEchoZh(snapshot) {
       reply: "谢谢！就是一个 14 行的函数——今天我会在线程里放完整代码。持续关注。🙏",
     },
     "eng-2": {
-      incoming: "在对比 @kellyships 的聚合器和 FeedForge——有人两个都用过吗？",
+      incoming: "在对比 @atlasships 的聚合器和 FeedForge——有人两个都用过吗？",
       reply: "很乐意回答任何具体问题！Busa Social 是本地优先、只读你自己的账号——没有云端中间层。你最看重哪一点？",
     },
     "eng-3": {
@@ -937,7 +937,7 @@ function localizeEchoZh(snapshot) {
   if (snapshot.crisis) {
     snapshot.crisis = {
       ...snapshot.crisis,
-      spokesperson: "the operator（创始人）",
+      spokesperson: "Jordan Lee（创始人）",
       steps: snapshot.crisis.steps.map((step) => ({
         ...step,
         label: crisisLabels[step.step_id]?.[0] || step.label,
@@ -949,7 +949,7 @@ function localizeEchoZh(snapshot) {
     snapshot.share_of_voice = {
       ...snapshot.share_of_voice,
       entries: snapshot.share_of_voice.entries.map((entry) =>
-        entry.is_self ? { ...entry, name: "the operator Ships（你）" } : entry,
+        entry.is_self ? { ...entry, name: "Atlas Ships（你）" } : entry,
       ),
     };
   }
@@ -975,7 +975,7 @@ function demoSnapshot(scenario, zh) {
             {
               id: "ig-export-stale",
               severity: "warning",
-              account_id: "ig-kelly",
+              account_id: "ig-atlas",
               message:
                 "Instagram export is older than 7 days; follower and impression figures may lag. Download a fresh Meta Business Suite export.",
               detail: "Demo warning, no live platform data.",

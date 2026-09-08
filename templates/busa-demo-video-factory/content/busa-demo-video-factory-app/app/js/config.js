@@ -78,7 +78,7 @@ export const appConfig = {
           required: false,
           options: {
             choices: [
-              { id: "kelly", name: "kelly", color: "pink" },
+              { id: "you", name: "you", color: "pink" },
               { id: "ai", name: "ai", color: "cyan" },
             ],
           },

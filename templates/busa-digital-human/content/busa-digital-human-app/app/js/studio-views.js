@@ -94,8 +94,8 @@ export function renderStudio() {
   const pipeline = snapshot.pipelines.find((item) => item.id === streamStore.currentProvider) || snapshot.pipelines[0];
   const script =
     state.lang === "zh"
-      ? "你好，我是 the operator AI 数字人助理。今天我会用一个实时视频流，演示语音输入、唇形驱动、字幕、延迟监控和上线 QA 的完整闭环。"
-      : "Hi, I am the operator's AI digital host. This live stream shows voice input, lip sync, captions, latency monitoring, and the QA gate before launch.";
+      ? "你好，我是 Busa AI 数字人助理。今天我会用一个实时视频流，演示语音输入、唇形驱动、字幕、延迟监控和上线 QA 的完整闭环。"
+      : "Hi, I am the Busa AI digital host. This live stream shows voice input, lip sync, captions, latency monitoring, and the QA gate before launch.";
   els.title.textContent = t("studioTitle");
   els.subtitle.textContent = t("studioSubtitle");
   els.content.innerHTML = `

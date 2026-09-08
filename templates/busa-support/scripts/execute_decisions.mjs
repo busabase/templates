@@ -5,7 +5,7 @@
 // external side effect — it never sends an email/WhatsApp/WeChat message,
 // never issues a refund, never calls any channel API. Real delivery
 // (send_reply / escalate / refund / close) is performed by the configured
-// channel connectors (kelly-email drafts, WhatsApp Cloud API, the web-chat
+// channel connectors (busa-email drafts, WhatsApp Cloud API, the web-chat
 // widget, WeChat Work) by the skill, only after this script's dry-run/--apply
 // report, per SKILL.md's boundary — this mirrors the retired
 // scripts/execute_decisions.ts exactly: it only ever wrote

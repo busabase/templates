@@ -169,7 +169,7 @@ export const busabaseProvider = {
   // own Busabase record -- replaces the retired local app's separate
   // app/.data/decisions.json handoff bucket (readJson/writeJson against
   // decisionsPath in the retired app/server/index.ts) with a direct field
-  // write, matching kelly-clm's saveApprovalDecision() precedent. Creates the
+  // write, matching busa-clm's saveApprovalDecision() precedent. Creates the
   // row the first time a check is decided; updates it on every later
   // decision for the same check. Looks up the existing row through
   // readFirstPage() (records.list) rather than records.get(fieldSlug=...):

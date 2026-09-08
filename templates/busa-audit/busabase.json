@@ -11,6 +11,7 @@
     "airapp": "busa-audit-app",
     "tags": ["finance", "risk:gated-write", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/anomalies.webp",
       "assets/screenshots/invoices.webp",
       "assets/screenshots/orders.webp",

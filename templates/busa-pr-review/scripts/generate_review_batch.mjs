@@ -5,7 +5,7 @@
 // diff`, scores risk and a proposed review action, and writes the resulting
 // review-queue rows into Busabase's `reviews` Base (create or update, keyed
 // by item-id) — the same "list existing rows, then create/update" pattern as
-// kelly-family-fund's scripts/import_csv.mjs, just sourced from `gh` output
+// busa-family-fund's scripts/import_csv.mjs, just sourced from `gh` output
 // instead of a CSV file. Regenerating resets each item's live PR data
 // (title/status/risk/…) and its decision/execution fields exactly like the
 // retired local-file provider's saveBatch() did, but preserves whatever
@@ -18,7 +18,7 @@
 // Config (repos/query/review policy) is read from the same local
 // JSON/env-file priority the retired lib/data-reader used; gh defaults are
 // used when nothing is configured. Writes are gated behind --apply (default
-// dry run), the same convention as kelly-family-fund's importer.
+// dry run), the same convention as busa-family-fund's importer.
 import { execFile as execFileCallback } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -391,7 +391,7 @@ async function fetchLiveItems(config) {
   return dedupeItems(items);
 }
 
-// ---- Busabase write side, mirrors kelly-family-fund's import_csv.mjs ----
+// ---- Busabase write side, mirrors busa-family-fund's import_csv.mjs ----
 
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));

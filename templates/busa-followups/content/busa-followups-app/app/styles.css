@@ -1285,7 +1285,7 @@ dd {
 }
 
 /* ---------------------------------------------------------------------------
-   the operator Ideas: idea vault, consultant questions, and the BRD/MRD/PRD ladder.
+   Busa Ideas: idea vault, consultant questions, and the BRD/MRD/PRD ladder.
    Every value reads from the shared tokens in base-ui.css so this app stays
    visually part of the fleet instead of growing its own palette.
    --------------------------------------------------------------------------- */

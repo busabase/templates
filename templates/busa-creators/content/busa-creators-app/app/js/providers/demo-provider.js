@@ -520,7 +520,7 @@ export const demoProvider = {
             platform_id: "email",
             type: "email",
             display_name: "Outreach Email",
-            handoff_skill: "kelly-email",
+            handoff_skill: "busa-email",
             secret_envs: ["KELLY_CREATORS_EMAIL_TOKEN_DEMO"],
             secrets_ready: true,
           },

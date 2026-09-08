@@ -147,7 +147,7 @@ export const messages = {
         manual: "manual",
       },
       operation: {
-        handoff_listing_brief: "listing brief → kelly-listing",
+        handoff_listing_brief: "listing brief → busa-listing",
         create_sourcing_brief: "sourcing brief export",
         add_watch: "add watch",
         drop_candidate: "drop candidate",
@@ -301,7 +301,7 @@ export const messages = {
         manual: "人工",
       },
       operation: {
-        handoff_listing_brief: "listing 简报 → kelly-listing",
+        handoff_listing_brief: "listing 简报 → busa-listing",
         create_sourcing_brief: "导出采购简报",
         add_watch: "加入观察",
         drop_candidate: "放弃候选品",

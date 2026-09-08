@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "version": "0.1.0",
-  "description": "the operator Legal Casebase Ingest Busabase App-in-Skill and trusted ingest/execute/export scripts.",
+  "description": "Busa Legal Casebase Ingest Busabase App-in-Skill and trusted ingest/execute/export scripts.",
   "scripts": {
     "ingest": "node scripts/ingest_documents.mjs",
     "execute": "node scripts/execute_decisions.mjs",

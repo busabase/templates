@@ -108,7 +108,7 @@ and `item-type: "engagement"` (quality-gate rows are skipped — they have no
 outbound handoff), and with `--apply` writes `status: "done"` back onto
 each. It performs no sending, publishing, or contract execution itself —
 that happens through the corresponding skill (for example
-`instagram-outreach`, `tiktok-outreach`, `kelly-email`) as a separate,
+`instagram-outreach`, `tiktok-outreach`, `busa-email`) as a separate,
 explicitly authorized step. Execution semantics by `proposed-action`:
 
 - `send_outreach` → hand off `suggested-reply` to the platform DM/email skill for `channel`.

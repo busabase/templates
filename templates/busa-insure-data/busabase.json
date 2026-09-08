@@ -11,6 +11,7 @@
     "airapp": "busa-insure-data-app",
     "tags": ["industry-intel", "risk:read-only", "industry:insurance", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/files.webp",
       "assets/screenshots/news.webp",
       "assets/screenshots/overview.webp",

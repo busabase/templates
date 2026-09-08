@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Write-path for trend mover payloads, with an optional read-only import of
-// a kelly-seo snapshot, ported from the retired scripts/ingest_trends.ts.
+// a busa-seo snapshot, ported from the retired scripts/ingest_trends.ts.
 // Dedupes movers by keyword+source (case-insensitive keyword), updates
 // volume/delta/momentum for existing movers, and can add opportunity cards
 // — same rules as the retired local-file version, just against Busabase
@@ -22,7 +22,7 @@ function help() {
 
 Validates and merges a trend-mover payload into Busabase (Movers,
 Opportunities), deduping movers by keyword+source and optionally
-cross-reading a kelly-seo snapshot (read-only) to import rising queries as
+cross-reading a busa-seo snapshot (read-only) to import rising queries as
 search movers.`);
 }
 
@@ -119,12 +119,12 @@ async function main() {
     if (mover.momentum && !Array.isArray(mover.momentum)) fail(`movers[${index}].momentum must be an array of numbers`);
   });
 
-  // Optional, read-only cross-read of a kelly-seo snapshot: import rising queries as search movers.
+  // Optional, read-only cross-read of a busa-seo snapshot: import rising queries as search movers.
   let seoImported = [];
   if (seoSnapshotPath) {
     const seo = await readJsonFile(seoSnapshotPath);
     if (!seo) {
-      console.warn(`Note: kelly-seo snapshot not readable at ${seoSnapshotPath}; skipping import.`);
+      console.warn(`Note: busa-seo snapshot not readable at ${seoSnapshotPath}; skipping import.`);
     } else {
       const candidates =
         [seo.rising_queries, seo.queries, seo.search_queries, seo.keywords, seo.snapshot?.rising_queries].find(
@@ -246,7 +246,7 @@ async function main() {
     opportunitiesAdded += 1;
   }
 
-  const detail = `${added} movers added, ${updated} updated, ${opportunitiesAdded} opportunities added${seoImported.length ? `, ${seoImported.length} rising queries imported from kelly-seo` : ""}.`;
+  const detail = `${added} movers added, ${updated} updated, ${opportunitiesAdded} opportunities added${seoImported.length ? `, ${seoImported.length} rising queries imported from busa-seo` : ""}.`;
   await create(
     client,
     declared("sync-log"),

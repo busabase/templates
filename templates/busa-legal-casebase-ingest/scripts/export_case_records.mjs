@@ -6,7 +6,7 @@
 // exact document format (headings, field order, CSV columns) from the
 // retired scripts/export_case_records.ts.
 //
-// Departure from the retired script (matching kelly-legal-contracts'
+// Departure from the retired script (matching busa-legal-contracts'
 // export_issues.mjs precedent, applied here too): a case record is
 // exportable only when its decision_action is a genuine "approve" (written
 // exclusively by the review queue's decideItem()) — not merely because

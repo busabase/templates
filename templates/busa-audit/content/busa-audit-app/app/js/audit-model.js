@@ -870,7 +870,7 @@ export function planExecution(anomaly, { apply = false, hasEditedDraft = false }
     target,
     status: apply ? "ready_for_agent" : "planned",
     detail: apply
-      ? `Approved: agent should ${operation.replaceAll("_", " ")} for ${target} (${anomaly.customer}) using the ${hasEditedDraft ? "user-edited" : "agent"} draft — e.g. send the chasing email via kelly-email or open the billing task — then record the real result here.`
+      ? `Approved: agent should ${operation.replaceAll("_", " ")} for ${target} (${anomaly.customer}) using the ${hasEditedDraft ? "user-edited" : "agent"} draft — e.g. send the chasing email via busa-email or open the billing task — then record the real result here.`
       : `Dry run: would ${operation.replaceAll("_", " ")} for ${target} using the ${hasEditedDraft ? "user-edited" : "agent"} draft. No email sent, no records changed.`,
   };
 }

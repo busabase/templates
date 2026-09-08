@@ -23,7 +23,7 @@ Social-qa gate verdicts: `SHIP | FIX | BLOCK`.
 | --- | --- | --- | --- |
 | `account-id` | `account_id` | text | stable domain id, required |
 | `platform` | `platform` | text | see platform vocabulary above |
-| `handle` | `handle` | text | e.g. `@kellyships` |
+| `handle` | `handle` | text | e.g. `@atlasships` |
 | `display-name` | `display_name` | text | |
 | `profile-url` | `profile_url` | text | optional public profile URL |
 | `collection` | `collection` | text | how the agent gathers this account's data |

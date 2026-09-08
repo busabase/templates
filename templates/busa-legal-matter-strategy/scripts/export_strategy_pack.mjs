@@ -6,8 +6,8 @@
 // preserving the exact document format (headings, field order, CSV
 // columns) from the retired scripts/export_strategy_pack.ts.
 //
-// Departure from the retired script (matching kelly-legal-casebase-ingest's
-// export_case_records.mjs and kelly-legal-firm-radar's
+// Departure from the retired script (matching busa-legal-casebase-ingest's
+// export_case_records.mjs and busa-legal-firm-radar's
 // export_management_report.mjs precedent, applied here too): a strategy
 // pack is exportable only when its decision_action is a genuine "approve"
 // (written exclusively by the review queue's decideItem()) — not merely

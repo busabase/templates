@@ -92,9 +92,9 @@ source of truth for both the draft and its review state.
 The trusted handoff step. Reads `items` with `status: "approved"`, and with
 `--apply` writes `status: "done"` back onto each. It performs no public
 submission or send itself — that happens through the corresponding skill
-(for example `kelly-email`) as a separate, explicitly authorized step.
+(for example `busa-email`) as a separate, explicitly authorized step.
 Execution semantics by `proposed_action`:
 
 - `submit_channel` → hand off to the channel connector for `channel_id`.
-- `send_pitch` → hand off to `kelly-email` (or the configured press skill).
+- `send_pitch` → hand off to `busa-email` (or the configured press skill).
 - `publish_asset` → hand off the approved `draft` in the item's `format`.

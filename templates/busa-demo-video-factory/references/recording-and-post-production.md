@@ -25,7 +25,7 @@ never silently.
 ## Who records each shot
 
 Each shot has no dedicated "owner" field of its own — the video-level `owner`
-(`kelly` | `ai`) is the default, but real production usually mixes: the operator records
+(`you` | `ai`) is the default, but real production usually mixes: the operator records
 talking-head/live-product shots, AI-generated b-roll or screen-recordings fill gaps.
 When a shot needs a different owner than the video default, say so in that shot's
 `note` field rather than adding a new field — keep the schema stable.

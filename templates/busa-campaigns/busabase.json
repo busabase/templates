@@ -11,6 +11,7 @@
     "airapp": "busa-campaigns-app",
     "tags": ["marketing", "risk:gated-write", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/campaigns.webp",
       "assets/screenshots/deliverability.webp",
       "assets/screenshots/overview.webp",

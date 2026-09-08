@@ -143,7 +143,7 @@ compared case-insensitively).
 | `status` | `status` | text | `needs_review\|approved\|done\|blocked` |
 | `created-at` | `created_at` | text | ISO timestamp |
 | `rationale` | `rationale` | longtext | why this is worth acting on now |
-| `proposed-next-step` | `proposed_next_step` | longtext | JSON: `{operation, target, summary}` — `handoff_content_brief\|handoff_roadmap_candidate`, target `kelly-writer\|kelly-feedback` |
+| `proposed-next-step` | `proposed_next_step` | longtext | JSON: `{operation, target, summary}` — `handoff_content_brief\|handoff_roadmap_candidate`, target `busa-writer\|busa-feedback` |
 | `decision-verdict` | `decision_verdict` | text | written with the verdict |
 | `decision-comment` | `decision_comment` | longtext | written with the verdict |
 | `decided-at` | `decided_at` | text | written with the verdict |

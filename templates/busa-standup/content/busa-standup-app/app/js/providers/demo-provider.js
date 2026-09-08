@@ -476,8 +476,8 @@ export function buildDemoSnapshot(zh = false) {
           },
         ],
         detail: L(
-          "Sent via kelly-messenger after approval; Marco checked in 20 minutes later.",
-          "审批后经 kelly-messenger 发送；马晨 20 分钟后补交了日报。",
+          "Sent via busa-messenger after approval; Marco checked in 20 minutes later.",
+          "审批后经 busa-messenger 发送；马晨 20 分钟后补交了日报。",
         ),
         executed_at: "2026-07-02T03:05:00.000Z",
       },

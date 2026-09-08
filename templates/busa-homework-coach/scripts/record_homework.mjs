@@ -90,7 +90,7 @@ const toBusabaseFields = (fields) =>
 // records.get({baseId, fieldSlug, valueText}) is typed narrower than the
 // records.list() shape read elsewhere (only headCommit.fields, no top-level
 // fields fallback); accept it loosely here. Mirrors busabase-provider.js's
-// findRecord() and kelly-pr-review's execute_decisions.mjs rawFieldsOf().
+// findRecord() and busa-pr-review's execute_decisions.mjs rawFieldsOf().
 /** @param {any} record */
 const rawFieldsOf = (record) => record?.headCommit?.payload || record?.headCommit?.fields || record?.fields || {};
 

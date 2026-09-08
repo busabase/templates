@@ -27,6 +27,7 @@
       "surface:creem"
     ],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/accounts.webp",
       "assets/screenshots/detail.webp",
       "assets/screenshots/invoices.webp",

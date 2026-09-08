@@ -4,7 +4,7 @@
 // revise / block); this script is the process authorized to act on that
 // decision. It performs NO external side effects — it never publishes a
 // management report, notifies downstream skills, or files anything itself.
-// This mirrors kelly-legal-casebase-ingest's execute_decisions.mjs
+// This mirrors busa-legal-casebase-ingest's execute_decisions.mjs
 // precedent: it only ever records a planned operation
 // ("planned"/"ready_for_agent") and NEVER flips an item's workflow `status`
 // itself, unlike the retired scripts/execute_decisions.ts (which set

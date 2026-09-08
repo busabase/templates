@@ -134,17 +134,17 @@ function demoProducts() {
 
 function demoSources() {
   return [
-    source("support-email", "email", "Support inbox", "kelly-email handoff", "2026-07-02T07:10:00.000Z", 5),
+    source("support-email", "email", "Support inbox", "busa-email handoff", "2026-07-02T07:10:00.000Z", 5),
     source(
       "discord-community",
       "discord",
       "Discord #feedback",
-      "kelly-messenger handoff",
+      "busa-messenger handoff",
       "2026-07-02T08:45:00.000Z",
       6,
     ),
-    source("slack-beta", "slack", "Slack beta workspace", "kelly-messenger handoff", "2026-07-01T18:20:00.000Z", 3),
-    source("x-mentions", "x", "X replies and mentions", "kelly-social handoff", "2026-07-02T06:30:00.000Z", 5),
+    source("slack-beta", "slack", "Slack beta workspace", "busa-messenger handoff", "2026-07-01T18:20:00.000Z", 3),
+    source("x-mentions", "x", "X replies and mentions", "busa-social handoff", "2026-07-02T06:30:00.000Z", 5),
     source("appstore-reviews", "appstore", "App Store reviews", "manual export", "2026-06-30T09:00:00.000Z", 3),
     source("in-app-survey", "survey", "In-app NPS survey", "CSV export", "2026-07-01T09:00:00.000Z", 3),
     source("user-interviews", "interview", "Founder interviews", "agent notes", "2026-06-27T15:00:00.000Z", 2),
@@ -890,7 +890,7 @@ function demoSyncLog() {
       "2026-07-02T07:15:00.000Z",
       "busa-feedback",
       "ingest",
-      "Ingested 5 support emails via kelly-email handoff.",
+      "Ingested 5 support emails via busa-email handoff.",
       5,
     ),
     log(

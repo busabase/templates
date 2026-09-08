@@ -18,7 +18,7 @@ const RAW_DEMO_VIDEOS = [
     verified_claims: '| 原草稿说法 | 代码库实际情况 |\n| --- | --- |\n| "钱包" | 实际是 Vault |',
     hyperframe_path: "",
     final_video_url: "",
-    owner: "kelly",
+    owner: "you",
   },
   {
     __recordId: "demo-video-2",
@@ -32,7 +32,7 @@ const RAW_DEMO_VIDEOS = [
     verified_claims: "| 原草稿说法 | 核实结果 |\n| --- | --- |\n| 跨 Agent 共享 | 合理，中心化数据库 |",
     hyperframe_path: "videos/busabase-cloud/single-source-of-truth",
     final_video_url: "",
-    owner: "kelly",
+    owner: "you",
   },
 ];
 

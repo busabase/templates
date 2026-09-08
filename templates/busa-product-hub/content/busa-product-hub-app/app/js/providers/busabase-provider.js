@@ -168,7 +168,7 @@ export const busabaseProvider = {
   // Human verdict on a review item, written directly onto the item's own
   // Busabase record -- replaces the retired app/server/store.ts's separate
   // app/.data/decisions.json handoff bucket (readDecisions/applyDecision)
-  // with a direct field write, matching the kelly-legal-contracts/kelly-crm
+  // with a direct field write, matching the busa-legal-contracts/busa-crm
   // precedent. Only the three actions the retired review queue actually
   // exposed as buttons are supported (see product-hub-model.js's DECISION_ACTIONS
   // comment for why "revise" was dropped).

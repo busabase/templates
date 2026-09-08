@@ -7,7 +7,7 @@
 // Outbound operations (publish_changelog_note, send_decline_reply) are NEVER
 // sent by this script: it performs no external side effect — it never
 // publishes a changelog, posts to a roadmap doc, or sends a reply. Real
-// delivery is handed off to the agent via kelly-messenger/kelly-email/docs
+// delivery is handed off to the agent via busa-messenger/busa-email/docs
 // edits, only after this script's dry-run/--apply report, per SKILL.md's
 // boundary. Once an approved proposal is processed under --apply (whether
 // its operations were local or handoff-only) its status is set "done"
@@ -113,7 +113,7 @@ function operationsFor(proposal, draft) {
     return [
       {
         operation: "send_decline_reply",
-        handoff: "kelly-messenger/kelly-email",
+        handoff: "busa-messenger/busa-email",
         draft_id: proposal.proposal_id,
         request_id: proposal.request_id,
         draft,
@@ -359,7 +359,7 @@ async function main() {
   if (!apply) console.log("Dry run only. Re-run with --apply to apply local roadmap/merge operations.");
   else
     console.log(
-      "Local roadmap/merge operations applied. Outbound operations (changelog/decline reply) are handoff_ready only — deliver them via kelly-messenger/kelly-email/docs edits, never this script.",
+      "Local roadmap/merge operations applied. Outbound operations (changelog/decline reply) are handoff_ready only — deliver them via busa-messenger/busa-email/docs edits, never this script.",
     );
 }
 

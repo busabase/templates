@@ -1087,7 +1087,7 @@ function buildDemoSnapshot(zh) {
     template_sections,
     compliance_rules: rules,
     export: { format: "markdown", out_dir: "exports", docx_via_agent: true },
-    feedback: { handoff_skill: "kelly-email", requires_approval: true, secret_envs: [], secrets_ready: true },
+    feedback: { handoff_skill: "busa-email", requires_approval: true, secret_envs: [], secrets_ready: true },
   };
   const snapshot = assembleSnapshot({ teachers, plans, checks, configSummary, now: NOW });
   return { snapshot, configSummary };

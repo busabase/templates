@@ -10,6 +10,15 @@
     "schemaVersion": 1,
     "airapp": "busa-product-hub-app",
     "tags": ["ecommerce", "risk:local-write", "industry:ecommerce", "surface:busabase"],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/products.webp",
+      "assets/screenshots/certificates.webp",
+      "assets/screenshots/review.webp",
+      "assets/screenshots/inventory.webp",
+      "assets/screenshots/channels.webp"
+    ],
     "agentPrompts": [
       "Show me which certificates are expiring soon or already expired.",
       "Summarize the latest products and flag what needs my attention.",

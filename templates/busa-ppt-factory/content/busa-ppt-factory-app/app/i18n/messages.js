@@ -100,7 +100,7 @@ export const messages = {
   },
   zh: {
     all: "全部",
-    appName: "the operator PPT 工厂",
+    appName: "Busa PPT 工厂",
     appSubtitle: "PPT 生产工作台",
     attentionPrimary: "需要确认页面卡",
     approved: "已批准",

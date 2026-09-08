@@ -117,7 +117,7 @@ process that sets it, only for a proposal already `approved`, only after the
 agent reports the real external handoff succeeded. Approved proposals map to
 concrete operations (see `scripts/execute_decisions.mjs`):
 
-- `develop` → `create_sourcing_brief` (export path under `exports/`) + `handoff_listing_brief` (target `kelly-listing`)
+- `develop` → `create_sourcing_brief` (export path under `exports/`) + `handoff_listing_brief` (target `busa-listing`)
 - `watch` → `add_watch` (target candidate id, summary carries the re-check criteria)
 - `drop` → `drop_candidate` (candidate stage update only)
 

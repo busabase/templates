@@ -35,7 +35,7 @@ test("evaluateGate: a banned claim plus undisclosed promo -> BLOCK", () => {
   // Mirrors the retired demo.ts's draft-5 fixture: an absolute claim AND a
   // promotional read with no #ad/#sponsored disclosure marker.
   const gate = evaluateGate({
-    hook: "the operator Money v0.5 is the #1 in the world, GUARANTEED to be 100% secure.",
+    hook: "Atlas Money v0.5 is the #1 in the world, GUARANTEED to be 100% secure.",
     body: "Sponsored launch push: the best invoicing tool ever made, risk-free, guaranteed results. Sign up now.",
     hashtags: [],
     cta: "Buy now.",
@@ -63,7 +63,7 @@ test("evaluateGate: promo copy WITH a disclosure marker passes the disclosure ch
 test("normalizeDraft: a gate BLOCK forces status to blocked regardless of stored status", () => {
   const draft = normalizeDraft({
     draft_id: "draft-5",
-    hook: "the operator Money v0.5 is the #1 in the world, GUARANTEED to be 100% secure.",
+    hook: "Atlas Money v0.5 is the #1 in the world, GUARANTEED to be 100% secure.",
     body: "Sponsored launch push: risk-free, guaranteed results.",
     status: "needs_review",
   });
@@ -75,7 +75,7 @@ test("normalizeDraft: a clean draft keeps its stored status", () => {
   const draft = normalizeDraft({
     draft_id: "draft-3",
     hook: "Something new is matching your invoices while you sleep.",
-    body: "the operator Money v0.5 teaser.",
+    body: "Atlas Money v0.5 teaser.",
     status: "approved",
   });
   assert.equal(draft.gate.verdict, "SHIP");
@@ -140,11 +140,11 @@ test("assertReplySendable: requires prior human approval", () => {
 test("buildSnapshot: derives warnings from non-ok account status, never a separate store", () => {
   const snapshot = buildSnapshot({
     accounts: [
-      { account_id: "x-kelly", platform: "x", handle: "@kellyships", status: "ok", metrics: "{}" },
+      { account_id: "x-atlas", platform: "x", handle: "@atlasships", status: "ok", metrics: "{}" },
       {
-        account_id: "ig-kelly",
+        account_id: "ig-atlas",
         platform: "instagram",
-        handle: "@kelly.ships",
+        handle: "@atlas.ships",
         status: "warning",
         notes: "Export older than 7 days.",
         metrics: "{}",
@@ -153,7 +153,7 @@ test("buildSnapshot: derives warnings from non-ok account status, never a separa
     posts: [],
   });
   assert.equal(snapshot.warnings.length, 1);
-  assert.equal(snapshot.warnings[0].account_id, "ig-kelly");
+  assert.equal(snapshot.warnings[0].account_id, "ig-atlas");
   assert.equal(snapshot.warnings[0].severity, "warning");
   assert.equal(snapshot.warnings[0].message, "Export older than 7 days.");
   assert.equal(snapshot.metrics.account_count, 2);
@@ -163,9 +163,9 @@ test("buildSnapshot: parses JSON longtext fields for metrics/follower-series/tag
   const snapshot = buildSnapshot({
     accounts: [
       {
-        account_id: "x-kelly",
+        account_id: "x-atlas",
         platform: "x",
-        handle: "@kellyships",
+        handle: "@atlasships",
         metrics: JSON.stringify({ followers: 12480, followers_delta_7d: 412 }),
         follower_series: JSON.stringify([{ date: "2026-07-01", followers: 12480 }]),
       },
@@ -174,7 +174,7 @@ test("buildSnapshot: parses JSON longtext fields for metrics/follower-series/tag
       {
         post_id: "x-1",
         platform: "x",
-        account_id: "x-kelly",
+        account_id: "x-atlas",
         posted_at: "2026-07-02T08:05:00.000Z",
         metrics: JSON.stringify({ likes: 10, replies: 2, reposts: 1, views: 100 }),
         // engagement_rate is computed and stored at ingest time (see

@@ -11,6 +11,7 @@
     "airapp": "busa-family-fund-app",
     "tags": ["invest", "risk:read-only", "industry:family", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/category.webp",
       "assets/screenshots/family.webp",
       "assets/screenshots/ledger.webp",

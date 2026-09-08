@@ -24,7 +24,7 @@ Generation-status fields (`reference-card-status`, `voice-reference-status`,
 Every character reference-card image, character reference-voice sample, and
 shot storyboard image/video is a real **Busabase Asset** (`busabase-sdk`'s
 `assets` client: `createUploadUrl` → PUT bytes → `confirm`). Unlike a sibling
-skill (kelly-mv) where the human uploads their own MP3/reference image
+skill (busa-mv) where the human uploads their own MP3/reference image
 directly, the retired Busa Drama app's UI had **no manual asset-upload
 affordance at all** — every image/video/voice is either AI-generated or
 absent, so every upload in this skill happens from a trusted skill-root
@@ -48,7 +48,7 @@ own product usage (the Doc editor's image-paste upload); it is correct and
 will start working the moment the upstream package serves what it
 advertises. The OSS integration test (`tests/app-skills/busa-drama/ui_test.py`)
 scopes its live-write coverage to a plain text field for exactly this
-reason, mirroring kelly-mv's identical precedent.
+reason, mirroring busa-mv's identical precedent.
 
 ## project (`busa-drama-project`)
 

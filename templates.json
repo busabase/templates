@@ -54,6 +54,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/adjustments.webp",
         "assets/screenshots/alerts.webp",
         "assets/screenshots/campaigns.webp",
@@ -86,6 +87,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/actions.webp",
         "assets/screenshots/drafts.webp",
         "assets/screenshots/overview.webp",
@@ -118,6 +120,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/anomalies.webp",
         "assets/screenshots/invoices.webp",
         "assets/screenshots/orders.webp",
@@ -150,6 +153,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/drift.webp",
         "assets/screenshots/narrative.webp",
         "assets/screenshots/overview.webp",
@@ -182,6 +186,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/campaigns.webp",
         "assets/screenshots/deliverability.webp",
         "assets/screenshots/overview.webp",
@@ -206,7 +211,7 @@
     {
       "subdir": "templates/busa-clm",
       "name": "busa-clm",
-      "description": "Lightweight contract lifecycle desk: contract inventory, lifecycle stage, owners, obligations, renewal/notice dates, and a simple approval reminder queue. Not a legal redline/clause-review product -- see kelly-legal-contracts for that. Contract records, obligation status, renewal acknowledgements, and approval decisions are all direct writes made by the operator in the browser, not a review/approval pipeline.",
+      "description": "Lightweight contract lifecycle desk: contract inventory, lifecycle stage, owners, obligations, renewal/notice dates, and a simple approval reminder queue. Not a legal redline/clause-review product -- see busa-legal-contracts for that. Contract records, obligation status, renewal acknowledgements, and approval decisions are all direct writes made by the operator in the browser, not a review/approval pipeline.",
       "category": "legal",
       "tags": [
         "legal",
@@ -215,6 +220,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/approvals.webp",
         "assets/screenshots/contracts.webp",
         "assets/screenshots/obligations.webp",
@@ -289,6 +295,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/creators.webp",
         "assets/screenshots/outreach.webp",
         "assets/screenshots/overview.webp",
@@ -321,6 +328,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/contacts.webp",
         "assets/screenshots/deals.webp",
         "assets/screenshots/followups.webp",
@@ -353,12 +361,13 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/video-shots.webp",
         "assets/screenshots/videos.webp"
       ],
       "agentPrompts": [
-        "Summarize the latest Videos and flag what needs my attention.",
-        "Open Busa Demo Video Factory and show me the items that need review."
+        "Summarize the videos in production and flag which claims still need verification.",
+        "Open Busa Demo Video Factory and show me the shots that need review."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -384,6 +393,7 @@
         "surface:sendgrid"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/actions.webp",
         "assets/screenshots/expiries.webp",
         "assets/screenshots/overview.webp",
@@ -409,7 +419,7 @@
     {
       "subdir": "templates/busa-digital-human",
       "name": "busa-digital-human",
-      "description": "Digital-human solution desk: a fast 2D vendor-service path and a high-control 3D UE/Unity path, plus a launch QA gate. The project overview, personas, pipeline routes, vendor comparison, and QA checklist are curated reference content, not per-user data -- the only genuinely dynamic state is the human review verdict (approve / request changes / block) recorded against each QA gate check, written as a direct field write on its own record, mirroring kelly-clm's approvals.",
+      "description": "Digital-human solution desk: a fast 2D vendor-service path and a high-control 3D UE/Unity path, plus a launch QA gate. The project overview, personas, pipeline routes, vendor comparison, and QA checklist are curated reference content, not per-user data -- the only genuinely dynamic state is the human review verdict (approve / request changes / block) recorded against each QA gate check, written as a direct field write on its own record, mirroring busa-clm's approvals.",
       "category": "production",
       "tags": [
         "production",
@@ -417,6 +427,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp",
         "assets/screenshots/qa.webp",
         "assets/screenshots/studio.webp",
@@ -451,6 +462,7 @@
         "surface:byteplus-ark"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/characters.webp",
         "assets/screenshots/episodes.webp",
         "assets/screenshots/overview.webp",
@@ -484,6 +496,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/actions.webp",
         "assets/screenshots/drafts.webp",
         "assets/screenshots/overview.webp",
@@ -554,7 +567,12 @@
         "surface:busabase",
         "risk:gated-write"
       ],
-      "screenshots": [],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/leads.webp",
+        "assets/screenshots/followups.webp"
+      ],
       "agentPrompts": [
         "Show me which leads are about to blow past the 24-hour follow-up window.",
         "Open Busa Expo Leads and show me the follow-ups that need review."
@@ -583,6 +601,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/category.webp",
         "assets/screenshots/family.webp",
         "assets/screenshots/ledger.webp",
@@ -616,6 +635,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/assets.webp",
         "assets/screenshots/entities.webp",
         "assets/screenshots/institutions.webp",
@@ -649,6 +669,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/inbox.webp",
         "assets/screenshots/overview.webp",
         "assets/screenshots/requests.webp",
@@ -681,6 +702,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/checks.webp",
         "assets/screenshots/overview.webp",
         "assets/screenshots/workbook.webp"
@@ -711,6 +733,7 @@
         "reminder"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/today.webp"
       ],
       "agentPrompts": [
@@ -723,7 +746,7 @@
         "folders": 0,
         "docs": 0,
         "bases": 1,
-        "records": 0,
+        "records": 4,
         "files": 22,
         "airapps": 1,
         "skill": true
@@ -741,6 +764,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/mistakes.webp",
         "assets/screenshots/papers.webp",
         "assets/screenshots/review.webp",
@@ -776,6 +800,7 @@
         "consultant"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp",
         "assets/screenshots/idea-detail.webp",
         "assets/screenshots/questions.webp",
@@ -792,7 +817,7 @@
         "folders": 0,
         "docs": 0,
         "bases": 4,
-        "records": 0,
+        "records": 35,
         "files": 27,
         "airapps": 1,
         "skill": true
@@ -810,6 +835,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/files.webp",
         "assets/screenshots/news.webp",
         "assets/screenshots/overview.webp",
@@ -843,6 +869,7 @@
         "surface:webull"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/accounts.webp",
         "assets/screenshots/detail.webp",
         "assets/screenshots/overview.webp",
@@ -875,6 +902,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/detail-mobile.webp",
         "assets/screenshots/detail.webp",
         "assets/screenshots/extract-data.webp",
@@ -909,6 +937,7 @@
         "surface:smtp"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/blocked.webp",
         "assets/screenshots/mobile-detail.webp",
         "assets/screenshots/mobile-list.webp",
@@ -943,6 +972,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/assets.webp",
         "assets/screenshots/checklist.webp",
         "assets/screenshots/launchday.webp",
@@ -975,6 +1005,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/kanban.webp",
         "assets/screenshots/lead-detail.webp",
         "assets/screenshots/overview.webp"
@@ -1007,6 +1038,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/checks.webp",
         "assets/screenshots/entities.webp",
         "assets/screenshots/mobile-detail.webp",
@@ -1042,6 +1074,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/checks.webp",
         "assets/screenshots/contracts.webp",
         "assets/screenshots/issues.webp",
@@ -1077,6 +1110,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/checks.webp",
         "assets/screenshots/entities.webp",
         "assets/screenshots/needs-review.webp",
@@ -1111,6 +1145,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/checks.webp",
         "assets/screenshots/entities.webp",
         "assets/screenshots/needs-review.webp",
@@ -1145,6 +1180,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/checks.webp",
         "assets/screenshots/entities.webp",
         "assets/screenshots/needs-review.webp",
@@ -1179,6 +1215,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/checks.webp",
         "assets/screenshots/needs-review.webp",
         "assets/screenshots/overview.webp",
@@ -1212,6 +1249,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/checks.webp",
         "assets/screenshots/claims.webp",
         "assets/screenshots/drafts.webp",
@@ -1246,10 +1284,11 @@
         "surface:busabase"
       ],
       "screenshots": [
-        "assets/screenshots/overview.png",
-        "assets/screenshots/dataset.png",
-        "assets/screenshots/evaluations.png",
-        "assets/screenshots/registry.png"
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/dataset.webp",
+        "assets/screenshots/evaluations.webp",
+        "assets/screenshots/registry.webp"
       ],
       "agentPrompts": [
         "Open Busa Local Model Lab and show me which examples need review.",
@@ -1283,6 +1322,7 @@
         "surface:telegram"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/accounts.webp",
         "assets/screenshots/chat.webp",
         "assets/screenshots/inbox.webp",
@@ -1320,6 +1360,7 @@
         "surface:creem"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/accounts.webp",
         "assets/screenshots/detail.webp",
         "assets/screenshots/invoices.webp",
@@ -1354,6 +1395,7 @@
         "surface:moonrouter"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/cast.webp",
         "assets/screenshots/overview.webp",
         "assets/screenshots/song.webp",
@@ -1387,6 +1429,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/candidates.webp",
         "assets/screenshots/decisions.webp",
         "assets/screenshots/detail.webp",
@@ -1419,6 +1462,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/concentration.webp",
         "assets/screenshots/overview.webp",
         "assets/screenshots/watchlist.webp"
@@ -1451,11 +1495,12 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp"
       ],
       "agentPrompts": [
-        "Summarize the latest Retouch Jobs and flag what needs my attention.",
-        "Open Busa Portrait Retouch and show me the items that need review."
+        "Summarize the retouch batches and flag what needs my approval.",
+        "Open Busa Portrait Retouch and show me the edits waiting for review."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1480,6 +1525,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/decks.webp",
         "assets/screenshots/exports.webp",
         "assets/screenshots/overview.webp",
@@ -1516,6 +1562,7 @@
         "surface:github"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/blocked-security.webp",
         "assets/screenshots/needs-review.webp",
         "assets/screenshots/needs-test.webp",
@@ -1550,7 +1597,15 @@
         "industry:ecommerce",
         "surface:busabase"
       ],
-      "screenshots": [],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/products.webp",
+        "assets/screenshots/certificates.webp",
+        "assets/screenshots/review.webp",
+        "assets/screenshots/inventory.webp",
+        "assets/screenshots/channels.webp"
+      ],
       "agentPrompts": [
         "Show me which certificates are expiring soon or already expired.",
         "Summarize the latest products and flag what needs my attention.",
@@ -1579,6 +1634,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp",
         "assets/screenshots/research.webp",
         "assets/screenshots/signals.webp",
@@ -1613,6 +1669,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/actions.webp",
         "assets/screenshots/drafts.webp",
         "assets/screenshots/overview.webp",
@@ -1646,6 +1703,7 @@
         "surface:smtp"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/blocked.webp",
         "assets/screenshots/profile.webp",
         "assets/screenshots/sent.webp",
@@ -1679,6 +1737,7 @@
         "surface:gsc"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/entity.webp",
         "assets/screenshots/geo.webp",
         "assets/screenshots/opportunities.webp",
@@ -1715,6 +1774,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/accounts.webp",
         "assets/screenshots/calendar.webp",
         "assets/screenshots/compose.webp",
@@ -1752,6 +1812,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/blockers.webp",
         "assets/screenshots/history.webp",
         "assets/screenshots/members.webp",
@@ -1788,6 +1849,7 @@
         "surface:webchat"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/knowledge.webp",
         "assets/screenshots/overview.webp",
         "assets/screenshots/sla.webp",
@@ -1822,6 +1884,7 @@
         "surface:wechat"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/board.webp",
         "assets/screenshots/dispatch.webp",
         "assets/screenshots/intake.webp",
@@ -1860,6 +1923,7 @@
         "agent-worklog"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/actions.webp",
         "assets/screenshots/people.webp",
         "assets/screenshots/snapshots.webp",
@@ -1894,6 +1958,7 @@
         "surface:busabase"
       ],
       "screenshots": [
+        "assets/screenshots/cover.webp",
         "assets/screenshots/distribution.webp",
         "assets/screenshots/main.webp",
         "assets/screenshots/overview.webp",

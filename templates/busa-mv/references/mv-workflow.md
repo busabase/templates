@@ -16,7 +16,7 @@ opt-in capability — see SKILL.md → Song Generation).
 
 ## 3. 角色 (Cast)
 
-Add the people who appear on screen — same as kelly-drama. Fill three-view visual notes,
+Add the people who appear on screen — same as busa-drama. Fill three-view visual notes,
 wardrobe, anchors, and forbidden drift, then **generate each character's reference card before
 storyboarding**. Storyboard image generation feeds these cards as real input pixels, so without
 them the likeness drifts shot to shot.
@@ -45,4 +45,4 @@ picture only, no added audio besides the track.
 ## Pure-visual rule
 
 Never add dialogue audio, narration, TTS, or burned-in subtitles/lyrics. The only audio is the
-song. If a project needs spoken dialogue or voice, that is `kelly-drama`, not `busa-mv`.
+song. If a project needs spoken dialogue or voice, that is `busa-drama`, not `busa-mv`.

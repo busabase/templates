@@ -11,6 +11,7 @@
     "airapp": "busa-invoice-sheet-app",
     "tags": ["finance", "risk:local-write", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/detail-mobile.webp",
       "assets/screenshots/detail.webp",
       "assets/screenshots/extract-data.webp",

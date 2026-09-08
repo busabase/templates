@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "version": "0.1.0",
-  "description": "the operator Legal Firm Radar Busabase App-in-Skill and trusted import/execute/export scripts.",
+  "description": "Busa Legal Firm Radar Busabase App-in-Skill and trusted import/execute/export scripts.",
   "scripts": {
     "import": "node scripts/import_metrics.mjs",
     "execute": "node scripts/execute_decisions.mjs",

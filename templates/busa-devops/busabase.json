@@ -11,6 +11,7 @@
     "airapp": "busa-devops-app",
     "tags": ["platform", "risk:gated-write", "surface:busabase", "surface:sendgrid"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/actions.webp",
       "assets/screenshots/expiries.webp",
       "assets/screenshots/overview.webp",

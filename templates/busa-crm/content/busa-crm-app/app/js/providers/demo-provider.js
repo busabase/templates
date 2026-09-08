@@ -668,7 +668,7 @@ function demoSnapshot(scenario) {
       "email-main",
       "email",
       "Thank-you note after signing",
-      "Orbit Works signed the annual license; the approved thank-you note was handed off to kelly-email on June 27.",
+      "Orbit Works signed the annual license; the approved thank-you note was handed off to busa-email on June 27.",
       [],
       "2026-06-27",
       "done",
@@ -785,7 +785,7 @@ export const demoProvider = {
             channel_id: "email-main",
             type: "email",
             display_name: "Founder Email",
-            handoff_skill: "kelly-email",
+            handoff_skill: "busa-email",
             secrets_ready: true,
           },
           {

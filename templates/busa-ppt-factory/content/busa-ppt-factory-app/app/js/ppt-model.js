@@ -13,7 +13,7 @@
 // bucket keyed by review_id — the verdict (`decision_action`/
 // `decision_note`/`decided_at`) and the resulting workflow `status` are
 // written directly onto the slide card's or deck's own Busabase row,
-// mirroring kelly-legal-precedent-desk's items Base. A row is "in the review
+// mirroring busa-legal-precedent-desk's items Base. A row is "in the review
 // queue" when it carries a non-empty `review_summary` (the agent's note on
 // what needs a human look) — this replaces the retired separate
 // review_items.json array. `agent_tasks.json` (queued "revise_slide_card"/
@@ -647,7 +647,7 @@ export function deriveReviewItems(decks = [], slideCards = []) {
 // New orchestration (not a port): derives a recent-activity feed from each
 // row's own timestamps instead of reading a persisted activity_log.json,
 // since Busabase reads are always live — same technique as
-// kelly-legal-precedent-desk's deriveActivityLog.
+// busa-legal-precedent-desk's deriveActivityLog.
 export function deriveActivityLog(decks = [], slideCards = [], { limit = 20 } = {}) {
   const entries = [];
   for (const deck of decks) {
@@ -776,7 +776,7 @@ export function buildSnapshot({
 // the target the operation acts on. The retired script only ever wrote an
 // execution_report.json summary and never touched workflow status itself;
 // this Busabase-only shape follows the same conservative precedent as
-// kelly-legal-precedent-desk's itemExecution() — it never flips workflow
+// busa-legal-precedent-desk's itemExecution() — it never flips workflow
 // status itself (the decision write already did that), only records an
 // execution marker directly on the row (execution_status/operation/target/
 // detail/executed_at).

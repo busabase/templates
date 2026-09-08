@@ -2,7 +2,7 @@ import { inspectProvisionedResources, provisionDeclaredResources } from "../../v
 // Reads/writes the operator-provisioned Busa Drama Busabase workspace (one
 // Folder, 7 Bases: project/settings/characters/relationships/episodes/shots/
 // tasks) through js/busabase-client.js + js/drama-client.js (Asset upload/
-// read) and normalizes with js/drama-model.js. Mirrors the operator MV's
+// read) and normalizes with js/drama-model.js. Mirrors Busa MV's
 // busabase-provider.js one-for-one (this skill's closest architectural twin)
 // — see that module's header comment for the write-scope rationale.
 //
@@ -31,7 +31,7 @@ import { inspectProvisionedResources, provisionDeclaredResources } from "../../v
 //     trusted skill-root script (scripts/read_hyperframe_status.mjs) that
 //     writes a cached status snapshot onto the project record. The browser
 //     only ever displays that cached snapshot.
-//   - Binary uploads: unlike the operator MV (which lets a human upload an MP3 or a
+//   - Binary uploads: unlike Busa MV (which lets a human upload an MP3 or a
 //     reference image/video directly), the retired Busa Drama app's UI had
 //     NO manual asset-upload affordance at all — every image/video/voice
 //     asset is either AI-generated (via a "requested" status flip) or absent.

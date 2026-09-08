@@ -10,6 +10,12 @@
     "schemaVersion": 1,
     "airapp": "busa-expo-leads-app",
     "tags": ["sales-crm", "industry:ecommerce", "surface:whatsapp", "surface:busabase", "risk:gated-write"],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/leads.webp",
+      "assets/screenshots/followups.webp"
+    ],
     "agentPrompts": [
       "Show me which leads are about to blow past the 24-hour follow-up window.",
       "Open Busa Expo Leads and show me the follow-ups that need review."

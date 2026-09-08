@@ -11,6 +11,7 @@
     "airapp": "busa-sales-outreach-app",
     "tags": ["sales-crm", "risk:gated-write", "surface:busabase", "surface:smtp"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/blocked.webp",
       "assets/screenshots/profile.webp",
       "assets/screenshots/sent.webp",

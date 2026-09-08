@@ -10,11 +10,11 @@
 // now lives directly on the invoice's own Busabase record (decision-action/
 // decision-note/decided-at alongside the raw invoice fields) instead of a
 // separate decisions.json bucket keyed by invoice id — same pattern used
-// across this batch of Busabase-only conversions (see kelly-writer,
-// kelly-finance). Line items share the exact same lifecycle as their parent
+// across this batch of Busabase-only conversions (see busa-writer,
+// busa-finance). Line items share the exact same lifecycle as their parent
 // invoice (created/edited/exported together, never independently reviewed
 // or exported on their own), so they stay a JSON array field directly on the
-// invoice record instead of a separate Base — same pattern as kelly-writer's
+// invoice record instead of a separate Base — same pattern as busa-writer's
 // hashtags/title_options/source_notes. The retired agent_tasks.json queue is
 // gone too: a "task" was always just an invoice whose status is
 // changes_requested, so it can be derived on read instead of stored
@@ -321,7 +321,7 @@ export function baseInvoiceFields({
 // Normalizes a Busabase `invoices` row (already snake_cased by the provider)
 // into the structured InvoiceRecord shape the UI renders, reassembling the
 // `decision` convenience object only once a human has actually decided —
-// mirrors computeReviewFromRow() in kelly-homework-coach's homework-model.js.
+// mirrors computeReviewFromRow() in busa-homework-coach's homework-model.js.
 export function computeInvoiceFromRow({
   invoice_id = "",
   ref = "",

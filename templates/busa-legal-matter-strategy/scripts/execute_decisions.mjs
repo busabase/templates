@@ -4,7 +4,7 @@
 // block); this script is the process authorized to act on that decision. It
 // performs NO external side effects — it never files documents, sends
 // client advice, contacts counterparties, or exports anything itself. This
-// mirrors kelly-legal-casebase-ingest's and kelly-legal-firm-radar's
+// mirrors busa-legal-casebase-ingest's and busa-legal-firm-radar's
 // execute_decisions.mjs precedent: it only ever records a planned operation
 // ("planned"/"ready_for_agent") and NEVER flips an item's workflow `status`
 // itself, unlike the retired scripts/execute_decisions.ts (which set

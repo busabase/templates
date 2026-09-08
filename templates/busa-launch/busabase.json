@@ -11,6 +11,7 @@
     "airapp": "busa-launch-app",
     "tags": ["marketing", "risk:gated-write", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/assets.webp",
       "assets/screenshots/checklist.webp",
       "assets/screenshots/launchday.webp",

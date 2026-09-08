@@ -11,8 +11,8 @@ persisted state is what lives directly on those four Bases.
 Workflow statuses: `needs_review`, `changes_requested`, `approved`, `done`, `blocked`.
 
 Decision actions: `approve`, `request_changes`, `revise`, `block`. Like
-`kelly-legal-casebase-ingest`, `kelly-legal-firm-radar`, and
-`kelly-legal-matter-strategy`, `revise` maps status back to `needs_review`
+`busa-legal-casebase-ingest`, `busa-legal-firm-radar`, and
+`busa-legal-matter-strategy`, `revise` maps status back to `needs_review`
 (saving an edited draft/note returns the record to the queue), not
 "unchanged" — see `statusFromDecision()` in `precedent-model.js` (ported
 verbatim from the retired `lib/common.ts` and confirmed against the retired

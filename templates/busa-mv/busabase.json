@@ -11,6 +11,7 @@
     "airapp": "busa-mv-app",
     "tags": ["production", "risk:local-write", "surface:busabase", "surface:moonrouter"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/cast.webp",
       "assets/screenshots/overview.webp",
       "assets/screenshots/song.webp",

@@ -11,6 +11,7 @@
     "airapp": "busa-ads-app",
     "tags": ["ecommerce", "risk:gated-write", "industry:ecommerce", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/adjustments.webp",
       "assets/screenshots/alerts.webp",
       "assets/screenshots/campaigns.webp",

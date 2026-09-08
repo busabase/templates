@@ -21,8 +21,8 @@ never moves money.
 
 <table>
   <tr>
-    <td width="50%"><img src="assets/screenshots/overview.webp" alt="the operator Invest overview"></td>
-    <td width="50%"><img src="assets/screenshots/positions.webp" alt="the operator Invest positions"></td>
+    <td width="50%"><img src="assets/screenshots/overview.webp" alt="Busa Invest overview"></td>
+    <td width="50%"><img src="assets/screenshots/positions.webp" alt="Busa Invest positions"></td>
   </tr>
   <tr>
     <td><strong>Overview</strong><br>Portfolio command desk with market value, unrealized P/L, day change, cash, an allocation-by-asset-type donut, and top day movers.</td>

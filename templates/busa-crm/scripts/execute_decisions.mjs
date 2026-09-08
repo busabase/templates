@@ -2,7 +2,7 @@
 // Trusted hand-off step. Busa CRM's AirApp only ever proposes a review
 // decision on a followup record; this script is the process authorized to act
 // on an `approved` verdict. It performs NO external send itself — sending is
-// delegated to another skill (for example kelly-email) per SKILL.md — it only
+// delegated to another skill (for example busa-email) per SKILL.md — it only
 // re-reads Busabase, marks the followup `done` with a handoff record, and
 // reports what still needs to be sent.
 //

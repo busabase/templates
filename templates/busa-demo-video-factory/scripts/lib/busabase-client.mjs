@@ -18,7 +18,7 @@
 // 0.11.0's own oRPC contract source, apps/busabase-sdk/dist/index.js, and
 // against a live busabase@0.11.0 OSS server) — the original
 // lib/data-provider/busabase-client.ts predates these fixes and used the
-// wrong shapes for several calls; kelly-insure-data's scripts/lib/busabase-client.mjs
+// wrong shapes for several calls; busa-insure-data's scripts/lib/busabase-client.mjs
 // hit the same class of bug first and is the precedent for these corrections:
 //   - records.list is `GET /records` (NOT `/records/paged`).
 //   - records.get-by-id is `GET /records/get?recordId=...` (NOT `GET /records/{id}`).

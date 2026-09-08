@@ -12,7 +12,7 @@
 // action beyond what the retired script already reported. There is no
 // separate execution_report.json bucket in the Busabase-only shape — the
 // report is written directly onto each review's own execution-* fields,
-// matching the execution-marker pattern used by kelly-finance/
+// matching the execution-marker pattern used by busa-finance/
 // kelly-disclosure-tracker/kelly-deal-scorer.
 //
 // Usage:

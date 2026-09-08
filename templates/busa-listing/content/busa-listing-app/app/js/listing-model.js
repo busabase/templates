@@ -842,7 +842,7 @@ export function assembleSnapshot({
               id: "no-snapshot",
               severity: "info",
               message:
-                "No listing snapshot exists yet. Ingest product source material, or ask the agent to draft listings from a kelly-picks brief.",
+                "No listing snapshot exists yet. Ingest product source material, or ask the agent to draft listings from a busa-picks brief.",
             },
           ],
   };

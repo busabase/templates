@@ -11,6 +11,7 @@
     "airapp": "busa-drama-app",
     "tags": ["production", "risk:local-write", "surface:busabase", "surface:moonrouter", "surface:byteplus-ark"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/characters.webp",
       "assets/screenshots/episodes.webp",
       "assets/screenshots/overview.webp",

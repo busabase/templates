@@ -25,6 +25,7 @@
       "surface:webchat"
     ],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/knowledge.webp",
       "assets/screenshots/overview.webp",
       "assets/screenshots/sla.webp",

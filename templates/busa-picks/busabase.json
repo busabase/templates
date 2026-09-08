@@ -11,6 +11,7 @@
     "airapp": "busa-picks-app",
     "tags": ["ecommerce", "risk:local-write", "industry:ecommerce", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/candidates.webp",
       "assets/screenshots/decisions.webp",
       "assets/screenshots/detail.webp",

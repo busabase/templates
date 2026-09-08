@@ -4,7 +4,7 @@
 // the retired app/server/demo.ts's demoProject(). Binary media are synthetic
 // in-memory placeholders (hash-tinted SVG data URLs) generated in the
 // browser — never a real generated/uploaded asset, matching the existing
-// demo-visuals pattern used across every converted skill (kelly-mv's
+// demo-visuals pattern used across every converted skill (busa-mv's
 // demo-provider.js, this skill's closest architectural twin).
 import { demoVisualsForApp } from "../demo-visuals-data.js?v=0.1.0";
 import { attention, completeness, countBy } from "../drama-model.js?v=0.1.0";

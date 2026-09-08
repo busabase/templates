@@ -2,9 +2,9 @@
 // Dry-run-by-default execution stub, ported from the retired
 // scripts/execute_decisions.ts. Turns APPROVED proposals into concrete
 // operations the agent must perform outside the app — a sourcing brief
-// export, a listing-brief handoff to kelly-listing, or a watch/drop stage
+// export, a listing-brief handoff to busa-listing, or a watch/drop stage
 // update. No external side effects: this script never writes an export
-// file and never invokes kelly-listing itself; it only prints the plan
+// file and never invokes busa-listing itself; it only prints the plan
 // (default) or, with --apply, marks the proposal `done` and updates the
 // candidate's stage after the agent has actually performed the handoff.
 //
@@ -70,8 +70,8 @@ function operationsFor(proposal, candidateName) {
       },
       {
         operation: "handoff_listing_brief",
-        target: "kelly-listing",
-        summary: `Hand off listing brief for ${candidateName || proposal.candidate_id} to kelly-listing`,
+        target: "busa-listing",
+        summary: `Hand off listing brief for ${candidateName || proposal.candidate_id} to busa-listing`,
         note,
       },
     ];

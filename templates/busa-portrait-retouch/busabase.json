@@ -10,10 +10,13 @@
     "schemaVersion": 1,
     "airapp": "busa-portrait-retouch-app",
     "tags": ["production", "risk:local-write", "industry:beauty", "surface:busabase"],
-    "screenshots": ["assets/screenshots/overview.webp"],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp"
+    ],
     "agentPrompts": [
-      "Summarize the latest Retouch Jobs and flag what needs my attention.",
-      "Open Busa Portrait Retouch and show me the items that need review."
+      "Summarize the retouch batches and flag what needs my approval.",
+      "Open Busa Portrait Retouch and show me the edits waiting for review."
     ],
     "requires": {
       "airapp": true

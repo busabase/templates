@@ -11,6 +11,7 @@
     "airapp": "busa-wechat-crm-app",
     "tags": ["wechat", "goals", "relationship-analysis", "next-actions", "agent-worklog"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/actions.webp",
       "assets/screenshots/people.webp",
       "assets/screenshots/snapshots.webp",

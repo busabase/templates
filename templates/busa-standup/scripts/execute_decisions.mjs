@@ -9,11 +9,11 @@
 // scripts/execute_decisions.ts produced (channel/target/contact_env/
 // contact_ready/message_draft), and — only with --apply — writes that plan
 // back onto each reminder record as execution_status "ready_for_agent" so
-// the agent can pick it up and send the real message via kelly-messenger /
-// kelly-email, then record the outcome. Without --apply this is a dry run
+// the agent can pick it up and send the real message via busa-messenger /
+// busa-email, then record the outcome. Without --apply this is a dry run
 // that only prints the plan; nothing is written to Busabase either way
 // unless --apply is given, matching the decision-execution convention used
-// by kelly-campaigns/kelly-pr-review's execute_decisions.mjs (the retired
+// by busa-campaigns/busa-pr-review's execute_decisions.mjs (the retired
 // TS version always wrote its local execution_report.json even on a dry
 // run; gating the Busabase write behind --apply is the safer adaptation for
 // shared, multi-writer state).
@@ -32,7 +32,7 @@ send_reminder operation plan (channel, target, contact_env, contact_ready,
 message draft) for each. Without --apply this is a dry run that only prints
 the plan. With --apply it writes execution_status "ready_for_agent" plus the
 plan back onto each reminder record. It never sends a message itself — the
-agent sends the real nudge via kelly-messenger/kelly-email after this plan is
+agent sends the real nudge via busa-messenger/busa-email after this plan is
 reviewed, then records the outcome, per SKILL.md's Reminder Workflow.`);
 }
 
@@ -122,7 +122,7 @@ async function main() {
       },
     ];
     const detail = apply
-      ? `Approved: agent should send this via kelly-messenger/kelly-email${contactReady ? "" : ` after configuring ${contactEnv || "a contact env"}`}, then record the outcome.`
+      ? `Approved: agent should send this via busa-messenger/busa-email${contactReady ? "" : ` after configuring ${contactEnv || "a contact env"}`}, then record the outcome.`
       : `Dry run: would hand the ${reminder.channel} draft for ${member.name} to the agent.${contactReady ? "" : ` Contact env ${contactEnv || "(unset)"} is not configured.`}`;
     results.push({
       id: reminder.reminder_id,

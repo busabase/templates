@@ -9,7 +9,7 @@
 // wrote this same deterministic mock pipeline to a local file for dev
 // convenience — so its logic is folded in here instead of becoming a
 // skill-root trusted script; there is no trusted-writer precedent (like
-// kelly-money's provider sync or kelly-family-fund's CSV import) to preserve.
+// busa-money's provider sync or busa-family-fund's CSV import) to preserve.
 import { DEFAULT_SCORING_CRITERIA, buildSnapshot } from "../lead-funnel-model.js?v=0.1.0";
 
 const NOW = new Date("2026-07-01T15:00:00.000Z");

@@ -453,7 +453,7 @@ export function deriveActivityLog(plans = [], { limit = 50 } = {}) {
 // objects/arrays, not JSON strings) plus a configSummary in
 // buildConfigSummary()'s output shape. Used directly by the demo provider
 // (which builds its fixtures already in this shape, same split as
-// kelly-audit's deriveSnapshot()/buildSnapshot()) and by buildSnapshot()
+// busa-audit's deriveSnapshot()/buildSnapshot()) and by buildSnapshot()
 // below for the Busabase-row path.
 /**
  * @param {{

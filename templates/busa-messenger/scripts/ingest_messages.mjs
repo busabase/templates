@@ -14,7 +14,7 @@
 // required the account to already exist in config.accounts[]; since there is
 // no local config file anymore, this script's optional `payload.account`
 // field now plays that role (upserted into the accounts Base first), mirroring
-// kelly-standup's ingest_updates.mjs optional payload.team/payload.members
+// busa-standup's ingest_updates.mjs optional payload.team/payload.members
 // onboarding fields.
 //
 // Connects with the trusted process's own credentials (BUSABASE_BASE_URL,

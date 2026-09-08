@@ -8,7 +8,7 @@
 // operations ("planned"/"ready_for_agent") and NEVER flipped a plan's
 // workflow `status` itself — the real follow-up (export the Markdown via
 // scripts/export_plans.mjs, send the feedback draft via other channels e.g.
-// kelly-email) is performed by the agent OUTSIDE the app only after explicit
+// busa-email) is performed by the agent OUTSIDE the app only after explicit
 // user approval, matching SKILL.md's Boundary section.
 //
 // planExecution is ported/adapted from the retired scripts/execute_decisions.ts

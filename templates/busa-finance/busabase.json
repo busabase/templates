@@ -11,6 +11,7 @@
     "airapp": "busa-finance-app",
     "tags": ["finance", "risk:local-write", "surface:busabase"],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/checks.webp",
       "assets/screenshots/overview.webp",
       "assets/screenshots/workbook.webp"

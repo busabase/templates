@@ -27,6 +27,7 @@
       "surface:telegram"
     ],
     "screenshots": [
+      "assets/screenshots/cover.webp",
       "assets/screenshots/accounts.webp",
       "assets/screenshots/chat.webp",
       "assets/screenshots/inbox.webp",

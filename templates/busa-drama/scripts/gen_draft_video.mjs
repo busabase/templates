@@ -5,7 +5,7 @@
 // framesForDuration/draftPrompt (now in js/drama-model.js), merged into one
 // module since the Busabase-only shape has no server-side video-service.ts to
 // own the frame-count math separately from the process spawn — same
-// restructuring the operator MV's gen_draft_video.mjs did (this skill's closest
+// restructuring Busa MV's gen_draft_video.mjs did (this skill's closest
 // architectural twin). Genuinely local generation (no cloud call, no API
 // key) — still cannot run in the browser because it spawns a child process
 // against a local model checkout and reads/writes local files.

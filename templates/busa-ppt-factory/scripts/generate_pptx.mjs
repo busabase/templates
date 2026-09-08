@@ -14,7 +14,7 @@
 // decision_action is a genuine "approve" (written exclusively by the
 // review queue's decideItem() in content/busa-ppt-factory-app/app/js/providers/busabase-provider.js)
 // — not merely because status happens to read "approved"/"generated". This
-// mirrors kelly-legal-precedent-desk's export_research_pack.mjs precedent:
+// mirrors busa-legal-precedent-desk's export_research_pack.mjs precedent:
 // closing the gap where a spoofed status could otherwise be enough to
 // trigger generation.
 //
