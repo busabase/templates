@@ -1,6 +1,19 @@
 {
   "name": "Settings",
   "description": "One row (record-id: config) with scoring weights and roadmap lane names",
+  "agentPrompts": [
+    {
+      "key": "configure-scoring",
+      "label": "Configure scoring weights and roadmap lanes",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder and follow its workflow, then update the `config` settings row with the plan weights, default weight, recency half-life, or roadmap lane names I give."
+    },
+    {
+      "key": "current-config",
+      "label": "What are the current scoring weights and lanes?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder, then show me the current plan weights, default weight, recency half-life, and roadmap lane names."
+    }
+  ],
   "position": 7,
   "fields": [
     {

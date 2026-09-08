@@ -116,5 +116,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "build-paper",
+      "label": "Build a practice paper plan",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder and follow its workflow, then plan a practice paper for the subject/topic/grade I give — title, question count, estimated minutes, difficulty mix, and linked mistakes to focus on. This is a plan only; export happens locally outside this app after parent/teacher approval."
+    },
+    {
+      "key": "analyze-paper",
+      "label": "Analyze a completed paper",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder and follow its workflow, then record the analysis for the paper I name after it was completed — wrong-question count, strengths, concept gaps, and a recommended review sequence."
+    },
+    {
+      "key": "paper-status",
+      "label": "What's in this paper?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder, then show me the paper I name — its focus topics, linked mistakes, difficulty mix, and items, plus its analysis if one exists."
+    }
+  ]
 }

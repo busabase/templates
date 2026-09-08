@@ -36,5 +36,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-update-teacher",
+      "label": "Add or update a teacher",
+      "body": "{target}\n\nRead the `busa-lesson` skill in this folder and follow its workflow, then add or update the teacher record I describe — set the Teacher ID as the stable natural key so re-ingesting stays idempotent, and record their subject and grades."
+    },
+    {
+      "key": "teacher-coverage",
+      "label": "What does this teacher teach?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-lesson` skill in this folder, then look up the teacher I name and tell me their subject and the grades they cover."
+    }
+  ]
 }

@@ -1,80 +1,93 @@
 {
-  "name": "Settings",
-  "description": "Structured non-secret defaults, onboarding version, and privacy policy",
-  "position": 2,
-  "fields": [
-    {
-      "slug": "record-id",
-      "name": "Record ID",
-      "type": "text",
-      "required": true,
-      "position": 0,
-      "options": {}
-    },
-    {
-      "slug": "onboarding-version",
-      "name": "Onboarding version",
-      "type": "number",
-      "required": false,
-      "position": 1,
-      "options": {}
-    },
-    {
-      "slug": "completed-at",
-      "name": "Completed at",
-      "type": "text",
-      "required": false,
-      "position": 2,
-      "options": {}
-    },
-    {
-      "slug": "default-preset",
-      "name": "Default preset",
-      "type": "text",
-      "required": false,
-      "position": 3,
-      "options": {}
-    },
-    {
-      "slug": "default-strength",
-      "name": "Default strength",
-      "type": "number",
-      "required": false,
-      "position": 4,
-      "options": {}
-    },
-    {
-      "slug": "metadata-policy",
-      "name": "Metadata policy",
-      "type": "text",
-      "required": false,
-      "position": 5,
-      "options": {}
-    },
-    {
-      "slug": "external-upload-policy",
-      "name": "External upload policy",
-      "type": "text",
-      "required": false,
-      "position": 6,
-      "options": {}
-    },
-    {
-      "slug": "overwrite-policy",
-      "name": "Overwrite policy",
-      "type": "text",
-      "required": false,
-      "position": 7,
-      "options": {}
-    },
-    {
-      "slug": "updated-at",
-      "name": "Updated at",
-      "type": "text",
-      "required": false,
-      "position": 8,
-      "options": {}
-    }
-  ],
-  "views": []
+    "name": "Settings",
+    "description": "Structured non-secret defaults, onboarding version, and privacy policy",
+    "position": 2,
+    "fields": [
+        {
+            "slug": "record-id",
+            "name": "Record ID",
+            "type": "text",
+            "required": true,
+            "position": 0,
+            "options": {}
+        },
+        {
+            "slug": "onboarding-version",
+            "name": "Onboarding version",
+            "type": "number",
+            "required": false,
+            "position": 1,
+            "options": {}
+        },
+        {
+            "slug": "completed-at",
+            "name": "Completed at",
+            "type": "text",
+            "required": false,
+            "position": 2,
+            "options": {}
+        },
+        {
+            "slug": "default-preset",
+            "name": "Default preset",
+            "type": "text",
+            "required": false,
+            "position": 3,
+            "options": {}
+        },
+        {
+            "slug": "default-strength",
+            "name": "Default strength",
+            "type": "number",
+            "required": false,
+            "position": 4,
+            "options": {}
+        },
+        {
+            "slug": "metadata-policy",
+            "name": "Metadata policy",
+            "type": "text",
+            "required": false,
+            "position": 5,
+            "options": {}
+        },
+        {
+            "slug": "external-upload-policy",
+            "name": "External upload policy",
+            "type": "text",
+            "required": false,
+            "position": 6,
+            "options": {}
+        },
+        {
+            "slug": "overwrite-policy",
+            "name": "Overwrite policy",
+            "type": "text",
+            "required": false,
+            "position": 7,
+            "options": {}
+        },
+        {
+            "slug": "updated-at",
+            "name": "Updated at",
+            "type": "text",
+            "required": false,
+            "position": 8,
+            "options": {}
+        }
+    ],
+    "views": [],
+    "agentPrompts": [
+        {
+            "key": "update-defaults",
+            "label": "Update the default preset, strength, or privacy policy",
+            "body": "{target}\n\nRead the `busa-portrait-retouch` skill in this folder and follow its workflow, then update the settings row's default preset, default strength, metadata policy, external-upload policy, or overwrite policy with the values I give you."
+        },
+        {
+            "key": "current-defaults",
+            "label": "What are the current retouch defaults and privacy policy?",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-portrait-retouch` skill in this folder, then show me the current default preset, default strength, and privacy policies (metadata, external upload, overwrite) from the settings row."
+        }
+    ]
 }

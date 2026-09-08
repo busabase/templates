@@ -108,5 +108,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "draft-episode",
+      "label": "Draft a new episode",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder and follow its workflow, then draft the episode I describe \u2014 promise, A/B plot, beats, and cliffhanger \u2014 as a production unit, keeping runtime flexible (usually 2-4 minutes) rather than forcing a fixed length."
+    },
+    {
+      "key": "link-episode-composition",
+      "label": "Link an episode to its HyperFrame composition",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder and follow its workflow, then set the named episode's hyperframe-composition path and, once rendered, its hyperframe-video-asset \u2014 treating the HyperFrame composition as the canonical final cut once it exists."
+    },
+    {
+      "key": "episode-ladder-status",
+      "label": "What's the status of the episode ladder?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder, then show me every episode with its script/storyboard status and whether it is linked to a HyperFrame composition."
+    }
+  ]
 }

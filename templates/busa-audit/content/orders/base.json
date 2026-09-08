@@ -2,6 +2,20 @@
   "name": "Orders",
   "description": "Normalized sales orders imported from CSV/JSON exports",
   "position": 0,
+  "agentPrompts": [
+    {
+      "key": "order-status",
+      "label": "Show me this order's invoice and payment status",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder, then show me the order I name with its invoice status, payment status, and any linked anomaly."
+    },
+    {
+      "key": "orders-missing-invoice",
+      "label": "Which orders are missing an invoice?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder, then show me the orders that still have no matching invoice past the configured days-to-invoice tolerance."
+    }
+  ],
   "fields": [
     {
       "slug": "order-id",

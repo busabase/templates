@@ -2,6 +2,19 @@
   "name": "Settings",
   "description": "ACOS/ROAS targets and anomaly-detection thresholds, a single settings row",
   "position": 5,
+  "agentPrompts": [
+    {
+      "key": "settings-summary",
+      "label": "Show our current targets and thresholds",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder, then show me the current ACOS/ROAS targets (default plus per-platform and per-product overrides), anomaly-detection thresholds, and currency. Never surface a credential or token value."
+    },
+    {
+      "key": "update-threshold",
+      "label": "Update a target or anomaly threshold",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder and follow its workflow, then update the ACOS/ROAS target or anomaly threshold I describe (for example ACOS breach days, budget-exhausted percent, or the zero-conversion spend floor) directly on the settings row. Never write a platform credential or token into this record."
+    }
+  ],
   "fields": [
     {
       "slug": "record-id",

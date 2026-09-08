@@ -100,5 +100,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-strategy-settings",
+      "label": "Update the firm profile or strategy policy",
+      "body": "{target}\n\nRead the `busa-legal-matter-strategy` skill in this folder and follow its workflow, then update the settings row with the firm profile, jurisdictions, risk scale, enabled drafting templates, and precedent/evidence-map requirements I give you."
+    },
+    {
+      "key": "settings-readiness",
+      "label": "Is the strategy desk ready for a real matter?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-matter-strategy` skill in this folder, then check the settings row and tell me what onboarding — jurisdictions, drafting templates, evidence/precedent policy, export preferences — is still missing before a real strategy pack should be drafted."
+    }
+  ]
 }

@@ -68,5 +68,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-case-library-grouping",
+      "label": "Update a case library grouping",
+      "body": "{target}\n\nRead the `busa-legal-casebase-ingest` skill in this folder and follow its workflow, then update or add the canonical case-library grouping I describe (by cause, court, lawyer, or status) — this is a grouping over reviewed case records, not a place to paste raw source documents."
+    },
+    {
+      "key": "case-library-overview",
+      "label": "What does the case library look like?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-casebase-ingest` skill in this folder, then summarize the canonical case-library groupings by cause, court, lawyer, and status, with their current metrics."
+    }
+  ]
 }

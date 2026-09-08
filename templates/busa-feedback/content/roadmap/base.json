@@ -1,6 +1,14 @@
 {
   "name": "Roadmap",
   "description": "Roadmap lane items (now/next/later), read-only in the app; changed only via approved proposals",
+  "agentPrompts": [
+    {
+      "key": "current-roadmap",
+      "label": "What's on the roadmap right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder, then show me the current roadmap items by lane (Now/Next/Later). This view is read-only here; roadmap changes only happen through an approved proposal executed by `scripts/execute_decisions.mjs`."
+    }
+  ],
   "position": 4,
   "fields": [
     {

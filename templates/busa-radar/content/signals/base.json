@@ -2,6 +2,25 @@
   "name": "Signals",
   "description": "Normalized competitor-monitoring signals: pricing/changelog/launch/review/news/hiring changes",
   "position": 1,
+  "agentPrompts": [
+    {
+      "key": "triage-queue",
+      "label": "What signals need my triage?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder, then summarize the untriaged competitor signals — group by watch target and severity, and lead with the highest-severity ones."
+    },
+    {
+      "key": "explain-signal",
+      "label": "Explain a signal in detail",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder, then show me the full detail for the signal I name — the change summary, why it matters, evidence links, and the before/after diff if it's a page change."
+    },
+    {
+      "key": "decide-signal",
+      "label": "Record my triage decision on a signal",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder and follow its workflow, then record my triage verdict (act / watch / ignore / needs_info) and note on the signal I name. Act queues a handoff — it does not perform the handoff itself; that still needs `execute_decisions.mjs`."
+    }
+  ],
   "fields": [
     {
       "slug": "signal-id",

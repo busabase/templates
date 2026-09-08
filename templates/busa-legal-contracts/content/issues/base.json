@@ -252,5 +252,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "raise-clause-issue",
+      "label": "Raise a clause issue on a contract",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder and follow its workflow, then draft the clause issue I describe against the clause playbook, using the field shape for its workstream (nda: risk notes/fallback language/negotiation notes; msa: fallback language/memo; dpa: business ask; sow: structured facts), and run the risk checks so it lands in the review queue."
+    },
+    {
+      "key": "decide-on-issue",
+      "label": "Approve, request changes, or block a clause issue",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder and follow its workflow, then record my decision on the clause issue I name. If a hard-stop term is present — uncapped liability, perpetual data retention, broad indemnity, or missing DPA terms — block or request changes rather than weakening the rule; never approve on my behalf without an explicit instruction to do so."
+    },
+    {
+      "key": "review-queue-status",
+      "label": "What is waiting for review right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder, then show me the clause issues waiting for review, grouped by workstream, with their risk score and any failing risk checks."
+    }
+  ]
 }

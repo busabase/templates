@@ -1,5 +1,25 @@
 {
   "type": "airapp",
   "name": "Busa Family Office",
-  "description": "Multi-entity family-office consolidation dashboard"
+  "description": "Multi-entity family-office consolidation dashboard",
+  "agentPrompts": [
+    {
+      "key": "aum-overview",
+      "label": "Show me total AUM and unrealized P/L",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-family-office` skill in this folder, then open the overview and summarize total consolidated AUM in the base currency, unrealized P/L, entity count, and the headline allocation. This app only reads Busabase and never trades, moves money, or rebalances."
+    },
+    {
+      "key": "concentration-check",
+      "label": "Where are we concentrated?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-family-office` skill in this folder, then check for asset-class, institution, or entity concentration and any allocation drift from the target allocation, and report them as neutral facts, never as trading advice."
+    },
+    {
+      "key": "performance-by-entity",
+      "label": "Show performance by entity",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-family-office` skill in this folder, then show me cost basis versus market value and unrealized P/L (absolute and percent) for each entity and for the whole family office in the base currency."
+    }
+  ]
 }

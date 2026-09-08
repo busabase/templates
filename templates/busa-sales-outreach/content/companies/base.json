@@ -2,6 +2,29 @@
   "name": "目标客户",
   "description": "One row per target account with fit evidence, pain signals, a reviewed first-touch draft, and outreach state",
   "position": 1,
+  "agentPrompts": [
+    {
+      "key": "queue-overview",
+      "label": "What's in my outreach queue?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-sales-outreach` skill in this folder, then show me the target accounts grouped by status (needs review / to-send / sent / opted-out), with match score, match reason, and pain signals for each."
+    },
+    {
+      "key": "draft-outreach",
+      "label": "Draft or refine a first-touch email",
+      "body": "{target}\n\nRead the `busa-sales-outreach` skill in this folder and follow its workflow, then draft or refine the first-touch email subject/body for the company I name, grounded only in stored offer claims and this company's observed signals — never invent urgency, customer logos, metrics, or relationships."
+    },
+    {
+      "key": "approve-send",
+      "label": "Approve a company's first touch",
+      "body": "{target}\n\nRead the `busa-sales-outreach` skill in this folder and follow its workflow, then approve the first-touch draft for the company I name, moving it to `queued`. This only queues it — the trusted sender still has to run `send_emails.mjs --apply` to actually send it."
+    },
+    {
+      "key": "opt-out",
+      "label": "Mark a company opted out",
+      "body": "{target}\n\nRead the `busa-sales-outreach` skill in this folder, then mark the company I name `opted-out` immediately. This is terminal — never queue or send to this company again."
+    }
+  ],
   "fields": [
     {
       "slug": "name",

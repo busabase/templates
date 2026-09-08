@@ -1,5 +1,18 @@
 {
   "type": "airapp",
   "name": "Busa Invoice Sheet",
-  "description": "Busa Invoice Sheet: invoice/receipt/credit-note/statement extraction batches under human review, with field confidence, line items, and export-ready approved rows"
+  "description": "Busa Invoice Sheet: invoice/receipt/credit-note/statement extraction batches under human review, with field confidence, line items, and export-ready approved rows",
+  "agentPrompts": [
+    {
+      "key": "process-new-invoices",
+      "label": "Process new invoice files",
+      "body": "{target}\n\nRead the `busa-invoice-sheet` skill in this folder and follow its workflow, then extract the invoices, receipts, or credit notes I give you, import them for review, and give me the AirApp URL so I can review and decide on each row."
+    },
+    {
+      "key": "attention-needed",
+      "label": "What needs my attention right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-invoice-sheet` skill in this folder, then summarize how many invoices are `needs_review`, `changes_requested`, `blocked`, `approved`, and `done`, and call out the ones with low confidence or unresolved warnings."
+    }
+  ]
 }

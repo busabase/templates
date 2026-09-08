@@ -100,5 +100,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "top-movers",
+      "label": "Show pages gaining and losing clicks",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder, then show me the pages with the biggest click gains and losses this period, flagging any indexing or canonical issues.",
+      "intent": "read-only"
+    },
+    {
+      "key": "note-page-change",
+      "label": "Note what happened to a page",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder and follow its workflow, then add an agent note on the page I name explaining what happened to its performance."
+    }
+  ]
 }

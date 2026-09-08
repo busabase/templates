@@ -2,6 +2,19 @@
   "name": "Settings",
   "description": "Seller profile, platform connectors, warehouses, and review policy -- a single settings row",
   "position": 4,
+  "agentPrompts": [
+    {
+      "key": "show-config",
+      "label": "What's the current seller/channel config?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder, then show me the seller profile, platform connectors, warehouses, and review policy currently on record."
+    },
+    {
+      "key": "update-review-policy",
+      "label": "Update the review policy or warehouse list",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder and follow its workflow, then update the review policy, warehouse list, or platform connector info I give you on the settings row."
+    }
+  ],
   "fields": [
     {
       "slug": "record-id",

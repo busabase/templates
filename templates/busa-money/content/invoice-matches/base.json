@@ -132,5 +132,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "match-invoices",
+      "label": "Match invoices to transactions",
+      "body": "{target}\n\nRead the `busa-money` skill in this folder and follow its workflow, then reconcile invoices against transactions and write the matches, confidence, and amount/date deltas to Busabase, flagging anything outside tolerance for my review instead of guessing."
+    },
+    {
+      "key": "reconciliation-review",
+      "label": "What needs reconciliation review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-money` skill in this folder, then list the invoices with a missing match, an amount mismatch, or low confidence, with the amount/date delta and matching rule."
+    }
+  ]
 }

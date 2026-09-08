@@ -84,5 +84,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "member-history",
+      "label": "Show a member's update history",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder, then show me the member I name's yesterday/today/blockers updates over time.",
+      "intent": "read-only"
+    },
+    {
+      "key": "log-manual-checkin",
+      "label": "Log an update someone gave me directly",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder and follow its workflow, then parse the update I'm dictating for the member I name into yesterday/today/blockers and add it to today's board, following the ingest workflow."
+    }
+  ]
 }

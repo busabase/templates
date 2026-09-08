@@ -92,5 +92,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-update-claim",
+      "label": "Add or update a marketing claim",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder and follow its workflow, then add or update the marketing claim I describe with its substantiation and evidence, and mark it approved or rejected — never approve a claim the checks would flag."
+    },
+    {
+      "key": "approved-claims",
+      "label": "What claims are approved for use?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder, then list the approved marketing claims by category, with their substantiation."
+    }
+  ]
 }

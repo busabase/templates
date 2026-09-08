@@ -124,5 +124,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-product",
+      "label": "Add a new product from source material",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder and follow its workflow, then add the product I describe from its specs, feature list, target keywords, and image checklist — set source to busa_picks and note the pick reference if it came from a busa-picks handoff brief."
+    },
+    {
+      "key": "products-missing-drafts",
+      "label": "What still needs drafts?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder, then list the products that don't yet have a draft for one of their target platforms."
+    }
+  ]
 }

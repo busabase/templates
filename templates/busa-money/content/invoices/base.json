@@ -132,5 +132,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "import-invoice",
+      "label": "Import invoice metadata",
+      "body": "{target}\n\nRead the `busa-money` skill in this folder and follow its workflow, then parse the provider export, PDF, or manual details I give you into invoice metadata and write it to Busabase — never commit the raw invoice PDF to git."
+    },
+    {
+      "key": "outstanding-invoices",
+      "label": "What invoices are outstanding?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-money` skill in this folder, then list the unpaid or overdue invoices by due date, with vendor/customer and amount."
+    }
+  ]
 }

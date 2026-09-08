@@ -2,6 +2,24 @@
   "name": "Deals",
   "description": "Sales opportunities tracked from qualification through closed outcome.",
   "position": 0,
+  "agentPrompts": [
+    {
+      "key": "add-opportunity",
+      "label": "Add a new opportunity",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder and follow its workflow, then add the opportunity I describe — reuse the canonical Company and Contact record ids for the relation fields rather than writing display names, and leave anything I did not tell you empty."
+    },
+    {
+      "key": "advance-deal",
+      "label": "Move a deal to its next stage",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder and follow its workflow, then advance the deal I name to its next stage. Record what changed and the agreed next step; do not touch Relationship Type, which describes the account, not this deal."
+    },
+    {
+      "key": "closing-this-month",
+      "label": "What is closing this month?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder, then show me the deals with an expected close date this month, grouped by stage, with the amount in its stated currency. Do not convert currencies or forecast a weighted total."
+    }
+  ],
   "fields": [
     {
       "slug": "deal-name",

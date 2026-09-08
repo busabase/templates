@@ -140,5 +140,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "sync-accounts",
+      "label": "Sync my provider accounts",
+      "body": "{target}\n\nRead the `busa-money` skill in this folder and follow its workflow, then propose a read-only sync scope (providers, accounts, date window, currencies, whether to include pending) for my approval, and after I approve, fetch and normalize the account balances and totals into Busabase."
+    },
+    {
+      "key": "account-attention",
+      "label": "Which accounts need attention?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-money` skill in this folder, then list the accounts with a warning status, a stale last-sync time, or a balance/transaction mismatch, and explain each without inventing a correction."
+    }
+  ]
 }

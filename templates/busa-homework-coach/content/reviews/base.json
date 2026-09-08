@@ -148,5 +148,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "decide-review",
+      "label": "Approve, request changes, or block a review item",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder and follow its workflow, then record my decision on the review item I name — write the decision action and my note onto its decision-action, decision-comment, and decided-at fields, and mirror the resulting status onto the linked question, mistake, or paper."
+    },
+    {
+      "key": "needs-review",
+      "label": "What needs my review right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder, then list the review items still needing a parent/teacher decision, with each one's target (question, mistake, or paper), summary, and proposed action."
+    }
+  ]
 }

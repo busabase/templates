@@ -60,5 +60,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "latest-sync",
+      "label": "What happened in the last sync?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder, then show me the most recent sync entry per account — method, status, message, and how many new messages it pulled in."
+    },
+    {
+      "key": "failing-syncs",
+      "label": "Which accounts are failing to sync?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder, then list the accounts whose recent sync-log entries show an error status, with the error message."
+    }
+  ]
 }

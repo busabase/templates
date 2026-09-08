@@ -76,5 +76,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "sync-history",
+      "label": "Show recent collection runs",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder, then show me the recent collection runs per account — when they ran, the method used, and how many posts were collected.",
+      "intent": "read-only"
+    },
+    {
+      "key": "failed-syncs",
+      "label": "Which collections failed or need attention?",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder, then show me any collection runs that failed or reported a warning, and which account and method was involved.",
+      "intent": "read-only"
+    }
+  ]
 }

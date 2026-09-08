@@ -276,5 +276,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "ingest-case-record",
+      "label": "Ingest a new case record from a document",
+      "body": "{target}\n\nRead the `busa-legal-casebase-ingest` skill in this folder and follow its workflow, then prepare and ingest the case record I describe — facts, court reasoning, legal basis, tags, cause of action, court/arbitral body, and source paragraphs — with anonymization evidence attached, so it lands in the review queue rather than being marked approved directly."
+    },
+    {
+      "key": "decide-on-case-record",
+      "label": "Approve, request changes, revise, or block a case record",
+      "body": "{target}\n\nRead the `busa-legal-casebase-ingest` skill in this folder and follow its workflow, then record my decision on the case record I name. Block or request changes when PII evidence is missing, anonymization checks fail, duplicate risk is unresolved, required taxonomy is incomplete, source coverage is thin, or extraction confidence is low; approve only when the record is reusable without exposing raw client names or privileged source text."
+    },
+    {
+      "key": "needs-review",
+      "label": "What is waiting for review right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-casebase-ingest` skill in this folder, then show me the case records waiting for review, grouped by status, with anonymization risk, duplicate score, and extraction confidence. Flag any with missing PII evidence or incomplete taxonomy."
+    }
+  ]
 }

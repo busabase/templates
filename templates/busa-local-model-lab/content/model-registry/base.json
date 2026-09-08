@@ -84,5 +84,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "promotion-decision",
+      "label": "Promote, hold, or reject an adapter",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder and follow its workflow, then record my promote, hold, or reject decision for the adapter I name, creating or updating its model-registry record with the base revision, dataset hash, run id, and artifact reference — this verdict is mine to make, never fabricate it."
+    },
+    {
+      "key": "registry-lineage",
+      "label": "What's active or candidate right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder, then list the active, candidate, and retired adapters with their complete lineage — base model, revision, dataset hash, and training run."
+    }
+  ]
 }

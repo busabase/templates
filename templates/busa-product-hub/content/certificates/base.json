@@ -2,6 +2,19 @@
   "name": "Certificates",
   "description": "One row per product certificate (CE/FCC/RoHS/UN38.3/UKCA/Other): issuer, certificate number, issued/expiry dates, the certificate file itself, and a source note. There is no stored status field -- expiring_soon/expired/valid is always derived client-side from expiry-date vs now, the same derived-not-stored pattern as this app's own SLA/status badges (see product-hub-model.js's certStatusFor).",
   "position": 5,
+  "agentPrompts": [
+    {
+      "key": "expiry-check",
+      "label": "What certificates are expiring soon?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder, then list certificates that are expired or expiring within 90 days, soonest first, with the product each belongs to."
+    },
+    {
+      "key": "log-certificate",
+      "label": "Record a new or renewed certificate",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder and follow its workflow, then record the certificate I describe (type, issuer, certificate number, issued/expiry dates, file, and a source note citing the specific document and page/section) for the product I name. Never invent an expiry date or issuer — mark it missing and request evidence instead."
+    }
+  ],
   "fields": [
     {
       "slug": "product",

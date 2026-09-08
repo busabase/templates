@@ -52,5 +52,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "run-history",
+      "label": "Show recent ingest/triage runs",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder, then show me the recent ingest, triage, and execute runs with their counts.",
+      "intent": "read-only"
+    },
+    {
+      "key": "recent-failures",
+      "label": "Did any runs report problems?",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder, then show me any ingest or triage runs that reported a problem, and what it was.",
+      "intent": "read-only"
+    }
+  ]
 }

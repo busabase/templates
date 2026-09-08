@@ -100,5 +100,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "account-health",
+      "label": "Show connected-account health",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder, then show me the connected accounts' platform status, audience totals, and sync freshness, and flag any account whose status isn't ok.",
+      "intent": "read-only"
+    },
+    {
+      "key": "add-account",
+      "label": "Connect a new account to monitor",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder and follow its workflow, then walk me through connecting a new social account — which platform, handle, display name, and collection method (browser agent, manual export, or API)."
+    }
+  ]
 }

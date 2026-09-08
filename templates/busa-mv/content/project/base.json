@@ -1,96 +1,114 @@
 {
-  "name": "Project",
-  "description": "Single-row MV project meta: song metadata + concept (treatment)",
-  "position": 0,
-  "fields": [
-    {
-      "slug": "project-id",
-      "name": "Project ID",
-      "type": "text",
-      "required": true,
-      "position": 0,
-      "options": {}
-    },
-    {
-      "slug": "song-title",
-      "name": "Song title",
-      "type": "text",
-      "required": false,
-      "position": 1,
-      "options": {}
-    },
-    {
-      "slug": "song-artist",
-      "name": "Song artist",
-      "type": "text",
-      "required": false,
-      "position": 2,
-      "options": {}
-    },
-    {
-      "slug": "song-audio-asset-id",
-      "name": "Song audio asset ID",
-      "type": "text",
-      "required": false,
-      "position": 3,
-      "options": {}
-    },
-    {
-      "slug": "song-duration-seconds",
-      "name": "Song duration seconds",
-      "type": "number",
-      "required": false,
-      "position": 4,
-      "options": {}
-    },
-    {
-      "slug": "song-source",
-      "name": "Song source",
-      "type": "text",
-      "required": false,
-      "position": 5,
-      "options": {}
-    },
-    {
-      "slug": "song-uploaded-at",
-      "name": "Song uploaded at",
-      "type": "text",
-      "required": false,
-      "position": 6,
-      "options": {}
-    },
-    {
-      "slug": "treatment-summary",
-      "name": "Treatment summary",
-      "type": "longtext",
-      "required": false,
-      "position": 7,
-      "options": {}
-    },
-    {
-      "slug": "treatment-look",
-      "name": "Treatment look",
-      "type": "longtext",
-      "required": false,
-      "position": 8,
-      "options": {}
-    },
-    {
-      "slug": "treatment-aspect-ratio",
-      "name": "Treatment aspect ratio",
-      "type": "text",
-      "required": false,
-      "position": 9,
-      "options": {}
-    },
-    {
-      "slug": "updated-at",
-      "name": "Updated at",
-      "type": "text",
-      "required": false,
-      "position": 10,
-      "options": {}
-    }
-  ],
-  "views": []
+    "name": "Project",
+    "description": "Single-row MV project meta: song metadata + concept (treatment)",
+    "position": 0,
+    "fields": [
+        {
+            "slug": "project-id",
+            "name": "Project ID",
+            "type": "text",
+            "required": true,
+            "position": 0,
+            "options": {}
+        },
+        {
+            "slug": "song-title",
+            "name": "Song title",
+            "type": "text",
+            "required": false,
+            "position": 1,
+            "options": {}
+        },
+        {
+            "slug": "song-artist",
+            "name": "Song artist",
+            "type": "text",
+            "required": false,
+            "position": 2,
+            "options": {}
+        },
+        {
+            "slug": "song-audio-asset-id",
+            "name": "Song audio asset ID",
+            "type": "text",
+            "required": false,
+            "position": 3,
+            "options": {}
+        },
+        {
+            "slug": "song-duration-seconds",
+            "name": "Song duration seconds",
+            "type": "number",
+            "required": false,
+            "position": 4,
+            "options": {}
+        },
+        {
+            "slug": "song-source",
+            "name": "Song source",
+            "type": "text",
+            "required": false,
+            "position": 5,
+            "options": {}
+        },
+        {
+            "slug": "song-uploaded-at",
+            "name": "Song uploaded at",
+            "type": "text",
+            "required": false,
+            "position": 6,
+            "options": {}
+        },
+        {
+            "slug": "treatment-summary",
+            "name": "Treatment summary",
+            "type": "longtext",
+            "required": false,
+            "position": 7,
+            "options": {}
+        },
+        {
+            "slug": "treatment-look",
+            "name": "Treatment look",
+            "type": "longtext",
+            "required": false,
+            "position": 8,
+            "options": {}
+        },
+        {
+            "slug": "treatment-aspect-ratio",
+            "name": "Treatment aspect ratio",
+            "type": "text",
+            "required": false,
+            "position": 9,
+            "options": {}
+        },
+        {
+            "slug": "updated-at",
+            "name": "Updated at",
+            "type": "text",
+            "required": false,
+            "position": 10,
+            "options": {}
+        }
+    ],
+    "views": [],
+    "agentPrompts": [
+        {
+            "key": "write-concept",
+            "label": "Write or update the MV concept",
+            "body": "{target}\n\nRead the `busa-mv` skill in this folder and follow its workflow, then write or update the project's treatment: a one-line summary of what the MV is and its tonality, a one-line visual `look`, and the aspect ratio. Keep it to those three things — do not add song-section taxonomies or extra fields."
+        },
+        {
+            "key": "record-song-details",
+            "label": "Record the song title and artist",
+            "body": "{target}\n\nRead the `busa-mv` skill in this folder and follow its workflow, then set the song title and artist on the project record. The MP3 file itself and its duration are handled by upload, not by you — only update the metadata I give you."
+        },
+        {
+            "key": "project-status",
+            "label": "Where does this MV project stand?",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-mv` skill in this folder, then summarize the project: whether a song is uploaded, the current concept/look/aspect ratio, and what's still missing before storyboard work can start."
+        }
+    ]
 }

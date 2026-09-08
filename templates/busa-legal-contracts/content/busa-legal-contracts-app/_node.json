@@ -1,5 +1,19 @@
 {
   "type": "airapp",
   "name": "Busa Legal Contracts",
-  "description": "Legal-contract review desk: contract library, clause issues, risk checks, clause playbook, and a review queue"
+  "description": "Legal-contract review desk: contract library, clause issues, risk checks, clause playbook, and a review queue",
+  "agentPrompts": [
+    {
+      "key": "legal-desk-overview",
+      "label": "Show me the legal command desk",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder, then summarize the legal desk: contract × workstream status, risk pass rate, review queue preview, and recent activity."
+    },
+    {
+      "key": "review-queue-summary",
+      "label": "What needs my review or approval?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder, then summarize the review queue across contracts and workstreams, and flag anything blocked by a hard-stop term or high risk score."
+    }
+  ]
 }

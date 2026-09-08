@@ -292,5 +292,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "add-character",
+      "label": "Add a new character to the library",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder and follow its workflow, then create the character I describe \u2014 identity, motivation, wound, secret, arc, three-view visual notes, wardrobe, forbidden-drift anchors, and voice profile \u2014 as the story's source of truth, kept separate from the actor playing them."
+    },
+    {
+      "key": "request-reference-asset",
+      "label": "Request a reference card or reference voice",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder and follow its workflow, then mark the named character's reference-card and/or voice-reference status as requested so the trusted generation script can fulfill it; do not attempt to generate the asset yourself from the browser."
+    },
+    {
+      "key": "missing-reference-cards",
+      "label": "Which characters still need reference cards?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder, then list characters without a generated reference card, since storyboard shots for them will fall back to text-to-image and drift in consistency."
+    }
+  ]
 }

@@ -2,6 +2,24 @@
   "name": "Companies",
   "description": "Organizations tracked by the sales team.",
   "position": 0,
+  "agentPrompts": [
+    {
+      "key": "add-company",
+      "label": "Add a new company",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder and follow its workflow, then add the company I describe, with its Relationship Type (Prospect, Customer, Partner, or Former Customer). Do not infer industry, company size, or headquarters from weak context — leave anything I did not tell you empty."
+    },
+    {
+      "key": "update-relationship-type",
+      "label": "Update an account's relationship stage",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder and follow its workflow, then update this company's Relationship Type to reflect the change I describe, such as a Prospect becoming a Customer. Relationship Type describes the account, not any one deal's sales stage — leave Deal Stage alone."
+    },
+    {
+      "key": "accounts-by-relationship",
+      "label": "Show our accounts by relationship type",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `b2b-crm` skill in this folder, then show me the companies grouped by Relationship Type (Prospect, Customer, Partner, Former Customer), stating when the summary covers only the loaded page."
+    }
+  ],
   "fields": [
     {
       "slug": "company-name",

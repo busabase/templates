@@ -1,5 +1,18 @@
 {
-  "type": "airapp",
-  "name": "Busa MV",
-  "description": "Music-video workspace: song, concept, cast reference cards, and storyboard shots"
+    "type": "airapp",
+    "name": "Busa MV",
+    "description": "Music-video workspace: song, concept, cast reference cards, and storyboard shots",
+    "agentPrompts": [
+        {
+            "key": "mv-overview",
+            "label": "Show me the MV project overview",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-mv` skill in this folder, then summarize the concept, song, cast reference-card readiness, and storyboard completeness in one pass."
+        },
+        {
+            "key": "fulfill-pending-generation",
+            "label": "Fulfill pending generation requests",
+            "body": "{target}\n\nRead the `busa-mv` skill in this folder and follow its workflow, then fulfill any character reference-card, shot-image, or shot-video generation requests that are currently in `requested` status, in dependency order (reference cards before storyboard images)."
+        }
+    ]
 }

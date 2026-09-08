@@ -1,5 +1,19 @@
 {
   "type": "airapp",
   "name": "Legal Matter Strategy",
-  "description": "Matter-strategy desk over new-case strategy, issue trees, evidence checklists, risk analysis, pleading outlines, and approval-gated drafting packs grounded in internal precedents (approve / request changes / revise / block) before a strategy pack becomes a drafting handoff"
+  "description": "Matter-strategy desk over new-case strategy, issue trees, evidence checklists, risk analysis, pleading outlines, and approval-gated drafting packs grounded in internal precedents (approve / request changes / revise / block) before a strategy pack becomes a drafting handoff",
+  "agentPrompts": [
+    {
+      "key": "strategy-desk-overview",
+      "label": "Show me the strategy command desk",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-matter-strategy` skill in this folder, then summarize the matter-strategy desk: partner-review load, ready-to-draft strategies, evidence gaps, and deadline pressure."
+    },
+    {
+      "key": "review-queue-summary",
+      "label": "What needs my review or approval?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-matter-strategy` skill in this folder, then summarize the review queue of strategy packs, flagging anything with missing facts, unresolved evidence gaps, or an approaching deadline."
+    }
+  ]
 }

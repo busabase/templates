@@ -2,6 +2,19 @@
   "name": "Settings",
   "description": "Product profile, research defaults, trend sources, and cadence, a single settings row",
   "position": 8,
+  "agentPrompts": [
+    {
+      "key": "show-config",
+      "label": "What's the current radar config?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder, then show me the current product profile, monitoring/trend cadence, research defaults, and trend sources."
+    },
+    {
+      "key": "update-cadence",
+      "label": "Update cadence or research defaults",
+      "body": "{target}\n\nRead the `busa-radar` skill in this folder and follow its workflow, then update the monitoring cadence, trend cadence, research defaults (depth, source policy, citation requirement, max sources), or trend sources with the values I give you."
+    }
+  ],
   "fields": [
     {
       "slug": "record-id",

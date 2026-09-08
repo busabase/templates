@@ -2,6 +2,19 @@
   "name": "Settings",
   "description": "Brand/audience/channel profile and the agent lock",
   "position": 1,
+  "agentPrompts": [
+    {
+      "key": "update-profile",
+      "label": "Update the brand, audience, and channel profile",
+      "body": "{target}\n\nRead the `busa-writer` skill in this folder and follow its workflow, then update the `busa-writer-profile` settings row with the brand, audience, official URLs, CTA defaults, channel defaults, and risk terms I give you — never write a secret value into this record."
+    },
+    {
+      "key": "check-profile",
+      "label": "What is the current writer profile?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-writer` skill in this folder, then show me the current brand, audience, tone, configured channels, and CTA defaults from the settings row, and tell me the exact `generate_batch.mjs` / `export_decisions.mjs` commands to run next."
+    }
+  ],
   "fields": [
     {
       "slug": "record-id",

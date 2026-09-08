@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Tickets",
-  "description": "Complaint/ticket triage-and-dispatch desk: intake stream, ticket board, and a dispatch review queue"
+  "description": "Complaint/ticket triage-and-dispatch desk: intake stream, ticket board, and a dispatch review queue",
+  "agentPrompts": [
+    {
+      "key": "dispatch-overview",
+      "label": "Summarize what needs my attention",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder, then open the overview and summarize dispatch proposals awaiting approval, unclassified intake, and SLA-breaching tickets.",
+      "intent": "read-only"
+    },
+    {
+      "key": "review-dispatch",
+      "label": "Review the dispatch queue",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder and follow its workflow, then walk me through the pending dispatch proposals so I can approve, request changes, or block each proposed crew assignment."
+    },
+    {
+      "key": "ingest-complaints",
+      "label": "Ingest and triage new complaints",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder and follow its workflow, then ingest and triage the complaints from the export or log I give you — classify each one and propose a crew, priority, and SLA — then get the proposals ready for my review."
+    }
+  ]
 }

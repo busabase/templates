@@ -116,5 +116,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "review-queue",
+      "label": "Review the action queue",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder, then list the action cards awaiting a decision, each with its type, reason, evidence, and proposed plan, so I can decide what to approve."
+    },
+    {
+      "key": "decide-action",
+      "label": "Approve, request changes, or block an action",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder and follow its workflow, then write my verdict (approve, request changes, or block) and note onto the action card I name. Never mark a card done yourself \u2014 that only happens after the real renewal/rotation/restart is performed outside the app and reported back."
+    },
+    {
+      "key": "complete-action",
+      "label": "Mark an approved action done",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder and follow its workflow, then, only after I confirm the real-world renewal/rotation/restart already happened, mark the named action card done with a note describing what was done, and append the matching event."
+    }
+  ]
 }

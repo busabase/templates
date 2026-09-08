@@ -68,5 +68,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "judge-agent-review-checks",
+      "label": "Judge the curriculum-alignment checks",
+      "body": "{target}\n\nRead the `busa-lesson` skill in this folder and follow its workflow, then judge the checks marked agent_review for the plan I name by comparing its objectives against the cited curriculum refs, and deliver your verdicts."
+    },
+    {
+      "key": "plan-failures",
+      "label": "What's failing for this plan?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-lesson` skill in this folder, then show me every warn/fail compliance result for the plan I name, with the rule, severity, and evidence snippet."
+    }
+  ]
 }

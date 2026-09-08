@@ -76,5 +76,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "draft-failures",
+      "label": "What's failing for this draft?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder, then show me every warn/fail compliance result for the draft I name, with the rule, severity, and evidence."
+    },
+    {
+      "key": "banned-word-hits",
+      "label": "Show banned-word and competitor-brand hits",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder, then show me every check across all drafts that failed on a banned word, competitor brand, or claims-registry violation."
+    }
+  ]
 }

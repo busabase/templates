@@ -2,6 +2,19 @@
   "name": "Inventory",
   "description": "One row per product x warehouse: on-hand/available/reserved/inbound units, inbound ETA, days of cover, and stock-risk status.",
   "position": 2,
+  "agentPrompts": [
+    {
+      "key": "stock-risk-overview",
+      "label": "Which products are at stock risk?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder, then list the products at low-stock or stockout risk, with days of cover, on-hand/available units, and inbound ETA per warehouse."
+    },
+    {
+      "key": "record-inbound",
+      "label": "Record an inbound shipment",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder and follow its workflow, then update on-hand/available/reserved/inbound units and the inbound ETA for the product and warehouse I name, using the stock count I give you."
+    }
+  ],
   "fields": [
     {
       "slug": "inventory-id",

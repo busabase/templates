@@ -2,6 +2,20 @@
   "name": "Payments",
   "description": "Normalized payments / receipts (回款) imported from CSV/JSON exports",
   "position": 2,
+  "agentPrompts": [
+    {
+      "key": "payment-lookup",
+      "label": "Find this payment and what it matches",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder, then find the payment I describe and show which invoice and order it matches."
+    },
+    {
+      "key": "unmatched-payments",
+      "label": "Which payments match no invoice?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder, then show me the payments that match no invoice, so I can chase down the missing documents."
+    }
+  ],
   "fields": [
     {
       "slug": "payment-id",

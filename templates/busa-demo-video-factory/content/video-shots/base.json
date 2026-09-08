@@ -113,5 +113,23 @@
       }
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-storyboard-shots",
+      "label": "Add shots to a video's storyboard",
+      "body": "{target}\n\nRead the `busa-demo-video-factory` skill in this folder and follow its workflow, then add the shots I describe to the named video's storyboard — timecode, scene, script line, and code reference when the shot demos a real product surface. Leave recording-status as pending until it is actually recorded."
+    },
+    {
+      "key": "mark-shot-recorded",
+      "label": "Mark a shot recorded or needing a reshoot",
+      "body": "{target}\n\nRead the `busa-demo-video-factory` skill in this folder and follow its workflow, then update the recording-status of the shot I name to recorded or needs_reshoot, and attach the asset if I give you one."
+    },
+    {
+      "key": "whats-left-to-record",
+      "label": "What's left to record?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-demo-video-factory` skill in this folder, then show me the shots still pending for the video I name (or across all videos), grouped by video with a recording-progress rollup."
+    }
+  ]
 }

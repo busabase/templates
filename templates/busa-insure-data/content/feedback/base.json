@@ -84,5 +84,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "recent-feedback",
+      "label": "Summarize recent user feedback",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-insure-data` skill in this folder, then summarize the most recent user feedback — content, rating, category, and status."
+    },
+    {
+      "key": "flagged-feedback",
+      "label": "Show feedback that needs follow-up",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-insure-data` skill in this folder, then show me the feedback items with a low rating or a status that still needs follow-up, with their source and contact if available."
+    }
+  ]
 }

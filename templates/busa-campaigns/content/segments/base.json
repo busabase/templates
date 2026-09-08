@@ -36,5 +36,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "build-or-refresh-segment",
+      "label": "Build or refresh an audience segment",
+      "body": "{target}\n\nRead the `busa-campaigns` skill in this folder and follow its workflow, then build (or refresh the size and description of) the audience segment I describe, so it can be used to target a send."
+    },
+    {
+      "key": "segment-overview",
+      "label": "What segments do we have?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-campaigns` skill in this folder, then list the current audience segments with their description and audience size."
+    }
+  ]
 }

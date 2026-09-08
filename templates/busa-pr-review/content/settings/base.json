@@ -2,6 +2,20 @@
   "name": "Settings",
   "description": "Reviewer/repo profile and the agent lock",
   "position": 1,
+  "agentPrompts": [
+    {
+      "key": "show-profile",
+      "label": "What reviewer/repo config is active?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-pr-review` skill in this folder, then show me the current `busa-pr-review-profile` row — reviewer, repo filters, query, and review policy — that the next `generate_review_batch.mjs --apply` run will use."
+    },
+    {
+      "key": "check-lock",
+      "label": "Is a batch run currently locked?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-pr-review` skill in this folder, then check the `busa-pr-review-lock` row and tell me whether a review batch generation or execution is currently in progress."
+    }
+  ],
   "fields": [
     {
       "slug": "record-id",

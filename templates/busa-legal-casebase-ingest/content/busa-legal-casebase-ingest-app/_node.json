@@ -1,5 +1,19 @@
 {
   "type": "airapp",
   "name": "Legal Casebase Ingest",
-  "description": "Casebase intake and anonymization QA desk for law-firm judgment and arbitral award documents: agent-prepared case records, canonical case-library groupings, deterministic QA checks, and a review queue (approve / request changes / revise / block) before a record becomes a searchable knowledge asset"
+  "description": "Casebase intake and anonymization QA desk for law-firm judgment and arbitral award documents: agent-prepared case records, canonical case-library groupings, deterministic QA checks, and a review queue (approve / request changes / revise / block) before a record becomes a searchable knowledge asset",
+  "agentPrompts": [
+    {
+      "key": "casebase-overview",
+      "label": "Show me the casebase command desk",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-casebase-ingest` skill in this folder, then summarize the casebase: intake progress, anonymization risk, QA burden, review load, and recent activity."
+    },
+    {
+      "key": "review-queue-summary",
+      "label": "What needs my review or approval?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-casebase-ingest` skill in this folder, then summarize the review queue — case records awaiting a decision — flagging any with missing PII evidence, unresolved duplicate risk, or incomplete taxonomy."
+    }
+  ]
 }

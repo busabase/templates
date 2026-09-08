@@ -84,5 +84,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "site-status",
+      "label": "Show site sync status",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder, then show me the configured Search Console properties with their 28-day totals and how fresh each site's last sync is.",
+      "intent": "read-only"
+    },
+    {
+      "key": "add-site",
+      "label": "Add a new site to track",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder and follow its workflow, then walk me through adding a new site property to track — I'll give you the property URL and verification type — and get it ready to sync."
+    }
+  ]
 }

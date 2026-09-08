@@ -148,5 +148,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "prepare-training-run",
+      "label": "Prepare a new training run",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder and follow its workflow, then create a ready training run with the exact base model and revision, method, dataset snapshot reference and SHA-256 hash, and config I give you — never train from a mutable live query."
+    },
+    {
+      "key": "runs-status",
+      "label": "What's the status of runs?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-local-model-lab` skill in this folder, then show me each run's base model, method, claim/status, last heartbeat, artifacts, and any failure."
+    }
+  ]
 }

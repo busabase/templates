@@ -108,5 +108,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "propose-action",
+      "label": "Turn an approved signal into an action",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder and follow its workflow, then propose a listing edit, ad angle, bundle test, or operating action for the signal I name \u2014 owner, priority, reason, and a concrete next step \u2014 linked back to that signal."
+    },
+    {
+      "key": "decide-action",
+      "label": "Decide on an action",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder and follow its workflow, then write my verdict (approve / request changes / block) and review note directly onto the action I name."
+    },
+    {
+      "key": "actions-ready-to-execute",
+      "label": "What actions are ready to execute?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder, then list the approved actions ready for handoff, with owner, priority, and next step, so I know what to execute today."
+    }
+  ]
 }

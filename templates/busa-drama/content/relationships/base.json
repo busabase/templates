@@ -92,5 +92,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "update-relationship",
+      "label": "Add or update a relationship between two characters",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder and follow its workflow, then record the relationship I describe between the two characters \u2014 type, power dynamic, emotional temperature, conflict, and the evidence episodes \u2014 using the characters' canonical ids, not display names. If the relationship just changed (reconciled, betrayed, revealed kinship), update it explicitly rather than leaving stale state."
+    },
+    {
+      "key": "power-dynamics-map",
+      "label": "Map the power dynamics in this story",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder, then summarize the relationship map \u2014 who holds power over whom, current conflicts, and which episodes carry the evidence."
+    }
+  ]
 }

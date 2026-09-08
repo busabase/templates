@@ -100,5 +100,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "build-profile-from-resume",
+      "label": "Build my profile from a resume or notes",
+      "body": "{target}\n\nRead the `busa-jobhunt` skill in this folder and follow its workflow, then extract my target role, locations, industries, and highlights from the resume or notes I give you — extract only, never invent a claim — ask me which job channels to search, and build a typeset resume PDF if I want one."
+    },
+    {
+      "key": "check-profile-readiness",
+      "label": "Check whether my profile is ready for outreach",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-jobhunt` skill in this folder, then check whether target role, truthful highlights, and sender address are filled in, and tell me what's still missing before `research` or `send` can run."
+    }
+  ]
 }

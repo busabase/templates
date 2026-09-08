@@ -60,5 +60,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "account-cash-summary",
+      "label": "Check cash and buying power by account",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-invest-webull` skill in this folder and follow its workflow, then summarize each account's net liquidation, total cash, and buying power in its stated currency. This data is read-only — never place, modify, or cancel orders, and never move money."
+    },
+    {
+      "key": "accounts-needing-attention",
+      "label": "Flag accounts that need attention",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-invest-webull` skill in this folder and follow its workflow, then check for accounts with low or negative cash and call them out, along with each account's type (cash or margin). Do not suggest trades or transfers — this is a read-only monitoring snapshot."
+    }
+  ]
 }

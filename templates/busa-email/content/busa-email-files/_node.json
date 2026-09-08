@@ -2,5 +2,19 @@
   "type": "drive",
   "name": "Email Files",
   "description": "Email HTML and attachment artifacts",
+  "agentPrompts": [
+    {
+      "key": "find-attachment",
+      "label": "Find an attachment from a review",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-email` skill in this folder, then locate the attachment or original HTML for the review item I name and tell me what's stored for it. Do not open or forward the file outside this review."
+    },
+    {
+      "key": "list-recent-artifacts",
+      "label": "What email artifacts were saved recently?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-email` skill in this folder, then list the email HTML and attachment artifacts saved here recently, grouped by review batch."
+    }
+  ],
   "position": 3
 }

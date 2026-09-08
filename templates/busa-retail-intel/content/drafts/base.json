@@ -2,6 +2,24 @@
   "name": "Drafts",
   "description": "Editable channel drafts (staff brief / IG story / store sign) tied to an approved action, kept behind a review gate until approved.",
   "position": 2,
+  "agentPrompts": [
+    {
+      "key": "read-draft",
+      "label": "Show me a channel draft to review",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-retail-intel` skill in this folder, then show me the draft I name (staff brief / IG story / store sign), its linked action, and any risk badge."
+    },
+    {
+      "key": "revise-draft",
+      "label": "Revise a draft's wording",
+      "body": "{target}\n\nRead the `busa-retail-intel` skill in this folder and follow its workflow, then rewrite the draft I name per the edit I describe and save it as `edited-body` on the same record, without inventing a claim, price, or inventory promise I didn't give you."
+    },
+    {
+      "key": "decide-draft",
+      "label": "Approve, request changes, or block a draft",
+      "body": "{target}\n\nRead the `busa-retail-intel` skill in this folder and follow its workflow, then record my decision (approve / request_changes / block) and comment on the draft I name. This never publishes anything by itself — that only happens after `execute_decisions.mjs --apply` and a real outbound handoff."
+    }
+  ],
   "fields": [
     {
       "slug": "draft-id",

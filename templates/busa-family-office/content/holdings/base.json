@@ -1,6 +1,19 @@
 {
   "name": "Holdings",
   "description": "Individual holdings across every account",
+  "agentPrompts": [
+    {
+      "key": "record-holding",
+      "label": "Import or record a holding",
+      "body": "{target}\n\nRead the `busa-family-office` skill in this folder and follow its workflow, then record the holding I describe — symbol, asset class, quantity, cost basis, market value, and currency, linked to its account and entity. Write it through the trusted `scripts/import_csv.mjs` process, never a direct Base write."
+    },
+    {
+      "key": "allocation-by-asset-class",
+      "label": "What's our current allocation by asset class?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-family-office` skill in this folder, then consolidate the holdings by asset class into the base currency and show me the weight of each. Flag any holding that is unpriced or missing an FX rate instead of inventing a value."
+    }
+  ],
   "position": 2,
   "fields": [
     {

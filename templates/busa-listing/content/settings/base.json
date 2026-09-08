@@ -116,5 +116,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "setup-seller-profile",
+      "label": "Set up or update the seller profile",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder and follow its workflow, then walk me through the seller/brand profile, platforms and locales to enable, the banned-word list and competitor brand names, and export preferences, and write my answers onto this settings row."
+    },
+    {
+      "key": "show-config",
+      "label": "Show me the current configuration",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder, then summarize the current seller profile, enabled platforms and locales, and export preferences from this settings row."
+    }
+  ]
 }

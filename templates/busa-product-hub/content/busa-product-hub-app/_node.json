@@ -1,5 +1,24 @@
 {
   "type": "airapp",
   "name": "Busa Product Hub",
-  "description": "Product & certification hub for export/trade sellers: catalog/SKU master data, pricing, inventory, channel status (Amazon/Shopify/TikTok Shop/eBay), content readiness, compliance notes, lifecycle state, a certificate expiry tracker (CE/FCC/RoHS/UN38.3/UKCA), and an approval-gated review queue (channel publish approvals, price-change review, quality holds, lifecycle decisions, and unsourced spec claims). The AirApp itself only ever decides on a review item (approve/request_changes/block) directly onto its own record -- it never creates a product, channel, inventory, or certificate row."
+  "description": "Product & certification hub for export/trade sellers: catalog/SKU master data, pricing, inventory, channel status (Amazon/Shopify/TikTok Shop/eBay), content readiness, compliance notes, lifecycle state, a certificate expiry tracker (CE/FCC/RoHS/UN38.3/UKCA), and an approval-gated review queue (channel publish approvals, price-change review, quality holds, lifecycle decisions, and unsourced spec claims). The AirApp itself only ever decides on a review item (approve/request_changes/block) directly onto its own record -- it never creates a product, channel, inventory, or certificate row.",
+  "agentPrompts": [
+    {
+      "key": "overview-brief",
+      "label": "Give me the product hub overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder, then give me the overview: active product count, average margin, inventory value, certificates at risk, and what's waiting in the review queue."
+    },
+    {
+      "key": "ingest-data",
+      "label": "Ingest a marketplace export or spec sheet",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder and follow its workflow, then run `scripts/ingest_products.mjs` with the product/channel/inventory/certificate payload I prepared, upserting by natural key so re-ingests stay idempotent. Never invent a fact the source document doesn't contain."
+    },
+    {
+      "key": "trade-show-prep",
+      "label": "What am I not ready to answer at the trade show?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder, then tell me which products have missing or soon-to-expire certificates, unsourced spec claims, or incomplete content, so I know what to fix before I'm asked about it in person."
+    }
+  ]
 }

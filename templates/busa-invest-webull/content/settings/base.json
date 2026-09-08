@@ -44,5 +44,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "connection-status",
+      "label": "Check connection and onboarding status",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-invest-webull` skill in this folder and follow its workflow, then show the sanitized config summary — data provider, Webull region and base URL, credential-readiness booleans, and onboarding state. Never reveal or ask for secret values; the App Key and App Secret live only in local env files read by the trusted sync script."
+    },
+    {
+      "key": "how-to-connect",
+      "label": "How do I connect my Webull account?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-invest-webull` skill in this folder and follow its workflow, then walk me through connecting Webull: getting an OpenAPI App Key and App Secret from Webull's OpenAPI Portal, and which non-secret setup fields (region, base URL, base currency, account allowlist, env var names) still need to be filled in. Never ask me to paste secret values into chat."
+    }
+  ]
 }

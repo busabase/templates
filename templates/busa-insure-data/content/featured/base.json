@@ -60,5 +60,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "latest-featured",
+      "label": "Summarize the latest 资讯精选",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-insure-data` skill in this folder, then summarize the latest curated insurance information and product updates, and flag any that look outdated or unreviewed."
+    },
+    {
+      "key": "featured-by-carrier",
+      "label": "Find featured items by carrier or category",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-insure-data` skill in this folder, then show me the featured information items for the carrier or category I name, with their publish date and source URL."
+    }
+  ]
 }

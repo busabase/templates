@@ -2,6 +2,30 @@
   "name": "Anomalies",
   "description": "Rule-flagged anomalies with evidence, a drafted follow-up, and the review-queue decision",
   "position": 3,
+  "agentPrompts": [
+    {
+      "key": "anomalies-needing-review",
+      "label": "What anomalies need my review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder, then show me the anomalies awaiting a decision — missing invoice, amount mismatch, overdue receivable, duplicate, unmatched payment, or irregular entry — with severity and amount at stake."
+    },
+    {
+      "key": "explain-anomaly",
+      "label": "Explain this anomaly's evidence",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder, then explain the anomaly I name: the rule that flagged it, the exact order/invoice/payment rows and computed delta, and the proposed follow-up."
+    },
+    {
+      "key": "revise-draft",
+      "label": "Sharpen the drafted follow-up",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder and follow its workflow, then rewrite the drafted follow-up (chasing email, billing request, or accountant note) on the anomaly I name, keeping its id and evidence intact."
+    },
+    {
+      "key": "decide-anomaly",
+      "label": "Record my decision on this anomaly",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder and follow its workflow, then write the verdict I give — approve, request changes with a note, block, or dismiss — directly onto the anomaly I name. This only records the decision; sending the chasing email or updating bookkeeping records happens outside this app after approval."
+    }
+  ],
   "fields": [
     {
       "slug": "anomaly-id",

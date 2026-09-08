@@ -52,5 +52,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "crew-roster",
+      "label": "Show the crew roster",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder, then show me the crews, their skills, and current ticket load.",
+      "intent": "read-only"
+    },
+    {
+      "key": "add-crew",
+      "label": "Add a new crew",
+      "body": "{target}\n\nRead the `busa-tickets` skill in this folder and follow its workflow, then add a new crew — name, skills, and which env var holds their contact."
+    }
+  ]
 }

@@ -132,5 +132,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "draft-followup",
+      "label": "Draft a follow-up message",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder and follow its workflow, then draft the follow-up I ask for as `suggested-reply` with status \"needs_review\", a clear `reason`, and any risk badges. This only drafts the message \u2014 it never sends it; sending happens through another skill only after I approve it here."
+    },
+    {
+      "key": "revise-after-feedback",
+      "label": "Revise a follow-up that got changes requested",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder, then revise the `suggested-reply` for the follow-up I name per the review comment, and set its status back to \"needs_review\"."
+    },
+    {
+      "key": "queue-status",
+      "label": "What follow-ups are waiting for review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder, then list the follow-ups waiting for review, with their due date, channel, and risk badges."
+    }
+  ]
 }

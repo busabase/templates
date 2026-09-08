@@ -1,5 +1,24 @@
 {
   "type": "airapp",
   "name": "Busa Expo Leads",
-  "description": "Trade-show lead capture, SLA countdown, and a multilingual follow-up review queue"
+  "description": "Trade-show lead capture, SLA countdown, and a multilingual follow-up review queue",
+  "agentPrompts": [
+    {
+      "key": "sla-board",
+      "label": "Show me the SLA countdown board",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-expo-leads` skill in this folder, then open the overview and summarize the green/amber/red buckets, calling out any lead about to blow past the 24-hour follow-up window."
+    },
+    {
+      "key": "log-lead",
+      "label": "Log a lead I just met",
+      "body": "{target}\n\nRead the `busa-expo-leads` skill in this folder and follow its workflow, then capture the lead I describe and get its same-day multilingual follow-up drafted for my review, without sending anything myself."
+    },
+    {
+      "key": "review-followups",
+      "label": "What follow-ups need my review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-expo-leads` skill in this folder, then open the follow-up review queue and summarize what is waiting on an approve / request-changes / block decision from me."
+    }
+  ]
 }

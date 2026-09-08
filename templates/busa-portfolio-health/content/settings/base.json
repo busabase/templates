@@ -1,40 +1,53 @@
 {
-  "name": "Settings",
-  "description": "Sanitized config summary (fund name, base currency, risk-policy thresholds), one row keyed by kind",
-  "position": 1,
-  "fields": [
-    {
-      "slug": "record-id",
-      "name": "Record ID",
-      "type": "text",
-      "required": true,
-      "position": 0,
-      "options": {}
-    },
-    {
-      "slug": "kind",
-      "name": "Kind",
-      "type": "text",
-      "required": true,
-      "position": 1,
-      "options": {}
-    },
-    {
-      "slug": "payload",
-      "name": "Payload (JSON object)",
-      "type": "longtext",
-      "required": false,
-      "position": 2,
-      "options": {}
-    },
-    {
-      "slug": "updated-at",
-      "name": "Updated at",
-      "type": "text",
-      "required": false,
-      "position": 3,
-      "options": {}
-    }
-  ],
-  "views": []
+    "name": "Settings",
+    "description": "Sanitized config summary (fund name, base currency, risk-policy thresholds), one row keyed by kind",
+    "position": 1,
+    "fields": [
+        {
+            "slug": "record-id",
+            "name": "Record ID",
+            "type": "text",
+            "required": true,
+            "position": 0,
+            "options": {}
+        },
+        {
+            "slug": "kind",
+            "name": "Kind",
+            "type": "text",
+            "required": true,
+            "position": 1,
+            "options": {}
+        },
+        {
+            "slug": "payload",
+            "name": "Payload (JSON object)",
+            "type": "longtext",
+            "required": false,
+            "position": 2,
+            "options": {}
+        },
+        {
+            "slug": "updated-at",
+            "name": "Updated at",
+            "type": "text",
+            "required": false,
+            "position": 3,
+            "options": {}
+        }
+    ],
+    "views": [],
+    "agentPrompts": [
+        {
+            "key": "update-risk-policy",
+            "label": "Update the fund name, currency, or risk-policy thresholds",
+            "body": "{target}\n\nRead the `busa-portfolio-health` skill in this folder and follow its workflow, then update the settings row's fund name, base currency, or risk-policy thresholds (lag watch/high percentage points, revenue decline percentage) with the values I give you."
+        },
+        {
+            "key": "current-risk-policy",
+            "label": "What are the current risk-policy thresholds?",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-portfolio-health` skill in this folder, then show me the current fund name, base currency, and risk-policy thresholds from the settings row."
+        }
+    ]
 }

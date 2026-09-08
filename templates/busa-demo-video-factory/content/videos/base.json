@@ -151,5 +151,23 @@
       }
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "plan-new-video",
+      "label": "Plan a new demo video",
+      "body": "{target}\n\nRead the `busa-demo-video-factory` skill in this folder and follow its workflow, then turn the idea I describe into a video: one-sentence purpose, a hook + pain-point pair, the core concept, and status idea. Verify every product claim against the real codebase before ever moving status past needs_review."
+    },
+    {
+      "key": "advance-video-status",
+      "label": "Move a video to its next status",
+      "body": "{target}\n\nRead the `busa-demo-video-factory` skill in this folder and follow its workflow, then advance the video I name to its next status (idea -> needs_review -> approved -> recording -> post_production -> done). Never mark a video approved without a verified-claims correction table already in place, and never merge the change without my explicit go-ahead."
+    },
+    {
+      "key": "needs-review",
+      "label": "What still needs review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-demo-video-factory` skill in this folder, then list the videos still in idea or needs_review status and tell me which ones are missing a verified-claims correction table."
+    }
+  ]
 }

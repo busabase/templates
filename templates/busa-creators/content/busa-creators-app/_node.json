@@ -1,5 +1,19 @@
 {
   "type": "airapp",
   "name": "Busa Creators",
-  "description": "Influencer/creator marketing command desk — discovery, outreach, briefs, contracts, and ROI"
+  "description": "Influencer/creator marketing command desk — discovery, outreach, briefs, contracts, and ROI",
+  "agentPrompts": [
+    {
+      "key": "command-desk-overview",
+      "label": "Show me the program overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-creators` skill in this folder, then summarize the Discover \u2192 Plan \u2192 Activate \u2192 Measure funnel, budget allocation, total reach, and the top fit-scored candidates."
+    },
+    {
+      "key": "roi-summary",
+      "label": "Summarize ROI across live creators",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-creators` skill in this folder, then summarize spend, estimated value, and CPM per creator for engagements that have gone live."
+    }
+  ]
 }

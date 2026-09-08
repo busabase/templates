@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Support",
-  "description": "Customer-support desk: tickets, knowledge base, and the support-qa quality gate"
+  "description": "Customer-support desk: tickets, knowledge base, and the support-qa quality gate",
+  "agentPrompts": [
+    {
+      "key": "queue-health",
+      "label": "Summarize queue health",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder, then open the overview and summarize open, breaching-SLA, and awaiting-approval ticket counts, the CSAT trend, and volume by channel and category.",
+      "intent": "read-only"
+    },
+    {
+      "key": "review-tickets",
+      "label": "Review the approval queue",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder and follow its workflow, then walk me through the tickets waiting on my decision so I can approve, request changes, or block each drafted reply — nothing sends until I approve, and a support-qa BLOCK verdict can't be approved until it's fixed."
+    },
+    {
+      "key": "triage-new",
+      "label": "Triage the latest incoming tickets",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder and follow its workflow, then collect and triage the latest incoming tickets across channels, draft KB-grounded replies with a proposed action for each, and get them ready for my review."
+    }
+  ]
 }

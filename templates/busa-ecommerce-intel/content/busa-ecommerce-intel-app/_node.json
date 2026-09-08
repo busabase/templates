@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Ecommerce Intel",
-  "description": "Daily industry-intelligence cockpit for e-commerce and cross-border sellers: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (listing copy / ad angle / customer reply) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only."
+  "description": "Daily industry-intelligence cockpit for e-commerce and cross-border sellers: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (listing copy / ad angle / customer reply) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
+  "agentPrompts": [
+    {
+      "key": "todays-attention",
+      "label": "What needs my attention today?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder, then open the overview and summarize today's needs-review/approved/blocked counts, the top signals, and which actions are ready to execute."
+    },
+    {
+      "key": "run-todays-batch",
+      "label": "Run today's intelligence batch",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder and follow its workflow, then collect today's signals, turn the approved ones into actions and drafts, write the batch into Busabase, and give me the AirApp URL for review."
+    },
+    {
+      "key": "execute-approved-items",
+      "label": "Execute the approved items",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder and follow its workflow, then dry-run the execution plan for today's approved signals/actions/drafts, and only after I confirm each real handoff happened outside the app, mark those items done."
+    }
+  ]
 }

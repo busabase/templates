@@ -68,5 +68,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-profile-card",
+      "label": "Update a practice-area or lawyer capability profile",
+      "body": "{target}\n\nRead the `busa-legal-firm-radar` skill in this folder and follow its workflow, then update or add the practice-area grouping or lawyer capability profile card I describe, derived from anonymized casebase metadata rather than raw case documents."
+    },
+    {
+      "key": "profile-overview",
+      "label": "What do our practice and lawyer profiles look like?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-firm-radar` skill in this folder, then summarize the practice-area groupings and lawyer capability profile cards, with their current metrics and review state."
+    }
+  ]
 }

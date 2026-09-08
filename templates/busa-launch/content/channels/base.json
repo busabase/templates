@@ -36,5 +36,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "channel-status",
+      "label": "Check channel submission status",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-launch` skill in this folder, then list each launch channel with its type and submission status, so I can see which channels are still outstanding."
+    },
+    {
+      "key": "mark-channel-submitted",
+      "label": "Mark a channel submission as done",
+      "body": "{target}\n\nRead the `busa-launch` skill in this folder and follow its workflow, then update the submission status for the channel I name after I confirm it went out through the corresponding skill. Never mark a channel submitted on your own initiative — only after I confirm the send happened."
+    }
+  ]
 }

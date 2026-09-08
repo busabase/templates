@@ -76,5 +76,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "failing-risk-checks",
+      "label": "What risk checks are failing right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder, then show me the risk checks that are currently failing — hard-stop terms, restricted positions, or clause-playbook violations — grouped by severity, with the issue each one blocks."
+    },
+    {
+      "key": "explain-check-result",
+      "label": "Why did this check fail?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder, then explain why the rule I name failed for its clause issue, citing the evidence and referenced hard-stop terms or clauses."
+    }
+  ]
 }

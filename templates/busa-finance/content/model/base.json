@@ -132,5 +132,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "record-real-figures",
+      "label": "Record real figures from a reviewed workbook",
+      "body": "{target}\n\nRead the `busa-finance` skill in this folder and follow its workflow, then update this model run with the real period-by-period figures you actually read from the workbook — revenue, cash, and the balance check. Never estimate or invent numbers; only real computed values belong here."
+    },
+    {
+      "key": "model-summary",
+      "label": "Summarize this model run",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-finance` skill in this folder, then summarize this model run — company, currency, forecast horizon, revenue CAGR, ending cash, free cash flow, the balance check, and any warnings."
+    }
+  ]
 }

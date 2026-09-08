@@ -252,5 +252,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "research-similar-cases",
+      "label": "Research precedents for a new legal question",
+      "body": "{target}\n\nRead the `busa-legal-precedent-desk` skill in this folder and follow its workflow, then search the approved internal casebase for the legal question I describe and prepare a research pack — matched similar cases, similarity rationale, local court-pattern notes, and source-backed citations — for the jurisdiction I name, so it lands in the review queue. If the casebase does not contain enough similar cases, say so instead of inventing support."
+    },
+    {
+      "key": "decide-on-research-pack",
+      "label": "Approve, request changes, revise, or block a research pack",
+      "body": "{target}\n\nRead the `busa-legal-precedent-desk` skill in this folder and follow its workflow, then record my decision on the research pack I name. Block or request changes when similar-case support is too thin, citation traceability is missing, jurisdiction or court level does not fit, confidentiality labels are absent, or the pack overstates an outcome."
+    },
+    {
+      "key": "needs-review",
+      "label": "What is waiting for review right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-precedent-desk` skill in this folder, then show me the research packs waiting for review, grouped by jurisdiction, with their match count, top similarity, and citation count."
+    }
+  ]
 }

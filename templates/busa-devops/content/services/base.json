@@ -108,5 +108,24 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "add-service",
+      "label": "Add a service to monitor",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder and follow its workflow, then register the endpoint I describe (name, product, URL) in a roster file and run the health check script so it starts reporting status, latency, and TLS certificate expiry."
+    },
+    {
+      "key": "fleet-health",
+      "label": "What's down or degraded right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder, then show me every service that is down or degraded, with latency and 7-day uptime, so I know what needs attention first."
+    },
+    {
+      "key": "check-certificate",
+      "label": "Check a certificate before it expires",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder, then tell me the TLS certificate issuer and expiry date for the service I name, and flag it if it is inside the expiry-warning window."
+    }
+  ]
 }

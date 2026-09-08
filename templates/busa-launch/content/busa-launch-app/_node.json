@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Launch",
-  "description": "Product-launch command desk built on the RAMP discipline"
+  "description": "Product-launch command desk built on the RAMP discipline",
+  "agentPrompts": [
+    {
+      "key": "launch-readiness-status",
+      "label": "What's my launch readiness right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-launch` skill in this folder, then report the Launch Quality Score and overall verdict (SHIP/FIX/BLOCK), the countdown to the target date, RAMP phase progress, and channel-submission status."
+    },
+    {
+      "key": "assemble-from-material",
+      "label": "Assemble my launch from product docs",
+      "body": "{target}\n\nRead the `busa-launch` skill in this folder and follow its workflow, then read the product docs, positioning notes, and target date I give you, write the RAMP checklist with per-item readiness and drafts, and give me the AirApp URL to review it."
+    },
+    {
+      "key": "execute-approved",
+      "label": "Execute what I've approved",
+      "body": "{target}\n\nRead the `busa-launch` skill in this folder and follow its workflow, then re-read the approved items, mark them done, and perform the actual submissions or sends only through the corresponding skill, one item at a time. Never submit or send an item without an explicit approve decision, never re-submit an item already done, and do not proceed if the readiness gate is BLOCK."
+    }
+  ]
 }

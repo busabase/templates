@@ -1,6 +1,24 @@
 {
   "name": "Feedback",
   "description": "Raw feedback items normalized from every channel, one row per item",
+  "agentPrompts": [
+    {
+      "key": "ingest-feedback",
+      "label": "Ingest feedback from a channel",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder and follow its workflow, then build a payload from the feedback I hand you and run `scripts/ingest_feedback.mjs` to bring it in — own-community data only, never scraped from a third party's users. Dedupe by `external_id` so re-ingest stays idempotent."
+    },
+    {
+      "key": "triage-item",
+      "label": "Triage a feedback item",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder and follow its workflow, then triage the feedback item I name — assign it to a request, mark it ignored (spam), or mark it insight (a bug or pattern worth routing elsewhere) — writing the decision directly onto the feedback record."
+    },
+    {
+      "key": "new-feedback",
+      "label": "What new feedback needs triage?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-feedback` skill in this folder, then list the feedback items still marked `triage: new`, with channel, user handle, product, and a one-line preview."
+    }
+  ],
   "position": 2,
   "fields": [
     {

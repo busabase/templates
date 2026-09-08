@@ -1,5 +1,18 @@
 {
   "type": "airapp",
   "name": "Busa Brand",
-  "description": "Brand-narrative single source of truth built on the TALE discipline"
+  "description": "Brand-narrative single source of truth built on the TALE discipline",
+  "agentPrompts": [
+    {
+      "key": "message-house-overview",
+      "label": "Show me the message house",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-brand` skill in this folder, then show me the message house: the canonical or draft positioning statement, the value pillars, the overall Narrative Quality Score with its gate, and the open drift-alert count."
+    },
+    {
+      "key": "review-queue",
+      "label": "Walk me through what needs review",
+      "body": "{target}\n\nRead the `busa-brand` skill in this folder and follow its workflow, then walk me through the narrative items and drift alerts awaiting a decision one at a time, and record the verdict I give for each. Never adopt or export an asset without an explicit approve verdict."
+    }
+  ]
 }

@@ -36,5 +36,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-settings",
+      "label": "Update the learning policy and practice defaults",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder and follow its workflow, then update the sanitized settings I specify — student profile, subjects, learning policy (such as hint_first), practice defaults, or export policy. Never store a secret or credential value here."
+    },
+    {
+      "key": "view-progress",
+      "label": "What's the current mastery progress?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder, then show me the current mastery score and all-time questions-analyzed count, along with the active learning policy and practice defaults."
+    }
+  ]
 }

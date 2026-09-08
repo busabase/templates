@@ -124,5 +124,25 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "holdings-and-pl",
+      "label": "Show my current holdings and P/L",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-invest-webull` skill in this folder and follow its workflow, then list my current positions across all accounts with quantity, average cost, last price, market value, and unrealized P/L (amount and %). Do not invent prices — if data looks stale or missing, say so instead of guessing."
+    },
+    {
+      "key": "movers-today",
+      "label": "What moved the most today?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-invest-webull` skill in this folder and follow its workflow, then show today's top gainers and laggards by day change, with symbol, asset type, and portfolio weight. This is an observation only — no buy/sell/rebalance suggestions."
+    },
+    {
+      "key": "concentration-check",
+      "label": "Check portfolio concentration risk",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-invest-webull` skill in this folder and follow its workflow, then flag single-position concentration, crypto concentration, and allocation drift versus the target allocation in Settings. These are neutral facts, not investment advice."
+    }
+  ]
 }

@@ -2,6 +2,20 @@
   "name": "Invoices",
   "description": "Normalized invoices and credit notes imported from CSV/JSON exports",
   "position": 1,
+  "agentPrompts": [
+    {
+      "key": "invoice-status",
+      "label": "Show me this invoice's status",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder, then show me the invoice I name — due date, paid amount, days overdue, and matched payments."
+    },
+    {
+      "key": "overdue-receivables",
+      "label": "What receivables are overdue?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-audit` skill in this folder, then show me the overdue invoices grouped into the configured aging buckets (default 30/60/90), with amount outstanding by customer."
+    }
+  ],
   "fields": [
     {
       "slug": "invoice-id",

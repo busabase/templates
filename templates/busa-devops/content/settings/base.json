@@ -44,5 +44,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "update-thresholds",
+      "label": "Update the alert thresholds",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder and follow its workflow, then update the expiry-warning days, expiry-critical days, degraded-latency threshold, or spend-anomaly percentage I give you through the roster thresholds path \u2014 never write the settings row directly."
+    },
+    {
+      "key": "current-thresholds",
+      "label": "What are the current alert thresholds?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder, then tell me the current expiry-warning/critical day thresholds, degraded-latency threshold, and spend-anomaly percentage."
+    }
+  ]
 }

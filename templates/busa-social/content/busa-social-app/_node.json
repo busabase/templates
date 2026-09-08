@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Social",
-  "description": "Social media command desk: cross-platform monitoring plus an ECHO publishing desk"
+  "description": "Social media command desk: cross-platform monitoring plus an ECHO publishing desk",
+  "agentPrompts": [
+    {
+      "key": "overview-summary",
+      "label": "Summarize what needs my attention",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder, then open the overview and summarize the per-platform KPI deltas, this week's top posts, and share-of-voice vs competitors.",
+      "intent": "read-only"
+    },
+    {
+      "key": "review-drafts",
+      "label": "Review the post composer queue",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder and follow its workflow, then walk me through the pending drafts in the compose queue so I can approve, edit, or block each one — nothing publishes without my approval, and even an approved draft only ever records intent, never a real post."
+    },
+    {
+      "key": "review-engagement",
+      "label": "Review the engagement inbox",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder and follow its workflow, then walk me through the incoming mentions and comments with their drafted replies so I can approve or edit each one before it's sent."
+    }
+  ]
 }

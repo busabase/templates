@@ -103,5 +103,18 @@
         ]
       }
     }
+  ],
+  "agentPrompts": [
+    {
+      "key": "add-category",
+      "label": "Add a new category",
+      "body": "{target}\n\nRead the `busa-cms` skill in this folder and follow its workflow, then add the category I describe with `name`, `slug`, and `locale`, so posts and pages can reference it by record id."
+    },
+    {
+      "key": "list-categories",
+      "intent": "read-only",
+      "label": "What categories exist?",
+      "body": "{target}\n\nRead the `busa-cms` skill in this folder, then list the current categories with their slug and locale, so I can pick the right id for a post or page."
+    }
   ]
 }

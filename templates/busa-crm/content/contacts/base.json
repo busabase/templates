@@ -92,5 +92,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-or-update-contact",
+      "label": "Add or update a contact",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder and follow its workflow, then add or update the contact I describe, reusing the canonical `company-id` for the company link rather than writing its display name, and set relationship strength and next follow-up date if I gave them."
+    },
+    {
+      "key": "log-relationship-touch",
+      "label": "Log that I touched base with a contact",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder, then update the contact I name with today as `last-touch-at`, and set `next-followup-at` and `agent-notes` from what I tell you."
+    },
+    {
+      "key": "contacts-needing-followup",
+      "label": "Who is due for a follow-up?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder, then list the contacts whose `next-followup-at` has passed or is coming up soon, with their relationship strength and company."
+    }
+  ]
 }

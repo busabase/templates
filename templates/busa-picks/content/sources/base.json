@@ -1,64 +1,77 @@
 {
-  "name": "Sources",
-  "description": "Configured trend sources: kind, collection method, and sweep freshness",
-  "position": 3,
-  "fields": [
-    {
-      "slug": "source-id",
-      "name": "Source ID",
-      "type": "text",
-      "required": true,
-      "position": 0,
-      "options": {}
-    },
-    {
-      "slug": "kind",
-      "name": "Kind",
-      "type": "text",
-      "required": false,
-      "position": 1,
-      "options": {}
-    },
-    {
-      "slug": "name",
-      "name": "Name",
-      "type": "text",
-      "required": false,
-      "position": 2,
-      "options": {}
-    },
-    {
-      "slug": "method",
-      "name": "Method",
-      "type": "text",
-      "required": false,
-      "position": 3,
-      "options": {}
-    },
-    {
-      "slug": "last-sweep-at",
-      "name": "Last sweep at",
-      "type": "text",
-      "required": false,
-      "position": 4,
-      "options": {}
-    },
-    {
-      "slug": "items-7d",
-      "name": "Items 7d",
-      "type": "number",
-      "required": false,
-      "position": 5,
-      "options": {}
-    },
-    {
-      "slug": "status",
-      "name": "Status",
-      "type": "text",
-      "required": false,
-      "position": 6,
-      "options": {}
-    }
-  ],
-  "views": []
+    "name": "Sources",
+    "description": "Configured trend sources: kind, collection method, and sweep freshness",
+    "position": 3,
+    "fields": [
+        {
+            "slug": "source-id",
+            "name": "Source ID",
+            "type": "text",
+            "required": true,
+            "position": 0,
+            "options": {}
+        },
+        {
+            "slug": "kind",
+            "name": "Kind",
+            "type": "text",
+            "required": false,
+            "position": 1,
+            "options": {}
+        },
+        {
+            "slug": "name",
+            "name": "Name",
+            "type": "text",
+            "required": false,
+            "position": 2,
+            "options": {}
+        },
+        {
+            "slug": "method",
+            "name": "Method",
+            "type": "text",
+            "required": false,
+            "position": 3,
+            "options": {}
+        },
+        {
+            "slug": "last-sweep-at",
+            "name": "Last sweep at",
+            "type": "text",
+            "required": false,
+            "position": 4,
+            "options": {}
+        },
+        {
+            "slug": "items-7d",
+            "name": "Items 7d",
+            "type": "number",
+            "required": false,
+            "position": 5,
+            "options": {}
+        },
+        {
+            "slug": "status",
+            "name": "Status",
+            "type": "text",
+            "required": false,
+            "position": 6,
+            "options": {}
+        }
+    ],
+    "views": [],
+    "agentPrompts": [
+        {
+            "key": "add-source",
+            "label": "Add or update a trend source",
+            "body": "{target}\n\nRead the `busa-picks` skill in this folder and follow its workflow, then add or update the trend source I describe — kind (amazon_bsr/tiktok/temu/aliexpress/trends/competitor) and collection method (browser_agent or manual)."
+        },
+        {
+            "key": "stale-sources",
+            "label": "Which sources are stale?",
+            "intent": "read-only",
+            "body": "{target}\n\nRead the `busa-picks` skill in this folder, then tell me which configured sources have not been swept recently, using each source's last-sweep freshness."
+        }
+    ]
 }

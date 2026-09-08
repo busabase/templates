@@ -116,5 +116,17 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-shorts",
+      "label": "Review pending short-video scripts",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder and follow its workflow, then walk me through the pending short-video scripts so I can approve, edit, or block each one."
+    },
+    {
+      "key": "draft-short",
+      "label": "Draft a new short-video script",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder and follow its workflow, then draft a new short-video script for the channel and theme pillar I describe — shot list, caption, and hashtags — and put it in the review queue."
+    }
+  ]
 }

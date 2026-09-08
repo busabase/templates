@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa JobHunt",
-  "description": "Job-search profile, target companies, and outreach state"
+  "description": "Job-search profile, target companies, and outreach state",
+  "agentPrompts": [
+    {
+      "key": "whats-next",
+      "label": "What should I do next?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-jobhunt` skill in this folder, then open the desk and report where things stand — profile readiness, how many companies are queued/sent, and the next subcommand to run."
+    },
+    {
+      "key": "run-research-round",
+      "label": "Find new target companies",
+      "body": "{target}\n\nRead the `busa-jobhunt` skill in this folder and follow its `research` workflow, then find twenty to thirty target companies with a real contact address and its source for each, draft one tailored email per company, and import them. Never buy, sell, or import a purchased contact list, and never bypass a paywall or anti-bot control to reach an address."
+    },
+    {
+      "key": "send-approved-emails",
+      "label": "Send my approved emails",
+      "body": "{target}\n\nRead the `busa-jobhunt` skill in this folder and follow its `send` workflow, then send the letters I've approved from my own mailbox. Rehearse with `--test-to` before the first real send, report each failure per company instead of dropping it silently, and never send more than one email to the same company."
+    }
+  ]
 }

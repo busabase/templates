@@ -188,5 +188,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "setup-series-bible",
+      "label": "Set up the series bible",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder and follow its workflow, then write the series bible I describe \u2014 logline, genre, platform, episode format, hook rules, and world rules \u2014 plus the visual bible (aspect ratio, orientation, realism target, cinematography, color palette, style medium)."
+    },
+    {
+      "key": "link-hyperframe-project",
+      "label": "Link this project to its HyperFrame project",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder and follow its workflow, then store the HyperFrame project path I give you on hyperframe-project-path \u2014 never guess it \u2014 and refresh the cached HyperFrame status from that path."
+    },
+    {
+      "key": "series-bible-summary",
+      "label": "What's the current series and visual bible?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-drama` skill in this folder, then summarize the logline, genre, platform, tone, visual style, and whether the HyperFrame project link and cached status are set."
+    }
+  ]
 }

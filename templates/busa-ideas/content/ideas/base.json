@@ -132,5 +132,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "capture-idea",
+      "label": "记一条新想法",
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能并按照其流程执行，然后帮我记下这条新想法——一句陌生人也能懂的话，加上一个确实有这个问题的具体的人；不知道的字段标 unknown，不要替我编。"
+    },
+    {
+      "key": "idea-status",
+      "label": "这个想法现在到哪一档了",
+      "intent": "read-only",
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能，然后告诉我这条想法现在在梯子的哪一档（idea/brd/mrd/prd）、清晰度如何，还剩几个问题没回答。"
+    },
+    {
+      "key": "park-idea",
+      "label": "把一个站不住脚的想法搁置",
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能并按照其流程执行，然后如果这条想法的 BRD 回答显示没有真实问题、或没有理由必须是我来做，直接说明原因并把它标记为已搁置，这是一个正当的结果，不是失败。"
+    }
+  ]
 }

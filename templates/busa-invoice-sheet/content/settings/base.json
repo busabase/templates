@@ -36,5 +36,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "check-extraction-defaults",
+      "label": "Check extraction and currency defaults",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-invoice-sheet` skill in this folder, then show the default currency and extraction preferences from the sanitized config summary. Never reveal or ask for secret values."
+    },
+    {
+      "key": "check-review-export-policy",
+      "label": "Check review and export policy",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-invoice-sheet` skill in this folder, then show the current review policy and export preferences — what triggers `needs_review` vs `blocked`, and where approved exports land."
+    }
+  ]
 }

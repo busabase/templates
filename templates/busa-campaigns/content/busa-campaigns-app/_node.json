@@ -1,5 +1,19 @@
 {
   "type": "airapp",
   "name": "Busa Campaigns",
-  "description": "Outbound email-marketing desk built on the SEND discipline"
+  "description": "Outbound email-marketing desk built on the SEND discipline",
+  "agentPrompts": [
+    {
+      "key": "send-desk-overview",
+      "label": "Show me the send desk overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-campaigns` skill in this folder, then summarize the send desk: sends due in the next weeks, list health (subscribers, bounce/complaint/churn, open/click), and the SEND-phase breakdown."
+    },
+    {
+      "key": "review-queue-summary",
+      "label": "What needs my review or approval?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-campaigns` skill in this folder, then summarize what is in the review queue across campaigns, newsletters, and sequence steps, and flag anything blocked or at high deliverability risk."
+    }
+  ]
 }

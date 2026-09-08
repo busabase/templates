@@ -84,5 +84,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "ask-next-question",
+      "label": "问下一个咨询师问题",
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能并按照其流程执行，然后针对我指定的想法，一次只问一个还没问过的问题——问到点子上的那种，不要问「还想要什么功能」这种空泛问题；如果我的回答含糊，直接说明为什么站不住脚并更精确地再问一次，第二次回答后就往下走。"
+    },
+    {
+      "key": "answer-question",
+      "label": "记录我对某个问题的回答",
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能并按照其流程执行，然后把我的回答写回到那条唯一对应的未回答问题记录上——写入 answer、status 改为已回答、answered-at，绝不新建第二条答案记录；如果对不上哪一条，先问清楚是哪个想法或哪个问题。"
+    },
+    {
+      "key": "open-questions",
+      "label": "还有哪些问题没回答",
+      "intent": "read-only",
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能，然后列出我指定的想法目前还没回答的问题，以及为什么要问这些问题。"
+    }
+  ]
 }

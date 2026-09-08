@@ -108,5 +108,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "config-summary",
+      "label": "Show the current SEO desk config",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder, then show me the brand, sync window and row limit, last sync range, and any warnings on the settings row.",
+      "intent": "read-only"
+    },
+    {
+      "key": "update-sync-settings",
+      "label": "Adjust sync preferences",
+      "body": "{target}\n\nRead the `busa-seo` skill in this folder and follow its workflow, then update the sync window (days) or row limit I describe for future Search Console syncs."
+    }
+  ]
 }

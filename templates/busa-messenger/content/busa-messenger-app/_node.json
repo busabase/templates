@@ -1,5 +1,28 @@
 {
   "type": "airapp",
   "name": "Busa Messenger",
-  "description": "Unified chat inbox: WhatsApp/Discord/Slack/Telegram accounts, conversations, messages, and a reply outbox"
+  "description": "Unified chat inbox: WhatsApp/Discord/Slack/Telegram accounts, conversations, messages, and a reply outbox",
+  "agentPrompts": [
+    {
+      "key": "whats-attention",
+      "label": "What needs my attention?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder, then give me the messaging command-desk view — conversations needing a reply decision, approved replies waiting to send, anything blocked, and the oldest-waiting conversation."
+    },
+    {
+      "key": "sync-accounts",
+      "label": "Sync my connected accounts",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder and follow its workflow, then sync the configured accounts and report any connector problems as warnings, not silent failures."
+    },
+    {
+      "key": "draft-waiting-replies",
+      "label": "Draft replies for what's waiting",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder and follow its workflow, then go through the conversations awaiting a reply and queue a drafted reply for each, honoring the configured reply style, for me to review in the outbox."
+    },
+    {
+      "key": "send-approved-replies",
+      "label": "Send the approved replies",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder and follow its workflow, then show me the send plan for approved replies first; only send after I explicitly confirm, and report the per-reply result."
+    }
+  ]
 }

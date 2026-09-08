@@ -1,5 +1,18 @@
 {
   "type": "airapp",
   "name": "Busa DevOps",
-  "description": "Product-fleet ops desk: service health, SSL/domain/key expiries, cloud spend, and an action review queue"
+  "description": "Product-fleet ops desk: service health, SSL/domain/key expiries, cloud spend, and an action review queue",
+  "agentPrompts": [
+    {
+      "key": "ops-overview",
+      "label": "What needs my attention across the fleet?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder, then open this app's overview and summarize actions needing a decision, items expiring within 14 days, and any services currently down."
+    },
+    {
+      "key": "run-due-checks",
+      "label": "Run the checks that are due and report back",
+      "body": "{target}\n\nRead the `busa-devops` skill in this folder and follow its workflow, then run whichever of the service-health, domain-expiry, or spend-ingestion checks are due, and give me the AirApp URL plus what now needs a decision."
+    }
+  ]
 }

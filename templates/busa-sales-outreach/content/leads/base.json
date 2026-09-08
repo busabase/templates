@@ -2,6 +2,19 @@
   "name": "业务联系人",
   "description": "Public business contact candidates for each target account, each with provenance and confidence",
   "position": 2,
+  "agentPrompts": [
+    {
+      "key": "show-contacts",
+      "label": "Who's the contact for this company?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-sales-outreach` skill in this folder, then show me the public business contact(s) on file for the company I name, with source URL and confidence."
+    },
+    {
+      "key": "correct-contact",
+      "label": "Correct a contact's name or role",
+      "body": "{target}\n\nRead the `busa-sales-outreach` skill in this folder, then update the contact name or role I verified for the lead I name, keeping the same public source URL — never invent or guess a new email address."
+    }
+  ],
   "fields": [
     {
       "slug": "email",

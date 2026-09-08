@@ -1,6 +1,19 @@
 {
   "name": "Expenses",
   "description": "Care cost and family-benefiting expenses",
+  "agentPrompts": [
+    {
+      "key": "record-expense",
+      "label": "Record an expense",
+      "body": "{target}\n\nRead the `busa-family-fund` skill in this folder and follow its workflow, then record the expense I describe — category (care, transport, meal, gift, renqing, medical, or misc), amount, payee/occasion, and which sibling family it benefits, or mark it shared. A `care` expense is always the parents' cost: leave the family blank and mark it not shared. Write it through the trusted import process, never a direct Base write."
+    },
+    {
+      "key": "spend-split",
+      "label": "How is spending split between care and family expenses?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-family-fund` skill in this folder, then show me this month's expense split by category and the care-versus-family total, without inventing figures for a month that has no recorded expenses."
+    }
+  ],
   "position": 3,
   "fields": [
     {

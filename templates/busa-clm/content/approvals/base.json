@@ -76,5 +76,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-approval-reminder",
+      "label": "Add an approval or reminder item",
+      "body": "{target}\n\nRead the `busa-clm` skill in this folder and follow its workflow, then add the approval/reminder handoff I describe for the contract I name, with a clear title and summary of what needs a decision."
+    },
+    {
+      "key": "record-approval-decision",
+      "label": "Record an approve / request-changes / block decision",
+      "body": "{target}\n\nRead the `busa-clm` skill in this folder, then record the decision I give you (approve, request changes, or block) on the approval item I name, along with my note. Only record a decision I have explicitly told you to make."
+    },
+    {
+      "key": "approvals-queue",
+      "label": "What approvals are still pending?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-clm` skill in this folder, then list the approval/reminder items still waiting on a decision, with their linked contract."
+    }
+  ]
 }

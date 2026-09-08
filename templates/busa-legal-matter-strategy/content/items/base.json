@@ -252,5 +252,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "draft-strategy-pack",
+      "label": "Draft a strategy pack for a new or ongoing matter",
+      "body": "{target}\n\nRead the `busa-legal-matter-strategy` skill in this folder and follow its workflow, then draft the strategy pack I describe — issue tree, evidence map, risk posture, negotiation options, and pleading outline — grounded in the facts, deadline, and approved precedent packs I give you, and mark clearly whatever is an assumption rather than a supplied fact, so it lands in the review queue."
+    },
+    {
+      "key": "decide-on-strategy-pack",
+      "label": "Approve, request changes, revise, or block a strategy pack",
+      "body": "{target}\n\nRead the `busa-legal-matter-strategy` skill in this folder and follow its workflow, then record my decision on the strategy pack I name. Block or request changes when the client objective, procedural posture, deadline, jurisdiction, evidence inventory, or assumptions are missing, or when it relies on unapproved precedent or treats an assumption as a fact."
+    },
+    {
+      "key": "needs-review",
+      "label": "What is waiting for review right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-matter-strategy` skill in this folder, then show me the strategy packs waiting for review, grouped by matter stage, with their evidence-gap count and deadline pressure."
+    }
+  ]
 }

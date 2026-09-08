@@ -108,5 +108,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-engagement",
+      "label": "Review drafted replies",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder and follow its workflow, then walk me through the incoming mentions and comments with their drafted replies so I can approve or edit each one before it's sent."
+    },
+    {
+      "key": "urgent-mentions",
+      "label": "What needs an urgent reply?",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder, then show me the highest-priority mentions and comments still waiting on a reply, with their sentiment.",
+      "intent": "read-only"
+    }
+  ]
 }

@@ -1,6 +1,19 @@
 {
   "name": "Follow-ups",
   "description": "The review queue: drafted multilingual follow-ups awaiting a human decision before send",
+  "agentPrompts": [
+    {
+      "key": "needs-review-queue",
+      "label": "What follow-ups need my review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-expo-leads` skill in this folder, then list the follow-ups with status `needs_review`, showing the target lead, language, channel, and the drafted text."
+    },
+    {
+      "key": "decide-followup",
+      "label": "Approve, request changes, or block a follow-up",
+      "body": "{target}\n\nRead the `busa-expo-leads` skill in this folder and follow its workflow, then record my decision — approve, request changes, or block — plus my comment for the follow-up I name. This only records the decision; the actual send always happens outside this app after an explicit approve, and a follow-up already `sent` must never be re-sent."
+    }
+  ],
   "position": 2,
   "fields": [
     {

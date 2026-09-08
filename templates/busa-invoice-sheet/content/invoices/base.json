@@ -292,5 +292,28 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-invoice",
+      "label": "Review an invoice and record my decision",
+      "body": "{target}\n\nRead the `busa-invoice-sheet` skill in this folder and follow its workflow, then help me review the invoice I name — walk through its extracted fields, line items, and any low-confidence or risk flags, then write my decision (approve, request changes, or block) with a note directly onto that record."
+    },
+    {
+      "key": "extract-new-batch",
+      "label": "Extract a new batch of invoices",
+      "body": "{target}\n\nRead the `busa-invoice-sheet` skill in this folder and follow its workflow, then extract the invoice files or text I give you into the batch schema and import them with `scripts/import_batch.mjs`. Preserve source values exactly — never invent invoice numbers, dates, tax ids, vendors, or totals, and keep the original currency unless I explicitly ask for conversion and give rates."
+    },
+    {
+      "key": "whats-needs-review",
+      "label": "What needs my review right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-invoice-sheet` skill in this folder, then list the invoices with status `needs_review` or `blocked`, along with their confidence, risk flags, and warnings, so I know what to look at first."
+    },
+    {
+      "key": "export-approved",
+      "label": "Export approved invoices",
+      "body": "{target}\n\nRead the `busa-invoice-sheet` skill in this folder and follow its workflow, then run `scripts/export_decisions.mjs` to export the approved invoices to CSV and JSON, grouped by batch, and mark each exported invoice `done`."
+    }
+  ]
 }

@@ -1,5 +1,23 @@
 {
   "type": "airapp",
   "name": "Busa Retail Intel",
-  "description": "Daily industry-intelligence cockpit for retail stores and consumer brands: source-backed signals, buyer-intent interpretation, approved sales/merchandising actions, and channel drafts (staff brief / IG story / store sign) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only."
+  "description": "Daily industry-intelligence cockpit for retail stores and consumer brands: source-backed signals, buyer-intent interpretation, approved sales/merchandising actions, and channel drafts (staff brief / IG story / store sign) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
+  "agentPrompts": [
+    {
+      "key": "daily-brief",
+      "label": "Give me today's cockpit overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-retail-intel` skill in this folder, then give me today's overview: needs-review / approved / blocked counts, top signals, and the actions ready to go."
+    },
+    {
+      "key": "run-batch",
+      "label": "Collect today's batch",
+      "body": "{target}\n\nRead the `busa-retail-intel` skill in this folder and follow its workflow, then browse today's configured sources, build one narrow buyer scene, and write the new signal/action/draft rows into Busabase tied to evidence — mark anything without solid evidence `blocked` instead of guessing."
+    },
+    {
+      "key": "execute-approved",
+      "label": "Carry out my approved items",
+      "body": "{target}\n\nRead the `busa-retail-intel` skill in this folder and follow its workflow, then run `execute_decisions.mjs` (dry-run) to list the concrete operation for every decided signal/action/draft, and after I confirm and any real handoff happens outside this app, run `execute_decisions.mjs --apply` to mark the approved items done."
+    }
+  ]
 }

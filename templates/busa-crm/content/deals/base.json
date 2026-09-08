@@ -140,5 +140,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-opportunity",
+      "label": "Add a new deal",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder and follow its workflow, then add the deal I describe \u2014 reuse the canonical `company-id` and contact id(s) for the relation fields rather than writing display names, and leave anything I did not tell you empty."
+    },
+    {
+      "key": "advance-deal-stage",
+      "label": "Move a deal to its next stage",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder and follow its workflow, then advance the deal I name to its next stage, and record the next step and any change to amount or probability."
+    },
+    {
+      "key": "pipeline-by-stage",
+      "label": "What does the pipeline look like right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder, then show me open deals grouped by stage, with amount, probability, and next step. Do not convert currencies or compute a weighted total unless I ask for it."
+    }
+  ]
 }

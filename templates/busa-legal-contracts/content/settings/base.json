@@ -116,5 +116,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-legal-settings",
+      "label": "Update the legal profile or workstream rules",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder and follow its workflow, then update the settings row with the legal profile, enabled workstreams, jurisdictions, hard-stop terms, and export preferences I give you."
+    },
+    {
+      "key": "legal-settings-readiness",
+      "label": "Is the contracts desk ready for real review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-contracts` skill in this folder, then check the settings row and tell me what onboarding — legal profile, workstream rule sets, hard-stop terms, export preferences — is still missing before real contracts should be reviewed."
+    }
+  ]
 }

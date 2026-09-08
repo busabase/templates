@@ -1,5 +1,29 @@
 {
   "type": "airapp",
   "name": "Busa Listing",
-  "description": "Listing factory desk: product library, platform drafts, compliance checks, claims registry, and a review queue"
+  "description": "Listing factory desk: product library, platform drafts, compliance checks, claims registry, and a review queue",
+  "agentPrompts": [
+    {
+      "key": "pipeline-overview",
+      "label": "What's the state of the listing pipeline?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder, then give me the listing command-desk view — the product-by-platform status matrix, compliance pass rate, and what's ready to export this week."
+    },
+    {
+      "key": "draft-listings-for-product",
+      "label": "Draft listings for a product",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder and follow its workflow, then draft this product's listings across its target platforms and locales from the source material I give you, run the compliance checks, and give me the review-queue link."
+    },
+    {
+      "key": "whats-in-review",
+      "label": "Show me what needs review",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder, then open the review queue and summarize every draft waiting on a decision, with its compliance score and keyword-strategy notes."
+    },
+    {
+      "key": "export-approved-listings",
+      "label": "Export the approved listings",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder and follow its workflow, then export the drafts with a genuine approve decision to Markdown and a flat-file-ready listings.csv, and tell me the concrete file paths. Publishing to the marketplace itself still needs my explicit approval and happens outside this app."
+    }
+  ]
 }

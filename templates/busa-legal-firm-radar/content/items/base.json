@@ -236,5 +236,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "prepare-management-insight",
+      "label": "Prepare a management insight from anonymized metrics",
+      "body": "{target}\n\nRead the `busa-legal-firm-radar` skill in this folder and follow its workflow, then prepare the management insight I describe — practice mix, quality, talent, or brand-proof analytics — from anonymized casebase metadata, stating the reporting period, sample size, and whether each point is internal-only or public-citable, so it lands in the review queue."
+    },
+    {
+      "key": "decide-on-insight",
+      "label": "Approve, request changes, revise, or block an insight",
+      "body": "{target}\n\nRead the `busa-legal-firm-radar` skill in this folder and follow its workflow, then record my decision on the management insight I name. Block or request changes when sample size is too small, anonymization is weak, methodology is unclear, lawyer attribution is unfair, or an external brand claim lacks public-citable proof."
+    },
+    {
+      "key": "needs-review",
+      "label": "What is waiting for review right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-firm-radar` skill in this folder, then show me the management insights waiting for review, grouped by category, with sample size and visibility (internal-only vs public-citable)."
+    }
+  ]
 }

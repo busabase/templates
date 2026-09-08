@@ -116,5 +116,28 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "move-lead-stage",
+      "label": "Move a lead to its next stage",
+      "body": "{target}\n\nRead the `busa-lead-funnel` skill in this folder and follow its workflow, then advance the lead I name to its next funnel stage (New → Data-Verified → Scored → Term-Sheet-Ready) and append a stage-history entry. This is a direct kanban write, not an approval queue — never send outreach, sign a term sheet, or move money."
+    },
+    {
+      "key": "reject-lead",
+      "label": "Reject a lead with a reason",
+      "body": "{target}\n\nRead the `busa-lead-funnel` skill in this folder and follow its workflow, then move the lead I name to rejected with the reason I give you, storing it on the lead and in stage-history. A rejection always requires a reason."
+    },
+    {
+      "key": "add-lead-note",
+      "label": "Add a note to a lead",
+      "body": "{target}\n\nRead the `busa-lead-funnel` skill in this folder and follow its workflow, then append the note I give you to the lead I name as a timestamped entry, without changing its stage."
+    },
+    {
+      "key": "explain-lead-score",
+      "label": "Explain this lead's score",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-lead-funnel` skill in this folder, then show the lead's deterministic 0-100 score broken down by factor (chain-size fit, revenue-scale fit, category risk, data verifiability) with each factor's weight, contribution, and rationale, plus the suggested next action. The score is rule-based, never an LLM call — do not editorialize beyond the computed breakdown."
+    }
+  ]
 }

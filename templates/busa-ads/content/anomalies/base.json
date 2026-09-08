@@ -2,6 +2,20 @@
   "name": "Anomalies",
   "description": "Deterministic anomaly feed: ACOS breaches, budget burnouts, zero-conversion spend, CPC spikes, rejections",
   "position": 2,
+  "agentPrompts": [
+    {
+      "key": "anomaly-feed",
+      "label": "What anomalies need attention?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder, then show me the open anomalies — ACOS breaches, budget exhaustion, zero-conversion spend, CPC spikes, and rejections — with severity, evidence, and whether an adjustment card already exists."
+    },
+    {
+      "key": "campaign-anomalies",
+      "label": "Show me the anomalies for this campaign",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ads` skill in this folder, then show me the anomalies detected for the campaign I name, with type, evidence, and how long each has been open."
+    }
+  ],
   "fields": [
     {
       "slug": "anomaly-id",

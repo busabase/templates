@@ -76,5 +76,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "log-obligation",
+      "label": "Log a new obligation for a contract",
+      "body": "{target}\n\nRead the `busa-clm` skill in this folder and follow its workflow, then add the obligation or milestone I describe for the contract I name, with owner and due date, so it shows up in the tracker. This app never creates obligations from its own UI \u2014 writing the record directly is the intended way to get one in."
+    },
+    {
+      "key": "mark-obligation-done",
+      "label": "Mark an obligation done",
+      "body": "{target}\n\nRead the `busa-clm` skill in this folder, then mark the obligation I name as done and record the evidence note I give you."
+    },
+    {
+      "key": "obligations-at-risk",
+      "label": "What obligations are overdue or due soon?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-clm` skill in this folder, then list the obligations that are overdue or due soon, grouped by owner, with their linked contract."
+    }
+  ]
 }

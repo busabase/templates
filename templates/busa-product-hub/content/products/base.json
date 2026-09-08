@@ -2,6 +2,25 @@
   "name": "Products",
   "description": "One row per product/SKU: catalog identity, lifecycle/status, owner, vendor, launch date, image + gallery, tags, and JSON-encoded pricing/inventory-rollup/content/compliance blocks.",
   "position": 0,
+  "agentPrompts": [
+    {
+      "key": "update-catalog",
+      "label": "Update a product's catalog info",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder and follow its workflow, then update the catalog identity, content, or compliance-note fields I describe for the product I name. Do not change price or lifecycle/archive status here — those need a review item and human approval first."
+    },
+    {
+      "key": "trade-show-answers",
+      "label": "Answer a trade-show question about a product",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder, then answer the MOQ, lead-time, price, or certification question I ask about a product using only stored Products and Certificates data. If the fact isn't sourced or is missing, say so plainly and suggest a `spec_claim` review item instead of guessing."
+    },
+    {
+      "key": "margin-watch",
+      "label": "Which products need pricing or content attention?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder, then list products that are below target margin or have incomplete content readiness, so I know what to fix before it reaches a channel or a quote."
+    }
+  ],
   "fields": [
     {
       "slug": "product-id",

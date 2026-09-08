@@ -140,5 +140,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "review-reminders",
+      "label": "Review drafted reminders",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder and follow its workflow, then walk me through the drafted reminders so I can approve, request changes, revise, or block each one."
+    },
+    {
+      "key": "pending-reminders",
+      "label": "What reminders are waiting on me?",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder, then show me the reminders waiting on my decision, with the target member, channel, and reason.",
+      "intent": "read-only"
+    },
+    {
+      "key": "execute-approved",
+      "label": "Send the approved reminders",
+      "body": "{target}\n\nRead the `busa-standup` skill in this folder and follow its workflow, then plan and send the reminders I've already approved, then record the outcome back onto each reminder."
+    }
+  ]
 }

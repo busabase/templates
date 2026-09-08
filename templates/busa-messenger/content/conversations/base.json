@@ -100,5 +100,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "whats-waiting",
+      "label": "What needs a reply right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder, then list conversations flagged awaiting-reply across all platforms, sorted by how long they've been waiting."
+    },
+    {
+      "key": "suggest-reply",
+      "label": "Suggest a reply for this conversation",
+      "body": "{target}\n\nRead the `busa-messenger` skill in this folder and follow its workflow, then draft a suggested reply for the conversation I name, honoring the configured reply style and tone. This only writes a draft for review — it never sends anything."
+    }
+  ]
 }

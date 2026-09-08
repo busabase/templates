@@ -60,5 +60,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-claim-rule",
+      "label": "Add a banned-word or restricted-phrase rule",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder and follow its workflow, then add the banned-word or restricted-phrase rule I describe, with its severity, reason, and a suggested alternative phrase."
+    },
+    {
+      "key": "whats-banned",
+      "label": "What's banned and why?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-listing` skill in this folder, then list the current banned-word and restricted-phrase rules with their severity and reason."
+    }
+  ]
 }

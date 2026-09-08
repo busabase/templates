@@ -52,5 +52,19 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "failing-analytics-checks",
+      "label": "What analytics QA checks are failing right now?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-firm-radar` skill in this folder, then show me the analytics QA checks that are currently failing — anonymization, sample size, attribution, or unsupported claims — grouped by severity, with the insight each one blocks."
+    },
+    {
+      "key": "explain-check-failure",
+      "label": "Why did this check fail?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-firm-radar` skill in this folder, then explain why the check I name failed for its management insight and what evidence or caveat is needed before it can be approved."
+    }
+  ]
 }

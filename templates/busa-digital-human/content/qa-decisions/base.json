@@ -36,5 +36,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "record-qa-decision",
+      "label": "Record a QA gate decision",
+      "body": "{target}\n\nRead the `busa-digital-human` skill in this folder and follow its workflow, then record my verdict (approve / request changes / block) and note for the QA check I name — lip sync, latency, ai-disclosure, voice-consent, script-safety, fallback, privacy, or mobile. Never call a real digital-human vendor, TTS/STT, camera, or microphone to reach that verdict."
+    },
+    {
+      "key": "launch-blockers",
+      "label": "What's blocking launch?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-digital-human` skill in this folder, then tell me which launch QA checks are still undecided or blocked, and which are already approved."
+    }
+  ]
 }

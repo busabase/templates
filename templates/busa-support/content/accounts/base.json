@@ -84,5 +84,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "channel-health",
+      "label": "Show connected support channels",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder, then show me the connected support channels, their connector, and sync status.",
+      "intent": "read-only"
+    },
+    {
+      "key": "add-channel",
+      "label": "Connect a new support channel",
+      "body": "{target}\n\nRead the `busa-support` skill in this folder and follow its workflow, then walk me through connecting a new support channel — which channel and connector, display name/handle, and which env var names hold its tokens."
+    }
+  ]
 }

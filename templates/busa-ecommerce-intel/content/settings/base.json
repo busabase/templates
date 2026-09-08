@@ -36,5 +36,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "refresh-batch-metadata",
+      "label": "Refresh today's batch metadata",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder and follow its workflow, then, after collecting a new batch of signals/actions/drafts, refresh the batch row's payload with the new batch id, generated-at timestamp, vertical, buyer, and offer."
+    },
+    {
+      "key": "current-batch-info",
+      "label": "What's in today's batch?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder, then tell me the current batch id, when it was generated, and the vertical/buyer/offer it targets."
+    }
+  ]
 }

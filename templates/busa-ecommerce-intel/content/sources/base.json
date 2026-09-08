@@ -44,5 +44,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "add-source",
+      "label": "Add or update a source to monitor",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder and follow its workflow, then register or update the marketplace, competitor, or trend source category I give you, including its expected freshness."
+    },
+    {
+      "key": "coverage-gaps",
+      "label": "Where are the coverage gaps?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder, then tell me which configured sources are stale or have coverage gaps, so I know where today's signals might be blind."
+    }
+  ]
 }

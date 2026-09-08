@@ -100,5 +100,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "log-mistake",
+      "label": "Add or update a mistake-book entry",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder and follow its workflow, then turn the wrong answer I describe into a mistake-book card — root cause, misconception, fix strategy, a similar practice prompt, and the next review date. Reuse the same mistake id if this is the same recurring mistake instead of creating a duplicate card, and use supportive language, never words like \"careless\" or \"lazy\"."
+    },
+    {
+      "key": "due-mistakes",
+      "label": "What mistakes are due for review?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-homework-coach` skill in this folder, then list the mistake-book entries due for review today or soon, grouped by topic, with each one's root cause and fix strategy."
+    }
+  ]
 }

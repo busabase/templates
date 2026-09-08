@@ -76,5 +76,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "draft-document",
+      "label": "起草或修订 BRD/MRD/PRD",
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能并按照其流程执行，然后为我指定的想法起草或修订对应阶段的文档——绝不在上一档还没答完的情况下往下写。标为「已完善」的文档必须包含至少一张有意义的图和一张决策表，事实要区分「已确认」「假设」「未知」。"
+    },
+    {
+      "key": "show-document",
+      "label": "查看一份文档",
+      "intent": "read-only",
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能，然后展示我指定的这份 BRD/MRD/PRD 正文，以及它的 gaps 字段里还缺什么。"
+    }
+  ]
 }

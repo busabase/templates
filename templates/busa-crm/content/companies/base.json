@@ -60,5 +60,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "add-company",
+      "label": "Add a new company",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder and follow its workflow, then add the company I describe with a stable `company-id`, domain, industry, size, and location, so contacts and deals can reference it."
+    },
+    {
+      "key": "company-lookup",
+      "label": "What do we know about this company?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-crm` skill in this folder, then show me what we have on the company I name, plus any contacts and deals linked to it."
+    }
+  ]
 }

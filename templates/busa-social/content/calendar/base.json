@@ -76,5 +76,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "whats-scheduled",
+      "label": "What's scheduled this week?",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder, then show me what's scheduled on the content calendar this week, grouped by channel and theme pillar.",
+      "intent": "read-only"
+    },
+    {
+      "key": "add-calendar-entry",
+      "label": "Schedule a calendar entry",
+      "body": "{target}\n\nRead the `busa-social` skill in this folder and follow its workflow, then add a new calendar entry for the post I describe — date, channel, and theme pillar — and link it to a draft if I already have one."
+    }
+  ]
 }

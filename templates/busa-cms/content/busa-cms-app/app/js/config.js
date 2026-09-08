@@ -14,6 +14,76 @@ import { CMS_BASES, CMS_SCHEMA_PROFILE, CMS_SCHEMA_VERSION } from "./schema.js";
 
 const readLimits = { categories: 100, tags: 100, posts: 50, pages: 50 };
 
+/**
+ * Each Base's scenario Agent prompts (schema §per-node agentPrompts): what a person
+ * actually asks for, sourced from this file's own workflow — never hand-edited in
+ * the generated `content/<base>/base.json`, same rule as `views` above.
+ */
+const prompts = {
+  categories: [
+      {
+        key: "add-category",
+        label: "Add a new category",
+        body: "{target}\n\nRead the `busa-cms` skill in this folder and follow its workflow, then add the category I describe with `name`, `slug`, and `locale`, so posts and pages can reference it by record id.",
+      },
+      {
+        key: "list-categories",
+        intent: "read-only",
+        label: "What categories exist?",
+        body: "{target}\n\nRead the `busa-cms` skill in this folder, then list the current categories with their slug and locale, so I can pick the right id for a post or page.",
+      },
+  ],
+  tags: [
+      {
+        key: "add-tag",
+        label: "Add a new tag",
+        body: "{target}\n\nRead the `busa-cms` skill in this folder and follow its workflow, then add the tag I describe with `name`, `slug`, and `locale`, so posts and pages can reference it by record id.",
+      },
+      {
+        key: "list-tags",
+        intent: "read-only",
+        label: "What tags exist?",
+        body: "{target}\n\nRead the `busa-cms` skill in this folder, then list the current tags with their slug and locale, so I can pick the right id for a post or page.",
+      },
+  ],
+  posts: [
+      {
+        key: "write-post",
+        label: "Write a new post",
+        body: "{target}\n\nRead the `busa-cms` skill in this folder and follow its workflow, then write the post I describe — set `path` (starting with `/`), `title`, `slug`, `locale`, and `body` markdown. Leave `status` as draft unless I explicitly tell you to publish it, set `schema-version` to 1, and resolve any category/tag by its record id rather than typing a name.",
+      },
+      {
+        key: "publish-or-unpublish-post",
+        label: "Publish a post, or move it back to draft",
+        body: "{target}\n\nRead the `busa-cms` skill in this folder, then set the status of the post I name to published (with a `published-at` date) or back to draft as I ask. Never delete a published post to unpublish it — only Pages/Posts status changes; if its path is changing, add the old path to `legacy-paths` first.",
+      },
+      {
+        key: "seo-gaps",
+        intent: "read-only",
+        label: "Which published posts are missing SEO fields?",
+        body: "{target}\n\nRead the `busa-cms` skill in this folder, then list the published posts that have no `seo-title` or `seo-description`, since a live post without them is exactly what the site cannot rank well.",
+      },
+  ],
+  pages: [
+      {
+        key: "draft-new-page",
+        label: "Draft a new page",
+        body: "{target}\n\nRead the `busa-cms` skill in this folder and follow its workflow, then draft the page I describe — `path` (starting with `/`), `title`, `slug`, `locale`, `template` (standard/landing/product/use-case), and `body` html. Leave `status` as draft unless I explicitly tell you to publish it, and set `schema-version` to 1.",
+      },
+      {
+        key: "publish-or-unpublish-page",
+        label: "Publish a page, or move it back to draft",
+        body: "{target}\n\nRead the `busa-cms` skill in this folder, then set the status of the page I name to published or back to draft as I ask. Never delete a published page to unpublish it, and never bulk-renumber or re-slug paths — every one is a live URL; put the old path in `legacy-paths` before changing it.",
+      },
+      {
+        key: "seo-gaps",
+        intent: "read-only",
+        label: "Which published pages are missing an SEO description?",
+        body: "{target}\n\nRead the `busa-cms` skill in this folder, then list the published pages that have no `seo-description`.",
+      },
+  ],
+};
+
 const views = {
   categories: [
     {
@@ -145,6 +215,7 @@ export const appConfig = {
       description: base.description,
       fields: base.fields,
       views: views[base.role],
+      agentPrompts: prompts[base.role],
     })),
     relations: [
       {

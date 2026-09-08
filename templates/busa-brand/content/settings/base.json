@@ -2,6 +2,19 @@
   "name": "Settings",
   "description": "Brand profile, style/tone, risk policy, monitored channels, and the agent lock",
   "position": 2,
+  "agentPrompts": [
+    {
+      "key": "settings-summary",
+      "label": "Show our current brand profile and risk policy",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-brand` skill in this folder, then show me the brand profile, tone/reading level, banned or regulated language, and monitored channels. Never expose a secret value here."
+    },
+    {
+      "key": "update-brand-profile",
+      "label": "Update the brand profile or risk policy",
+      "body": "{target}\n\nRead the `busa-brand` skill in this folder and follow its workflow, then update the brand profile field or risk-policy item I describe (for example a banned phrase, a monitored channel, or the tone/reading level) directly on the settings row."
+    }
+  ],
   "fields": [
     {
       "slug": "record-id",

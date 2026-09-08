@@ -1,6 +1,19 @@
 {
   "name": "Settings",
   "description": "SLA thresholds, default reply templates, and the channel accounts used to send follow-ups, one row",
+  "agentPrompts": [
+    {
+      "key": "adjust-sla",
+      "label": "Adjust SLA thresholds or reply templates",
+      "body": "{target}\n\nRead the `busa-expo-leads` skill in this folder and follow its workflow, then update the `sla-24h-hours` / `sla-72h-hours` thresholds or the per-language reply templates I describe on the settings record. Never write a secret value here — only the non-secret env var name that names the sending account."
+    },
+    {
+      "key": "check-settings",
+      "label": "What are my current SLA thresholds and sending accounts?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-expo-leads` skill in this folder, then show me the current SLA thresholds, reply templates, and the configured WhatsApp/email account env var names (never secret values)."
+    }
+  ],
   "position": 3,
   "fields": [
     {

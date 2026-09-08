@@ -68,5 +68,18 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts": [
+    {
+      "key": "update-matter-grouping",
+      "label": "Update a matter family or strategy lane",
+      "body": "{target}\n\nRead the `busa-legal-matter-strategy` skill in this folder and follow its workflow, then update or add the matter family, issue cluster, or strategy lane I describe, grouped by cause, stage, and responsible lawyer."
+    },
+    {
+      "key": "matter-library-overview",
+      "label": "What does the matter library look like?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-legal-matter-strategy` skill in this folder, then summarize the matter families and strategy lanes in the library, with their stage, responsible lawyer, and current metrics."
+    }
+  ]
 }

@@ -100,5 +100,23 @@
       "options": {}
     }
   ],
-  "views": []
+  "views": [],
+  "agentPrompts":   [
+    {
+      "key": "draft-channel-copy",
+      "label": "Draft channel copy for an approved action",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder and follow its workflow, then draft the listing copy, ad angle, or customer reply for the approved action I name, tied to it, and leave it behind the review gate \u2014 never publish or send it yourself."
+    },
+    {
+      "key": "revise-draft",
+      "label": "Revise a draft after feedback",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder and follow its workflow, then revise the named draft per my feedback, writing the revision as edited-body on the same record, and leave it for another review pass."
+    },
+    {
+      "key": "drafts-ready-to-ship",
+      "label": "What drafts are ready to ship?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-ecommerce-intel` skill in this folder, then list the approved drafts by channel (listing copy / ad angle / customer reply) that are ready for handoff."
+    }
+  ]
 }
