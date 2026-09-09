@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-lead-funnel",
-  "description": "Deal sourcing pipeline for a BD/sourcing team triaging merchant and business financing leads: a kanban board across new/data-verified/scored/term-sheet-ready/rejected stages with deterministic rule-based lead scoring, notes, and stage history — never outreach, term sheets, or money movement",
+  "description": {
+    "en": "Deal sourcing pipeline for a BD/sourcing team triaging merchant and business financing leads: a kanban board across new/data-verified/scored/term-sheet-ready/rejected stages with deterministic rule-based lead scoring, notes, and stage history — never outreach, term sheets, or money movement",
+    "zh-CN": "面向 BD/获客团队筛选商户与企业融资线索的成交来源流水线：看板贯穿新增/数据已核验/已评分/条款清单待发/已拒绝各阶段，配合规则化线索评分、备注与阶段变更历史——绝不涉及触达、条款清单或资金划转。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["rbf", "risk:local-write", "surface:busabase"],

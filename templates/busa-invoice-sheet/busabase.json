@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-invoice-sheet",
-  "description": "Busa Invoice Sheet: invoice/receipt/credit-note/statement extraction batches under human review, with field confidence, line items, and export-ready approved rows",
+  "description": {
+    "en": "Busa Invoice Sheet: invoice/receipt/credit-note/statement extraction batches under human review, with field confidence, line items, and export-ready approved rows",
+    "zh-CN": "Busa Invoice Sheet：发票/收据/贷记通知单/对账单的批量提取任务，配合人工审核、字段置信度、明细行，以及可导出的已批准记录。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["finance", "risk:local-write", "surface:busabase"],

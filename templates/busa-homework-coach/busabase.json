@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-homework-coach",
-  "description": "Busa Homework Coach: a child-friendly homework desk — questions the agent explained (with the gentle step-by-step explanation), the mistake notebook, practice papers, the parent/teacher review queue, and sanitized settings",
+  "description": {
+    "en": "Busa Homework Coach: a child-friendly homework desk — questions the agent explained (with the gentle step-by-step explanation), the mistake notebook, practice papers, the parent/teacher review queue, and sanitized settings",
+    "zh-CN": "Busa 作业辅导：面向孩子的作业工作台——Agent 讲解过的题目（附耐心的分步讲解）、错题本、练习卷，配合家长/老师审核队列，以及脱敏后的设置。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["education", "risk:local-write", "industry:education", "surface:busabase"],

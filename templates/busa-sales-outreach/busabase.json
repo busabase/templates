@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-sales-outreach",
-  "description": "Product positioning, ideal-customer profile, target accounts, contacts, and reviewed outreach",
+  "description": {
+    "en": "Product positioning, ideal-customer profile, target accounts, contacts, and reviewed outreach",
+    "zh-CN": "产品定位、理想客户画像、目标客户、联系人，以及经审核的外联触达。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["sales-crm", "risk:gated-write", "surface:busabase", "surface:smtp"],

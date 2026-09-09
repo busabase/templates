@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-picks",
-  "description": "Product-research (选品) desk: trend sweeps, margin cards, competition reads, and a develop/watch/drop review queue",
+  "description": {
+    "en": "Product-research (选品) desk: trend sweeps, margin cards, competition reads, and a develop/watch/drop review queue",
+    "zh-CN": "选品研究台：趋势扫描、利润测算卡、竞品分析，配合开发/观察/放弃的审核队列。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["ecommerce", "risk:local-write", "industry:ecommerce", "surface:busabase"],

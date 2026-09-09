@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-support",
-  "description": "Customer-support desk: tickets, knowledge base, and the support-qa quality gate",
+  "description": {
+    "en": "Customer-support desk: tickets, knowledge base, and the support-qa quality gate",
+    "zh-CN": "客户支持工作台：工单、知识库，以及支持质量把关。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": [

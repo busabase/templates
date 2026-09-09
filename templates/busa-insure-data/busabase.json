@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-insure-data",
-  "description": "Insurance-industry App-in-Skill for read-only data governance, backed by an operator-provisioned Busabase workspace (one Drive node for the file drive plus four Bases for QA pairs, featured information, insurer notices, and user feedback) and trusted export/restore/PDF-text-backfill scripts. Use when the user invokes $busa-insure-data or /busa-insure-data, wants an insurance data workspace with UI, needs to review insurance files, metadata completeness, QA pairs, featured information, insurer notices, or user feedback, wants to back up or restore a Busa Insure Data Busabase workspace from local PDFs, or wants Busabase Drive/Base data surfaced for data quality review and ongoing data governance.",
+  "description": {
+    "en": "Insurance-industry App-in-Skill for read-only data governance, backed by an operator-provisioned Busabase workspace (one Drive node for the file drive plus four Bases for QA pairs, featured information, insurer notices, and user feedback) and trusted export/restore/PDF-text-backfill scripts. Use when the user invokes $busa-insure-data or /busa-insure-data, wants an insurance data workspace with UI, needs to review insurance files, metadata completeness, QA pairs, featured information, insurer notices, or user feedback, wants to back up or restore a Busa Insure Data Busabase workspace from local PDFs, or wants Busabase Drive/Base data surfaced for data quality review and ongoing data governance.",
+    "zh-CN": "保险行业只读数据治理 App-in-Skill，依托操作者预置的 Busabase 工作空间（一个文件网盘 Drive 节点，加上问答对、精选资讯、保司通知、用户反馈四张 Base），配合可信的导出/还原/PDF 文本回填脚本。适用场景：用户调用 $busa-insure-data 或 /busa-insure-data、想要一个带界面的保险数据工作空间、需要审核保险文件与元数据完整性、问答对、精选资讯、保司通知或用户反馈、想从本地 PDF 备份或还原 Busa Insure Data 工作空间，或希望把 Busabase Drive/Base 数据摊开做数据质量审查与持续数据治理。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["industry-intel", "risk:read-only", "industry:insurance", "surface:busabase"],

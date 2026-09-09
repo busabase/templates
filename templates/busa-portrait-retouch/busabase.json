@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-portrait-retouch",
-  "description": "Natural portrait retouch jobs, reviewable candidates, and non-secret workflow settings",
+  "description": {
+    "en": "Natural portrait retouch jobs, reviewable candidates, and non-secret workflow settings",
+    "zh-CN": "自然风人像修图任务、可审核的候选方案，以及不含密钥的工作流设置。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["production", "risk:local-write", "industry:beauty", "surface:busabase"],

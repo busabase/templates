@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-social",
-  "description": "Social media command desk: cross-platform monitoring plus an ECHO publishing desk",
+  "description": {
+    "en": "Social media command desk: cross-platform monitoring plus an ECHO publishing desk",
+    "zh-CN": "社交媒体指挥台：跨平台监测，外加基于 ECHO 方法的发布工作台。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["marketing", "risk:gated-write", "surface:busabase"],

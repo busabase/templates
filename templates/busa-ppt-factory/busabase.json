@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-ppt-factory",
-  "description": "Project-based PPTX production desk — project, deck, slide card, style system, QA checks, and generated exports, with a review queue (approve / request changes / block / revise) gating PPTX generation",
+  "description": {
+    "en": "Project-based PPTX production desk — project, deck, slide card, style system, QA checks, and generated exports, with a review queue (approve / request changes / block / revise) gating PPTX generation",
+    "zh-CN": "基于项目的 PPTX 生产台——项目、演示文稿、幻灯片卡片、样式体系、质检，以及生成的导出文件，PPTX 生成前需过审核队列（通过 / 打回修改 / 拦截 / 需修订）。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["production", "risk:local-write", "surface:busabase"],

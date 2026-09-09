@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-jobhunt",
-  "description": "Job-search profile, target companies, and outreach state",
+  "description": {
+    "en": "Job-search profile, target companies, and outreach state",
+    "zh-CN": "求职档案、目标公司与触达进度追踪。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["comms", "risk:gated-write", "surface:busabase", "surface:smtp"],

@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-brand",
-  "description": "Brand-narrative single source of truth built on the TALE discipline",
+  "description": {
+    "en": "Brand-narrative single source of truth built on the TALE discipline",
+    "zh-CN": "基于 TALE 方法构建的品牌叙事唯一信源。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["marketing", "risk:local-write", "surface:busabase"],

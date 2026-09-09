@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-feedback",
-  "description": "Voice-of-customer desk: raw feedback, clustered feature requests, and the roadmap decision queue",
+  "description": {
+    "en": "Voice-of-customer desk: raw feedback, clustered feature requests, and the roadmap decision queue",
+    "zh-CN": "客户之声工作台：原始反馈、聚类后的功能诉求，配合路线图决策队列。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["sales-crm", "risk:gated-write", "surface:busabase"],

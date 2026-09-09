@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-wechat-crm",
-  "description": "Goal-first WeChat relationship desk that promotes only selected contacts into focused People workflows.",
+  "description": {
+    "en": "Goal-first WeChat relationship desk that promotes only selected contacts into focused People workflows.",
+    "zh-CN": "目标优先的微信关系管理台，只把精选联系人提升进专注的「人物」工作流。"
+  },
   "version": "0.3.0",
   "license": "MIT",
   "tags": ["sales-crm", "wechat", "relationship-strategy", "risk:local-write", "surface:busabase"],

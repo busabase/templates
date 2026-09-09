@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-digital-human",
-  "description": "Digital-human solution desk: a fast 2D vendor-service path and a high-control 3D UE/Unity path, plus a launch QA gate. The project overview, personas, pipeline routes, vendor comparison, and QA checklist are curated reference content, not per-user data -- the only genuinely dynamic state is the human review verdict (approve / request changes / block) recorded against each QA gate check, written as a direct field write on its own record, mirroring busa-clm's approvals.",
+  "description": {
+    "en": "Digital-human solution desk: a fast 2D vendor-service path and a high-control 3D UE/Unity path, plus a launch QA gate. The project overview, personas, pipeline routes, vendor comparison, and QA checklist are curated reference content, not per-user data -- the only genuinely dynamic state is the human review verdict (approve / request changes / block) recorded against each QA gate check, written as a direct field write on its own record, mirroring busa-clm's approvals.",
+    "zh-CN": "数字人方案台：既有快速交付的 2D 供应商服务路线，也有高把控力的 3D UE/Unity 路线，外加上线前的质检关卡。项目总览、人设、制作路线、供应商对比与质检清单都是精选的参考内容，不是逐用户数据——唯一真正会变化的状态是记在每项质检关卡上的人工审核结论（通过 / 打回修改 / 拦截），以字段直接写入自身记录的方式落地，与 busa-clm 的审批方式一致。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["production", "risk:local-write", "surface:busabase"],

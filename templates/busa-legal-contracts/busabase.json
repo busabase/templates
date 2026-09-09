@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-legal-contracts",
-  "description": "Legal-contract review desk: contract library, clause issues, risk checks, clause playbook, and a review queue",
+  "description": {
+    "en": "Legal-contract review desk: contract library, clause issues, risk checks, clause playbook, and a review queue",
+    "zh-CN": "法务合同审查台：合同库、条款问题、风险检查、条款处置手册，配合审核队列。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["legal", "risk:gated-write", "industry:legal", "surface:busabase"],

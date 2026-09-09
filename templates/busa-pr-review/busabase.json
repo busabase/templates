@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-pr-review",
-  "description": "GitHub pull request review desk backed by the gh CLI",
+  "description": {
+    "en": "GitHub pull request review desk backed by the gh CLI",
+    "zh-CN": "基于 gh CLI 的 GitHub Pull Request 审查台。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["platform", "risk:gated-write", "surface:busabase", "surface:github"],

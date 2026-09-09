@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-legal-firm-radar",
-  "description": "Firm-level radar desk over anonymized casebase analytics: practice-area mix, case-quality indicators, lawyer capability profiles, brand proof points, and approval-gated management insights (approve / request changes / revise / block) before a report becomes a management or brand handoff",
+  "description": {
+    "en": "Firm-level radar desk over anonymized casebase analytics: practice-area mix, case-quality indicators, lawyer capability profiles, brand proof points, and approval-gated management insights (approve / request changes / revise / block) before a report becomes a management or brand handoff",
+    "zh-CN": "基于脱敏案例库分析的律所级雷达台：业务领域构成、案件质量指标、律师能力画像、品牌佐证素材，以及报告成为管理层或品牌交付物前需审批放行的管理洞察（通过 / 打回修改 / 需修订 / 拦截）。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["legal", "risk:local-write", "industry:legal", "surface:busabase"],

@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-standup",
-  "description": "Team standup board: check-ins, blockers, and missing-check-in reminders",
+  "description": {
+    "en": "Team standup board: check-ins, blockers, and missing-check-in reminders",
+    "zh-CN": "团队站会看板：打卡动态、阻塞项，以及漏打卡提醒。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["comms", "risk:local-write", "surface:busabase"],

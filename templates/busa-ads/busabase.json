@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-ads",
-  "description": "Ad-campaign command desk: Amazon/Meta/TikTok/Google spend and performance, deterministic anomaly detection, and an adjustment-card review queue",
+  "description": {
+    "en": "Ad-campaign command desk: Amazon/Meta/TikTok/Google spend and performance, deterministic anomaly detection, and an adjustment-card review queue",
+    "zh-CN": "广告投放指挥台：汇总 Amazon/Meta/TikTok/Google 的投放支出与效果，规则化异常检测，配合调整卡片的审核队列。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["ecommerce", "risk:gated-write", "industry:ecommerce", "surface:busabase"],
