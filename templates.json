@@ -6,6 +6,10 @@
     {
       "subdir": "templates/b2b-crm",
       "name": "b2b-crm",
+      "displayName": {
+        "en": "B2B CRM",
+        "zh-CN": "B2B客户管理"
+      },
       "description": {
         "en": "A lightweight B2B CRM with a daily sales overview, accounts, activities, follow-ups, and a review-first pipeline.",
         "zh-CN": "轻量级 B2B CRM：每日销售总览、客户、跟进动态，以及先审后办的成交流水线。"
@@ -48,6 +52,10 @@
     {
       "subdir": "templates/busa-ads",
       "name": "busa-ads",
+      "displayName": {
+        "en": "Busa Ads",
+        "zh-CN": "Busa 广告管家"
+      },
       "description": {
         "en": "Ad-campaign command desk: Amazon/Meta/TikTok/Google spend and performance, deterministic anomaly detection, and an adjustment-card review queue",
         "zh-CN": "广告投放指挥台：汇总 Amazon/Meta/TikTok/Google 的投放支出与效果，规则化异常检测，配合调整卡片的审核队列。"
@@ -86,6 +94,10 @@
     {
       "subdir": "templates/busa-ai-newsroom",
       "name": "busa-ai-newsroom",
+      "displayName": {
+        "en": "Busa AI Newsroom",
+        "zh-CN": "Busa AI新闻编辑室"
+      },
       "description": {
         "en": "Daily industry-intelligence cockpit for AI/news-source intelligence: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (sales opener / LinkedIn post / client memo) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
         "zh-CN": "面向 AI 与新闻信源情报的每日行业情报驾驶舱：有出处的情报信号、买家意向解读、经审批的销售/运营动作，以及对外发出前待审的渠道文案草稿（开场白 / LinkedIn 帖子 / 客户备忘录）。信号、动作与草稿只通过 Agent 自身的浏览与写入流程进入 Busabase（见 SKILL.md）；AirApp 本身只负责查看与决策。"
@@ -123,6 +135,10 @@
     {
       "subdir": "templates/busa-audit",
       "name": "busa-audit",
+      "displayName": {
+        "en": "Busa Audit",
+        "zh-CN": "Busa 财务审核"
+      },
       "description": {
         "en": "Finance anomaly review desk: imported orders/invoices/payments, deterministic anomaly rules, and a human review queue",
         "zh-CN": "财务异常审核台：导入的订单/发票/付款记录，规则化异常检测，配合人工审核队列。"
@@ -160,6 +176,10 @@
     {
       "subdir": "templates/busa-brand",
       "name": "busa-brand",
+      "displayName": {
+        "en": "Busa Brand",
+        "zh-CN": "Busa 品牌叙事"
+      },
       "description": {
         "en": "Brand-narrative single source of truth built on the TALE discipline",
         "zh-CN": "基于 TALE 方法构建的品牌叙事唯一信源。"
@@ -197,6 +217,10 @@
     {
       "subdir": "templates/busa-campaigns",
       "name": "busa-campaigns",
+      "displayName": {
+        "en": "Busa Campaigns",
+        "zh-CN": "Busa 邮件营销"
+      },
       "description": {
         "en": "Outbound email-marketing desk built on the SEND discipline",
         "zh-CN": "基于 SEND 方法构建的外发邮件营销工作台。"
@@ -234,6 +258,10 @@
     {
       "subdir": "templates/busa-clm",
       "name": "busa-clm",
+      "displayName": {
+        "en": "Busa CLM",
+        "zh-CN": "Busa 合同管理"
+      },
       "description": {
         "en": "Lightweight contract lifecycle desk: contract inventory, lifecycle stage, owners, obligations, renewal/notice dates, and a simple approval reminder queue. Not a legal redline/clause-review product -- see busa-legal-contracts for that. Contract records, obligation status, renewal acknowledgements, and approval decisions are all direct writes made by the operator in the browser, not a review/approval pipeline.",
         "zh-CN": "轻量级合同生命周期台：合同台账、生命周期阶段、责任人、履约义务、续约/到期提醒日期，配合简单的审批提醒队列。不是法务红线/条款审查产品——那类需求见 busa-legal-contracts。合同记录、履约状态、续约确认与审批决定均由操作者在浏览器中直接写入，不是一条审核流水线。"
@@ -273,6 +301,10 @@
     {
       "subdir": "templates/busa-cms",
       "name": "busa-cms",
+      "displayName": {
+        "en": "Busa CMS",
+        "zh-CN": "Busa 内容管理"
+      },
       "description": {
         "en": "A WordPress-style admin for a website's Posts, Pages, Categories, and Tags — the exact four Bases the busabase-cms-sdk reads.",
         "zh-CN": "WordPress 风格的网站后台：文章、页面、分类与标签——正是 busabase-cms-sdk 读取的那四张 Base。"
@@ -318,6 +350,10 @@
     {
       "subdir": "templates/busa-creators",
       "name": "busa-creators",
+      "displayName": {
+        "en": "Busa Creators",
+        "zh-CN": "Busa 达人营销"
+      },
       "description": {
         "en": "Influencer/creator marketing command desk — discovery, outreach, briefs, contracts, and ROI",
         "zh-CN": "达人/创作者营销指挥台——达人发掘、触达、简报、合同与投产比。"
@@ -355,6 +391,10 @@
     {
       "subdir": "templates/busa-crm",
       "name": "busa-crm",
+      "displayName": {
+        "en": "Busa CRM",
+        "zh-CN": "Busa 客户管理"
+      },
       "description": {
         "en": "Contacts, companies, deals, and follow-up review workspace",
         "zh-CN": "客户、公司、成交机会与跟进审核工作台。"
@@ -392,6 +432,10 @@
     {
       "subdir": "templates/busa-demo-video-factory",
       "name": "busa-demo-video-factory",
+      "displayName": {
+        "en": "Busa Demo Video Factory",
+        "zh-CN": "Busa 演示视频工厂"
+      },
       "description": {
         "en": "Demo/marketing video planning pipeline: idea -> storyboard -> verified claims -> recording -> post-production.",
         "zh-CN": "演示/营销视频策划流水线：创意 → 分镜脚本 → 核实过的卖点主张 → 拍摄 → 后期制作。"
@@ -427,6 +471,10 @@
     {
       "subdir": "templates/busa-devops",
       "name": "busa-devops",
+      "displayName": {
+        "en": "Busa DevOps",
+        "zh-CN": "Busa 运维台"
+      },
       "description": {
         "en": "Product-fleet ops desk: service health, SSL/domain/key expiries, cloud spend, and an action review queue",
         "zh-CN": "产品矩阵运维台：服务健康状态、SSL/域名/密钥到期提醒、云服务开销，配合动作审核队列。"
@@ -466,6 +514,10 @@
     {
       "subdir": "templates/busa-digital-human",
       "name": "busa-digital-human",
+      "displayName": {
+        "en": "Busa Digital Human",
+        "zh-CN": "Busa 数字人"
+      },
       "description": {
         "en": "Digital-human solution desk: a fast 2D vendor-service path and a high-control 3D UE/Unity path, plus a launch QA gate. The project overview, personas, pipeline routes, vendor comparison, and QA checklist are curated reference content, not per-user data -- the only genuinely dynamic state is the human review verdict (approve / request changes / block) recorded against each QA gate check, written as a direct field write on its own record, mirroring busa-clm's approvals.",
         "zh-CN": "数字人方案台：既有快速交付的 2D 供应商服务路线，也有高把控力的 3D UE/Unity 路线，外加上线前的质检关卡。项目总览、人设、制作路线、供应商对比与质检清单都是精选的参考内容，不是逐用户数据——唯一真正会变化的状态是记在每项质检关卡上的人工审核结论（通过 / 打回修改 / 拦截），以字段直接写入自身记录的方式落地，与 busa-clm 的审批方式一致。"
@@ -503,6 +555,10 @@
     {
       "subdir": "templates/busa-drama",
       "name": "busa-drama",
+      "displayName": {
+        "en": "Busa Drama",
+        "zh-CN": "Busa 短剧制作"
+      },
       "description": {
         "en": "Short-drama workspace: series bible, characters, relationships, episodes, and storyboard shots",
         "zh-CN": "短剧制作工作台：剧集设定集、人物、人物关系、分集与分镜镜头。"
@@ -542,6 +598,10 @@
     {
       "subdir": "templates/busa-ecommerce-intel",
       "name": "busa-ecommerce-intel",
+      "displayName": {
+        "en": "Busa E-commerce Intel",
+        "zh-CN": "Busa 电商情报"
+      },
       "description": {
         "en": "Daily industry-intelligence cockpit for e-commerce and cross-border sellers: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (listing copy / ad angle / customer reply) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
         "zh-CN": "面向电商与跨境卖家的每日行业情报驾驶舱：有出处的情报信号、买家意向解读、经审批的销售/运营动作，以及对外发出前待审的渠道文案草稿（商品文案 / 广告角度 / 客户回复）。信号、动作与草稿只通过 Agent 自身的浏览与写入流程进入 Busabase（见 SKILL.md）；AirApp 本身只负责查看与决策。"
@@ -580,6 +640,10 @@
     {
       "subdir": "templates/busa-email",
       "name": "busa-email",
+      "displayName": {
+        "en": "Busa Email",
+        "zh-CN": "Busa 邮件台"
+      },
       "description": {
         "en": "Inbox triage, human review, and trusted execution — an approval-first email desk.",
         "zh-CN": "收件箱分诊、人工审核与可信执行——先审后发的邮件工作台。"
@@ -621,6 +685,10 @@
     {
       "subdir": "templates/busa-expo-leads",
       "name": "busa-expo-leads",
+      "displayName": {
+        "en": "Busa Expo Leads",
+        "zh-CN": "Busa 展会线索"
+      },
       "description": {
         "en": "Trade-show lead capture desk: an SLA countdown board and a multilingual follow-up review queue",
         "zh-CN": "展会线索采集台：SLA 倒计时看板，配合多语言跟进审核队列。"
@@ -659,6 +727,10 @@
     {
       "subdir": "templates/busa-family-fund",
       "name": "busa-family-fund",
+      "displayName": {
+        "en": "Busa Family Fund",
+        "zh-CN": "Busa 家庭基金"
+      },
       "description": {
         "en": "Household pooled-pension / elder-care fund ledger and fairness dashboard",
         "zh-CN": "家庭养老金/赡养基金共同账本与公平性看板。"
@@ -697,6 +769,10 @@
     {
       "subdir": "templates/busa-family-office",
       "name": "busa-family-office",
+      "displayName": {
+        "en": "Busa Family Office",
+        "zh-CN": "Busa 家族办公室"
+      },
       "description": {
         "en": "Multi-entity family-office consolidation dashboard",
         "zh-CN": "多主体家族办公室合并报表看板。"
@@ -736,6 +812,10 @@
     {
       "subdir": "templates/busa-feedback",
       "name": "busa-feedback",
+      "displayName": {
+        "en": "Busa Feedback",
+        "zh-CN": "Busa 客户之声"
+      },
       "description": {
         "en": "Voice-of-customer desk: raw feedback, clustered feature requests, and the roadmap decision queue",
         "zh-CN": "客户之声工作台：原始反馈、聚类后的功能诉求，配合路线图决策队列。"
@@ -773,6 +853,10 @@
     {
       "subdir": "templates/busa-finance",
       "name": "busa-finance",
+      "displayName": {
+        "en": "Busa Finance",
+        "zh-CN": "Busa 财务模型"
+      },
       "description": {
         "en": "Busa Finance: a review workspace for a three-statement financial model — the current model snapshot (company/currency/periods/workbook), its model-quality check queue (balance-sheet ties, cash roll-forward, formula reviews), and sanitized settings",
         "zh-CN": "Busa Finance：三表联动财务模型的审核工作台——当前模型快照（公司/币种/期间/工作簿）、模型质量检查队列（资产负债表勾稽、现金滚存、公式复核），以及脱敏后的设置。"
@@ -809,6 +893,10 @@
     {
       "subdir": "templates/busa-followups",
       "name": "busa-followups",
+      "displayName": {
+        "en": "Busa Follow-ups",
+        "zh-CN": "Busa 跟进提醒"
+      },
       "description": {
         "en": "Post-meeting follow-up reminders: who to follow up with, what for, and when it's due — open it and see today's to-dos.",
         "zh-CN": "会后跟进提醒：谁、跟进什么事、什么时候该完成，打开就看到今天该做什么"
@@ -842,6 +930,10 @@
     {
       "subdir": "templates/busa-homework-coach",
       "name": "busa-homework-coach",
+      "displayName": {
+        "en": "Busa Homework Coach",
+        "zh-CN": "Busa 作业辅导"
+      },
       "description": {
         "en": "Busa Homework Coach: a child-friendly homework desk — questions the agent explained (with the gentle step-by-step explanation), the mistake notebook, practice papers, the parent/teacher review queue, and sanitized settings",
         "zh-CN": "Busa 作业辅导：面向孩子的作业工作台——Agent 讲解过的题目（附耐心的分步讲解）、错题本、练习卷，配合家长/老师审核队列，以及脱敏后的设置。"
@@ -880,6 +972,10 @@
     {
       "subdir": "templates/busa-ideas",
       "name": "busa-ideas",
+      "displayName": {
+        "en": "Busa Ideas",
+        "zh-CN": "Busa 创意库"
+      },
       "description": {
         "en": "An idea vault with a business consultant attached — interrogate a vague idea, then carry it through BRD, MRD, and PRD.",
         "zh-CN": "自带商业顾问的创意库——先把模糊的点子问透，再一路推进到 BRD、MRD 和 PRD。"
@@ -921,6 +1017,10 @@
     {
       "subdir": "templates/busa-insure-data",
       "name": "busa-insure-data",
+      "displayName": {
+        "en": "Busa Insure Data",
+        "zh-CN": "Busa 保险数据"
+      },
       "description": {
         "en": "Insurance-industry App-in-Skill for read-only data governance, backed by an operator-provisioned Busabase workspace (one Drive node for the file drive plus four Bases for QA pairs, featured information, insurer notices, and user feedback) and trusted export/restore/PDF-text-backfill scripts. Use when the user invokes $busa-insure-data or /busa-insure-data, wants an insurance data workspace with UI, needs to review insurance files, metadata completeness, QA pairs, featured information, insurer notices, or user feedback, wants to back up or restore a Busa Insure Data Busabase workspace from local PDFs, or wants Busabase Drive/Base data surfaced for data quality review and ongoing data governance.",
         "zh-CN": "保险行业只读数据治理 App-in-Skill，依托操作者预置的 Busabase 工作空间（一个文件网盘 Drive 节点，加上问答对、精选资讯、保司通知、用户反馈四张 Base），配合可信的导出/还原/PDF 文本回填脚本。适用场景：用户调用 $busa-insure-data 或 /busa-insure-data、想要一个带界面的保险数据工作空间、需要审核保险文件与元数据完整性、问答对、精选资讯、保司通知或用户反馈、想从本地 PDF 备份或还原 Busa Insure Data 工作空间，或希望把 Busabase Drive/Base 数据摊开做数据质量审查与持续数据治理。"
@@ -959,6 +1059,10 @@
     {
       "subdir": "templates/busa-invest-webull",
       "name": "busa-invest-webull",
+      "displayName": {
+        "en": "Busa Invest (Webull)",
+        "zh-CN": "Busa 投资看板"
+      },
       "description": {
         "en": "Read-only Webull brokerage portfolio dashboard (accounts, positions, insights)",
         "zh-CN": "只读的 Webull 证券持仓看板（账户、持仓、洞察）。"
@@ -997,6 +1101,10 @@
     {
       "subdir": "templates/busa-invoice-sheet",
       "name": "busa-invoice-sheet",
+      "displayName": {
+        "en": "Busa Invoice Sheet",
+        "zh-CN": "Busa 发票台账"
+      },
       "description": {
         "en": "Busa Invoice Sheet: invoice/receipt/credit-note/statement extraction batches under human review, with field confidence, line items, and export-ready approved rows",
         "zh-CN": "Busa Invoice Sheet：发票/收据/贷记通知单/对账单的批量提取任务，配合人工审核、字段置信度、明细行，以及可导出的已批准记录。"
@@ -1035,6 +1143,10 @@
     {
       "subdir": "templates/busa-jobhunt",
       "name": "busa-jobhunt",
+      "displayName": {
+        "en": "Busa Job Hunt",
+        "zh-CN": "Busa 求职档案"
+      },
       "description": {
         "en": "Job-search profile, target companies, and outreach state",
         "zh-CN": "求职档案、目标公司与触达进度追踪。"
@@ -1075,6 +1187,10 @@
     {
       "subdir": "templates/busa-launch",
       "name": "busa-launch",
+      "displayName": {
+        "en": "Busa Launch",
+        "zh-CN": "Busa 产品发布"
+      },
       "description": {
         "en": "Product-launch command desk built on the RAMP discipline",
         "zh-CN": "基于 RAMP 方法构建的产品发布指挥台。"
@@ -1112,6 +1228,10 @@
     {
       "subdir": "templates/busa-lead-funnel",
       "name": "busa-lead-funnel",
+      "displayName": {
+        "en": "Busa Lead Funnel",
+        "zh-CN": "Busa 线索漏斗"
+      },
       "description": {
         "en": "Deal sourcing pipeline for a BD/sourcing team triaging merchant and business financing leads: a kanban board across new/data-verified/scored/term-sheet-ready/rejected stages with deterministic rule-based lead scoring, notes, and stage history — never outreach, term sheets, or money movement",
         "zh-CN": "面向 BD/获客团队筛选商户与企业融资线索的成交来源流水线：看板贯穿新增/数据已核验/已评分/条款清单待发/已拒绝各阶段，配合规则化线索评分、备注与阶段变更历史——绝不涉及触达、条款清单或资金划转。"
@@ -1148,6 +1268,10 @@
     {
       "subdir": "templates/busa-legal-casebase-ingest",
       "name": "busa-legal-casebase-ingest",
+      "displayName": {
+        "en": "Busa Legal Casebase Ingest",
+        "zh-CN": "Busa 案例录入"
+      },
       "description": {
         "en": "Casebase intake and anonymization QA desk for law-firm judgment and arbitral award documents: agent-prepared case records, canonical case-library groupings, deterministic QA checks, and a review queue (approve / request changes / revise / block) before a record becomes a searchable knowledge asset",
         "zh-CN": "面向律所判决书与仲裁裁决文书的案例库录入与脱敏质检台：Agent 整理好的案例记录、规范化的案例库分组、规则化质检检查，以及记录成为可检索知识资产前的审核队列（通过 / 打回修改 / 需修订 / 拦截）。"
@@ -1188,6 +1312,10 @@
     {
       "subdir": "templates/busa-legal-contracts",
       "name": "busa-legal-contracts",
+      "displayName": {
+        "en": "Busa Legal Contracts",
+        "zh-CN": "Busa 合同审查"
+      },
       "description": {
         "en": "Legal-contract review desk: contract library, clause issues, risk checks, clause playbook, and a review queue",
         "zh-CN": "法务合同审查台：合同库、条款问题、风险检查、条款处置手册，配合审核队列。"
@@ -1228,6 +1356,10 @@
     {
       "subdir": "templates/busa-legal-firm-radar",
       "name": "busa-legal-firm-radar",
+      "displayName": {
+        "en": "Busa Legal Firm Radar",
+        "zh-CN": "Busa 律所雷达"
+      },
       "description": {
         "en": "Firm-level radar desk over anonymized casebase analytics: practice-area mix, case-quality indicators, lawyer capability profiles, brand proof points, and approval-gated management insights (approve / request changes / revise / block) before a report becomes a management or brand handoff",
         "zh-CN": "基于脱敏案例库分析的律所级雷达台：业务领域构成、案件质量指标、律师能力画像、品牌佐证素材，以及报告成为管理层或品牌交付物前需审批放行的管理洞察（通过 / 打回修改 / 需修订 / 拦截）。"
@@ -1267,6 +1399,10 @@
     {
       "subdir": "templates/busa-legal-matter-strategy",
       "name": "busa-legal-matter-strategy",
+      "displayName": {
+        "en": "Busa Legal Matter Strategy",
+        "zh-CN": "Busa 案件策略"
+      },
       "description": {
         "en": "Matter-strategy desk over new-case strategy, issue trees, evidence checklists, risk analysis, pleading outlines, and approval-gated drafting packs grounded in internal precedents (approve / request changes / revise / block) before a strategy pack becomes a drafting handoff",
         "zh-CN": "案件策略台：新案策略、争议焦点树、证据清单、风险分析、诉状大纲，以及基于内部判例、在成为撰写交付物前需审批放行的策略包（通过 / 打回修改 / 需修订 / 拦截）。"
@@ -1306,6 +1442,10 @@
     {
       "subdir": "templates/busa-legal-precedent-desk",
       "name": "busa-legal-precedent-desk",
+      "displayName": {
+        "en": "Busa Legal Precedent Desk",
+        "zh-CN": "Busa 判例研究"
+      },
       "description": {
         "en": "Precedent-research desk over internal casebase search, local court-pattern analysis, similar-case packs, citations, and approval-gated research exports (approve / request changes / revise / block) before a research pack becomes a matter-strategy input",
         "zh-CN": "判例研究台：内部案例库检索、地方法院裁判规律分析、类案检索包、引证，以及研究成果在成为案件策略输入前需审批放行的导出物（通过 / 打回修改 / 需修订 / 拦截）。"
@@ -1345,6 +1485,10 @@
     {
       "subdir": "templates/busa-lesson",
       "name": "busa-lesson",
+      "displayName": {
+        "en": "Busa Lesson",
+        "zh-CN": "Busa 教案工坊"
+      },
       "description": {
         "en": "Lesson-plan generation and compliance-check desk: plan library, compliance checks, and a review queue",
         "zh-CN": "教案生成与合规检查台：教案库、合规检查，配合审核队列。"
@@ -1383,6 +1527,10 @@
     {
       "subdir": "templates/busa-listing",
       "name": "busa-listing",
+      "displayName": {
+        "en": "Busa Listing",
+        "zh-CN": "Busa 商品详情页"
+      },
       "description": {
         "en": "Listing factory desk: product library, platform drafts, compliance checks, claims registry, and a review queue",
         "zh-CN": "商品详情页生产台：商品库、各平台文案草稿、合规检查、卖点主张登记，配合审核队列。"
@@ -1423,6 +1571,10 @@
     {
       "subdir": "templates/busa-local-model-lab",
       "name": "busa-local-model-lab",
+      "displayName": {
+        "en": "Busa Local Model Lab",
+        "zh-CN": "Busa 本地模型实验室"
+      },
       "description": {
         "en": "Busabase-backed control plane for local Apple Silicon fine-tuning, locked evaluation, and LoRA adapter governance.",
         "zh-CN": "基于 Busabase 的控制面，管理本地 Apple Silicon 微调、锁定评测与 LoRA 适配器治理。"
@@ -1461,6 +1613,10 @@
     {
       "subdir": "templates/busa-messenger",
       "name": "busa-messenger",
+      "displayName": {
+        "en": "Busa Messenger",
+        "zh-CN": "Busa 聊天收件箱"
+      },
       "description": {
         "en": "Unified chat inbox: WhatsApp/Discord/Slack/Telegram accounts, conversations, messages, and a reply outbox",
         "zh-CN": "统一聊天收件箱：WhatsApp/Discord/Slack/Telegram 账号、会话、消息，配合回复发件箱。"
@@ -1503,6 +1659,10 @@
     {
       "subdir": "templates/busa-money",
       "name": "busa-money",
+      "displayName": {
+        "en": "Busa Money",
+        "zh-CN": "Busa 资金台账"
+      },
       "description": {
         "en": "Aggregated money ledger across Mercury, Stripe, Airwallex, and Creem",
         "zh-CN": "汇总 Mercury、Stripe、Airwallex 与 Creem 的资金台账。"
@@ -1545,6 +1705,10 @@
     {
       "subdir": "templates/busa-mv",
       "name": "busa-mv",
+      "displayName": {
+        "en": "Busa Music Video",
+        "zh-CN": "Busa 音乐视频"
+      },
       "description": {
         "en": "Music-video workspace: song, concept, cast reference cards, and storyboard shots",
         "zh-CN": "音乐视频制作工作台：歌曲、创意概念、演员参考卡与分镜镜头。"
@@ -1583,6 +1747,10 @@
     {
       "subdir": "templates/busa-picks",
       "name": "busa-picks",
+      "displayName": {
+        "en": "Busa Picks",
+        "zh-CN": "Busa 选品台"
+      },
       "description": {
         "en": "Product-research (选品) desk: trend sweeps, margin cards, competition reads, and a develop/watch/drop review queue",
         "zh-CN": "选品研究台：趋势扫描、利润测算卡、竞品分析，配合开发/观察/放弃的审核队列。"
@@ -1621,6 +1789,10 @@
     {
       "subdir": "templates/busa-portfolio-health",
       "name": "busa-portfolio-health",
+      "displayName": {
+        "en": "Busa Portfolio Health",
+        "zh-CN": "Busa 组合健康"
+      },
       "description": {
         "en": "Read-mostly dashboard over a revenue-based-financing (RBF) fund or private-credit book of many small SME contracts: portfolio health, AUM, repayment progress, industry/city concentration risk, and a watchlist of contracts with declining revenue. The only human action — flag a contract for review, clear a flag, or leave a note — is written directly onto the contract's own record; there is no separate approval queue and no transaction path. Generic and brand-free.",
         "zh-CN": "面向收入分成融资（RBF）基金或由大量小微企业合同组成的私募信贷组合的以查看为主的看板：组合健康度、管理规模、还款进度、行业/城市集中度风险，以及收入下滑合同的观察名单。唯一的人工动作——标记合同待审核、清除标记或留言——直接写入合同自身记录，没有单独的审批队列，也没有交易通路。通用且不带品牌信息。"
@@ -1657,6 +1829,10 @@
     {
       "subdir": "templates/busa-portrait-retouch",
       "name": "busa-portrait-retouch",
+      "displayName": {
+        "en": "Busa Portrait Retouch",
+        "zh-CN": "Busa 人像修图"
+      },
       "description": {
         "en": "Natural portrait retouch jobs, reviewable candidates, and non-secret workflow settings",
         "zh-CN": "自然风人像修图任务、可审核的候选方案，以及不含密钥的工作流设置。"
@@ -1692,6 +1868,10 @@
     {
       "subdir": "templates/busa-ppt-factory",
       "name": "busa-ppt-factory",
+      "displayName": {
+        "en": "Busa PPT Factory",
+        "zh-CN": "Busa PPT工厂"
+      },
       "description": {
         "en": "Project-based PPTX production desk — project, deck, slide card, style system, QA checks, and generated exports, with a review queue (approve / request changes / block / revise) gating PPTX generation",
         "zh-CN": "基于项目的 PPTX 生产台——项目、演示文稿、幻灯片卡片、样式体系、质检，以及生成的导出文件，PPTX 生成前需过审核队列（通过 / 打回修改 / 拦截 / 需修订）。"
@@ -1732,6 +1912,10 @@
     {
       "subdir": "templates/busa-pr-review",
       "name": "busa-pr-review",
+      "displayName": {
+        "en": "Busa PR Review",
+        "zh-CN": "Busa PR审查"
+      },
       "description": {
         "en": "GitHub pull request review desk backed by the gh CLI",
         "zh-CN": "基于 gh CLI 的 GitHub Pull Request 审查台。"
@@ -1772,6 +1956,10 @@
     {
       "subdir": "templates/busa-product-hub",
       "name": "busa-product-hub",
+      "displayName": {
+        "en": "Busa Product Hub",
+        "zh-CN": "Busa 产品枢纽"
+      },
       "description": {
         "en": "Product & certification hub for export/trade sellers: catalog/SKU master data, pricing, inventory, channel status (Amazon/Shopify/TikTok Shop/eBay), content readiness, compliance notes, lifecycle state, a certificate expiry tracker (CE/FCC/RoHS/UN38.3/UKCA), and an approval-gated review queue (channel publish approvals, price-change review, quality holds, lifecycle decisions, and unsourced spec claims). The AirApp itself only ever decides on a review item (approve/request_changes/block) directly onto its own record -- it never creates a product, channel, inventory, or certificate row.",
         "zh-CN": "面向出口贸易卖家的产品与认证枢纽：商品/SKU 主数据、定价、库存、渠道状态（Amazon/Shopify/TikTok Shop/eBay）、内容就绪度、合规备注、生命周期状态、认证到期追踪（CE/FCC/RoHS/UN38.3/UKCA），以及需审批放行的审核队列（渠道上架审批、调价审核、质量冻结、生命周期决策，以及无依据的规格主张）。AirApp 本身只会对审核事项做出决定（通过/打回修改/拦截）并直接写回该事项自身的记录——绝不会自行创建商品、渠道、库存或认证记录。"
@@ -1813,6 +2001,10 @@
     {
       "subdir": "templates/busa-radar",
       "name": "busa-radar",
+      "displayName": {
+        "en": "Busa Radar",
+        "zh-CN": "Busa 市场雷达"
+      },
       "description": {
         "en": "Market-intelligence desk: competitor signals, research briefs/reports, trend movers/opportunities, and a triage review queue",
         "zh-CN": "市场情报工作台：竞对信号、调研简报/报告、趋势变化与机会，配合分诊审核队列。"
@@ -1851,6 +2043,10 @@
     {
       "subdir": "templates/busa-retail-intel",
       "name": "busa-retail-intel",
+      "displayName": {
+        "en": "Busa Retail Intel",
+        "zh-CN": "Busa 零售情报"
+      },
       "description": {
         "en": "Daily industry-intelligence cockpit for retail stores and consumer brands: source-backed signals, buyer-intent interpretation, approved sales/merchandising actions, and channel drafts (staff brief / IG story / store sign) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
         "zh-CN": "面向零售门店与消费品牌的每日行业情报驾驶舱：有出处的情报信号、买家意向解读、经审批的销售/陈列运营动作，以及对外发出前待审的渠道文案草稿（店员简报 / IG 故事 / 门店海报）。信号、动作与草稿只通过 Agent 自身的浏览与写入流程进入 Busabase（见 SKILL.md）；AirApp 本身只负责查看与决策。"
@@ -1889,6 +2085,10 @@
     {
       "subdir": "templates/busa-sales-outreach",
       "name": "busa-sales-outreach",
+      "displayName": {
+        "en": "Busa Sales Outreach",
+        "zh-CN": "Busa 销售外联"
+      },
       "description": {
         "en": "Product positioning, ideal-customer profile, target accounts, contacts, and reviewed outreach",
         "zh-CN": "产品定位、理想客户画像、目标客户、联系人，以及经审核的外联触达。"
@@ -1927,6 +2127,10 @@
     {
       "subdir": "templates/busa-seo",
       "name": "busa-seo",
+      "displayName": {
+        "en": "Busa SEO",
+        "zh-CN": "Busa SEO优化"
+      },
       "description": {
         "en": "SEO + GEO (AI-search) + brand-entity desk: Search Console analytics, an SEO opportunities review queue, an AI-visibility tracker, a geo-qa-gated GEO content queue, and an entity/knowledge-panel readiness checklist",
         "zh-CN": "SEO + GEO（AI 搜索优化）+ 品牌实体工作台：Search Console 数据分析、SEO 机会审核队列、AI 可见度追踪、经质检把关的 GEO 内容队列，以及实体/知识面板就绪度清单。"
@@ -1969,6 +2173,10 @@
     {
       "subdir": "templates/busa-social",
       "name": "busa-social",
+      "displayName": {
+        "en": "Busa Social",
+        "zh-CN": "Busa 社媒指挥台"
+      },
       "description": {
         "en": "Social media command desk: cross-platform monitoring plus an ECHO publishing desk",
         "zh-CN": "社交媒体指挥台：跨平台监测，外加基于 ECHO 方法的发布工作台。"
@@ -2011,6 +2219,10 @@
     {
       "subdir": "templates/busa-standup",
       "name": "busa-standup",
+      "displayName": {
+        "en": "Busa Standup",
+        "zh-CN": "Busa 站会看板"
+      },
       "description": {
         "en": "Team standup board: check-ins, blockers, and missing-check-in reminders",
         "zh-CN": "团队站会看板：打卡动态、阻塞项，以及漏打卡提醒。"
@@ -2049,6 +2261,10 @@
     {
       "subdir": "templates/busa-support",
       "name": "busa-support",
+      "displayName": {
+        "en": "Busa Support",
+        "zh-CN": "Busa 客户支持"
+      },
       "description": {
         "en": "Customer-support desk: tickets, knowledge base, and the support-qa quality gate",
         "zh-CN": "客户支持工作台：工单、知识库，以及支持质量把关。"
@@ -2089,6 +2305,10 @@
     {
       "subdir": "templates/busa-tickets",
       "name": "busa-tickets",
+      "displayName": {
+        "en": "Busa Tickets",
+        "zh-CN": "Busa 工单派单"
+      },
       "description": {
         "en": "Complaint/ticket triage-and-dispatch desk: intake stream, ticket board, and a dispatch review queue",
         "zh-CN": "投诉/工单分诊派单台：接入流、工单看板，配合派单审核队列。"
@@ -2128,6 +2348,10 @@
     {
       "subdir": "templates/busa-wechat-crm",
       "name": "busa-wechat-crm",
+      "displayName": {
+        "en": "Busa WeChat CRM",
+        "zh-CN": "Busa 微信管理"
+      },
       "description": {
         "en": "Goal-first WeChat relationship desk that promotes only selected contacts into focused People workflows.",
         "zh-CN": "目标优先的微信关系管理台，只把精选联系人提升进专注的「人物」工作流。"
@@ -2173,6 +2397,10 @@
     {
       "subdir": "templates/busa-writer",
       "name": "busa-writer",
+      "displayName": {
+        "en": "Busa Writer",
+        "zh-CN": "Busa 内容工坊"
+      },
       "description": {
         "en": "Channel-ready content drafting and review desk",
         "zh-CN": "面向各渠道发布就绪的内容撰写与审核工作台。"
