@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-drama",
+  "displayName": {
+    "en": "Busa Drama",
+    "zh-CN": "Busa 短剧制作"
+  },
   "description": {
     "en": "Short-drama workspace: series bible, characters, relationships, episodes, and storyboard shots",
     "zh-CN": "短剧制作工作台：剧集设定集、人物、人物关系、分集与分镜镜头。"

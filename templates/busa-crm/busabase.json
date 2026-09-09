@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-crm",
+  "displayName": {
+    "en": "Busa CRM",
+    "zh-CN": "Busa 客户管理"
+  },
   "description": {
     "en": "Contacts, companies, deals, and follow-up review workspace",
     "zh-CN": "客户、公司、成交机会与跟进审核工作台。"

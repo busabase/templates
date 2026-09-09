@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-launch",
+  "displayName": {
+    "en": "Busa Launch",
+    "zh-CN": "Busa 产品发布"
+  },
   "description": {
     "en": "Product-launch command desk built on the RAMP discipline",
     "zh-CN": "基于 RAMP 方法构建的产品发布指挥台。"

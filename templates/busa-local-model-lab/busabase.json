@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-local-model-lab",
+  "displayName": {
+    "en": "Busa Local Model Lab",
+    "zh-CN": "Busa 本地模型实验室"
+  },
   "description": {
     "en": "Busabase-backed control plane for local Apple Silicon fine-tuning, locked evaluation, and LoRA adapter governance.",
     "zh-CN": "基于 Busabase 的控制面，管理本地 Apple Silicon 微调、锁定评测与 LoRA 适配器治理。"

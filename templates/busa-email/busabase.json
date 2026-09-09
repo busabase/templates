@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-email",
+  "displayName": {
+    "en": "Busa Email",
+    "zh-CN": "Busa 邮件台"
+  },
   "description": {
     "en": "Inbox triage, human review, and trusted execution — an approval-first email desk.",
     "zh-CN": "收件箱分诊、人工审核与可信执行——先审后发的邮件工作台。"

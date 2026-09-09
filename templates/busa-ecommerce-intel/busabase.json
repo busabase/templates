@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-ecommerce-intel",
+  "displayName": {
+    "en": "Busa E-commerce Intel",
+    "zh-CN": "Busa 电商情报"
+  },
   "description": {
     "en": "Daily industry-intelligence cockpit for e-commerce and cross-border sellers: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (listing copy / ad angle / customer reply) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
     "zh-CN": "面向电商与跨境卖家的每日行业情报驾驶舱：有出处的情报信号、买家意向解读、经审批的销售/运营动作，以及对外发出前待审的渠道文案草稿（商品文案 / 广告角度 / 客户回复）。信号、动作与草稿只通过 Agent 自身的浏览与写入流程进入 Busabase（见 SKILL.md）；AirApp 本身只负责查看与决策。"

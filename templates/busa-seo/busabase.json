@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-seo",
+  "displayName": {
+    "en": "Busa SEO",
+    "zh-CN": "Busa SEO优化"
+  },
   "description": {
     "en": "SEO + GEO (AI-search) + brand-entity desk: Search Console analytics, an SEO opportunities review queue, an AI-visibility tracker, a geo-qa-gated GEO content queue, and an entity/knowledge-panel readiness checklist",
     "zh-CN": "SEO + GEO（AI 搜索优化）+ 品牌实体工作台：Search Console 数据分析、SEO 机会审核队列、AI 可见度追踪、经质检把关的 GEO 内容队列，以及实体/知识面板就绪度清单。"

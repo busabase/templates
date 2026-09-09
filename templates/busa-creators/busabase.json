@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-creators",
+  "displayName": {
+    "en": "Busa Creators",
+    "zh-CN": "Busa 达人营销"
+  },
   "description": {
     "en": "Influencer/creator marketing command desk — discovery, outreach, briefs, contracts, and ROI",
     "zh-CN": "达人/创作者营销指挥台——达人发掘、触达、简报、合同与投产比。"

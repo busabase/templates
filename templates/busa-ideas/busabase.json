@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-ideas",
+  "displayName": {
+    "en": "Busa Ideas",
+    "zh-CN": "Busa 创意库"
+  },
   "description": {
     "en": "An idea vault with a business consultant attached — interrogate a vague idea, then carry it through BRD, MRD, and PRD.",
     "zh-CN": "自带商业顾问的创意库——先把模糊的点子问透，再一路推进到 BRD、MRD 和 PRD。"

@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-mv",
+  "displayName": {
+    "en": "Busa Music Video",
+    "zh-CN": "Busa 音乐视频"
+  },
   "description": {
     "en": "Music-video workspace: song, concept, cast reference cards, and storyboard shots",
     "zh-CN": "音乐视频制作工作台：歌曲、创意概念、演员参考卡与分镜镜头。"

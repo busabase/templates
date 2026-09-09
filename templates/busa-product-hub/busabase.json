@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-product-hub",
+  "displayName": {
+    "en": "Busa Product Hub",
+    "zh-CN": "Busa 产品枢纽"
+  },
   "description": {
     "en": "Product & certification hub for export/trade sellers: catalog/SKU master data, pricing, inventory, channel status (Amazon/Shopify/TikTok Shop/eBay), content readiness, compliance notes, lifecycle state, a certificate expiry tracker (CE/FCC/RoHS/UN38.3/UKCA), and an approval-gated review queue (channel publish approvals, price-change review, quality holds, lifecycle decisions, and unsourced spec claims). The AirApp itself only ever decides on a review item (approve/request_changes/block) directly onto its own record -- it never creates a product, channel, inventory, or certificate row.",
     "zh-CN": "面向出口贸易卖家的产品与认证枢纽：商品/SKU 主数据、定价、库存、渠道状态（Amazon/Shopify/TikTok Shop/eBay）、内容就绪度、合规备注、生命周期状态、认证到期追踪（CE/FCC/RoHS/UN38.3/UKCA），以及需审批放行的审核队列（渠道上架审批、调价审核、质量冻结、生命周期决策，以及无依据的规格主张）。AirApp 本身只会对审核事项做出决定（通过/打回修改/拦截）并直接写回该事项自身的记录——绝不会自行创建商品、渠道、库存或认证记录。"

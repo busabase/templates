@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-expo-leads",
+  "displayName": {
+    "en": "Busa Expo Leads",
+    "zh-CN": "Busa 展会线索"
+  },
   "description": {
     "en": "Trade-show lead capture desk: an SLA countdown board and a multilingual follow-up review queue",
     "zh-CN": "展会线索采集台：SLA 倒计时看板，配合多语言跟进审核队列。"

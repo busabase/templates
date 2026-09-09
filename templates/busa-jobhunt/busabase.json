@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-jobhunt",
+  "displayName": {
+    "en": "Busa Job Hunt",
+    "zh-CN": "Busa 求职档案"
+  },
   "description": {
     "en": "Job-search profile, target companies, and outreach state",
     "zh-CN": "求职档案、目标公司与触达进度追踪。"

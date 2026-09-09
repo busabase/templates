@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-portfolio-health",
+  "displayName": {
+    "en": "Busa Portfolio Health",
+    "zh-CN": "Busa 组合健康"
+  },
   "description": {
     "en": "Read-mostly dashboard over a revenue-based-financing (RBF) fund or private-credit book of many small SME contracts: portfolio health, AUM, repayment progress, industry/city concentration risk, and a watchlist of contracts with declining revenue. The only human action — flag a contract for review, clear a flag, or leave a note — is written directly onto the contract's own record; there is no separate approval queue and no transaction path. Generic and brand-free.",
     "zh-CN": "面向收入分成融资（RBF）基金或由大量小微企业合同组成的私募信贷组合的以查看为主的看板：组合健康度、管理规模、还款进度、行业/城市集中度风险，以及收入下滑合同的观察名单。唯一的人工动作——标记合同待审核、清除标记或留言——直接写入合同自身记录，没有单独的审批队列，也没有交易通路。通用且不带品牌信息。"

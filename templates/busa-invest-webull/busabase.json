@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-invest-webull",
+  "displayName": {
+    "en": "Busa Invest (Webull)",
+    "zh-CN": "Busa 投资看板"
+  },
   "description": {
     "en": "Read-only Webull brokerage portfolio dashboard (accounts, positions, insights)",
     "zh-CN": "只读的 Webull 证券持仓看板（账户、持仓、洞察）。"

@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-ai-newsroom",
+  "displayName": {
+    "en": "Busa AI Newsroom",
+    "zh-CN": "Busa AI新闻编辑室"
+  },
   "description": {
     "en": "Daily industry-intelligence cockpit for AI/news-source intelligence: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (sales opener / LinkedIn post / client memo) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
     "zh-CN": "面向 AI 与新闻信源情报的每日行业情报驾驶舱：有出处的情报信号、买家意向解读、经审批的销售/运营动作，以及对外发出前待审的渠道文案草稿（开场白 / LinkedIn 帖子 / 客户备忘录）。信号、动作与草稿只通过 Agent 自身的浏览与写入流程进入 Busabase（见 SKILL.md）；AirApp 本身只负责查看与决策。"

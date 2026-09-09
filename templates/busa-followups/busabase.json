@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-followups",
+  "displayName": {
+    "en": "Busa Follow-ups",
+    "zh-CN": "Busa 跟进提醒"
+  },
   "description": {
     "en": "Post-meeting follow-up reminders: who to follow up with, what for, and when it's due — open it and see today's to-dos.",
     "zh-CN": "会后跟进提醒：谁、跟进什么事、什么时候该完成，打开就看到今天该做什么"

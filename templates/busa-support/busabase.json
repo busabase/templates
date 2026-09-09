@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-support",
+  "displayName": {
+    "en": "Busa Support",
+    "zh-CN": "Busa 客户支持"
+  },
   "description": {
     "en": "Customer-support desk: tickets, knowledge base, and the support-qa quality gate",
     "zh-CN": "客户支持工作台：工单、知识库，以及支持质量把关。"

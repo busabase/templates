@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-campaigns",
+  "displayName": {
+    "en": "Busa Campaigns",
+    "zh-CN": "Busa 邮件营销"
+  },
   "description": {
     "en": "Outbound email-marketing desk built on the SEND discipline",
     "zh-CN": "基于 SEND 方法构建的外发邮件营销工作台。"
