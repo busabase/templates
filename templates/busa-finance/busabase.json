@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-finance",
-  "description": "Busa Finance: a review workspace for a three-statement financial model — the current model snapshot (company/currency/periods/workbook), its model-quality check queue (balance-sheet ties, cash roll-forward, formula reviews), and sanitized settings",
+  "description": {
+    "en": "Busa Finance: a review workspace for a three-statement financial model — the current model snapshot (company/currency/periods/workbook), its model-quality check queue (balance-sheet ties, cash roll-forward, formula reviews), and sanitized settings",
+    "zh-CN": "Busa Finance：三表联动财务模型的审核工作台——当前模型快照（公司/币种/期间/工作簿）、模型质量检查队列（资产负债表勾稽、现金滚存、公式复核），以及脱敏后的设置。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["finance", "risk:local-write", "surface:busabase"],

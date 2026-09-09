@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-writer",
-  "description": "Channel-ready content drafting and review desk",
+  "description": {
+    "en": "Channel-ready content drafting and review desk",
+    "zh-CN": "面向各渠道发布就绪的内容撰写与审核工作台。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["marketing", "risk:gated-write", "surface:busabase"],

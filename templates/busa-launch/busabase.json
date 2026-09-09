@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-launch",
-  "description": "Product-launch command desk built on the RAMP discipline",
+  "description": {
+    "en": "Product-launch command desk built on the RAMP discipline",
+    "zh-CN": "基于 RAMP 方法构建的产品发布指挥台。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["marketing", "risk:gated-write", "surface:busabase"],

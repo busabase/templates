@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-expo-leads",
-  "description": "Trade-show lead capture desk: an SLA countdown board and a multilingual follow-up review queue",
+  "description": {
+    "en": "Trade-show lead capture desk: an SLA countdown board and a multilingual follow-up review queue",
+    "zh-CN": "展会线索采集台：SLA 倒计时看板，配合多语言跟进审核队列。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["sales-crm", "industry:ecommerce", "surface:whatsapp", "surface:busabase", "risk:gated-write"],

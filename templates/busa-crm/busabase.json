@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-crm",
-  "description": "Contacts, companies, deals, and follow-up review workspace",
+  "description": {
+    "en": "Contacts, companies, deals, and follow-up review workspace",
+    "zh-CN": "客户、公司、成交机会与跟进审核工作台。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["sales-crm", "risk:gated-write", "surface:busabase"],

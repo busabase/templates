@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-devops",
-  "description": "Product-fleet ops desk: service health, SSL/domain/key expiries, cloud spend, and an action review queue",
+  "description": {
+    "en": "Product-fleet ops desk: service health, SSL/domain/key expiries, cloud spend, and an action review queue",
+    "zh-CN": "产品矩阵运维台：服务健康状态、SSL/域名/密钥到期提醒、云服务开销，配合动作审核队列。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["platform", "risk:gated-write", "surface:busabase", "surface:sendgrid"],

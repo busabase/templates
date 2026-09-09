@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-mv",
-  "description": "Music-video workspace: song, concept, cast reference cards, and storyboard shots",
+  "description": {
+    "en": "Music-video workspace: song, concept, cast reference cards, and storyboard shots",
+    "zh-CN": "音乐视频制作工作台：歌曲、创意概念、演员参考卡与分镜镜头。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["production", "risk:local-write", "surface:busabase", "surface:moonrouter"],

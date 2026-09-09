@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-email",
-  "description": "Inbox triage, human review, and trusted execution — an approval-first email desk.",
+  "description": {
+    "en": "Inbox triage, human review, and trusted execution — an approval-first email desk.",
+    "zh-CN": "收件箱分诊、人工审核与可信执行——先审后发的邮件工作台。"
+  },
   "version": "0.3.0",
   "license": "MIT",
   "tags": ["email", "triage", "approval"],

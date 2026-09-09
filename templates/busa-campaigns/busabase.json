@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-campaigns",
-  "description": "Outbound email-marketing desk built on the SEND discipline",
+  "description": {
+    "en": "Outbound email-marketing desk built on the SEND discipline",
+    "zh-CN": "基于 SEND 方法构建的外发邮件营销工作台。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["marketing", "risk:gated-write", "surface:busabase"],

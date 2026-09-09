@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-radar",
-  "description": "Market-intelligence desk: competitor signals, research briefs/reports, trend movers/opportunities, and a triage review queue",
+  "description": {
+    "en": "Market-intelligence desk: competitor signals, research briefs/reports, trend movers/opportunities, and a triage review queue",
+    "zh-CN": "市场情报工作台：竞对信号、调研简报/报告、趋势变化与机会，配合分诊审核队列。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["growth", "risk:local-write", "surface:busabase"],

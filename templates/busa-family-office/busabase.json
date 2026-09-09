@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-family-office",
-  "description": "Multi-entity family-office consolidation dashboard",
+  "description": {
+    "en": "Multi-entity family-office consolidation dashboard",
+    "zh-CN": "多主体家族办公室合并报表看板。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["invest", "risk:read-only", "industry:family", "surface:busabase"],

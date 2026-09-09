@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-tickets",
-  "description": "Complaint/ticket triage-and-dispatch desk: intake stream, ticket board, and a dispatch review queue",
+  "description": {
+    "en": "Complaint/ticket triage-and-dispatch desk: intake stream, ticket board, and a dispatch review queue",
+    "zh-CN": "投诉/工单分诊派单台：接入流、工单看板，配合派单审核队列。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["sales-crm", "risk:gated-write", "industry:property-management", "surface:busabase", "surface:wechat"],

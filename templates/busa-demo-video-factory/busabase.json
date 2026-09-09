@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-demo-video-factory",
-  "description": "Demo/marketing video planning pipeline: idea -> storyboard -> verified claims -> recording -> post-production.",
+  "description": {
+    "en": "Demo/marketing video planning pipeline: idea -> storyboard -> verified claims -> recording -> post-production.",
+    "zh-CN": "演示/营销视频策划流水线：创意 → 分镜脚本 → 核实过的卖点主张 → 拍摄 → 后期制作。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["production", "risk:read-only", "surface:busabase"],

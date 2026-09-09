@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-money",
-  "description": "Aggregated money ledger across Mercury, Stripe, Airwallex, and Creem",
+  "description": {
+    "en": "Aggregated money ledger across Mercury, Stripe, Airwallex, and Creem",
+    "zh-CN": "汇总 Mercury、Stripe、Airwallex 与 Creem 的资金台账。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": [

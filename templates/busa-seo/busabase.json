@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-seo",
-  "description": "SEO + GEO (AI-search) + brand-entity desk: Search Console analytics, an SEO opportunities review queue, an AI-visibility tracker, a geo-qa-gated GEO content queue, and an entity/knowledge-panel readiness checklist",
+  "description": {
+    "en": "SEO + GEO (AI-search) + brand-entity desk: Search Console analytics, an SEO opportunities review queue, an AI-visibility tracker, a geo-qa-gated GEO content queue, and an entity/knowledge-panel readiness checklist",
+    "zh-CN": "SEO + GEO（AI 搜索优化）+ 品牌实体工作台：Search Console 数据分析、SEO 机会审核队列、AI 可见度追踪、经质检把关的 GEO 内容队列，以及实体/知识面板就绪度清单。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["growth", "risk:local-write", "surface:busabase", "surface:gsc"],

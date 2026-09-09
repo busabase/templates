@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-lesson",
-  "description": "Lesson-plan generation and compliance-check desk: plan library, compliance checks, and a review queue",
+  "description": {
+    "en": "Lesson-plan generation and compliance-check desk: plan library, compliance checks, and a review queue",
+    "zh-CN": "教案生成与合规检查台：教案库、合规检查，配合审核队列。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["education", "risk:gated-write", "industry:education", "surface:busabase"],

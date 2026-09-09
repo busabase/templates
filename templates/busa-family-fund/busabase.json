@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-family-fund",
-  "description": "Household pooled-pension / elder-care fund ledger and fairness dashboard",
+  "description": {
+    "en": "Household pooled-pension / elder-care fund ledger and fairness dashboard",
+    "zh-CN": "家庭养老金/赡养基金共同账本与公平性看板。"
+  },
   "version": "0.1.0",
   "license": "MIT",
   "tags": ["invest", "risk:read-only", "industry:family", "surface:busabase"],
