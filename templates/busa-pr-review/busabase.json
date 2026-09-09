@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-pr-review",
+  "displayName": {
+    "en": "Busa PR Review",
+    "zh-CN": "Busa PR审查"
+  },
   "description": {
     "en": "GitHub pull request review desk backed by the gh CLI",
     "zh-CN": "基于 gh CLI 的 GitHub Pull Request 审查台。"

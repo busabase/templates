@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-ads",
+  "displayName": {
+    "en": "Busa Ads",
+    "zh-CN": "Busa 广告管家"
+  },
   "description": {
     "en": "Ad-campaign command desk: Amazon/Meta/TikTok/Google spend and performance, deterministic anomaly detection, and an adjustment-card review queue",
     "zh-CN": "广告投放指挥台：汇总 Amazon/Meta/TikTok/Google 的投放支出与效果，规则化异常检测，配合调整卡片的审核队列。"

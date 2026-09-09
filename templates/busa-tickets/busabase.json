@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-tickets",
+  "displayName": {
+    "en": "Busa Tickets",
+    "zh-CN": "Busa 工单派单"
+  },
   "description": {
     "en": "Complaint/ticket triage-and-dispatch desk: intake stream, ticket board, and a dispatch review queue",
     "zh-CN": "投诉/工单分诊派单台：接入流、工单看板，配合派单审核队列。"

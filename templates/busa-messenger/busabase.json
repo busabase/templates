@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-messenger",
+  "displayName": {
+    "en": "Busa Messenger",
+    "zh-CN": "Busa 聊天收件箱"
+  },
   "description": {
     "en": "Unified chat inbox: WhatsApp/Discord/Slack/Telegram accounts, conversations, messages, and a reply outbox",
     "zh-CN": "统一聊天收件箱：WhatsApp/Discord/Slack/Telegram 账号、会话、消息，配合回复发件箱。"

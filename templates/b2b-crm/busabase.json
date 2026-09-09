@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "b2b-crm",
+  "displayName": {
+    "en": "B2B CRM",
+    "zh-CN": "B2B客户管理"
+  },
   "description": {
     "en": "A lightweight B2B CRM with a daily sales overview, accounts, activities, follow-ups, and a review-first pipeline.",
     "zh-CN": "轻量级 B2B CRM：每日销售总览、客户、跟进动态，以及先审后办的成交流水线。"

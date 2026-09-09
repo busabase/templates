@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-portrait-retouch",
+  "displayName": {
+    "en": "Busa Portrait Retouch",
+    "zh-CN": "Busa 人像修图"
+  },
   "description": {
     "en": "Natural portrait retouch jobs, reviewable candidates, and non-secret workflow settings",
     "zh-CN": "自然风人像修图任务、可审核的候选方案，以及不含密钥的工作流设置。"

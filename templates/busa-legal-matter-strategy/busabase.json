@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-legal-matter-strategy",
+  "displayName": {
+    "en": "Busa Legal Matter Strategy",
+    "zh-CN": "Busa 案件策略"
+  },
   "description": {
     "en": "Matter-strategy desk over new-case strategy, issue trees, evidence checklists, risk analysis, pleading outlines, and approval-gated drafting packs grounded in internal precedents (approve / request changes / revise / block) before a strategy pack becomes a drafting handoff",
     "zh-CN": "案件策略台：新案策略、争议焦点树、证据清单、风险分析、诉状大纲，以及基于内部判例、在成为撰写交付物前需审批放行的策略包（通过 / 打回修改 / 需修订 / 拦截）。"

@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-legal-casebase-ingest",
+  "displayName": {
+    "en": "Busa Legal Casebase Ingest",
+    "zh-CN": "Busa 案例录入"
+  },
   "description": {
     "en": "Casebase intake and anonymization QA desk for law-firm judgment and arbitral award documents: agent-prepared case records, canonical case-library groupings, deterministic QA checks, and a review queue (approve / request changes / revise / block) before a record becomes a searchable knowledge asset",
     "zh-CN": "面向律所判决书与仲裁裁决文书的案例库录入与脱敏质检台：Agent 整理好的案例记录、规范化的案例库分组、规则化质检检查，以及记录成为可检索知识资产前的审核队列（通过 / 打回修改 / 需修订 / 拦截）。"

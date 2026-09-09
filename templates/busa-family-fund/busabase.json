@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-family-fund",
+  "displayName": {
+    "en": "Busa Family Fund",
+    "zh-CN": "Busa 家庭基金"
+  },
   "description": {
     "en": "Household pooled-pension / elder-care fund ledger and fairness dashboard",
     "zh-CN": "家庭养老金/赡养基金共同账本与公平性看板。"

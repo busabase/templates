@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-writer",
+  "displayName": {
+    "en": "Busa Writer",
+    "zh-CN": "Busa 内容工坊"
+  },
   "description": {
     "en": "Channel-ready content drafting and review desk",
     "zh-CN": "面向各渠道发布就绪的内容撰写与审核工作台。"

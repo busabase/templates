@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-brand",
+  "displayName": {
+    "en": "Busa Brand",
+    "zh-CN": "Busa 品牌叙事"
+  },
   "description": {
     "en": "Brand-narrative single source of truth built on the TALE discipline",
     "zh-CN": "基于 TALE 方法构建的品牌叙事唯一信源。"

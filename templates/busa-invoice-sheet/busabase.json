@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-invoice-sheet",
+  "displayName": {
+    "en": "Busa Invoice Sheet",
+    "zh-CN": "Busa 发票台账"
+  },
   "description": {
     "en": "Busa Invoice Sheet: invoice/receipt/credit-note/statement extraction batches under human review, with field confidence, line items, and export-ready approved rows",
     "zh-CN": "Busa Invoice Sheet：发票/收据/贷记通知单/对账单的批量提取任务，配合人工审核、字段置信度、明细行，以及可导出的已批准记录。"

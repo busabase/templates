@@ -1,6 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-cms",
+  "displayName": {
+    "en": "Busa CMS",
+    "zh-CN": "Busa 内容管理"
+  },
   "description": {
     "en": "A WordPress-style admin for a website's Posts, Pages, Categories, and Tags — the exact four Bases the busabase-cms-sdk reads.",
     "zh-CN": "WordPress 风格的网站后台：文章、页面、分类与标签——正是 busabase-cms-sdk 读取的那四张 Base。"
