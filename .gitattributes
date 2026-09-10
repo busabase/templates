@@ -1,1 +1,18 @@
-assets/recordings/**/*.mp4 filter=lfs diff=lfs merge=lfs -text
+# Demo clips (assets/recordings/<name>.mp4) are Git LFS.
+#
+# Unanchored on purpose. The previous rule, `assets/recordings/**/*.mp4`,
+# silently matched nothing: a gitattributes pattern containing a slash is
+# anchored to the .gitattributes directory, so it only ever covered a repo-root
+# `assets/recordings/`, never `templates/<name>/assets/recordings/`. Verified
+# with `git check-attr`. It looked correct for as long as no clip existed.
+#
+# LFS matters here because installing a template downloads a zip of this whole
+# repo from codeload, and that archive carries LFS pointers rather than the
+# bytes. Committing clips as plain objects would put every template's video into
+# every install of every other template.
+#
+# Note for whoever wires clips into the catalog gallery: build their URLs
+# against media.githubusercontent.com/media/..., NOT raw.githubusercontent.com.
+# The raw host returns the LFS pointer file as the body; the media host returns
+# the real bytes.
+*.mp4 filter=lfs diff=lfs merge=lfs -text
