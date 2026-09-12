@@ -41,6 +41,7 @@
       "assets/screenshots/ledger.webp",
       "assets/screenshots/overview.webp"
     ],
+    "video": "assets/recordings/busa-money.mp4",
     "agentPrompts": [
       "Summarize the latest Accounts and flag what needs my attention.",
       "Open Busa Money and show me the items that need review."

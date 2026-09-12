@@ -24,6 +24,7 @@
       "assets/screenshots/followups.webp",
       "assets/screenshots/overview.webp"
     ],
+    "video": "assets/recordings/busa-crm.mp4",
     "agentPrompts": [
       "Summarize the latest 公司 and flag what needs my attention.",
       "Open Busa CRM and show me the items that need review."

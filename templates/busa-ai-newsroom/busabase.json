@@ -24,6 +24,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/signals.webp"
     ],
+    "video": "assets/recordings/busa-ai-newsroom.mp4",
     "agentPrompts": [
       "Summarize the latest Signals and flag what needs my attention.",
       "Open Busa AI Newsroom and show me the items that need review."

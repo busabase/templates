@@ -28,6 +28,7 @@
       "assets/screenshots/queries.webp",
       "assets/screenshots/sites.webp"
     ],
+    "video": "assets/recordings/busa-seo.mp4",
     "agentPrompts": [
       "Summarize the latest Sites and flag what needs my attention.",
       "Open Busa SEO and show me the items that need review."

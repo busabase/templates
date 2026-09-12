@@ -32,6 +32,7 @@
       "assets/screenshots/evaluations.webp",
       "assets/screenshots/registry.webp"
     ],
+    "video": "assets/recordings/busa-local-model-lab.mp4",
     "agentPrompts": [
       "Open Busa Local Model Lab and show me which examples need review.",
       "Prepare a reproducible local QLoRA run from the approved Busabase dataset.",

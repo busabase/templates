@@ -25,6 +25,7 @@
       "assets/screenshots/overview-mobile.webp",
       "assets/screenshots/overview.webp"
     ],
+    "video": "assets/recordings/busa-invoice-sheet.mp4",
     "agentPrompts": [
       "Summarize the latest Invoices and flag what needs my attention.",
       "Open Busa Invoice Sheet and show me the items that need review."

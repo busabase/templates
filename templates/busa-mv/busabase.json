@@ -24,6 +24,7 @@
       "assets/screenshots/song.webp",
       "assets/screenshots/storyboard.webp"
     ],
+    "video": "assets/recordings/busa-mv.mp4",
     "agentPrompts": [
       "Summarize the latest Project and flag what needs my attention.",
       "Open Busa MV and show me the items that need review."

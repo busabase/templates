@@ -24,6 +24,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/stories.webp"
     ],
+    "video": "assets/recordings/busa-brand.mp4",
     "agentPrompts": [
       "Summarize the latest Narrative Items and flag what needs my attention.",
       "Open Busa Brand and show me the items that need review."

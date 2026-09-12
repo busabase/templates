@@ -25,6 +25,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/workbench.webp"
     ],
+    "video": "assets/recordings/busa-legal-precedent-desk.mp4",
     "agentPrompts": [
       "Summarize the latest Research Packs and flag what needs my attention.",
       "Open Legal Precedent Desk and show me the items that need review."

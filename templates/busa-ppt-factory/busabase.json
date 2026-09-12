@@ -27,6 +27,7 @@
       "assets/screenshots/slides.webp",
       "assets/screenshots/style.webp"
     ],
+    "video": "assets/recordings/busa-ppt-factory.mp4",
     "agentPrompts": [
       "Summarize the latest Projects and flag what needs my attention.",
       "Open Busa PPT Factory and show me the items that need review."

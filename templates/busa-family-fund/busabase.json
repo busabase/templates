@@ -24,6 +24,7 @@
       "assets/screenshots/ledger.webp",
       "assets/screenshots/overview.webp"
     ],
+    "video": "assets/recordings/busa-family-fund.mp4",
     "agentPrompts": [
       "Summarize the latest Beneficiaries and flag what needs my attention.",
       "Open Busa Family Fund and show me the items that need review."

@@ -29,6 +29,7 @@
       "assets/screenshots/shorts.webp",
       "assets/screenshots/timeline.webp"
     ],
+    "video": "assets/recordings/busa-social.mp4",
     "agentPrompts": [
       "Summarize the latest Accounts and flag what needs my attention.",
       "Open Busa Social and show me the items that need review."

@@ -25,6 +25,7 @@
       "assets/screenshots/services.webp",
       "assets/screenshots/spend.webp"
     ],
+    "video": "assets/recordings/busa-devops.mp4",
     "agentPrompts": [
       "Summarize the latest Services and flag what needs my attention.",
       "Open Busa DevOps and show me the items that need review."

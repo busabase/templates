@@ -24,6 +24,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/qa.webp"
     ],
+    "video": "assets/recordings/busa-insure-data.mp4",
     "agentPrompts": [
       "Summarize the latest 资讯精选 and flag what needs my attention.",
       "Open Busa Insure Data and show me the items that need review."

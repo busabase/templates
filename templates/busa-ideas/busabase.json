@@ -24,6 +24,7 @@
       "assets/screenshots/questions.webp",
       "assets/screenshots/documents.webp"
     ],
+    "video": "assets/recordings/busa-ideas.mp4",
     "agentPrompts": [
       "我有个想法但说不太清楚，帮我理一理。",
       "打开灵感库，看看哪些还等着我回答问题。",

@@ -24,6 +24,7 @@
       "assets/screenshots/launchday.webp",
       "assets/screenshots/overview.webp"
     ],
+    "video": "assets/recordings/busa-launch.mp4",
     "agentPrompts": [
       "Summarize the latest Launch Items and flag what needs my attention.",
       "Open Busa Launch and show me the items that need review."

@@ -41,6 +41,7 @@
       "assets/screenshots/outbox.webp",
       "assets/screenshots/overview.webp"
     ],
+    "video": "assets/recordings/busa-messenger.mp4",
     "agentPrompts": [
       "Summarize the latest Accounts and flag what needs my attention.",
       "Open Busa Messenger and show me the items that need review."

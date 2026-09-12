@@ -24,6 +24,7 @@
       "assets/screenshots/detail.webp",
       "assets/screenshots/overview.webp"
     ],
+    "video": "assets/recordings/busa-picks.mp4",
     "agentPrompts": [
       "Summarize the latest Candidates and flag what needs my attention.",
       "Open Busa Picks and show me the items that need review."

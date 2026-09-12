@@ -24,6 +24,7 @@
       "assets/screenshots/orders.webp",
       "assets/screenshots/overview.webp"
     ],
+    "video": "assets/recordings/busa-audit.mp4",
     "agentPrompts": [
       "Summarize the latest Orders and flag what needs my attention.",
       "Open Busa Audit and show me the items that need review."

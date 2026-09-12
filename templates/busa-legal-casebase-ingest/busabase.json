@@ -26,6 +26,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/workbench.webp"
     ],
+    "video": "assets/recordings/busa-legal-casebase-ingest.mp4",
     "agentPrompts": [
       "Summarize the latest Case Records and flag what needs my attention.",
       "Open Legal Casebase Ingest and show me the items that need review."

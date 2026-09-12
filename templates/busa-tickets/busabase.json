@@ -24,6 +24,7 @@
       "assets/screenshots/intake.webp",
       "assets/screenshots/overview.webp"
     ],
+    "video": "assets/recordings/busa-tickets.mp4",
     "agentPrompts": [
       "Summarize the latest Crews and flag what needs my attention.",
       "Open Busa Tickets and show me the items that need review."

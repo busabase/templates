@@ -24,6 +24,7 @@
       "assets/screenshots/sent.webp",
       "assets/screenshots/to-send.webp"
     ],
+    "video": "assets/recordings/busa-sales-outreach.mp4",
     "agentPrompts": [
       "Summarize the latest 产品与 ICP and flag what needs my attention.",
       "Open Busa Sales Outreach and show me the items that need review."

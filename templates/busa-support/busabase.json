@@ -38,6 +38,7 @@
       "assets/screenshots/sla.webp",
       "assets/screenshots/tickets.webp"
     ],
+    "video": "assets/recordings/busa-support.mp4",
     "agentPrompts": [
       "Summarize the latest Accounts and flag what needs my attention.",
       "Open Busa Support and show me the items that need review."

@@ -24,6 +24,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/topics.webp"
     ],
+    "video": "assets/recordings/busa-writer.mp4",
     "agentPrompts": [
       "Summarize the latest Drafts and flag what needs my attention.",
       "Open Busa Writer and show me the items that need review."

@@ -23,6 +23,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/workbook.webp"
     ],
+    "video": "assets/recordings/busa-finance.mp4",
     "agentPrompts": [
       "Summarize the latest Model and flag what needs my attention.",
       "Open Busa Finance and show me the items that need review."

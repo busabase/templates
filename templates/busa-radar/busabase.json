@@ -25,6 +25,7 @@
       "assets/screenshots/trends.webp",
       "assets/screenshots/watchlist.webp"
     ],
+    "video": "assets/recordings/busa-radar.mp4",
     "agentPrompts": [
       "Summarize the latest Watchlist and flag what needs my attention.",
       "Open Busa Radar and show me the items that need review."
