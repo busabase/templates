@@ -25,6 +25,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/renewals.webp"
     ],
+    "video": "assets/recordings/busa-clm.mp4",
     "agentPrompts": [
       "Summarize the latest Contracts and flag what needs my attention.",
       "Open Busa CLM and show me the items that need review."

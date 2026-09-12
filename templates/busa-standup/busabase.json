@@ -25,6 +25,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/reminders.webp"
     ],
+    "video": "assets/recordings/busa-standup.mp4",
     "agentPrompts": [
       "Summarize the latest Members and flag what needs my attention.",
       "Open Busa Standup and show me the items that need review."

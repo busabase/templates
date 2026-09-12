@@ -26,6 +26,7 @@
       "assets/screenshots/inventory.webp",
       "assets/screenshots/channels.webp"
     ],
+    "video": "assets/recordings/busa-product-hub.mp4",
     "agentPrompts": [
       "Show me which certificates are expiring soon or already expired.",
       "Summarize the latest products and flag what needs my attention.",

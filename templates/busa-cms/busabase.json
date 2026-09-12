@@ -24,6 +24,7 @@
       "assets/screenshots/editor.webp",
       "assets/screenshots/connect.webp"
     ],
+    "video": "assets/recordings/busa-cms.mp4",
     "agentPrompts": [
       "Write a post announcing this week's release and publish it.",
       "Which pages are published without an SEO description?",

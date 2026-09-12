@@ -26,6 +26,7 @@
       "assets/screenshots/sent.webp",
       "assets/screenshots/to-send.webp"
     ],
+    "video": "assets/recordings/busa-jobhunt.mp4",
     "agentPrompts": [
       "Summarize the latest 求职档案 and flag what needs my attention.",
       "Open Busa JobHunt and show me the items that need review."

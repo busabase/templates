@@ -25,6 +25,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/workbench.webp"
     ],
+    "video": "assets/recordings/busa-legal-firm-radar.mp4",
     "agentPrompts": [
       "Summarize the latest Management Insights and flag what needs my attention.",
       "Open Legal Firm Radar and show me the items that need review."

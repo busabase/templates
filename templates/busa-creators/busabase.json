@@ -24,6 +24,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/roi.webp"
     ],
+    "video": "assets/recordings/busa-creators.mp4",
     "agentPrompts": [
       "Summarize the latest Creator Engagements and flag what needs my attention.",
       "Open Busa Creators and show me the items that need review."

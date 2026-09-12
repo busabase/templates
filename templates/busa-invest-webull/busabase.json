@@ -24,6 +24,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/positions.webp"
     ],
+    "video": "assets/recordings/busa-invest-webull.mp4",
     "agentPrompts": [
       "Summarize the latest Accounts and flag what needs my attention.",
       "Open Busa Invest (Webull) and show me the items that need review."

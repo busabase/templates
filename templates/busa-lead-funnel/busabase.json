@@ -23,6 +23,7 @@
       "assets/screenshots/lead-detail.webp",
       "assets/screenshots/overview.webp"
     ],
+    "video": "assets/recordings/busa-lead-funnel.mp4",
     "agentPrompts": [
       "Summarize the latest Leads and flag what needs my attention.",
       "Open Busa Lead Funnel and show me the items that need review."

@@ -23,6 +23,7 @@
       "assets/screenshots/leads.webp",
       "assets/screenshots/followups.webp"
     ],
+    "video": "assets/recordings/busa-expo-leads.mp4",
     "agentPrompts": [
       "Show me which leads are about to blow past the 24-hour follow-up window.",
       "Open Busa Expo Leads and show me the follow-ups that need review."

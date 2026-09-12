@@ -24,6 +24,7 @@
       "assets/screenshots/campaigns.webp",
       "assets/screenshots/overview.webp"
     ],
+    "video": "assets/recordings/busa-ads.mp4",
     "agentPrompts": [
       "Summarize the latest Platforms and flag what needs my attention.",
       "Open Busa Ads and show me the items that need review."

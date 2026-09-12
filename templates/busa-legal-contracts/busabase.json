@@ -26,6 +26,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/playbook.webp"
     ],
+    "video": "assets/recordings/busa-legal-contracts.mp4",
     "agentPrompts": [
       "Summarize the latest Contracts and flag what needs my attention.",
       "Open Busa Legal Contracts and show me the items that need review."

@@ -24,6 +24,7 @@
       "assets/screenshots/studio.webp",
       "assets/screenshots/vendors.webp"
     ],
+    "video": "assets/recordings/busa-digital-human.mp4",
     "agentPrompts": [
       "Summarize the latest QA Decisions and flag what needs my attention.",
       "Open Busa Digital Human and show me the items that need review."

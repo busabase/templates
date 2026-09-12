@@ -21,6 +21,7 @@
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp"
     ],
+    "video": "assets/recordings/busa-portrait-retouch.mp4",
     "agentPrompts": [
       "Summarize the retouch batches and flag what needs my approval.",
       "Open Busa Portrait Retouch and show me the edits waiting for review."

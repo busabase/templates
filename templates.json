@@ -75,6 +75,7 @@
         "assets/screenshots/campaigns.webp",
         "assets/screenshots/overview.webp"
       ],
+      "video": "assets/recordings/busa-ads.mp4",
       "agentPrompts": [
         "Summarize the latest Platforms and flag what needs my attention.",
         "Open Busa Ads and show me the items that need review."
@@ -116,6 +117,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/signals.webp"
       ],
+      "video": "assets/recordings/busa-ai-newsroom.mp4",
       "agentPrompts": [
         "Summarize the latest Signals and flag what needs my attention.",
         "Open Busa AI Newsroom and show me the items that need review."
@@ -157,6 +159,7 @@
         "assets/screenshots/orders.webp",
         "assets/screenshots/overview.webp"
       ],
+      "video": "assets/recordings/busa-audit.mp4",
       "agentPrompts": [
         "Summarize the latest Orders and flag what needs my attention.",
         "Open Busa Audit and show me the items that need review."
@@ -198,6 +201,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/stories.webp"
       ],
+      "video": "assets/recordings/busa-brand.mp4",
       "agentPrompts": [
         "Summarize the latest Narrative Items and flag what needs my attention.",
         "Open Busa Brand and show me the items that need review."
@@ -239,6 +243,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/performance.webp"
       ],
+      "video": "assets/recordings/busa-campaigns.mp4",
       "agentPrompts": [
         "Summarize the latest Segments and flag what needs my attention.",
         "Open Busa Campaigns and show me the items that need review."
@@ -282,6 +287,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/renewals.webp"
       ],
+      "video": "assets/recordings/busa-clm.mp4",
       "agentPrompts": [
         "Summarize the latest Contracts and flag what needs my attention.",
         "Open Busa CLM and show me the items that need review."
@@ -329,6 +335,7 @@
         "assets/screenshots/editor.webp",
         "assets/screenshots/connect.webp"
       ],
+      "video": "assets/recordings/busa-cms.mp4",
       "agentPrompts": [
         "Write a post announcing this week's release and publish it.",
         "Which pages are published without an SEO description?",
@@ -372,6 +379,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/roi.webp"
       ],
+      "video": "assets/recordings/busa-creators.mp4",
       "agentPrompts": [
         "Summarize the latest Creator Engagements and flag what needs my attention.",
         "Open Busa Creators and show me the items that need review."
@@ -413,6 +421,7 @@
         "assets/screenshots/followups.webp",
         "assets/screenshots/overview.webp"
       ],
+      "video": "assets/recordings/busa-crm.mp4",
       "agentPrompts": [
         "Summarize the latest 公司 and flag what needs my attention.",
         "Open Busa CRM and show me the items that need review."
@@ -495,6 +504,7 @@
         "assets/screenshots/services.webp",
         "assets/screenshots/spend.webp"
       ],
+      "video": "assets/recordings/busa-devops.mp4",
       "agentPrompts": [
         "Summarize the latest Services and flag what needs my attention.",
         "Open Busa DevOps and show me the items that need review."
@@ -536,6 +546,7 @@
         "assets/screenshots/studio.webp",
         "assets/screenshots/vendors.webp"
       ],
+      "video": "assets/recordings/busa-digital-human.mp4",
       "agentPrompts": [
         "Summarize the latest QA Decisions and flag what needs my attention.",
         "Open Busa Digital Human and show me the items that need review."
@@ -579,6 +590,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/relationships.webp"
       ],
+      "video": "assets/recordings/busa-drama.mp4",
       "agentPrompts": [
         "Summarize the latest Project and flag what needs my attention.",
         "Open Busa Drama and show me the items that need review."
@@ -621,6 +633,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/signals.webp"
       ],
+      "video": "assets/recordings/busa-ecommerce-intel.mp4",
       "agentPrompts": [
         "Summarize the latest Signals and flag what needs my attention.",
         "Open Busa Ecommerce Intel and show me the items that need review."
@@ -708,6 +721,7 @@
         "assets/screenshots/leads.webp",
         "assets/screenshots/followups.webp"
       ],
+      "video": "assets/recordings/busa-expo-leads.mp4",
       "agentPrompts": [
         "Show me which leads are about to blow past the 24-hour follow-up window.",
         "Open Busa Expo Leads and show me the follow-ups that need review."
@@ -750,6 +764,7 @@
         "assets/screenshots/ledger.webp",
         "assets/screenshots/overview.webp"
       ],
+      "video": "assets/recordings/busa-family-fund.mp4",
       "agentPrompts": [
         "Summarize the latest Beneficiaries and flag what needs my attention.",
         "Open Busa Family Fund and show me the items that need review."
@@ -793,6 +808,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/performance.webp"
       ],
+      "video": "assets/recordings/busa-family-office.mp4",
       "agentPrompts": [
         "Summarize the latest Entities and flag what needs my attention.",
         "Open Busa Family Office and show me the items that need review."
@@ -834,6 +850,7 @@
         "assets/screenshots/requests.webp",
         "assets/screenshots/roadmap.webp"
       ],
+      "video": "assets/recordings/busa-feedback.mp4",
       "agentPrompts": [
         "Summarize the latest Products and flag what needs my attention.",
         "Open Busa Feedback and show me the items that need review."
@@ -874,6 +891,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/workbook.webp"
       ],
+      "video": "assets/recordings/busa-finance.mp4",
       "agentPrompts": [
         "Summarize the latest Model and flag what needs my attention.",
         "Open Busa Finance and show me the items that need review."
@@ -911,6 +929,7 @@
         "assets/screenshots/cover.webp",
         "assets/screenshots/today.webp"
       ],
+      "video": "assets/recordings/busa-followups.mp4",
       "agentPrompts": [
         "帮我记一条跟进：跟进谁、跟进什么事",
         "今天该跟进哪些人和事"
@@ -953,6 +972,7 @@
         "assets/screenshots/review.webp",
         "assets/screenshots/student.webp"
       ],
+      "video": "assets/recordings/busa-homework-coach.mp4",
       "agentPrompts": [
         "Summarize the latest Questions and flag what needs my attention.",
         "Open Busa Homework Coach and show me the items that need review."
@@ -997,6 +1017,7 @@
         "assets/screenshots/questions.webp",
         "assets/screenshots/documents.webp"
       ],
+      "video": "assets/recordings/busa-ideas.mp4",
       "agentPrompts": [
         "我有个想法但说不太清楚，帮我理一理。",
         "打开灵感库，看看哪些还等着我回答问题。",
@@ -1040,6 +1061,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/qa.webp"
       ],
+      "video": "assets/recordings/busa-insure-data.mp4",
       "agentPrompts": [
         "Summarize the latest 资讯精选 and flag what needs my attention.",
         "Open Busa Insure Data and show me the items that need review."
@@ -1082,6 +1104,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/positions.webp"
       ],
+      "video": "assets/recordings/busa-invest-webull.mp4",
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
         "Open Busa Invest (Webull) and show me the items that need review."
@@ -1124,6 +1147,7 @@
         "assets/screenshots/overview-mobile.webp",
         "assets/screenshots/overview.webp"
       ],
+      "video": "assets/recordings/busa-invoice-sheet.mp4",
       "agentPrompts": [
         "Summarize the latest Invoices and flag what needs my attention.",
         "Open Busa Invoice Sheet and show me the items that need review."
@@ -1168,6 +1192,7 @@
         "assets/screenshots/sent.webp",
         "assets/screenshots/to-send.webp"
       ],
+      "video": "assets/recordings/busa-jobhunt.mp4",
       "agentPrompts": [
         "Summarize the latest 求职档案 and flag what needs my attention.",
         "Open Busa JobHunt and show me the items that need review."
@@ -1209,6 +1234,7 @@
         "assets/screenshots/launchday.webp",
         "assets/screenshots/overview.webp"
       ],
+      "video": "assets/recordings/busa-launch.mp4",
       "agentPrompts": [
         "Summarize the latest Launch Items and flag what needs my attention.",
         "Open Busa Launch and show me the items that need review."
@@ -1249,6 +1275,7 @@
         "assets/screenshots/lead-detail.webp",
         "assets/screenshots/overview.webp"
       ],
+      "video": "assets/recordings/busa-lead-funnel.mp4",
       "agentPrompts": [
         "Summarize the latest Leads and flag what needs my attention.",
         "Open Busa Lead Funnel and show me the items that need review."
@@ -1293,6 +1320,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/workbench.webp"
       ],
+      "video": "assets/recordings/busa-legal-casebase-ingest.mp4",
       "agentPrompts": [
         "Summarize the latest Case Records and flag what needs my attention.",
         "Open Legal Casebase Ingest and show me the items that need review."
@@ -1337,6 +1365,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/playbook.webp"
       ],
+      "video": "assets/recordings/busa-legal-contracts.mp4",
       "agentPrompts": [
         "Summarize the latest Contracts and flag what needs my attention.",
         "Open Busa Legal Contracts and show me the items that need review."
@@ -1380,6 +1409,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/workbench.webp"
       ],
+      "video": "assets/recordings/busa-legal-firm-radar.mp4",
       "agentPrompts": [
         "Summarize the latest Management Insights and flag what needs my attention.",
         "Open Legal Firm Radar and show me the items that need review."
@@ -1423,6 +1453,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/workbench.webp"
       ],
+      "video": "assets/recordings/busa-legal-matter-strategy.mp4",
       "agentPrompts": [
         "Summarize the latest Strategy Packs and flag what needs my attention.",
         "Open Legal Matter Strategy and show me the items that need review."
@@ -1466,6 +1497,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/workbench.webp"
       ],
+      "video": "assets/recordings/busa-legal-precedent-desk.mp4",
       "agentPrompts": [
         "Summarize the latest Research Packs and flag what needs my attention.",
         "Open Legal Precedent Desk and show me the items that need review."
@@ -1508,6 +1540,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/plans.webp"
       ],
+      "video": "assets/recordings/busa-lesson.mp4",
       "agentPrompts": [
         "Summarize the latest Teachers and flag what needs my attention.",
         "Open Busa Lesson and show me the items that need review."
@@ -1552,6 +1585,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/products.webp"
       ],
+      "video": "assets/recordings/busa-listing.mp4",
       "agentPrompts": [
         "Summarize the latest Products and flag what needs my attention.",
         "Open Busa Listing and show me the items that need review."
@@ -1593,6 +1627,7 @@
         "assets/screenshots/evaluations.webp",
         "assets/screenshots/registry.webp"
       ],
+      "video": "assets/recordings/busa-local-model-lab.mp4",
       "agentPrompts": [
         "Open Busa Local Model Lab and show me which examples need review.",
         "Prepare a reproducible local QLoRA run from the approved Busabase dataset.",
@@ -1640,6 +1675,7 @@
         "assets/screenshots/outbox.webp",
         "assets/screenshots/overview.webp"
       ],
+      "video": "assets/recordings/busa-messenger.mp4",
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
         "Open Busa Messenger and show me the items that need review."
@@ -1686,6 +1722,7 @@
         "assets/screenshots/ledger.webp",
         "assets/screenshots/overview.webp"
       ],
+      "video": "assets/recordings/busa-money.mp4",
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
         "Open Busa Money and show me the items that need review."
@@ -1728,6 +1765,7 @@
         "assets/screenshots/song.webp",
         "assets/screenshots/storyboard.webp"
       ],
+      "video": "assets/recordings/busa-mv.mp4",
       "agentPrompts": [
         "Summarize the latest Project and flag what needs my attention.",
         "Open Busa MV and show me the items that need review."
@@ -1770,6 +1808,7 @@
         "assets/screenshots/detail.webp",
         "assets/screenshots/overview.webp"
       ],
+      "video": "assets/recordings/busa-picks.mp4",
       "agentPrompts": [
         "Summarize the latest Candidates and flag what needs my attention.",
         "Open Busa Picks and show me the items that need review."
@@ -1810,6 +1849,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/watchlist.webp"
       ],
+      "video": "assets/recordings/busa-portfolio-health.mp4",
       "agentPrompts": [
         "Summarize the latest Contracts and flag what needs my attention.",
         "Open Busa Portfolio Health and show me the items that need review."
@@ -1849,6 +1889,7 @@
         "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp"
       ],
+      "video": "assets/recordings/busa-portrait-retouch.mp4",
       "agentPrompts": [
         "Summarize the retouch batches and flag what needs my approval.",
         "Open Busa Portrait Retouch and show me the edits waiting for review."
@@ -1893,6 +1934,7 @@
         "assets/screenshots/slides.webp",
         "assets/screenshots/style.webp"
       ],
+      "video": "assets/recordings/busa-ppt-factory.mp4",
       "agentPrompts": [
         "Summarize the latest Projects and flag what needs my attention.",
         "Open Busa PPT Factory and show me the items that need review."
@@ -1937,6 +1979,7 @@
         "assets/screenshots/ready.webp",
         "assets/screenshots/tested.webp"
       ],
+      "video": "assets/recordings/busa-pr-review.mp4",
       "agentPrompts": [
         "Summarize the latest Reviews and flag what needs my attention.",
         "Open Busa PR Review and show me the items that need review."
@@ -1981,6 +2024,7 @@
         "assets/screenshots/inventory.webp",
         "assets/screenshots/channels.webp"
       ],
+      "video": "assets/recordings/busa-product-hub.mp4",
       "agentPrompts": [
         "Show me which certificates are expiring soon or already expired.",
         "Summarize the latest products and flag what needs my attention.",
@@ -2024,6 +2068,7 @@
         "assets/screenshots/trends.webp",
         "assets/screenshots/watchlist.webp"
       ],
+      "video": "assets/recordings/busa-radar.mp4",
       "agentPrompts": [
         "Summarize the latest Watchlist and flag what needs my attention.",
         "Open Busa Radar and show me the items that need review."
@@ -2066,6 +2111,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/signals.webp"
       ],
+      "video": "assets/recordings/busa-retail-intel.mp4",
       "agentPrompts": [
         "Summarize the latest Signals and flag what needs my attention.",
         "Open Busa Retail Intel and show me the items that need review."
@@ -2108,6 +2154,7 @@
         "assets/screenshots/sent.webp",
         "assets/screenshots/to-send.webp"
       ],
+      "video": "assets/recordings/busa-sales-outreach.mp4",
       "agentPrompts": [
         "Summarize the latest 产品与 ICP and flag what needs my attention.",
         "Open Busa Sales Outreach and show me the items that need review."
@@ -2154,6 +2201,7 @@
         "assets/screenshots/queries.webp",
         "assets/screenshots/sites.webp"
       ],
+      "video": "assets/recordings/busa-seo.mp4",
       "agentPrompts": [
         "Summarize the latest Sites and flag what needs my attention.",
         "Open Busa SEO and show me the items that need review."
@@ -2200,6 +2248,7 @@
         "assets/screenshots/shorts.webp",
         "assets/screenshots/timeline.webp"
       ],
+      "video": "assets/recordings/busa-social.mp4",
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
         "Open Busa Social and show me the items that need review."
@@ -2242,6 +2291,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/reminders.webp"
       ],
+      "video": "assets/recordings/busa-standup.mp4",
       "agentPrompts": [
         "Summarize the latest Members and flag what needs my attention.",
         "Open Busa Standup and show me the items that need review."
@@ -2286,6 +2336,7 @@
         "assets/screenshots/sla.webp",
         "assets/screenshots/tickets.webp"
       ],
+      "video": "assets/recordings/busa-support.mp4",
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
         "Open Busa Support and show me the items that need review."
@@ -2329,6 +2380,7 @@
         "assets/screenshots/intake.webp",
         "assets/screenshots/overview.webp"
       ],
+      "video": "assets/recordings/busa-tickets.mp4",
       "agentPrompts": [
         "Summarize the latest Crews and flag what needs my attention.",
         "Open Busa Tickets and show me the items that need review."
@@ -2377,6 +2429,7 @@
         "assets/screenshots/goals.webp",
         "assets/screenshots/mobile-actions.webp"
       ],
+      "video": "assets/recordings/busa-wechat-crm.mp4",
       "agentPrompts": [
         "先创建一个目标，再从本机通讯录选择要重点关注的人。",
         "我想为一款产品找到合适的试用者，请建立目标并提出下一步行动。",
@@ -2419,6 +2472,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/topics.webp"
       ],
+      "video": "assets/recordings/busa-writer.mp4",
       "agentPrompts": [
         "Summarize the latest Drafts and flag what needs my attention.",
         "Open Busa Writer and show me the items that need review."

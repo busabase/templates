@@ -25,6 +25,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/workbench.webp"
     ],
+    "video": "assets/recordings/busa-legal-matter-strategy.mp4",
     "agentPrompts": [
       "Summarize the latest Strategy Packs and flag what needs my attention.",
       "Open Legal Matter Strategy and show me the items that need review."

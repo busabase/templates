@@ -24,6 +24,7 @@
       "assets/screenshots/requests.webp",
       "assets/screenshots/roadmap.webp"
     ],
+    "video": "assets/recordings/busa-feedback.mp4",
     "agentPrompts": [
       "Summarize the latest Products and flag what needs my attention.",
       "Open Busa Feedback and show me the items that need review."

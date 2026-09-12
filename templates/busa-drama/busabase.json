@@ -24,6 +24,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/relationships.webp"
     ],
+    "video": "assets/recordings/busa-drama.mp4",
     "agentPrompts": [
       "Summarize the latest Project and flag what needs my attention.",
       "Open Busa Drama and show me the items that need review."

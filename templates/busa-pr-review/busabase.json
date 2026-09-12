@@ -26,6 +26,7 @@
       "assets/screenshots/ready.webp",
       "assets/screenshots/tested.webp"
     ],
+    "video": "assets/recordings/busa-pr-review.mp4",
     "agentPrompts": [
       "Summarize the latest Reviews and flag what needs my attention.",
       "Open Busa PR Review and show me the items that need review."
