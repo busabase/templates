@@ -27,6 +27,7 @@
       "industry:ecommerce",
       "surface:busabase"
     ],
+    "video": "assets/recordings/busa-agent-orders.mp4",
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",
