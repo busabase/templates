@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Busa Agent Orders</title>
+    <link rel="stylesheet" href="./base-ui.css">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
+    <link rel="stylesheet" href="./accent-theme.css">
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <aside class="sidebar" id="appSidebar">
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true">AO</div>
+          <div class="brand-copy">
+            <div class="brand-title" data-i18n="appTitle">Busa Agent Orders</div>
+            <div id="sync-status" class="brand-subtitle">Loading</div>
+          </div>
+          <button id="sidebarToggle" class="icon-button sidebar-toggle" type="button" aria-controls="appSidebar" aria-expanded="true" title="Toggle sidebar" aria-label="Toggle sidebar">
+            <span class="sidebar-toggle-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <section class="human-work" aria-labelledby="humanWorkTitle">
+          <div class="human-work-eyebrow" data-i18n="attention">Needs you</div>
+          <div id="humanWorkTitle" class="human-work-title" data-i18n="humanWorkTitle">What needs a decision</div>
+          <a class="human-work-primary" href="#/proposals" data-route="proposals">
+            <span><strong id="count-breaching">0</strong> <span data-i18n="breachingWaiting">proposals breach a guardrail</span></span>
+          </a>
+          <div class="human-work-secondary">
+            <a href="#/exceptions" data-route="exceptions">
+              <span><strong id="count-open">0</strong> <span data-i18n="openExceptions">open exceptions</span></span>
+            </a>
+            <a href="#/orders/flagged" data-route="orders">
+              <span><strong id="count-uncovered">0</strong> <span data-i18n="uncoveredOrders">paid below listed, no exception</span></span>
+            </a>
+            <a href="#/proposals" data-route="proposals">
+              <span><strong id="count-waiting">0</strong> <span data-i18n="proposalsWaiting">proposals waiting</span></span>
+            </a>
+          </div>
+        </section>
+        <div class="sidebar-separator"></div>
+        <nav class="filters" aria-label="Main">
+          <a href="#/overview" data-route="overview" data-i18n="overview">Overview</a>
+          <a href="#/orders" data-route="orders" data-i18n="orders">Agent orders</a>
+          <a href="#/proposals" data-route="proposals" data-i18n="proposals">Price proposals</a>
+          <a href="#/exceptions" data-route="exceptions" data-i18n="exceptions">Exceptions</a>
+          <a href="#/guardrails" data-route="guardrails" data-i18n="guardrails">Guardrails</a>
+          <a href="#/settings" data-route="settings" data-i18n="settings">Settings</a>
+        </nav>
+        <div class="sidebar-footer">
+          <label for="language" data-i18n="language">Language</label>
+          <select id="language">
+            <option value="auto">Auto</option>
+            <option value="en">English</option>
+            <option value="zh">中文</option>
+          </select>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="mobile-topbar">
+          <button id="mobileSidebarToggle" class="icon-button mobile-sidebar-toggle" type="button" aria-controls="appSidebar" aria-label="Open sidebar" title="Open sidebar">
+            <span class="sidebar-toggle-icon" aria-hidden="true"></span>
+          </button>
+          <div class="mobile-topbar-copy">
+            <div id="mobileViewTitle" class="mobile-view-title">Busa Agent Orders</div>
+            <div id="mobileViewMeta" class="mobile-view-meta">Loading</div>
+          </div>
+          <button id="mobileRefresh" class="mobile-refresh-button" type="button" title="Refresh" aria-label="Refresh">↻</button>
+        </div>
+        <header class="topbar">
+          <div class="topbar-copy">
+            <h1 id="page-title">Overview</h1>
+            <p id="page-subtitle" class="muted"></p>
+          </div>
+          <div class="topbar-actions">
+            <button id="refresh" class="button" type="button">Refresh</button>
+          </div>
+        </header>
+        <section id="content" class="content" aria-live="polite"></section>
+      </main>
+    </div>
+    <div id="sidebarScrim" class="sidebar-scrim" hidden></div>
+    <script type="module" src="./app.js"></script>
+    <script type="module" src="./accent-theme.js"></script>
+  </body>
+</html>

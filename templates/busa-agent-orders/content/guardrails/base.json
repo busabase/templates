@@ -1,0 +1,82 @@
+{
+  "name": "Price Guardrails",
+  "description": "Per-SKU limits an agent-proposed price must stay inside: floor, ceiling, maximum change per step, and whether all agent channels must show the same price.",
+  "position": 1,
+  "agentPrompts": [
+    {
+      "key": "set-guardrail",
+      "label": {
+        "en": "Set a price guardrail for a SKU",
+        "zh-CN": "给某个 SKU 设价格护栏"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-orders` skill in this folder and follow its workflow, then add or update the guardrail for the SKU I name: floor, ceiling, maximum change per step, and whether every channel must show the same price.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-orders` 技能并按它的流程做，然后为我指定的 SKU 新增或更新护栏：最低价、最高价、单次最大改价幅度、是否要求所有渠道同价。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "skus-without-guardrail",
+      "label": {
+        "en": "Which SKUs sold through agents have no guardrail?",
+        "zh-CN": "哪些通过智能体卖出的 SKU 还没有护栏？"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-orders` skill in this folder and follow its workflow, then list SKUs that appear in agent orders but have no guardrail row.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-orders` 技能并按它的流程做，然后列出出现在智能体订单里、但还没有护栏的 SKU。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "sku",
+      "name": "SKU",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "floor-price",
+      "name": "Floor price",
+      "type": "number",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "ceiling-price",
+      "name": "Ceiling price",
+      "type": "number",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "max-change-pct",
+      "name": "Max change per step (%)",
+      "type": "number",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "same-price-everywhere",
+      "name": "Same price on every channel",
+      "type": "checkbox",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Owner",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    }
+  ],
+  "views": []
+}

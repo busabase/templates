@@ -93,6 +93,96 @@
       }
     },
     {
+      "subdir": "templates/busa-agent-orders",
+      "name": "busa-agent-orders",
+      "displayName": {
+        "en": "Busa Agent Orders",
+        "zh-CN": "Busa 智能体订单"
+      },
+      "description": {
+        "en": "Agent-channel orders and price guardrails for e-commerce sellers: orders that AI shopping agents (Meta Muse, ChatGPT, Gemini, Perplexity) bring in, with the price paid versus the price listed; per-SKU guardrails; a review queue for agent-proposed price changes; and order exceptions. The AirApp only records a person's decision; it never touches a store, a payment or a price.",
+        "zh-CN": "面向电商卖家的智能体渠道订单与价格护栏：记录 AI 购物智能体（Meta Muse、ChatGPT、Gemini、Perplexity）带来的订单及实付价与标价；每个 SKU 的价格护栏；智能体改价提议的审核队列；以及订单异常。AirApp 只记录人的决定，从不改动店铺、付款或价格。"
+      },
+      "category": "ecommerce",
+      "risk": "gated-write",
+      "tags": [
+        "ecommerce",
+        "risk:gated-write",
+        "industry:ecommerce",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/proposals.webp",
+        "assets/screenshots/orders.webp",
+        "assets/screenshots/exceptions.webp",
+        "assets/screenshots/guardrails.webp",
+        "assets/screenshots/settings.webp"
+      ],
+      "agentPrompts": [
+        "Which AI agents brought us orders this week, and were any paid below the listed price?",
+        "Show me the price proposals that breach a guardrail and what each would cost.",
+        "Summarise open order exceptions and suggest how to close each one."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 5,
+        "records": 38,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-agent-shelf",
+      "name": "busa-agent-shelf",
+      "displayName": {
+        "en": "Busa Agent Shelf",
+        "zh-CN": "Busa 智能体货架"
+      },
+      "description": {
+        "en": "Agent shelf desk for e-commerce sellers: track whether AI shopping agents (ChatGPT, Gemini, Meta Muse, Amazon Rufus, Perplexity) recommend your products for the questions buyers ask, who they pick instead and why, and a review queue of sourced listing fixes. The AirApp only records a person's decision on a fix; it never contacts a shopping agent or edits a store.",
+        "zh-CN": "面向电商卖家的智能体货架工作台：追踪 AI 购物智能体（ChatGPT、Gemini、Meta Muse、Amazon Rufus、Perplexity）在买家提问时是否推荐你的商品、推荐了谁、为什么，并把缺口变成有来源、需人审核的商品数据修改。AirApp 只记录人对修改的决定，从不访问购物智能体，也不改动店铺。"
+      },
+      "category": "ecommerce",
+      "risk": "gated-write",
+      "tags": [
+        "ecommerce",
+        "risk:gated-write",
+        "industry:ecommerce",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/fixes.webp",
+        "assets/screenshots/questions.webp",
+        "assets/screenshots/answers.webp",
+        "assets/screenshots/competitors.webp",
+        "assets/screenshots/settings.webp"
+      ],
+      "agentPrompts": [
+        "Run this week's check: ask each buyer question in ChatGPT, Gemini and Meta Muse and record where we rank.",
+        "Which high-priority buyer questions are we missing from, and who gets recommended instead?",
+        "Turn this week's gaps into listing fixes with a source for every new value."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 5,
+        "records": 57,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-ai-newsroom",
       "name": "busa-ai-newsroom",
       "displayName": {
@@ -2030,7 +2120,7 @@
         "Summarize the latest products and flag what needs my attention.",
         "Open Busa Product Hub and show me the items that need review."
       ],
-      "version": "0.1.0",
+      "version": "0.2.0",
       "license": "MIT",
       "stats": {
         "folders": 0,

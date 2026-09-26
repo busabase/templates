@@ -296,7 +296,11 @@ def draw_cover(manifest: dict, screenshot_path: Path, title_override: str | None
 
     raw_name = str(manifest.get("name") or "Template")
     title = title_override or display_name(raw_name)
-    description = str(manifest.get("description") or "A ready-to-install Busabase workspace template.")
+    raw_description = manifest.get("description")
+    # A localized manifest stores `{"en": ..., "zh-CN": ...}`; the cover is English.
+    if isinstance(raw_description, dict):
+        raw_description = raw_description.get("en") or next(iter(raw_description.values()), None)
+    description = str(raw_description or "A ready-to-install Busabase workspace template.")
 
     safe_left = SAFE_HORIZONTAL_INSET
     safe_top = SAFE_VERTICAL_INSET

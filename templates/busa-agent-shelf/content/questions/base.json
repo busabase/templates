@@ -1,0 +1,170 @@
+{
+  "name": "Buyer Questions",
+  "description": "The shopping questions buyers ask an agent, in their words, with the products that should be the answer.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "add-question",
+      "label": {
+        "en": "Add a question buyers ask",
+        "zh-CN": "加一个买家会问的问题"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then add the buyer question I describe, in the buyer's own words, with its market, intent, priority and the SKUs that should answer it.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后把我描述的买家问题加进来：用买家的原话，写上市场、意图、优先级，以及应该被推荐的 SKU。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "missing-high",
+      "label": {
+        "en": "Where are we missing on high-priority questions?",
+        "zh-CN": "高优先级问题里，我们在哪些地方没被推荐？"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then list the high-priority questions where our product was not shown by any agent in the latest check, and who was picked instead.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后列出最近一次检查里，我们在哪些高优先级问题上没被任何智能体推荐，以及被推荐的是谁。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "suggest-questions",
+      "label": {
+        "en": "Suggest questions from our product range",
+        "zh-CN": "根据我们的商品线建议要追踪的问题"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then suggest five buyer questions worth tracking for the products I name, phrased the way a shopper would ask an agent. Propose them; do not add them until I pick.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后针对我点名的商品，建议五个值得追踪的买家问题，用消费者问智能体的口吻来写。先给我挑，挑完再加。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "question",
+      "name": "Question",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "market",
+      "name": "Market",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "us",
+            "name": "US"
+          },
+          {
+            "id": "uk",
+            "name": "UK"
+          },
+          {
+            "id": "eu",
+            "name": "EU"
+          },
+          {
+            "id": "global",
+            "name": "Global"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "category",
+      "name": "Category",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "intent",
+      "name": "Intent",
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "discover",
+            "name": "Discover"
+          },
+          {
+            "id": "compare",
+            "name": "Compare"
+          },
+          {
+            "id": "buy",
+            "name": "Buy now"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "priority",
+      "name": "Priority",
+      "type": "select",
+      "required": true,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "high",
+            "name": "High"
+          },
+          {
+            "id": "medium",
+            "name": "Medium"
+          },
+          {
+            "id": "low",
+            "name": "Low"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "target-products",
+      "name": "Products that should answer it",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 6,
+      "options": {
+        "choices": [
+          {
+            "id": "tracking",
+            "name": "Tracking"
+          },
+          {
+            "id": "paused",
+            "name": "Paused"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "notes",
+      "name": "Notes",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": []
+}

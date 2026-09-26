@@ -1,0 +1,156 @@
+{
+  "name": "Agent Answers",
+  "description": "One row per question x shopping agent x check: what the agent recommended, where we ranked, and the reason it gave. Collected by an agent's own browsing, with the answer excerpt as evidence.",
+  "position": 1,
+  "agentPrompts": [
+    {
+      "key": "run-weekly-check",
+      "label": {
+        "en": "Run this week's check across agents",
+        "zh-CN": "跑一遍本周的智能体检查"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then ask every tracking question in each agent listed in Settings, and record one answer row per question and agent with our position, who was picked, the reason given, and an excerpt as evidence.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后把每个在追踪的问题，在设置里列出的每个智能体上各问一遍；每个问题×智能体记一行：我们排第几、推荐了谁、给出的理由，并摘录原文作证据。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "why-ranked-low",
+      "label": {
+        "en": "Why did an agent rank us low?",
+        "zh-CN": "为什么某个智能体把我们排在后面？"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then for the question and agent I name, compare the reasons the agent gave for the products it ranked above ours, and tell me what our listing is missing.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后针对我点名的问题和智能体，对比它给排在我们前面的商品的理由，告诉我我们的商品页缺了什么。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "share-trend",
+      "label": {
+        "en": "How is our share of shelf moving?",
+        "zh-CN": "我们被推荐的比例在怎么变？"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then compare the share of questions where we appear, per agent, between the latest check and the one before, and flag the biggest drops.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后按智能体对比最近两次检查中我们出现的问题比例，标出下降最多的地方。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Title",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "question",
+      "name": "Question",
+      "type": "relation",
+      "required": true,
+      "position": 1,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "questions"
+      }
+    },
+    {
+      "slug": "agent",
+      "name": "Shopping agent",
+      "type": "select",
+      "required": true,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "chatgpt",
+            "name": "ChatGPT"
+          },
+          {
+            "id": "gemini",
+            "name": "Gemini"
+          },
+          {
+            "id": "meta-muse",
+            "name": "Meta Muse"
+          },
+          {
+            "id": "amazon-rufus",
+            "name": "Amazon Rufus"
+          },
+          {
+            "id": "perplexity",
+            "name": "Perplexity"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "checked-on",
+      "name": "Checked on",
+      "type": "date",
+      "required": true,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "our-position",
+      "name": "Our position (0 = not shown)",
+      "type": "number",
+      "required": true,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "our-product",
+      "name": "Our product shown",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "picked-instead",
+      "name": "Recommended instead",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "reason-given",
+      "name": "Reason the agent gave",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "answer-excerpt",
+      "name": "Answer excerpt",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "evidence-url",
+      "name": "Evidence link",
+      "type": "url",
+      "required": false,
+      "position": 9,
+      "options": {}
+    }
+  ],
+  "views": []
+}

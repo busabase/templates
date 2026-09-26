@@ -25,6 +25,8 @@ import {
   certificateToFields,
   channelToFields,
   inventoryToFields,
+  normalizeCertificateRow,
+  productForCertificate,
   productToFields,
   reviewToFields,
 } from "../content/busa-product-hub-app/app/js/product-hub-model.js";
@@ -263,7 +265,15 @@ async function main() {
   // natural product_id business key -- that resolution only happens for free
   // at install time (package-local `key` refs), not for a live changeRequest.
   const certKey = (row) => `${row.product_id}__${row.cert_type}__${row.cert_number}`;
-  const certsByKey = new Map(existingCertificates.map((row) => [certKey(row), row]));
+  // Existing rows carry `product` (the linked record id), not product_id --
+  // resolve it back to the natural product_id so a re-ingest updates the row
+  // instead of creating a duplicate.
+  const certsByKey = new Map(
+    existingCertificates.map((row) => {
+      const product = productForCertificate(existingProducts, normalizeCertificateRow(row));
+      return [certKey({ ...row, product_id: product?.product_id || "" }), row];
+    }),
+  );
   let certsCreated = 0;
   let certsUpdated = 0;
   let certsSkipped = 0;

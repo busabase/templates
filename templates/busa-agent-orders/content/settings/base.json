@@ -1,0 +1,73 @@
+{
+  "name": "Settings",
+  "description": "One row: store name, agent channels in use, currency, and which changes always need a person.",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "setup-store",
+      "label": {
+        "en": "Set up the store and agent channels",
+        "zh-CN": "设置店铺和智能体渠道"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-orders` skill in this folder and follow its workflow, then update the settings row with the store name, agent channels in use, currency and review policy I describe.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-orders` 技能并按它的流程做，然后按我的描述更新设置：店铺名、在用的智能体渠道、币种和审核规则。"
+      },
+      "intent": "change"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "store-name",
+      "name": "Store name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "agent-channels",
+      "name": "Agent channels",
+      "type": "multiselect",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "meta-muse",
+            "name": "Meta Muse"
+          },
+          {
+            "id": "chatgpt",
+            "name": "ChatGPT"
+          },
+          {
+            "id": "gemini",
+            "name": "Gemini"
+          },
+          {
+            "id": "perplexity",
+            "name": "Perplexity"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "currency",
+      "name": "Currency",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "review-policy",
+      "name": "Review policy",
+      "type": "longtext",
+      "required": false,
+      "position": 3,
+      "options": {}
+    }
+  ],
+  "views": []
+}

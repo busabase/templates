@@ -1,0 +1,31 @@
+{
+  "type": "airapp",
+  "name": "Busa Agent Shelf",
+  "description": "Share of shelf across AI shopping agents, the buyer questions where we are missing, who gets picked instead, and a review queue for sourced listing fixes. The app only records a person's decision on a fix (approve, request changes, block); it never contacts a shopping agent or edits a store.",
+  "agentPrompts": [
+    {
+      "key": "weekly-brief",
+      "label": {
+        "en": "Brief me on this week's agent shelf",
+        "zh-CN": "给我讲讲本周在智能体里的曝光情况"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then summarise the latest check: our share of shelf per shopping agent and how it moved since the previous check, the high-priority questions where no agent showed us, and the fixes waiting for my decision.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后总结最近一次检查：每个购物智能体里我们被推荐的比例、和上一次相比的变化、没有任何智能体推荐我们的高优先级问题，以及等我决定的修改提议。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "prepare-review",
+      "label": {
+        "en": "Prepare the fixes I need to review",
+        "zh-CN": "把我要审的修改提议整理好"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then go through the proposed listing fixes and tell me, for each one, whether its source actually supports the new value and what I should check before approving. Do not change any status yourself.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后逐条过一遍待审的修改提议，告诉我每条的来源是否真的支撑新值、批准前我要核对什么。不要自己改任何状态。"
+      },
+      "intent": "read-only"
+    }
+  ]
+}

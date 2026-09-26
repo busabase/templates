@@ -1,0 +1,173 @@
+{
+  "name": "Price Proposals",
+  "description": "Review queue for price changes proposed by a repricing agent. Each row states the guardrails it breaches, if any. Nothing is changed in a store until a person approves.",
+  "position": 2,
+  "agentPrompts": [
+    {
+      "key": "propose-price",
+      "label": {
+        "en": "Propose a price change",
+        "zh-CN": "提出一条改价"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-orders` skill in this folder and follow its workflow, then propose the price change I describe as one row per SKU, with the reason and source, and list every guardrail it breaches. Never apply it.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-orders` 技能并按它的流程做，然后把我描述的改价按每个 SKU 一条提出来，写明理由和来源，并列出它触碰的每一条护栏。不要直接执行。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "breaching-proposals",
+      "label": {
+        "en": "Which proposals breach a guardrail?",
+        "zh-CN": "哪些改价提议触碰了护栏？"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-orders` skill in this folder and follow its workflow, then list proposals waiting for a decision that breach a guardrail, and what each breach would cost if approved.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-orders` 技能并按它的流程做，然后列出等待决定、且触碰护栏的改价提议，以及批准后各自的影响。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "apply-approved-prices",
+      "label": {
+        "en": "Apply the price changes I approved",
+        "zh-CN": "执行我批准的改价"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-orders` skill in this folder and follow its workflow, then apply each approved proposal in the store or channel it names, then mark it applied with today's date. Leave every other status untouched.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-orders` 技能并按它的流程做，然后把已批准的改价应用到对应店铺或渠道，然后标为已应用并写上今天的日期。其他状态一律不动。"
+      },
+      "intent": "change"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Title",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "sku",
+      "name": "SKU",
+      "type": "text",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "channels",
+      "name": "Channels",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "current-price",
+      "name": "Current price",
+      "type": "number",
+      "required": true,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "proposed-price",
+      "name": "Proposed price",
+      "type": "number",
+      "required": true,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "reason",
+      "name": "Reason",
+      "type": "longtext",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "source",
+      "name": "Source",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "breaches",
+      "name": "Guardrails breached",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 8,
+      "options": {
+        "choices": [
+          {
+            "id": "proposed",
+            "name": "Proposed"
+          },
+          {
+            "id": "approved",
+            "name": "Approved"
+          },
+          {
+            "id": "changes-requested",
+            "name": "Changes requested"
+          },
+          {
+            "id": "blocked",
+            "name": "Blocked"
+          },
+          {
+            "id": "applied",
+            "name": "Applied"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "decision-note",
+      "name": "Decision note",
+      "type": "longtext",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "applied-on",
+      "name": "Applied on",
+      "type": "date",
+      "required": false,
+      "position": 10,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "waiting-for-review",
+      "name": "Waiting for review",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "proposed"
+          }
+        ],
+        "sorts": []
+      }
+    }
+  ]
+}

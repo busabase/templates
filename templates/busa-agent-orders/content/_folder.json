@@ -1,0 +1,30 @@
+{
+  "name": "Busa Agent Orders",
+  "description": "Agent-channel orders and price guardrails for e-commerce sellers: orders that AI shopping agents (Meta Muse, ChatGPT, Gemini, Perplexity) bring in, with the price paid versus the price listed; per-SKU guardrails; a review queue for agent-proposed price changes; and order exceptions. The AirApp only records a person's decision; it never touches a store, a payment or a price.",
+  "agentPrompts": [
+    {
+      "key": "weekly-review",
+      "label": {
+        "en": "Run this week's agent-order review",
+        "zh-CN": "跑一遍本周的智能体订单复盘"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-orders` skill in this folder and follow its workflow, then import this week's agent-channel orders, open exceptions for anything paid below listed price or floor, and list the price proposals waiting for me.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-orders` 技能并按它的流程做，然后导入本周的智能体渠道订单，对低于标价或最低价成交的开异常，并列出等我决定的改价提议。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "brief",
+      "label": {
+        "en": "Brief me on the agent channel",
+        "zh-CN": "给我讲讲智能体渠道现状"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-orders` skill in this folder and follow its workflow, then give me a short brief: orders and revenue by agent versus last week, open exceptions and their impact, and proposals that breach a guardrail.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-orders` 技能并按它的流程做，然后给我一个简短汇报：各智能体的订单和收入与上周对比、待处理异常及影响、触碰护栏的改价提议。"
+      },
+      "intent": "read-only"
+    }
+  ]
+}

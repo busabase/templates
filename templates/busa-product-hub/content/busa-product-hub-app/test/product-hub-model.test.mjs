@@ -1,16 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  AGENT_ATTRIBUTE_KEYS,
+  AGENT_READINESS_CHECK_IDS,
   CERT_EXPIRING_SOON_DAYS,
   DECISION_ACTIONS,
+  agentReadinessFor,
   assembleSnapshot,
   buildConfigSummary,
+  buildSnapshot,
   certStatusFor,
   certificateToFields,
   certificatesFor,
   channelToFields,
   channelsFor,
   computeMetrics,
+  countAgentReady,
   filteredProducts,
   inventoryFor,
   inventoryToFields,
@@ -20,6 +25,7 @@ import {
   normalizeProductRow,
   normalizeReviewRow,
   parseJsonValue,
+  productForCertificate,
   productToFields,
   reviewExecution,
   reviewFor,
@@ -495,4 +501,295 @@ test("reviewExecution: status reflects apply vs dry-run", () => {
   assert.equal(dryRun.status, "planned");
   const applied = reviewExecution({ item_id: "r1", product_id: "p1", type: "spec_claim" }, { action: "approve" }, "Aurora Lamp", { apply: true });
   assert.equal(applied.status, "ready_for_agent");
+});
+
+// ---- agentReadinessFor: every check, pass and fail ----
+
+const READY_NOW = "2026-07-07T09:00:00.000Z";
+const readyProduct = (overrides = {}) => ({
+  product_id: "p1",
+  pricing: { price: 29.99, currency: "USD" },
+  inventory: { available: 510 },
+  content: {
+    images_ready: true,
+    attributes: { weight: "0.9 kg", dimensions: "48 x 34 x 6 cm", warranty: "1-year", returns: "30-day" },
+  },
+  ...overrides,
+});
+const checkOf = (result, id) => result.checks.find((check) => check.id === id);
+
+test("agentReadinessFor: a fully described product scores 7/7, checks in a fixed order", () => {
+  const result = agentReadinessFor(readyProduct(), { now: READY_NOW });
+  assert.equal(result.total, 7);
+  assert.equal(result.passed, 7);
+  assert.deepEqual(
+    result.checks.map((check) => check.id),
+    AGENT_READINESS_CHECK_IDS,
+  );
+  assert.ok(result.checks.every((check) => typeof check.detail === "string" && check.detail));
+});
+
+test("agentReadinessFor price: passes with price + currency, accepts the demo's current_price shape", () => {
+  assert.equal(checkOf(agentReadinessFor(readyProduct(), { now: READY_NOW }), "price").ok, true);
+  const demoShape = readyProduct({ pricing: { current_price: 38.99, currency: "USD" } });
+  const check = checkOf(agentReadinessFor(demoShape, { now: READY_NOW }), "price");
+  assert.equal(check.ok, true);
+  assert.equal(check.detail, "USD 38.99");
+});
+
+test("agentReadinessFor price: fails without a currency, without a price, or with a zero price", () => {
+  const noCurrency = checkOf(agentReadinessFor(readyProduct({ pricing: { price: 10 } }), { now: READY_NOW }), "price");
+  assert.equal(noCurrency.ok, false);
+  assert.equal(noCurrency.reason, "missing_currency");
+  const noPrice = checkOf(agentReadinessFor(readyProduct({ pricing: { currency: "USD" } }), { now: READY_NOW }), "price");
+  assert.equal(noPrice.ok, false);
+  assert.equal(noPrice.reason, "missing_price");
+  const zero = checkOf(agentReadinessFor(readyProduct({ pricing: { price: 0, currency: "USD" } }), { now: READY_NOW }), "price");
+  assert.equal(zero.ok, false);
+  const neither = checkOf(agentReadinessFor(readyProduct({ pricing: {} }), { now: READY_NOW }), "price");
+  assert.equal(neither.reason, "missing_price_currency");
+});
+
+test("agentReadinessFor availability: passes from the rollup (even at 0) or from inventory rows; fails when unknown", () => {
+  assert.equal(checkOf(agentReadinessFor(readyProduct(), { now: READY_NOW }), "availability").ok, true);
+  const zero = checkOf(agentReadinessFor(readyProduct({ inventory: { available: 0 } }), { now: READY_NOW }), "availability");
+  assert.equal(zero.ok, true);
+  assert.equal(zero.data.count, 0);
+  const fromRows = checkOf(
+    agentReadinessFor(readyProduct({ inventory: {} }), {
+      inventory: [
+        { product_id: "p1", available: 40 },
+        { product_id: "p1", available: 2 },
+        { product_id: "p2", available: 999 },
+      ],
+      now: READY_NOW,
+    }),
+    "availability",
+  );
+  assert.equal(fromRows.ok, true);
+  assert.equal(fromRows.data.count, 42);
+  const unknown = checkOf(agentReadinessFor(readyProduct({ inventory: {} }), { now: READY_NOW }), "availability");
+  assert.equal(unknown.ok, false);
+  assert.equal(unknown.reason, "unknown_stock");
+});
+
+test("agentReadinessFor channel-price: no live priced channels passes as 'no priced channels'", () => {
+  const check = checkOf(
+    agentReadinessFor(readyProduct(), {
+      channels: [
+        { product_id: "p1", platform: "amazon", status: "ready_to_publish", price: 30 },
+        { product_id: "p1", platform: "shopify", status: "draft", price: 45 },
+        { product_id: "p1", platform: "ebay", status: "live", price: 0 },
+      ],
+      now: READY_NOW,
+    }),
+    "channel-price",
+  );
+  assert.equal(check.ok, true);
+  assert.equal(check.detail, "no priced channels");
+});
+
+test("agentReadinessFor channel-price: live channels within 0.01 pass, a wider spread fails", () => {
+  const agree = checkOf(
+    agentReadinessFor(readyProduct(), {
+      channels: [
+        { product_id: "p1", platform: "amazon", status: "live", price: 21.99 },
+        { product_id: "p1", platform: "shopify", status: "active", price: 22.0 },
+        { product_id: "p2", platform: "ebay", status: "live", price: 5 },
+      ],
+      now: READY_NOW,
+    }),
+    "channel-price",
+  );
+  assert.equal(agree.ok, true);
+  assert.equal(agree.detail, "same price on 2 live channels");
+  const disagree = checkOf(
+    agentReadinessFor(readyProduct(), {
+      channels: [
+        { product_id: "p1", platform: "amazon", status: "live", price: 21.99 },
+        { product_id: "p1", platform: "tiktok_shop", status: "live", price: 22.49 },
+      ],
+      now: READY_NOW,
+    }),
+    "channel-price",
+  );
+  assert.equal(disagree.ok, false);
+  assert.equal(disagree.detail, "live channels disagree: amazon 21.99, tiktok_shop 22.49");
+});
+
+test("agentReadinessFor channel-price: a single live channel reads '1 live channel', not '1 live channels'", () => {
+  const check = checkOf(
+    agentReadinessFor(readyProduct(), {
+      channels: [{ product_id: "p1", platform: "amazon", status: "live", price: 21.99 }],
+      now: READY_NOW,
+    }),
+    "channel-price",
+  );
+  assert.equal(check.detail, "same price on 1 live channel");
+});
+
+test("agentReadinessFor attributes: all four present passes; missing or blank ones are listed", () => {
+  assert.equal(checkOf(agentReadinessFor(readyProduct(), { now: READY_NOW }), "attributes").ok, true);
+  const partial = checkOf(
+    agentReadinessFor(
+      readyProduct({ content: { images_ready: true, attributes: { dimensions: "20 cm", warranty: " ", returns: "30-day" } } }),
+      { now: READY_NOW },
+    ),
+    "attributes",
+  );
+  assert.equal(partial.ok, false);
+  assert.deepEqual(partial.data.missing, ["weight", "warranty"]);
+  assert.equal(partial.detail, "missing weight, warranty");
+  const none = checkOf(agentReadinessFor(readyProduct({ content: { images_ready: true } }), { now: READY_NOW }), "attributes");
+  assert.deepEqual(none.data.missing, AGENT_ATTRIBUTE_KEYS);
+});
+
+test("agentReadinessFor images: only content.images_ready === true passes", () => {
+  assert.equal(checkOf(agentReadinessFor(readyProduct(), { now: READY_NOW }), "images").ok, true);
+  const notReady = readyProduct({ content: { ...readyProduct().content, images_ready: false } });
+  assert.equal(checkOf(agentReadinessFor(notReady, { now: READY_NOW }), "images").ok, false);
+  const missing = readyProduct({ content: { attributes: readyProduct().content.attributes } });
+  assert.equal(checkOf(agentReadinessFor(missing, { now: READY_NOW }), "images").ok, false);
+});
+
+test("agentReadinessFor sourced-claims: open spec_claims fail; decided ones and other types do not", () => {
+  const reviewItems = [
+    { product_id: "p1", type: "spec_claim", status: "approved" },
+    { product_id: "p1", type: "spec_claim", status: "blocked" },
+    { product_id: "p1", type: "quality_hold", status: "needs_review" },
+    { product_id: "p2", type: "spec_claim", status: "needs_review" },
+  ];
+  assert.equal(checkOf(agentReadinessFor(readyProduct(), { reviewItems, now: READY_NOW }), "sourced-claims").ok, true);
+  const open = checkOf(
+    agentReadinessFor(readyProduct(), {
+      reviewItems: [...reviewItems, { product_id: "p1", type: "spec_claim", status: "needs_review" }],
+      now: READY_NOW,
+    }),
+    "sourced-claims",
+  );
+  assert.equal(open.ok, false);
+  assert.equal(open.detail, "1 open spec claim");
+  const sentBack = checkOf(
+    agentReadinessFor(readyProduct(), {
+      reviewItems: [
+        { product_id: "p1", type: "spec_claim", status: "needs_review" },
+        { product_id: "p1", type: "spec_claim", status: "changes_requested" },
+      ],
+      now: READY_NOW,
+    }),
+    "sourced-claims",
+  );
+  assert.equal(sentBack.detail, "2 open spec claims");
+});
+
+test("agentReadinessFor certificates: expiring_soon still passes, an expired one fails (derived against now)", () => {
+  const certificates = [
+    { product_id: "p1", cert_type: "CE", expiry_date: "2027-05-01" },
+    { product_id: "p1", cert_type: "UN38.3", expiry_date: "2026-07-20" },
+    { product_id: "p2", cert_type: "RoHS", expiry_date: "2020-01-01" },
+  ];
+  assert.equal(checkOf(agentReadinessFor(readyProduct(), { certificates, now: READY_NOW }), "certificates").ok, true);
+  const lapsed = checkOf(
+    agentReadinessFor(readyProduct(), {
+      certificates: [...certificates, { product_id: "p1", cert_type: "RoHS", expiry_date: "2026-05-01" }],
+      now: READY_NOW,
+    }),
+    "certificates",
+  );
+  assert.equal(lapsed.ok, false);
+  assert.equal(lapsed.detail, "expired: RoHS");
+  // The same UN38.3 row is expired once "now" moves past its expiry date.
+  const later = checkOf(agentReadinessFor(readyProduct(), { certificates, now: "2026-08-01T00:00:00.000Z" }), "certificates");
+  assert.equal(later.ok, false);
+});
+
+test("agentReadinessFor certificates: a live certificate points at the product's record id, not its product_id", () => {
+  const product = normalizeProductRow({ ...productToFields(readyProduct()), __recordId: "rec-p1" });
+  assert.equal(product.record_id, "rec-p1");
+  const certificates = [normalizeCertificateRow({ product: ["rec-p1"], cert_type: "RoHS", expiry_date: "2026-06-15" })];
+  assert.equal(checkOf(agentReadinessFor(product, { certificates, now: READY_NOW }), "certificates").ok, false);
+});
+
+test("countAgentReady: counts only products that pass every check", () => {
+  const products = [
+    readyProduct(),
+    readyProduct({ product_id: "p2" }),
+    readyProduct({ product_id: "p3", content: { images_ready: true } }),
+  ];
+  assert.equal(countAgentReady(products, { now: READY_NOW }), 2);
+  assert.equal(countAgentReady([], { now: READY_NOW }), 0);
+});
+
+// ---- Certificate -> product joins against real-install-shaped rows: a
+// certificate's `product` relation holds the product's Busabase RECORD id,
+// not its product_id. ----
+
+const liveRows = () => {
+  const products = [
+    { __recordId: "rec-lamp", product_id: "prod-aurora-lamp", ref: 1, name: "Aurora Desk Lamp", pricing: "{}", inventory: "{}" },
+    { __recordId: "rec-lunch", product_id: "prod-lunchbox", ref: 2, name: "Bento Lunchbox", pricing: "{}", inventory: "{}" },
+  ];
+  const certificates = [
+    { __recordId: "rec-c1", product: ["rec-lamp"], cert_type: "CE", expiry_date: "2027-06-01" },
+    { __recordId: "rec-c2", product: ["rec-lunch"], cert_type: "RoHS", expiry_date: "2025-06-15" },
+    { __recordId: "rec-c3", product: "rec-lamp", cert_type: "FCC", expiry_date: "2026-02-01" },
+  ];
+  return { products, certificates };
+};
+
+test("certificatesFor: a live product matches certificates by record id; demo product_id still matches", () => {
+  const { products, certificates } = liveRows();
+  const lamp = normalizeProductRow(products[0]);
+  const certs = certificates.map(normalizeCertificateRow);
+  assert.deepEqual(
+    certificatesFor(certs, lamp).map((item) => item.cert_type),
+    ["CE", "FCC"],
+  );
+  // A bare product_id string cannot see a record-id relation -- the object form is required.
+  assert.equal(certificatesFor(certs, "prod-aurora-lamp").length, 0);
+  // Demo / ingest-payload shape: certificate keyed by product_id.
+  const demoCerts = [{ product_id: "prod-aurora-lamp", cert_type: "CE" }];
+  assert.equal(certificatesFor(demoCerts, lamp).length, 1);
+  assert.equal(certificatesFor(demoCerts, { product_id: "prod-aurora-lamp" }).length, 1);
+});
+
+test("productForCertificate: resolves a record-id relation to the product (name + product_id), never the raw id", () => {
+  const { products, certificates } = liveRows();
+  const normalized = products.map(normalizeProductRow);
+  const product = productForCertificate(normalized, normalizeCertificateRow(certificates[1]));
+  assert.equal(product.name, "Bento Lunchbox");
+  assert.equal(product.product_id, "prod-lunchbox");
+  assert.equal(productForCertificate(normalized, { product_id: "prod-aurora-lamp" }).name, "Aurora Desk Lamp");
+  assert.equal(productForCertificate(normalized, { product_id: "rec-missing" }), null);
+  assert.equal(productForCertificate(normalized, { product_id: "" }), null);
+});
+
+test("productForCertificate: also resolves against raw rows (__recordId), as scripts/ingest_products.mjs reads them", () => {
+  const { products, certificates } = liveRows();
+  const product = productForCertificate(products, normalizeCertificateRow(certificates[0]));
+  assert.equal(product.product_id, "prod-aurora-lamp");
+});
+
+test("buildSnapshot + sortCertificatesByUrgency: live rows stay joinable to their products after sorting", () => {
+  const { products, certificates } = liveRows();
+  const snapshot = buildSnapshot({ products, certificates, now: CERT_NOW });
+  assert.deepEqual(
+    snapshot.certificates.map((item) => [item.cert_type, item.cert_status]),
+    [
+      ["RoHS", "expired"],
+      ["FCC", "expiring_soon"],
+      ["CE", "valid"],
+    ],
+  );
+  assert.deepEqual(
+    snapshot.certificates.map((item) => productForCertificate(snapshot.products, item)?.name),
+    ["Bento Lunchbox", "Aurora Desk Lamp", "Aurora Desk Lamp"],
+  );
+  const lamp = snapshot.products.find((item) => item.product_id === "prod-aurora-lamp");
+  assert.equal(certificatesFor(snapshot.certificates, lamp).length, 2);
+  const lunch = snapshot.products.find((item) => item.product_id === "prod-lunchbox");
+  const check = agentReadinessFor(lunch, { certificates: snapshot.certificates, now: CERT_NOW }).checks.find(
+    (item) => item.id === "certificates",
+  );
+  assert.equal(check.ok, false);
 });

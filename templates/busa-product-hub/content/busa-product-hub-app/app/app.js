@@ -3,11 +3,14 @@ import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
 import { createPagination } from "./js/pagination.js?v=0.1.0";
 import {
+  agentReadinessFor,
   certificatesFor,
   channelsFor,
   computeMetrics,
+  countAgentReady,
   filteredProducts,
   inventoryFor,
+  productForCertificate,
   reviewFor,
   sortCertificatesByUrgency,
   statusForVerdict,
@@ -274,6 +277,90 @@ function badge(value, group = "status") {
   return `<span class="badge badge-${String(value || "neutral").replaceAll("_", "-")}">${esc(enumLabel(value, group))}</span>`;
 }
 
+// ---- Agent readiness (derived in product-hub-model.js's agentReadinessFor;
+// nothing here is read from or written to a stored field). ----
+
+function fill(template, values = {}) {
+  return String(template).replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? ""));
+}
+
+function countKey(table, key, count) {
+  if (count === 1 && table?.[`${key}_one`]) return `${key}_one`;
+  if (table?.[`${key}_other`]) return `${key}_other`;
+  return key;
+}
+
+function countMessage(key, count, values = {}) {
+  const table = messages[activeLang()] || messages.en;
+  const resolved = countKey(table, key, count);
+  return fill(table[resolved] || messages.en[countKey(messages.en, key, count)] || key, { count, ...values });
+}
+
+function readinessText(group, key) {
+  return messages[activeLang()]?.readiness?.[group]?.[key] || messages.en.readiness?.[group]?.[key] || key;
+}
+
+function moneyIn(value, currency) {
+  try {
+    return money2(value, currency);
+  } catch {
+    return `${currency} ${Number(value || 0).toFixed(2)}`;
+  }
+}
+
+function readinessFor(product) {
+  return agentReadinessFor(product, {
+    channels: channels(),
+    inventory: inventory(),
+    certificates: certificates(),
+    reviewItems: reviewItems(),
+    now: state.snapshot?.generated_at,
+  });
+}
+
+function readinessDetail(check, product) {
+  const data = check.data || {};
+  const currency = product.pricing?.currency || state.snapshot?.seller?.base_currency || "USD";
+  const separator = activeLang() === "zh" ? "、" : ", ";
+  const values = {
+    count: typeof data.count === "number" ? Number(data.count).toLocaleString() : "",
+    price: data.price !== undefined ? moneyIn(data.price, data.currency || currency) : "",
+    list: (data.channels || [])
+      .map((item) => `${enumLabel(item.platform, "platform")} ${moneyIn(item.price, currency)}`)
+      .join(separator),
+    missing: (data.missing || []).map((key) => readinessText("attributes", key)).join(separator),
+    types: data.types || "",
+  };
+  const reasons = messages[activeLang()]?.readiness?.reasons || messages.en.readiness.reasons;
+  const key = typeof data.count === "number" ? countKey(reasons, check.reason, data.count) : check.reason;
+  const template = reasons[key] || messages.en.readiness.reasons[key];
+  return template ? fill(template, values) : check.detail;
+}
+
+function readinessBadge(result) {
+  const tone = result.passed === result.total ? "pass" : result.passed >= result.total - 2 ? "warn" : "fail";
+  return `<span class="badge badge-readiness badge-${tone}">${esc(fill(t("agentReadyBadge"), result))}</span>`;
+}
+
+function readinessPanel(product) {
+  const result = readinessFor(product);
+  return `<section class="panel">
+    <div class="panel-head"><h2>${t("agentReadiness")}</h2>${readinessBadge(result)}</div>
+    <p class="muted readiness-hint">${esc(t("agentReadinessHint"))}</p>
+    <ul class="readiness-list">
+      ${result.checks
+        .map(
+          (check) => `<li class="readiness-check ${check.ok ? "is-ok" : "is-fail"}">
+            <span class="readiness-mark" aria-hidden="true">${check.ok ? "✓" : "✗"}</span>
+            <strong>${esc(readinessText("checks", check.id))}</strong>
+            <span>${esc(readinessDetail(check, product))}</span>
+          </li>`,
+        )
+        .join("")}
+    </ul>
+  </section>`;
+}
+
 function metricCard(label, value, hint = "") {
   return `<article class="metric-card">
     <span>${esc(label)}</span>
@@ -300,6 +387,7 @@ function productCard(product) {
       </div>
       <p>${esc(product.subtitle)}</p>
       <div class="tag-row">${(product.tags || []).map((tag) => `<span>${esc(tag)}</span>`).join("")}</div>
+      <div class="readiness-row">${readinessBadge(readinessFor(product))}</div>
       <div class="product-stats">
         <div><span>${t("grossMargin")}</span><strong>${pct(product.pricing?.gross_margin_pct)}</strong></div>
         <div><span>${t("daysCover")}</span><strong>${esc(inv.days_cover ?? "")}</strong></div>
@@ -314,6 +402,14 @@ function renderOverview() {
   const currency = state.snapshot?.seller?.base_currency || "USD";
   setPage(t("overview"), state.settings?.demo ? t("demoNote") : "");
   const review = reviewItems().slice(0, 3);
+  const readinessContext = {
+    channels: channels(),
+    inventory: inventory(),
+    certificates: certificates(),
+    reviewItems: reviewItems(),
+    now: state.snapshot?.generated_at,
+  };
+  const agentReady = countAgentReady(products(), readinessContext);
   const urgentCerts = certificates()
     .filter((item) => item.cert_status === "expiring_soon" || item.cert_status === "expired")
     .slice(0, 5);
@@ -324,6 +420,7 @@ function renderOverview() {
       ${metricCard(t("avgMargin"), pct(metrics.avg_margin_pct), t("grossMargin"))}
       ${metricCard(t("inventoryValue"), money(metrics.inventory_value, currency), t("localFilesOnly"))}
       ${metricCard(t("expiringCerts"), String((metrics.expiring_cert_count || 0) + (metrics.expired_cert_count || 0)), t("certificates"))}
+      ${metricCard(t("agentReadyProducts"), String(agentReady), countMessage("agentReadyOf", products().length, { ready: agentReady }))}
     </section>
     <section class="panel">
       <div class="panel-head">
@@ -399,7 +496,7 @@ function renderProductDetail(productId) {
   const inv = inventoryFor(inventory(), product.product_id);
   const channelRows = channelsFor(channels(), product.product_id);
   const reviewRows = reviewFor(reviewItems(), product.product_id);
-  const certRows = certificatesFor(certificates(), product.product_id);
+  const certRows = certificatesFor(certificates(), product);
   const currency = state.snapshot?.seller?.base_currency || "USD";
   setPage(product.name, `${product.sku} · ${product.category}`);
   els.content.innerHTML = `
@@ -450,21 +547,22 @@ function renderProductDetail(productId) {
       <article class="panel">
         <h2>${t("content")}</h2>
         <div class="data-grid">
-          <div><span>Images</span><strong>${product.content?.hero_images_ready}/${product.content?.hero_images_required}</strong></div>
+          <div><span>Images</span><strong>${product.content?.hero_images_required ? `${product.content?.hero_images_ready ?? 0}/${product.content.hero_images_required}` : "—"}</strong></div>
           <div><span>Video</span><strong>${product.content?.video_ready ? t("ready") : t("needsReview")}</strong></div>
           <div><span>Copy</span><strong>${enumLabel(product.content?.copy_status)}</strong></div>
-          <div><span>Source</span><strong>${esc(product.content?.listing_source)}</strong></div>
+          <div><span>Source</span><strong>${esc(product.content?.listing_source || "—")}</strong></div>
         </div>
       </article>
       <article class="panel">
         <h2>${t("compliance")}</h2>
         <div class="score-row">
-          <strong>${product.compliance?.score}</strong>
+          <strong>${esc(product.compliance?.score ?? "—")}</strong>
           ${badge(product.compliance?.status)}
         </div>
         <ul class="clean-list">${(product.compliance?.notes || []).map((note) => `<li>${esc(note)}</li>`).join("")}</ul>
       </article>
     </section>
+    ${readinessPanel(product)}
     <section class="panel">
       <div class="panel-head"><h2>${t("channels")}</h2><a href="#/channels">${t("channels")}</a></div>
       ${channelTable(channelRows, { showProduct: false })}
@@ -564,10 +662,18 @@ function renderChannels() {
 // sortCertificatesByUrgency() when the snapshot is built -- never read or
 // written as a stored Busabase field. See product-hub-model.js's
 // certStatusFor().
+// A certificate's product cell: resolved through productForCertificate() so a
+// live row (whose product_id is the linked RECORD id) still links to the
+// product's own route and shows its name -- never the raw record id.
+function certProductCell(item) {
+  const product = productForCertificate(products(), item);
+  if (!product) return `<span class="muted">${esc(t("productNotLoaded"))}</span>`;
+  return `<a href="#/products/${encodeURIComponent(product.product_id)}">${esc(product.name)}</a>`;
+}
+
 function certRow(item) {
-  const product = productById(item.product_id);
   return `<tr>
-    <td><a href="#/products/${encodeURIComponent(item.product_id)}">${esc(product?.name || item.product_id)}</a></td>
+    <td>${certProductCell(item)}</td>
     <td>${esc(item.cert_type)}<div class="muted">${esc(item.issuer)}</div></td>
     <td>${date(item.expiry_date)}</td>
     <td>${badge(item.cert_status, "certStatus")}</td>
@@ -588,7 +694,7 @@ function renderCertificates() {
         ${certificates()
           .map(
             (item) => `<tr>
-              <td><a href="#/products/${encodeURIComponent(item.product_id)}">${esc(productById(item.product_id)?.name || item.product_id)}</a></td>
+              <td>${certProductCell(item)}</td>
               <td>${esc(item.cert_type)}<div class="muted">${esc(item.issuer)}</div></td>
               <td>${esc(item.cert_number)}</td>
               <td>${date(item.issued_date)}</td>

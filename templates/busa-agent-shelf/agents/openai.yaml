@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Agent Shelf"
+  short_description: "Track whether AI shopping agents recommend your products, and review the listing fixes that close the gap"
+  default_prompt: "Use $busa-agent-shelf to show me which buyer questions ChatGPT, Gemini and Meta Muse don't recommend us for, and who they pick instead."
