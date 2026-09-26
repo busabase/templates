@@ -5,6 +5,10 @@
 // ported verbatim (same ids, same names, same numbers, same bilingual copy)
 // from the retired app/server/demo.ts. The fourth review item and the five
 // certificates are new for busa-product-hub's certificate-tracker scope.
+// `pricing.currency`, `content.images_ready`, and `content.attributes` feed
+// the derived Agent readiness score; the attribute values match
+// content/products/records.ndjson for the three products both ship
+// (Aurora: all four; Lunch box: no weight; Spice rack: no warranty/returns).
 import { assembleSnapshot, computeMetrics } from "../product-hub-model.js?v=0.1.0";
 
 const NOW = "2026-07-07T09:00:00.000Z";
@@ -76,6 +80,7 @@ function demoProducts(zh) {
       updated_at: "2026-07-07T07:52:00.000Z",
       created_at: "2026-06-20T02:00:00.000Z",
       pricing: {
+        currency: "USD",
         cogs: 11.8,
         landed_cost: 15.25,
         target_price: 39.99,
@@ -99,6 +104,13 @@ function demoProducts(zh) {
         video_ready: false,
         listing_source: "busa-listing",
         copy_status: "ready",
+        images_ready: false,
+        attributes: {
+          weight: "1.2 kg",
+          dimensions: "38 × 16 × 45 cm",
+          warranty: l("2-year limited warranty", "2 年有限保修"),
+          returns: l("30-day returns", "30 天无理由退货"),
+        },
       },
       compliance: {
         score: 86,
@@ -127,6 +139,7 @@ function demoProducts(zh) {
       updated_at: "2026-07-07T05:40:00.000Z",
       created_at: "2026-05-01T02:00:00.000Z",
       pricing: {
+        currency: "USD",
         cogs: 5.2,
         landed_cost: 7.45,
         target_price: 22.99,
@@ -150,6 +163,12 @@ function demoProducts(zh) {
         video_ready: true,
         listing_source: "busa-listing",
         copy_status: "approved",
+        images_ready: true,
+        attributes: {
+          dimensions: "20 × 13 × 7 cm",
+          warranty: l("1-year limited warranty", "1 年有限保修"),
+          returns: l("30-day returns", "30 天无理由退货"),
+        },
       },
       compliance: {
         score: 94,
@@ -175,6 +194,7 @@ function demoProducts(zh) {
       updated_at: "2026-07-06T13:20:00.000Z",
       created_at: "2026-03-15T02:00:00.000Z",
       pricing: {
+        currency: "USD",
         cogs: 8.6,
         landed_cost: 12.9,
         target_price: 28.99,
@@ -197,6 +217,11 @@ function demoProducts(zh) {
         hero_images_required: 6,
         video_ready: false,
         listing_source: "manual",
+        images_ready: false,
+        attributes: {
+          weight: "0.8 kg",
+          dimensions: "30 × 9 × 40 cm",
+        },
         copy_status: "changes_requested",
       },
       compliance: {
@@ -226,6 +251,7 @@ function demoProducts(zh) {
       updated_at: "2026-07-05T16:05:00.000Z",
       created_at: "2026-06-10T02:00:00.000Z",
       pricing: {
+        currency: "USD",
         cogs: 7.1,
         landed_cost: 10.85,
         target_price: 29.99,
@@ -248,6 +274,13 @@ function demoProducts(zh) {
         hero_images_required: 6,
         video_ready: true,
         listing_source: "busa-picks",
+        images_ready: true,
+        attributes: {
+          weight: "0.9 kg",
+          dimensions: "48 × 34 × 6 cm (folded)",
+          warranty: l("1-year limited warranty", "1 年有限保修"),
+          returns: l("30-day returns", "30 天无理由退货"),
+        },
         copy_status: "draft",
       },
       compliance: {
@@ -274,6 +307,7 @@ function demoProducts(zh) {
       updated_at: "2026-07-04T09:55:00.000Z",
       created_at: "2025-10-20T02:00:00.000Z",
       pricing: {
+        currency: "USD",
         cogs: 6.4,
         landed_cost: 9.3,
         target_price: 18.99,
@@ -296,6 +330,13 @@ function demoProducts(zh) {
         hero_images_required: 5,
         video_ready: true,
         listing_source: "legacy",
+        images_ready: true,
+        attributes: {
+          weight: "0.6 kg",
+          dimensions: "23 × 17 × 1.5 cm",
+          warranty: l("1-year limited warranty", "1 年有限保修"),
+          returns: l("14-day returns", "14 天退货"),
+        },
         copy_status: "approved",
       },
       compliance: {

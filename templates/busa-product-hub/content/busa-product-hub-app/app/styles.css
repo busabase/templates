@@ -703,6 +703,71 @@ body.sidebar-collapsed .sidebar-footer {
   color: var(--blue);
 }
 
+.badge-readiness {
+  max-width: none;
+}
+
+.readiness-row {
+  display: flex;
+}
+
+.readiness-hint {
+  margin: -6px 0 0;
+  font-size: var(--text-sm);
+}
+
+.readiness-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.readiness-check {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+  gap: 2px 8px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel-subtle);
+  padding: 8px;
+}
+
+.readiness-check > span:last-child {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.readiness-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  grid-row: span 2;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  font-size: var(--text-xs);
+  font-weight: 800;
+}
+
+.readiness-check.is-ok .readiness-mark {
+  border-color: color-mix(in srgb, var(--positive) 34%, var(--line));
+  color: var(--green);
+}
+
+.readiness-check.is-fail .readiness-mark {
+  border-color: color-mix(in srgb, var(--danger) 34%, var(--line));
+  color: var(--red);
+}
+
 .table-wrap {
   overflow: auto;
   border: 1px solid var(--line);
@@ -928,6 +993,7 @@ tr:last-child td {
   }
 
   .metrics-grid,
+  .readiness-list,
   .product-stats,
   .summary-grid,
   .data-grid,

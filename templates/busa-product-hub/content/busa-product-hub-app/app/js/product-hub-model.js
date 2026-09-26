@@ -42,6 +42,7 @@ export function parseJsonValue(value = "", fallback = null) {
 // ---- Normalization: Busabase rows (already snake_cased by the provider) -> item shapes ----
 
 export function normalizeProductRow({
+  __recordId = "",
   product_id = "",
   ref = 0,
   sku = "",
@@ -84,6 +85,10 @@ export function normalizeProductRow({
     compliance: parseJsonValue(compliance, {}) || {},
     created_at,
     updated_at,
+    // The Busabase record id, kept only when a live row carried one: it is
+    // what a certificate's `product` relation points at (see
+    // agentReadinessFor()). Never written back -- productToFields() ignores it.
+    ...(__recordId ? { record_id: __recordId } : {}),
   };
 }
 
@@ -335,8 +340,32 @@ export function certStatusFor(expiryDateIso, nowIso = new Date().toISOString()) 
   return "valid";
 }
 
-export function certificatesFor(certificates = [], productId = "") {
-  return certificates.filter((item) => item.product_id === productId);
+// ---- Certificate -> product join. A certificate's `product` is a real
+// relation field, so on a live install normalizeCertificateRow() yields the
+// linked product's Busabase RECORD id, while demo data and ingest payloads
+// carry the natural product_id. Every join accepts either, so no screen ever
+// falls back to showing a raw record id. ----
+
+// The identities one product answers to: its product_id and, for a live row,
+// its record id (`record_id` once normalized, `__recordId` on a raw row).
+export function productKeys(product = {}) {
+  return new Set([product.product_id, product.record_id, product.__recordId].filter(Boolean));
+}
+
+// `productOrId` is a product object (preferred: matches both identities) or,
+// for backwards compatibility, a bare product_id / record id string.
+export function certificatesFor(certificates = [], productOrId = "") {
+  const keys =
+    productOrId && typeof productOrId === "object" ? productKeys(productOrId) : new Set([productOrId].filter(Boolean));
+  return certificates.filter((item) => keys.has(item.product_id));
+}
+
+// The product a certificate belongs to, or null when that product is not
+// among `products` (e.g. not on the loaded page).
+export function productForCertificate(products = [], certificate = {}) {
+  const key = certificate.product_id;
+  if (!key) return null;
+  return products.find((product) => productKeys(product).has(key)) || null;
 }
 
 // Every certificate annotated with its own `cert_status`, sorted
@@ -403,6 +432,149 @@ export function filteredProducts(products = [], query = "") {
       .toLowerCase()
       .includes(q),
   );
+}
+
+// ---- Agent readiness: how ready one product's data is for AI shopping
+// agents (ChatGPT, Gemini, Meta Muse, Amazon Rufus) to read and recommend.
+// Derived, never stored -- the same pattern as certStatusFor(): every check
+// is recomputed from rows already on the page, so the score can never go
+// stale relative to the data it describes, and there is no field to write.
+//
+// The optional attribute keys live INSIDE the existing `content` JSON block
+// (`content.attributes.{weight,dimensions,warranty,returns}`), so this adds
+// no Base field and no schema version. ----
+
+export const AGENT_READINESS_CHECK_IDS = [
+  "price",
+  "availability",
+  "channel-price",
+  "attributes",
+  "images",
+  "sourced-claims",
+  "certificates",
+];
+export const AGENT_ATTRIBUTE_KEYS = ["weight", "dimensions", "warranty", "returns"];
+// Channel statuses that mean a shopper (or a shopping agent) can see the
+// listing's price right now. ready_to_publish/draft/price_review/suppressed
+// are not public yet (or no longer), so they cannot contradict each other.
+export const AGENT_LIVE_CHANNEL_STATUSES = new Set(["live", "active"]);
+// Review statuses that leave a spec_claim unresolved: not yet decided, or
+// sent back for a better source. approved/blocked are both final verdicts.
+export const OPEN_REVIEW_STATUSES = new Set(["needs_review", "changes_requested"]);
+const CHANNEL_PRICE_TOLERANCE = 0.01;
+
+function knownNumber(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function nonEmpty(value) {
+  if (value === null || value === undefined) return false;
+  return String(value).trim() !== "";
+}
+
+function plural(count, one, other) {
+  return `${count} ${count === 1 ? one : other}`;
+}
+
+/**
+ * @param {Record<string, any>} product a normalized product (normalizeProductRow shape)
+ * @param {{ channels?: any[], inventory?: any[], certificates?: any[], reviewItems?: any[], now?: string }} [context]
+ * @returns {{ passed: number, total: number, checks: { id: string, ok: boolean, detail: string, reason: string, data: Record<string, any> }[] }}
+ */
+export function agentReadinessFor(
+  product = {},
+  { channels = [], inventory = [], certificates = [], reviewItems = [], now = new Date().toISOString() } = {},
+) {
+  const keys = productKeys(product);
+  const checks = [];
+  const add = (id, ok, reason, detail, data = {}) => checks.push({ id, ok, reason, detail, data });
+
+  // 1. price -- a price and the currency it is in. `price` is the Busabase
+  // record shape; `current_price` is the demo/ingest shape of the same fact.
+  const pricing = product.pricing || {};
+  const price = knownNumber(pricing.price ?? pricing.current_price);
+  const currency = nonEmpty(pricing.currency) ? String(pricing.currency).trim() : "";
+  const hasPrice = price !== null && price > 0;
+  if (hasPrice && currency) add("price", true, "priced", `${currency} ${price.toFixed(2)}`, { price, currency });
+  else if (!hasPrice && !currency) add("price", false, "missing_price_currency", "no price or currency");
+  else if (!hasPrice) add("price", false, "missing_price", "no price");
+  else add("price", false, "missing_currency", "price has no currency", { price });
+
+  // 2. availability -- a known available (or on-hand) quantity, from the
+  // product's own inventory rollup or, failing that, its warehouse rows.
+  const rollup = product.inventory || {};
+  let available = knownNumber(rollup.available ?? rollup.on_hand);
+  if (available === null) {
+    const rows = inventory.filter((row) => keys.has(row.product_id));
+    if (rows.length) {
+      available = rows.reduce((sum, row) => sum + (knownNumber(row.available ?? row.on_hand) || 0), 0);
+    }
+  }
+  if (available !== null) add("availability", true, "available", `${available} available`, { count: available });
+  else add("availability", false, "unknown_stock", "no stock quantity on file");
+
+  // 3. channel-price -- every live channel that shows a price shows the same one.
+  const priced = channels
+    .filter((row) => keys.has(row.product_id) && AGENT_LIVE_CHANNEL_STATUSES.has(row.status))
+    .map((row) => ({ platform: row.platform, price: knownNumber(row.price) }))
+    .filter((row) => row.price !== null && row.price > 0);
+  if (!priced.length) {
+    add("channel-price", true, "no_priced_channels", "no priced channels");
+  } else {
+    const prices = priced.map((row) => row.price);
+    const spread = Math.max(...prices) - Math.min(...prices);
+    const list = priced.map((row) => `${row.platform} ${row.price.toFixed(2)}`).join(", ");
+    if (spread <= CHANNEL_PRICE_TOLERANCE + 1e-9) {
+      add("channel-price", true, "channel_prices_match", `same price on ${plural(priced.length, "live channel", "live channels")}`, {
+        count: priced.length,
+      });
+    } else {
+      add("channel-price", false, "channel_price_mismatch", `live channels disagree: ${list}`, { list, channels: priced });
+    }
+  }
+
+  // 4. attributes -- the facts a shopping agent is asked about most.
+  const attributes = product.content?.attributes;
+  const attrs = attributes && typeof attributes === "object" && !Array.isArray(attributes) ? attributes : {};
+  const missing = AGENT_ATTRIBUTE_KEYS.filter((key) => !nonEmpty(attrs[key]));
+  if (!missing.length) add("attributes", true, "attributes_complete", "weight, dimensions, warranty, returns");
+  else add("attributes", false, "attributes_missing", `missing ${missing.join(", ")}`, { missing });
+
+  // 5. images -- the listing's image set is marked ready.
+  if (product.content?.images_ready === true) add("images", true, "images_ready", "images ready");
+  else add("images", false, "images_not_ready", "images not marked ready");
+
+  // 6. sourced-claims -- no unresolved spec_claim for this product.
+  const openClaims = reviewItems.filter(
+    (item) => keys.has(item.product_id) && item.type === "spec_claim" && OPEN_REVIEW_STATUSES.has(item.status),
+  ).length;
+  if (!openClaims) add("sourced-claims", true, "no_open_claims", "no open spec claims");
+  else
+    add("sourced-claims", false, "open_claims", `${plural(openClaims, "open spec claim", "open spec claims")}`, {
+      count: openClaims,
+    });
+
+  // 7. certificates -- nothing on file has lapsed (derived status, as above).
+  const expired = certificates.filter(
+    (item) => keys.has(item.product_id) && certStatusFor(item.expiry_date, now) === "expired",
+  );
+  if (!expired.length) add("certificates", true, "no_expired_certs", "no expired certificates");
+  else {
+    const types = expired.map((item) => item.cert_type || "Other").join(", ");
+    add("certificates", false, "expired_certs", `expired: ${types}`, { types });
+  }
+
+  return { passed: checks.filter((check) => check.ok).length, total: checks.length, checks };
+}
+
+// Products whose readiness is a full score, out of the products given.
+export function countAgentReady(products = [], context = {}) {
+  return products.filter((product) => {
+    const { passed, total } = agentReadinessFor(product, context);
+    return passed === total;
+  }).length;
 }
 
 // ---- Metrics, ported verbatim from the retired app/server/demo.ts's

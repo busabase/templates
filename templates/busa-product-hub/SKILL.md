@@ -130,6 +130,32 @@ fact is trustworthy enough to appear on a customer-facing quote. It renders
 in the review queue exactly like every other type — there is no separate UI
 surface for it.
 
+### Agent readiness
+
+Every product carries a derived **Agent readiness** score out of 7: how ready
+its data is for AI shopping agents (ChatGPT, Gemini, Meta Muse, Amazon Rufus)
+to read and recommend it. Like certificate status it is **derived, never
+stored** — `agentReadinessFor()` in `product-hub-model.js` recomputes it from
+the loaded rows every time, so there is no field to write and nothing to
+backfill. The seven checks:
+
+1. `price` — `pricing.current_price` (or `price`) and `pricing.currency` are both present.
+2. `availability` — an available/on-hand quantity is known, from the product's `inventory` rollup or its inventory rows.
+3. `channel-price` — every `live`/`active` channel row with a price shows the same price (±0.01). No priced live channels passes.
+4. `attributes` — `content.attributes.weight`, `.dimensions`, `.warranty`, and `.returns` are all non-empty.
+5. `images` — `content.images_ready` is `true`.
+6. `sourced-claims` — no `spec_claim` review item for the product is still `needs_review` or `changes_requested`.
+7. `certificates` — none of the product's certificates has the derived status `expired`.
+
+The four attribute keys are optional and live inside the existing `content`
+JSON field of `products` (`{"images_ready": true, "attributes": {"weight":
+"1.2 kg", "dimensions": "38 × 16 × 45 cm", "warranty": "2-year limited
+warranty", "returns": "30-day returns"}}`) — there is no schema change. Fill
+them only from a cited source; a missing value stays missing and shows up as
+a failed check, which is the point. Raise a score by fixing the underlying
+data (through `scripts/ingest_products.mjs` or a review decision), never by
+guessing a value.
+
 ## Local App
 
 Default behavior is AirApp-first — give the user the clickable AirApp URL.
@@ -139,12 +165,14 @@ preview/debugging is explicitly requested.
 Required app views (hash routes):
 
 - `#/overview`: KPI cards (products, active products, average margin,
-  inventory value, certificates at risk), a **"Certificates expiring soon"**
+  inventory value, certificates at risk, agent-ready products at 7/7), a **"Certificates expiring soon"**
   panel (the headline screen — soonest-first, linking to each product),
   visual product cards, review-queue preview, and recent activity.
-- `#/products` and `#/products/<id>`: catalog and product detail with
-  gallery, pricing, inventory, content readiness, compliance notes, channel
-  matrix, linked certificates, and linked review cards.
+- `#/products` and `#/products/<id>`: catalog (each card shows an
+  "Agent-ready x/7" badge) and product detail with gallery, pricing,
+  inventory, content readiness, compliance notes, the Agent readiness panel
+  (each check with ✓/✗ and its detail), channel matrix, linked certificates,
+  and linked review cards.
 - `#/inventory`: warehouse and days-cover table with low-stock and
   stockout-risk badges.
 - `#/channels`: product × platform status table with channel issue notes
