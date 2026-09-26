@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Agent Orders"
+  short_description: "Orders from AI shopping agents, price guardrails, and a review queue for price changes and order exceptions"
+  default_prompt: "Use $busa-agent-orders to show me which AI agents brought us orders this week and anything that sold below the listed price."

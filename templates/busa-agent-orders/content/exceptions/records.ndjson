@@ -1,0 +1,4 @@
+{"key": "x-48213", "fields": {"title": "Muse order at $179 while Shopify listed $189", "order": "o-48213", "type": "channel-mismatch", "sku": "KS-CO-20", "detected-on": "2026-09-23", "impact": -10, "status": "open"}}
+{"key": "x-48214", "fields": {"title": "Muse order at $179 x2 while Shopify listed $189", "order": "o-48214", "type": "channel-mismatch", "sku": "KS-CO-20", "detected-on": "2026-09-23", "impact": -20, "status": "open"}}
+{"key": "x-48222", "fields": {"title": "Refund: Voyager 28 bought for the wrong trip length", "order": "o-48222", "type": "refund-dispute", "sku": "KS-CH-28", "detected-on": "2026-09-25", "impact": -279, "status": "open"}}
+{"key": "x-48225", "fields": {"title": "Dispute: buyer says the laptop sleeve is too small", "order": "o-48225", "type": "refund-dispute", "sku": "KS-BP-14", "detected-on": "2026-09-25", "impact": -64, "status": "resolved", "resolution": "Listing now states the sleeve size (fits up to 14 in); replacement sent."}}

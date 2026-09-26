@@ -1,0 +1,31 @@
+{
+  "type": "airapp",
+  "name": "Busa Agent Orders",
+  "description": "Orders and revenue per AI shopping agent this week versus last, orders paid below the listed price or the floor, a review queue for agent-proposed price changes checked against per-SKU guardrails, and order exceptions to close. The app only records a person's decision (approve, request changes or block a proposal; resolve or accept an exception); it never changes a price, a store or a payment.",
+  "agentPrompts": [
+    {
+      "key": "weekly-brief",
+      "label": {
+        "en": "Brief me on this week's agent orders",
+        "zh-CN": "给我讲讲本周的智能体订单"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-orders` skill in this folder and follow its workflow, then summarise the latest 7 days of agent-channel orders against the 7 days before (orders, units and revenue per agent), every order paid below the listed price or the guardrail floor, and the open exceptions with their total impact.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-orders` 技能并按它的流程做，然后总结最近 7 天与再往前 7 天的智能体渠道订单（每个智能体的订单数、件数和收入）、所有低于标价或护栏最低价成交的订单，以及待处理异常和合计影响。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "prepare-review",
+      "label": {
+        "en": "Prepare the price proposals I need to review",
+        "zh-CN": "把我要审的改价提议整理好"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-orders` skill in this folder and follow its workflow, then go through the price proposals waiting for a decision and tell me, for each one, which guardrails it breaches (floor, ceiling, step limit, same price on every channel), whether its stated breaches match the guardrail table, and what I should check before approving. Do not change any status yourself.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-orders` 技能并按它的流程做，然后逐条过一遍待决定的改价提议，告诉我每条触碰了哪些护栏（最低价、最高价、单次调整幅度、所有渠道同价）、它自述的违规和护栏表是否一致，以及批准前我要核对什么。不要自己改任何状态。"
+      },
+      "intent": "read-only"
+    }
+  ]
+}

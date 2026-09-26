@@ -1,0 +1,5 @@
+{"key": "g-ks-co-20", "fields": {"sku": "KS-CO-20", "floor-price": 169, "ceiling-price": 219, "max-change-pct": 8, "same-price-everywhere": true, "owner": "Pricing"}}
+{"key": "g-ks-co-22", "fields": {"sku": "KS-CO-22", "floor-price": 209, "ceiling-price": 259, "max-change-pct": 6, "same-price-everywhere": true, "owner": "Pricing"}}
+{"key": "g-ks-bp-14", "fields": {"sku": "KS-BP-14", "floor-price": 55, "ceiling-price": 79, "max-change-pct": 10, "same-price-everywhere": false, "owner": "Pricing"}}
+{"key": "g-ks-pc-03", "fields": {"sku": "KS-PC-03", "floor-price": 32, "ceiling-price": 49, "max-change-pct": 10, "same-price-everywhere": false, "owner": "Pricing"}}
+{"key": "g-ks-ch-28", "fields": {"sku": "KS-CH-28", "floor-price": 249, "ceiling-price": 329, "max-change-pct": 6, "same-price-everywhere": true, "owner": "Pricing"}}

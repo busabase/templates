@@ -1,0 +1,151 @@
+{
+  "name": "Order Exceptions",
+  "description": "Orders an agent completed that should not have gone through as they did: sold below floor, sold out of stock, a price that differed by channel, a refund or dispute pattern.",
+  "position": 3,
+  "agentPrompts": [
+    {
+      "key": "open-exceptions",
+      "label": {
+        "en": "What went wrong with agent orders this week?",
+        "zh-CN": "本周智能体订单出了什么问题？"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-orders` skill in this folder and follow its workflow, then summarise open exceptions by type with their total impact, and suggest a resolution for each.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-orders` 技能并按它的流程做，然后按类型汇总待处理的异常及总影响，并为每条建议处理方式。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "log-exception",
+      "label": {
+        "en": "Log an order exception",
+        "zh-CN": "记录一条订单异常"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-orders` skill in this folder and follow its workflow, then log the exception I describe against its order, with the type, SKU, detection date and impact.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-orders` 技能并按它的流程做，然后把我描述的异常关联到对应订单记下来，写上类型、SKU、发现日期和影响金额。"
+      },
+      "intent": "change"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Title",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "order",
+      "name": "Order",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "orders"
+      }
+    },
+    {
+      "slug": "type",
+      "name": "Type",
+      "type": "select",
+      "required": true,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "below-floor",
+            "name": "Sold below floor"
+          },
+          {
+            "id": "channel-mismatch",
+            "name": "Channel price mismatch"
+          },
+          {
+            "id": "out-of-stock",
+            "name": "Sold out of stock"
+          },
+          {
+            "id": "refund-dispute",
+            "name": "Refund or dispute"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "sku",
+      "name": "SKU",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "detected-on",
+      "name": "Detected on",
+      "type": "date",
+      "required": true,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "impact",
+      "name": "Impact (currency)",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 6,
+      "options": {
+        "choices": [
+          {
+            "id": "open",
+            "name": "Open"
+          },
+          {
+            "id": "resolved",
+            "name": "Resolved"
+          },
+          {
+            "id": "accepted",
+            "name": "Accepted as is"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "resolution",
+      "name": "Resolution",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "open",
+      "name": "Open",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "open"
+          }
+        ],
+        "sorts": []
+      }
+    }
+  ]
+}
