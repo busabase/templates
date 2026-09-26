@@ -1,0 +1,238 @@
+{
+  "name": "Listing Fixes",
+  "description": "Review queue. Each row is one proposed change to product data that should close a gap an agent answer exposed, with its evidence and the source for the new value. Nothing here is applied to a store or catalog until a person approves it.",
+  "position": 3,
+  "agentPrompts": [
+    {
+      "key": "propose-fixes",
+      "label": {
+        "en": "Propose listing fixes from this week's answers",
+        "zh-CN": "根据本周回答提出商品数据修改"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then turn the gaps in the latest agent answers into listing-fix proposals: one field per row, current and proposed value, the source for the new value, and the answers that justify it. Never propose a value you cannot source.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后把最新智能体回答暴露的缺口变成修改提议：每行只改一个字段，写清现值和提议值、新值的来源，以及支撑它的回答。拿不出来源的值不要提。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "high-risk",
+      "label": {
+        "en": "Which proposed fixes are high risk?",
+        "zh-CN": "哪些修改提议风险高？"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then list the proposed fixes marked high risk or without a source, and what I need to check before approving each.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后列出标为高风险或没有来源的修改提议，以及批准前我分别要核对什么。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "apply-approved",
+      "label": {
+        "en": "Apply the fixes I approved",
+        "zh-CN": "执行我已批准的修改"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then apply each approved fix to the store or catalog it names, then mark it applied with today's date. Do not touch fixes that are proposed, changes-requested or blocked.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后把已批准的修改应用到对应的店铺或商品库，然后标为已应用并写上今天的日期。待审、打回和拦截的都不要动。"
+      },
+      "intent": "change"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Title",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "question",
+      "name": "Question",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "questions"
+      }
+    },
+    {
+      "slug": "product",
+      "name": "Product (SKU)",
+      "type": "text",
+      "required": true,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "gap-type",
+      "name": "Gap",
+      "type": "select",
+      "required": true,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "missing-attribute",
+            "name": "Missing attribute"
+          },
+          {
+            "id": "unsourced-claim",
+            "name": "Unsourced claim"
+          },
+          {
+            "id": "price",
+            "name": "Price"
+          },
+          {
+            "id": "availability",
+            "name": "Availability"
+          },
+          {
+            "id": "reviews",
+            "name": "Reviews"
+          },
+          {
+            "id": "shipping-returns",
+            "name": "Shipping & returns"
+          },
+          {
+            "id": "copy",
+            "name": "Copy"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "field-name",
+      "name": "Product field",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "current-value",
+      "name": "Current value",
+      "type": "longtext",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "proposed-value",
+      "name": "Proposed value",
+      "type": "longtext",
+      "required": true,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "source",
+      "name": "Source for the new value",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "evidence",
+      "name": "Why (agent answers)",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "risk",
+      "name": "Risk",
+      "type": "select",
+      "required": true,
+      "position": 9,
+      "options": {
+        "choices": [
+          {
+            "id": "low",
+            "name": "Low"
+          },
+          {
+            "id": "medium",
+            "name": "Medium"
+          },
+          {
+            "id": "high",
+            "name": "High"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 10,
+      "options": {
+        "choices": [
+          {
+            "id": "proposed",
+            "name": "Proposed"
+          },
+          {
+            "id": "approved",
+            "name": "Approved"
+          },
+          {
+            "id": "changes-requested",
+            "name": "Changes requested"
+          },
+          {
+            "id": "blocked",
+            "name": "Blocked"
+          },
+          {
+            "id": "applied",
+            "name": "Applied"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "decision-note",
+      "name": "Decision note",
+      "type": "longtext",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "applied-on",
+      "name": "Applied on",
+      "type": "date",
+      "required": false,
+      "position": 12,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "waiting-for-review",
+      "name": "Waiting for review",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "proposed"
+          }
+        ],
+        "sorts": []
+      }
+    }
+  ]
+}

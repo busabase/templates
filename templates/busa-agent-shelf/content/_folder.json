@@ -1,0 +1,30 @@
+{
+  "name": "Busa Agent Shelf",
+  "description": "Agent shelf desk for e-commerce sellers: track whether AI shopping agents (ChatGPT, Gemini, Meta Muse, Amazon Rufus, Perplexity) recommend your products for the questions buyers ask, who they pick instead and why, and a review queue of sourced listing fixes. The AirApp only records a person's decision on a fix; it never contacts a shopping agent or edits a store.",
+  "agentPrompts": [
+    {
+      "key": "weekly-check",
+      "label": {
+        "en": "Run this week's agent-shelf check",
+        "zh-CN": "跑一遍本周的智能体货架检查"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then run this week's check end to end: ask every tracking question in each agent from Settings, record the answers, update competitors, and propose listing fixes for the gaps.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后完整跑一遍本周检查：在设置里的每个智能体上问一遍所有追踪中的问题，记录回答，更新竞品，并为缺口提出修改。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "weekly-brief",
+      "label": {
+        "en": "Brief me on our agent shelf",
+        "zh-CN": "给我讲讲我们的智能体货架现状"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then give me a short brief: share of shelf per agent versus the previous check, the high-priority questions we are missing from, and the fixes waiting for my decision.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后给我一个简短汇报：各智能体的被推荐比例与上次相比的变化、我们缺席的高优先级问题、等我决定的修改。"
+      },
+      "intent": "read-only"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-agent-shelf",
+  "displayName": {
+    "en": "Busa Agent Shelf",
+    "zh-CN": "Busa 智能体货架"
+  },
+  "description": {
+    "en": "Agent shelf desk for e-commerce sellers: track whether AI shopping agents (ChatGPT, Gemini, Meta Muse, Amazon Rufus, Perplexity) recommend your products for the questions buyers ask, who they pick instead and why, and a review queue of sourced listing fixes. The AirApp only records a person's decision on a fix; it never contacts a shopping agent or edits a store.",
+    "zh-CN": "面向电商卖家的智能体货架工作台：追踪 AI 购物智能体（ChatGPT、Gemini、Meta Muse、Amazon Rufus、Perplexity）在买家提问时是否推荐你的商品、推荐了谁、为什么，并把缺口变成有来源、需人审核的商品数据修改。AirApp 只记录人对修改的决定，从不访问购物智能体，也不改动店铺。"
+  },
+  "version": "0.1.0",
+  "license": "MIT",
+  "tags": [
+    "ecommerce",
+    "risk:gated-write",
+    "industry:ecommerce",
+    "surface:busabase"
+  ],
+  "template": {
+    "category": "ecommerce",
+    "schemaVersion": 1,
+    "airapp": "busa-agent-shelf-app",
+    "tags": [
+      "ecommerce",
+      "risk:gated-write",
+      "industry:ecommerce",
+      "surface:busabase"
+    ],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/fixes.webp",
+      "assets/screenshots/questions.webp",
+      "assets/screenshots/answers.webp",
+      "assets/screenshots/competitors.webp",
+      "assets/screenshots/settings.webp"
+    ],
+    "agentPrompts": [
+      "Run this week's check: ask each buyer question in ChatGPT, Gemini and Meta Muse and record where we rank.",
+      "Which high-priority buyer questions are we missing from, and who gets recommended instead?",
+      "Turn this week's gaps into listing fixes with a source for every new value."
+    ],
+    "requires": {
+      "airapp": true
+    }
+  }
+}

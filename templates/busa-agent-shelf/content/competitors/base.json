@@ -1,0 +1,82 @@
+{
+  "name": "Competitors",
+  "description": "Products the agents pick instead of ours, and what their listings have that ours do not.",
+  "position": 2,
+  "agentPrompts": [
+    {
+      "key": "why-competitor",
+      "label": {
+        "en": "Why does a competitor keep getting picked?",
+        "zh-CN": "为什么这个竞品总被推荐？"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then for the competitor I name, summarise what its listing carries that ours does not, citing the agent answers that mention it.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后针对我点名的竞品，总结它的商品页有、我们没有的内容，并引用提到它的智能体回答。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "update-competitors",
+      "label": {
+        "en": "Update competitors from the latest answers",
+        "zh-CN": "根据最新回答更新竞品"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then add or update competitor rows for every product agents recommended instead of ours in the latest check, including how many times each was picked.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后根据最近一次检查里被推荐、而不是我们的商品，新增或更新竞品记录，包括各自被推荐的次数。"
+      },
+      "intent": "change"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "product",
+      "name": "Product",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "brand",
+      "name": "Brand",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "url",
+      "name": "Listing URL",
+      "type": "url",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "price",
+      "name": "Price",
+      "type": "number",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "times-picked",
+      "name": "Times recommended",
+      "type": "number",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "what-they-have",
+      "name": "What their listing has",
+      "type": "longtext",
+      "required": false,
+      "position": 5,
+      "options": {}
+    }
+  ],
+  "views": []
+}

@@ -1,0 +1,104 @@
+{
+  "name": "Settings",
+  "description": "One row: the brand being tracked, the shopping agents to check, the check cadence, and which fix types always need a person.",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "set-brand",
+      "label": {
+        "en": "Set up the brand and agents to check",
+        "zh-CN": "设置品牌和要检查的智能体"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then update the settings row with the brand, the shopping agents to check, the cadence and the review policy I describe.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后按我的描述更新设置：品牌、要检查的购物智能体、检查频率和审核规则。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "explain-policy",
+      "label": {
+        "en": "Explain the current review policy",
+        "zh-CN": "解释当前的审核规则"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-agent-shelf` skill in this folder and follow its workflow, then explain in plain words which fixes need a person before they are applied under the current review policy.",
+        "zh-CN": "{target}\n\n先读这个文件夹里的 `busa-agent-shelf` 技能并按它的流程做，然后用大白话解释，按当前审核规则，哪些修改必须有人批准才能执行。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "brand",
+      "name": "Brand",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "agents",
+      "name": "Agents to check",
+      "type": "multiselect",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "chatgpt",
+            "name": "ChatGPT"
+          },
+          {
+            "id": "gemini",
+            "name": "Gemini"
+          },
+          {
+            "id": "meta-muse",
+            "name": "Meta Muse"
+          },
+          {
+            "id": "amazon-rufus",
+            "name": "Amazon Rufus"
+          },
+          {
+            "id": "perplexity",
+            "name": "Perplexity"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "cadence",
+      "name": "Check cadence",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "weekly",
+            "name": "Weekly"
+          },
+          {
+            "id": "biweekly",
+            "name": "Every two weeks"
+          },
+          {
+            "id": "monthly",
+            "name": "Monthly"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "review-policy",
+      "name": "Review policy",
+      "type": "longtext",
+      "required": false,
+      "position": 3,
+      "options": {}
+    }
+  ],
+  "views": []
+}
