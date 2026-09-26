@@ -120,6 +120,7 @@
         "assets/screenshots/guardrails.webp",
         "assets/screenshots/settings.webp"
       ],
+      "video": "assets/recordings/busa-agent-orders.mp4",
       "agentPrompts": [
         "Which AI agents brought us orders this week, and were any paid below the listed price?",
         "Show me the price proposals that breach a guardrail and what each would cost.",
@@ -165,6 +166,7 @@
         "assets/screenshots/competitors.webp",
         "assets/screenshots/settings.webp"
       ],
+      "video": "assets/recordings/busa-agent-shelf.mp4",
       "agentPrompts": [
         "Run this week's check: ask each buyer question in ChatGPT, Gemini and Meta Muse and record where we rank.",
         "Which high-priority buyer questions are we missing from, and who gets recommended instead?",
