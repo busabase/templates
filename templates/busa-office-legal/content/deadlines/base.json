@@ -1,0 +1,119 @@
+{
+  "name": "Preservation & deadlines",
+  "description": "Preservation and legal due dates with source authority",
+  "position": 1,
+  "agentPrompts": [
+    {
+      "key": "deadlines-0",
+      "label": {
+        "en": "Review upcoming preservation expiries",
+        "zh-CN": "核查保全与期限中需要关注的事项"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nReview upcoming preservation expiries. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核查保全与期限中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+      }
+    },
+    {
+      "key": "deadlines-1",
+      "label": {
+        "en": "Verify a deadline against source evidence",
+        "zh-CN": "按工作流程拟定保全与期限变更"
+      },
+      "intent": "change",
+      "body": {
+        "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nVerify a deadline against source evidence. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定保全与期限变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+      }
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "code",
+      "name": "Deadline code",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "case",
+      "name": "Case code",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Responsible counsel",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Verification state",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "due",
+      "name": "Verified due date",
+      "type": "date",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "source",
+      "name": "Deadline authority",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Preservation notes",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "key": "working",
+      "name": "Preservation & deadlines working table",
+      "type": "table",
+      "config": {
+        "visibleFieldSlugs": [
+          "name",
+          "owner",
+          "status",
+          "due"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "due",
+            "direction": "asc"
+          }
+        ]
+      },
+      "slug": "busa-office-legal-deadlines-working"
+    }
+  ]
+}

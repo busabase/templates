@@ -1,0 +1,148 @@
+{
+  "name": "Verification tasks / 核验待办",
+  "description": "Assign evidence checks and renewal follow-up with accountable owners.",
+  "position": 3,
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Task / 待办事项",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "source-ref",
+      "name": "Evidence reference / 证据业务编号",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Owner / 负责人",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "due",
+      "name": "Due on / 截止日期",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Task status / 待办状态",
+      "type": "select",
+      "required": false,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "open",
+            "name": "Open"
+          },
+          {
+            "id": "blocked",
+            "name": "Blocked"
+          },
+          {
+            "id": "completed",
+            "name": "Completed"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "notes",
+      "name": "Next step / 下一步",
+      "type": "longtext",
+      "required": false,
+      "position": 5,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "Verification tasks / 核验待办",
+      "description": "Assign evidence checks and renewal follow-up with accountable owners.",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "due",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "source-ref",
+          "owner",
+          "due",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "review",
+      "name": "Priority queue / 优先处理",
+      "description": "Focus on the open state",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "open"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "due",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "source-ref",
+          "owner",
+          "due",
+          "status"
+        ]
+      }
+    }
+  ],
+  "agentPrompts": [
+    {
+      "key": "scenario-1",
+      "label": {
+        "en": "Prepare this week's verification priorities",
+        "zh-CN": "整理本周核验优先级"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-admin skill in this folder and follow its workflow.\n\n{target}\n\nPrepare this week's verification priorities. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-admin Skill，遵循其流程。\n\n{target}\n\n整理本周核验优先级。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    },
+    {
+      "key": "scenario-2",
+      "label": {
+        "en": "Draft an owner follow-up for blocked checks",
+        "zh-CN": "为受阻核验拟定负责人跟进安排"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-admin skill in this folder and follow its workflow.\n\n{target}\n\nDraft an owner follow-up for blocked checks. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-admin Skill，遵循其流程。\n\n{target}\n\n为受阻核验拟定负责人跟进安排。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    }
+  ]
+}

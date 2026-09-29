@@ -1,0 +1,35 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-office-recruiting",
+  "displayName": { "en": "Recruiting Desk", "zh-CN": "招聘管理" },
+  "description": {
+    "en": "Hiring positions, candidate pipelines, interviews, and reviewed offers.",
+    "zh-CN": "职位需求、候选人进度、面试反馈与录用复核。"
+  },
+  "version": "0.1.0",
+  "license": "MIT",
+  "tags": ["office", "hr", "management"],
+  "template": {
+    "tags": ["hiring", "applicants", "interviews", "offers"],
+    "category": "hr",
+    "schemaVersion": 1,
+    "airapp": "busa-office-recruiting-app",
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/overview-zh-CN.webp",
+      "assets/screenshots/core.webp",
+      "assets/screenshots/core-zh-CN.webp",
+      "assets/screenshots/attention.webp",
+      "assets/screenshots/attention-zh-CN.webp"
+    ],
+    "agentPrompts": [
+      "Review applicants whose next step is overdue and prepare a hiring follow-up plan.",
+      "Check interview feedback and draft offer proposals for human review."
+    ],
+    "secrets": [],
+    "requires": {
+      "airapp": true
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "slug": "busa-office-cashier",
+  "name": "Cashier Desk",
+  "description": "Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money.",
+  "agentPrompts": [
+    {
+      "key": "scenario-0",
+      "label": {
+        "en": "Review Cashier Desk",
+        "zh-CN": "检查出纳管理"
+      },
+      "body": {
+        "en": "Read the `busa-office-cashier` skill in this folder first.\n\n{target}\n\nBank checks, payment evidence, cash movements and reconciliation exceptions without moving money.",
+        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n检查出纳管理。核对原始依据与状态；修改须通过变更申请，不执行付款、开票或申报。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "scenario-1",
+      "label": {
+        "en": "Prepare a weekly handoff",
+        "zh-CN": "准备每周交接"
+      },
+      "body": {
+        "en": "Read the `busa-office-cashier` skill in this folder first.\n\n{target}\n\nPrepare a weekly handoff with unresolved evidence, owners and deadlines, keeping proposed changes separate from approvals.",
+        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n准备每周交接。核对原始依据与状态；修改须通过变更申请，不执行付款、开票或申报。"
+      },
+      "intent": "change"
+    }
+  ]
+}

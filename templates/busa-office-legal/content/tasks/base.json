@@ -1,0 +1,119 @@
+{
+  "name": "Legal follow-up",
+  "description": "Accountable counsel and business owner follow-up actions",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "tasks-0",
+      "label": {
+        "en": "Prioritize overdue legal follow-up",
+        "zh-CN": "核查法务待办中需要关注的事项"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nPrioritize overdue legal follow-up. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核查法务待办中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+      }
+    },
+    {
+      "key": "tasks-1",
+      "label": {
+        "en": "Prepare a reviewable next-action proposal",
+        "zh-CN": "按工作流程拟定法务待办变更"
+      },
+      "intent": "change",
+      "body": {
+        "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nPrepare a reviewable next-action proposal. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定法务待办变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+      }
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "code",
+      "name": "Task code",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "case",
+      "name": "Case code",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Responsible owner",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Task state",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "due",
+      "name": "Action due",
+      "type": "date",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "next",
+      "name": "Required action",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Review context",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "key": "working",
+      "name": "Legal follow-up working table",
+      "type": "table",
+      "config": {
+        "visibleFieldSlugs": [
+          "name",
+          "owner",
+          "status",
+          "due"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "due",
+            "direction": "asc"
+          }
+        ]
+      },
+      "slug": "busa-office-legal-tasks-working"
+    }
+  ]
+}

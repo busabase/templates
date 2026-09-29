@@ -1,0 +1,168 @@
+{
+  "name": "Certificates / 证照台账",
+  "description": "Track company certificates and verified expiry dates.",
+  "position": 0,
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Certificate / 证照名称",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "entity",
+      "name": "Legal entity / 公司主体",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Owner / 负责人",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "issued",
+      "name": "Issued on / 签发日期",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "expires",
+      "name": "Expires on / 到期日期",
+      "type": "date",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Verification status / 核验状态",
+      "type": "select",
+      "required": false,
+      "position": 5,
+      "options": {
+        "choices": [
+          {
+            "id": "verified",
+            "name": "Verified"
+          },
+          {
+            "id": "expiring",
+            "name": "Renewal due"
+          },
+          {
+            "id": "unverified",
+            "name": "Unverified"
+          },
+          {
+            "id": "conflict",
+            "name": "Evidence conflict"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "source-ref",
+      "name": "Source reference / 原件业务编号",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Evidence notes / 核验说明",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "Certificates / 证照台账",
+      "description": "Track company certificates and verified expiry dates.",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "expires",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "entity",
+          "owner",
+          "expires",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "review",
+      "name": "Priority queue / 优先处理",
+      "description": "Focus on the expiring state",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "expiring"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "expires",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "entity",
+          "owner",
+          "expires",
+          "status"
+        ]
+      }
+    }
+  ],
+  "agentPrompts": [
+    {
+      "key": "scenario-1",
+      "label": {
+        "en": "Which certificates need renewal?",
+        "zh-CN": "哪些证照需要续期？"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-admin skill in this folder and follow its workflow.\n\n{target}\n\nWhich certificates need renewal?. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-admin Skill，遵循其流程。\n\n{target}\n\n哪些证照需要续期？。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    },
+    {
+      "key": "scenario-2",
+      "label": {
+        "en": "Draft a certificate verification checklist",
+        "zh-CN": "拟定证照核验清单"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-admin skill in this folder and follow its workflow.\n\n{target}\n\nDraft a certificate verification checklist. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-admin Skill，遵循其流程。\n\n{target}\n\n拟定证照核验清单。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    }
+  ]
+}

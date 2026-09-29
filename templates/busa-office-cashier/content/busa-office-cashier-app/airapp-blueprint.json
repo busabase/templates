@@ -1,0 +1,935 @@
+{
+  "binding": "runtime",
+  "schema_version": 1,
+  "workspace": {
+    "folder": {
+      "slug": "busa-office-cashier",
+      "name": "Cashier Desk",
+      "description": "Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money."
+    },
+    "bases": [
+      {
+        "key": "accounts",
+        "resourceKey": "accounts",
+        "slug": "busa-office-cashier-accounts",
+        "fields": [
+          {
+            "slug": "title",
+            "name": "Title",
+            "nameI18n": {
+              "en": "Title",
+              "zh-CN": "事项"
+            },
+            "type": "text",
+            "required": true,
+            "position": 0,
+            "options": {}
+          },
+          {
+            "slug": "entity",
+            "name": "Entity",
+            "nameI18n": {
+              "en": "Entity",
+              "zh-CN": "主体"
+            },
+            "type": "text",
+            "required": false,
+            "position": 1,
+            "options": {}
+          },
+          {
+            "slug": "owner",
+            "name": "Owner",
+            "nameI18n": {
+              "en": "Owner",
+              "zh-CN": "负责人"
+            },
+            "type": "text",
+            "required": false,
+            "position": 2,
+            "options": {}
+          },
+          {
+            "slug": "status",
+            "name": "Status",
+            "nameI18n": {
+              "en": "Status",
+              "zh-CN": "状态"
+            },
+            "type": "select",
+            "required": false,
+            "position": 3,
+            "options": {
+              "choices": [
+                {
+                  "id": "active",
+                  "name": "active"
+                },
+                {
+                  "id": "restricted",
+                  "name": "restricted"
+                },
+                {
+                  "id": "closed",
+                  "name": "closed"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "bank",
+            "name": "Bank",
+            "nameI18n": {
+              "en": "Bank",
+              "zh-CN": "银行"
+            },
+            "type": "text",
+            "required": false,
+            "position": 4,
+            "options": {}
+          },
+          {
+            "slug": "accountHint",
+            "name": "Account suffix",
+            "nameI18n": {
+              "en": "Account suffix",
+              "zh-CN": "账户尾号"
+            },
+            "type": "text",
+            "required": false,
+            "position": 5,
+            "options": {}
+          },
+          {
+            "slug": "currency",
+            "name": "Currency",
+            "nameI18n": {
+              "en": "Currency",
+              "zh-CN": "币种"
+            },
+            "type": "text",
+            "required": false,
+            "position": 6,
+            "options": {}
+          },
+          {
+            "slug": "balance",
+            "name": "Book balance",
+            "nameI18n": {
+              "en": "Book balance",
+              "zh-CN": "账面余额"
+            },
+            "type": "number",
+            "required": false,
+            "position": 7,
+            "options": {}
+          },
+          {
+            "slug": "checkedAt",
+            "name": "Checked at",
+            "nameI18n": {
+              "en": "Checked at",
+              "zh-CN": "核查时间"
+            },
+            "type": "date",
+            "required": false,
+            "position": 8,
+            "options": {}
+          },
+          {
+            "slug": "notes",
+            "name": "Notes",
+            "nameI18n": {
+              "en": "Notes",
+              "zh-CN": "备注"
+            },
+            "type": "longtext",
+            "required": false,
+            "position": 9,
+            "options": {}
+          }
+        ],
+        "views": [
+          {
+            "slug": "register",
+            "name": "Bank accounts",
+            "type": "table",
+            "position": 0,
+            "config": {
+              "visibleFieldSlugs": [
+                "title",
+                "entity",
+                "owner",
+                "status",
+                "bank",
+                "accountHint",
+                "currency",
+                "balance",
+                "checkedAt",
+                "notes"
+              ],
+              "sorts": [
+                {
+                  "fieldSlug": "title",
+                  "direction": "asc"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "attention",
+            "name": "Needs review",
+            "type": "table",
+            "position": 1,
+            "config": {
+              "visibleFieldSlugs": ["title", "owner", "status", "notes"],
+              "filters": [
+                {
+                  "fieldSlug": "status",
+                  "operator": "equals",
+                  "value": "restricted"
+                }
+              ]
+            }
+          }
+        ],
+        "read_limit": 50
+      },
+      {
+        "key": "checks",
+        "resourceKey": "checks",
+        "slug": "busa-office-cashier-checks",
+        "fields": [
+          {
+            "slug": "title",
+            "name": "Title",
+            "nameI18n": {
+              "en": "Title",
+              "zh-CN": "事项"
+            },
+            "type": "text",
+            "required": true,
+            "position": 0,
+            "options": {}
+          },
+          {
+            "slug": "entity",
+            "name": "Entity",
+            "nameI18n": {
+              "en": "Entity",
+              "zh-CN": "主体"
+            },
+            "type": "text",
+            "required": false,
+            "position": 1,
+            "options": {}
+          },
+          {
+            "slug": "owner",
+            "name": "Owner",
+            "nameI18n": {
+              "en": "Owner",
+              "zh-CN": "负责人"
+            },
+            "type": "text",
+            "required": false,
+            "position": 2,
+            "options": {}
+          },
+          {
+            "slug": "status",
+            "name": "Status",
+            "nameI18n": {
+              "en": "Status",
+              "zh-CN": "状态"
+            },
+            "type": "select",
+            "required": false,
+            "position": 3,
+            "options": {
+              "choices": [
+                {
+                  "id": "pending",
+                  "name": "pending"
+                },
+                {
+                  "id": "matched",
+                  "name": "matched"
+                },
+                {
+                  "id": "exception",
+                  "name": "exception"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "account",
+            "name": "Bank account",
+            "nameI18n": {
+              "en": "Bank account",
+              "zh-CN": "银行账户"
+            },
+            "type": "relation",
+            "required": false,
+            "position": 4,
+            "options": {
+              "targetBaseSlug": "busa-office-cashier-accounts"
+            }
+          },
+          {
+            "slug": "currency",
+            "name": "Currency",
+            "nameI18n": {
+              "en": "Currency",
+              "zh-CN": "币种"
+            },
+            "type": "text",
+            "required": false,
+            "position": 5,
+            "options": {}
+          },
+          {
+            "slug": "balance",
+            "name": "Book balance",
+            "nameI18n": {
+              "en": "Book balance",
+              "zh-CN": "账面余额"
+            },
+            "type": "number",
+            "required": false,
+            "position": 6,
+            "options": {}
+          },
+          {
+            "slug": "bankBalance",
+            "name": "Bank balance",
+            "nameI18n": {
+              "en": "Bank balance",
+              "zh-CN": "银行余额"
+            },
+            "type": "number",
+            "required": false,
+            "position": 7,
+            "options": {}
+          },
+          {
+            "slug": "checkedAt",
+            "name": "Checked at",
+            "nameI18n": {
+              "en": "Checked at",
+              "zh-CN": "核查时间"
+            },
+            "type": "date",
+            "required": false,
+            "position": 8,
+            "options": {}
+          },
+          {
+            "slug": "evidence",
+            "name": "Evidence reference",
+            "nameI18n": {
+              "en": "Evidence reference",
+              "zh-CN": "凭证引用"
+            },
+            "type": "text",
+            "required": false,
+            "position": 9,
+            "options": {}
+          },
+          {
+            "slug": "reason",
+            "name": "Attention reason",
+            "nameI18n": {
+              "en": "Attention reason",
+              "zh-CN": "需关注原因"
+            },
+            "type": "longtext",
+            "required": false,
+            "position": 10,
+            "options": {}
+          },
+          {
+            "slug": "notes",
+            "name": "Notes",
+            "nameI18n": {
+              "en": "Notes",
+              "zh-CN": "备注"
+            },
+            "type": "longtext",
+            "required": false,
+            "position": 11,
+            "options": {}
+          }
+        ],
+        "views": [
+          {
+            "slug": "register",
+            "name": "Daily balance checks",
+            "type": "table",
+            "position": 0,
+            "config": {
+              "visibleFieldSlugs": [
+                "title",
+                "entity",
+                "owner",
+                "status",
+                "account",
+                "currency",
+                "balance",
+                "bankBalance",
+                "checkedAt",
+                "evidence",
+                "reason",
+                "notes"
+              ],
+              "sorts": [
+                {
+                  "fieldSlug": "title",
+                  "direction": "asc"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "attention",
+            "name": "Needs review",
+            "type": "table",
+            "position": 1,
+            "config": {
+              "visibleFieldSlugs": ["title", "owner", "status", "notes"],
+              "filters": [
+                {
+                  "fieldSlug": "status",
+                  "operator": "equals",
+                  "value": "matched"
+                }
+              ]
+            }
+          }
+        ],
+        "read_limit": 50
+      },
+      {
+        "key": "payments",
+        "resourceKey": "payments",
+        "slug": "busa-office-cashier-payments",
+        "fields": [
+          {
+            "slug": "title",
+            "name": "Title",
+            "nameI18n": {
+              "en": "Title",
+              "zh-CN": "事项"
+            },
+            "type": "text",
+            "required": true,
+            "position": 0,
+            "options": {}
+          },
+          {
+            "slug": "entity",
+            "name": "Entity",
+            "nameI18n": {
+              "en": "Entity",
+              "zh-CN": "主体"
+            },
+            "type": "text",
+            "required": false,
+            "position": 1,
+            "options": {}
+          },
+          {
+            "slug": "owner",
+            "name": "Owner",
+            "nameI18n": {
+              "en": "Owner",
+              "zh-CN": "负责人"
+            },
+            "type": "text",
+            "required": false,
+            "position": 2,
+            "options": {}
+          },
+          {
+            "slug": "status",
+            "name": "Status",
+            "nameI18n": {
+              "en": "Status",
+              "zh-CN": "状态"
+            },
+            "type": "select",
+            "required": false,
+            "position": 3,
+            "options": {
+              "choices": [
+                {
+                  "id": "draft",
+                  "name": "draft"
+                },
+                {
+                  "id": "pending",
+                  "name": "pending"
+                },
+                {
+                  "id": "approved",
+                  "name": "approved"
+                },
+                {
+                  "id": "paid",
+                  "name": "paid"
+                },
+                {
+                  "id": "blocked",
+                  "name": "blocked"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "account",
+            "name": "Bank account",
+            "nameI18n": {
+              "en": "Bank account",
+              "zh-CN": "银行账户"
+            },
+            "type": "relation",
+            "required": false,
+            "position": 4,
+            "options": {
+              "targetBaseSlug": "busa-office-cashier-accounts"
+            }
+          },
+          {
+            "slug": "amount",
+            "name": "Amount",
+            "nameI18n": {
+              "en": "Amount",
+              "zh-CN": "金额"
+            },
+            "type": "number",
+            "required": false,
+            "position": 5,
+            "options": {}
+          },
+          {
+            "slug": "currency",
+            "name": "Currency",
+            "nameI18n": {
+              "en": "Currency",
+              "zh-CN": "币种"
+            },
+            "type": "text",
+            "required": false,
+            "position": 6,
+            "options": {}
+          },
+          {
+            "slug": "due",
+            "name": "Due date",
+            "nameI18n": {
+              "en": "Due date",
+              "zh-CN": "到期日"
+            },
+            "type": "date",
+            "required": false,
+            "position": 7,
+            "options": {}
+          },
+          {
+            "slug": "approval",
+            "name": "Approval reference",
+            "nameI18n": {
+              "en": "Approval reference",
+              "zh-CN": "审批依据"
+            },
+            "type": "text",
+            "required": false,
+            "position": 8,
+            "options": {}
+          },
+          {
+            "slug": "receipt",
+            "name": "Receipt reference",
+            "nameI18n": {
+              "en": "Receipt reference",
+              "zh-CN": "回单引用"
+            },
+            "type": "text",
+            "required": false,
+            "position": 9,
+            "options": {}
+          },
+          {
+            "slug": "paidAt",
+            "name": "Paid date",
+            "nameI18n": {
+              "en": "Paid date",
+              "zh-CN": "付款日期"
+            },
+            "type": "date",
+            "required": false,
+            "position": 10,
+            "options": {}
+          },
+          {
+            "slug": "invoice",
+            "name": "Invoice reference",
+            "nameI18n": {
+              "en": "Invoice reference",
+              "zh-CN": "发票引用"
+            },
+            "type": "text",
+            "required": false,
+            "position": 11,
+            "options": {}
+          },
+          {
+            "slug": "notes",
+            "name": "Notes",
+            "nameI18n": {
+              "en": "Notes",
+              "zh-CN": "备注"
+            },
+            "type": "longtext",
+            "required": false,
+            "position": 12,
+            "options": {}
+          }
+        ],
+        "views": [
+          {
+            "slug": "register",
+            "name": "Payment requests",
+            "type": "table",
+            "position": 0,
+            "config": {
+              "visibleFieldSlugs": [
+                "title",
+                "entity",
+                "owner",
+                "status",
+                "account",
+                "amount",
+                "currency",
+                "due",
+                "approval",
+                "receipt",
+                "paidAt",
+                "invoice",
+                "notes"
+              ],
+              "sorts": [
+                {
+                  "fieldSlug": "title",
+                  "direction": "asc"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "attention",
+            "name": "Needs review",
+            "type": "table",
+            "position": 1,
+            "config": {
+              "visibleFieldSlugs": ["title", "owner", "status", "notes"],
+              "filters": [
+                {
+                  "fieldSlug": "status",
+                  "operator": "equals",
+                  "value": "pending"
+                }
+              ]
+            }
+          }
+        ],
+        "read_limit": 50
+      },
+      {
+        "key": "ledger",
+        "resourceKey": "ledger",
+        "slug": "busa-office-cashier-ledger",
+        "fields": [
+          {
+            "slug": "title",
+            "name": "Title",
+            "nameI18n": {
+              "en": "Title",
+              "zh-CN": "事项"
+            },
+            "type": "text",
+            "required": true,
+            "position": 0,
+            "options": {}
+          },
+          {
+            "slug": "entity",
+            "name": "Entity",
+            "nameI18n": {
+              "en": "Entity",
+              "zh-CN": "主体"
+            },
+            "type": "text",
+            "required": false,
+            "position": 1,
+            "options": {}
+          },
+          {
+            "slug": "owner",
+            "name": "Owner",
+            "nameI18n": {
+              "en": "Owner",
+              "zh-CN": "负责人"
+            },
+            "type": "text",
+            "required": false,
+            "position": 2,
+            "options": {}
+          },
+          {
+            "slug": "status",
+            "name": "Status",
+            "nameI18n": {
+              "en": "Status",
+              "zh-CN": "状态"
+            },
+            "type": "select",
+            "required": false,
+            "position": 3,
+            "options": {
+              "choices": [
+                {
+                  "id": "unmatched",
+                  "name": "unmatched"
+                },
+                {
+                  "id": "reconciled",
+                  "name": "reconciled"
+                },
+                {
+                  "id": "exception",
+                  "name": "exception"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "account",
+            "name": "Bank account",
+            "nameI18n": {
+              "en": "Bank account",
+              "zh-CN": "银行账户"
+            },
+            "type": "relation",
+            "required": false,
+            "position": 4,
+            "options": {
+              "targetBaseSlug": "busa-office-cashier-accounts"
+            }
+          },
+          {
+            "slug": "payment",
+            "name": "Payment request",
+            "nameI18n": {
+              "en": "Payment request",
+              "zh-CN": "付款申请"
+            },
+            "type": "relation",
+            "required": false,
+            "position": 5,
+            "options": {
+              "targetBaseSlug": "busa-office-cashier-payments"
+            }
+          },
+          {
+            "slug": "amount",
+            "name": "Amount",
+            "nameI18n": {
+              "en": "Amount",
+              "zh-CN": "金额"
+            },
+            "type": "number",
+            "required": false,
+            "position": 6,
+            "options": {}
+          },
+          {
+            "slug": "currency",
+            "name": "Currency",
+            "nameI18n": {
+              "en": "Currency",
+              "zh-CN": "币种"
+            },
+            "type": "text",
+            "required": false,
+            "position": 7,
+            "options": {}
+          },
+          {
+            "slug": "direction",
+            "name": "Direction",
+            "nameI18n": {
+              "en": "Direction",
+              "zh-CN": "收付方向"
+            },
+            "type": "select",
+            "required": false,
+            "position": 8,
+            "options": {
+              "choices": [
+                {
+                  "id": "in",
+                  "name": "in"
+                },
+                {
+                  "id": "out",
+                  "name": "out"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "due",
+            "name": "Due date",
+            "nameI18n": {
+              "en": "Due date",
+              "zh-CN": "到期日"
+            },
+            "type": "date",
+            "required": false,
+            "position": 9,
+            "options": {}
+          },
+          {
+            "slug": "receipt",
+            "name": "Receipt reference",
+            "nameI18n": {
+              "en": "Receipt reference",
+              "zh-CN": "回单引用"
+            },
+            "type": "text",
+            "required": false,
+            "position": 10,
+            "options": {}
+          },
+          {
+            "slug": "invoice",
+            "name": "Invoice reference",
+            "nameI18n": {
+              "en": "Invoice reference",
+              "zh-CN": "发票引用"
+            },
+            "type": "text",
+            "required": false,
+            "position": 11,
+            "options": {}
+          },
+          {
+            "slug": "reason",
+            "name": "Attention reason",
+            "nameI18n": {
+              "en": "Attention reason",
+              "zh-CN": "需关注原因"
+            },
+            "type": "longtext",
+            "required": false,
+            "position": 12,
+            "options": {}
+          },
+          {
+            "slug": "notes",
+            "name": "Notes",
+            "nameI18n": {
+              "en": "Notes",
+              "zh-CN": "备注"
+            },
+            "type": "longtext",
+            "required": false,
+            "position": 13,
+            "options": {}
+          }
+        ],
+        "views": [
+          {
+            "slug": "register",
+            "name": "Cash ledger",
+            "type": "table",
+            "position": 0,
+            "config": {
+              "visibleFieldSlugs": [
+                "title",
+                "entity",
+                "owner",
+                "status",
+                "account",
+                "payment",
+                "amount",
+                "currency",
+                "direction",
+                "due",
+                "receipt",
+                "invoice",
+                "reason",
+                "notes"
+              ],
+              "sorts": [
+                {
+                  "fieldSlug": "title",
+                  "direction": "asc"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "attention",
+            "name": "Needs review",
+            "type": "table",
+            "position": 1,
+            "config": {
+              "visibleFieldSlugs": ["title", "owner", "status", "notes"],
+              "filters": [
+                {
+                  "fieldSlug": "status",
+                  "operator": "equals",
+                  "value": "reconciled"
+                }
+              ]
+            }
+          }
+        ],
+        "read_limit": 50
+      }
+    ]
+  },
+  "relations": [
+    {
+      "from_base": "checks",
+      "field": "account",
+      "target_base": "accounts"
+    },
+    {
+      "from_base": "payments",
+      "field": "account",
+      "target_base": "accounts"
+    },
+    {
+      "from_base": "ledger",
+      "field": "account",
+      "target_base": "accounts"
+    },
+    {
+      "from_base": "ledger",
+      "field": "payment",
+      "target_base": "payments"
+    }
+  ],
+  "actions": [],
+  "onboarding": {
+    "version": 1,
+    "fields": [],
+    "rationale": "No integrations or external credentials are required; the installed records are the operational state."
+  },
+  "vault_requirements": [],
+  "integrations": []
+}

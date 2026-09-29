@@ -1,0 +1,1 @@
+{"compilerOptions":{"allowJs":true,"checkJs":true,"noEmit":true,"module":"nodenext","moduleResolution":"nodenext","target":"ES2022","skipLibCheck":true,"strict":false},"include":["app/js/model.js","app/js/binding.js","app/js/busabase-client.js","app/js/providers/busabase-provider.js"]}

@@ -1,0 +1,168 @@
+{
+  "name": "Administrative contracts / 行政合同",
+  "description": "Track office supplier agreements, signatures and renewal responsibilities.",
+  "position": 1,
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Agreement / 合同名称",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "counterparty",
+      "name": "Counterparty / 对方主体",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "entity",
+      "name": "Legal entity / 公司主体",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Owner / 负责人",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "expires",
+      "name": "Ends on / 合同到期",
+      "type": "date",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Contract status / 合同状态",
+      "type": "select",
+      "required": false,
+      "position": 5,
+      "options": {
+        "choices": [
+          {
+            "id": "signed",
+            "name": "Signed"
+          },
+          {
+            "id": "renewal",
+            "name": "Renewal due"
+          },
+          {
+            "id": "review",
+            "name": "Signature pending"
+          },
+          {
+            "id": "archived",
+            "name": "Archived"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "source-ref",
+      "name": "Source reference / 原件业务编号",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Review notes / 审阅说明",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "Administrative contracts / 行政合同",
+      "description": "Track office supplier agreements, signatures and renewal responsibilities.",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "expires",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "counterparty",
+          "owner",
+          "expires",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "review",
+      "name": "Priority queue / 优先处理",
+      "description": "Focus on the renewal state",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "renewal"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "expires",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "counterparty",
+          "owner",
+          "expires",
+          "status"
+        ]
+      }
+    }
+  ],
+  "agentPrompts": [
+    {
+      "key": "scenario-1",
+      "label": {
+        "en": "Prepare the next contract renewal agenda",
+        "zh-CN": "整理下一轮合同续期议程"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-admin skill in this folder and follow its workflow.\n\n{target}\n\nPrepare the next contract renewal agenda. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-admin Skill，遵循其流程。\n\n{target}\n\n整理下一轮合同续期议程。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    },
+    {
+      "key": "scenario-2",
+      "label": {
+        "en": "List contracts still waiting for signature",
+        "zh-CN": "列出仍待签署的合同"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-admin skill in this folder and follow its workflow.\n\n{target}\n\nList contracts still waiting for signature. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-admin Skill，遵循其流程。\n\n{target}\n\n列出仍待签署的合同。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,164 @@
+{
+  "name": "Employees / 员工花名册",
+  "description": "Maintain the authoritative employee roster and confirmed salary inputs.",
+  "position": 0,
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Employee / 员工姓名",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "employee-code",
+      "name": "Employee reference / 员工业务编号",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "department",
+      "name": "Department / 部门",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "HR owner / 人事负责人",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "joined",
+      "name": "Joined on / 入职日期",
+      "type": "date",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "confirmed-salary",
+      "name": "Confirmed monthly salary (CNY) / 已确认月薪（元）",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Record status / 档案状态",
+      "type": "select",
+      "required": false,
+      "position": 6,
+      "options": {
+        "choices": [
+          {
+            "id": "active",
+            "name": "Active"
+          },
+          {
+            "id": "incomplete",
+            "name": "Inputs missing"
+          },
+          {
+            "id": "leave",
+            "name": "On leave"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "notes",
+      "name": "Confirmation notes / 确认说明",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "Employees / 员工花名册",
+      "description": "Maintain the authoritative employee roster and confirmed salary inputs.",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "joined",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "employee-code",
+          "department",
+          "owner",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "review",
+      "name": "Priority queue / 优先处理",
+      "description": "Focus on the incomplete state",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "incomplete"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "joined",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "employee-code",
+          "department",
+          "owner",
+          "status"
+        ]
+      }
+    }
+  ],
+  "agentPrompts": [
+    {
+      "key": "scenario-1",
+      "label": {
+        "en": "Check employee records for missing payroll inputs",
+        "zh-CN": "检查员工档案缺失的工资输入"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-hr skill in this folder and follow its workflow.\n\n{target}\n\nCheck employee records for missing payroll inputs. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-hr Skill，遵循其流程。\n\n{target}\n\n检查员工档案缺失的工资输入。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    },
+    {
+      "key": "scenario-2",
+      "label": {
+        "en": "Prepare an onboarding record for a new colleague",
+        "zh-CN": "为新同事拟定入职档案"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-hr skill in this folder and follow its workflow.\n\n{target}\n\nPrepare an onboarding record for a new colleague. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-hr Skill，遵循其流程。\n\n{target}\n\n为新同事拟定入职档案。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    }
+  ]
+}

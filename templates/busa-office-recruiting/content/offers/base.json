@@ -1,0 +1,127 @@
+{
+  "name": "Offer review",
+  "description": "Compensation proposals, review status and acceptance evidence",
+  "position": 3,
+  "agentPrompts": [
+    {
+      "key": "offers-0",
+      "label": {
+        "en": "Audit offers awaiting approval",
+        "zh-CN": "核查录用复核中需要关注的事项"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nAudit offers awaiting approval. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查录用复核中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+      }
+    },
+    {
+      "key": "offers-1",
+      "label": {
+        "en": "Draft an offer review checklist",
+        "zh-CN": "按工作流程拟定录用复核变更"
+      },
+      "intent": "change",
+      "body": {
+        "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nDraft an offer review checklist. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定录用复核变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+      }
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "code",
+      "name": "Offer code",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "candidate",
+      "name": "Candidate code",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Approver",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "amount",
+      "name": "Monthly salary",
+      "type": "number",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "currency",
+      "name": "Currency",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Review state",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "due",
+      "name": "Decision due",
+      "type": "date",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Conditions",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "key": "working",
+      "name": "Offer review working table",
+      "type": "table",
+      "config": {
+        "visibleFieldSlugs": [
+          "name",
+          "owner",
+          "status",
+          "due"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "due",
+            "direction": "asc"
+          }
+        ]
+      },
+      "slug": "busa-office-recruiting-offers-working"
+    }
+  ]
+}

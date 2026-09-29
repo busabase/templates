@@ -1,0 +1,38 @@
+{
+  "app": {
+    "slug": "busa-office-admin"
+  },
+  "route": "package-first",
+  "binding": "runtime",
+  "workspace": {
+    "bases": [
+      {
+        "key": "certificates",
+        "slug": "busa-office-admin-certificates",
+        "read_limit": 50
+      },
+      {
+        "key": "contracts",
+        "slug": "busa-office-admin-contracts",
+        "read_limit": 50
+      },
+      {
+        "key": "sources",
+        "slug": "busa-office-admin-sources",
+        "read_limit": 50
+      },
+      {
+        "key": "checks",
+        "slug": "busa-office-admin-checks",
+        "read_limit": 50
+      }
+    ]
+  },
+  "dataBudgets": "One 50-row page per Base; one continuation page on explicit action. No unrequested background scans.",
+  "actions": [],
+  "onboarding": {
+    "version": 0,
+    "fields": [],
+    "rationale": "No integration or setup required; installed Bases are the workflow."
+  }
+}

@@ -1,0 +1,267 @@
+{
+  "key": "expenses",
+  "resourceKey": "expenses",
+  "slug": "busa-office-finance-expenses",
+  "name": "Expenses & reimbursements",
+  "nameI18n": {
+    "en": "Expenses & reimbursements",
+    "zh-CN": "费用与报销"
+  },
+  "description": "Review pending and blocked expense claims, list missing evidence and duplicates before suggesting approval.",
+  "readLimit": 50,
+  "agentPrompts": [
+    {
+      "key": "scenario-0",
+      "label": {
+        "en": "Review missing expense evidence",
+        "zh-CN": "检查报销缺失凭证"
+      },
+      "body": {
+        "en": "Read the `busa-office-finance` skill in this folder first.\n\n{target}\n\nReview pending and blocked expense claims, list missing evidence and duplicates before suggesting approval.",
+        "zh-CN": "先阅读本文件夹的 `busa-office-finance` Skill 并遵守其流程。\n\n{target}\n\n检查报销缺失凭证。核对原始依据与状态；修改须通过变更申请，不执行付款、开票或申报。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "scenario-1",
+      "label": {
+        "en": "Prepare an expense claim",
+        "zh-CN": "准备报销申请"
+      },
+      "body": {
+        "en": "Read the `busa-office-finance` skill in this folder first.\n\n{target}\n\nPrepare an expense claim from the receipts I provide, preserve original currency, and propose it for review.",
+        "zh-CN": "先阅读本文件夹的 `busa-office-finance` Skill 并遵守其流程。\n\n{target}\n\n准备报销申请。核对原始依据与状态；修改须通过变更申请，不执行付款、开票或申报。"
+      },
+      "intent": "change"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Title",
+      "nameI18n": {
+        "en": "Title",
+        "zh-CN": "事项"
+      },
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "entity",
+      "name": "Entity",
+      "nameI18n": {
+        "en": "Entity",
+        "zh-CN": "主体"
+      },
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Owner",
+      "nameI18n": {
+        "en": "Owner",
+        "zh-CN": "负责人"
+      },
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "nameI18n": {
+        "en": "Status",
+        "zh-CN": "状态"
+      },
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "draft",
+            "name": "draft"
+          },
+          {
+            "id": "pending",
+            "name": "pending"
+          },
+          {
+            "id": "approved",
+            "name": "approved"
+          },
+          {
+            "id": "paid",
+            "name": "paid"
+          },
+          {
+            "id": "blocked",
+            "name": "blocked"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "amount",
+      "name": "Amount",
+      "nameI18n": {
+        "en": "Amount",
+        "zh-CN": "金额"
+      },
+      "type": "number",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "currency",
+      "name": "Currency",
+      "nameI18n": {
+        "en": "Currency",
+        "zh-CN": "币种"
+      },
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "due",
+      "name": "Due date",
+      "nameI18n": {
+        "en": "Due date",
+        "zh-CN": "到期日"
+      },
+      "type": "date",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "evidence",
+      "name": "Evidence reference",
+      "nameI18n": {
+        "en": "Evidence reference",
+        "zh-CN": "凭证引用"
+      },
+      "type": "text",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "approval",
+      "name": "Approval reference",
+      "nameI18n": {
+        "en": "Approval reference",
+        "zh-CN": "审批依据"
+      },
+      "type": "text",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "paidAt",
+      "name": "Paid date",
+      "nameI18n": {
+        "en": "Paid date",
+        "zh-CN": "付款日期"
+      },
+      "type": "date",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Notes",
+      "nameI18n": {
+        "en": "Notes",
+        "zh-CN": "备注"
+      },
+      "type": "longtext",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "receipt",
+      "name": "Payment receipt reference",
+      "nameI18n": {
+        "en": "Payment receipt reference",
+        "zh-CN": "付款回单引用"
+      },
+      "type": "text",
+      "required": false,
+      "position": 11,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "register",
+      "name": "Expenses & reimbursements",
+      "type": "table",
+      "position": 0,
+      "config": {
+        "visibleFieldSlugs": [
+          "title",
+          "entity",
+          "owner",
+          "status",
+          "amount",
+          "currency",
+          "due",
+          "evidence",
+          "approval",
+          "paidAt",
+          "notes"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "title",
+            "direction": "asc"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "attention",
+      "name": "Needs review",
+      "type": "table",
+      "position": 1,
+      "config": {
+        "visibleFieldSlugs": [
+          "title",
+          "owner",
+          "status",
+          "notes"
+        ],
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "pending"
+          }
+        ]
+      }
+    }
+  ],
+  "primaryField": "title",
+  "columns": [
+    "title",
+    "owner",
+    "status",
+    "amount",
+    "currency",
+    "due"
+  ],
+  "position": 0
+}

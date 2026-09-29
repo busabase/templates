@@ -1,0 +1,143 @@
+{
+  "name": "Recoveries & costs",
+  "description": "Case recoveries and costs with currency and verification evidence",
+  "position": 2,
+  "agentPrompts": [
+    {
+      "key": "settlements-0",
+      "label": {
+        "en": "Reconcile verified recoveries and costs",
+        "zh-CN": "核查回款与成本中需要关注的事项"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nReconcile verified recoveries and costs. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核查回款与成本中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+      }
+    },
+    {
+      "key": "settlements-1",
+      "label": {
+        "en": "Draft a missing-evidence checklist",
+        "zh-CN": "按工作流程拟定回款与成本变更"
+      },
+      "intent": "change",
+      "body": {
+        "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nDraft a missing-evidence checklist. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定回款与成本变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+      }
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "code",
+      "name": "Entry code",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "case",
+      "name": "Case code",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Finance reviewer",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "kind",
+      "name": "Entry type",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "amount",
+      "name": "Amount",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "currency",
+      "name": "Currency",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Evidence state",
+      "type": "text",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "due",
+      "name": "Posting date",
+      "type": "date",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "source",
+      "name": "Evidence reference",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Reconciliation notes",
+      "type": "longtext",
+      "required": false,
+      "position": 10,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "key": "working",
+      "name": "Recoveries & costs working table",
+      "type": "table",
+      "config": {
+        "visibleFieldSlugs": [
+          "name",
+          "owner",
+          "status",
+          "due"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "due",
+            "direction": "asc"
+          }
+        ]
+      },
+      "slug": "busa-office-legal-settlements-working"
+    }
+  ]
+}

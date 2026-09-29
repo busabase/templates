@@ -1,0 +1,31 @@
+{
+  "type": "airapp",
+  "name": "Legal Case Desk",
+  "description": "Case progress, preservation deadlines, settlement evidence, and legal follow-up.",
+  "agentPrompts": [
+    {
+      "key": "review-0",
+      "label": {
+        "en": "Review active cases and preservation deadlines and identify missing legal evid",
+        "zh-CN": "核查在办案件与保全期限，列出缺少法律证据的事项"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nReview active cases and preservation deadlines and identify missing legal evidence. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核查在办案件与保全期限，列出缺少法律证据的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+      }
+    },
+    {
+      "key": "review-1",
+      "label": {
+        "en": "Reconcile case recovery and legal costs by currency, then prepare a review sum",
+        "zh-CN": "按币种核对案件回款及法务成本，拟定人工复核摘要"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nReconcile case recovery and legal costs by currency, then prepare a review summary. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n按币种核对案件回款及法务成本，拟定人工复核摘要。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+      }
+    }
+  ]
+}

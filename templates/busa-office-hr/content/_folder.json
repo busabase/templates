@@ -1,0 +1,30 @@
+{
+  "name": "People & Payroll Desk / 人事薪酬工作台",
+  "description": "Employee records, labor contracts, salary proposals and monthly payroll reviews.",
+  "agentPrompts": [
+    {
+      "key": "scenario-1",
+      "label": {
+        "en": "Review salary and payroll inputs",
+        "zh-CN": "复核薪酬与工资输入"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-hr skill in this folder and follow its workflow.\n\n{target}\n\nCompare salary change proposals with confirmed employee salaries and prepare a payroll-review checklist without applying unapproved changes.. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-hr Skill，遵循其流程。\n\n{target}\n\n比较薪酬变动提案与已确认工资，不应用未批准变动，拟定工资复核清单。。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    },
+    {
+      "key": "scenario-2",
+      "label": {
+        "en": "Review labor contract renewals",
+        "zh-CN": "复核劳动合同续签"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-hr skill in this folder and follow its workflow.\n\n{target}\n\nFind labor contracts nearing expiry and assign renewal follow-ups to their HR owners.. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-hr Skill，遵循其流程。\n\n{target}\n\n找出临近到期的劳动合同，按人事负责人拟定续签跟进。。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    }
+  ]
+}

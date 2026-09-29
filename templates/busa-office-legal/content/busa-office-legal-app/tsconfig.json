@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022", "DOM"]
+  },
+  "include": ["app/js/model.js", "app/js/resource-binding.js", "app/js/busabase-client.js", "app/js/providers/busabase-provider.js"],
+  "exclude": ["app/vendor"]
+}
