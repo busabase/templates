@@ -84,15 +84,25 @@ for (const domain of domains.length ? domains : ["admin", "finance", "cashier", 
     const owned = folder.children.filter((node) => node.type === "base" &&
       node.metadata.appId === manifest.name && node.metadata.resourceKey === base.key);
     assert.equal(owned.length, 1);
+    const packaged = JSON.parse(await readFile(path.join(root, "content", base.key, "base.json"), "utf8"));
+    assert.equal(owned[0].name, packaged.name, `${manifest.name}/${base.key}: native bilingual Base label installed`);
     const native = await client.bases.get({ baseId: owned[0].baseId });
     const fieldShapes = (fields) => fields.map(({ slug, type }) => ({ slug, type }))
       .sort((left, right) => left.slug.localeCompare(right.slug));
     assert.equal(native.fields[0].slug, base.fields[0].slug, "Preserve the primary display field.");
     assert.deepEqual(fieldShapes(native.fields), fieldShapes(base.fields),
       `${manifest.name}/${base.key}: canonical schema agrees`);
+    for (const field of packaged.fields) {
+      const installed = native.fields.find((candidate) => candidate.slug === field.slug);
+      assert.equal(installed.name, field.name, `${manifest.name}/${base.key}/${field.slug}: bilingual field label installed`);
+    }
     for (const field of base.fields.filter((field) => field.type === "select")) {
       assert.deepEqual(native.fields.find((candidate) => candidate.slug === field.slug).options.choices.map((choice) => choice.id),
         field.options.choices.map((choice) => choice.id));
+      const choiceLabels = (choices) => choices.map(({ id, name }) => ({ id, name }));
+      assert.deepEqual(choiceLabels(native.fields.find((candidate) => candidate.slug === field.slug).options.choices),
+        choiceLabels(packaged.fields.find((candidate) => candidate.slug === field.slug).options.choices),
+        `${manifest.name}/${base.key}/${field.slug}: bilingual choices installed`);
     }
   }
   console.log(JSON.stringify({

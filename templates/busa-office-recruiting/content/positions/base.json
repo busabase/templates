@@ -1,37 +1,37 @@
 {
-  "name": "Positions",
-  "description": "Approved hiring requirements and vacancy ownership",
+  "name": "Positions / 招聘职位",
+  "description": "Approved hiring requirements and vacancy ownership / 已批准的招聘要求及空缺职位负责人",
   "position": 0,
   "agentPrompts": [
     {
       "key": "positions-0",
       "label": {
         "en": "Review open position capacity",
-        "zh-CN": "核查招聘职位中需要关注的事项"
+        "zh-CN": "核查开放职位的招聘名额"
       },
       "intent": "read-only",
       "body": {
         "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nReview open position capacity. Cite source records, label missing evidence and keep changes reviewable.",
-        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查招聘职位中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查开放职位的招聘名额。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
       }
     },
     {
       "key": "positions-1",
       "label": {
         "en": "Draft a role requirement update",
-        "zh-CN": "按工作流程拟定招聘职位变更"
+        "zh-CN": "拟定岗位要求更新草案"
       },
       "intent": "change",
       "body": {
         "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nDraft a role requirement update. Cite source records, label missing evidence and keep changes reviewable.",
-        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定招聘职位变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n拟定岗位要求更新草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
       }
     }
   ],
   "fields": [
     {
       "slug": "name",
-      "name": "Name",
+      "name": "Name / 名称",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Position code",
+      "name": "Position code / 职位编号",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "department",
-      "name": "Department",
+      "name": "Department / 部门",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Hiring owner",
+      "name": "Hiring owner / 招聘负责人",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "headcount",
-      "name": "Approved headcount",
+      "name": "Approved headcount / 已批准人数",
       "type": "number",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "status",
-      "name": "Status",
+      "name": "Status / 状态",
       "type": "text",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "due",
-      "name": "Target start",
+      "name": "Target start / 目标到岗日",
       "type": "date",
       "required": false,
       "position": 6,
@@ -87,7 +87,7 @@
     },
     {
       "slug": "notes",
-      "name": "Requirements",
+      "name": "Requirements / 任职要求",
       "type": "longtext",
       "required": false,
       "position": 7,
@@ -97,7 +97,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Positions working table",
+      "name": "Positions working table / 招聘职位工作表",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

@@ -1,7 +1,7 @@
 {
   "type": "airapp",
-  "name": "Legal Case Desk",
-  "description": "Case progress, preservation deadlines, settlement evidence, and legal follow-up.",
+  "name": "Legal Case Desk / 法务管理",
+  "description": "Case progress, preservation deadlines, settlement evidence, and legal follow-up. / 案件进度、保全期限、回款成本与法务待办",
   "agentPrompts": [
     {
       "key": "review-0",

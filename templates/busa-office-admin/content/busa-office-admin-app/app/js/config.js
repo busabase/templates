@@ -21,12 +21,12 @@ export const appConfig = {
   },
   "asOf": "2026-09-29",
   "folder": {
-    "name": "Administration Desk",
+    "name": "Administration Desk / 行政管理工作台",
     "slug": "busa-office-admin",
-    "description": "Certificates, contracts, source documents and verification tasks in one administration desk."
+    "description": "Certificates, contracts, source documents and verification tasks in one administration desk. / 统一管理证照、合同、原件来源和待核验事项。"
   },
   "airApp": {
-    "name": "Administration Desk",
+    "name": "Administration Desk / 行政管理工作台",
     "slug": "busa-office-admin-app",
     "resourceKey": "busa-office-admin-app"
   },
@@ -221,7 +221,7 @@ export const appConfig = {
         {
           "slug": "all",
           "name": "Certificates / 证照台账",
-          "description": "Track company certificates and verified expiry dates.",
+          "description": "Track company certificates and verified expiry dates. / 跟踪公司证照与已核实的有效期。",
           "type": "table",
           "config": {
             "filters": [],
@@ -243,7 +243,7 @@ export const appConfig = {
         {
           "slug": "review",
           "name": "Priority queue / 优先处理",
-          "description": "Focus on the expiring state",
+          "description": "Focus on the expiring state / 聚焦 待续期状态",
           "type": "table",
           "config": {
             "filters": [
@@ -459,7 +459,7 @@ export const appConfig = {
         {
           "slug": "all",
           "name": "Administrative contracts / 行政合同",
-          "description": "Track office supplier agreements, signatures and renewal responsibilities.",
+          "description": "Track office supplier agreements, signatures and renewal responsibilities. / 跟踪办公供应商合同、签署与续期责任。",
           "type": "table",
           "config": {
             "filters": [],
@@ -481,7 +481,7 @@ export const appConfig = {
         {
           "slug": "review",
           "name": "Priority queue / 优先处理",
-          "description": "Focus on the renewal state",
+          "description": "Focus on the renewal state / 聚焦 待续约状态",
           "type": "table",
           "config": {
             "filters": [
@@ -677,7 +677,7 @@ export const appConfig = {
         {
           "slug": "all",
           "name": "Source archive / 原件来源台账",
-          "description": "Record original-document provenance without exposing private document content.",
+          "description": "Record original-document provenance without exposing private document content. / 记录原件来源，避免在公开模板泄露文件内容。",
           "type": "table",
           "config": {
             "filters": [],
@@ -699,7 +699,7 @@ export const appConfig = {
         {
           "slug": "review",
           "name": "Priority queue / 优先处理",
-          "description": "Focus on the copy-only state",
+          "description": "Focus on the copy-only state / 聚焦 仅复印件状态",
           "type": "table",
           "config": {
             "filters": [
@@ -883,7 +883,7 @@ export const appConfig = {
         {
           "slug": "all",
           "name": "Verification tasks / 核验待办",
-          "description": "Assign evidence checks and renewal follow-up with accountable owners.",
+          "description": "Assign evidence checks and renewal follow-up with accountable owners. / 落实证据核验与续期跟进责任。",
           "type": "table",
           "config": {
             "filters": [],
@@ -905,7 +905,7 @@ export const appConfig = {
         {
           "slug": "review",
           "name": "Priority queue / 优先处理",
-          "description": "Focus on the open state",
+          "description": "Focus on the open state / 聚焦 待处理状态",
           "type": "table",
           "config": {
             "filters": [
@@ -1125,7 +1125,7 @@ export const appConfig = {
           {
             "slug": "all",
             "name": "Certificates / 证照台账",
-            "description": "Track company certificates and verified expiry dates.",
+            "description": "Track company certificates and verified expiry dates. / 跟踪公司证照与已核实的有效期。",
             "type": "table",
             "config": {
               "filters": [],
@@ -1147,7 +1147,7 @@ export const appConfig = {
           {
             "slug": "review",
             "name": "Priority queue / 优先处理",
-            "description": "Focus on the expiring state",
+            "description": "Focus on the expiring state / 聚焦 待续期状态",
             "type": "table",
             "config": {
               "filters": [
@@ -1363,7 +1363,7 @@ export const appConfig = {
           {
             "slug": "all",
             "name": "Administrative contracts / 行政合同",
-            "description": "Track office supplier agreements, signatures and renewal responsibilities.",
+            "description": "Track office supplier agreements, signatures and renewal responsibilities. / 跟踪办公供应商合同、签署与续期责任。",
             "type": "table",
             "config": {
               "filters": [],
@@ -1385,7 +1385,7 @@ export const appConfig = {
           {
             "slug": "review",
             "name": "Priority queue / 优先处理",
-            "description": "Focus on the renewal state",
+            "description": "Focus on the renewal state / 聚焦 待续约状态",
             "type": "table",
             "config": {
               "filters": [
@@ -1581,7 +1581,7 @@ export const appConfig = {
           {
             "slug": "all",
             "name": "Source archive / 原件来源台账",
-            "description": "Record original-document provenance without exposing private document content.",
+            "description": "Record original-document provenance without exposing private document content. / 记录原件来源，避免在公开模板泄露文件内容。",
             "type": "table",
             "config": {
               "filters": [],
@@ -1603,7 +1603,7 @@ export const appConfig = {
           {
             "slug": "review",
             "name": "Priority queue / 优先处理",
-            "description": "Focus on the copy-only state",
+            "description": "Focus on the copy-only state / 聚焦 仅复印件状态",
             "type": "table",
             "config": {
               "filters": [
@@ -1787,7 +1787,7 @@ export const appConfig = {
           {
             "slug": "all",
             "name": "Verification tasks / 核验待办",
-            "description": "Assign evidence checks and renewal follow-up with accountable owners.",
+            "description": "Assign evidence checks and renewal follow-up with accountable owners. / 落实证据核验与续期跟进责任。",
             "type": "table",
             "config": {
               "filters": [],
@@ -1809,7 +1809,7 @@ export const appConfig = {
           {
             "slug": "review",
             "name": "Priority queue / 优先处理",
-            "description": "Focus on the open state",
+            "description": "Focus on the open state / 聚焦 待处理状态",
             "type": "table",
             "config": {
               "filters": [
@@ -1852,7 +1852,7 @@ export const appConfig = {
   "onboarding": {
     "version": 0,
     "fields": [],
-    "rationale": "No integration or setup required; installed Bases are the workflow."
+    "rationale": "No integration or setup required; installed Bases are the workflow. / 无需集成或额外设置；业务流程使用安装后的台账。"
   },
   "ui": {
     "summary": {
@@ -1905,7 +1905,7 @@ export const appConfig = {
         "expires": "2027-05-31",
         "status": "unverified",
         "source-ref": "SRC-103",
-        "notes": "Only a copy is available; verify the original and issuing authority. / 目前仅有复印件，需核对原件。"
+        "notes": "Only a copy is available; verify the original and issuing authority. / 目前仅有复印件，需核对原件与签发机构。"
       }
     },
     {
@@ -1988,7 +1988,7 @@ export const appConfig = {
         "received": "2026-09-20",
         "location": "Cabinet A / A 柜",
         "status": "original",
-        "notes": "Synthetic example: no attachment or real document included. / 虚构示例，不含真实附件。"
+        "notes": "Synthetic example: no attachment or real document included. / 虚构示例，不含附件或真实文件。"
       }
     },
     {
@@ -2027,7 +2027,7 @@ export const appConfig = {
         "received": "2026-09-23",
         "location": "Verification folder / 核验文件夹",
         "status": "conflict",
-        "notes": "Two contradictory dates retained: 2026-10-31 and 2027-10-31. / 保留两个冲突日期。"
+        "notes": "Two contradictory dates retained: 2026-10-31 and 2027-10-31. / 保留两个冲突日期：2026-10-31 与 2027-10-31。"
       }
     },
     {
@@ -2039,7 +2039,7 @@ export const appConfig = {
         "owner": "Owen Chen / 陈欧文",
         "due": "2026-10-02",
         "status": "blocked",
-        "notes": "Ask custodian for the complete issued document; keep both dates. / 取得完整签发件前保留双方日期。"
+        "notes": "Ask custodian for the complete issued document; keep both dates. / 向保管人索取完整签发件，并保留双方日期。"
       }
     },
     {

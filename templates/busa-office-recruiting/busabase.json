@@ -25,8 +25,8 @@
       "assets/screenshots/attention-zh-CN.webp"
     ],
     "agentPrompts": [
-      "Review applicants whose next step is overdue and prepare a hiring follow-up plan.",
-      "Check interview feedback and draft offer proposals for human review."
+      "Review applicants whose next step is overdue and prepare a hiring follow-up plan.\n梳理下一步逾期的候选人，拟定招聘跟进计划。",
+      "Check interview feedback and draft offer proposals for human review.\n核对面试反馈，拟定录用草案供人工复核。"
     ],
     "secrets": [],
     "requires": {

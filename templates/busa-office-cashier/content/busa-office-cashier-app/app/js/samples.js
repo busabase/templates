@@ -3,48 +3,49 @@ export const samples = {
     {
       key: "accounts-1",
       fields: {
-        title: "Operating account",
+        title: "Operating account / 经营账户",
         entity: "Lumen Studio",
         owner: "Maya Zhou",
         status: "active",
-        bank: "Example Commercial Bank",
+        bank: "Example Commercial Bank / 示例商业银行",
         accountHint: "4821",
         currency: "CNY",
         balance: 128400,
         checkedAt: "2026-09-29T08:30:00+08:00",
-        notes: "Book balance as of the stated check; not a live bank balance.",
+        notes:
+          "Book balance as of the stated check; not a live bank balance. / 所示余额为核查时点的账面余额，并非银行实时余额。",
       },
     },
     {
       key: "accounts-2",
       fields: {
-        title: "Reserve account",
+        title: "Reserve account / 备用账户",
         entity: "Lumen Studio",
         owner: "Kai Wu",
         status: "active",
-        bank: "Example Savings Bank",
+        bank: "Example Savings Bank / 示例储蓄银行",
         accountHint: "7604",
         currency: "CNY",
         balance: 68000,
         checkedAt: "2026-09-25T09:00:00+08:00",
         notes:
-          "Last check is stale; obtain a new statement before relying on this amount.",
+          "Last check is stale; obtain a new statement before relying on this amount. / 最近核查已过期，使用此金额前应取得新对账单。",
       },
     },
     {
       key: "accounts-3",
       fields: {
-        title: "Foreign currency account",
+        title: "Foreign currency account / 外币账户",
         entity: "Lumen Studio",
         owner: "Maya Zhou",
         status: "restricted",
-        bank: "Example Trade Bank",
+        bank: "Example Trade Bank / 示例贸易银行",
         accountHint: "1168",
         currency: "USD",
         balance: 7200,
         checkedAt: "2026-09-28T09:00:00+08:00",
         notes:
-          "Restricted pending owner verification. Never combine USD and CNY totals.",
+          "Restricted pending owner verification. Never combine USD and CNY totals. / 账户受限，等待所有人核实；不可合并 USD 与 CNY 金额。",
       },
     },
   ],
@@ -52,7 +53,7 @@ export const samples = {
     {
       key: "checks-1",
       fields: {
-        title: "Operating check - September 29",
+        title: "Operating check - September 29 / 9 月 29 日经营账户走查",
         entity: "Lumen Studio",
         owner: "Maya Zhou",
         status: "exception",
@@ -61,15 +62,17 @@ export const samples = {
         balance: 128400,
         bankBalance: 127900,
         checkedAt: "2026-09-29T08:30:00+08:00",
-        evidence: "Statement ST-0929 (synthetic)",
-        reason: "Bank balance is 500 lower than book; trace an unposted fee.",
-        notes: "Do not adjust the ledger until source evidence is confirmed.",
+        evidence: "Statement ST-0929 (synthetic) / 对账单 ST-0929（虚构）",
+        reason:
+          "Bank balance is 500 lower than book; trace an unposted fee. / 银行余额比账面少 500，应追查未入账费用。",
+        notes:
+          "Do not adjust the ledger until source evidence is confirmed. / 核实原始依据前，不调整流水台账。",
       },
     },
     {
       key: "checks-2",
       fields: {
-        title: "Reserve check - September 25",
+        title: "Reserve check - September 25 / 9 月 25 日备用账户走查",
         entity: "Lumen Studio",
         owner: "Kai Wu",
         status: "matched",
@@ -78,15 +81,16 @@ export const samples = {
         balance: 68000,
         bankBalance: 68000,
         checkedAt: "2026-09-25T09:00:00+08:00",
-        evidence: "Statement ST-0925 (synthetic)",
+        evidence: "Statement ST-0925 (synthetic) / 对账单 ST-0925（虚构）",
         reason: "",
-        notes: "Matched on the stated date only; a new check is due.",
+        notes:
+          "Matched on the stated date only; a new check is due. / 仅在所示日期匹配；需要进行新一轮核查。",
       },
     },
     {
       key: "checks-3",
       fields: {
-        title: "Foreign account check",
+        title: "Foreign account check / 外币账户走查",
         entity: "Lumen Studio",
         owner: "Maya Zhou",
         status: "pending",
@@ -96,8 +100,8 @@ export const samples = {
         bankBalance: null,
         checkedAt: "",
         evidence: "",
-        reason: "No bank statement supplied.",
-        notes: "No verified bank balance available.",
+        reason: "No bank statement supplied. / 尚未提供银行对账单。",
+        notes: "No verified bank balance available. / 暂无已核实的银行余额。",
       },
     },
   ],
@@ -105,7 +109,7 @@ export const samples = {
     {
       key: "payments-1",
       fields: {
-        title: "September office rent",
+        title: "September office rent / 九月办公室租金",
         entity: "Lumen Studio",
         owner: "Maya Zhou",
         status: "approved",
@@ -113,17 +117,18 @@ export const samples = {
         amount: 12000,
         currency: "CNY",
         due: "2026-10-03",
-        approval: "Approval AP-028 (synthetic)",
+        approval: "Approval AP-028 (synthetic) / 审批 AP-028（虚构）",
         receipt: "",
         paidAt: "",
         invoice: "SYN-INV-RENT-09",
-        notes: "Approved request; funds have not been transferred.",
+        notes:
+          "Approved request; funds have not been transferred. / 申请已获批准，尚未转账。",
       },
     },
     {
       key: "payments-2",
       fields: {
-        title: "Equipment supplier installment",
+        title: "Equipment supplier installment / 设备供应商分期款",
         entity: "Lumen Studio",
         owner: "Kai Wu",
         status: "pending",
@@ -135,13 +140,14 @@ export const samples = {
         receipt: "",
         paidAt: "",
         invoice: "SYN-INV-EQ-26",
-        notes: "Awaiting human approval and beneficiary verification.",
+        notes:
+          "Awaiting human approval and beneficiary verification. / 等待人工审批及收款人核实。",
       },
     },
     {
       key: "payments-3",
       fields: {
-        title: "Network service renewal",
+        title: "Network service renewal / 网络服务续费",
         entity: "Lumen Studio",
         owner: "Maya Zhou",
         status: "paid",
@@ -149,17 +155,18 @@ export const samples = {
         amount: 720,
         currency: "CNY",
         due: "2026-09-28",
-        approval: "Approval AP-026 (synthetic)",
+        approval: "Approval AP-026 (synthetic) / 审批 AP-026（虚构）",
         receipt: "SYN-RC-NET-26",
         paidAt: "2026-09-28",
         invoice: "SYN-INV-NET-26",
-        notes: "Synthetic bank receipt linked; matching ledger entry exists.",
+        notes:
+          "Synthetic bank receipt linked; matching ledger entry exists. / 已关联虚构银行回单，并存在匹配流水。",
       },
     },
     {
       key: "payments-4",
       fields: {
-        title: "Reserve-account vendor payment",
+        title: "Reserve-account vendor payment / 备用账户供应商付款",
         entity: "Lumen Studio",
         owner: "Kai Wu",
         status: "blocked",
@@ -172,7 +179,7 @@ export const samples = {
         paidAt: "",
         invoice: "",
         notes:
-          "Invoice missing and account check is stale. Hold for verification.",
+          "Invoice missing and account check is stale. Hold for verification. / 缺少发票，且账户核查已过期；暂缓处理并等待核实。",
       },
     },
   ],
@@ -180,7 +187,7 @@ export const samples = {
     {
       key: "ledger-1",
       fields: {
-        title: "Network renewal outgoing",
+        title: "Network renewal outgoing / 网络续费支出",
         entity: "Lumen Studio",
         owner: "Maya Zhou",
         status: "reconciled",
@@ -193,13 +200,14 @@ export const samples = {
         receipt: "SYN-RC-NET-26",
         invoice: "SYN-INV-NET-26",
         reason: "",
-        notes: "Exact synthetic match to paid request and receipt.",
+        notes:
+          "Exact synthetic match to paid request and receipt. / 与已付款申请及回单完全匹配（虚构）。",
       },
     },
     {
       key: "ledger-2",
       fields: {
-        title: "Workshop fee received",
+        title: "Workshop fee received / 工作坊费用到账",
         entity: "Lumen Studio",
         owner: "Kai Wu",
         status: "unmatched",
@@ -211,14 +219,15 @@ export const samples = {
         due: "2026-09-29",
         receipt: "SYN-RC-WS-26",
         invoice: "",
-        reason: "Invoice reference not yet supplied.",
-        notes: "Cash received, but not reconciled to customer invoice.",
+        reason: "Invoice reference not yet supplied. / 尚未提供发票引用。",
+        notes:
+          "Cash received, but not reconciled to customer invoice. / 款项已收到，但尚未与客户发票对账。",
       },
     },
     {
       key: "ledger-3",
       fields: {
-        title: "Unposted bank charge",
+        title: "Unposted bank charge / 未入账银行费用",
         entity: "Lumen Studio",
         owner: "Maya Zhou",
         status: "exception",
@@ -230,8 +239,10 @@ export const samples = {
         due: "2026-09-29",
         receipt: "SYN-ST-0929-FEE",
         invoice: "",
-        reason: "Bank charge is absent from approved book adjustments.",
-        notes: "Investigate the daily check difference before posting.",
+        reason:
+          "Bank charge is absent from approved book adjustments. / 已批准的账面调整中缺少此银行费用。",
+        notes:
+          "Investigate the daily check difference before posting. / 入账前先调查每日走查差异。",
       },
     },
   ],

@@ -2,12 +2,12 @@
   "key": "ledger",
   "resourceKey": "ledger",
   "slug": "busa-office-cashier-ledger",
-  "name": "Cash ledger",
+  "name": "Cash ledger / 收付流水",
   "nameI18n": {
     "en": "Cash ledger",
     "zh-CN": "收付流水"
   },
-  "description": "List unmatched and exception cash movements with bank receipt and invoice evidence; distinguish a paid request from a reconciled ledger entry.",
+  "description": "List unmatched and exception cash movements with bank receipt and invoice evidence; distinguish a paid request from a reconciled ledger entry. / 列出未匹配及存在差异的收付流水及其银行回单、发票依据；区分已付款申请与已对账流水。",
   "readLimit": 50,
   "agentPrompts": [
     {
@@ -18,7 +18,7 @@
       },
       "body": {
         "en": "Read the `busa-office-cashier` skill in this folder first.\n\n{target}\n\nList unmatched and exception cash movements with bank receipt and invoice evidence; distinguish a paid request from a reconciled ledger entry.",
-        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n检查未对账流水。核对原始依据与状态；修改须通过变更申请，不执行付款、开票或申报。"
+        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n列出未匹配及存在差异的收付流水及其银行回单、发票依据；区分已付款申请与已对账流水。"
       },
       "intent": "read-only"
     },
@@ -30,7 +30,7 @@
       },
       "body": {
         "en": "Read the `busa-office-cashier` skill in this folder first.\n\n{target}\n\nCompare the ledger entry I name to a supplied bank receipt and payment request. Propose a reconciliation only when amount, currency and source evidence agree.",
-        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n准备流水匹配建议。核对原始依据与状态；修改须通过变更申请，不执行付款、开票或申报。"
+        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n将我指定的流水与提供的银行回单和付款申请核对；只有金额、币种和原始依据一致时，才提出对账变更申请。"
       },
       "intent": "change"
     }
@@ -38,7 +38,7 @@
   "fields": [
     {
       "slug": "title",
-      "name": "Title",
+      "name": "Title / 事项",
       "nameI18n": {
         "en": "Title",
         "zh-CN": "事项"
@@ -50,7 +50,7 @@
     },
     {
       "slug": "entity",
-      "name": "Entity",
+      "name": "Entity / 主体",
       "nameI18n": {
         "en": "Entity",
         "zh-CN": "主体"
@@ -62,7 +62,7 @@
     },
     {
       "slug": "owner",
-      "name": "Owner",
+      "name": "Owner / 负责人",
       "nameI18n": {
         "en": "Owner",
         "zh-CN": "负责人"
@@ -74,7 +74,7 @@
     },
     {
       "slug": "status",
-      "name": "Status",
+      "name": "Status / 状态",
       "nameI18n": {
         "en": "Status",
         "zh-CN": "状态"
@@ -86,22 +86,22 @@
         "choices": [
           {
             "id": "unmatched",
-            "name": "unmatched"
+            "name": "Unmatched / 未匹配"
           },
           {
             "id": "reconciled",
-            "name": "reconciled"
+            "name": "Reconciled / 已对账"
           },
           {
             "id": "exception",
-            "name": "exception"
+            "name": "Exception / 存在差异"
           }
         ]
       }
     },
     {
       "slug": "account",
-      "name": "Bank account",
+      "name": "Bank account / 银行账户",
       "nameI18n": {
         "en": "Bank account",
         "zh-CN": "银行账户"
@@ -115,7 +115,7 @@
     },
     {
       "slug": "payment",
-      "name": "Payment request",
+      "name": "Payment request / 付款申请",
       "nameI18n": {
         "en": "Payment request",
         "zh-CN": "付款申请"
@@ -129,7 +129,7 @@
     },
     {
       "slug": "amount",
-      "name": "Amount",
+      "name": "Amount / 金额",
       "nameI18n": {
         "en": "Amount",
         "zh-CN": "金额"
@@ -141,7 +141,7 @@
     },
     {
       "slug": "currency",
-      "name": "Currency",
+      "name": "Currency / 币种",
       "nameI18n": {
         "en": "Currency",
         "zh-CN": "币种"
@@ -153,7 +153,7 @@
     },
     {
       "slug": "direction",
-      "name": "Direction",
+      "name": "Direction / 收付方向",
       "nameI18n": {
         "en": "Direction",
         "zh-CN": "收付方向"
@@ -165,18 +165,18 @@
         "choices": [
           {
             "id": "in",
-            "name": "in"
+            "name": "Incoming / 收入"
           },
           {
             "id": "out",
-            "name": "out"
+            "name": "Outgoing / 支出"
           }
         ]
       }
     },
     {
       "slug": "due",
-      "name": "Due date",
+      "name": "Due date / 到期日",
       "nameI18n": {
         "en": "Due date",
         "zh-CN": "到期日"
@@ -188,7 +188,7 @@
     },
     {
       "slug": "receipt",
-      "name": "Receipt reference",
+      "name": "Receipt reference / 回单引用",
       "nameI18n": {
         "en": "Receipt reference",
         "zh-CN": "回单引用"
@@ -200,7 +200,7 @@
     },
     {
       "slug": "invoice",
-      "name": "Invoice reference",
+      "name": "Invoice reference / 发票引用",
       "nameI18n": {
         "en": "Invoice reference",
         "zh-CN": "发票引用"
@@ -212,7 +212,7 @@
     },
     {
       "slug": "reason",
-      "name": "Attention reason",
+      "name": "Attention reason / 需关注原因",
       "nameI18n": {
         "en": "Attention reason",
         "zh-CN": "需关注原因"
@@ -224,7 +224,7 @@
     },
     {
       "slug": "notes",
-      "name": "Notes",
+      "name": "Notes / 备注",
       "nameI18n": {
         "en": "Notes",
         "zh-CN": "备注"
@@ -238,7 +238,7 @@
   "views": [
     {
       "slug": "register",
-      "name": "Cash ledger",
+      "name": "Cash ledger / 收付流水",
       "type": "table",
       "position": 0,
       "config": {
@@ -268,7 +268,7 @@
     },
     {
       "slug": "attention",
-      "name": "Needs review",
+      "name": "Needs review / 待复核",
       "type": "table",
       "position": 1,
       "config": {

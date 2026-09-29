@@ -1,5 +1,11 @@
 export const copy = {
   en: {
+    language: "Language",
+    status: "Status",
+    openNav: "Open navigation",
+    closeNav: "Close navigation",
+    refresh: "Refresh",
+    close: "Close",
     help: "Review & connection",
     checklist:
       "Confirm source notices and counsel-verified deadlines. Reconcile verified recoveries and costs separately by currency, with evidence for every case outcome.",
@@ -43,6 +49,12 @@ export const copy = {
     retry: "Retry",
   },
   "zh-CN": {
+    language: "语言",
+    status: "状态",
+    openNav: "打开导航",
+    closeNav: "关闭导航",
+    refresh: "刷新",
+    close: "关闭",
     help: "复核与连接",
     checklist:
       "核查来源通知和负责律师确认的期限；按币种分别核对已核验回款及成本，案件结果需要对应证据。",

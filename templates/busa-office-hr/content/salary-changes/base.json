@@ -1,6 +1,6 @@
 {
   "name": "Salary changes / 薪酬变动",
-  "description": "Keep proposed, approved and rejected compensation decisions separate.",
+  "description": "Keep proposed, approved and rejected compensation decisions separate. / 分别留存拟议、批准与拒绝的薪酬决定。",
   "position": 2,
   "fields": [
     {
@@ -53,19 +53,19 @@
         "choices": [
           {
             "id": "proposed",
-            "name": "Proposed"
+            "name": "Proposed / 待批准"
           },
           {
             "id": "approved",
-            "name": "Approved, not applied"
+            "name": "Approved, not applied / 已批待核对"
           },
           {
             "id": "applied",
-            "name": "Applied"
+            "name": "Applied / 已应用"
           },
           {
             "id": "rejected",
-            "name": "Rejected"
+            "name": "Rejected / 已拒绝"
           }
         ]
       }
@@ -91,7 +91,7 @@
     {
       "slug": "all",
       "name": "Salary changes / 薪酬变动",
-      "description": "Keep proposed, approved and rejected compensation decisions separate.",
+      "description": "Keep proposed, approved and rejected compensation decisions separate. / 分别留存拟议、批准与拒绝的薪酬决定。",
       "type": "table",
       "config": {
         "filters": [],
@@ -113,7 +113,7 @@
     {
       "slug": "review",
       "name": "Priority queue / 优先处理",
-      "description": "Focus on the proposed state",
+      "description": "Focus on the proposed state / 聚焦 待批准状态",
       "type": "table",
       "config": {
         "filters": [

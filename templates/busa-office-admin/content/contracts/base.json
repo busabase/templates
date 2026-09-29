@@ -1,6 +1,6 @@
 {
   "name": "Administrative contracts / 行政合同",
-  "description": "Track office supplier agreements, signatures and renewal responsibilities.",
+  "description": "Track office supplier agreements, signatures and renewal responsibilities. / 跟踪办公供应商合同、签署与续期责任。",
   "position": 1,
   "fields": [
     {
@@ -53,19 +53,19 @@
         "choices": [
           {
             "id": "signed",
-            "name": "Signed"
+            "name": "Signed / 已签署"
           },
           {
             "id": "renewal",
-            "name": "Renewal due"
+            "name": "Renewal due / 待续约"
           },
           {
             "id": "review",
-            "name": "Signature pending"
+            "name": "Signature pending / 待签署"
           },
           {
             "id": "archived",
-            "name": "Archived"
+            "name": "Archived / 已归档"
           }
         ]
       }
@@ -91,7 +91,7 @@
     {
       "slug": "all",
       "name": "Administrative contracts / 行政合同",
-      "description": "Track office supplier agreements, signatures and renewal responsibilities.",
+      "description": "Track office supplier agreements, signatures and renewal responsibilities. / 跟踪办公供应商合同、签署与续期责任。",
       "type": "table",
       "config": {
         "filters": [],
@@ -113,7 +113,7 @@
     {
       "slug": "review",
       "name": "Priority queue / 优先处理",
-      "description": "Focus on the renewal state",
+      "description": "Focus on the renewal state / 聚焦 待续约状态",
       "type": "table",
       "config": {
         "filters": [

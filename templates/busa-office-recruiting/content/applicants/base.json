@@ -1,37 +1,37 @@
 {
-  "name": "Applicants",
-  "description": "Candidate stage, next action and role assessment evidence",
+  "name": "Applicants / 候选人",
+  "description": "Candidate stage, next action and role assessment evidence / 候选人阶段、下一步行动及岗位评估证据",
   "position": 1,
   "agentPrompts": [
     {
       "key": "applicants-0",
       "label": {
         "en": "Review candidates needing follow-up",
-        "zh-CN": "核查候选人中需要关注的事项"
+        "zh-CN": "核查需要跟进的候选人"
       },
       "intent": "read-only",
       "body": {
         "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nReview candidates needing follow-up. Cite source records, label missing evidence and keep changes reviewable.",
-        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查候选人中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查需要跟进的候选人。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
       }
     },
     {
       "key": "applicants-1",
       "label": {
         "en": "Propose a candidate stage change",
-        "zh-CN": "按工作流程拟定候选人变更"
+        "zh-CN": "拟定候选人阶段变更草案"
       },
       "intent": "change",
       "body": {
         "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nPropose a candidate stage change. Cite source records, label missing evidence and keep changes reviewable.",
-        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定候选人变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n拟定候选人阶段变更草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
       }
     }
   ],
   "fields": [
     {
       "slug": "name",
-      "name": "Name",
+      "name": "Name / 名称",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Candidate code",
+      "name": "Candidate code / 候选人编号",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "position",
-      "name": "Position code",
+      "name": "Position code / 职位编号",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Recruiter",
+      "name": "Recruiter / 招聘专员",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "status",
-      "name": "Hiring stage",
+      "name": "Hiring stage / 招聘阶段",
       "type": "text",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "due",
-      "name": "Next step date",
+      "name": "Next step date / 下一步日期",
       "type": "date",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "next",
-      "name": "Next step",
+      "name": "Next step / 下一步",
       "type": "text",
       "required": false,
       "position": 6,
@@ -87,7 +87,7 @@
     },
     {
       "slug": "notes",
-      "name": "Evidence and notes",
+      "name": "Evidence and notes / 证据与备注",
       "type": "longtext",
       "required": false,
       "position": 7,
@@ -97,7 +97,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Applicants working table",
+      "name": "Applicants working table / 候选人工作表",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

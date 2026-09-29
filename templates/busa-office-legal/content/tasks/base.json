@@ -1,37 +1,37 @@
 {
-  "name": "Legal follow-up",
-  "description": "Accountable counsel and business owner follow-up actions",
+  "name": "Legal follow-up / 法务待办",
+  "description": "Accountable counsel and business owner follow-up actions / 负责律师与业务负责人的跟进行动",
   "position": 4,
   "agentPrompts": [
     {
       "key": "tasks-0",
       "label": {
         "en": "Prioritize overdue legal follow-up",
-        "zh-CN": "核查法务待办中需要关注的事项"
+        "zh-CN": "为逾期法务跟进事项排序"
       },
       "intent": "read-only",
       "body": {
         "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nPrioritize overdue legal follow-up. Cite source records, label missing evidence and keep changes reviewable.",
-        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核查法务待办中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n为逾期法务跟进事项排序。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
       }
     },
     {
       "key": "tasks-1",
       "label": {
         "en": "Prepare a reviewable next-action proposal",
-        "zh-CN": "按工作流程拟定法务待办变更"
+        "zh-CN": "拟定可供复核的下一步行动草案"
       },
       "intent": "change",
       "body": {
         "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nPrepare a reviewable next-action proposal. Cite source records, label missing evidence and keep changes reviewable.",
-        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定法务待办变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n拟定可供复核的下一步行动草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
       }
     }
   ],
   "fields": [
     {
       "slug": "name",
-      "name": "Name",
+      "name": "Name / 名称",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Task code",
+      "name": "Task code / 待办编号",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "case",
-      "name": "Case code",
+      "name": "Case code / 案件编号",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Responsible owner",
+      "name": "Responsible owner / 负责人",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "status",
-      "name": "Task state",
+      "name": "Task state / 待办状态",
       "type": "text",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "due",
-      "name": "Action due",
+      "name": "Action due / 行动期限",
       "type": "date",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "next",
-      "name": "Required action",
+      "name": "Required action / 所需行动",
       "type": "text",
       "required": false,
       "position": 6,
@@ -87,7 +87,7 @@
     },
     {
       "slug": "notes",
-      "name": "Review context",
+      "name": "Review context / 复核背景",
       "type": "longtext",
       "required": false,
       "position": 7,
@@ -97,7 +97,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Legal follow-up working table",
+      "name": "Legal follow-up working table / 法务待办工作表",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

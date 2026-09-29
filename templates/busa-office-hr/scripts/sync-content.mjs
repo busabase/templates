@@ -7,6 +7,7 @@ const spec = JSON.parse(await readFile(resolve(root, 'references/workflow.json')
 const check = process.argv.includes('--check');
 const json = (value) => JSON.stringify(value, null, 2) + '\n';
 const localized = (en, zh) => ({ en, 'zh-CN': zh });
+const bilingual = (value) => `${value.en} / ${value['zh-CN']}`;
 const prompts = (jobs) => jobs.map((job, index) => ({
   key: `scenario-${index + 1}`,
   label: job.en.length <= 80 ? job : spec.name.endsWith('-hr')
@@ -25,8 +26,8 @@ const bases = spec.bases.map((base) => ({
     options: choices ? { choices: choices.map(([id, name, chinese]) => ({ id, name, localizedName: localized(name, chinese) })) } : {},
   })),
   views: [
-    { slug: 'all', name: `${base.name.en} / ${base.name['zh-CN']}`, description: base.job.en, type: 'table', config: { filters: [], sorts: [{ fieldSlug: base.date, direction: 'asc' }], visibleFieldSlugs: [base.primary, ...base.secondary, base.status] } },
-    { slug: 'review', name: 'Priority queue / 优先处理', description: `Focus on the ${base.attention[0]} state`, type: 'table', config: { filters: [{ fieldSlug: base.status, operator: 'equals', value: base.attention[0] }], sorts: [{ fieldSlug: base.date, direction: 'asc' }], visibleFieldSlugs: [base.primary, ...base.secondary, base.status] } },
+    { slug: 'all', name: bilingual(base.name), description: bilingual(base.job), type: 'table', config: { filters: [], sorts: [{ fieldSlug: base.date, direction: 'asc' }], visibleFieldSlugs: [base.primary, ...base.secondary, base.status] } },
+    { slug: 'review', name: 'Priority queue / 优先处理', description: `Focus on the ${base.attention[0]} state / 聚焦 ${base.fields.find(([slug]) => slug === base.status)[4].find(([id]) => id === base.attention[0])[2]}状态`, type: 'table', config: { filters: [{ fieldSlug: base.status, operator: 'equals', value: base.attention[0] }], sorts: [{ fieldSlug: base.date, direction: 'asc' }], visibleFieldSlugs: [base.primary, ...base.secondary, base.status] } },
   ],
 }));
 const demoRecords = spec.bases.flatMap((base, index) => base.rows.map((fields, row) => ({ id: `recdemo${String(index).padStart(6, '0')}${String(row).padStart(6, '0')}`, baseKey: base.key, fields })));
@@ -35,24 +36,24 @@ const config = {
   description: spec.description.en, localizedDescription: spec.description,
   deployment: 'cloud', binding: 'runtime', readOnly: true, schemaVersion: 1,
   locale: 'en', brand: { accent: spec.accent }, asOf: spec.asOf,
-  folder: { name: spec.title.en, slug: spec.name, description: spec.description.en },
-  airApp: { name: spec.title.en, slug: `${spec.name}-app`, resourceKey: `${spec.name}-app` },
+  folder: { name: bilingual(spec.title), slug: spec.name, description: bilingual(spec.description) },
+  airApp: { name: bilingual(spec.title), slug: `${spec.name}-app`, resourceKey: `${spec.name}-app` },
   bases, schema: { bases },
   permissions: { readProcedures: ['nodes.list', 'nodes.get', 'bases.get', 'records.list', 'records.count'], setupProcedures: [], change_request_procedures: [] },
-  onboarding: { version: 0, fields: [], rationale: 'No integration or setup required; installed Bases are the workflow.' },
+  onboarding: { version: 0, fields: [], rationale: 'No integration or setup required; installed Bases are the workflow. / 无需集成或额外设置；业务流程使用安装后的台账。' },
   ui: { summary: spec.summary, primary_base: bases[0].key }, boundary: spec.boundary, demoRecords,
 };
 const targets = new Map();
 targets.set(`content/${spec.name}-app/app/js/config.js`, `export const appConfig = ${JSON.stringify(config, null, 2)};\n`);
-targets.set(`content/${spec.name}-app/airapp-blueprint.json`, json({ app: { slug: spec.name }, route: 'package-first', binding: 'runtime', workspace: { bases: bases.map((base) => ({ key: base.key, slug: base.slug, read_limit: base.readLimit })) }, dataBudgets: 'One 50-row page per Base; one continuation page on explicit action. No unrequested background scans.', actions: [], onboarding: config.onboarding }));
-targets.set('content/_folder.json', json({ name: `${spec.title.en} / ${spec.title['zh-CN']}`, description: spec.description.en, agentPrompts: prompts(spec.prompts) }));
-targets.set(`content/${spec.name}-app/_node.json`, json({ type: 'airapp', name: `${spec.title.en} / ${spec.title['zh-CN']}`, description: spec.description.en, position: bases.length, agentPrompts: prompts(spec.prompts) }));
+targets.set(`content/${spec.name}-app/airapp-blueprint.json`, json({ app: { slug: spec.name }, route: 'package-first', binding: 'runtime', workspace: { bases: bases.map((base) => ({ key: base.key, slug: base.slug, read_limit: base.readLimit })) }, dataBudgets: 'One 50-row page per Base; one continuation page on explicit action. No unrequested background scans. / 每张台账首次读取最多 50 行；用户明确操作时续读一页，不自动后台遍历。', actions: [], onboarding: config.onboarding }));
+targets.set('content/_folder.json', json({ name: bilingual(spec.title), description: bilingual(spec.description), agentPrompts: prompts(spec.prompts) }));
+targets.set(`content/${spec.name}-app/_node.json`, json({ type: 'airapp', name: bilingual(spec.title), description: bilingual(spec.description), position: bases.length, agentPrompts: prompts(spec.prompts) }));
 for (const [index, base] of bases.entries()) {
   const fields = base.fields.map(({ localizedName, ...field }) => ({
     ...field, name: `${field.name} / ${localizedName['zh-CN']}`,
-    options: { ...field.options, ...(field.options.choices ? { choices: field.options.choices.map(({ localizedName: _locale, ...choice }) => choice) } : {}) },
+    options: { ...field.options, ...(field.options.choices ? { choices: field.options.choices.map(({ localizedName: locale, ...choice }) => ({ ...choice, name: bilingual(locale) })) } : {}) },
   }));
-  targets.set(`content/${base.key}/base.json`, json({ name: `${base.name} / ${base.localizedName['zh-CN']}`, description: base.description, position: index, fields, views: base.views, agentPrompts: base.agentPrompts }));
+  targets.set(`content/${base.key}/base.json`, json({ name: bilingual(base.localizedName), description: bilingual(base.localizedDescription), position: index, fields, views: base.views, agentPrompts: base.agentPrompts }));
   targets.set(`content/${base.key}/records.ndjson`, spec.bases[index].rows.map((fields, row) => JSON.stringify({ key: `${base.key}-${row + 1}`, fields })).join('\n') + '\n');
 }
 const stale = [];

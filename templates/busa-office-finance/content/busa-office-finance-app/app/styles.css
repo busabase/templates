@@ -139,10 +139,14 @@
     gap: 14px;
     justify-content: space-between;
   }
+  .header > div:first-of-type {
+    min-width: 0;
+  }
   .header h1 {
     font-size: 28px;
     margin: 0 0 4px;
     line-height: 1.25;
+    overflow-wrap: anywhere;
   }
   .header p {
     margin: 0;
@@ -509,12 +513,16 @@
     .header {
       gap: 10px;
       align-items: flex-start;
+      display: grid;
+      grid-template-columns: 16px minmax(0, 1fr);
     }
     .header p {
       font-size: 11px;
     }
     .tools {
       gap: 6px;
+      grid-column: 2;
+      justify-self: end;
     }
     .tools select {
       max-width: 80px;
@@ -600,7 +608,7 @@
       padding: 10px 12px;
     }
     .detail dl {
-      grid-template-columns: 95px 1fr;
+      grid-template-columns: 95px minmax(0, 1fr);
     }
     .overview-item {
       padding: 14px 12px;

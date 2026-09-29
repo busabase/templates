@@ -1,6 +1,6 @@
 {
   "name": "Certificates / 证照台账",
-  "description": "Track company certificates and verified expiry dates.",
+  "description": "Track company certificates and verified expiry dates. / 跟踪公司证照与已核实的有效期。",
   "position": 0,
   "fields": [
     {
@@ -53,19 +53,19 @@
         "choices": [
           {
             "id": "verified",
-            "name": "Verified"
+            "name": "Verified / 已核验"
           },
           {
             "id": "expiring",
-            "name": "Renewal due"
+            "name": "Renewal due / 待续期"
           },
           {
             "id": "unverified",
-            "name": "Unverified"
+            "name": "Unverified / 未核验"
           },
           {
             "id": "conflict",
-            "name": "Evidence conflict"
+            "name": "Evidence conflict / 证据冲突"
           }
         ]
       }
@@ -91,7 +91,7 @@
     {
       "slug": "all",
       "name": "Certificates / 证照台账",
-      "description": "Track company certificates and verified expiry dates.",
+      "description": "Track company certificates and verified expiry dates. / 跟踪公司证照与已核实的有效期。",
       "type": "table",
       "config": {
         "filters": [],
@@ -113,7 +113,7 @@
     {
       "slug": "review",
       "name": "Priority queue / 优先处理",
-      "description": "Focus on the expiring state",
+      "description": "Focus on the expiring state / 聚焦 待续期状态",
       "type": "table",
       "config": {
         "filters": [

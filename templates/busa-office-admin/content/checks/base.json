@@ -1,6 +1,6 @@
 {
   "name": "Verification tasks / 核验待办",
-  "description": "Assign evidence checks and renewal follow-up with accountable owners.",
+  "description": "Assign evidence checks and renewal follow-up with accountable owners. / 落实证据核验与续期跟进责任。",
   "position": 3,
   "fields": [
     {
@@ -45,15 +45,15 @@
         "choices": [
           {
             "id": "open",
-            "name": "Open"
+            "name": "Open / 待处理"
           },
           {
             "id": "blocked",
-            "name": "Blocked"
+            "name": "Blocked / 受阻"
           },
           {
             "id": "completed",
-            "name": "Completed"
+            "name": "Completed / 已完成"
           }
         ]
       }
@@ -71,7 +71,7 @@
     {
       "slug": "all",
       "name": "Verification tasks / 核验待办",
-      "description": "Assign evidence checks and renewal follow-up with accountable owners.",
+      "description": "Assign evidence checks and renewal follow-up with accountable owners. / 落实证据核验与续期跟进责任。",
       "type": "table",
       "config": {
         "filters": [],
@@ -93,7 +93,7 @@
     {
       "slug": "review",
       "name": "Priority queue / 优先处理",
-      "description": "Focus on the open state",
+      "description": "Focus on the open state / 聚焦 待处理状态",
       "type": "table",
       "config": {
         "filters": [

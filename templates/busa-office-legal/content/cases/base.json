@@ -1,37 +1,37 @@
 {
-  "name": "Cases",
-  "description": "Disputes, case owners, stages and next legal actions",
+  "name": "Cases / 法务案件",
+  "description": "Disputes, case owners, stages and next legal actions / 争议、案件负责人、案件阶段及下一步法务行动",
   "position": 0,
   "agentPrompts": [
     {
       "key": "cases-0",
       "label": {
         "en": "Summarize active case next steps",
-        "zh-CN": "核查法务案件中需要关注的事项"
+        "zh-CN": "汇总在办案件的下一步行动"
       },
       "intent": "read-only",
       "body": {
         "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nSummarize active case next steps. Cite source records, label missing evidence and keep changes reviewable.",
-        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核查法务案件中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n汇总在办案件的下一步行动。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
       }
     },
     {
       "key": "cases-1",
       "label": {
         "en": "Draft a factual case update",
-        "zh-CN": "按工作流程拟定法务案件变更"
+        "zh-CN": "拟定基于事实的案件更新草案"
       },
       "intent": "change",
       "body": {
         "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nDraft a factual case update. Cite source records, label missing evidence and keep changes reviewable.",
-        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定法务案件变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n拟定基于事实的案件更新草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
       }
     }
   ],
   "fields": [
     {
       "slug": "name",
-      "name": "Name",
+      "name": "Name / 名称",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Case code",
+      "name": "Case code / 案件编号",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "counterparty",
-      "name": "Counterparty",
+      "name": "Counterparty / 对方主体",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Case owner",
+      "name": "Case owner / 案件负责人",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "status",
-      "name": "Case stage",
+      "name": "Case stage / 案件阶段",
       "type": "text",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "due",
-      "name": "Next hearing",
+      "name": "Next hearing / 下次庭审",
       "type": "date",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "next",
-      "name": "Next action",
+      "name": "Next action / 下一步",
       "type": "text",
       "required": false,
       "position": 6,
@@ -87,7 +87,7 @@
     },
     {
       "slug": "notes",
-      "name": "Dispute summary",
+      "name": "Dispute summary / 争议摘要",
       "type": "longtext",
       "required": false,
       "position": 7,
@@ -97,7 +97,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Cases working table",
+      "name": "Cases working table / 法务案件工作表",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

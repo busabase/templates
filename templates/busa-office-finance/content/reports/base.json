@@ -2,12 +2,12 @@
   "key": "reports",
   "resourceKey": "reports",
   "slug": "busa-office-finance-reports",
-  "name": "Monthly actual reports",
+  "name": "Monthly actual reports / 月度实际报告",
   "nameI18n": {
     "en": "Monthly actual reports",
     "zh-CN": "月度实际报告"
   },
-  "description": "Compare monthly actual reports against their evidence, identify incomplete sources and explain variances without presenting this as an audited statement.",
+  "description": "Compare monthly actual reports against their evidence, identify incomplete sources and explain variances without presenting this as an audited statement. / 将月度实际报告与原始依据核对，找出不完整的资料并解释差异，不将报告描述为经审计的报表。",
   "readLimit": 50,
   "agentPrompts": [
     {
@@ -18,7 +18,7 @@
       },
       "body": {
         "en": "Read the `busa-office-finance` skill in this folder first.\n\n{target}\n\nCompare monthly actual reports against their evidence, identify incomplete sources and explain variances without presenting this as an audited statement.",
-        "zh-CN": "先阅读本文件夹的 `busa-office-finance` Skill 并遵守其流程。\n\n{target}\n\n复核月度实际数据。核对原始依据与状态；修改须通过变更申请，不执行付款、开票或申报。"
+        "zh-CN": "先阅读本文件夹的 `busa-office-finance` Skill 并遵守其流程。\n\n{target}\n\n将月度实际报告与原始依据核对，找出不完整的资料并解释差异，不将报告描述为经审计的报表。"
       },
       "intent": "read-only"
     },
@@ -30,7 +30,7 @@
       },
       "body": {
         "en": "Read the `busa-office-finance` skill in this folder first.\n\n{target}\n\nPrepare monthly review notes using the actual figures and source references I provide, propose a draft report, and leave acceptance to the named reviewer.",
-        "zh-CN": "先阅读本文件夹的 `busa-office-finance` Skill 并遵守其流程。\n\n{target}\n\n准备月度复核记录。核对原始依据与状态；修改须通过变更申请，不执行付款、开票或申报。"
+        "zh-CN": "先阅读本文件夹的 `busa-office-finance` Skill 并遵守其流程。\n\n{target}\n\n使用我提供的实际数据和资料引用准备月度复核记录，提出报告草稿，并由指定复核人确认接受。"
       },
       "intent": "change"
     }
@@ -38,7 +38,7 @@
   "fields": [
     {
       "slug": "title",
-      "name": "Title",
+      "name": "Title / 事项",
       "nameI18n": {
         "en": "Title",
         "zh-CN": "事项"
@@ -50,7 +50,7 @@
     },
     {
       "slug": "entity",
-      "name": "Entity",
+      "name": "Entity / 主体",
       "nameI18n": {
         "en": "Entity",
         "zh-CN": "主体"
@@ -62,7 +62,7 @@
     },
     {
       "slug": "owner",
-      "name": "Owner",
+      "name": "Owner / 负责人",
       "nameI18n": {
         "en": "Owner",
         "zh-CN": "负责人"
@@ -74,7 +74,7 @@
     },
     {
       "slug": "status",
-      "name": "Status",
+      "name": "Status / 状态",
       "nameI18n": {
         "en": "Status",
         "zh-CN": "状态"
@@ -86,26 +86,26 @@
         "choices": [
           {
             "id": "draft",
-            "name": "draft"
+            "name": "Draft / 草稿"
           },
           {
             "id": "review",
-            "name": "review"
+            "name": "In review / 待复核"
           },
           {
             "id": "accepted",
-            "name": "accepted"
+            "name": "Accepted / 已接受"
           },
           {
             "id": "blocked",
-            "name": "blocked"
+            "name": "Blocked / 已阻塞"
           }
         ]
       }
     },
     {
       "slug": "period",
-      "name": "Period",
+      "name": "Period / 期间",
       "nameI18n": {
         "en": "Period",
         "zh-CN": "期间"
@@ -117,7 +117,7 @@
     },
     {
       "slug": "currency",
-      "name": "Currency",
+      "name": "Currency / 币种",
       "nameI18n": {
         "en": "Currency",
         "zh-CN": "币种"
@@ -129,7 +129,7 @@
     },
     {
       "slug": "revenue",
-      "name": "Revenue actual",
+      "name": "Revenue actual / 实际收入",
       "nameI18n": {
         "en": "Revenue actual",
         "zh-CN": "实际收入"
@@ -141,7 +141,7 @@
     },
     {
       "slug": "cost",
-      "name": "Cost actual",
+      "name": "Cost actual / 实际成本",
       "nameI18n": {
         "en": "Cost actual",
         "zh-CN": "实际成本"
@@ -153,7 +153,7 @@
     },
     {
       "slug": "due",
-      "name": "Due date",
+      "name": "Due date / 到期日",
       "nameI18n": {
         "en": "Due date",
         "zh-CN": "到期日"
@@ -165,7 +165,7 @@
     },
     {
       "slug": "reviewer",
-      "name": "Reviewer",
+      "name": "Reviewer / 复核人",
       "nameI18n": {
         "en": "Reviewer",
         "zh-CN": "复核人"
@@ -177,7 +177,7 @@
     },
     {
       "slug": "evidence",
-      "name": "Evidence reference",
+      "name": "Evidence reference / 凭证引用",
       "nameI18n": {
         "en": "Evidence reference",
         "zh-CN": "凭证引用"
@@ -189,7 +189,7 @@
     },
     {
       "slug": "notes",
-      "name": "Notes",
+      "name": "Notes / 备注",
       "nameI18n": {
         "en": "Notes",
         "zh-CN": "备注"
@@ -203,7 +203,7 @@
   "views": [
     {
       "slug": "register",
-      "name": "Monthly actual reports",
+      "name": "Monthly actual reports / 月度实际报告",
       "type": "table",
       "position": 0,
       "config": {
@@ -231,7 +231,7 @@
     },
     {
       "slug": "attention",
-      "name": "Needs review",
+      "name": "Needs review / 待复核",
       "type": "table",
       "position": 1,
       "config": {

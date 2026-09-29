@@ -1,7 +1,7 @@
 {
   "slug": "busa-office-finance",
-  "name": "Office Finance",
-  "description": "Expense evidence, invoice requests, monthly actuals and filing deadlines in one review desk.",
+  "name": "Office Finance / 财务管理",
+  "description": "Expense evidence, invoice requests, monthly actuals and filing deadlines in one review desk. / 集中复核报销依据、开票申请、月度实际报告和申报期限。",
   "agentPrompts": [
     {
       "key": "scenario-0",
@@ -11,7 +11,7 @@
       },
       "body": {
         "en": "Read the `busa-office-finance` skill in this folder first.\n\n{target}\n\nExpense evidence, invoice requests, monthly actuals and filing deadlines in one review desk.",
-        "zh-CN": "先阅读本文件夹的 `busa-office-finance` Skill 并遵守其流程。\n\n{target}\n\n检查财务管理。核对原始依据与状态；修改须通过变更申请，不执行付款、开票或申报。"
+        "zh-CN": "先阅读本文件夹的 `busa-office-finance` Skill 并遵守其流程。\n\n{target}\n\n集中复核报销依据、开票申请、月度实际报告和申报期限。"
       },
       "intent": "read-only"
     },
@@ -23,7 +23,7 @@
       },
       "body": {
         "en": "Read the `busa-office-finance` skill in this folder first.\n\n{target}\n\nPrepare a weekly handoff with unresolved evidence, owners and deadlines, keeping proposed changes separate from approvals.",
-        "zh-CN": "先阅读本文件夹的 `busa-office-finance` Skill 并遵守其流程。\n\n{target}\n\n准备每周交接。核对原始依据与状态；修改须通过变更申请，不执行付款、开票或申报。"
+        "zh-CN": "先阅读本文件夹的 `busa-office-finance` Skill 并遵守其流程。\n\n{target}\n\n准备包含未解决的凭证问题、负责人和截止日期的每周交接，明确区分拟议变更与审批事实。"
       },
       "intent": "change"
     }

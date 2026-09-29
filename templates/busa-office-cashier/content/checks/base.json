@@ -2,12 +2,12 @@
   "key": "checks",
   "resourceKey": "checks",
   "slug": "busa-office-cashier-checks",
-  "name": "Daily balance checks",
+  "name": "Daily balance checks / 每日余额走查",
   "nameI18n": {
     "en": "Daily balance checks",
     "zh-CN": "每日余额走查"
   },
-  "description": "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments.",
+  "description": "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments. / 将每日走查记录与账面余额及银行依据核对，列出差异和过期核查；不编造调整记录。",
   "readLimit": 50,
   "agentPrompts": [
     {
@@ -18,7 +18,7 @@
       },
       "body": {
         "en": "Read the `busa-office-cashier` skill in this folder first.\n\n{target}\n\nCompare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments.",
-        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n检查银行与账面差异。核对原始依据与状态；修改须通过变更申请，不执行付款、开票或申报。"
+        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n将每日走查记录与账面余额及银行依据核对，列出差异和过期核查；不编造调整记录。"
       },
       "intent": "read-only"
     },
@@ -30,7 +30,7 @@
       },
       "body": {
         "en": "Read the `busa-office-cashier` skill in this folder first.\n\n{target}\n\nPrepare a daily balance check from a statement or verified balance supplied by me, link the account, and propose any exception with its source reference.",
-        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n准备每日走查。核对原始依据与状态；修改须通过变更申请，不执行付款、开票或申报。"
+        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n根据我提供的银行对账单或已核实余额准备每日走查，关联账户，并为存在差异的事项附上来源引用后提出变更申请。"
       },
       "intent": "change"
     }
@@ -38,7 +38,7 @@
   "fields": [
     {
       "slug": "title",
-      "name": "Title",
+      "name": "Title / 事项",
       "nameI18n": {
         "en": "Title",
         "zh-CN": "事项"
@@ -50,7 +50,7 @@
     },
     {
       "slug": "entity",
-      "name": "Entity",
+      "name": "Entity / 主体",
       "nameI18n": {
         "en": "Entity",
         "zh-CN": "主体"
@@ -62,7 +62,7 @@
     },
     {
       "slug": "owner",
-      "name": "Owner",
+      "name": "Owner / 负责人",
       "nameI18n": {
         "en": "Owner",
         "zh-CN": "负责人"
@@ -74,7 +74,7 @@
     },
     {
       "slug": "status",
-      "name": "Status",
+      "name": "Status / 状态",
       "nameI18n": {
         "en": "Status",
         "zh-CN": "状态"
@@ -86,22 +86,22 @@
         "choices": [
           {
             "id": "pending",
-            "name": "pending"
+            "name": "Pending review / 待审核"
           },
           {
             "id": "matched",
-            "name": "matched"
+            "name": "Matched / 已匹配"
           },
           {
             "id": "exception",
-            "name": "exception"
+            "name": "Exception / 存在差异"
           }
         ]
       }
     },
     {
       "slug": "account",
-      "name": "Bank account",
+      "name": "Bank account / 银行账户",
       "nameI18n": {
         "en": "Bank account",
         "zh-CN": "银行账户"
@@ -115,7 +115,7 @@
     },
     {
       "slug": "currency",
-      "name": "Currency",
+      "name": "Currency / 币种",
       "nameI18n": {
         "en": "Currency",
         "zh-CN": "币种"
@@ -127,7 +127,7 @@
     },
     {
       "slug": "balance",
-      "name": "Book balance",
+      "name": "Book balance / 账面余额",
       "nameI18n": {
         "en": "Book balance",
         "zh-CN": "账面余额"
@@ -139,7 +139,7 @@
     },
     {
       "slug": "bankBalance",
-      "name": "Bank balance",
+      "name": "Bank balance / 银行余额",
       "nameI18n": {
         "en": "Bank balance",
         "zh-CN": "银行余额"
@@ -151,7 +151,7 @@
     },
     {
       "slug": "checkedAt",
-      "name": "Checked at",
+      "name": "Checked at / 核查时间",
       "nameI18n": {
         "en": "Checked at",
         "zh-CN": "核查时间"
@@ -163,7 +163,7 @@
     },
     {
       "slug": "evidence",
-      "name": "Evidence reference",
+      "name": "Evidence reference / 凭证引用",
       "nameI18n": {
         "en": "Evidence reference",
         "zh-CN": "凭证引用"
@@ -175,7 +175,7 @@
     },
     {
       "slug": "reason",
-      "name": "Attention reason",
+      "name": "Attention reason / 需关注原因",
       "nameI18n": {
         "en": "Attention reason",
         "zh-CN": "需关注原因"
@@ -187,7 +187,7 @@
     },
     {
       "slug": "notes",
-      "name": "Notes",
+      "name": "Notes / 备注",
       "nameI18n": {
         "en": "Notes",
         "zh-CN": "备注"
@@ -201,7 +201,7 @@
   "views": [
     {
       "slug": "register",
-      "name": "Daily balance checks",
+      "name": "Daily balance checks / 每日余额走查",
       "type": "table",
       "position": 0,
       "config": {
@@ -229,7 +229,7 @@
     },
     {
       "slug": "attention",
-      "name": "Needs review",
+      "name": "Needs review / 待复核",
       "type": "table",
       "position": 1,
       "config": {

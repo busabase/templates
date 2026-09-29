@@ -1,6 +1,6 @@
 {
   "name": "Employees / 员工花名册",
-  "description": "Maintain the authoritative employee roster and confirmed salary inputs.",
+  "description": "Maintain the authoritative employee roster and confirmed salary inputs. / 维护员工主台账与已确认工资输入。",
   "position": 0,
   "fields": [
     {
@@ -61,15 +61,15 @@
         "choices": [
           {
             "id": "active",
-            "name": "Active"
+            "name": "Active / 在职"
           },
           {
             "id": "incomplete",
-            "name": "Inputs missing"
+            "name": "Inputs missing / 资料待补"
           },
           {
             "id": "leave",
-            "name": "On leave"
+            "name": "On leave / 休假中"
           }
         ]
       }
@@ -87,7 +87,7 @@
     {
       "slug": "all",
       "name": "Employees / 员工花名册",
-      "description": "Maintain the authoritative employee roster and confirmed salary inputs.",
+      "description": "Maintain the authoritative employee roster and confirmed salary inputs. / 维护员工主台账与已确认工资输入。",
       "type": "table",
       "config": {
         "filters": [],
@@ -109,7 +109,7 @@
     {
       "slug": "review",
       "name": "Priority queue / 优先处理",
-      "description": "Focus on the incomplete state",
+      "description": "Focus on the incomplete state / 聚焦 资料待补状态",
       "type": "table",
       "config": {
         "filters": [

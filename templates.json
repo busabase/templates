@@ -1905,8 +1905,8 @@
       ],
       "video": "assets/recordings/busa-office-admin.mp4",
       "agentPrompts": [
-        "Review certificates and administrative contracts expiring within 60 days and draft an owner-by-owner renewal plan.",
-        "Compare original-document dates with archive summaries and prepare verification tasks without resolving conflicting evidence by guesswork."
+        "Review certificates and administrative contracts expiring within 60 days and draft an owner-by-owner renewal plan.\n检查 60 天内到期的证照和行政合同，按负责人拟定续期计划。",
+        "Compare original-document dates with archive summaries and prepare verification tasks without resolving conflicting evidence by guesswork.\n比较原件日期与归档汇总，拟定核验待办，不凭猜测处理证据冲突。"
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1949,9 +1949,9 @@
       ],
       "video": "assets/recordings/busa-office-cashier.mp4",
       "agentPrompts": [
-        "List active bank accounts and their last checked date; flag stale balances and restricted accounts without treating book balances as live bank data.",
-        "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments.",
-        "Review pending, approved and blocked payments, separating approval from actual payment and flagging missing invoice or bank receipt references."
+        "List active bank accounts and their last checked date; flag stale balances and restricted accounts without treating book balances as live bank data. / 列出正常银行账户及最近核查时间，标记过期余额和受限账户；不将账面余额视为银行实时数据。",
+        "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments. / 将每日走查记录与账面余额及银行依据核对，列出差异和过期核查；不编造调整记录。",
+        "Review pending, approved and blocked payments, separating approval from actual payment and flagging missing invoice or bank receipt references. / 复核待审核、已批准和已阻塞的付款申请，区分审批与实际付款，并标记缺失的发票或银行回单引用。"
       ],
       "version": "1.0.0",
       "license": "MIT",
@@ -1994,9 +1994,9 @@
       ],
       "video": "assets/recordings/busa-office-finance.mp4",
       "agentPrompts": [
-        "Review pending and blocked expense claims, list missing evidence and duplicates before suggesting approval.",
-        "Check invoice requests against supplied customer and contract details; flag missing tax information without inventing it.",
-        "Compare monthly actual reports against their evidence, identify incomplete sources and explain variances without presenting this as an audited statement."
+        "Review pending and blocked expense claims, list missing evidence and duplicates before suggesting approval. / 复核待审核和已阻塞的报销申请；在提出审批建议前，列出缺失凭证与重复申请。",
+        "Check invoice requests against supplied customer and contract details; flag missing tax information without inventing it. / 根据已提供的客户和合同资料核对开票申请；标记缺失的税务信息，不编造信息。",
+        "Compare monthly actual reports against their evidence, identify incomplete sources and explain variances without presenting this as an audited statement. / 将月度实际报告与原始依据核对，找出不完整的资料并解释差异，不将报告描述为经审计的报表。"
       ],
       "version": "1.0.0",
       "license": "MIT",
@@ -2041,8 +2041,8 @@
       ],
       "video": "assets/recordings/busa-office-hr.mp4",
       "agentPrompts": [
-        "Compare salary proposals with confirmed employee salaries and prepare a payroll-review checklist without applying unapproved changes.",
-        "Review labor contracts expiring within 60 days and assign renewal follow-ups to their HR owners."
+        "Compare salary proposals with confirmed employee salaries and prepare a payroll-review checklist without applying unapproved changes.\n比较薪酬提案与员工已确认工资，拟定工资复核清单，不应用未批准的变动。",
+        "Review labor contracts expiring within 60 days and assign renewal follow-ups to their HR owners.\n复核 60 天内到期的劳动合同，向其人事负责人分派续签跟进。"
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2089,8 +2089,8 @@
       ],
       "video": "assets/recordings/busa-office-legal.mp4",
       "agentPrompts": [
-        "Review active cases and preservation deadlines and identify missing legal evidence.",
-        "Reconcile case recovery and legal costs by currency, then prepare a review summary."
+        "Review active cases and preservation deadlines and identify missing legal evidence.\n核查在办案件与保全期限，列出缺少法律证据的事项。",
+        "Reconcile case recovery and legal costs by currency, then prepare a review summary.\n按币种核对案件回款及法务成本，拟定人工复核摘要。"
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2137,8 +2137,8 @@
       ],
       "video": "assets/recordings/busa-office-recruiting.mp4",
       "agentPrompts": [
-        "Review applicants whose next step is overdue and prepare a hiring follow-up plan.",
-        "Check interview feedback and draft offer proposals for human review."
+        "Review applicants whose next step is overdue and prepare a hiring follow-up plan.\n梳理下一步逾期的候选人，拟定招聘跟进计划。",
+        "Check interview feedback and draft offer proposals for human review.\n核对面试反馈，拟定录用草案供人工复核。"
       ],
       "version": "0.1.0",
       "license": "MIT",

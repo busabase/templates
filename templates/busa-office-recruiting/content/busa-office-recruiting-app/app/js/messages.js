@@ -1,5 +1,11 @@
 export const copy = {
   en: {
+    language: "Language",
+    status: "Status",
+    openNav: "Open navigation",
+    closeNav: "Close navigation",
+    refresh: "Refresh",
+    close: "Close",
     help: "Review & connection",
     checklist:
       "Confirm approved headcount, observed interview evidence, budget authority and candidate acceptance before recording a hiring outcome.",
@@ -43,6 +49,12 @@ export const copy = {
     retry: "Retry",
   },
   "zh-CN": {
+    language: "语言",
+    status: "状态",
+    openNav: "打开导航",
+    closeNav: "关闭导航",
+    refresh: "刷新",
+    close: "关闭",
     help: "复核与连接",
     checklist:
       "记录录用结果前，核查已批准人数、结构化面试证据、薪酬预算授权和候选人的接受凭证。",

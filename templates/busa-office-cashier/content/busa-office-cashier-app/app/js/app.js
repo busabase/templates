@@ -314,7 +314,9 @@ function render() {
   root.innerHTML =
     '<div class="shell ' +
     (drawer ? "drawer" : "") +
-    '"><button class="scrim" aria-label="Close menu" id="scrim"></button><aside class="sidebar"><div><div class="brand">' +
+    '"><button class="scrim" aria-label="' +
+    t("closeMenu") +
+    '" id="scrim"></button><aside class="sidebar"><div><div class="brand">' +
     esc(appConfig.appTitle[locale]) +
     '</div><div class="subtle">' +
     t("readOnly") +
@@ -352,7 +354,9 @@ function render() {
     t("asof") +
     "</div><strong>" +
     new Date(state.reviewTime).toISOString().slice(0, 10) +
-    '</strong></div></aside><main class="main"><header class="header"><button class="menu" id="menu" aria-label="Open menu">' +
+    '</strong></div></aside><main class="main"><header class="header"><button class="menu" id="menu" aria-label="' +
+    t("openMenu") +
+    '">' +
     icon("menu") +
     "</button><div><h1>" +
     esc(

@@ -1,37 +1,37 @@
 {
-  "name": "Recoveries & costs",
-  "description": "Case recoveries and costs with currency and verification evidence",
+  "name": "Recoveries & costs / 回款与成本",
+  "description": "Case recoveries and costs with currency and verification evidence / 案件回款与成本、币种及核验凭证",
   "position": 2,
   "agentPrompts": [
     {
       "key": "settlements-0",
       "label": {
         "en": "Reconcile verified recoveries and costs",
-        "zh-CN": "核查回款与成本中需要关注的事项"
+        "zh-CN": "核对已核验的回款与成本"
       },
       "intent": "read-only",
       "body": {
         "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nReconcile verified recoveries and costs. Cite source records, label missing evidence and keep changes reviewable.",
-        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核查回款与成本中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核对已核验的回款与成本。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
       }
     },
     {
       "key": "settlements-1",
       "label": {
         "en": "Draft a missing-evidence checklist",
-        "zh-CN": "按工作流程拟定回款与成本变更"
+        "zh-CN": "拟定缺失凭证清单"
       },
       "intent": "change",
       "body": {
         "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nDraft a missing-evidence checklist. Cite source records, label missing evidence and keep changes reviewable.",
-        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定回款与成本变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n拟定缺失凭证清单。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
       }
     }
   ],
   "fields": [
     {
       "slug": "name",
-      "name": "Name",
+      "name": "Name / 名称",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Entry code",
+      "name": "Entry code / 流水编号",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "case",
-      "name": "Case code",
+      "name": "Case code / 案件编号",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Finance reviewer",
+      "name": "Finance reviewer / 财务复核人",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "kind",
-      "name": "Entry type",
+      "name": "Entry type / 流水类别",
       "type": "text",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "amount",
-      "name": "Amount",
+      "name": "Amount / 金额",
       "type": "number",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "currency",
-      "name": "Currency",
+      "name": "Currency / 币种",
       "type": "text",
       "required": false,
       "position": 6,
@@ -87,7 +87,7 @@
     },
     {
       "slug": "status",
-      "name": "Evidence state",
+      "name": "Evidence state / 凭证状态",
       "type": "text",
       "required": false,
       "position": 7,
@@ -95,7 +95,7 @@
     },
     {
       "slug": "due",
-      "name": "Posting date",
+      "name": "Posting date / 记账日期",
       "type": "date",
       "required": false,
       "position": 8,
@@ -103,7 +103,7 @@
     },
     {
       "slug": "source",
-      "name": "Evidence reference",
+      "name": "Evidence reference / 凭证编号",
       "type": "text",
       "required": false,
       "position": 9,
@@ -111,7 +111,7 @@
     },
     {
       "slug": "notes",
-      "name": "Reconciliation notes",
+      "name": "Reconciliation notes / 对账说明",
       "type": "longtext",
       "required": false,
       "position": 10,
@@ -121,7 +121,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Recoveries & costs working table",
+      "name": "Recoveries & costs working table / 回款与成本工作表",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

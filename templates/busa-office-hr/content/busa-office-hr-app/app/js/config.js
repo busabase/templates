@@ -21,12 +21,12 @@ export const appConfig = {
   },
   "asOf": "2026-09-29",
   "folder": {
-    "name": "People & Payroll Desk",
+    "name": "People & Payroll Desk / 人事薪酬工作台",
     "slug": "busa-office-hr",
-    "description": "Employee records, labor contracts, salary proposals and monthly payroll reviews."
+    "description": "Employee records, labor contracts, salary proposals and monthly payroll reviews. / 管理员工档案、劳动合同、薪酬变动和月度工资复核。"
   },
   "airApp": {
-    "name": "People & Payroll Desk",
+    "name": "People & Payroll Desk / 人事薪酬工作台",
     "slug": "busa-office-hr-app",
     "resourceKey": "busa-office-hr-app"
   },
@@ -211,7 +211,7 @@ export const appConfig = {
         {
           "slug": "all",
           "name": "Employees / 员工花名册",
-          "description": "Maintain the authoritative employee roster and confirmed salary inputs.",
+          "description": "Maintain the authoritative employee roster and confirmed salary inputs. / 维护员工主台账与已确认工资输入。",
           "type": "table",
           "config": {
             "filters": [],
@@ -233,7 +233,7 @@ export const appConfig = {
         {
           "slug": "review",
           "name": "Priority queue / 优先处理",
-          "description": "Focus on the incomplete state",
+          "description": "Focus on the incomplete state / 聚焦 资料待补状态",
           "type": "table",
           "config": {
             "filters": [
@@ -429,7 +429,7 @@ export const appConfig = {
         {
           "slug": "all",
           "name": "Labor contracts / 劳动合同",
-          "description": "Track employee contract dates, originals and renewal responsibility.",
+          "description": "Track employee contract dates, originals and renewal responsibility. / 跟踪劳动合同日期、原件与续签责任。",
           "type": "table",
           "config": {
             "filters": [],
@@ -451,7 +451,7 @@ export const appConfig = {
         {
           "slug": "review",
           "name": "Priority queue / 优先处理",
-          "description": "Focus on the renewal state",
+          "description": "Focus on the renewal state / 聚焦 待续签状态",
           "type": "table",
           "config": {
             "filters": [
@@ -667,7 +667,7 @@ export const appConfig = {
         {
           "slug": "all",
           "name": "Salary changes / 薪酬变动",
-          "description": "Keep proposed, approved and rejected compensation decisions separate.",
+          "description": "Keep proposed, approved and rejected compensation decisions separate. / 分别留存拟议、批准与拒绝的薪酬决定。",
           "type": "table",
           "config": {
             "filters": [],
@@ -689,7 +689,7 @@ export const appConfig = {
         {
           "slug": "review",
           "name": "Priority queue / 优先处理",
-          "description": "Focus on the proposed state",
+          "description": "Focus on the proposed state / 聚焦 待批准状态",
           "type": "table",
           "config": {
             "filters": [
@@ -944,7 +944,7 @@ export const appConfig = {
         {
           "slug": "all",
           "name": "Monthly payroll / 月度工资",
-          "description": "Review payroll inputs and separately confirmed amounts before any payment.",
+          "description": "Review payroll inputs and separately confirmed amounts before any payment. / 付款前逐项复核工资输入与已确认金额。",
           "type": "table",
           "config": {
             "filters": [],
@@ -966,7 +966,7 @@ export const appConfig = {
         {
           "slug": "review",
           "name": "Priority queue / 优先处理",
-          "description": "Focus on the draft state",
+          "description": "Focus on the draft state / 聚焦 草稿状态",
           "type": "table",
           "config": {
             "filters": [
@@ -1176,7 +1176,7 @@ export const appConfig = {
           {
             "slug": "all",
             "name": "Employees / 员工花名册",
-            "description": "Maintain the authoritative employee roster and confirmed salary inputs.",
+            "description": "Maintain the authoritative employee roster and confirmed salary inputs. / 维护员工主台账与已确认工资输入。",
             "type": "table",
             "config": {
               "filters": [],
@@ -1198,7 +1198,7 @@ export const appConfig = {
           {
             "slug": "review",
             "name": "Priority queue / 优先处理",
-            "description": "Focus on the incomplete state",
+            "description": "Focus on the incomplete state / 聚焦 资料待补状态",
             "type": "table",
             "config": {
               "filters": [
@@ -1394,7 +1394,7 @@ export const appConfig = {
           {
             "slug": "all",
             "name": "Labor contracts / 劳动合同",
-            "description": "Track employee contract dates, originals and renewal responsibility.",
+            "description": "Track employee contract dates, originals and renewal responsibility. / 跟踪劳动合同日期、原件与续签责任。",
             "type": "table",
             "config": {
               "filters": [],
@@ -1416,7 +1416,7 @@ export const appConfig = {
           {
             "slug": "review",
             "name": "Priority queue / 优先处理",
-            "description": "Focus on the renewal state",
+            "description": "Focus on the renewal state / 聚焦 待续签状态",
             "type": "table",
             "config": {
               "filters": [
@@ -1632,7 +1632,7 @@ export const appConfig = {
           {
             "slug": "all",
             "name": "Salary changes / 薪酬变动",
-            "description": "Keep proposed, approved and rejected compensation decisions separate.",
+            "description": "Keep proposed, approved and rejected compensation decisions separate. / 分别留存拟议、批准与拒绝的薪酬决定。",
             "type": "table",
             "config": {
               "filters": [],
@@ -1654,7 +1654,7 @@ export const appConfig = {
           {
             "slug": "review",
             "name": "Priority queue / 优先处理",
-            "description": "Focus on the proposed state",
+            "description": "Focus on the proposed state / 聚焦 待批准状态",
             "type": "table",
             "config": {
               "filters": [
@@ -1909,7 +1909,7 @@ export const appConfig = {
           {
             "slug": "all",
             "name": "Monthly payroll / 月度工资",
-            "description": "Review payroll inputs and separately confirmed amounts before any payment.",
+            "description": "Review payroll inputs and separately confirmed amounts before any payment. / 付款前逐项复核工资输入与已确认金额。",
             "type": "table",
             "config": {
               "filters": [],
@@ -1931,7 +1931,7 @@ export const appConfig = {
           {
             "slug": "review",
             "name": "Priority queue / 优先处理",
-            "description": "Focus on the draft state",
+            "description": "Focus on the draft state / 聚焦 草稿状态",
             "type": "table",
             "config": {
               "filters": [
@@ -1974,7 +1974,7 @@ export const appConfig = {
   "onboarding": {
     "version": 0,
     "fields": [],
-    "rationale": "No integration or setup required; installed Bases are the workflow."
+    "rationale": "No integration or setup required; installed Bases are the workflow. / 无需集成或额外设置；业务流程使用安装后的台账。"
   },
   "ui": {
     "summary": {
@@ -2099,7 +2099,7 @@ export const appConfig = {
       "id": "recdemo000002000000",
       "baseKey": "salary-changes",
       "fields": {
-        "title": "Alex / 林安 · role expansion",
+        "title": "Alex · role expansion / 林安 · 职责扩展",
         "employee-code": "EMP-101",
         "owner": "Morgan Wu / 吴敏",
         "effective": "2026-10-01",
@@ -2113,21 +2113,21 @@ export const appConfig = {
       "id": "recdemo000002000001",
       "baseKey": "salary-changes",
       "fields": {
-        "title": "Riley / 陈瑞 · annual review",
+        "title": "Riley · annual review / 陈瑞 · 年度评审",
         "employee-code": "EMP-102",
         "owner": "Morgan Wu / 吴敏",
         "effective": "2026-11-01",
         "proposed-salary": 19000,
         "status": "approved",
         "approval-ref": "APP-2026-041",
-        "notes": "Approved for November; do not include in September payroll. / 11 月生效，不计入 9 月工资。"
+        "notes": "Approved for November; do not include in September payroll. / 已批准于 11 月生效，不计入 9 月工资。"
       }
     },
     {
       "id": "recdemo000002000002",
       "baseKey": "salary-changes",
       "fields": {
-        "title": "Jamie / 徐嘉 · prior review",
+        "title": "Jamie · prior review / 徐嘉 · 之前的评审",
         "employee-code": "EMP-104",
         "owner": "Taylor He / 何泰",
         "effective": "2026-08-01",
@@ -2141,7 +2141,7 @@ export const appConfig = {
       "id": "recdemo000002000003",
       "baseKey": "salary-changes",
       "fields": {
-        "title": "Alex / 林安 · earlier request",
+        "title": "Alex · earlier request / 林安 · 先前的申请",
         "employee-code": "EMP-101",
         "owner": "Morgan Wu / 吴敏",
         "effective": "2026-07-01",
@@ -2155,7 +2155,7 @@ export const appConfig = {
       "id": "recdemo000003000000",
       "baseKey": "payroll",
       "fields": {
-        "title": "Alex / 林安 · September",
+        "title": "Alex · September / 林安 · 9 月",
         "employee-code": "EMP-101",
         "period": "2026-09",
         "owner": "Morgan Wu / 吴敏",
@@ -2170,7 +2170,7 @@ export const appConfig = {
       "id": "recdemo000003000001",
       "baseKey": "payroll",
       "fields": {
-        "title": "Riley / 陈瑞 · September",
+        "title": "Riley · September / 陈瑞 · 9 月",
         "employee-code": "EMP-102",
         "period": "2026-09",
         "owner": "Morgan Wu / 吴敏",
@@ -2178,14 +2178,14 @@ export const appConfig = {
         "gross-pay": 18000,
         "deductions": 3100,
         "status": "paid",
-        "notes": "Synthetic payment evidence: PAY-2026-102, 2026-09-29. November approved raise is excluded. / 虚构付款证据 PAY-2026-102，2026-09-29；不含 11 月调薪。"
+        "notes": "Synthetic payment evidence: PAY-2026-102, 2026-09-29. November approved raise is excluded. / 虚构付款证据 PAY-2026-102，2026-09-29；不含 11 月已批调薪。"
       }
     },
     {
       "id": "recdemo000003000002",
       "baseKey": "payroll",
       "fields": {
-        "title": "Sam / 周杉 · September",
+        "title": "Sam · September / 周杉 · 9 月",
         "employee-code": "EMP-103",
         "period": "2026-09",
         "owner": "Taylor He / 何泰",
@@ -2198,7 +2198,7 @@ export const appConfig = {
       "id": "recdemo000003000003",
       "baseKey": "payroll",
       "fields": {
-        "title": "Jamie / 徐嘉 · September",
+        "title": "Jamie · September / 徐嘉 · 9 月",
         "employee-code": "EMP-104",
         "period": "2026-09",
         "owner": "Taylor He / 何泰",

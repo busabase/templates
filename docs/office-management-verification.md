@@ -19,6 +19,27 @@ Date: 2026-09-29
 各自拥有 Folder、AirApp 和业务 Skill。
 安装结果均为无阻塞、无冲突、无待审核申请、无警告。示例数据均为虚构，未复制原工作区的编号、人员或文件。
 
+## 整包双语覆盖
+
+按后续要求，将六个模板包补齐为 English / 简体中文，并在新的本地数据目录重新安装验收。
+
+| 内容 | 双语方式 |
+| --- | --- |
+| APP 界面、帮助、按钮提示与无障碍标签 | 随界面语言切换 |
+| 模板名称、简介及节点提示词 | 使用格式支持的 `en` / `zh-CN` 对象；中文提示词对应具体英文业务动作 |
+| 模板卡片提示词 | 当前格式为字符串列表，每个场景内同时提供英文和中文 |
+| 原生 Folder、AirApp、Base、字段、选项与视图名称 | 当前原生名称为字符串，中英并列，描述同样补齐 |
+| Skill、README 与模板内验收说明 | 完整英文和简体中文章节，含工作流程、字段说明与业务边界 |
+| 示例标题、说明、证据及下一步 | 中英并列；人物/公司专名、业务编号、状态代码、币种、金额和日期保持稳定 |
+| 图库 | 双语截图、双语录屏和从最新截图生成的中英名称封面 |
+
+新增静态门禁核对文案覆盖和界面语言键一致；真实 SDK 门禁核对原生表、字段及选项的安装后标签。
+六份安装后的 Skill 已逐字读回，与本地完整双语手册一致。
+业务字段 slug、类型、选项 ID、关联目标及视图筛选/排序与补齐前比较，未发生变化。
+
+手机复核发现财务英文标题在 390px 下会撑出屏幕，已调整财务/出纳的移动标题与工具布局，
+并重新验证所有业务入口、双语记录详情和桌面布局。
+
 ## 方法与结果
 
 - 每个项目独立执行 `pnpm check` 和 `pnpm typecheck`，50 项领域与 provider 测试通过。
@@ -41,6 +62,8 @@ Date: 2026-09-29
   六个运行时均返回 `browser / hosted=true / devProxy=false`，无需独立 APP 的连接对话框。
   Playwright 在每个 APP 中操作所有业务入口、详情、逐字搜索、空结果及中英切换，
   并检查 390px 手机布局。六个 APP 无页面异常、无横向溢出；记录请求均为带 Base 范围的 GET，分页上限 50。
+- 整包双语复核后，所有六个原生 Run 再次通过以上步骤，并在手机尺寸打开记录详情。
+  财务/出纳修复后的源码通过带原文件哈希的变更申请同步至本地实例，读回确认一致。
 - 本地 SDK 校验通过：25 个 Base schema、89 条安装记录、精确计数和出纳真实关联均与包内定义一致。
 - 新增 12 段中英录屏。完整解码和逐帧非空/运动/首尾循环检查通过；122 张操作帧 OCR 无作者品牌残留。
   Chromium 中全部播放至结束，无解码异常。录屏展示真实只读操作，不暗示付款或审批写入。
@@ -64,12 +87,12 @@ Date: 2026-09-29
 
 | 模板 | 英文 / 中文时长 | 文件目录 |
 | --- | --- | --- |
-| 行政 | 19.73 / 19.73 秒 | [录屏](../templates/busa-office-admin/assets/recordings/) |
-| 财务 | 19.13 / 18.87 秒 | [录屏](../templates/busa-office-finance/assets/recordings/) |
-| 出纳 | 19.23 / 18.90 秒 | [录屏](../templates/busa-office-cashier/assets/recordings/) |
-| 人事薪酬 | 19.83 / 19.80 秒 | [录屏](../templates/busa-office-hr/assets/recordings/) |
-| 招聘 | 20.00 / 19.37 秒 | [录屏](../templates/busa-office-recruiting/assets/recordings/) |
-| 法务 | 22.03 / 21.70 秒 | [录屏](../templates/busa-office-legal/assets/recordings/) |
+| 行政 | 20.20 / 19.73 秒 | [录屏](../templates/busa-office-admin/assets/recordings/) |
+| 财务 | 19.33 / 19.00 秒 | [录屏](../templates/busa-office-finance/assets/recordings/) |
+| 出纳 | 19.23 / 19.03 秒 | [录屏](../templates/busa-office-cashier/assets/recordings/) |
+| 人事薪酬 | 19.80 / 19.60 秒 | [录屏](../templates/busa-office-hr/assets/recordings/) |
+| 招聘 | 19.87 / 23.33 秒 | [录屏](../templates/busa-office-recruiting/assets/recordings/) |
+| 法务 | 21.77 / 22.17 秒 | [录屏](../templates/busa-office-legal/assets/recordings/) |
 
 ## 用户故事
 
@@ -77,24 +100,27 @@ Date: 2026-09-29
 下面是本地 Busabase 内置 Run 读取真实安装数据后的界面；图库另包含人工关注场景。
 
 1. 从行政工作台总览进入，先查看续期及待核验情况。
-   ![行政工作台原生入口](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/admin-native-shell.png)
+   ![行政工作台原生入口](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/bilingual/admin-native-shell.png)
 2. 进入证照台账，核对负责人、到期日和证据状态。
-   ![行政证照核验](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/admin-native-zh.png)
+   ![行政证照核验](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/bilingual/admin-native-zh.png)
 3. 打开证照详情，保留来源依据和待核验信息。
-   ![证照原生详情](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/admin-native-detail.png)
+   ![证照原生详情](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/bilingual/admin-native-detail.png)
 4. 切换到人事工作台，进入员工档案，并可继续检查合同、调薪与工资复核。
-   ![人事原生入口](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/hr-native-shell.png)
+   ![人事原生入口](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/bilingual/hr-native-shell.png)
 5. 进入财务报销表，区分待审、受阻和已支付事项。
-   ![财务原生入口](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/finance-native-shell.png)
+   ![财务原生入口](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/bilingual/finance-native-shell.png)
 6. 进入出纳付款申请，核对银行账户和凭证，批准不被视为付款完成。
-   ![出纳原生入口](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/cashier-native-shell.png)
+   ![出纳原生入口](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/bilingual/cashier-native-shell.png)
 7. 进入招聘职位表，再检查候选人、面试和录用进度。
-   ![招聘原生入口](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/recruiting-native-shell.png)
+   ![招聘原生入口](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/bilingual/recruiting-native-shell.png)
 8. 最后进入法务案件台账，再核对保全期限、进展及回款证据。
-   ![法务原生入口](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/legal-native-shell.png)
+   ![法务原生入口](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/bilingual/legal-native-shell.png)
 9. 返回行政工作表，切换中文，并在手机尺寸继续查看。
-   ![行政中文](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/admin-native-zh.png)
-   ![行政手机](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/admin-native-phone.png)
+   ![行政中文](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/bilingual/admin-native-zh.png)
+   ![行政手机](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/bilingual/admin-native-phone.png)
+10. 在手机上打开财务与出纳记录详情，双语长文本不撑出工具栏和字段区域。
+   ![财务手机详情](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/bilingual/finance-native-phone-detail.png)
+   ![出纳手机详情](https://pub-5d59c786708441b3a80620d87e7dee2b.r2.dev/tmp/2026-09-29/office-templates/bilingual/cashier-native-phone-detail.png)
 
 ## 验收等级与限制
 

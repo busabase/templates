@@ -1,6 +1,6 @@
 {
   "name": "People & Payroll Desk / 人事薪酬工作台",
-  "description": "Employee records, labor contracts, salary proposals and monthly payroll reviews.",
+  "description": "Employee records, labor contracts, salary proposals and monthly payroll reviews. / 管理员工档案、劳动合同、薪酬变动和月度工资复核。",
   "agentPrompts": [
     {
       "key": "scenario-1",

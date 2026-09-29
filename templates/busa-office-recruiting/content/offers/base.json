@@ -1,37 +1,37 @@
 {
-  "name": "Offer review",
-  "description": "Compensation proposals, review status and acceptance evidence",
+  "name": "Offer review / 录用复核",
+  "description": "Compensation proposals, review status and acceptance evidence / 薪酬草案、复核状态及候选人接受凭证",
   "position": 3,
   "agentPrompts": [
     {
       "key": "offers-0",
       "label": {
         "en": "Audit offers awaiting approval",
-        "zh-CN": "核查录用复核中需要关注的事项"
+        "zh-CN": "审查待批准的录用草案"
       },
       "intent": "read-only",
       "body": {
         "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nAudit offers awaiting approval. Cite source records, label missing evidence and keep changes reviewable.",
-        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查录用复核中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n审查待批准的录用草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
       }
     },
     {
       "key": "offers-1",
       "label": {
         "en": "Draft an offer review checklist",
-        "zh-CN": "按工作流程拟定录用复核变更"
+        "zh-CN": "拟定录用复核清单"
       },
       "intent": "change",
       "body": {
         "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nDraft an offer review checklist. Cite source records, label missing evidence and keep changes reviewable.",
-        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定录用复核变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n拟定录用复核清单。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
       }
     }
   ],
   "fields": [
     {
       "slug": "name",
-      "name": "Name",
+      "name": "Name / 名称",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Offer code",
+      "name": "Offer code / 录用编号",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "candidate",
-      "name": "Candidate code",
+      "name": "Candidate code / 候选人编号",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Approver",
+      "name": "Approver / 复核人",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "amount",
-      "name": "Monthly salary",
+      "name": "Monthly salary / 月薪",
       "type": "number",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "currency",
-      "name": "Currency",
+      "name": "Currency / 币种",
       "type": "text",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "status",
-      "name": "Review state",
+      "name": "Review state / 复核状态",
       "type": "text",
       "required": false,
       "position": 6,
@@ -87,7 +87,7 @@
     },
     {
       "slug": "due",
-      "name": "Decision due",
+      "name": "Decision due / 复核期限",
       "type": "date",
       "required": false,
       "position": 7,
@@ -95,7 +95,7 @@
     },
     {
       "slug": "notes",
-      "name": "Conditions",
+      "name": "Conditions / 录用条件",
       "type": "longtext",
       "required": false,
       "position": 8,
@@ -105,7 +105,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Offer review working table",
+      "name": "Offer review working table / 录用复核工作表",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

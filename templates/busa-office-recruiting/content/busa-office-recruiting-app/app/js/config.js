@@ -57,6 +57,7 @@ export const appConfig = {
       name: "Positions",
       labelZh: "招聘职位",
       description: "Approved hiring requirements and vacancy ownership",
+      descriptionZh: "已批准的招聘要求及空缺职位负责人",
       fields: [
         {
           slug: "name",
@@ -130,26 +131,26 @@ export const appConfig = {
           key: "positions-0",
           label: {
             en: "Review open position capacity",
-            "zh-CN": "核查招聘职位中需要关注的事项",
+            "zh-CN": "核查开放职位的招聘名额",
           },
           intent: "read-only",
           body: {
             en: "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nReview open position capacity. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查招聘职位中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查开放职位的招聘名额。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
         {
           key: "positions-1",
           label: {
             en: "Draft a role requirement update",
-            "zh-CN": "按工作流程拟定招聘职位变更",
+            "zh-CN": "拟定岗位要求更新草案",
           },
           intent: "change",
           body: {
             en: "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nDraft a role requirement update. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定招聘职位变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n拟定岗位要求更新草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
       ],
@@ -176,6 +177,7 @@ export const appConfig = {
       name: "Applicants",
       labelZh: "候选人",
       description: "Candidate stage, next action and role assessment evidence",
+      descriptionZh: "候选人阶段、下一步行动及岗位评估证据",
       fields: [
         {
           slug: "name",
@@ -249,26 +251,26 @@ export const appConfig = {
           key: "applicants-0",
           label: {
             en: "Review candidates needing follow-up",
-            "zh-CN": "核查候选人中需要关注的事项",
+            "zh-CN": "核查需要跟进的候选人",
           },
           intent: "read-only",
           body: {
             en: "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nReview candidates needing follow-up. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查候选人中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查需要跟进的候选人。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
         {
           key: "applicants-1",
           label: {
             en: "Propose a candidate stage change",
-            "zh-CN": "按工作流程拟定候选人变更",
+            "zh-CN": "拟定候选人阶段变更草案",
           },
           intent: "change",
           body: {
             en: "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nPropose a candidate stage change. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定候选人变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n拟定候选人阶段变更草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
       ],
@@ -295,6 +297,7 @@ export const appConfig = {
       name: "Interviews",
       labelZh: "面试安排",
       description: "Interview scheduling and structured feedback evidence",
+      descriptionZh: "面试安排及结构化反馈证据",
       fields: [
         {
           slug: "name",
@@ -360,26 +363,26 @@ export const appConfig = {
           key: "interviews-0",
           label: {
             en: "Find interviews missing feedback",
-            "zh-CN": "核查面试安排中需要关注的事项",
+            "zh-CN": "查找缺少反馈的面试",
           },
           intent: "read-only",
           body: {
             en: "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nFind interviews missing feedback. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查面试安排中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n查找缺少反馈的面试。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
         {
           key: "interviews-1",
           label: {
             en: "Draft evidence-based interview notes",
-            "zh-CN": "按工作流程拟定面试安排变更",
+            "zh-CN": "依据证据拟定面试记录草案",
           },
           intent: "change",
           body: {
             en: "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nDraft evidence-based interview notes. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定面试安排变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n依据证据拟定面试记录草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
       ],
@@ -407,6 +410,7 @@ export const appConfig = {
       labelZh: "录用复核",
       description:
         "Compensation proposals, review status and acceptance evidence",
+      descriptionZh: "薪酬草案、复核状态及候选人接受凭证",
       fields: [
         {
           slug: "name",
@@ -488,26 +492,26 @@ export const appConfig = {
           key: "offers-0",
           label: {
             en: "Audit offers awaiting approval",
-            "zh-CN": "核查录用复核中需要关注的事项",
+            "zh-CN": "审查待批准的录用草案",
           },
           intent: "read-only",
           body: {
             en: "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nAudit offers awaiting approval. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查录用复核中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n审查待批准的录用草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
         {
           key: "offers-1",
           label: {
             en: "Draft an offer review checklist",
-            "zh-CN": "按工作流程拟定录用复核变更",
+            "zh-CN": "拟定录用复核清单",
           },
           intent: "change",
           body: {
             en: "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nDraft an offer review checklist. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定录用复核变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n拟定录用复核清单。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
       ],

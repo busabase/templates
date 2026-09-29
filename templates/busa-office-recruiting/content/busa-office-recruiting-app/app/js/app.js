@@ -105,6 +105,16 @@ function draw() {
   document.documentElement.lang = lang;
   document.title = lang === "zh-CN" ? C.appNameZh : C.appName;
   $("language").value = lang;
+  $("languageLabel").textContent = t.language;
+  $("statusLabel").textContent = t.status;
+  $("search").setAttribute("aria-label", t.search);
+  for (const [id, title] of [
+    ["openNav", t.openNav], ["closeNav", t.closeNav], ["scrim", t.closeNav],
+    ["refresh", t.refresh], ["help", t.help], ["closeHelp", t.close],
+  ]) {
+    $(id).title = title;
+    $(id).setAttribute("aria-label", title);
+  }
   $("brand").textContent = lang === "zh-CN" ? C.appNameZh : C.appName;
   $("brandSub").textContent =
     lang === "zh-CN" ? "业务工作台" : "Operations workspace";

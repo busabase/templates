@@ -57,6 +57,7 @@ export const appConfig = {
       name: "Cases",
       labelZh: "法务案件",
       description: "Disputes, case owners, stages and next legal actions",
+      descriptionZh: "争议、案件负责人、案件阶段及下一步法务行动",
       fields: [
         {
           slug: "name",
@@ -130,26 +131,26 @@ export const appConfig = {
           key: "cases-0",
           label: {
             en: "Summarize active case next steps",
-            "zh-CN": "核查法务案件中需要关注的事项",
+            "zh-CN": "汇总在办案件的下一步行动",
           },
           intent: "read-only",
           body: {
             en: "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nSummarize active case next steps. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核查法务案件中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n汇总在办案件的下一步行动。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
         {
           key: "cases-1",
           label: {
             en: "Draft a factual case update",
-            "zh-CN": "按工作流程拟定法务案件变更",
+            "zh-CN": "拟定基于事实的案件更新草案",
           },
           intent: "change",
           body: {
             en: "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nDraft a factual case update. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定法务案件变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n拟定基于事实的案件更新草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
       ],
@@ -176,6 +177,7 @@ export const appConfig = {
       name: "Preservation & deadlines",
       labelZh: "保全与期限",
       description: "Preservation and legal due dates with source authority",
+      descriptionZh: "保全与法务期限及其依据来源",
       fields: [
         {
           slug: "name",
@@ -249,26 +251,26 @@ export const appConfig = {
           key: "deadlines-0",
           label: {
             en: "Review upcoming preservation expiries",
-            "zh-CN": "核查保全与期限中需要关注的事项",
+            "zh-CN": "核查即将到期的保全事项",
           },
           intent: "read-only",
           body: {
             en: "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nReview upcoming preservation expiries. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核查保全与期限中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核查即将到期的保全事项。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
         {
           key: "deadlines-1",
           label: {
             en: "Verify a deadline against source evidence",
-            "zh-CN": "按工作流程拟定保全与期限变更",
+            "zh-CN": "依据来源证据核验期限",
           },
           intent: "change",
           body: {
             en: "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nVerify a deadline against source evidence. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定保全与期限变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n依据来源证据核验期限。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
       ],
@@ -296,6 +298,7 @@ export const appConfig = {
       labelZh: "回款与成本",
       description:
         "Case recoveries and costs with currency and verification evidence",
+      descriptionZh: "案件回款与成本、币种及核验凭证",
       fields: [
         {
           slug: "name",
@@ -393,26 +396,26 @@ export const appConfig = {
           key: "settlements-0",
           label: {
             en: "Reconcile verified recoveries and costs",
-            "zh-CN": "核查回款与成本中需要关注的事项",
+            "zh-CN": "核对已核验的回款与成本",
           },
           intent: "read-only",
           body: {
             en: "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nReconcile verified recoveries and costs. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核查回款与成本中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核对已核验的回款与成本。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
         {
           key: "settlements-1",
           label: {
             en: "Draft a missing-evidence checklist",
-            "zh-CN": "按工作流程拟定回款与成本变更",
+            "zh-CN": "拟定缺失凭证清单",
           },
           intent: "change",
           body: {
             en: "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nDraft a missing-evidence checklist. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定回款与成本变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n拟定缺失凭证清单。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
       ],
@@ -439,6 +442,7 @@ export const appConfig = {
       name: "Case timeline",
       labelZh: "案件进展",
       description: "Chronological factual case progress with source references",
+      descriptionZh: "按时间顺序记录案件事实进展及来源引用",
       fields: [
         {
           slug: "name",
@@ -512,26 +516,26 @@ export const appConfig = {
           key: "updates-0",
           label: {
             en: "Build a chronological case summary",
-            "zh-CN": "核查案件进展中需要关注的事项",
+            "zh-CN": "按时间顺序汇总案件进展",
           },
           intent: "read-only",
           body: {
             en: "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nBuild a chronological case summary. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核查案件进展中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n按时间顺序汇总案件进展。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
         {
           key: "updates-1",
           label: {
             en: "Draft a sourced case progress entry",
-            "zh-CN": "按工作流程拟定案件进展变更",
+            "zh-CN": "拟定有来源依据的案件进展草案",
           },
           intent: "change",
           body: {
             en: "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nDraft a sourced case progress entry. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定案件进展变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n拟定有来源依据的案件进展草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
       ],
@@ -558,6 +562,7 @@ export const appConfig = {
       name: "Legal follow-up",
       labelZh: "法务待办",
       description: "Accountable counsel and business owner follow-up actions",
+      descriptionZh: "负责律师与业务负责人的跟进行动",
       fields: [
         {
           slug: "name",
@@ -631,26 +636,26 @@ export const appConfig = {
           key: "tasks-0",
           label: {
             en: "Prioritize overdue legal follow-up",
-            "zh-CN": "核查法务待办中需要关注的事项",
+            "zh-CN": "为逾期法务跟进事项排序",
           },
           intent: "read-only",
           body: {
             en: "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nPrioritize overdue legal follow-up. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n核查法务待办中需要关注的事项。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n为逾期法务跟进事项排序。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
         {
           key: "tasks-1",
           label: {
             en: "Prepare a reviewable next-action proposal",
-            "zh-CN": "按工作流程拟定法务待办变更",
+            "zh-CN": "拟定可供复核的下一步行动草案",
           },
           intent: "change",
           body: {
             en: "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nPrepare a reviewable next-action proposal. Cite source records, label missing evidence and keep changes reviewable.",
             "zh-CN":
-              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n按工作流程拟定法务待办变更。引用来源记录，标明缺失证据，所有变更通过变更申请提交。",
+              "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n拟定可供复核的下一步行动草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。",
           },
         },
       ],

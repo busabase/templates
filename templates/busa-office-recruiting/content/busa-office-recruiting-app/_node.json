@@ -1,7 +1,7 @@
 {
   "type": "airapp",
-  "name": "Recruiting Desk",
-  "description": "Hiring positions, candidate pipelines, interviews, and reviewed offers.",
+  "name": "Recruiting Desk / 招聘管理",
+  "description": "Hiring positions, candidate pipelines, interviews, and reviewed offers. / 职位需求、候选人进度、面试反馈与录用复核",
   "agentPrompts": [
     {
       "key": "review-0",

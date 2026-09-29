@@ -1,7 +1,7 @@
 {
   "type": "airapp",
   "name": "Administration Desk / 行政管理工作台",
-  "description": "Certificates, contracts, source documents and verification tasks in one administration desk.",
+  "description": "Certificates, contracts, source documents and verification tasks in one administration desk. / 统一管理证照、合同、原件来源和待核验事项。",
   "position": 4,
   "agentPrompts": [
     {

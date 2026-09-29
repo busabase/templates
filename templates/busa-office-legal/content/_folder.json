@@ -1,7 +1,7 @@
 {
-  "name": "Legal Case Desk",
+  "name": "Legal Case Desk / 法务管理",
   "slug": "busa-office-legal",
-  "description": "Case progress, preservation deadlines, settlement evidence, and legal follow-up.",
+  "description": "Case progress, preservation deadlines, settlement evidence, and legal follow-up. / 案件进度、保全期限、回款成本与法务待办",
   "agentPrompts": [
     {
       "key": "review-0",

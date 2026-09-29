@@ -1,6 +1,6 @@
 {
   "name": "Monthly payroll / 月度工资",
-  "description": "Review payroll inputs and separately confirmed amounts before any payment.",
+  "description": "Review payroll inputs and separately confirmed amounts before any payment. / 付款前逐项复核工资输入与已确认金额。",
   "position": 3,
   "fields": [
     {
@@ -69,31 +69,31 @@
         "choices": [
           {
             "id": "draft",
-            "name": "Draft"
+            "name": "Draft / 草稿"
           },
           {
             "id": "in-review",
-            "name": "In review"
+            "name": "In review / 审批中"
           },
           {
             "id": "approved",
-            "name": "Approved, unpaid"
+            "name": "Approved, unpaid / 已批未付"
           },
           {
             "id": "paid",
-            "name": "Paid"
+            "name": "Paid / 已付款"
           },
           {
             "id": "rejected",
-            "name": "Rejected"
+            "name": "Rejected / 已拒绝"
           },
           {
             "id": "missing-input",
-            "name": "Inputs missing"
+            "name": "Inputs missing / 输入待补"
           },
           {
             "id": "review",
-            "name": "Attendance review"
+            "name": "Attendance review / 出勤待核"
           }
         ]
       }
@@ -111,7 +111,7 @@
     {
       "slug": "all",
       "name": "Monthly payroll / 月度工资",
-      "description": "Review payroll inputs and separately confirmed amounts before any payment.",
+      "description": "Review payroll inputs and separately confirmed amounts before any payment. / 付款前逐项复核工资输入与已确认金额。",
       "type": "table",
       "config": {
         "filters": [],
@@ -133,7 +133,7 @@
     {
       "slug": "review",
       "name": "Priority queue / 优先处理",
-      "description": "Focus on the draft state",
+      "description": "Focus on the draft state / 聚焦 草稿状态",
       "type": "table",
       "config": {
         "filters": [

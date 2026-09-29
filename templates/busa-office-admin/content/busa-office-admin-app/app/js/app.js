@@ -111,6 +111,9 @@ function render() {
   $('searchLabel').textContent = tr('search'); $('searchInput').placeholder = tr('search'); $('backButton').textContent = tr('back');
   $('guideOpen').textContent = tr('guide'); $('guideTitle').textContent = tr('guide'); $('guideSummary').textContent = local(appConfig.localizedDescription); $('guideBoundary').textContent = local(appConfig.boundary);
   $('locale').value = state.locale; $('locale').setAttribute('aria-label', tr('language'));
+  $('baseNav').setAttribute('aria-label', tr('views'));
+  $('metrics').setAttribute('aria-label', tr('metrics'));
+  $('sidebarScrim').setAttribute('aria-label', tr('close'));
   for (const id of ['refresh', 'refreshMobile']) { $(id).title = tr('refresh'); $(id).setAttribute('aria-label', tr('refresh')); }
   for (const id of ['guideClose', 'sidebarClose']) { $(id).title = tr('close'); $(id).setAttribute('aria-label', tr('close')); }
   $('sidebarOpen').setAttribute('aria-label', tr('open')); $('sidebarOpen').title = tr('open');

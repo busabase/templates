@@ -1,7 +1,10 @@
 {
   "format": "busabase-package@1",
   "name": "busa-office-finance",
-  "displayName": { "en": "Office Finance", "zh-CN": "财务管理" },
+  "displayName": {
+    "en": "Office Finance",
+    "zh-CN": "财务管理"
+  },
   "description": {
     "en": "Expense evidence, invoice requests, monthly actuals and filing deadlines in one review desk.",
     "zh-CN": "集中复核报销依据、开票申请、月度实际报告和申报期限。"
@@ -24,9 +27,9 @@
       "assets/screenshots/attention-zh-CN.webp"
     ],
     "agentPrompts": [
-      "Review pending and blocked expense claims, list missing evidence and duplicates before suggesting approval.",
-      "Check invoice requests against supplied customer and contract details; flag missing tax information without inventing it.",
-      "Compare monthly actual reports against their evidence, identify incomplete sources and explain variances without presenting this as an audited statement."
+      "Review pending and blocked expense claims, list missing evidence and duplicates before suggesting approval. / 复核待审核和已阻塞的报销申请；在提出审批建议前，列出缺失凭证与重复申请。",
+      "Check invoice requests against supplied customer and contract details; flag missing tax information without inventing it. / 根据已提供的客户和合同资料核对开票申请；标记缺失的税务信息，不编造信息。",
+      "Compare monthly actual reports against their evidence, identify incomplete sources and explain variances without presenting this as an audited statement. / 将月度实际报告与原始依据核对，找出不完整的资料并解释差异，不将报告描述为经审计的报表。"
     ],
     "requires": {
       "airapp": true
