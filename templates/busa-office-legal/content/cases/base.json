@@ -1,0 +1,119 @@
+{
+  "name": "Cases / 法务案件",
+  "description": "Disputes, case owners, stages and next legal actions / 争议、案件负责人、案件阶段及下一步法务行动",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "cases-0",
+      "label": {
+        "en": "Summarize active case next steps",
+        "zh-CN": "汇总在办案件的下一步行动"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nSummarize active case next steps. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n汇总在办案件的下一步行动。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
+      }
+    },
+    {
+      "key": "cases-1",
+      "label": {
+        "en": "Draft a factual case update",
+        "zh-CN": "拟定基于事实的案件更新草案"
+      },
+      "intent": "change",
+      "body": {
+        "en": "Read the busa-office-legal skill in this folder and follow its workflow.\n\n{target}\n\nDraft a factual case update. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-legal Skill，遵守其工作流程。\n\n{target}\n\n拟定基于事实的案件更新草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
+      }
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Name / 名称",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "code",
+      "name": "Case code / 案件编号",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "counterparty",
+      "name": "Counterparty / 对方主体",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Case owner / 案件负责人",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Case stage / 案件阶段",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "due",
+      "name": "Next hearing / 下次庭审",
+      "type": "date",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "next",
+      "name": "Next action / 下一步",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Dispute summary / 争议摘要",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "key": "working",
+      "name": "Cases working table / 法务案件工作表",
+      "type": "table",
+      "config": {
+        "visibleFieldSlugs": [
+          "name",
+          "owner",
+          "status",
+          "due"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "due",
+            "direction": "asc"
+          }
+        ]
+      },
+      "slug": "busa-office-legal-cases-working"
+    }
+  ]
+}

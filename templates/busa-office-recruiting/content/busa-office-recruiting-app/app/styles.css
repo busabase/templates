@@ -1,0 +1,1290 @@
+/* ── Tokens ──────────────────────────────────────────────────────────────
+ * Everything below reads from these. Retheme an app by editing this block,
+ * not by writing new colors or sizes into the rules further down.
+ */
+:root {
+  --accent: #176b5b;
+  --accent-strong: #12594c;
+  --accent-soft: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  --accent-line: color-mix(in srgb, var(--accent) 26%, var(--surface));
+  --accent-contrast: #ffffff;
+
+  --canvas: #f6f7f8;
+  --surface: #ffffff;
+  --surface-soft: #f4f5f7;
+  --surface-hover: #fafbfb;
+
+  --ink: #14181f;
+  --ink-soft: #454c57;
+  --muted: #79828f;
+  --line: #ebedf0;
+  --line-strong: #dcdfe4;
+
+  --positive: #1f7a4d;
+  --danger: #b3261e;
+  --warning: #8a5a00;
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-modal: 0 24px 60px rgba(16, 24, 40, 0.16);
+
+  /* How hard a .badge tints. Both are overridden in dark, where a 9% wash over
+   * a dark surface is invisible and dark text on it is unreadable. */
+  --badge-wash: 9%;
+  --badge-ink: 76%;
+
+  /* Sticky headers blur over the surface they float on, and scrims dim it.
+   * Both were hardcoded rgba() and so silently stayed light in dark mode. */
+  --surface-blur: rgba(255, 255, 255, 0.94);
+  --scrim: rgba(16, 24, 40, 0.34);
+
+  /* One duration for every hover/selection change. Interactions that snap feel
+   * unfinished; anything slower than this feels laggy in a dense tool. */
+  --ease: 130ms cubic-bezier(0.2, 0, 0.2, 1);
+
+  color-scheme: light dark;
+
+  /* One scale. Do not introduce sizes between these steps. */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 30px;
+  --text-3xl: 38px;
+
+  /* CJK faces come first among the fallbacks so Chinese copy renders in a
+   * real UI face instead of a serif default -- these apps ship localized. */
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--canvas);
+  font-synthesis: none;
+  letter-spacing: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dark is a token override and nothing else -- not one rule below is duplicated
+ * for it. That only works because every rule reads from the block above, which
+ * is the real argument for keeping raw colors out of the rules.
+ * The surfaces are near-black rather than pure black: at #000 the hairlines
+ * have to get brighter to stay visible, and bright hairlines read as noise. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* The light accent is too dark to sit on a dark surface, so it lifts. */
+    --accent: #3fae95;
+    --accent-strong: #4ec0a6;
+    --accent-contrast: #0b1512;
+
+    --canvas: #0e1013;
+    --surface: #16191d;
+    --surface-soft: #1e2228;
+    --surface-hover: #1a1e23;
+
+    --ink: #e8eaed;
+    --ink-soft: #b4bac3;
+    --muted: #868d98;
+    --line: #262a30;
+    --line-strong: #363c45;
+
+    --positive: #45c07f;
+    --warning: #d9a441;
+    --danger: #f2685c;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.55);
+
+    /* A 9% wash is invisible over a dark surface, and 76% toward a dark --ink
+     * would make the text unreadable -- both flip direction here. */
+    --badge-wash: 18%;
+    --badge-ink: 62%;
+
+    --surface-blur: rgba(22, 25, 29, 0.92);
+    --scrim: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* ── Base ────────────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  letter-spacing: 0;
+}
+button {
+  color: inherit;
+}
+/* A ring plus a soft halo instead of one flat 3px outline: the ring stays
+ * legible on any surface, the halo is what makes it read as deliberate.
+ * box-shadow rather than a thicker outline so nothing shifts on focus. */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+::selection {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--ink);
+}
+input,
+textarea {
+  caret-color: var(--accent);
+}
+/* Overlay-thin and low contrast until you touch it. The default chrome
+ * scrollbar is wide, opaque and light-only -- in a dense two-pane tool it
+ * reads as a seam through the layout. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: var(--line-strong);
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+h1 {
+  font-size: var(--text-xl);
+  font-weight: 640;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+h2 {
+  font-size: var(--text-lg);
+  font-weight: 620;
+  line-height: 1.3;
+}
+strong {
+  font-weight: 600;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.eyebrow {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+/* Latin-only rule: uppercasing CJK does nothing but it also cannot letter-space
+ * cleanly, so drop the tracking when the label is not Latin. */
+.eyebrow:lang(zh),
+.eyebrow:lang(ja),
+.eyebrow:lang(ko) {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ── Shell ───────────────────────────────────────────────────────────── */
+.app-shell {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  height: 100dvh;
+  background: var(--canvas);
+}
+.sidebar {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 20px;
+  padding: 18px 12px 14px;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+  z-index: 30;
+}
+.brand-row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 32px;
+  gap: 10px;
+  align-items: center;
+  padding: 0 4px;
+}
+.brand-mark {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-size: var(--text-base);
+  font-weight: 650;
+}
+.brand-copy {
+  min-width: 0;
+}
+.brand-copy strong,
+.brand-copy span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.brand-copy strong {
+  font-size: var(--text-md);
+  font-weight: 620;
+}
+.brand-copy span {
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+.icon-button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background var(--ease),
+    color var(--ease);
+}
+.icon-button:hover {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+.panel-icon {
+  position: relative;
+  display: block;
+  width: 17px;
+  height: 15px;
+  border: 1.5px solid currentColor;
+  border-radius: 4px;
+}
+.panel-icon::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 5px;
+  width: 1.5px;
+  background: currentColor;
+  content: "";
+  opacity: 0.5;
+}
+
+/* Human-attention block: the one place a tinted surface is allowed in the
+ * sidebar, because it is the only thing competing for a decision. */
+.attention {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  padding: 14px;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+}
+.attention .eyebrow {
+  grid-column: 1 / -1;
+  margin-bottom: 4px;
+}
+.attention strong {
+  color: var(--accent);
+  font-size: var(--text-2xl);
+  font-weight: 650;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.attention span:last-child {
+  align-self: end;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+}
+
+.base-nav {
+  display: grid;
+  gap: 2px;
+}
+.nav-item {
+  display: flex;
+  min-width: 0;
+  min-height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: var(--text-md);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--ease),
+    color var(--ease);
+}
+.nav-item span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Counts are reference, never the thing you read first. */
+.nav-item span:last-child {
+  flex: 0 0 auto;
+  min-width: 22px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.nav-item:hover {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+.nav-item.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 580;
+}
+.nav-item.active span:last-child {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  color: var(--accent);
+}
+.settings-button {
+  min-height: 38px;
+  margin-top: auto;
+  padding: 8px 10px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--text-md);
+  text-align: left;
+  cursor: pointer;
+}
+.settings-button:hover {
+  color: var(--ink);
+}
+
+.main {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  background: var(--canvas);
+}
+.mobile-bar {
+  display: none;
+}
+
+/* ── Page header ─────────────────────────────────────────────────────── */
+.workspace-header {
+  display: flex;
+  min-width: 0;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 24px 16px;
+}
+.workspace-header > div {
+  min-width: 0;
+}
+.workspace-header h1 {
+  margin-top: 4px;
+}
+.workspace-header p {
+  max-width: 720px;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: var(--text-base);
+}
+.search {
+  position: relative;
+  flex: 0 0 auto;
+}
+.search input {
+  width: min(280px, 30vw);
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-md);
+}
+.search input::placeholder {
+  color: var(--muted);
+}
+
+/* ── Metric cards ────────────────────────────────────────────────────── */
+/* A band, not a row of cards.
+ *
+ * `grid-auto-flow: column` rather than `repeat(auto-fit, minmax(...))`: auto-fit
+ * wraps when space runs short, so the summary grows downward with every metric
+ * added and pushes the record list past the fold. Nothing overflows
+ * horizontally, so width-based checks keep passing while the app has stopped
+ * showing its content. A band that cannot wrap squeezes itself instead.
+ *
+ * Hairline dividers, no per-cell border/radius/shadow: framed numbers read as
+ * separately clickable things. */
+.metrics {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  margin: 0 24px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.metric {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 18px;
+  border-right: 1px solid var(--line);
+}
+.metric:last-child {
+  border-right: 0;
+}
+.metric span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.metric strong {
+  font-size: var(--text-xl);
+  font-weight: 650;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+/* Optional trend line under a metric. The arrow glyph carries the direction,
+ * so the color is a reinforcement and never the only signal. */
+.metric-delta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+.metric-delta b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.metric-delta.up b {
+  color: var(--positive);
+}
+.metric-delta.down b {
+  color: var(--danger);
+}
+
+/* ── Workspace card (list + detail) ──────────────────────────────────── */
+.content-split {
+  display: grid;
+  grid-template-columns: minmax(300px, 36%) minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  margin: 0 24px 24px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.list-panel,
+.detail-panel {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+.list-panel {
+  border-right: 1px solid var(--line);
+}
+.panel-heading {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-blur);
+  backdrop-filter: blur(10px);
+}
+.panel-heading h2 {
+  margin-top: 2px;
+}
+.count {
+  flex: 0 0 auto;
+  min-width: 24px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.record-list {
+  display: grid;
+}
+.record-row {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  padding: 13px 20px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--ease),
+    box-shadow var(--ease);
+}
+.record-row:hover {
+  background: var(--surface-hover);
+}
+.record-row.selected {
+  background: var(--accent-soft);
+  box-shadow: inset 2px 0 var(--accent);
+}
+.record-row strong {
+  overflow: hidden;
+  font-size: var(--text-md);
+  font-weight: 580;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.record-row span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--text-base);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.load-more {
+  min-height: 36px;
+  margin: 16px auto;
+  padding: 8px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-base);
+  font-weight: 580;
+  cursor: pointer;
+}
+.load-more:hover {
+  background: var(--surface-soft);
+}
+.state-message,
+.empty-list,
+.detail-empty {
+  max-width: 42ch;
+  margin: 0 auto;
+  padding: 56px 20px;
+  color: var(--muted);
+  font-size: var(--text-md);
+  line-height: 1.6;
+  text-align: center;
+  text-wrap: balance;
+}
+.state-message:empty {
+  display: none;
+}
+.state-message.error {
+  color: var(--danger);
+}
+
+.detail-panel {
+  padding: 24px 28px;
+  background: var(--surface);
+}
+.detail-panel article {
+  max-width: 720px;
+}
+.detail-panel h2 {
+  margin: 4px 0 20px;
+  font-size: var(--text-xl);
+}
+.detail-fields {
+  display: grid;
+  border-top: 1px solid var(--line);
+}
+.field-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 26%) minmax(0, 1fr);
+  gap: 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.field-row span {
+  color: var(--muted);
+  font-size: var(--text-base);
+}
+.field-row strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--text-base);
+  font-weight: 550;
+}
+.back-button {
+  display: none;
+}
+.sidebar-scrim {
+  display: none;
+}
+
+/* ── Optional component vocabulary ───────────────────────────────────────
+ * The shell above is what the scaffold renders. These are the canonical
+ * shapes for the pieces a domain app usually adds next -- use them instead
+ * of inventing a new pill/avatar/table per app, which is what makes a set
+ * of generated apps look like a set of unrelated apps.
+ */
+.card {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+/* Greeting/overview page header: a muted context line, one genuinely large
+ * title, a supporting sentence, and the page-level actions on the right. This
+ * is the one place --text-3xl is allowed -- a dashboard needs a single element
+ * large enough to anchor the page, and it is the greeting, never a KPI label. */
+.page-hero {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  min-width: 0;
+}
+.page-hero > div {
+  min-width: 0;
+}
+.page-hero-context {
+  color: var(--muted);
+  font-size: var(--text-base);
+}
+.page-hero h1 {
+  margin-top: 6px;
+  font-size: var(--text-3xl);
+  font-weight: 660;
+  letter-spacing: -0.02em;
+}
+.page-hero p {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+.page-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.card-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.card-heading p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: var(--text-base);
+}
+/* Use on a card that hosts a full-bleed toolbar/table: the card stops padding
+ * itself and the heading carries the inset, so header cells line up with the
+ * card title instead of sitting 20px further in. */
+.card.flush {
+  padding: 0;
+}
+.card.flush > .card-heading {
+  padding: 20px 20px 0;
+}
+
+.button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-base);
+  font-weight: 550;
+  cursor: pointer;
+  transition:
+    background var(--ease),
+    border-color var(--ease),
+    color var(--ease);
+}
+.button:hover {
+  background: var(--surface-soft);
+}
+.button.primary {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--accent-contrast);
+}
+.button.primary:hover {
+  background: color-mix(in srgb, var(--accent-strong) 88%, black);
+}
+.button:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Status pill. One token -- --dot -- drives the dot, a 9% wash behind it, and
+ * the text, so a status can never be half-colored. The wash stays that light
+ * on purpose: at full saturation a table of twenty pills reads as a bag of
+ * highlighters instead of one table. Set --dot directly for a domain status;
+ * the four modifiers cover the usual ones. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--dot, var(--muted)) var(--badge-wash), var(--surface));
+  color: color-mix(in srgb, var(--dot, var(--muted)) var(--badge-ink), var(--ink));
+  font-size: var(--text-base);
+  font-weight: 550;
+  white-space: nowrap;
+}
+.badge::before {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--dot, var(--muted));
+  content: "";
+}
+.badge.positive {
+  --dot: var(--positive);
+}
+.badge.warning {
+  --dot: var(--warning);
+}
+.badge.danger {
+  --dot: var(--danger);
+}
+.badge.active {
+  --dot: var(--accent);
+}
+
+/* Monogram avatar. Deliberately monochrome: per-row generated colors read as
+ * decoration and fight every real status color on the same row. */
+.avatar {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+/* Filter/search strip above a table. Wraps rather than scrolls -- a nested
+ * horizontal scrollbar inside a toolbar is the single most common way these
+ * layouts start looking broken at narrow widths. */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.toolbar .search-field {
+  flex: 1 1 220px;
+  min-width: 0;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: var(--text-base);
+}
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-soft);
+}
+.segment {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition:
+    background var(--ease),
+    color var(--ease),
+    box-shadow var(--ease);
+}
+.segment b {
+  font-weight: 550;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+.segment:hover {
+  color: var(--ink);
+}
+.segment.active {
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 580;
+  box-shadow: var(--shadow-card);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-md);
+}
+.table th {
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 550;
+  text-align: left;
+  white-space: nowrap;
+}
+.table td {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.table tbody tr {
+  transition: background var(--ease);
+}
+.table tbody tr:hover {
+  background: var(--surface-hover);
+}
+.cell-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.cell-identity div {
+  min-width: 0;
+}
+.cell-identity strong {
+  display: block;
+  overflow: hidden;
+  font-size: var(--text-md);
+  font-weight: 580;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cell-identity span {
+  display: block;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--text-base);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Icon slots. Generated apps drop in 16px stroke icons; these rules keep every
+ * icon the same size and make it inherit the control's color, so an icon can
+ * never become the loudest thing in a row. Monochrome only -- a multi-colored
+ * icon set is the fastest way to make a calm tool look like a toy. */
+.nav-item svg,
+.button svg,
+.segment svg,
+.icon-button svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  fill: none;
+}
+.nav-item svg {
+  margin-right: 10px;
+  opacity: 0.75;
+}
+.nav-item.active svg {
+  opacity: 1;
+}
+/* Optional icon on a metric card. One tint, from the accent -- not a different
+ * pastel per card, which turns four cards into four unrelated objects. */
+.metric-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.metric-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  fill: none;
+}
+.metric-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Richer empty state than a line of grey text: say what is missing, then give
+ * the one action that fixes it. An empty screen with no next step is the most
+ * common place these tools strand a user. */
+.empty-state {
+  display: grid;
+  max-width: 44ch;
+  margin: 0 auto;
+  padding: 56px 20px;
+  gap: 8px;
+  justify-items: center;
+  text-align: center;
+}
+.empty-state .empty-state-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 6px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--muted);
+}
+.empty-state strong {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+.empty-state p {
+  color: var(--muted);
+  font-size: var(--text-md);
+  line-height: 1.6;
+  text-wrap: balance;
+}
+.empty-state .button {
+  margin-top: 8px;
+}
+
+/* Skeleton placeholder. Use it for a known-shape load -- a list of rows, a
+ * metric row -- so the layout does not jump when data lands. Do not use it for
+ * an unknown-length wait; that is what the loading message is for. */
+.skeleton {
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft) 25%,
+    color-mix(in srgb, var(--surface-soft) 60%, var(--surface)) 37%,
+    var(--surface-soft) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-sweep 1.4s ease infinite;
+  color: transparent;
+  pointer-events: none;
+  user-select: none;
+}
+@keyframes skeleton-sweep {
+  from {
+    background-position: 100% 50%;
+  }
+  to {
+    background-position: 0 50%;
+  }
+}
+
+/* ── Modal ───────────────────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  padding: 24px;
+  place-items: center;
+  background: var(--scrim);
+}
+.modal-backdrop[hidden] {
+  display: none;
+}
+.modal {
+  width: min(620px, 100%);
+  max-height: min(720px, calc(100dvh - 48px));
+  overflow: auto;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-modal);
+}
+.modal-header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-blur);
+  backdrop-filter: blur(10px);
+}
+.modal-header h2 {
+  margin-top: 2px;
+}
+.settings-grid {
+  display: grid;
+  padding: 4px 20px 20px;
+}
+.settings-row {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.settings-row span {
+  color: var(--muted);
+  font-size: var(--text-base);
+}
+.settings-row code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: var(--text-base);
+}
+
+/* ── Phone ───────────────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(84vw, 300px);
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform 0.18s ease;
+    box-shadow: none;
+  }
+  body.sidebar-open .sidebar {
+    transform: translateX(0);
+    box-shadow: 18px 0 40px rgba(16, 24, 40, 0.16);
+  }
+  .sidebar-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: var(--scrim);
+  }
+  .sidebar-scrim[hidden] {
+    display: none;
+  }
+  .main {
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+    height: 100dvh;
+  }
+  .mobile-bar {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) 36px;
+    align-items: center;
+    gap: 8px;
+    min-height: 52px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .mobile-bar strong {
+    overflow: hidden;
+    font-size: var(--text-md);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .workspace-header {
+    align-items: stretch;
+    gap: 12px;
+    padding: 16px 14px 12px;
+  }
+  .workspace-header h1 {
+    font-size: var(--text-lg);
+  }
+  .workspace-header p {
+    font-size: var(--text-sm);
+  }
+  .search {
+    align-self: end;
+  }
+  .search input {
+    width: 120px;
+  }
+  /* Still one row on a phone, still no wrapping: the label stacks over the value
+   * and the cells narrow. Wrapping here costs the scarcest screen its list. */
+  .metrics {
+    margin: 0 14px 12px;
+    border-radius: var(--radius-md);
+  }
+  .metric {
+    display: grid;
+    gap: 2px;
+    padding: 9px 10px;
+  }
+  .metric span {
+    font-size: var(--text-xs);
+  }
+  .metric strong {
+    font-size: var(--text-lg);
+  }
+  /* Full-bleed: a rounded card inset inside a 390px viewport wastes the only
+   * horizontal space the list has. */
+  .content-split {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr);
+    margin: 0;
+    overflow: hidden;
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .list-panel {
+    height: 100%;
+    border-right: 0;
+  }
+  .record-row {
+    padding: 13px 14px;
+  }
+  .panel-heading,
+  .toolbar {
+    padding: 14px;
+  }
+  .detail-panel {
+    display: none;
+    height: 100%;
+    padding: 0 14px 24px;
+  }
+  body.mobile-detail-open .list-panel {
+    display: none;
+  }
+  body.mobile-detail-open .detail-panel {
+    display: block;
+  }
+  .back-button {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: block;
+    width: calc(100% + 28px);
+    margin: 0 -14px 18px;
+    padding: 12px 14px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--accent);
+    font-size: var(--text-md);
+    text-align: left;
+    cursor: pointer;
+  }
+  .modal-backdrop {
+    padding: 0;
+  }
+  .modal {
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
+  .settings-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

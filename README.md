@@ -28,11 +28,35 @@ Or from a terminal:
 npx busabase-cli install https://github.com/busabase/templates --skill busa-email
 ```
 
-Installing is **review-first**. Tables and their fields are created straight
-away — there is nowhere to put a row until they exist — while the app's code,
-its manual and its sample rows arrive as change requests for you to read. A
-stranger's template can lay out empty tables in your space; nothing that runs
-does so until you have merged it.
+Review the package before installing: it includes executable app and agent
+instructions. Installation is permission-aware. With write access, content
+can merge immediately; use `--require-review` when you want it held for review.
+Template sample records merge by default so the first screen has data.
+`--no-sample-records` proposes those rows for review instead.
+
+## Office Management
+
+These six templates install independently. Each includes its own workflow
+tables, fictional examples, agent manual, scenario prompts and a read-only desk.
+
+| Template | Workflow |
+| --- | --- |
+| [Administration Desk](templates/busa-office-admin) | Certificates, administrative contracts, original-document provenance and verification tasks |
+| [Office Finance](templates/busa-office-finance) | Reimbursements, invoice requests, monthly actuals and filing review |
+| [Cashier Desk](templates/busa-office-cashier) | Bank checks, payment requests, cash movements and reconciliation evidence |
+| [People & Payroll](templates/busa-office-hr) | Employees, labor contracts, salary changes and payroll review |
+| [Recruiting Desk](templates/busa-office-recruiting) | Hiring positions, applicants, interview feedback and offer review |
+| [Legal Case Desk](templates/busa-office-legal) | Case progress, preservation dates, recovery evidence and counsel follow-up |
+
+For example:
+
+```bash
+npx busabase-cli install https://github.com/busabase/templates --skill busa-office-admin
+```
+
+The desks organize evidence and human decisions. Actual payments, invoice
+issuance, filings, offer sending and legal commitments are separate authorized
+operations; installing a template does not execute them.
 
 ## What is in a template
 

@@ -1,0 +1,168 @@
+{
+  "name": "Salary changes / 薪酬变动",
+  "description": "Keep proposed, approved and rejected compensation decisions separate. / 分别留存拟议、批准与拒绝的薪酬决定。",
+  "position": 2,
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Proposal / 薪酬提案",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "employee-code",
+      "name": "Employee reference / 员工业务编号",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Decision owner / 审批负责人",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "effective",
+      "name": "Proposed effective date / 拟生效日期",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "proposed-salary",
+      "name": "Proposed monthly salary (CNY) / 拟议月薪（元）",
+      "type": "number",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Decision status / 决定状态",
+      "type": "select",
+      "required": false,
+      "position": 5,
+      "options": {
+        "choices": [
+          {
+            "id": "proposed",
+            "name": "Proposed / 待批准"
+          },
+          {
+            "id": "approved",
+            "name": "Approved, not applied / 已批待核对"
+          },
+          {
+            "id": "applied",
+            "name": "Applied / 已应用"
+          },
+          {
+            "id": "rejected",
+            "name": "Rejected / 已拒绝"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "approval-ref",
+      "name": "Approval evidence reference / 审批证据编号",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Decision notes / 决定说明",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "Salary changes / 薪酬变动",
+      "description": "Keep proposed, approved and rejected compensation decisions separate. / 分别留存拟议、批准与拒绝的薪酬决定。",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "effective",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "employee-code",
+          "owner",
+          "effective",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "review",
+      "name": "Priority queue / 优先处理",
+      "description": "Focus on the proposed state / 聚焦 待批准状态",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "proposed"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "effective",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "employee-code",
+          "owner",
+          "effective",
+          "status"
+        ]
+      }
+    }
+  ],
+  "agentPrompts": [
+    {
+      "key": "scenario-1",
+      "label": {
+        "en": "Compare proposed raises with confirmed salaries",
+        "zh-CN": "比较拟议调薪与已确认工资"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-hr skill in this folder and follow its workflow.\n\n{target}\n\nCompare proposed raises with confirmed salaries. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-hr Skill，遵循其流程。\n\n{target}\n\n比较拟议调薪与已确认工资。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    },
+    {
+      "key": "scenario-2",
+      "label": {
+        "en": "Draft the evidence checklist for approved changes",
+        "zh-CN": "拟定已批变动的证据核对清单"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-hr skill in this folder and follow its workflow.\n\n{target}\n\nDraft the evidence checklist for approved changes. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-hr Skill，遵循其流程。\n\n{target}\n\n拟定已批变动的证据核对清单。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    }
+  ]
+}

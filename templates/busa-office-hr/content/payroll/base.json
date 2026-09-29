@@ -1,0 +1,188 @@
+{
+  "name": "Monthly payroll / 月度工资",
+  "description": "Review payroll inputs and separately confirmed amounts before any payment. / 付款前逐项复核工资输入与已确认金额。",
+  "position": 3,
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Payroll item / 工资项目",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "employee-code",
+      "name": "Employee reference / 员工业务编号",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "period",
+      "name": "Payroll month / 工资月份",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Payroll reviewer / 工资复核人",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "due",
+      "name": "Review due on / 复核截止",
+      "type": "date",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "gross-pay",
+      "name": "Confirmed gross pay (CNY) / 已确认应发（元）",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "deductions",
+      "name": "Confirmed deductions (CNY) / 已确认扣款（元）",
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Payroll status / 工资状态",
+      "type": "select",
+      "required": false,
+      "position": 7,
+      "options": {
+        "choices": [
+          {
+            "id": "draft",
+            "name": "Draft / 草稿"
+          },
+          {
+            "id": "in-review",
+            "name": "In review / 审批中"
+          },
+          {
+            "id": "approved",
+            "name": "Approved, unpaid / 已批未付"
+          },
+          {
+            "id": "paid",
+            "name": "Paid / 已付款"
+          },
+          {
+            "id": "rejected",
+            "name": "Rejected / 已拒绝"
+          },
+          {
+            "id": "missing-input",
+            "name": "Inputs missing / 输入待补"
+          },
+          {
+            "id": "review",
+            "name": "Attendance review / 出勤待核"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "notes",
+      "name": "Review notes / 复核说明",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "Monthly payroll / 月度工资",
+      "description": "Review payroll inputs and separately confirmed amounts before any payment. / 付款前逐项复核工资输入与已确认金额。",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "due",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "employee-code",
+          "period",
+          "owner",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "review",
+      "name": "Priority queue / 优先处理",
+      "description": "Focus on the draft state / 聚焦 草稿状态",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "draft"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "due",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "employee-code",
+          "period",
+          "owner",
+          "status"
+        ]
+      }
+    }
+  ],
+  "agentPrompts": [
+    {
+      "key": "scenario-1",
+      "label": {
+        "en": "Check September payroll for unconfirmed inputs",
+        "zh-CN": "检查 9 月工资的未确认输入"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-hr skill in this folder and follow its workflow.\n\n{target}\n\nCheck September payroll for unconfirmed inputs. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-hr Skill，遵循其流程。\n\n{target}\n\n检查 9 月工资的未确认输入。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    },
+    {
+      "key": "scenario-2",
+      "label": {
+        "en": "Summarize confirmed payroll separately from drafts",
+        "zh-CN": "分别汇总已确认工资与草稿"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-hr skill in this folder and follow its workflow.\n\n{target}\n\nSummarize confirmed payroll separately from drafts. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-hr Skill，遵循其流程。\n\n{target}\n\n分别汇总已确认工资与草稿。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    }
+  ]
+}

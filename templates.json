@@ -1875,6 +1875,284 @@
       }
     },
     {
+      "subdir": "templates/busa-office-admin",
+      "name": "busa-office-admin",
+      "displayName": {
+        "en": "Administration Desk",
+        "zh-CN": "行政管理工作台"
+      },
+      "description": {
+        "en": "Certificates, contracts, source documents and verification tasks in one administration desk.",
+        "zh-CN": "统一管理证照、合同、原件来源和待核验事项。"
+      },
+      "category": "ops",
+      "risk": "read-only",
+      "tags": [
+        "office",
+        "administration",
+        "risk:read-only",
+        "certificates",
+        "renewals"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/certificates.webp",
+        "assets/screenshots/attention.webp",
+        "assets/screenshots/overview-zh-CN.webp",
+        "assets/screenshots/certificates-zh-CN.webp",
+        "assets/screenshots/attention-zh-CN.webp"
+      ],
+      "video": "assets/recordings/busa-office-admin.mp4",
+      "agentPrompts": [
+        "Review certificates and administrative contracts expiring within 60 days and draft an owner-by-owner renewal plan.\n检查 60 天内到期的证照和行政合同，按负责人拟定续期计划。",
+        "Compare original-document dates with archive summaries and prepare verification tasks without resolving conflicting evidence by guesswork.\n比较原件日期与归档汇总，拟定核验待办，不凭猜测处理证据冲突。"
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 16,
+        "files": 23,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-office-cashier",
+      "name": "busa-office-cashier",
+      "displayName": {
+        "en": "Cashier Desk",
+        "zh-CN": "出纳管理"
+      },
+      "description": {
+        "en": "Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money.",
+        "zh-CN": "管理银行走查、付款依据、收付流水和对账异常。"
+      },
+      "category": "finance",
+      "risk": "gated-write",
+      "tags": [
+        "office",
+        "cashier",
+        "evidence-review"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/overview-zh-CN.webp",
+        "assets/screenshots/core.webp",
+        "assets/screenshots/core-zh-CN.webp",
+        "assets/screenshots/attention.webp",
+        "assets/screenshots/attention-zh-CN.webp"
+      ],
+      "video": "assets/recordings/busa-office-cashier.mp4",
+      "agentPrompts": [
+        "List active bank accounts and their last checked date; flag stale balances and restricted accounts without treating book balances as live bank data. / 列出正常银行账户及最近核查时间，标记过期余额和受限账户；不将账面余额视为银行实时数据。",
+        "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments. / 将每日走查记录与账面余额及银行依据核对，列出差异和过期核查；不编造调整记录。",
+        "Review pending, approved and blocked payments, separating approval from actual payment and flagging missing invoice or bank receipt references. / 复核待审核、已批准和已阻塞的付款申请，区分审批与实际付款，并标记缺失的发票或银行回单引用。"
+      ],
+      "version": "1.0.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 13,
+        "files": 25,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-office-finance",
+      "name": "busa-office-finance",
+      "displayName": {
+        "en": "Office Finance",
+        "zh-CN": "财务管理"
+      },
+      "description": {
+        "en": "Expense evidence, invoice requests, monthly actuals and filing deadlines in one review desk.",
+        "zh-CN": "集中复核报销依据、开票申请、月度实际报告和申报期限。"
+      },
+      "category": "finance",
+      "risk": "gated-write",
+      "tags": [
+        "office",
+        "finance",
+        "evidence-review"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/overview-zh-CN.webp",
+        "assets/screenshots/core.webp",
+        "assets/screenshots/core-zh-CN.webp",
+        "assets/screenshots/attention.webp",
+        "assets/screenshots/attention-zh-CN.webp"
+      ],
+      "video": "assets/recordings/busa-office-finance.mp4",
+      "agentPrompts": [
+        "Review pending and blocked expense claims, list missing evidence and duplicates before suggesting approval. / 复核待审核和已阻塞的报销申请；在提出审批建议前，列出缺失凭证与重复申请。",
+        "Check invoice requests against supplied customer and contract details; flag missing tax information without inventing it. / 根据已提供的客户和合同资料核对开票申请；标记缺失的税务信息，不编造信息。",
+        "Compare monthly actual reports against their evidence, identify incomplete sources and explain variances without presenting this as an audited statement. / 将月度实际报告与原始依据核对，找出不完整的资料并解释差异，不将报告描述为经审计的报表。"
+      ],
+      "version": "1.0.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 13,
+        "files": 25,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-office-hr",
+      "name": "busa-office-hr",
+      "displayName": {
+        "en": "People & Payroll Desk",
+        "zh-CN": "人事薪酬工作台"
+      },
+      "description": {
+        "en": "Employee records, labor contracts, salary proposals and monthly payroll reviews.",
+        "zh-CN": "管理员工档案、劳动合同、薪酬变动和月度工资复核。"
+      },
+      "category": "ops",
+      "risk": "read-only",
+      "tags": [
+        "office",
+        "hr",
+        "payroll",
+        "risk:read-only",
+        "salary-review"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/payroll.webp",
+        "assets/screenshots/attention.webp",
+        "assets/screenshots/overview-zh-CN.webp",
+        "assets/screenshots/payroll-zh-CN.webp",
+        "assets/screenshots/attention-zh-CN.webp"
+      ],
+      "video": "assets/recordings/busa-office-hr.mp4",
+      "agentPrompts": [
+        "Compare salary proposals with confirmed employee salaries and prepare a payroll-review checklist without applying unapproved changes.\n比较薪酬提案与员工已确认工资，拟定工资复核清单，不应用未批准的变动。",
+        "Review labor contracts expiring within 60 days and assign renewal follow-ups to their HR owners.\n复核 60 天内到期的劳动合同，向其人事负责人分派续签跟进。"
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 16,
+        "files": 23,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-office-legal",
+      "name": "busa-office-legal",
+      "displayName": {
+        "en": "Legal Case Desk",
+        "zh-CN": "法务管理"
+      },
+      "description": {
+        "en": "Case progress, preservation deadlines, settlement evidence, and legal follow-up.",
+        "zh-CN": "案件进度、保全期限、回款成本与法务待办。"
+      },
+      "category": "legal",
+      "risk": "gated-write",
+      "tags": [
+        "office",
+        "legal",
+        "management",
+        "cases",
+        "preservation",
+        "deadlines",
+        "settlements"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/overview-zh-CN.webp",
+        "assets/screenshots/core.webp",
+        "assets/screenshots/core-zh-CN.webp",
+        "assets/screenshots/attention.webp",
+        "assets/screenshots/attention-zh-CN.webp"
+      ],
+      "video": "assets/recordings/busa-office-legal.mp4",
+      "agentPrompts": [
+        "Review active cases and preservation deadlines and identify missing legal evidence.\n核查在办案件与保全期限，列出缺少法律证据的事项。",
+        "Reconcile case recovery and legal costs by currency, then prepare a review summary.\n按币种核对案件回款及法务成本，拟定人工复核摘要。"
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 5,
+        "records": 16,
+        "files": 24,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-office-recruiting",
+      "name": "busa-office-recruiting",
+      "displayName": {
+        "en": "Recruiting Desk",
+        "zh-CN": "招聘管理"
+      },
+      "description": {
+        "en": "Hiring positions, candidate pipelines, interviews, and reviewed offers.",
+        "zh-CN": "职位需求、候选人进度、面试反馈与录用复核。"
+      },
+      "category": "hr",
+      "risk": "gated-write",
+      "tags": [
+        "office",
+        "hr",
+        "management",
+        "hiring",
+        "applicants",
+        "interviews",
+        "offers"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/overview-zh-CN.webp",
+        "assets/screenshots/core.webp",
+        "assets/screenshots/core-zh-CN.webp",
+        "assets/screenshots/attention.webp",
+        "assets/screenshots/attention-zh-CN.webp"
+      ],
+      "video": "assets/recordings/busa-office-recruiting.mp4",
+      "agentPrompts": [
+        "Review applicants whose next step is overdue and prepare a hiring follow-up plan.\n梳理下一步逾期的候选人，拟定招聘跟进计划。",
+        "Check interview feedback and draft offer proposals for human review.\n核对面试反馈，拟定录用草案供人工复核。"
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 15,
+        "files": 24,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-picks",
       "name": "busa-picks",
       "displayName": {

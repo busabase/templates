@@ -1,0 +1,24 @@
+{
+  "name": "busa-office-recruiting-airapp",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "test": "node --test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "check": "node scripts/check.mjs && node --test",
+    "build:sdk": "node scripts/bundle-sdk.mjs"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.2",
+    "busabase-sdk": "0.90.2",
+    "hono": "4.13.10"
+  },
+  "devDependencies": {
+    "esbuild-wasm": "0.28.1",
+    "typescript": "5.9.3",
+    "lucide": "1.48.0"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "type": "airapp",
+  "name": "Recruiting Desk / 招聘管理",
+  "description": "Hiring positions, candidate pipelines, interviews, and reviewed offers. / 职位需求、候选人进度、面试反馈与录用复核",
+  "agentPrompts": [
+    {
+      "key": "review-0",
+      "label": {
+        "en": "Review applicants whose next step is overdue and prepare a hiring follow-up pl",
+        "zh-CN": "梳理下一步逾期的候选人，拟定招聘跟进计划"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nReview applicants whose next step is overdue and prepare a hiring follow-up plan. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n梳理下一步逾期的候选人，拟定招聘跟进计划。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+      }
+    },
+    {
+      "key": "review-1",
+      "label": {
+        "en": "Check interview feedback and draft offer proposals for human review",
+        "zh-CN": "核对面试反馈，为需要录用的候选人准备人工复核草案"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nCheck interview feedback and draft offer proposals for human review. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核对面试反馈，为需要录用的候选人准备人工复核草案。引用来源记录，标明缺失证据，所有变更通过变更申请提交。"
+      }
+    }
+  ]
+}

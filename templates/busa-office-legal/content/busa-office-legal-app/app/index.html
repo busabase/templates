@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Office management</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./domain.css" />
+    <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-row">
+          <span class="brand-mark" aria-hidden="true">B</span>
+          <div class="brand-copy">
+            <strong id="brand"></strong><span id="brandSub"></span>
+          </div>
+          <button
+            class="icon-button"
+            id="closeNav"
+            title="Close navigation"
+            aria-label="Close navigation"
+          >
+            ×
+          </button>
+        </div>
+        <section class="attention">
+          <span id="attentionLabel"></span><strong id="attentionCount">—</strong
+          ><span id="attentionScope"></span>
+        </section>
+        <nav id="nav" class="base-nav"></nav>
+        <div class="sidebar-footer">
+          <label
+            ><span class="sr-only" id="languageLabel">Language</span
+            ><select id="language">
+              <option value="en">English</option>
+              <option value="zh-CN">简体中文</option>
+            </select></label
+          ><button
+            class="icon-button"
+            id="refresh"
+            title="Refresh"
+            aria-label="Refresh"
+          >
+            ↻
+          </button>
+          <button
+            class="icon-button"
+            id="help"
+            title="Review and connection"
+            aria-label="Review and connection"
+          >
+            ?
+          </button>
+        </div>
+      </aside>
+      <main class="main">
+        <header class="mobile-bar">
+          <button
+            class="icon-button"
+            id="openNav"
+            aria-label="Open navigation"
+            title="Open navigation"
+          >
+            ☰</button
+          ><strong id="mobileBrand"></strong>
+        </header>
+        <header class="workspace-header">
+          <div>
+            <span class="eyebrow" id="eyebrow"></span>
+            <h1 id="title"></h1>
+            <p id="summary"></p>
+          </div>
+        </header>
+        <section class="metrics" id="metrics"></section>
+        <div class="toolbar">
+          <label class="search"
+            ><input
+              id="search"
+              type="search"
+              autocomplete="off"
+              aria-label="Search loaded records" /></label
+          ><label
+            ><span class="sr-only" id="statusLabel">Status</span
+            ><select id="status"></select></label
+          ><span class="eyebrow" id="scope"></span>
+        </div>
+        <div id="loading" class="state-message" role="status"></div>
+        <div id="error" class="state-message error" role="alert" hidden></div>
+        <section class="content-split">
+          <section class="list-panel">
+            <div class="panel-heading">
+              <h2 id="listTitle"></h2>
+              <span class="count" id="resultCount"></span>
+            </div>
+            <div id="recordList" class="record-list"></div>
+            <button id="more" class="load-more" hidden></button>
+          </section>
+          <aside class="detail-panel">
+            <button id="back" class="back-button"></button>
+            <div class="detail-empty" id="detailEmpty"></div>
+            <article id="detail" hidden></article>
+          </aside>
+        </section>
+      </main>
+    </div>
+    <button
+      id="scrim"
+      class="sidebar-scrim"
+      aria-label="Close navigation"
+      hidden
+    ></button>
+    <dialog id="helpDialog" class="modal" aria-labelledby="helpTitle">
+      <header class="modal-header">
+        <h2 id="helpTitle"></h2>
+        <form method="dialog">
+          <button
+            class="icon-button"
+            id="closeHelp"
+            title="Close"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </form>
+      </header>
+      <section id="helpBody" class="help-body"></section>
+    </dialog>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

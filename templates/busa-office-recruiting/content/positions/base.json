@@ -1,0 +1,119 @@
+{
+  "name": "Positions / 招聘职位",
+  "description": "Approved hiring requirements and vacancy ownership / 已批准的招聘要求及空缺职位负责人",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "positions-0",
+      "label": {
+        "en": "Review open position capacity",
+        "zh-CN": "核查开放职位的招聘名额"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nReview open position capacity. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查开放职位的招聘名额。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
+      }
+    },
+    {
+      "key": "positions-1",
+      "label": {
+        "en": "Draft a role requirement update",
+        "zh-CN": "拟定岗位要求更新草案"
+      },
+      "intent": "change",
+      "body": {
+        "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nDraft a role requirement update. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n拟定岗位要求更新草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
+      }
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Name / 名称",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "code",
+      "name": "Position code / 职位编号",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "department",
+      "name": "Department / 部门",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Hiring owner / 招聘负责人",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "headcount",
+      "name": "Approved headcount / 已批准人数",
+      "type": "number",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status / 状态",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "due",
+      "name": "Target start / 目标到岗日",
+      "type": "date",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Requirements / 任职要求",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "key": "working",
+      "name": "Positions working table / 招聘职位工作表",
+      "type": "table",
+      "config": {
+        "visibleFieldSlugs": [
+          "name",
+          "owner",
+          "status",
+          "due"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "due",
+            "direction": "asc"
+          }
+        ]
+      },
+      "slug": "busa-office-recruiting-positions-working"
+    }
+  ]
+}

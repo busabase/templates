@@ -1,0 +1,156 @@
+{
+  "name": "Labor contracts / 劳动合同",
+  "description": "Track employee contract dates, originals and renewal responsibility. / 跟踪劳动合同日期、原件与续签责任。",
+  "position": 1,
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Contract / 合同名称",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "employee-code",
+      "name": "Employee reference / 员工业务编号",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "HR owner / 人事负责人",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "starts",
+      "name": "Starts on / 生效日期",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "expires",
+      "name": "Ends on / 到期日期",
+      "type": "date",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Contract status / 合同状态",
+      "type": "select",
+      "required": false,
+      "position": 5,
+      "options": {
+        "choices": [
+          {
+            "id": "signed",
+            "name": "Signed / 已签署"
+          },
+          {
+            "id": "renewal",
+            "name": "Renewal due / 待续签"
+          },
+          {
+            "id": "unsigned",
+            "name": "Signature pending / 待签署"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "notes",
+      "name": "Original and renewal notes / 原件与续签说明",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "Labor contracts / 劳动合同",
+      "description": "Track employee contract dates, originals and renewal responsibility. / 跟踪劳动合同日期、原件与续签责任。",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "expires",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "employee-code",
+          "owner",
+          "expires",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "review",
+      "name": "Priority queue / 优先处理",
+      "description": "Focus on the renewal state / 聚焦 待续签状态",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "renewal"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "expires",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "employee-code",
+          "owner",
+          "expires",
+          "status"
+        ]
+      }
+    }
+  ],
+  "agentPrompts": [
+    {
+      "key": "scenario-1",
+      "label": {
+        "en": "Prepare contract renewals for the next 60 days",
+        "zh-CN": "整理未来 60 天的劳动合同续签"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-hr skill in this folder and follow its workflow.\n\n{target}\n\nPrepare contract renewals for the next 60 days. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-hr Skill，遵循其流程。\n\n{target}\n\n整理未来 60 天的劳动合同续签。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    },
+    {
+      "key": "scenario-2",
+      "label": {
+        "en": "Find labor contracts lacking signed originals",
+        "zh-CN": "找出缺少签署原件的劳动合同"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-hr skill in this folder and follow its workflow.\n\n{target}\n\nFind labor contracts lacking signed originals. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-hr Skill，遵循其流程。\n\n{target}\n\n找出缺少签署原件的劳动合同。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    }
+  ]
+}

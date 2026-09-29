@@ -1,0 +1,6 @@
+{
+  "name":"busa-office-admin-airapp","private":true,"version":"0.1.0","type":"module",
+  "scripts":{"dev":"node server.js","start":"node server.js","check":"node scripts/check.mjs && node --test","test":"node --test","typecheck":"tsc --noEmit --allowJs --checkJs --module nodenext --target es2022 --skipLibCheck app/js/office-model.js app/js/resource-binding.js","build:sdk":"node scripts/bundle-sdk.mjs"},
+  "dependencies":{"@hono/node-server":"2.1.2","hono":"4.13.10","busabase-sdk":"0.90.2","lucide":"1.48.0"},
+  "devDependencies":{"esbuild-wasm":"0.28.1","typescript":"5.9.3","@types/node":"24.10.1"}
+}

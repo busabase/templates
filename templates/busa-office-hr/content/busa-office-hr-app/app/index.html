@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark">
+  <title>People &amp; Payroll Desk</title><link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./office.css"><link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-row"><div class="brand-mark" aria-hidden="true">O</div><div class="brand-copy"><strong id="brandName"></strong><span id="brandDescription"></span></div><button class="icon-button panel-button" id="sidebarClose" type="button" title="Close"><i data-lucide="panel-left-close"></i></button></div>
+    <button class="attention" id="attentionOpen" type="button"><span class="eyebrow" id="attentionTitle"></span><strong id="attentionValue"></strong><span id="attentionCopy"></span></button>
+    <nav class="base-nav" id="baseNav" aria-label="Workflow views"></nav>
+    <div class="sidebar-footer"><select id="locale" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option></select><button class="settings-button" id="guideOpen" type="button"></button></div>
+  </aside>
+  <main class="main">
+    <header class="mobile-bar"><button class="icon-button" id="sidebarOpen" type="button" title="Open navigation"><i data-lucide="menu"></i></button><strong id="mobileTitle"></strong><button class="icon-button" id="refreshMobile" type="button" title="Refresh"><i data-lucide="refresh-cw"></i></button></header>
+    <section class="workspace-header"><div><span class="eyebrow" id="viewEyebrow"></span><h1 id="viewTitle"></h1><p id="viewSummary"></p></div><button class="icon-button" id="refresh" type="button" title="Refresh"><i data-lucide="refresh-cw"></i></button></section>
+    <section class="metrics" id="metrics" aria-label="Review metrics"></section>
+    <section class="content-split">
+      <section class="list-panel"><div class="panel-heading"><div><span class="eyebrow" id="listEyebrow"></span><h2 id="listTitle"></h2></div><span class="count" id="recordCount"></span></div>
+        <div class="toolbar"><label class="search-label"><span class="sr-only" id="searchLabel"></span><input id="searchInput" class="search-field" type="search" autocomplete="off"></label><select id="statusFilter" aria-label="Status"></select><select id="periodFilter" aria-label="Payroll month" hidden></select></div>
+        <div class="state-message" id="loadingState" role="status"></div><div class="state-message error" id="errorState" role="alert" hidden></div><div class="state-message" id="partialState" role="status" hidden></div><div class="state-message" id="staleState" role="status" hidden></div><button class="button retry" id="retry" type="button" hidden></button>
+        <div class="record-list" id="recordList"></div><button class="load-more" id="loadMore" type="button" hidden></button>
+      </section>
+      <aside class="detail-panel"><button class="back-button" id="backButton" type="button"></button><div class="detail-empty" id="detailEmpty"></div><article id="detailContent" hidden><span class="eyebrow" id="detailEyebrow"></span><h2 id="detailTitle"></h2><div id="detailBadge"></div><div class="detail-fields" id="detailFields"></div><section class="evidence-note"><h3 id="evidenceTitle"></h3><p id="detailNotes"></p></section></article></aside>
+    </section>
+  </main>
+</div>
+<button class="sidebar-scrim" id="sidebarScrim" type="button" aria-label="Close navigation" hidden></button>
+<dialog id="guideDialog" class="modal"><header class="modal-header"><h2 id="guideTitle"></h2><button class="icon-button" id="guideClose" type="button" title="Close"><i data-lucide="x"></i></button></header><div class="guide-body"><p id="guideSummary"></p><p id="guideBoundary"></p></div></dialog>
+<script type="module" src="./js/app.js"></script>
+</body></html>

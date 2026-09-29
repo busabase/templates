@@ -1,0 +1,4 @@
+{"key":"checks-1","fields":{"title":"Resolve occupancy expiry / 核对场地证明有效期","source-ref":"SRC-104","owner":"Owen Chen / 陈欧文","due":"2026-10-02","status":"blocked","notes":"Ask custodian for the complete issued document; keep both dates. / 向保管人索取完整签发件，并保留双方日期。"}}
+{"key":"checks-2","fields":{"title":"Obtain service permit original / 补服务许可原件","source-ref":"SRC-103","owner":"Maya Lin / 林雅","due":"2026-10-05","status":"open","notes":"Request original from the document custodian. / 向保管人索取原件。"}}
+{"key":"checks-3","fields":{"title":"Schedule fire inspection renewal / 预约消防续检","source-ref":"SRC-102","owner":"Owen Chen / 陈欧文","due":"2026-10-08","status":"open","notes":"Confirm appointment and keep acknowledgement. / 确认预约并留存回执。"}}
+{"key":"checks-4","fields":{"title":"Check business registration / 核对营业登记","source-ref":"SRC-101","owner":"Maya Lin / 林雅","due":"2026-09-25","status":"completed","notes":"Original and archive dates agree. / 原件与归档日期一致。"}}

@@ -1,0 +1,261 @@
+{
+  "key": "checks",
+  "resourceKey": "checks",
+  "slug": "busa-office-cashier-checks",
+  "name": "Daily balance checks / 每日余额走查",
+  "nameI18n": {
+    "en": "Daily balance checks",
+    "zh-CN": "每日余额走查"
+  },
+  "description": "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments. / 将每日走查记录与账面余额及银行依据核对，列出差异和过期核查；不编造调整记录。",
+  "readLimit": 50,
+  "agentPrompts": [
+    {
+      "key": "scenario-0",
+      "label": {
+        "en": "Review balance differences",
+        "zh-CN": "检查银行与账面差异"
+      },
+      "body": {
+        "en": "Read the `busa-office-cashier` skill in this folder first.\n\n{target}\n\nCompare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments.",
+        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n将每日走查记录与账面余额及银行依据核对，列出差异和过期核查；不编造调整记录。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "scenario-1",
+      "label": {
+        "en": "Prepare a daily check",
+        "zh-CN": "准备每日走查"
+      },
+      "body": {
+        "en": "Read the `busa-office-cashier` skill in this folder first.\n\n{target}\n\nPrepare a daily balance check from a statement or verified balance supplied by me, link the account, and propose any exception with its source reference.",
+        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n根据我提供的银行对账单或已核实余额准备每日走查，关联账户，并为存在差异的事项附上来源引用后提出变更申请。"
+      },
+      "intent": "change"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Title / 事项",
+      "nameI18n": {
+        "en": "Title",
+        "zh-CN": "事项"
+      },
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "entity",
+      "name": "Entity / 主体",
+      "nameI18n": {
+        "en": "Entity",
+        "zh-CN": "主体"
+      },
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Owner / 负责人",
+      "nameI18n": {
+        "en": "Owner",
+        "zh-CN": "负责人"
+      },
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status / 状态",
+      "nameI18n": {
+        "en": "Status",
+        "zh-CN": "状态"
+      },
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "pending",
+            "name": "Pending review / 待审核"
+          },
+          {
+            "id": "matched",
+            "name": "Matched / 已匹配"
+          },
+          {
+            "id": "exception",
+            "name": "Exception / 存在差异"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "account",
+      "name": "Bank account / 银行账户",
+      "nameI18n": {
+        "en": "Bank account",
+        "zh-CN": "银行账户"
+      },
+      "type": "relation",
+      "required": false,
+      "position": 4,
+      "options": {
+        "targetBaseSlug": "accounts"
+      }
+    },
+    {
+      "slug": "currency",
+      "name": "Currency / 币种",
+      "nameI18n": {
+        "en": "Currency",
+        "zh-CN": "币种"
+      },
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "balance",
+      "name": "Book balance / 账面余额",
+      "nameI18n": {
+        "en": "Book balance",
+        "zh-CN": "账面余额"
+      },
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "bankBalance",
+      "name": "Bank balance / 银行余额",
+      "nameI18n": {
+        "en": "Bank balance",
+        "zh-CN": "银行余额"
+      },
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "checkedAt",
+      "name": "Checked at / 核查时间",
+      "nameI18n": {
+        "en": "Checked at",
+        "zh-CN": "核查时间"
+      },
+      "type": "date",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "evidence",
+      "name": "Evidence reference / 凭证引用",
+      "nameI18n": {
+        "en": "Evidence reference",
+        "zh-CN": "凭证引用"
+      },
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "reason",
+      "name": "Attention reason / 需关注原因",
+      "nameI18n": {
+        "en": "Attention reason",
+        "zh-CN": "需关注原因"
+      },
+      "type": "longtext",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Notes / 备注",
+      "nameI18n": {
+        "en": "Notes",
+        "zh-CN": "备注"
+      },
+      "type": "longtext",
+      "required": false,
+      "position": 11,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "register",
+      "name": "Daily balance checks / 每日余额走查",
+      "type": "table",
+      "position": 0,
+      "config": {
+        "visibleFieldSlugs": [
+          "title",
+          "entity",
+          "owner",
+          "status",
+          "account",
+          "currency",
+          "balance",
+          "bankBalance",
+          "checkedAt",
+          "evidence",
+          "reason",
+          "notes"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "title",
+            "direction": "asc"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "attention",
+      "name": "Needs review / 待复核",
+      "type": "table",
+      "position": 1,
+      "config": {
+        "visibleFieldSlugs": [
+          "title",
+          "owner",
+          "status",
+          "notes"
+        ],
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "matched"
+          }
+        ]
+      }
+    }
+  ],
+  "primaryField": "title",
+  "columns": [
+    "title",
+    "checkedAt",
+    "balance",
+    "bankBalance",
+    "status"
+  ],
+  "position": 1
+}

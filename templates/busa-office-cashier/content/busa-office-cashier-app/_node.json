@@ -1,0 +1,31 @@
+{
+  "type": "airapp",
+  "name": "Cashier Desk / 出纳管理",
+  "description": "Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money. / 管理银行走查、付款依据、收付流水和对账异常，不执行资金转账。",
+  "agentPrompts": [
+    {
+      "key": "scenario-0",
+      "label": {
+        "en": "Review the attention queue",
+        "zh-CN": "检查待关注队列"
+      },
+      "body": {
+        "en": "Read the `busa-office-cashier` skill in this folder first.\n\n{target}\n\nBank checks, payment evidence, cash movements and reconciliation exceptions without moving money.",
+        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n管理银行走查、付款依据、收付流水和对账异常，不执行资金转账。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "scenario-1",
+      "label": {
+        "en": "Prepare an evidence handoff",
+        "zh-CN": "准备凭证交接"
+      },
+      "body": {
+        "en": "Read the `busa-office-cashier` skill in this folder first.\n\n{target}\n\nPrepare an evidence handoff for the record I name, identify source gaps and propose updates through a ChangeRequest.",
+        "zh-CN": "先阅读本文件夹的 `busa-office-cashier` Skill 并遵守其流程。\n\n{target}\n\n为我指定的记录准备凭证交接，找出原始资料缺口，并通过变更申请提出更新。"
+      },
+      "intent": "change"
+    }
+  ]
+}

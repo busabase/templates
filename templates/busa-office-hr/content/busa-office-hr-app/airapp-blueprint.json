@@ -1,0 +1,38 @@
+{
+  "app": {
+    "slug": "busa-office-hr"
+  },
+  "route": "package-first",
+  "binding": "runtime",
+  "workspace": {
+    "bases": [
+      {
+        "key": "employees",
+        "slug": "busa-office-hr-employees",
+        "read_limit": 50
+      },
+      {
+        "key": "labor-contracts",
+        "slug": "busa-office-hr-labor-contracts",
+        "read_limit": 50
+      },
+      {
+        "key": "salary-changes",
+        "slug": "busa-office-hr-salary-changes",
+        "read_limit": 50
+      },
+      {
+        "key": "payroll",
+        "slug": "busa-office-hr-payroll",
+        "read_limit": 50
+      }
+    ]
+  },
+  "dataBudgets": "One 50-row page per Base; one continuation page on explicit action. No unrequested background scans. / 每张台账首次读取最多 50 行；用户明确操作时续读一页，不自动后台遍历。",
+  "actions": [],
+  "onboarding": {
+    "version": 0,
+    "fields": [],
+    "rationale": "No integration or setup required; installed Bases are the workflow. / 无需集成或额外设置；业务流程使用安装后的台账。"
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "name": "Source archive / 原件来源台账",
+  "description": "Record original-document provenance without exposing private document content. / 记录原件来源，避免在公开模板泄露文件内容。",
+  "position": 2,
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Document / 原件名称",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "source-ref",
+      "name": "Business reference / 业务编号",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "custodian",
+      "name": "Custodian / 保管人",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "received",
+      "name": "Received on / 收件日期",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "location",
+      "name": "Archive location / 归档位置",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Evidence status / 证据状态",
+      "type": "select",
+      "required": false,
+      "position": 5,
+      "options": {
+        "choices": [
+          {
+            "id": "original",
+            "name": "Original checked / 已核对原件"
+          },
+          {
+            "id": "copy-only",
+            "name": "Copy only / 仅复印件"
+          },
+          {
+            "id": "conflict",
+            "name": "Versions conflict / 版本冲突"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "notes",
+      "name": "Provenance notes / 来源说明",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "Source archive / 原件来源台账",
+      "description": "Record original-document provenance without exposing private document content. / 记录原件来源，避免在公开模板泄露文件内容。",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "received",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "source-ref",
+          "custodian",
+          "received",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "review",
+      "name": "Priority queue / 优先处理",
+      "description": "Focus on the copy-only state / 聚焦 仅复印件状态",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "copy-only"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "received",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "source-ref",
+          "custodian",
+          "received",
+          "status"
+        ]
+      }
+    }
+  ],
+  "agentPrompts": [
+    {
+      "key": "scenario-1",
+      "label": {
+        "en": "Which sources still need an original?",
+        "zh-CN": "哪些来源仍需补原件？"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-admin skill in this folder and follow its workflow.\n\n{target}\n\nWhich sources still need an original?. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-admin Skill，遵循其流程。\n\n{target}\n\n哪些来源仍需补原件？。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    },
+    {
+      "key": "scenario-2",
+      "label": {
+        "en": "Trace the conflicting occupancy evidence",
+        "zh-CN": "追溯场地证明的冲突证据"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-admin skill in this folder and follow its workflow.\n\n{target}\n\nTrace the conflicting occupancy evidence. Identify evidence gaps and draft proposed changes only when requested.",
+        "zh-CN": "先阅读本文件夹的 busa-office-admin Skill，遵循其流程。\n\n{target}\n\n追溯场地证明的冲突证据。指出证据缺口，只有用户要求时才拟定变更申请。"
+      }
+    }
+  ]
+}

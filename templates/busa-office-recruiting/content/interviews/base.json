@@ -1,0 +1,111 @@
+{
+  "name": "Interviews / 面试安排",
+  "description": "Interview scheduling and structured feedback evidence / 面试安排及结构化反馈证据",
+  "position": 2,
+  "agentPrompts": [
+    {
+      "key": "interviews-0",
+      "label": {
+        "en": "Find interviews missing feedback",
+        "zh-CN": "查找缺少反馈的面试"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nFind interviews missing feedback. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n查找缺少反馈的面试。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
+      }
+    },
+    {
+      "key": "interviews-1",
+      "label": {
+        "en": "Draft evidence-based interview notes",
+        "zh-CN": "依据证据拟定面试记录草案"
+      },
+      "intent": "change",
+      "body": {
+        "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nDraft evidence-based interview notes. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n依据证据拟定面试记录草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
+      }
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Name / 名称",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "code",
+      "name": "Interview code / 面试编号",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "candidate",
+      "name": "Candidate code / 候选人编号",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Interviewer / 面试官",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Feedback state / 反馈状态",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "due",
+      "name": "Interview date / 面试日期",
+      "type": "date",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Structured feedback / 结构化反馈",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "key": "working",
+      "name": "Interviews working table / 面试安排工作表",
+      "type": "table",
+      "config": {
+        "visibleFieldSlugs": [
+          "name",
+          "owner",
+          "status",
+          "due"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "due",
+            "direction": "asc"
+          }
+        ]
+      },
+      "slug": "busa-office-recruiting-interviews-working"
+    }
+  ]
+}

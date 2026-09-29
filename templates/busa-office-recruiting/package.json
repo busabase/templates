@@ -1,0 +1,10 @@
+{
+  "name": "busa-office-recruiting",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "npm --prefix content/busa-office-recruiting-app run typecheck",
+    "check": "node scripts/sync-content.mjs --check && npm --prefix content/busa-office-recruiting-app run check",
+    "sync": "node scripts/sync-content.mjs"
+  }
+}

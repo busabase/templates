@@ -1,0 +1,119 @@
+{
+  "name": "Applicants / 候选人",
+  "description": "Candidate stage, next action and role assessment evidence / 候选人阶段、下一步行动及岗位评估证据",
+  "position": 1,
+  "agentPrompts": [
+    {
+      "key": "applicants-0",
+      "label": {
+        "en": "Review candidates needing follow-up",
+        "zh-CN": "核查需要跟进的候选人"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nReview candidates needing follow-up. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n核查需要跟进的候选人。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
+      }
+    },
+    {
+      "key": "applicants-1",
+      "label": {
+        "en": "Propose a candidate stage change",
+        "zh-CN": "拟定候选人阶段变更草案"
+      },
+      "intent": "change",
+      "body": {
+        "en": "Read the busa-office-recruiting skill in this folder and follow its workflow.\n\n{target}\n\nPropose a candidate stage change. Cite source records, label missing evidence and keep changes reviewable.",
+        "zh-CN": "先阅读本目录的 busa-office-recruiting Skill，遵守其工作流程。\n\n{target}\n\n拟定候选人阶段变更草案。引用来源记录，标明缺失证据，保留可供复核的变更草案。"
+      }
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Name / 名称",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "code",
+      "name": "Candidate code / 候选人编号",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "position",
+      "name": "Position code / 职位编号",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Recruiter / 招聘专员",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Hiring stage / 招聘阶段",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "due",
+      "name": "Next step date / 下一步日期",
+      "type": "date",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "next",
+      "name": "Next step / 下一步",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Evidence and notes / 证据与备注",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "key": "working",
+      "name": "Applicants working table / 候选人工作表",
+      "type": "table",
+      "config": {
+        "visibleFieldSlugs": [
+          "name",
+          "owner",
+          "status",
+          "due"
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "due",
+            "direction": "asc"
+          }
+        ]
+      },
+      "slug": "busa-office-recruiting-applicants-working"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+minimumReleaseAgeExclude:
+  - '@hono/node-server@2.1.2'
+  - busabase-sdk@0.90.2
+  - hono@4.13.10

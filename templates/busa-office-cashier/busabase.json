@@ -1,0 +1,38 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-office-cashier",
+  "displayName": {
+    "en": "Cashier Desk",
+    "zh-CN": "出纳管理"
+  },
+  "description": {
+    "en": "Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money.",
+    "zh-CN": "管理银行走查、付款依据、收付流水和对账异常。"
+  },
+  "version": "1.0.0",
+  "license": "MIT",
+  "template": {
+    "category": "finance",
+    "schemaVersion": 1,
+    "airapp": "busa-office-cashier-app",
+    "video": "assets/recordings/busa-office-cashier.mp4",
+    "tags": ["office", "cashier", "evidence-review"],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/overview-zh-CN.webp",
+      "assets/screenshots/core.webp",
+      "assets/screenshots/core-zh-CN.webp",
+      "assets/screenshots/attention.webp",
+      "assets/screenshots/attention-zh-CN.webp"
+    ],
+    "agentPrompts": [
+      "List active bank accounts and their last checked date; flag stale balances and restricted accounts without treating book balances as live bank data. / 列出正常银行账户及最近核查时间，标记过期余额和受限账户；不将账面余额视为银行实时数据。",
+      "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments. / 将每日走查记录与账面余额及银行依据核对，列出差异和过期核查；不编造调整记录。",
+      "Review pending, approved and blocked payments, separating approval from actual payment and flagging missing invoice or bank receipt references. / 复核待审核、已批准和已阻塞的付款申请，区分审批与实际付款，并标记缺失的发票或银行回单引用。"
+    ],
+    "requires": {
+      "airapp": true
+    }
+  }
+}
