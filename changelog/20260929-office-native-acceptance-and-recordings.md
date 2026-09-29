@@ -53,3 +53,4 @@ None.
 ## Known Limits
 
 Cloud login and OAuth were outside the user-selected local acceptance scope. Existing instance-conflict handling, generated manual prompt transport and loaded-record summaries are documented in the verification report.
+The local Busabase npm package logged a missing upstream Shiki module; native app Run and SDK data validation passed. This platform packaging issue is disclosed in the report.
