@@ -14,6 +14,7 @@
     "category": "hr",
     "schemaVersion": 1,
     "airapp": "busa-office-recruiting-app",
+    "video": "assets/recordings/busa-office-recruiting.mp4",
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",

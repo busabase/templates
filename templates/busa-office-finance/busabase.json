@@ -12,6 +12,7 @@
     "category": "finance",
     "schemaVersion": 1,
     "airapp": "busa-office-finance-app",
+    "video": "assets/recordings/busa-office-finance.mp4",
     "tags": ["office", "finance", "evidence-review"],
     "screenshots": [
       "assets/screenshots/cover.webp",

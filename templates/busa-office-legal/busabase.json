@@ -14,6 +14,7 @@
     "category": "legal",
     "schemaVersion": 1,
     "airapp": "busa-office-legal-app",
+    "video": "assets/recordings/busa-office-legal.mp4",
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",

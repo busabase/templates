@@ -12,6 +12,7 @@
     "category": "finance",
     "schemaVersion": 1,
     "airapp": "busa-office-cashier-app",
+    "video": "assets/recordings/busa-office-cashier.mp4",
     "tags": ["office", "cashier", "evidence-review"],
     "screenshots": [
       "assets/screenshots/cover.webp",
