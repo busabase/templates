@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Move the WeChat CRM scenario to `mr-kelly/skills` and regenerate the generic catalog without its regional template; the six demo Bases, source workflow and recording are retained in the Kelly package.
 - Add a B2B CRM Sales Overview with exact account and Deal-stage counts, a multi-currency Revenue Rail, bounded follow-up attention, and responsive activity and outcome views.
 - Replace character and hand-drawn B2B CRM controls with a tree-shaken, locally bundled Lucide icon system; add restrained iconography to navigation and actions, plus large left-column icons and deep-green values for Overview KPIs.
 - Expand B2B CRM's isolated Demo provider to 30 related records, covering every Deal stage and a varied seven-day Activity rhythm without changing installed Base sample data.
