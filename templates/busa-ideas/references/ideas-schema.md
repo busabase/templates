@@ -58,6 +58,14 @@ The consultant's questions and the operator's answers — one row per question.
 | `position` | `position` | number | display order within an idea+stage |
 | `asked-at` | `asked_at` | text | ISO timestamp |
 | `answered-at` | `answered_at` | text | ISO timestamp |
+| `target-field` | `target_field` | text | Optional mapping to one required Idea field: `one_liner`, `who`, `problem`, or `why_now`. Additive field for existing installations. |
+
+Required-field Questions use the deterministic `record-id`
+`required:<URL-encoded idea record-id>:<snake_case field>`. Their answer must
+also be submitted to the corresponding field on the same Idea record. The
+Question and Idea ChangeRequests are separate and may be reviewed independently;
+confirm both before treating the required answer as complete. Do not infer a
+mapping from the text of an older question.
 
 ## The Ladder Gate
 

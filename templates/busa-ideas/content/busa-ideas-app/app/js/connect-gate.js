@@ -13,7 +13,7 @@
 // `isStandaloneLocalRuntime` drives whether writes may merge. They differ only
 // when the runtime is undetermined, where each falls to its own safe side.
 import { createAirAppConnectGate } from "../vendor/busabase-airapp-gate.js";
-import { getProvider } from "./providers/index.js?v=0.1.0";
+import { getProvider } from "./providers/index.js?v=0.2.0";
 import { isStandaloneLocalRuntime, shouldUseLocalGateway } from "./runtime.js";
 
 export { isStandaloneLocalRuntime, shouldUseLocalGateway };

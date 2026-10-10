@@ -1,9 +1,9 @@
 import { messages } from "./i18n/messages.js";
-import { appConfig } from "./js/config.js?v=0.1.0";
-import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
-import { DOC_KINDS, NORMALIZE_ROW_BY_KEY } from "./js/ideas-model.js?v=0.1.0";
+import { appConfig } from "./js/config.js?v=0.2.0";
+import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.2.0";
+import { DOC_KINDS, NORMALIZE_ROW_BY_KEY } from "./js/ideas-model.js?v=0.2.0";
 import { renderDocumentView, renderIdeaDetail, renderIdeas, renderSettings } from "./js/ideas-views.js";
-import { getProvider } from "./js/providers/index.js?v=0.1.0";
+import { getProvider } from "./js/providers/index.js?v=0.2.0";
 
 export const state = {
   snapshot: null,
@@ -221,6 +221,8 @@ function applyDemoRoute() {
   const route =
     scenario === "needs-answer"
       ? "#/ideas/idea-vague/questions"
+      : scenario === "why-now"
+        ? "#/ideas/idea-why-now/questions"
       : scenario === "ready"
         ? "#/ideas/idea-email/prd"
         : scenario === "parked"

@@ -9,7 +9,18 @@ import {
   missingForStage,
   nextStage,
   normalizeQuestionRow,
+  parseRequiredQuestionId,
+  questionsForIdea,
+  requiredQuestionId,
 } from "../app/js/ideas-model.js";
+import {
+  pendingIdeaAnswer,
+  pendingQuestionAnswer,
+  pendingRequiredFieldUpgrade,
+  rejectedQuestionMapping,
+  reviewBlockingQuestions,
+  requiredFieldUpgradeError,
+} from "../app/js/providers/busabase-provider.js";
 
 const demoProviderModule = "../app/js/providers/demo-provider.js";
 const { demoSnapshot } = await import(demoProviderModule);
@@ -122,6 +133,114 @@ test("a vague idea cannot leave the idea rung", () => {
   assert.deepEqual(check.missingFields, ["one_liner", "who"]);
 });
 
+test("missing required fields appear as stable answerable questions", () => {
+  const snapshot = buildSnapshot({ ideas: [vagueIdea] });
+  const questions = snapshot.ideas[0].questions;
+  assert.deepEqual(questions.map((question) => question.target_field), ["one_liner", "who"]);
+  assert.ok(questions.every((question) => question.status === "open" && question.generated));
+  assert.equal(snapshot.ideas[0].open_questions, 2);
+  assert.deepEqual(parseRequiredQuestionId(requiredQuestionId("idea:one", "why_now")), {
+    ideaId: "idea:one",
+    field: "why_now",
+  });
+  assert.equal(parseRequiredQuestionId("required:idea-1:unsupported"), null);
+});
+
+test("a mapped question is reused while an unrelated older question stays separate", () => {
+  const idea = { ...sharpIdea, why_now: "" };
+  const mapped = normalizeQuestionRow({ record_id: "q-why", idea_id: idea.record_id, stage: "brd",
+    question: "为什么现在？", target_field: "why_now", answer: "已有回答但 Idea 未同步" });
+  const unrelated = normalizeQuestionRow({ record_id: "q-old", idea_id: idea.record_id, stage: "brd",
+    question: "为什么现在？" });
+  const questions = questionsForIdea(idea, [mapped, unrelated]);
+  assert.equal(questions.length, 2);
+  assert.equal(questions.find((q) => q.target_field === "why_now").record_id, "q-why");
+  assert.equal(questions.find((q) => q.target_field === "why_now").status, "open");
+  assert.equal(questions.find((q) => q.record_id === "q-old").target_field, "");
+});
+
+test("six answered BRD follow-ups do not hide the missing why-now entry", () => {
+  const idea = { ...sharpIdea, why_now: "" };
+  const questions = Array.from({ length: 6 }, (_, index) => ({ record_id: `q-${index}`, idea_id: idea.record_id,
+    stage: "brd", question: `追问 ${index}`, answer: `回答 ${index}`, status: "answered" }));
+  const actual = buildSnapshot({ ideas: [idea], questions }).ideas[0];
+  assert.equal(actual.questions.length, 7);
+  assert.deepEqual(actual.questions.filter((question) => question.status === "open").map((question) => question.target_field), ["why_now"]);
+  assert.deepEqual(actual.advance.missingFields, ["why_now"]);
+});
+
+test("why-now demo reproduces six answered follow-ups and one required question", () => {
+  const idea = demoSnapshot("why-now").ideas[0];
+  assert.equal(idea.stage, "brd");
+  assert.equal(idea.questions.filter((question) => question.status === "answered").length, 6);
+  assert.deepEqual(idea.questions.filter((question) => question.status === "open").map((question) => question.target_field), ["why_now"]);
+});
+
+test("a rejected mapped Question blocks advancement after the Idea field merges", () => {
+  const recovery = { record_id: requiredQuestionId(sharpIdea.record_id, "why_now"), idea_id: sharpIdea.record_id,
+    stage: "brd", target_field: "why_now", question: "为什么现在？", recovery: true };
+  const actual = buildSnapshot({ ideas: [sharpIdea], questions: [recovery] }).ideas[0];
+  assert.equal(actual.advance.canAdvance, false);
+  assert.equal(actual.advance.reason, "open_questions");
+  assert.equal(actual.questions[0].recovery, true);
+});
+
+test("advance gate stays blocked when Idea merges before its required Question", () => {
+  const questionId = requiredQuestionId(sharpIdea.record_id, "why_now");
+  const payload = { "record-id": questionId, "idea-id": sharpIdea.record_id,
+    "target-field": "why_now", stage: "brd", question: "为什么现在？", answer: sharpIdea.why_now };
+  const pending = [{ headCommit: { payload } }];
+  const rejected = [{ operations: [{ headCommit: { payload } }] }];
+  for (const [pendingOperations, rejectedRequests] of [[pending, []], [[], rejected]]) {
+    const review = reviewBlockingQuestions([sharpIdea], [], pendingOperations, rejectedRequests);
+    const snapshot = buildSnapshot({ ideas: [sharpIdea], questions: review.questions });
+    assert.equal(snapshot.ideas[0].advance.canAdvance, false);
+    assert.equal(snapshot.ideas[0].advance.reason, "open_questions");
+    assert.equal(review.questions.length, 1);
+  }
+});
+
+test("a rejected mapped Question with an older ID also blocks advancement", () => {
+  const rejected = [{ operations: [{ headCommit: { payload: {
+    "record-id": "q-existing", "idea-id": sharpIdea.record_id, "target-field": "why_now",
+    stage: "brd", answer: sharpIdea.why_now,
+  } } }] }];
+  const review = reviewBlockingQuestions([sharpIdea], [], [], rejected);
+  assert.equal(review.questions[0].record_id, "q-existing");
+  assert.equal(buildSnapshot({ ideas: [sharpIdea], questions: review.questions }).ideas[0].advance.canAdvance, false);
+  assert.deepEqual(rejectedQuestionMapping(rejected, "q-existing", sharpIdea.record_id, "why_now"), {
+    ideaId: sharpIdea.record_id, field: "why_now",
+  });
+  assert.equal(rejectedQuestionMapping(rejected, "q-existing", "another-idea", "why_now"), null);
+});
+
+test("pending ChangeRequests match the exact required Question and Idea field", () => {
+  const operations = [
+    { targetRecordId: null, headCommit: { payload: { "record-id": "required:idea-2:why_now", answer: "现在能做" } } },
+    { targetRecordId: "rec-idea-2", headCommit: { payload: { "why-now": "现在能做" } } },
+    { targetRecordId: "rec-other", headCommit: { payload: { "why-now": "别人的回答" } } },
+  ];
+  assert.equal(pendingQuestionAnswer(operations, "required:idea-2:why_now"), "现在能做");
+  assert.equal(pendingQuestionAnswer(operations, "required:idea-3:why_now"), undefined);
+  assert.equal(pendingIdeaAnswer(operations, "rec-idea-2", "why_now"), "现在能做");
+  assert.equal(pendingIdeaAnswer(operations, "rec-idea-2", "problem"), undefined);
+});
+
+test("only an exact Questions field upgrade blocks a repeated schema request", () => {
+  const fieldOperation = [{ operation: "base_add_field", headCommit: { payload: { slug: "target-field" } } }];
+  const requests = [
+    { id: "other-base", baseId: "bas-ideas", sourceMeta: { subject: "base_field", fieldSlug: "target-field" }, operations: fieldOperation },
+    { id: "other-field", baseId: "bas-questions", sourceMeta: { subject: "base_field", fieldSlug: "notes" }, operations: fieldOperation },
+    { id: "matching", baseId: "bas-questions", sourceMeta: { subject: "base_field", fieldSlug: "target-field" }, operations: fieldOperation },
+  ];
+  assert.equal(pendingRequiredFieldUpgrade(requests, "bas-questions", "target-field")?.id, "matching");
+  assert.equal(pendingRequiredFieldUpgrade(requests.slice(0, 2), "bas-questions", "target-field"), undefined);
+  const rejected = { ...requests[2], id: "rejected", status: "rejected" };
+  assert.equal(pendingRequiredFieldUpgrade([rejected, ...requests], "bas-questions", "target-field")?.status, "rejected");
+  assert.match(requiredFieldUpgradeError(rejected, [{ resourceKey: "ideas" }]), /SETUP_REJECTED:.*Inbox.*ideas/);
+  assert.match(requiredFieldUpgradeError({ ...requests[2], status: "in_review" }), /SETUP_PENDING:/);
+});
+
 test("filling the required fields opens the gate", () => {
   const idea = { ...vagueIdea, one_liner: "一句话", who: "某类人" };
   assert.deepEqual(missingForStage(idea, "idea"), []);
@@ -180,7 +299,7 @@ test("buildSnapshot derives counts, attention, and per-kind documents", () => {
 
   const vague = snapshot.ideas.find((i) => i.record_id === "idea-1");
   assert.equal(vague.attention, "needs_answer");
-  assert.equal(vague.open_questions, 1);
+  assert.equal(vague.open_questions, 3);
 
   const sharp = snapshot.ideas.find((i) => i.record_id === "idea-2");
   assert.equal(sharp.documents.brd.status, "已完善");

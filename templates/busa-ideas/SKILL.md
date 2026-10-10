@@ -78,6 +78,24 @@ please them.
 Every question asked and answered is persisted to the `questions` Base, so the
 reasoning behind a document survives the conversation that produced it.
 
+Before asking a new free-form question, inspect the idea's current rung and
+its required fields. To leave `idea`, `one-liner` and `who` must be filled; to
+leave `brd`, `problem` and `why-now` must be filled. A blank required field is
+itself the next consultant question. Use the exact `ideas.record-id`, stage,
+and `questions.target-field` mapping below; do not rely on similar wording in
+another question. For an absent mapped question, create one with record-id
+`required:<URL-encoded idea record-id>:<snake_case field>` (for example,
+`required:idea-123:why_now`), the same `idea-id`, current stage, question text,
+and target-field. First check for an existing question with that target-field
+for the same idea, and reuse it rather than creating a duplicate.
+
+| `questions.target-field` | `ideas` field | Ask |
+| --- | --- | --- |
+| `one_liner` | `one-liner` | 请用一句话说清楚这个想法要做什么？ |
+| `who` | `who` | 这个想法首先是为谁解决问题？ |
+| `problem` | `problem` | 他们现在遇到的具体问题是什么？ |
+| `why_now` | `why-now` | 为什么现在是做这件事的合适时机？ |
+
 ## Answering Questions
 
 The operator may answer a consultant question either in Agent chat or in the
@@ -87,8 +105,22 @@ create a second answer record or keep chat-only state.
 - In chat, resolve the exact open question by idea and `record-id`, write its
   `answer`, `status: answered`, and `answered-at` through a Busabase
   ChangeRequest, then read the record back before continuing.
+- If the question has a `target-field`, verify it is required on the idea's
+  current rung and that the mapped Idea field is still blank. Submit the
+  Question answer and the mapped field on the **same Idea record** as two
+  ChangeRequests. Do not create a second Idea or a second Question. These
+  requests can be reviewed separately: confirm both are merged before saying
+  the gate is clear, and do not resubmit identical pending requests. If one is
+  rejected, reconcile or resubmit that side of the pair; a filled Idea field
+  alone does not prove its Question was approved. The UI can surface recent
+  rejected required questions, but older review history may need manual Inbox
+  inspection. A required question cannot be skipped; parking the Idea remains
+  available.
+- For older installs, an unmapped Question never fills a required Idea field
+  just because its text sounds related. Add or find the correctly mapped
+  question, and keep the old answer and its provenance intact.
 - The UI uses the same fields and mutation boundary. An answer made on either
-  surface must appear on the other after refresh.
+  surface must appear on the other after both ChangeRequests merge and refresh.
 - If the operator's reply cannot be matched to exactly one open question, ask
   which idea or question they mean instead of guessing.
 - After persisting an answer, ask only the next unanswered question for that

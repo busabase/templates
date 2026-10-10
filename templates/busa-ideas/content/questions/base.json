@@ -82,6 +82,14 @@
       "required": false,
       "position": 9,
       "options": {}
+    },
+    {
+      "slug": "target-field",
+      "name": "对应必填项",
+      "type": "text",
+      "required": false,
+      "position": 10,
+      "options": {}
     }
   ],
   "views": [],
@@ -94,7 +102,7 @@
     {
       "key": "answer-question",
       "label": "记录我对某个问题的回答",
-      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能并按照其流程执行，然后把我的回答写回到那条唯一对应的未回答问题记录上——写入 answer、status 改为已回答、answered-at，绝不新建第二条答案记录；如果对不上哪一条，先问清楚是哪个想法或哪个问题。"
+      "body": "{target}\n\n阅读这个文件夹里的 `busa-ideas` 技能并按照其流程执行，然后把我的回答写回到那条唯一对应的未回答问题记录上——写入 answer、status 改为已回答、answered-at，绝不新建第二条答案记录。若问题带 target-field，还要将回答同步到同一条灵感的对应必填字段，并确认两项修改均已合并；如果对不上哪一条，先问清楚是哪个想法或哪个问题。"
     },
     {
       "key": "open-questions",

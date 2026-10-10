@@ -68,6 +68,7 @@ export const messages = {
     // gate
     gateReady: "Everything on this rung is answered. Ready to move to {stage}.",
     gateBlocked: "Cannot advance yet: {blockers}.",
+    answerRequiredQuestions: "Answer the required questions",
     gateComplete: "This idea has reached PRD. It is ready to hand to the app creator.",
     gateParked: "This idea is parked. Nothing is expected of you.",
     advanceTo: "Advance to {stage}",
@@ -78,6 +79,16 @@ export const messages = {
     skipQuestion: "Skip",
     questionSkipped: "Skipped.",
     answerEmpty: "An answer cannot be empty. Use Skip if you want to move past it.",
+    requiredAnswerEmpty: "An answer is required before this idea can advance.",
+    answerSaved: "Answer saved.",
+    answerPendingReview: "Answer and Idea update submitted for review. The gate changes after both are approved.",
+    requiredAnswerPending: "Answer and Idea update are awaiting review.",
+    requiredAnswerPartialPending: "One related change is awaiting review. Save the same answer to finish submitting both changes.",
+    requiredAnswerRejected: "The Question change was rejected while the Idea field was saved. Review the answer, then resubmit this Question.",
+    requiredQuestion_one_liner: "In one sentence, what does this idea do?",
+    requiredQuestion_who: "Who is this idea primarily for?",
+    requiredQuestion_problem: "What specific problem do they face today?",
+    requiredQuestion_why_now: "Why is now the right time to do this?",
 
     // documents
     docNotWritten: "Not written yet.",
@@ -170,6 +181,7 @@ export const messages = {
     // gate
     gateReady: "这一层该答的都答了，可以进入{stage}。",
     gateBlocked: "还不能往下走：{blockers}。",
+    answerRequiredQuestions: "去回答必填问题",
     gateComplete: "已经到 PRD 了，可以交给 App Creator 做出来。",
     gateParked: "这条已经搁置，不需要你做什么。",
     advanceTo: "推进到{stage}",
@@ -180,6 +192,16 @@ export const messages = {
     skipQuestion: "跳过",
     questionSkipped: "已跳过。",
     answerEmpty: "回答不能是空的。想先放一放就点「跳过」。",
+    requiredAnswerEmpty: "这项需要回答后才能推进灵感。",
+    answerSaved: "回答已保存。",
+    answerPendingReview: "回答和灵感字段修改已提交审核；两项都通过后，推进条件才会更新。",
+    requiredAnswerPending: "回答和灵感字段修改正在等待审核。",
+    requiredAnswerPartialPending: "已有一项相关修改等待审核；保存同一回答可补交另一项。",
+    requiredAnswerRejected: "灵感字段已保存，但问题修改被拒绝。请核对回答后重新提交此问题。",
+    requiredQuestion_one_liner: "请用一句话说清楚这个想法要做什么？",
+    requiredQuestion_who: "这个想法首先是为谁解决问题？",
+    requiredQuestion_problem: "他们现在遇到的具体问题是什么？",
+    requiredQuestion_why_now: "为什么现在是做这件事的合适时机？",
 
     // documents
     docNotWritten: "还没写。",

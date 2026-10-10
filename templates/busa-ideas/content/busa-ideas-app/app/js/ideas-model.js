@@ -18,6 +18,27 @@ export const REQUIRED_TO_LEAVE = {
   prd: [],
 };
 
+export const REQUIRED_QUESTION_TEXT = {
+  one_liner: "请用一句话说清楚这个想法要做什么？",
+  who: "这个想法首先是为谁解决问题？",
+  problem: "他们现在遇到的具体问题是什么？",
+  why_now: "为什么现在是做这件事的合适时机？",
+};
+
+export function requiredQuestionId(ideaId, field) {
+  return `required:${encodeURIComponent(ideaId)}:${field}`;
+}
+
+export function parseRequiredQuestionId(id) {
+  const match = /^required:([^:]+):([a-z_]+)$/.exec(id);
+  if (!match || !Object.hasOwn(REQUIRED_QUESTION_TEXT, match[2])) return null;
+  try {
+    return { ideaId: decodeURIComponent(match[1]), field: match[2] };
+  } catch {
+    return null;
+  }
+}
+
 const STATUS_PARKED = "已搁置";
 
 function asArray(value) {
@@ -94,6 +115,8 @@ export function normalizeQuestionRow(row) {
     stage: STAGES.includes(row.stage) ? row.stage : "idea",
     question: row.question || "",
     why_asking: row.why_asking || "",
+    target_field: row.target_field || "",
+    recovery: Boolean(row.recovery),
     answer,
     // A row is only "answered" when it actually carries an answer. Trusting a
     // stale status field would let an emptied answer still gate-pass.
@@ -102,6 +125,29 @@ export function normalizeQuestionRow(row) {
     asked_at: row.asked_at || "",
     answered_at: row.answered_at || "",
   };
+}
+
+export function questionsForIdea(idea, questions = []) {
+  const mine = asArray(questions).filter((question) => question.idea_id === idea.record_id);
+  const missing = missingForStage(idea, idea.stage);
+  const required = missing.map((field, index) => {
+    const existing = mine.find((question) => question.target_field === field && question.stage === idea.stage);
+    return {
+      ...(existing || {}),
+      record_id: existing?.record_id || requiredQuestionId(idea.record_id, field),
+      idea_id: idea.record_id,
+      stage: idea.stage,
+      question: existing?.question || REQUIRED_QUESTION_TEXT[field],
+      target_field: field,
+      answer: existing?.answer || "",
+      status: "open",
+      position: existing?.position ?? index - missing.length,
+      generated: !existing,
+    };
+  });
+  return [...required, ...mine.filter((question) => !missing.includes(question.target_field))].sort(
+    (a, b) => a.position - b.position,
+  );
 }
 
 export const NORMALIZE_ROW_BY_KEY = {
@@ -179,15 +225,13 @@ export function buildSnapshot({ ideas = [], documents = [], questions = [] } = {
   const normalizedIdeas = asArray(ideas).map(normalizeIdeaRow);
 
   const enriched = normalizedIdeas.map((idea) => {
-    const mineQuestions = normalizedQuestions
-      .filter((q) => q.idea_id === idea.record_id)
-      .sort((a, b) => a.position - b.position);
+    const mineQuestions = questionsForIdea(idea, normalizedQuestions);
     const mineDocuments = normalizedDocuments.filter((doc) => doc.idea_id === idea.record_id);
     const byKind = {};
     for (const kind of DOC_KINDS) {
       byKind[kind] = mineDocuments.find((doc) => doc.kind === kind) || null;
     }
-    const check = advanceCheck(idea, normalizedQuestions);
+    const check = advanceCheck(idea, mineQuestions);
     return {
       ...idea,
       clarity: clarityFor(idea, normalizedQuestions, normalizedDocuments),
@@ -195,7 +239,7 @@ export function buildSnapshot({ ideas = [], documents = [], questions = [] } = {
       questions: mineQuestions,
       documents: byKind,
       advance: check,
-      attention: attentionFor(idea, normalizedQuestions),
+      attention: attentionFor(idea, mineQuestions),
     };
   });
 
