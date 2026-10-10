@@ -34,8 +34,10 @@ const json = (value) => `${JSON.stringify(value, null, 2)}\n`;
 
 let position = 0;
 for (const base of appConfig.bases) {
+  const relativePath = `content/${base.key}/base.json`;
+  const existing = JSON.parse(await readFile(path.join(root, relativePath), "utf8").catch(() => "{}"));
   await emit(
-    `content/${base.key}/base.json`,
+    relativePath,
     json({
       name: base.name,
       description: base.description ?? "",
@@ -54,6 +56,7 @@ for (const base of appConfig.bases) {
         },
       })),
       views: [],
+      ...(existing.agentPrompts ? { agentPrompts: existing.agentPrompts } : {}),
     }),
   );
 }

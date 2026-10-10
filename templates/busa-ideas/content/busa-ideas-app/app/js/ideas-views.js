@@ -16,9 +16,9 @@ import {
   t,
   warnings,
 } from "../app.js";
-import { DOC_KINDS, STAGES } from "./ideas-model.js?v=0.1.0";
-import { hydrateDocumentVisuals, renderMarkdownDocument } from "./markdown-renderer.js?v=0.1.0";
-import { getProvider } from "./providers/index.js?v=0.1.0";
+import { DOC_KINDS, STAGES } from "./ideas-model.js?v=0.2.0";
+import { hydrateDocumentVisuals, renderMarkdownDocument } from "./markdown-renderer.js?v=0.2.0";
+import { getProvider } from "./providers/index.js?v=0.2.0";
 
 const DOC_TABS = ["overview", "questions", ...DOC_KINDS];
 
@@ -57,25 +57,30 @@ export function renderIdeas() {
 function questionCard(question) {
   const answered = question.status === "answered";
   const skipped = question.status === "skipped";
+  const pending = state.settings?.pendingAnswers?.includes(question.record_id);
   const stateClass = answered ? "answered" : skipped ? "skipped" : "open";
   const why = question.why_asking ? `<p class="question-why">${escapeHtml(question.why_asking)}</p>` : "";
   const body = answered
     ? `<blockquote class="question-answer">${escapeHtml(question.answer)}</blockquote>`
     : skipped
       ? `<p class="muted">${t("questionSkipped")}</p>`
+      : pending
+        ? `<p class="muted">${t("requiredAnswerPending")}</p>`
       : `
         <textarea class="question-input" data-answer-for="${escapeHtml(question.record_id)}"
-          rows="3" placeholder="${t("answerPlaceholder")}"></textarea>
+          rows="3" placeholder="${t("answerPlaceholder")}">${escapeHtml(state.settings?.pendingDrafts?.[question.record_id] || question.answer)}</textarea>
+        ${question.recovery ? `<p class="muted">${t("requiredAnswerRejected")}</p>` :
+          state.settings?.pendingDrafts?.[question.record_id] ? `<p class="muted">${t("requiredAnswerPartialPending")}</p>` : ""}
         <div class="question-actions">
           <button type="button" class="btn primary" data-answer="${escapeHtml(question.record_id)}">${t("submitAnswer")}</button>
-          <button type="button" class="btn quiet" data-skip="${escapeHtml(question.record_id)}">${t("skipQuestion")}</button>
+          ${question.target_field ? "" : `<button type="button" class="btn quiet" data-skip="${escapeHtml(question.record_id)}">${t("skipQuestion")}</button>`}
         </div>
       `;
   return `
     <li class="question ${stateClass}">
       <div class="question-head">
         <span class="badge stage">${t(`stage_${question.stage}`)}</span>
-        <span class="question-text">${escapeHtml(question.question)}</span>
+        <span class="question-text">${escapeHtml(question.generated ? t(`requiredQuestion_${question.target_field}`) : question.question)}</span>
       </div>
       ${why}
       ${body}
@@ -105,7 +110,10 @@ function overviewTab(idea) {
     const blockers = advance.missingFields.length
       ? advance.missingFields.map((f) => t(`field_${f}`)).join("、")
       : t("openQuestionsCount").replace("{count}", String(advance.openQuestions.length));
-    gate = `<div class="gate blocked"><p>${t("gateBlocked").replace("{blockers}", escapeHtml(blockers))}</p></div>`;
+    const answerLink = advance.missingFields.length
+      ? `<a href="#/ideas/${encodeURIComponent(idea.record_id)}/questions">${t("answerRequiredQuestions")}</a>`
+      : "";
+    gate = `<div class="gate blocked"><p>${t("gateBlocked").replace("{blockers}", escapeHtml(blockers))}</p>${answerLink}</div>`;
   }
   return `
     ${gate}
@@ -188,11 +196,14 @@ function bindDetailEvents() {
       const input = els.content.querySelector(`[data-answer-for="${CSS.escape(id)}"]`);
       const answer = String(input?.value || "").trim();
       if (!answer) {
-        state.notice = t("answerEmpty");
+        const question = ideaById(state.route.id)?.questions.find((item) => item.record_id === id);
+        state.notice = t(question?.target_field ? "requiredAnswerEmpty" : "answerEmpty");
         render();
         return;
       }
-      await applyAndReload({ action: "answer", question_id: id, answer });
+      const question = ideaById(state.route.id)?.questions.find((item) => item.record_id === id);
+      await applyAndReload({ action: "answer", question_id: id, answer,
+        ...(question?.recovery ? { idea_id: question.idea_id, target_field: question.target_field } : {}) });
     });
   });
   els.content.querySelectorAll("[data-skip]").forEach((button) => {
@@ -206,7 +217,10 @@ function bindDetailEvents() {
 async function applyAndReload(payload) {
   try {
     const provider = await getProvider();
-    await provider.applyDecision(payload);
+    const result = await provider.applyDecision(payload);
+    if (payload.action === "answer" || payload.action === "skip") {
+      state.notice = result?.pending ? t("answerPendingReview") : t("answerSaved");
+    }
     await loadState();
   } catch (error) {
     state.notice = String(error?.message || error);

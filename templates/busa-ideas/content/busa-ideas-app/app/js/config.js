@@ -5,7 +5,7 @@ export const appConfig = {
   locale: "auto",
   readOnly: false,
   spaceId: "",
-  schemaVersion: 1,
+  schemaVersion: 2,
   folder: {
     name: "Busa Ideas",
     description: "灵感库、咨询师追问，以及每条灵感的 BRD / MRD / PRD",
@@ -73,6 +73,7 @@ export const appConfig = {
         { slug: "position", name: "顺序", type: "number", required: false },
         { slug: "asked-at", name: "提问时间", type: "text", required: false },
         { slug: "answered-at", name: "回答时间", type: "text", required: false },
+        { slug: "target-field", name: "对应必填项", type: "text", required: false },
       ],
     },
     {
@@ -91,8 +92,8 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
-    setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "changeRequests.list"],
+    setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata", "bases.fieldChangeRequest"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },
 };

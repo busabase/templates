@@ -6,7 +6,7 @@
 // classroom can point at busa-email and say "this is the conversation that
 // produced it", plus one still-vague idea mid-interrogation and one honestly
 // parked idea.
-import { buildSnapshot } from "../ideas-model.js?v=0.1.0";
+import { buildSnapshot } from "../ideas-model.js?v=0.2.0";
 
 const NOW = "2026-09-02T09:30:00.000Z";
 
@@ -781,12 +781,30 @@ export function demoSnapshot(scenario) {
     ideas = IDEAS.filter((i) => i.record_id === "idea-email");
   } else if (scenario === "parked") {
     ideas = IDEAS.filter((i) => i.record_id === "idea-parked");
+  } else if (scenario === "why-now") {
+    ideas = [idea("idea-why-now", "线下设备预约", {
+      one_liner: "让团队按日期预约共享设备并查看占用情况",
+      who: "需要轮流使用摄影设备的小团队",
+      problem: "预约分散在聊天里，容易发生时间冲突。",
+      stage: "brd",
+      status: "打磨中",
+    })];
   }
   const ids = new Set(ideas.map((i) => i.record_id));
+  const questions = scenario === "why-now"
+    ? Array.from({ length: 6 }, (_, index) => question(
+      `q-why-now-${index + 1}`,
+      "idea-why-now",
+      "brd",
+      index + 1,
+      ["谁会负责预约？", "现在如何记录借用？", "最常见的冲突是什么？", "设备交接如何确认？", "谁可以取消预约？", "如何判断试用成功？"][index],
+      { answer: ["设备管理员。", "目前在群里说。", "同一时段多人预约。", "借用人和管理员确认。", "管理员可以取消。", "两周内没有重复预约。"][index], status: "answered" },
+    ))
+    : QUESTIONS.filter((q) => ids.has(q.idea_id));
   return buildSnapshot({
     ideas,
     documents: DOCUMENTS.filter((d) => ids.has(d.idea_id)),
-    questions: QUESTIONS.filter((q) => ids.has(q.idea_id)),
+    questions,
   });
 }
 

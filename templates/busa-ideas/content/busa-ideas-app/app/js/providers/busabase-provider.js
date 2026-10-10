@@ -1,7 +1,13 @@
 import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
-import { appConfig } from "../config.js?v=0.1.0";
-import { buildSnapshot } from "../ideas-model.js?v=0.1.0";
+import { appConfig } from "../config.js?v=0.2.0";
+import {
+  buildSnapshot,
+  parseRequiredQuestionId,
+  requiredQuestionId,
+  REQUIRED_QUESTION_TEXT,
+  REQUIRED_TO_LEAVE,
+} from "../ideas-model.js?v=0.2.0";
 
 const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
@@ -27,6 +33,137 @@ const toBusabaseFields = (fields) =>
 let runtimeClient;
 let runtimeBases = new Map();
 let pendingSetupError = "";
+const pendingAnswers = new Set();
+const submittedQuestionAnswers = new Map();
+
+export function pendingRequiredFieldUpgrade(requests, baseId, fieldSlug) {
+  return requests.find((request) =>
+    request.baseId === baseId &&
+    request.sourceMeta?.subject === "base_field" &&
+    request.sourceMeta?.fieldSlug === fieldSlug &&
+    request.operations?.some((operation) =>
+      operation.operation === "base_add_field" && operation.headCommit?.payload?.slug === fieldSlug,
+    ),
+  );
+}
+
+export function requiredFieldUpgradeError(request, otherRepairs = []) {
+  const remaining = otherRepairs.length
+    ? ` Other resource upgrades remain: ${otherRepairs.map((item) => item.resourceKey).join(", ")}.`
+    : "";
+  return request.status === "rejected"
+    ? `SETUP_REJECTED: Field upgrade ${request.id} was rejected. Review its reason in the Inbox before retrying setup.${remaining}`
+    : `SETUP_PENDING: Existing field upgrade ${request.id} awaits Space admin approval.${remaining}`;
+}
+
+async function guardPendingRequiredFieldUpgrade(resources) {
+  const questionBase = resources.bases.find((entry) => entry.key === "questions");
+  if (!questionBase || !resources.repairs.some((repair) => repair.resourceKey === "questions")) return;
+  const detail = await runtimeClient.bases.get({ baseId: questionBase.baseId });
+  if (detail.fields?.some((field) => field.slug === "target-field")) return;
+  if (!allowedReads.has("changeRequests.list")) throw new Error("PROCEDURE_DENIED: changeRequests.list");
+  const result = await runtimeClient.changeRequests.list({
+    affectsNodeId: questionBase.nodeId,
+    status: ["in_review", "changes_requested", "approved", "rejected"],
+    limit: 20,
+  });
+  const existing = pendingRequiredFieldUpgrade(result.changeRequests, questionBase.baseId, "target-field");
+  if (existing) {
+    const others = resources.repairs.filter((repair) => repair.resourceKey !== "questions");
+    throw new Error(requiredFieldUpgradeError(existing, others));
+  }
+  if (result.nextCursor) {
+    throw new Error("SETUP_PENDING: More than 20 recent changes affect Questions; check the Inbox before retrying setup.");
+  }
+}
+
+async function pendingChanges(key, strict = true) {
+  if (!allowedReads.has("changeRequests.list")) throw new Error("PROCEDURE_DENIED: changeRequests.list");
+  const result = await runtimeClient.changeRequests.list({
+    affectsNodeId: base(key).nodeId,
+    status: ["in_review", "changes_requested", "approved"],
+    limit: 20,
+  });
+  if (strict && result.nextCursor) {
+    throw new Error("More than 20 pending changes affect this Base. Review its Inbox before submitting another answer.");
+  }
+  return result.changeRequests.flatMap((request) => request.operations || []);
+}
+
+export function pendingQuestionAnswer(operations, questionId, existingRecordId) {
+  return operations.find((operation) => {
+    const fields = operation.headCommit?.payload || {};
+    return Object.hasOwn(fields, "answer") &&
+      (fields["record-id"] === questionId || (existingRecordId && operation.targetRecordId === existingRecordId));
+  })?.headCommit?.payload?.answer;
+}
+
+export function pendingIdeaAnswer(operations, ideaRecordId, field) {
+  return operations.find(
+    (operation) => operation.targetRecordId === ideaRecordId &&
+      Object.hasOwn(operation.headCommit?.payload || {}, field.replaceAll("_", "-")),
+  )?.headCommit?.payload?.[field.replaceAll("_", "-")];
+}
+
+export function reviewBlockingQuestions(ideas, questions, pendingOperations, rejectedRequests) {
+  const canonicalIds = new Set(questions.map((question) => question.record_id));
+  const rejectedAnswers = new Map();
+  const rejectedMapped = [];
+  for (const operation of rejectedRequests.flatMap((request) => request.operations || [])) {
+    const fields = operation.headCommit?.payload || {};
+    const required = parseRequiredQuestionId(fields["record-id"]);
+    const id = fields["record-id"];
+    const ideaId = fields["idea-id"] || required?.ideaId;
+    const field = fields["target-field"] || required?.field;
+    if (!id || !ideaId || !field || !Object.hasOwn(REQUIRED_QUESTION_TEXT, field)) continue;
+    if (!rejectedAnswers.has(id)) rejectedAnswers.set(id, String(fields.answer || ""));
+    rejectedMapped.push({ id, ideaId, field, stage: fields.stage, answer: String(fields.answer || "") });
+  }
+  const pendingQuestions = pendingOperations
+    .map((operation) => operation.headCommit?.payload || {})
+    .filter((fields) => fields["record-id"] && fields["idea-id"] && fields["target-field"] && fields.answer)
+    .filter((fields) => !canonicalIds.has(fields["record-id"]))
+    .map((fields) => ({
+      record_id: fields["record-id"], idea_id: fields["idea-id"], stage: fields.stage,
+      question: fields.question, target_field: fields["target-field"], answer: "", status: "open",
+    }));
+  const pendingIds = new Set(pendingQuestions.map((question) => question.record_id));
+  const recoveryQuestions = ideas.flatMap((idea) =>
+    (REQUIRED_TO_LEAVE[idea.stage || "idea"] || []).flatMap((field) => {
+      const rejected = rejectedMapped.find((item) =>
+        item.ideaId === idea.record_id && item.field === field && (!item.stage || item.stage === idea.stage),
+      );
+      const id = rejected?.id || requiredQuestionId(idea.record_id, field);
+      const rejectedAnswer = rejected?.answer;
+      if (!rejectedAnswer || idea[field] !== rejectedAnswer || canonicalIds.has(id) || pendingIds.has(id)) return [];
+      return [{ record_id: id, idea_id: idea.record_id, stage: idea.stage,
+        question: REQUIRED_QUESTION_TEXT[field], target_field: field, answer: "", status: "open", recovery: true }];
+    }),
+  );
+  return { questions: [...pendingQuestions, ...recoveryQuestions], rejectedAnswers };
+}
+
+export function rejectedQuestionMapping(requests, questionId, ideaId, targetField) {
+  const operation = requests.flatMap((request) => request.operations || []).find((item) => {
+    const fields = item.headCommit?.payload || {};
+    return fields["record-id"] === questionId && fields["idea-id"] === ideaId &&
+      fields["target-field"] === targetField;
+  });
+  return operation ? { ideaId, field: targetField } : null;
+}
+
+async function readRejectedQuestionRequests(strict = true) {
+  if (!allowedReads.has("changeRequests.list")) throw new Error("PROCEDURE_DENIED: changeRequests.list");
+  const result = await runtimeClient.changeRequests.list({
+    affectsNodeId: base("questions").nodeId,
+    status: ["rejected"],
+    limit: 20,
+  });
+  if (strict && result.nextCursor) {
+    throw new Error("More than 20 rejected Question changes exist. Review the Inbox before advancing this idea.");
+  }
+  return result.changeRequests;
+}
 
 async function ensureResources() {
   runtimeClient = runtimeClient || createRuntimeClient();
@@ -38,6 +175,7 @@ async function ensureResources() {
     if (!allowedReads.has("bases.get") || !allowedSetup.has("nodes.updateMetadata")) {
       throw new Error("PROCEDURE_DENIED: bases.get/nodes.updateMetadata");
     }
+    await guardPendingRequiredFieldUpgrade(resources);
     resources = await provisionDeclaredResources(runtimeClient, appConfig);
   }
   if (!resources.folder || resources.missing.length) {
@@ -186,11 +324,38 @@ export const busabaseProvider = {
       readSettingsRows(),
       countRecords("ideas"),
     ]);
+    const [pendingQuestionOperations, pendingIdeaOperations] = await Promise.all([
+      pendingChanges("questions", false),
+      pendingChanges("ideas", false),
+    ]);
+    const { questions: reviewQuestions, rejectedAnswers } = reviewBlockingQuestions(
+      ideasPage.rows,
+      questionsPage.rows,
+      pendingQuestionOperations,
+      await readRejectedQuestionRequests(false),
+    );
     const snapshot = buildSnapshot({
       ideas: ideasPage.rows,
       documents: documentsPage.rows,
-      questions: questionsPage.rows,
+      questions: [...questionsPage.rows, ...reviewQuestions],
     });
+    pendingAnswers.clear();
+    const ideaRecordIds = new Map(ideasPage.rows.map((row) => [row.record_id, row.__recordId]));
+    const pendingDrafts = {};
+    for (const question of reviewQuestions.filter((item) => item.recovery)) {
+      pendingDrafts[question.record_id] = rejectedAnswers.get(question.record_id);
+    }
+    for (const idea of snapshot.ideas) {
+      for (const question of idea.questions.filter((item) => item.target_field)) {
+        const questionAnswer = pendingQuestionAnswer(pendingQuestionOperations, question.record_id);
+        const ideaAnswer = pendingIdeaAnswer(pendingIdeaOperations, ideaRecordIds.get(idea.record_id), question.target_field);
+        if (questionAnswer || ideaAnswer) pendingDrafts[question.record_id] = questionAnswer || ideaAnswer;
+        if (questionAnswer && (ideaAnswer === questionAnswer || idea[question.target_field] === questionAnswer)) {
+          pendingAnswers.add(question.record_id);
+        }
+        if (ideaAnswer && question.answer === ideaAnswer) pendingAnswers.add(question.record_id);
+      }
+    }
     // buildSnapshot only ever sees the first loaded page, so counts.total
     // undercounts once there is more than one page. Overwrite with the real
     // total from records.count; a null (permission denied, or the call failed)
@@ -209,6 +374,8 @@ export const busabaseProvider = {
       agent_tasks: { updated_at: "", tasks: [] },
       execution_report: null,
       snapshot,
+      pendingAnswers: [...pendingAnswers],
+      pendingDrafts,
       // Seeds app.js's page-cursor cache: the cursor needed to fetch page 2 of
       // each Base that has its own browsed list view (page 1 was just fetched
       // above). Settings is read once; see the comment on readPage.
@@ -248,6 +415,99 @@ export const busabaseProvider = {
       if (!questionId) throw new Error("question_id is required");
       const answer = action === "answer" ? String(payload.answer || "") : "";
       if (action === "answer" && !answer.trim()) throw new Error("An answer cannot be empty");
+      const required = parseRequiredQuestionId(questionId);
+      const existingQuestion = await findRecord("questions", "record-id", questionId);
+      const questionFields = normalizeFields(
+        existingQuestion?.headCommit?.payload || existingQuestion?.headCommit?.fields || existingQuestion?.fields,
+      );
+      const recovered = !existingQuestion && !required && payload.idea_id && payload.target_field
+        ? rejectedQuestionMapping(
+          await readRejectedQuestionRequests(), questionId, String(payload.idea_id), String(payload.target_field),
+        )
+        : null;
+      const targetField = questionFields.target_field || required?.field || recovered?.field || "";
+      if (targetField) {
+        if (action === "skip") throw new Error("A required field question cannot be skipped");
+        const ideaId = questionFields.idea_id || required?.ideaId || recovered?.ideaId;
+        if (!ideaId || (required && ideaId !== required.ideaId)) throw new Error("Invalid required question mapping");
+        const ideaRecord = await findRecord("ideas", "record-id", ideaId);
+        if (!ideaRecord) throw new Error(`Unknown idea: ${ideaId}`);
+        const ideaFields = normalizeFields(
+          ideaRecord.headCommit?.payload || ideaRecord.headCommit?.fields || ideaRecord.fields,
+        );
+        const stage = ideaFields.stage || "idea";
+        if (!REQUIRED_TO_LEAVE[stage]?.includes(targetField)) {
+          throw new Error("This required field is no longer on the current stage; refresh the idea");
+        }
+        if (existingQuestion && questionFields.target_field !== targetField) {
+          throw new Error("Existing question has no required field mapping");
+        }
+        const [questionOperations, ideaOperations] = await Promise.all([
+          pendingChanges("questions"),
+          pendingChanges("ideas"),
+        ]);
+        const pendingQuestion = pendingQuestionAnswer(questionOperations, questionId, existingQuestion?.id);
+        const pendingIdea = pendingIdeaAnswer(ideaOperations, ideaRecord.id, targetField);
+        const canonicalIdeaAnswer = String(ideaFields[targetField] || "");
+        const canonicalQuestionAnswer = String(questionFields.answer || "");
+        if (canonicalIdeaAnswer && canonicalIdeaAnswer !== answer) {
+          throw new Error("The Idea field has a different answer; refresh the idea before editing it");
+        }
+        if (canonicalQuestionAnswer && canonicalQuestionAnswer !== answer) {
+          throw new Error("The Question has a different answer; refresh the idea before editing it");
+        }
+        if (canonicalIdeaAnswer === answer && canonicalQuestionAnswer === answer) {
+          return { updated_at: now, pending: false };
+        }
+        if ((pendingQuestion && pendingQuestion !== answer) || (pendingIdea && pendingIdea !== answer)) {
+          throw new Error("A different answer for this required field is awaiting review; check the Inbox before resubmitting");
+        }
+        const submittedAnswer = submittedQuestionAnswers.get(questionId);
+        if (submittedAnswer && submittedAnswer !== answer) {
+          throw new Error("This question already has a submitted answer awaiting review; refresh after review");
+        }
+        if ((pendingQuestion === answer || canonicalQuestionAnswer === answer) &&
+          (pendingIdea === answer || canonicalIdeaAnswer === answer)) {
+          pendingAnswers.add(questionId);
+          return { updated_at: now, pending: true };
+        }
+        if (!pendingQuestion && !submittedAnswer && canonicalQuestionAnswer !== answer) {
+          await upsert(
+            "questions",
+            "record-id",
+            questionId,
+            {
+              record_id: questionId,
+              idea_id: ideaId,
+              stage,
+              question: questionFields.question || REQUIRED_QUESTION_TEXT[targetField],
+              target_field: targetField,
+              answer,
+              status: "answered",
+              answered_at: now,
+            },
+            `Answered required question ${questionId}`,
+          );
+          submittedQuestionAnswers.set(questionId, answer);
+        }
+        try {
+          if (pendingIdea !== answer && canonicalIdeaAnswer !== answer) {
+            await upsert(
+              "ideas",
+              "record-id",
+              ideaId,
+              { record_id: ideaId, [targetField]: answer, updated_at: now },
+              `Synced ${targetField} from question ${questionId}`,
+            );
+          }
+        } catch (error) {
+          throw new Error(`Question answer was submitted, but the Idea update failed: ${String(error?.message || error)}`);
+        }
+        const pending = !isStandaloneLocalRuntime() || Boolean(pendingQuestion || pendingIdea);
+        if (pending) pendingAnswers.add(questionId);
+        return { updated_at: now, pending };
+      }
+      if (!existingQuestion) throw new Error(`Unknown question: ${questionId}`);
       await upsert(
         "questions",
         "record-id",
@@ -260,7 +520,7 @@ export const busabaseProvider = {
         },
         `${action === "answer" ? "Answered" : "Skipped"} question ${questionId}`,
       );
-      return { updated_at: now };
+      return { updated_at: now, pending: !isStandaloneLocalRuntime() };
     }
 
     const ideaId = String(payload.idea_id || "");
@@ -277,11 +537,20 @@ export const busabaseProvider = {
       return { updated_at: now };
     }
 
-    // action === "advance": re-derive the gate from stored state instead of
-    // trusting the client. A UI that offers the button on a blocked idea, or a
-    // hand-made request, both get the same refusal here.
-    const [ideasPage, questionsPage] = await Promise.all([readPage("ideas"), readPage("questions")]);
-    const snapshot = buildSnapshot({ ideas: ideasPage.rows, questions: questionsPage.rows });
+    // Re-read review state as well as canonical rows before every advance.
+    const [ideasPage, questionsPage, pendingQuestionOperations, rejectedQuestions] = await Promise.all([
+      readPage("ideas"),
+      readPage("questions"),
+      pendingChanges("questions"),
+      readRejectedQuestionRequests(),
+    ]);
+    const reviewQuestions = reviewBlockingQuestions(
+      ideasPage.rows, questionsPage.rows, pendingQuestionOperations, rejectedQuestions,
+    ).questions;
+    const snapshot = buildSnapshot({
+      ideas: ideasPage.rows,
+      questions: [...questionsPage.rows, ...reviewQuestions],
+    });
     const idea = snapshot.ideas.find((row) => row.record_id === ideaId);
     if (!idea) throw new Error(`Unknown idea: ${ideaId}`);
     if (!idea.advance.canAdvance) {
@@ -305,7 +574,10 @@ export const busabaseProvider = {
       throw new Error("PROCEDURE_DENIED: nodes.createChangeRequest/nodes.updateMetadata");
     }
     const client = runtimeClient || createRuntimeClient();
+    runtimeClient = client;
     try {
+      const resources = await inspectProvisionedResources(client, appConfig);
+      await guardPendingRequiredFieldUpgrade(resources);
       return await provisionDeclaredResources(client, appConfig);
     } catch (error) {
       if (String(error?.message || error).startsWith("SETUP_PENDING:")) {
