@@ -15,84 +15,31 @@
   align-items: center;
 }
 .sidebar-footer select,
-.toolbar select {
+.toolbar-select {
+  height: 34px;
+  max-width: 100%;
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+}
+.sidebar-footer select {
+  height: auto;
   padding: 8px;
-  max-width: 100%;
 }
-.toolbar {
-  margin: 0 24px;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-  padding-bottom: 12px;
+/* The attention block is the way into the triage queue. */
+a.attention {
+  color: inherit;
+  text-decoration: none;
+  transition: border-color var(--ease);
 }
-.toolbar .search {
-  max-width: 320px;
-  width: 100%;
-}
-.toolbar .eyebrow {
-  margin-left: auto;
-}
-.record-row {
-  position: relative;
-}
-.record-row .badge {
-  font-size: var(--text-sm);
-  color: var(--accent);
-  background: var(--accent-soft);
-  padding: 3px 7px;
-  border-radius: var(--radius-sm);
-  align-self: flex-start;
-}
-.record-row .row-main {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.record-row .reason {
-  color: var(--warning);
-  font-size: var(--text-sm);
-}
-.detail-fields h3 {
-  margin: 20px 0 10px;
-  font-size: var(--text-lg);
-}
-.timeline-row {
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
-}
-.timeline-row p {
-  color: var(--ink-soft);
-  margin: 4px 0;
-  line-height: 1.6;
-}
-.page-note {
-  color: var(--muted);
-  font-size: var(--text-sm);
-  line-height: 1.6;
-}
-.field-row strong {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  max-width: 66%;
+a.attention:hover {
+  border-color: var(--accent);
 }
 #closeNav {
   display: none;
-}
-.workspace-header h1 {
-  font-size: var(--text-2xl);
-}
-.main {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
 }
 dialog.modal {
   color: var(--ink);
@@ -111,17 +58,190 @@ dialog.modal::backdrop {
   color: var(--ink-soft);
   line-height: 1.6;
 }
-.content-split {
-  flex-shrink: 1;
-  min-height: 0;
-  flex: 1;
+/* Once data is on screen, a stale/partial/error message is a one-line notice
+ * above the page rather than a centered empty state. */
+body.has-data #error {
+  max-width: none;
+  margin: 0;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  font-size: var(--text-base);
+  text-align: left;
 }
-.record-list {
-  overflow: auto;
+a.button {
+  text-decoration: none;
 }
-.state-message:empty {
-  display: none;
+.button {
+  white-space: nowrap;
 }
+#detail {
+  max-width: 920px;
+}
+#error .button {
+  margin-left: 8px;
+}
+
+/* ── Record views ──────────────────────────────────────────────────────── */
+.ws-actions .search input {
+  width: min(260px, 26vw);
+  height: 34px;
+  font-size: var(--text-base);
+}
+.recruiting-table .col-stage {
+  width: 15%;
+}
+body.ws-layout-split {
+  --ws-split-list: minmax(320px, 420px);
+}
+body.ws-layout-split .recruiting-table th:first-child {
+  width: 58%;
+}
+body.ws-layout-split .recruiting-table .col-stage {
+  width: 42%;
+}
+.recruiting-table td.col-stage {
+  padding-right: 8px;
+  text-overflow: clip;
+}
+.recruiting-table .col-date {
+  width: 118px;
+}
+/* Candidate names are short; the next step deserves the room. */
+.recruiting-table.table-applicants {
+  --ws-first-col: 17%;
+}
+.recruiting-table td strong {
+  font-weight: 580;
+}
+.recruiting-table .badge {
+  padding: 2px 9px 2px 7px;
+  font-size: var(--text-sm);
+}
+.reason {
+  color: var(--warning);
+  font-size: var(--text-sm);
+}
+.list-footer {
+  display: flex;
+  justify-content: center;
+  padding: 14px;
+}
+.field-row strong {
+  white-space: pre-wrap;
+  max-width: 66%;
+}
+.field-row a,
+.timeline-row {
+  color: inherit;
+}
+.field-row a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.field-row a:hover {
+  text-decoration: underline;
+}
+.detail-head h2 {
+  font-size: var(--text-xl);
+}
+.detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 20px;
+}
+.detail-ledger {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+.detail-related h3 {
+  margin: 24px 0 6px;
+  font-size: var(--text-md);
+}
+.timeline-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  align-items: center;
+  padding: 10px 8px;
+  margin: 0 -8px;
+  border-bottom: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background var(--ease);
+}
+.timeline-row:hover {
+  background: var(--surface-hover);
+}
+.timeline-row strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.timeline-row > span:last-child {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* ── Overview ──────────────────────────────────────────────────────────── */
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+.overview-card .card-heading {
+  margin-bottom: 8px;
+}
+.overview-list {
+  display: grid;
+  padding: 0 8px 8px;
+}
+.overview-row {
+  display: flex;
+  min-width: 0;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  text-decoration: none;
+  transition: background var(--ease);
+}
+.overview-row:hover {
+  background: var(--surface-hover);
+}
+.overview-num {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.overview-name {
+  display: grid;
+  min-width: 0;
+}
+.overview-name strong,
+.overview-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.overview-name span {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+.overview-row .reason {
+  flex: 0 0 auto;
+}
+.overview-empty {
+  padding: 12px;
+  color: var(--muted);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --accent: #7ec5a8;
@@ -131,40 +251,39 @@ dialog.modal::backdrop {
   }
 }
 @media (max-width: 720px) {
-  .toolbar {
-    margin: 0;
-  }
-  .toolbar .search input {
-    width: 100%;
-  }
   #closeNav {
     display: block;
   }
-  .toolbar {
-    gap: 8px;
+  .ws-actions {
+    flex: 1 1 0;
+    min-width: 0;
+    flex-wrap: nowrap;
   }
-  .toolbar .search {
-    max-width: none;
+  .recruiting-table .col-stage,
+  body.ws-layout-split .recruiting-table .col-stage {
+    width: 38%;
   }
-  .toolbar .eyebrow {
-    margin-left: 0;
+  .ws-actions .search {
+    flex: 1 1 auto;
+    min-width: 0;
   }
-  .workspace-header {
-    padding-bottom: 10px;
+  .ws-actions .search input {
+    width: 100%;
   }
-  .workspace-header h1 {
-    font-size: var(--text-xl);
+  .toolbar-select {
+    max-width: 120px;
   }
   .field-row {
-    flex-wrap: wrap;
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
   .field-row strong {
     max-width: 100%;
   }
-  .detail-panel article {
-    padding-bottom: 24px;
+  .overview-grid {
+    grid-template-columns: 1fr;
   }
-  .toolbar select {
-    max-width: 160px;
+  .ws-overview .page-hero h1 {
+    font-size: var(--text-2xl);
   }
 }

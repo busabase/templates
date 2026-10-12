@@ -72,8 +72,8 @@ one of them shows up, that is a new PRD to interrogate through
 
 ## Demo Mode
 
-`?demo=1` serves a deterministic read-only set of followups — some due
-today, one upcoming, one already done — so the today/all split is visible
+`?demo=1` serves a deterministic read-only set of followups — some overdue,
+some due today, a few upcoming, two already done — so the today/all split is visible
 without touching a real Space. Demo never impersonates a connection and is
 labeled read-only.
 

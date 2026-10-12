@@ -1,16 +1,15 @@
 import {
+  closeDetail,
   DURATIONS,
   esc,
   go,
-  isMobileLayout,
-  loadMore,
   loadState,
-  matchSearch,
+  navCount,
+  openRecord,
   pickFile,
   project,
   render,
   secs,
-  setMobileDetailOpen,
   state,
   statusClass,
   t,
@@ -19,39 +18,51 @@ import {
 import { listToArray, storyboardPromptPreview } from "./mv-model.js?v=0.1.0";
 import { getProvider } from "./providers/index.js?v=0.1.0";
 
-export function renderList() {
-  const host = document.getElementById("list");
-  const countPill = document.getElementById("itemCount");
-  const renderers = { concept: listConcept, song: listSong, cast: listCast, storyboard: listStoryboard };
-  const { html, count } = renderers[state.view]();
-  host.innerHTML = html;
-  countPill.textContent = count;
-  host.querySelectorAll("[data-select]").forEach((node) =>
-    node.addEventListener("click", () => {
-      if (isMobileLayout()) setMobileDetailOpen(true);
-      go(state.view, node.dataset.select, true);
-    }),
-  );
-  host.querySelectorAll("[data-jump]").forEach((node) =>
-    node.addEventListener("click", () => {
-      setMobileDetailOpen(false);
-      go(node.dataset.jump);
-    }),
-  );
-  host
-    .querySelector("[data-load-more]")
-    ?.addEventListener("click", () => loadMore(host.querySelector("[data-load-more]").dataset.loadMore));
+const STATUSES = ["draft", "needs_review", "approved", "blocked"];
+// Status values are stored as ids; the screen shows their label.
+export function statusLabel(status) {
+  const key = `status_${status || "draft"}`;
+  const label = t(key);
+  return label === key ? String(status || "") : label;
+}
+function statusBadge(status) {
+  return `<span class="badge ${statusClass(status)}">${esc(statusLabel(status))}</span>`;
 }
 
-function loadMoreControl(key) {
-  if (!state.data?.pagination?.[key]) return "";
-  return `<div class="load-more"><button type="button" data-load-more="${esc(key)}" ${state.loadingMore[key] ? "disabled" : ""}>${state.loadingMore[key] ? t("loading_more") : t("load_more")}</button>${state.loadMoreError[key] ? `<span role="alert">${t("load_more_failed")}</span>` : ""}</div>`;
+// Search matches the fields a person reads in the row, not the raw record
+// (asset URLs and ids would match almost any query).
+function matches(values) {
+  const query = state.search.trim().toLowerCase();
+  if (!query) return true;
+  return values.some((value) => String(value ?? "").toLowerCase().includes(query));
 }
 
-function listConcept() {
-  const c = state.data.completeness || {};
+// ---------------------------------------------------------------------------
+// OVERVIEW — the only page with the hero and the metrics band.
+// ---------------------------------------------------------------------------
+export function renderOverview() {
   const song = project().song || {};
-  const rows = [
+  const c = state.data.completeness || {};
+  const m = state.data.metrics || {};
+  document.getElementById("overviewTitle").textContent = song.title || t("project_unnamed");
+  document.getElementById("overviewSummary").textContent =
+    [song.artist, song.duration_seconds ? secs(song.duration_seconds) : ""].filter(Boolean).join(" · ") ||
+    t("project_meta_fallback");
+  // Three numbers the nav does not already show. When the provider could not
+  // count them exactly (more pages exist and records.count is unavailable),
+  // the cell says "—" instead of a partial number.
+  const metric = (label, value) =>
+    `<div title="${esc(label)}"><span>${esc(label)}</span><strong>${value === null || value === undefined ? "—" : esc(value)}</strong></div>`;
+  document.getElementById("overviewMetrics").innerHTML = [
+    metric(t("metric_refs_missing"), "refsMissing" in m ? m.refsMissing : c.characters_missing_refs),
+    metric(t("metric_shots_no_image"), "shotsNoImage" in m ? m.shotsNoImage : c.shots_missing_image),
+    metric(t("metric_shots_no_video"), "shotsNoVideo" in m ? m.shotsNoVideo : c.shots_missing_video),
+  ].join("");
+  const castTotal = state.data.totals?.characters ?? (project().characters || []).length;
+  const shotTotal = state.data.totals?.shots ?? (project().shots || []).length;
+  const castDone = castTotal > 0 && c.characters_missing_refs === 0 && !state.data.pagination?.cast;
+  const run = t("checklist_storyboard_run").replace("{dur}", secs(c.shots_total_seconds));
+  const steps = [
     [
       "song",
       t("checklist_song"),
@@ -59,7 +70,7 @@ function listConcept() {
       c.song_ready,
     ],
     [
-      "concept",
+      "overview",
       t("checklist_concept"),
       c.concept_ready ? t("checklist_concept_done") : t("checklist_concept_todo"),
       c.concept_ready,
@@ -67,119 +78,172 @@ function listConcept() {
     [
       "cast",
       t("checklist_cast"),
-      t("checklist_cast_sub")
-        .replace("{n}", state.data.totals?.characters ?? (project().characters || []).length)
-        .replace("{missing}", c.characters_missing_refs ?? 0),
-      c.characters_missing_refs === 0 && (state.data.totals?.characters ?? (project().characters || []).length) > 0,
+      castTotal ? (castDone ? t("checklist_cast_done") : t("checklist_cast_todo")) : t("checklist_cast_none"),
+      castDone,
     ],
     [
       "storyboard",
       t("checklist_storyboard"),
-      t("checklist_storyboard_sub")
-        .replace("{n}", state.data.totals?.shots ?? (project().shots || []).length)
-        .replace("{img}", c.shots_missing_image ?? 0)
-        .replace("{vid}", c.shots_missing_video ?? 0),
-      (state.data.totals?.shots ?? (project().shots || []).length) > 0 && c.shots_missing_video === 0,
+      shotTotal
+        ? `${run}${song.duration_seconds ? t("shot_timeline_meta_song").replace("{song}", secs(song.duration_seconds)) : ""}`
+        : t("checklist_storyboard_none"),
+      shotTotal > 0 && c.shots_missing_video === 0 && !state.data.pagination?.shots,
     ],
   ];
-  const html = rows
+  const checklist = steps
     .map(
       ([view, label, sub, ok]) => `
-    <div class="item-card" data-jump="${view}">
-      <span class="ready-chip ${ok ? "ok" : "planned"}">${ok ? "✓" : "…"}</span>
-      <div class="row-main"><div class="row-key">${esc(label)}</div><div class="table-sub">${esc(sub)}</div></div>
-      <span class="row-arrow">›</span>
-    </div>`,
+      <button type="button" class="step-row" ${view === "overview" ? 'data-focus-concept="1"' : `data-jump="${view}"`}>
+        <span class="ready-chip ${ok ? "ok" : "planned"}" aria-hidden="true">${ok ? "✓" : "…"}</span>
+        <span class="step-main"><strong>${esc(label)}</strong><span>${esc(sub)}</span></span>
+        <span class="row-arrow" aria-hidden="true">›</span>
+      </button>`,
     )
     .join("");
-  return { html, count: `${rows.filter((r) => r[3]).length}/${rows.length}` };
+  const host = document.getElementById("overviewBody");
+  host.innerHTML = `
+    <div class="overview-column">
+      <section class="card">
+        <div class="card-heading"><h2>${t("overview_checklist")}</h2><span class="muted">${steps.filter((step) => step[3]).length}/${steps.length}</span></div>
+        <div class="step-list">${checklist}</div>
+      </section>
+      <section class="card">
+        <div class="card-heading"><h2>${t("how_to_title")}</h2></div>
+        <p class="card-copy muted">${t("how_to_body")}</p>
+      </section>
+    </div>
+    ${detailConcept()}`;
+  host.querySelectorAll("[data-jump]").forEach((node) => node.addEventListener("click", () => go(node.dataset.jump)));
+  host
+    .querySelector("[data-focus-concept]")
+    ?.addEventListener("click", () => host.querySelector('#conceptForm [data-field="summary"]')?.focus());
+  bindDetail(host);
 }
 
-function listSong() {
-  const song = project().song || {};
-  const html = song.audio_asset
-    ? `<div class="item-card"><div class="row-main"><div class="row-key">${esc(song.title || "Song")}</div><div class="table-sub">${esc(song.artist || "")} · ${secs(song.duration_seconds)}</div></div><span class="badge ok">${t("song_uploaded_badge")}</span></div>`
-    : `<div class="empty-shot">${t("song_list_empty")}</div>`;
-  return { html, count: song.audio_asset ? 1 : 0 };
+// ---------------------------------------------------------------------------
+// SONG — one record, so a form under the toolbar instead of a list.
+// ---------------------------------------------------------------------------
+export function renderSong() {
+  const host = document.getElementById("songBody");
+  host.innerHTML = detailSong();
+  bindDetail(host);
+}
+
+// ---------------------------------------------------------------------------
+// RECORD VIEWS — one toolbar row over a full-bleed table.
+// ---------------------------------------------------------------------------
+export function renderList() {
+  const host = document.getElementById("list");
+  const { html, count, meta } = state.view === "cast" ? listCast() : listStoryboard();
+  host.innerHTML = html;
+  // Shown only while a search narrows the list (and on phones).
+  document.getElementById("viewCount").textContent = count;
+  const metaNode = document.getElementById("viewMeta");
+  metaNode.hidden = !meta;
+  metaNode.textContent = meta || "";
+}
+
+function loadMoreControl(key) {
+  if (!state.data?.pagination?.[key]) return "";
+  return `<div class="load-more"><button type="button" class="button" data-load-more="${esc(key)}" ${state.loadingMore[key] ? "disabled" : ""}>${state.loadingMore[key] ? t("loading_more") : t("load_more")}</button>${state.loadMoreError[key] ? `<span role="alert">${t("load_more_failed")}</span>` : ""}</div>`;
+}
+
+function listCount(items, key) {
+  if (!state.search) return navCount(key);
+  return `${items.length}${state.data.pagination?.[key] ? "+" : ""}`;
 }
 
 function listCast() {
-  const items = (project().characters || []).filter(matchSearch);
-  const html = items.length
-    ? items
-        .map((c) => {
-          const thumb = c.reference_card?.image_asset
-            ? `<img class="item-card-thumb" src="${esc(c.reference_card.image_asset)}" alt="" />`
-            : `<div class="item-card-thumb thumb-empty">${t("cast_no_thumb")}</div>`;
-          return `
-      <div class="item-card ${c.id === state.selectedId ? "active" : ""}" data-select="${esc(c.id)}">
-        ${thumb}
-        <div class="row-main"><div class="row-key">${esc(c.name)}</div><div class="table-sub">${esc(c.role || "")}</div></div>
-        <span class="badge ${statusClass(c.status)}">${esc(c.status || "draft")}</span>
-      </div>`;
-        })
-        .join("")
-    : `<div class="empty-shot">${t("cast_list_empty")}</div>`;
-  return {
-    html: `${html}${loadMoreControl("cast")}`,
-    count: state.search
-      ? `${items.length}${state.data.pagination?.cast ? "+" : ""}`
-      : (state.data.totalCount?.cast ?? `${items.length}${state.data.pagination?.cast ? "+" : ""}`),
-  };
+  const items = (project().characters || []).filter((c) =>
+    matches([c.name, c.role, c.actor_profile, statusLabel(c.status)]),
+  );
+  const rows = items
+    .map((c) => {
+      const ref = c.reference_card?.image_asset;
+      const thumb = ref
+        ? `<img class="row-thumb cast-thumb" src="${esc(ref)}" alt="" />`
+        : `<span class="row-thumb cast-thumb thumb-empty" aria-hidden="true"></span>`;
+      return `
+      <tr data-select="${esc(c.id)}" class="${c.id === state.selectedId ? "ws-selected" : ""}">
+        <td><span class="cell-name">${thumb}<strong>${esc(c.name || t("new_character_name"))}</strong></span></td>
+        <td class="muted">${esc(c.role || "—")}</td>
+        <td>${ref ? `<span class="badge positive">${t("ref_ready")}</span>` : `<span class="badge">${t("ref_missing")}</span>`}</td>
+        <td class="ws-col-wide">${statusBadge(c.status)}</td>
+      </tr>`;
+    })
+    .join("");
+  const table = `
+    <table class="ws-table cast-table">
+      <thead><tr><th>${t("col_character")}</th><th>${t("col_role")}</th><th>${t("col_ref")}</th><th class="ws-col-wide">${t("col_status")}</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  const empty = `<div class="ws-detail-empty">${t("cast_list_empty")}</div>`;
+  return { html: `${items.length ? table : empty}${loadMoreControl("cast")}`, count: listCount(items, "cast") };
+}
+
+function characterName(id) {
+  return (project().characters || []).find((c) => c.id === id)?.name || "";
 }
 
 function listStoryboard() {
-  const shots = (project().shots || []).filter(matchSearch);
+  const all = project().shots || [];
   const c = state.data.completeness || {};
   const song = project().song || {};
-  const hint = `<div class="mv-timeline-meta">${t("shot_timeline_meta")
-    .replace("{n}", state.data.totals?.shots ?? (project().shots || []).length)
-    .replace(
-      "{dur}",
-      secs(c.shots_total_seconds),
-    )}${song.duration_seconds ? t("shot_timeline_meta_song").replace("{song}", secs(song.duration_seconds)) : ""}</div>`;
-  let html = hint;
-  if (!shots.length) {
-    html += `<div class="empty-shot">${t("shot_list_empty")}</div>`;
-    return { html: `${html}${loadMoreControl("shots")}`, count: state.data.totalCount?.shots ?? 0 };
-  }
-  html += shots
-    .map((shot, i) => {
+  const shots = all
+    .map((shot, index) => ({ shot, index }))
+    .filter(({ shot }) =>
+      matches([shot.title, shot.description, shot.video_prompt, ...(shot.characters || []).map(characterName)]),
+    );
+  const rows = shots
+    .map(({ shot, index }) => {
       const thumb = shot.image_asset
-        ? `<img class="shot-row-thumb" src="${esc(shot.image_asset)}" alt="" />`
-        : `<div class="shot-row-thumb thumb-empty">${t("shot_no_image")}</div>`;
-      const hasVideo = Boolean(shot.video_asset);
+        ? `<img class="row-thumb shot-thumb" src="${esc(shot.image_asset)}" alt="" />`
+        : `<span class="row-thumb shot-thumb thumb-empty" aria-hidden="true"></span>`;
+      // A shot's cast arrives as character ids; show names, never the id.
+      // A character outside the loaded page is counted as "not loaded".
+      const ids = shot.characters || [];
+      const names = ids.map(characterName).filter(Boolean);
+      const missing = ids.length - names.length;
+      const cast = [...names, ...(missing ? [`${missing} ${t("not_loaded")}`] : [])].join(", ") || "—";
       return `
-      <div class="shot-row ${shot.id === state.selectedId ? "active" : ""}" data-select="${esc(shot.id)}">
-        <span class="shot-row-no">${i + 1}</span>
-        ${thumb}
-        <div class="shot-row-main">
-          <div class="row-key">${esc(shot.title || shot.id)}</div>
-          <div class="shot-row-meta">
-            <span class="table-sub">${shot.duration_seconds || "?"}s</span>
-            ${shot.image_asset ? `<span class="badge soft">${t("shot_badge_image")}</span>` : ""}
-            ${hasVideo ? `<span class="badge status-done">${t("shot_badge_video")}</span>` : ""}
-          </div>
-        </div>
-        <span class="row-arrow">›</span>
-      </div>`;
+      <tr data-select="${esc(shot.id)}" class="${shot.id === state.selectedId ? "ws-selected" : ""}">
+        <td><span class="cell-name"><span class="shot-no">${index + 1}</span>${thumb}<strong>${esc(shot.title || t("new_shot_name"))}</strong></span></td>
+        <td class="ws-col-narrow ws-split-keep media-cell">${shot.image_asset ? `<span class="badge positive" title="${esc(t("shot_badge_image"))}">${t("shot_badge_image")}</span>` : ""}${shot.video_asset ? `<span class="badge positive" title="${esc(t("shot_badge_video"))}">${t("shot_badge_video")}</span>` : ""}${shot.image_asset || shot.video_asset ? "" : '<span class="muted">—</span>'}</td>
+        <td class="ws-col-num ws-split-keep">${shot.duration_seconds ? `${esc(shot.duration_seconds)}s` : "—"}</td>
+        <td class="ws-col-wide muted">${esc(cast)}</td>
+      </tr>`;
     })
     .join("");
+  const table = `
+    <table class="ws-table shot-table">
+      <thead><tr><th>${t("col_shot")}</th><th class="ws-col-narrow ws-split-keep">${t("col_media")}</th><th class="ws-col-num ws-split-keep">${t("col_length")}</th><th class="ws-col-wide">${t("col_cast")}</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  const empty = `<div class="ws-detail-empty">${t("shot_list_empty")}</div>`;
+  const meta = all.length
+    ? `${secs(c.shots_total_seconds)}${song.duration_seconds ? ` / ${secs(song.duration_seconds)}` : ""}`
+    : "";
   return {
-    html: `${html}${loadMoreControl("shots")}`,
-    count: state.search
-      ? `${shots.length}${state.data.pagination?.shots ? "+" : ""}`
-      : (state.data.totalCount?.shots ?? `${shots.length}${state.data.pagination?.shots ? "+" : ""}`),
+    html: `${shots.length ? table : empty}${loadMoreControl("shots")}`,
+    count: listCount(
+      shots.map(({ shot }) => shot),
+      "shots",
+    ),
+    meta,
   };
 }
 
 // ---------------------------------------------------------------------------
-// DETAIL panel
+// DETAIL panel — the same markup in every mode (page / drawer / split).
 // ---------------------------------------------------------------------------
 export function renderDetail() {
   const host = document.getElementById("detail");
-  const renderers = { concept: detailConcept, song: detailSong, cast: detailCast, storyboard: detailStoryboard };
-  host.innerHTML = renderers[state.view]();
+  if (!state.selectedId) {
+    host.innerHTML =
+      state.view === "storyboard" ? `<div class="ws-detail-empty">${t("shot_empty")}</div>` : "";
+    return;
+  }
+  host.innerHTML = state.view === "cast" ? detailCast() : detailStoryboard();
   bindDetail(host);
 }
 
@@ -191,8 +255,11 @@ function field(label, name, value, opts = {}) {
   return `<label class="field ${full ? "full" : ""}"><span>${esc(label)}</span>${control}</label>`;
 }
 function selectField(label, name, value, options, opts = {}) {
+  const labelOf = opts.labelOf || ((o) => o);
   const opts2 = options
-    .map((o) => `<option value="${esc(o)}" ${String(o) === String(value) ? "selected" : ""}>${esc(o)}</option>`)
+    .map(
+      (o) => `<option value="${esc(o)}" ${String(o) === String(value) ? "selected" : ""}>${esc(labelOf(o))}</option>`,
+    )
     .join("");
   return `<label class="field ${opts.full ? "full" : ""}"><span>${esc(label)}</span><select data-field="${name}">${opts2}</select></label>`;
 }
@@ -207,27 +274,23 @@ function collect(scope) {
 function detailConcept() {
   const c = project().treatment || {};
   return `
-    <div class="detail-card">
-      <div class="detail-head"><h3>${t("concept_title")}</h3></div>
+    <section class="card concept-card">
+      <div class="card-heading"><h2>${t("concept_title")}</h2></div>
       <div class="form-grid" id="conceptForm">
         ${field(t("concept_summary_label"), "summary", c.summary, { textarea: true, rows: 4, full: true, placeholder: t("concept_summary_placeholder") })}
         ${field(t("concept_look_label"), "look", c.look, { full: true, placeholder: t("concept_look_placeholder") })}
         ${field(t("concept_ratio_label"), "aspect_ratio", c.aspect_ratio || "16:9")}
       </div>
       <div class="form-actions"><button class="mini-button" id="conceptSave">${t("concept_save")}</button></div>
-    </div>
-    <div class="detail-card">
-      <div class="detail-head"><h3>${t("how_to_title")}</h3></div>
-      <p class="muted">${t("how_to_body")}</p>
-    </div>`;
+    </section>`;
 }
 
 function detailSong() {
   const s = project().song || {};
   const has = Boolean(s.audio_asset);
   return `
-    <div class="detail-card">
-      <div class="detail-head"><h3>Song</h3>${s.source ? `<span class="badge soft">${esc(s.source)}</span>` : ""}</div>
+    <section class="card detail-card song-card">
+      ${s.source ? `<div class="detail-head"><span class="badge">${esc(s.source === "upload" ? t("asset_uploaded") : s.source)}</span></div>` : ""}
       ${has ? `<audio controls src="${esc(s.audio_asset)}" style="width:100%"></audio>` : `<div class="asset-placeholder">${t("song_placeholder")}</div>`}
       <div class="form-actions"><button class="generate-image-button" id="songUpload">${has ? t("song_reupload") : t("song_upload")}</button></div>
       <div class="form-grid">
@@ -236,23 +299,23 @@ function detailSong() {
       </div>
       <div class="form-actions"><button class="mini-button" id="songSave">${t("song_save")}</button></div>
       <p class="muted">${has ? t("song_duration_auto").replace("{dur}", secs(s.duration_seconds)) : t("song_duration_hint")}</p>
-    </div>`;
+    </section>`;
 }
 
 function detailCast() {
   const c = (project().characters || []).find((x) => x.id === state.selectedId);
-  if (!c) return `<div class="detail-card"><p class="muted">${t("cast_empty")}</p></div>`;
+  if (!c) return `<div class="ws-detail-empty">${t("cast_empty")}</div>`;
   const v = c.visual || {};
   const card = c.reference_card || {};
   const hasRef = Boolean(card.image_asset);
   return `
     <div class="detail-card" data-character="${esc(c.id)}">
-      <div class="detail-head"><h3>${esc(c.name)}</h3><span class="badge ${statusClass(c.status)}">${esc(c.status || "draft")}</span></div>
+      <div class="detail-head"><h2>${esc(c.name || t("new_character_name"))}</h2></div>
       ${hasRef ? `<img class="character-reference" src="${esc(card.image_asset)}" alt="" />` : `<div class="asset-placeholder">${t("cast_no_ref")}</div>`}
       <div class="form-grid">
         ${field(t("cast_name_label"), "name", c.name)}
         ${field(t("cast_role_label"), "role", c.role)}
-        ${selectField(t("cast_status_label"), "status", c.status || "draft", ["draft", "needs_review", "approved", "blocked"])}
+        ${selectField(t("cast_status_label"), "status", c.status || "draft", STATUSES.includes(c.status || "draft") ? STATUSES : [...STATUSES, c.status], { labelOf: statusLabel })}
         ${field(t("cast_profile_label"), "actor_profile", c.actor_profile, { textarea: true, rows: 2, full: true })}
         ${field(t("cast_front_label"), "front", v.front, { full: true })}
         ${field(t("cast_side_label"), "side", v.side, { full: true })}
@@ -288,7 +351,7 @@ function findAssetId(candidates, activePath) {
 
 function detailStoryboard() {
   const shot = (project().shots || []).find((x) => x.id === state.selectedId);
-  if (!shot) return `<div class="detail-card"><p class="muted">${t("shot_empty")}</p></div>`;
+  if (!shot) return `<div class="ws-detail-empty">${t("shot_missing")}</div>`;
   const chars = project().characters || [];
   const charChecks = chars
     .map(
@@ -314,7 +377,7 @@ function detailStoryboard() {
 
   return `
     <div class="detail-card shot-sheet" data-shot="${esc(shot.id)}">
-      <div class="detail-head"><h3>${esc(shot.title || shot.id)}</h3><span class="badge soft">${shot.duration_seconds || "?"}s</span></div>
+      <div class="detail-head"><h2>${esc(shot.title || t("new_shot_name"))}</h2></div>
 
       <div class="section-label">${t("shot_section_image")}</div>
       ${shot.image_asset ? `<div class="storyboard-actions"><img class="storyboard-image" src="${esc(shot.image_asset)}" alt="" />${assetMode(shot.image_generation)}</div>` : `<div class="asset-placeholder">${t("shot_image_empty")}</div>`}
@@ -450,7 +513,7 @@ function bindDetail(host) {
     try {
       const provider = await getProvider();
       await provider.deleteCharacter(state.selectedId);
-      state.selectedId = null;
+      closeDetail();
       await loadState();
       toast(t("toast_cast_deleted"));
     } catch (e) {
@@ -499,7 +562,7 @@ function bindDetail(host) {
     try {
       const provider = await getProvider();
       await provider.deleteShot(state.selectedId);
-      state.selectedId = null;
+      closeDetail();
       await loadState();
       toast(t("toast_shot_deleted"));
     } catch (e) {
@@ -538,7 +601,7 @@ async function uploadShotAsset(host, kind) {
     const provider = await getProvider();
     await provider.uploadShotAsset(state.selectedId, kind, file);
     await loadState();
-    toast(t("toast_song_uploaded"));
+    toast(t("toast_asset_uploaded"));
   } catch (e) {
     toast(e.message, "danger");
   }
@@ -583,7 +646,7 @@ export async function newCharacter() {
       reference_card: { prompt: "" },
     });
     await loadState();
-    go("cast", id);
+    openRecord(id, "cast");
   } catch (e) {
     toast(e.message, "danger");
   }
@@ -594,7 +657,7 @@ export async function newShot() {
     const provider = await getProvider();
     await provider.saveShot({ id, title: t("new_shot_name"), description: "", duration_seconds: 8, characters: [] });
     await loadState();
-    go("storyboard", id);
+    openRecord(id, "storyboard");
   } catch (e) {
     toast(e.message, "danger");
   }
@@ -619,7 +682,7 @@ function openPromptPreview(shotId) {
   node.className = "modal-backdrop";
   node.innerHTML = `
     <section class="modal" role="dialog" aria-modal="true">
-      <div class="modal-head"><div><div class="modal-title">${t("prompt_preview_title")}</div><div class="modal-subtitle">${esc(data.title || shotId)} · ${esc(modeLabel)}</div></div><button class="modal-close" id="promptClose">${t("close")}</button></div>
+      <div class="modal-head"><div><div class="modal-title">${t("prompt_preview_title")}</div><div class="modal-subtitle">${esc(data.title || t("new_shot_name"))} · ${esc(modeLabel)}</div></div><button class="modal-close" id="promptClose">${t("close")}</button></div>
       <div class="modal-body">
         ${chars.length ? `<section class="modal-section"><label>${t("prompt_label_chars")}</label>${chars.map((c) => `<div class="ctx-row"><span>${esc(c.name)}</span><p>${esc(c.visual_front || "")}${c.reference_image ? "" : t("prompt_no_ref")}</p></div>`).join("")}</section>` : ""}
         ${refs.length ? `<section class="modal-section"><label>${t("prompt_label_refs")}</label><div class="ref-grid">${refs.map((r) => `<figure><img class="ref-thumb" src="${esc(r.path)}" alt="" /><figcaption>${esc(r.name || r.kind)}</figcaption></figure>`).join("")}</div></section>` : `<section class="modal-section"><p class="muted">${t("prompt_no_ref_hint")}</p></section>`}

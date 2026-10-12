@@ -21,6 +21,7 @@ const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 const NORMALIZE_ROW_BY_KEY = { items: normalizeItemRow, entities: normalizeEntityRow, checks: normalizeCheckRow };
+const ID_FIELD_BY_KEY = { items: "item-id", entities: "entity-id", checks: "check-id" };
 
 // A deployed AirApp is served through the ambient Busabase session (a Busabase
 // iframe/preview host, or same-origin proxy under /api/airapp-preview/); a
@@ -103,6 +104,7 @@ const countStatus = (status) =>
   countRecords("items", [{ fieldSlug: "status", fieldType: "text", operator: "equals", value: status }]);
 
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -176,11 +178,21 @@ export const busabaseProvider = {
 
   async getState() {
     await ensureResources();
+    // Strategy packs are the page; the library, checks and settings are side
+    // reads. A side read that is denied or fails leaves its view empty (and
+    // says so) instead of failing the whole app.
+    const sideErrors = {};
+    const side = (key, promise, fallback) =>
+      promise.catch((error) => {
+        sideErrors[key] = error instanceof Error ? error.message : String(error);
+        return fallback;
+      });
+    const emptyPage = { rows: [], nextCursor: null };
     const [itemPage, entityPage, checkPage, settings, totals, checkStatusCounts, ...statusCounts] = await Promise.all([
       readPage("items"),
-      readPage("entities"),
-      readPage("checks"),
-      readSettingsRow(),
+      side("entities", readPage("entities"), emptyPage),
+      side("checks", readPage("checks"), emptyPage),
+      side("settings", readSettingsRow(), {}),
       Promise.all(["items", "entities", "checks"].map((key) => countRecords(key))),
       Promise.all(
         ["pass", "warn", "fail"].map((status) =>
@@ -209,6 +221,7 @@ export const busabaseProvider = {
       data_provider: "busabase",
       onboarding: { completed: (totals[0] ?? itemPage.rows.length) > 0, config_version: "1" },
       lock: null,
+      sideErrors,
       config_summary,
       snapshot,
       pagination: { items: itemPage.nextCursor, entities: entityPage.nextCursor, checks: checkPage.nextCursor },
@@ -227,6 +240,18 @@ export const busabaseProvider = {
     const page = await readPage(key, cursor);
     const normalize = NORMALIZE_ROW_BY_KEY[key];
     return { rows: normalize ? page.rows.map(normalize) : page.rows, nextCursor: page.nextCursor };
+  },
+
+  // A record named by the URL but not on the loaded page: read just that one
+  // (records.get by its business id) instead of paging until it turns up.
+  async getRecord(key, id) {
+    const idField = ID_FIELD_BY_KEY[key];
+    const normalize = NORMALIZE_ROW_BY_KEY[key];
+    if (!idField || !normalize) return null;
+    await ensureResources();
+    const record = await findRecord(key, idField, id);
+    if (!record) return null;
+    return normalize(normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields));
   },
 
   // Human verdict on a matter strategy pack, written directly onto the item

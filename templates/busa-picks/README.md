@@ -4,10 +4,10 @@ Busa Picks is a Busabase App-in-Skill product-research (选品) desk for a cross
 
 ## What It Shows
 
-- Overview: what needs the operator's attention (proposals to review, develop-approved awaiting handoff, stale watches), KPI cards (candidates this week by source, in development, watching, avg margin of approved), top movers with momentum arrows, and per-source sweep freshness.
+- Overview: what needs the operator's attention (proposals to review, develop-approved awaiting handoff, stale watches), a three-number summary band (new candidates this week, avg margin of develop-stage candidates, below the margin floor), top movers with momentum arrows, and per-source sweep freshness.
 - Candidates: the research table — source badge, momentum, est. price, est. margin %, competition grade (A-D), stage. Detail shows a line-by-line margin card (price − COGS − freight − platform fee − est. ad cost → margin %, breakeven ACOS) with live-recomputing inputs, a competition read (top-10 review counts as SVG bars, head-seller dominance, new-entrant velocity), evidence links, and Develop / Watch / Drop verdict buttons.
-- Trends: the raw signal feed, filterable by source badges, each item linked to its candidate or offering "Promote to candidate".
-- Decisions: the review queue (`needs_review / changes_requested / approved / done / blocked`) — each item is an agent verdict proposal with an editable sourcing/listing brief, Approve / Request changes / Block buttons, and stable refs like `Pick #1`.
+- Trends: the raw signal feed, filterable by source, opening each signal in a drawer; each item linked to its candidate or offering "Promote to candidate".
+- Decisions: the review queue (`needs_review / changes_requested / approved / done / blocked`), worked as a queue beside the selected proposal — each item is an agent verdict proposal with an editable sourcing/listing brief, Approve / Request changes / Block buttons, and stable refs like `Pick #1`.
 - Help & Settings: sanitized config — seller profile, platform fee tables, freight rules, sources with method, data provider, onboarding state.
 
 ## How It Flows

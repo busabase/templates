@@ -135,10 +135,47 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
   });
 }
 
+// Side reads: Settings tunes the rules and Import Log feeds one Overview panel.
+// Neither may take the whole desk down when it is denied or fails — the rules
+// fall back to their defaults and the panel says it has nothing to show.
 async function readSettingsRow() {
-  const rows = await readFirstPage("settings");
-  return rows.find((row) => row.record_id === "config") || {};
+  try {
+    const { rows } = await readPage("settings");
+    return rows.find((row) => row.record_id === "config") || {};
+  } catch {
+    return {};
+  }
 }
+
+const parseJson = (value, fallback) => {
+  if (!value) return fallback;
+  if (typeof value !== "string") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+};
+
+async function readImportLog() {
+  try {
+    const { rows } = await readPage("import-log");
+    return rows
+      .map((row) => ({
+        log_id: row.log_id,
+        imported_at: row.imported_at || "",
+        files: parseJson(row.files, {}) || {},
+        added: parseJson(row.added, {}) || {},
+        updated: parseJson(row.updated, {}) || {},
+        warnings: [parseJson(row.warnings, [])].flat().filter(Boolean),
+      }))
+      .sort((a, b) => String(b.imported_at).localeCompare(String(a.imported_at)));
+  } catch {
+    return [];
+  }
+}
+
+const ID_FIELD_SLUG = { orders: "order-id", invoices: "invoice-id", anomalies: "anomaly-id" };
 
 // Only known field slugs are ever written back for a decision — never spread
 // a raw row (it also carries __recordId/__headCommitId bookkeeping keys that
@@ -188,15 +225,16 @@ export const busabaseProvider = {
     for (const key of Object.keys(initialPageCursors)) delete initialPageCursors[key];
     for (const key of Object.keys(initialTotalCounts)) delete initialTotalCounts[key];
     await ensureResources();
-    const [orders, invoices, payments, anomalies, settings] = await Promise.all([
+    const [orders, invoices, payments, anomalies, settings, importLog] = await Promise.all([
       readFirstPage("orders"),
       readFirstPage("invoices"),
       readFirstPage("payments"),
       readFirstPage("anomalies"),
       readSettingsRow(),
+      readImportLog(),
     ]);
     currentPageContext = { orders, invoices, payments, anomalies, settings };
-    const snapshot = buildSnapshot(currentPageContext);
+    const snapshot = { ...buildSnapshot(currentPageContext), import_log: importLog };
     const config_summary = buildConfigSummary({ settings });
     return withPagination({
       app: "busa-audit",
@@ -240,6 +278,26 @@ export const busabaseProvider = {
     await ensureResources();
     const page = await readPage(key, cursor);
     return { ...page, rows: normalizePageRows(key, page.rows) };
+  },
+
+  // One record named by the URL (a shared link, a refresh on page 2) that is
+  // not on the loaded page: a single records.get by its business id, never a
+  // scan for it. Linked against the loaded pages without replacing them.
+  async getRecord(key, businessId) {
+    if (!allowedReads.has("records.get") || !ID_FIELD_SLUG[key]) return null;
+    await ensureResources();
+    const record = await findRecord(key, ID_FIELD_SLUG[key], businessId);
+    if (!record) return null;
+    const row = {
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    };
+    const snapshotKey = key.replaceAll("-", "_");
+    const loaded = currentPageContext[snapshotKey] || [];
+    const snapshot = buildSnapshot({ ...currentPageContext, [snapshotKey]: [...loaded, row] });
+    const idKey = key === "anomalies" ? "id" : ID_FIELD_SLUG[key].replace("-", "_");
+    return (snapshot[snapshotKey] || []).find((item) => item[idKey] === businessId) || null;
   },
 
   async provisionResources() {

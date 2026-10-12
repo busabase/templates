@@ -4,6 +4,7 @@
   "description":{"en":"Employee records, labor contracts, salary proposals and monthly payroll reviews.","zh-CN":"管理员工档案、劳动合同、薪酬变动和月度工资复核。"},
   "category":"ops","accent":"#166b74","asOf":"2026-09-29",
   "summary":{"en":"Contracts and payroll review","zh-CN":"合同与工资复核"},
+  "detailModes":{"employees":"drawer","labor-contracts":"drawer","salary-changes":"drawer","payroll":"split"},
   "boundary":{"en":"Proposed salaries never replace confirmed salaries. Employee headcount comes only from employee records, never contract or payroll row counts. Calculate a payroll draft only from explicitly confirmed inputs; missing inputs remain missing. Changes use ChangeRequests and require the user's requested approval evidence. Do not submit payments, send payslips or infer tax or legal obligations. Restrict employee information with workspace permissions.","zh-CN":"拟议工资不能覆盖已确认工资。员工人数只能由员工台账确定，不能从合同或工资行数推断。工资草稿只使用明确确认的数据，缺项保持待补充。记录修改通过变更申请并留存用户要求的审批证据。不发起付款、不发送工资条、不推断税务或法律义务；通过工作区权限限制员工信息访问。"},
   "prompts":[{"en":"Compare salary change proposals with confirmed employee salaries and prepare a payroll-review checklist without applying unapproved changes.","zh-CN":"比较薪酬变动提案与已确认工资，不应用未批准变动，拟定工资复核清单。"},{"en":"Find labor contracts nearing expiry and assign renewal follow-ups to their HR owners.","zh-CN":"找出临近到期的劳动合同，按人事负责人拟定续签跟进。"}],
   "bases":[

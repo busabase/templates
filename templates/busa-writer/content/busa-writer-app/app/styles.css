@@ -303,14 +303,16 @@ body.sidebar-collapsed .sidebar-footer {
   min-width: 0;
 }
 
+/* Token-driven, not a hardcoded dark gray: that froze into near-invisible
+ * text in dark mode once --accent-contrast flips for a dark surface. */
 .human-work-primary strong {
   min-width: 34px;
   height: 34px;
   display: grid;
   place-items: center;
   border-radius: var(--radius-sm);
-  background: #202124;
-  color: var(--accent-contrast);
+  background: var(--ink);
+  color: var(--surface);
   font-size: var(--text-lg);
 }
 
@@ -392,10 +394,13 @@ body.sidebar-collapsed .sidebar-footer {
 }
 
 /* Controls */
+/* Native controls only: `.button` / `.segment` / `.segmented` come from
+ * base-ui.css, and an unlayered element rule here would beat those layered
+ * classes outright. */
 select,
 input,
 textarea,
-button {
+button:not(.button, .segment) {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -423,14 +428,14 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.12);
 }
 
-button {
+button:not(.button, .segment) {
   min-height: 34px;
   padding: 0 14px;
   background: var(--panel);
   cursor: pointer;
 }
 
-button:hover {
+button:not(.button, .segment):hover {
   border-color: var(--line-strong);
   background: var(--surface-soft);
 }
@@ -447,8 +452,8 @@ textarea:disabled {
   min-width: 0;
   min-height: 0;
   height: 100vh;
-  display: grid;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
@@ -460,70 +465,47 @@ textarea:disabled {
   display: none;
 }
 
-.topbar {
-  position: static;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 58px;
-  padding: 10px 18px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-blur);
+.load-state {
+  padding: 24px;
+  color: var(--muted);
 }
 
-.topbar h1 {
-  font-size: var(--text-xl);
-  line-height: 1.2;
+.load-state.error {
+  color: var(--danger);
 }
 
-.topbar-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+.load-state[hidden] {
+  display: none;
 }
 
-.content {
-  min-height: 0;
-  overflow: auto;
-  padding: 16px 18px 24px;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-/* Metrics */
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 14px;
+/* Toolbar search: fixed-ish width so it does not crowd the filter segments. */
+.toolbar-search {
+  flex: 0 1 240px;
+  min-width: 160px;
 }
 
-.metric,
-.overview-panel,
-.detail-side,
-.settings section,
-.empty,
-.warnings {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--panel);
-  box-shadow: none;
+/* The status filter is a segmented control on desktop and a native select on
+ * phones, where six segments would wrap the toolbar into extra rows. */
+.status-select {
+  display: none;
 }
 
-.metric {
-  padding: 12px;
-}
-
-.metric span {
-  display: block;
+/* Overview metrics band: base-ui lays out the cells; label and value are ours. */
+.ws-metrics span {
+  overflow: hidden;
   color: var(--muted);
   font-size: var(--text-sm);
-}
-
-.metric strong {
-  display: block;
-  margin-top: 6px;
-  font-size: var(--text-xl);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .countdown-metric strong {
@@ -536,37 +518,15 @@ textarea:disabled {
   margin-top: 2px;
 }
 
-/* Tables */
-.table-wrap {
-  overflow: auto;
+.overview-panel,
+.detail-side,
+.settings section,
+.empty,
+.warnings {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--panel);
-}
-
-table {
-  width: 100%;
-  min-width: 860px;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  padding: 11px 12px;
-  border-bottom: 1px solid var(--line);
-  text-align: left;
-  vertical-align: top;
-}
-
-tbody tr:last-child td {
-  border-bottom: 0;
-}
-
-th {
-  color: var(--muted);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  background: var(--surface-hover);
+  box-shadow: none;
 }
 
 .strong {
@@ -1105,6 +1065,13 @@ th {
 }
 
 /* Settings */
+.settings-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 24px 32px;
+}
+
 .settings {
   display: grid;
   gap: 14px;
@@ -1177,10 +1144,6 @@ dd {
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 220px minmax(0, 1fr);
-  }
-
-  .metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .overview-grid {
@@ -1317,25 +1280,43 @@ dd {
     padding: 0;
   }
 
-  .topbar {
+  /* The mobile top bar already names the view; the toolbar keeps the count. */
+  .ws-title h1,
+  #detailExpand {
     display: none;
   }
 
-  .content {
-    padding: 12px;
+  .ws-toolbar,
+  .ws-actions {
+    flex-wrap: nowrap;
   }
 
-  .metrics,
+  .ws-actions {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .toolbar-search {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  #viewFilters {
+    display: none;
+  }
+
+  .status-select:not([hidden]) {
+    display: block;
+    flex: 0 1 44%;
+    min-width: 0;
+  }
+
   .settings-channel {
     grid-template-columns: 1fr;
   }
 
-  .metrics {
-    gap: 8px;
-  }
-
-  .metric {
-    padding: 10px 12px;
+  .settings-scroll {
+    padding: 0 14px 24px;
   }
 
   .overview-grid {
@@ -1346,10 +1327,6 @@ dd {
   .stage-row {
     grid-template-columns: 120px minmax(0, 1fr) 52px;
     gap: 8px;
-  }
-
-  table {
-    min-width: 720px;
   }
 
   .queue-card {

@@ -6,7 +6,14 @@
 // Drive or Base degrades to a snapshot warning instead of a blocking setup
 // screen, exactly like the original.
 import { appConfig } from "../config.js?v=0.1.0";
-import { listDriveFiles, listRecords, resolveBase, resolveDrive } from "../insure-client.js?v=0.1.0";
+import {
+  countRecords,
+  getRecord,
+  listBases,
+  listDriveFiles,
+  listRecordsPage,
+  resolveDrive,
+} from "../insure-client.js?v=0.1.0";
 import {
   metadataFields,
   needsGovernance,
@@ -74,73 +81,130 @@ function emptySnapshot(message) {
   };
 }
 
+// Each side read settles on its own: a denied or failing Base becomes a
+// warning on that Base, never an empty app (it used to be one Promise.all,
+// so a single 403 blanked every view).
+const settle = async (label, promise, warnings, view = "") => {
+  try {
+    return await promise;
+  } catch (error) {
+    warnings.push({
+      id: `read-failed-${label}`,
+      severity: "warning",
+      view,
+      message: `${label}: ${error instanceof Error ? error.message : String(error)}`,
+    });
+    return null;
+  }
+};
+
+// Collection key → declared Base, the taxonomy mapping, and its normalizer.
+const COLLECTIONS = {
+  qa: { base: "qa", normalize: (record) => normalizeQa(record, appConfig.taxonomy.qa_fields) },
+  featured: {
+    base: "featured",
+    normalize: (record) => normalizeNews(record, appConfig.taxonomy.featured_fields, "featured"),
+  },
+  notices: {
+    base: "notices",
+    normalize: (record) => normalizeNews(record, appConfig.taxonomy.notices_fields, "notice"),
+  },
+  feedback: { base: "feedback", normalize: (record) => normalizeFeedback(record, appConfig.taxonomy.feedback_fields) },
+};
+
+// Resolved Base ids, kept between getState() and the later fetchPage()/getRecord().
+const resolvedBases = {};
+
 async function readSnapshot() {
   const drive = appConfig.drive;
-  const featured = baseByKey("featured");
-  const notices = baseByKey("notices");
-  const qa = baseByKey("qa");
-  const feedback = baseByKey("feedback");
+  const warnings = [];
+  const limit = appConfig.readLimit || 50;
 
-  const [driveResult, featuredBase, noticesBase, qaBase, feedbackBase] = await Promise.all([
-    resolveDrive("", drive.slug),
-    resolveBase("", featured.slug),
-    resolveBase("", notices.slug),
-    resolveBase("", qa.slug),
-    resolveBase("", feedback.slug),
+  const [driveResult, allBases] = await Promise.all([
+    settle("drive", resolveDrive("", drive.slug), warnings),
+    settle("bases", listBases(), warnings),
   ]);
+  const findBase = (key) => {
+    const declared = baseByKey(key);
+    return (allBases || []).find((base) => base.slug === declared.slug) || null;
+  };
+  const featuredBase = findBase("featured");
+  const noticesBase = findBase("notices");
+  const qaBase = findBase("qa");
+  const feedbackBase = findBase("feedback");
+  for (const [key, base] of Object.entries({ qa: qaBase, featured: featuredBase, notices: noticesBase, feedback: feedbackBase })) {
+    resolvedBases[key] = base?.id || "";
+  }
+
   const resolvedDriveNodeId = driveResult?.node?.id || driveResult?.nodeId || driveResult?.id || "";
-  const [driveFiles, featuredRecords, noticesRecords, qaRecords, feedbackRecords] = await Promise.all([
-    resolvedDriveNodeId ? listDriveFiles(resolvedDriveNodeId) : [],
-    featuredBase ? listRecords(featuredBase.id) : [],
-    noticesBase ? listRecords(noticesBase.id) : [],
-    qaBase ? listRecords(qaBase.id) : [],
-    feedbackBase ? listRecords(feedbackBase.id) : [],
-  ]);
+  // Page 1 of each Base plus its exact total: two requests per Base, bounded.
+  const VIEW_OF = { qa: "qa", featured: "news", notices: "news", feedback: "feedback" };
+  const readPage = (key, base) =>
+    base ? settle(baseByKey(key).name, listRecordsPage(base.id, { limit }), warnings, VIEW_OF[key]) : null;
+  const readCount = (base) => (base ? countRecords(base.id) : null);
+  const [driveFiles, featuredPage, noticesPage, qaPage, feedbackPage, featuredTotal, noticesTotal, qaTotal, feedbackTotal] =
+    await Promise.all([
+      Array.isArray(driveResult?.files)
+        ? driveResult.files
+        : resolvedDriveNodeId
+          ? settle("drive files", listDriveFiles(resolvedDriveNodeId), warnings, "files")
+          : [],
+      readPage("featured", featuredBase),
+      readPage("notices", noticesBase),
+      readPage("qa", qaBase),
+      readPage("feedback", feedbackBase),
+      readCount(featuredBase),
+      readCount(noticesBase),
+      readCount(qaBase),
+      readCount(feedbackBase),
+    ]);
 
-  const files = driveFiles.map((file) => normalizeFile(file, appConfig.taxonomy.file_metadata_fields));
-  const qaPairs = qaRecords.map((record) => normalizeQa(record, appConfig.taxonomy.qa_fields));
-  const featuredItems = featuredRecords.map((record) =>
-    normalizeNews(record, appConfig.taxonomy.featured_fields, "featured"),
-  );
-  const noticeItems = noticesRecords.map((record) =>
-    normalizeNews(record, appConfig.taxonomy.notices_fields, "notice"),
-  );
+  const files = (driveFiles || []).map((file) => normalizeFile(file, appConfig.taxonomy.file_metadata_fields));
+  const qaPairs = (qaPage?.records || []).map(COLLECTIONS.qa.normalize);
+  const featuredItems = (featuredPage?.records || []).map(COLLECTIONS.featured.normalize);
+  const noticeItems = (noticesPage?.records || []).map(COLLECTIONS.notices.normalize);
   const newsItems = [...featuredItems, ...noticeItems];
-  const feedbackItems = feedbackRecords.map((record) => normalizeFeedback(record, appConfig.taxonomy.feedback_fields));
+  const feedbackItems = (feedbackPage?.records || []).map(COLLECTIONS.feedback.normalize);
   const allGoverned = [...files, ...qaPairs, ...newsItems, ...feedbackItems];
   const driveMetadata = driveResult?.node?.metadata || {};
 
-  const warnings = [];
   if (!driveResult)
     warnings.push({
       id: "missing-drive",
       severity: "warning",
       message: "Busabase Drive node is not configured or not found.",
     });
-  if (!qaBase)
+  if (allBases && !qaBase)
     warnings.push({
       id: "missing-qa-base",
       severity: "warning",
       message: "Busabase QA Base is not configured or not found.",
     });
-  if (!featuredBase)
+  if (allBases && !featuredBase)
     warnings.push({
       id: "missing-featured-base",
       severity: "warning",
       message: "Busabase Featured Information Base is not configured or not found.",
     });
-  if (!noticesBase)
+  if (allBases && !noticesBase)
     warnings.push({
       id: "missing-notices-base",
       severity: "warning",
       message: "Busabase Insurer Notices Base is not configured or not found.",
     });
-  if (!feedbackBase)
+  if (allBases && !feedbackBase)
     warnings.push({
       id: "missing-feedback-base",
       severity: "warning",
       message: "Busabase feedback Base is not configured or not found.",
     });
+
+  // A total is the exact records.count answer, or the loaded length when the
+  // Base fit on one page; otherwise null ("—"), never a partial number.
+  const total = (count, page, rows) => (count ?? (page && !page.nextCursor ? rows.length : null));
+  const featuredCount = total(featuredTotal, featuredPage, featuredItems);
+  const noticeCount = total(noticesTotal, noticesPage, noticeItems);
+  const newsCount = featuredCount === null || noticeCount === null ? null : featuredCount + noticeCount;
 
   const snapshot = {
     schema_version: "1",
@@ -154,20 +218,21 @@ async function readSnapshot() {
       metadata_fields: metadataFields(driveMetadata),
     },
     bases: {
-      featured: baseSummary(featuredBase, featured),
-      notices: baseSummary(noticesBase, notices),
-      qa: baseSummary(qaBase, qa),
-      feedback: baseSummary(feedbackBase, feedback),
+      featured: baseSummary(featuredBase, baseByKey("featured")),
+      notices: baseSummary(noticesBase, baseByKey("notices")),
+      qa: baseSummary(qaBase, baseByKey("qa")),
+      feedback: baseSummary(feedbackBase, baseByKey("feedback")),
     },
     metrics: {
       file_count: files.length,
       metadata_field_count: metadataFields(driveMetadata).length,
-      qa_count: qaPairs.length,
-      featured_count: featuredItems.length,
-      notice_count: noticeItems.length,
-      news_count: newsItems.length,
-      feedback_count: feedbackItems.length,
-      total_records: files.length + qaPairs.length + newsItems.length + feedbackItems.length,
+      qa_count: total(qaTotal, qaPage, qaPairs),
+      featured_count: featuredCount,
+      notice_count: noticeCount,
+      news_count: newsCount,
+      feedback_count: total(feedbackTotal, feedbackPage, feedbackItems),
+      // Per-row arithmetic (completeness across fields) has no server
+      // aggregate: these two cover the loaded rows and the UI says so.
       data_quality_score: qualityScore(allGoverned),
       needs_governance: needsGovernance(allGoverned),
     },
@@ -180,7 +245,13 @@ async function readSnapshot() {
     warnings,
   };
 
-  return snapshot;
+  const pagination = {
+    qa: qaPage?.nextCursor || "",
+    featured: featuredPage?.nextCursor || "",
+    notices: noticesPage?.nextCursor || "",
+    feedback: feedbackPage?.nextCursor || "",
+  };
+  return { snapshot, pagination };
 }
 
 function configSummary() {
@@ -216,8 +287,9 @@ export const busabaseProvider = {
   // catch is the coarse fallback for everything else.
   async getState() {
     let snapshot;
+    let pagination = {};
     try {
-      snapshot = await readSnapshot();
+      ({ snapshot, pagination } = await readSnapshot());
     } catch (error) {
       snapshot = emptySnapshot(error instanceof Error ? error.message : String(error));
     }
@@ -229,7 +301,29 @@ export const busabaseProvider = {
       config_summary: configSummary(),
       lock: null,
       snapshot,
+      pagination,
     };
+  },
+
+  // The next page of one collection (qa | featured | notices | feedback), run
+  // through the same normalizer as page 1. One request per "Load more" click.
+  async fetchPage(key, cursor) {
+    const collection = COLLECTIONS[key];
+    const baseId = resolvedBases[key];
+    if (!collection || !baseId || !cursor) return { rows: [], nextCursor: "" };
+    const page = await listRecordsPage(baseId, { limit: appConfig.readLimit || 50, cursor });
+    return { rows: page.records.map(collection.normalize), nextCursor: page.nextCursor };
+  },
+
+  // A record named by the URL (a shared ?peek= or /<id> link) that is not on a
+  // loaded page: one records.get, normalized by the Base it belongs to.
+  async getRecord(view, id) {
+    const record = await getRecord(id);
+    const raw = record?.record || record;
+    if (!raw) return null;
+    const keys = view === "news" ? ["featured", "notices"] : [view];
+    const key = keys.find((candidate) => resolvedBases[candidate] && raw.baseId === resolvedBases[candidate]);
+    return key ? COLLECTIONS[key].normalize(raw) : null;
   },
 
   async provisionResources() {

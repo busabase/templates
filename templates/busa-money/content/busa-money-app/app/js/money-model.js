@@ -84,14 +84,8 @@ export function normalizeInvoiceRow(row = {}) {
   };
 }
 
-export function buildSnapshot({ accounts = [], transactions = [], invoices = [], invoiceMatches = [] } = {}) {
-  const normalizedAccounts = accounts.map(normalizeAccountRow);
-
-  const normalizedTransactions = transactions.map(normalizeTransactionRow);
-
-  const normalizedInvoices = invoices.map(normalizeInvoiceRow);
-
-  const normalizedMatches = invoiceMatches.map((row) => ({
+export function normalizeMatchRow(row = {}) {
+  return {
     match_id: row.match_id || "",
     invoice_id: row.invoice_id || "",
     transaction_id: row.transaction_id || "",
@@ -108,9 +102,24 @@ export function buildSnapshot({ accounts = [], transactions = [], invoices = [],
     matched_at: row.matched_at || "",
     audit_events: parseJsonList(row.audit_events),
     notes: parseJsonList(row.notes),
-  }));
+  };
+}
 
-  const metrics = normalizedAccounts.reduce(
+// The rows each Base is browsed by, keyed like config.js `bases[].key`. One
+// named normalizer per record shape, used for page 1, every Load more page and
+// a record fetched on its own — never a second copy for later pages.
+export const NORMALIZE_ROW_BY_KEY = {
+  accounts: normalizeAccountRow,
+  transactions: normalizeTransactionRow,
+  invoices: normalizeInvoiceRow,
+  "invoice-matches": normalizeMatchRow,
+};
+
+// Totals and warnings over ALREADY-NORMALIZED accounts. Each account row
+// carries its own provider-side totals, so summing the loaded accounts is the
+// whole answer when every account is loaded (callers mark it partial if not).
+export function summarizeAccounts(accounts = [], transactionCount = 0) {
+  const metrics = accounts.reduce(
     (acc, account) => {
       acc.gross_inflow += account.totals.gross_inflow;
       acc.gross_outflow += account.totals.gross_outflow;
@@ -119,17 +128,16 @@ export function buildSnapshot({ accounts = [], transactions = [], invoices = [],
       return acc;
     },
     {
-      account_count: normalizedAccounts.length,
-      transaction_count: normalizedTransactions.length,
+      account_count: accounts.length,
+      transaction_count: transactionCount,
       gross_inflow: 0,
       gross_outflow: 0,
       fees: 0,
       net: 0,
     },
   );
-
   const warnings = [];
-  for (const account of normalizedAccounts) {
+  for (const account of accounts) {
     if (account.status === "warning" || account.status === "error") {
       warnings.push({
         id: `account-${account.account_id}-${account.status}`,
@@ -140,6 +148,15 @@ export function buildSnapshot({ accounts = [], transactions = [], invoices = [],
       });
     }
   }
+  return { metrics, warnings };
+}
+
+export function buildSnapshot({ accounts = [], transactions = [], invoices = [], invoiceMatches = [] } = {}) {
+  const normalizedAccounts = accounts.map(normalizeAccountRow);
+  const normalizedTransactions = transactions.map(normalizeTransactionRow);
+  const normalizedInvoices = invoices.map(normalizeInvoiceRow);
+  const normalizedMatches = invoiceMatches.map(normalizeMatchRow);
+  const { metrics, warnings } = summarizeAccounts(normalizedAccounts, normalizedTransactions.length);
 
   return {
     schema_version: "1",

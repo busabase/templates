@@ -12,6 +12,9 @@ export const appConfig = {
     slug: "busa-launch",
   },
   airApp: { name: "Busa Launch", slug: "busa-launch-app", resourceKey: "busa-launch-app" },
+  // Where a record opens, per record view (checklist and assets both read the
+  // Launch Items Base; launchday reads Runbook). See app.js for the reasons.
+  ui: { detail_modes: { checklist: "drawer", assets: "split", launchday: "drawer" } },
   bases: [
     {
       key: "items",
@@ -82,7 +85,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

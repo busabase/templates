@@ -12,6 +12,9 @@ export const appConfig = {
     slug: "busa-money",
   },
   airApp: { name: "Busa Money", slug: "busa-money-app", resourceKey: "busa-money-app" },
+  // Where a record opens, per browsed Base (see app.js for the reasoning).
+  // Keys are the route names: ledger = transactions Base.
+  ui: { detail_modes: { ledger: "drawer", accounts: "page", invoices: "split" } },
   bases: [
     {
       key: "accounts",
@@ -132,7 +135,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: [],
   },

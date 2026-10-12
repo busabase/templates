@@ -6,6 +6,10 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Detail mode per record view (busabase-app-creator "Choose The Detail Mode"):
+  // qa is a review queue worked top to bottom (split); vendors are facts compared
+  // and returned from (drawer).
+  ui: { detail_modes: { qa: "split", vendors: "drawer" } },
   folder: {
     name: "Busa Digital Human",
     description:

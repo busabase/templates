@@ -1,25 +1,39 @@
 import { messages } from "./i18n/messages.js";
-import {
-  renderAdjustmentDetail,
-  renderAdjustments,
-  renderAlerts,
-  renderCampaignDetail,
-  renderCampaigns,
-  renderSettings,
-} from "./js/campaign-views.js";
 import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
+import { renderOverview, renderRecordView, renderSettings, submitDecision } from "./js/campaign-views.js";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
 
+// Where a record opens, per view. Chosen by what people do with the record:
+//   campaigns   → page:   a campaign is a workplace — daily series, targets,
+//                         linked anomalies and its adjustment history.
+//   alerts      → drawer: an anomaly is a fact you scan many of, read its
+//                         evidence, maybe follow it to its card, and return.
+//   adjustments → split:  the review queue is worked top to bottom, one card
+//                         after the next, so the queue stays beside the card.
+// A `/record` path always opens the full page; `?peek=` drives drawer/split.
+// On a phone every mode is a page (base-ui.css handles that).
+// Declared once, per Base, in config.js `ui.detail_modes`.
+const VIEW_BASE = { campaigns: "campaigns", alerts: "anomalies", adjustments: "adjustments" };
+const RECORD_VIEWS = Object.keys(VIEW_BASE);
+export const modeFor = (view) => appConfig.ui.detail_modes[VIEW_BASE[view]];
+export const baseFor = (view) => VIEW_BASE[view];
+
 export const state = {
+  // Prev/Next pager per paginated Base. records.list only exposes a forward
+  // keyset cursor, so pageCursors[key][i] is the cursor that fetches page i+1.
+  // Only neighbouring pages are reachable — one click, one request; there is
+  // no "jump to page N" because reaching it means reading every page between.
   pageCursors: {},
   currentPage: {},
   pageLoading: {},
   totals: {},
+  // Records opened by URL that are not on the loaded page (records.get).
+  extra: { campaigns: new Map(), anomalies: new Map(), adjustments: new Map() },
   snapshot: null,
   settings: null,
+  provider: null,
   route: parseRoute(),
-  query: "",
   lang: normalizeLang(
     new URLSearchParams(location.search).get("lang") || localStorage.getItem("busa-ads-language") || "auto",
   ),
@@ -29,23 +43,32 @@ export const state = {
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-ads.sidebarCollapsed";
 
+const byId = (id) => document.getElementById(id);
 export const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  reviewCount: document.querySelector("#count-review"),
-  alertCount: document.querySelector("#count-alerts"),
-  budgetCount: document.querySelector("#count-budget"),
-  language: document.querySelector("#language"),
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  reviewCount: byId("count-review"),
+  alertCount: byId("count-alerts"),
+  budgetCount: byId("count-budget"),
+  language: byId("language"),
 };
 
 function isMobileLayout() {
@@ -117,7 +140,7 @@ export function money(value, currency = state.snapshot?.currency || "USD") {
   }).format(Number(value || 0));
 }
 
-function date(value) {
+export function date(value) {
   if (!value) return "";
   return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
     month: "short",
@@ -135,11 +158,6 @@ export function dateTime(value) {
   }).format(new Date(value));
 }
 
-function pct(value) {
-  const number = Number(value || 0);
-  return `${number > 0 ? "+" : ""}${number.toFixed(1)}%`;
-}
-
 export function ageOf(startIso) {
   const reference = Date.parse(state.snapshot?.generated_at || "") || Date.now();
   const start = Date.parse(startIso || "");
@@ -149,24 +167,101 @@ export function ageOf(startIso) {
   return `${Math.round(hours / 24)}${t("daysShort")}`;
 }
 
-export function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] ? decodeURIComponent(parts[1]) : "" };
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&peek=…]`. Search and the peeked record live in the
+// URL so refresh, shared links and Back restore the same list context.
+function parseRoute() {
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const mode = RECORD_VIEWS.includes(view) ? modeFor(view) : null;
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+  };
 }
 
+const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) => {
+  const route = view === state.route.view ? state.route : { view, query: "" };
+  return `#/${view}/${encodeURIComponent(id)}${routeQuery({}, route)}`;
+};
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) => {
+  if (modeFor(view) === "page") return detailUrl(id, view);
+  const route = view === state.route.view ? state.route : { view, query: "" };
+  return `#/${view}${routeQuery({ peek: id }, route)}`;
+};
+
+let previousRouteWasList = false;
+let routeSerial = 0;
+
 function setRoute() {
-  state.notice = "";
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  state.notice = "";
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
+  render();
+  ensureSelectedRecord();
+}
+
+// Replace the current entry without a hashchange: search keystrokes should not
+// each become a Back step.
+function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
   render();
 }
 
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── Data ───────────────────────────────────────────────────────────────────
 export async function loadState() {
   const provider = await getProvider();
+  state.provider = provider;
   const data = await provider.getState();
+  // Seed each paginated Base's cursor list with page 1 (no cursor) and the
+  // page-2 cursor getState() learned while fetching page 1.
   state.pageCursors = {};
   state.currentPage = {};
   state.pageLoading = {};
   state.totals = data.totals || {};
+  state.extra = { campaigns: new Map(), anomalies: new Map(), adjustments: new Map() };
   for (const [key, nextCursor] of Object.entries(data.pagination || {})) {
     state.pageCursors[key] = [undefined, nextCursor];
     state.currentPage[key] = 1;
@@ -177,6 +272,7 @@ export async function loadState() {
   applyDemoRoute();
   window.dispatchEvent(new CustomEvent("busa-ads:state", { detail: data }));
   render();
+  ensureSelectedRecord();
 }
 
 function applyDemoRoute() {
@@ -196,6 +292,75 @@ function applyDemoRoute() {
   state.route = parseRoute();
 }
 
+function pageSize(key) {
+  return appConfig.bases.find((entry) => entry.key === key)?.readLimit || 50;
+}
+
+// The real total comes from records.count; null when the SDK or the grant
+// cannot answer, and the pager then says "Page N" without inventing a total.
+export function pageCount(key) {
+  const total = state.totals?.[key];
+  return total == null ? null : Math.max(1, Math.ceil(total / pageSize(key)));
+}
+
+// True while a Base holds only part of its rows — more pages exist, or the user
+// is on a later page. Anything summed from loaded rows must say so.
+export function isPartial(key) {
+  const cursors = state.pageCursors[key];
+  if (!cursors) return false;
+  const current = state.currentPage[key] || 1;
+  return current > 1 || Boolean(cursors[current]);
+}
+
+// Replaces the displayed page for `key` with a NEIGHBOURING page: exactly one
+// request per click, using a cursor already learned. Never appends.
+async function goToPage(key, targetPage) {
+  if (state.pageLoading[key]) return;
+  const cursors = state.pageCursors[key];
+  if (!cursors) return;
+  const current = state.currentPage[key] || 1;
+  if (Math.abs(targetPage - current) !== 1 || targetPage < 1) return;
+  if (targetPage > current && !cursors[current]) return;
+  state.pageLoading[key] = true;
+  render();
+  try {
+    const provider = await getProvider();
+    if (typeof provider.fetchPage !== "function") return;
+    const { rows, nextCursor } = await provider.fetchPage(key, cursors[targetPage - 1]);
+    state.snapshot[key] = rows;
+    cursors[targetPage] = nextCursor;
+    state.currentPage[key] = targetPage;
+  } catch (error) {
+    state.notice = error instanceof Error ? error.message : String(error);
+  } finally {
+    state.pageLoading[key] = false;
+    render();
+  }
+}
+
+// A record named by the URL but not on the loaded page is read on its own
+// (records.get by its business id) instead of loading more pages to find it.
+async function ensureSelectedRecord() {
+  const { view, selectedId } = state.route;
+  if (!state.snapshot || !selectedId || !RECORD_VIEWS.includes(view)) return;
+  const key = baseFor(view);
+  if (recordById(view, selectedId) || state.extra[key].has(selectedId)) return;
+  const provider = state.provider;
+  if (typeof provider?.getRecord !== "function") {
+    state.extra[key].set(selectedId, null);
+    render();
+    return;
+  }
+  const serial = ++routeSerial;
+  state.extra[key].set(selectedId, undefined);
+  try {
+    state.extra[key].set(selectedId, (await provider.getRecord(key, selectedId)) || null);
+  } catch {
+    state.extra[key].set(selectedId, null);
+  }
+  if (serial === routeSerial) render();
+}
+
 function applyI18n() {
   document.documentElement.lang = activeLang() === "zh" ? "zh-CN" : "en";
   document.querySelectorAll("[data-i18n]").forEach((node) => {
@@ -208,14 +373,18 @@ function applyI18n() {
   }
   els.search.placeholder = t("search");
   els.refresh.textContent = t("refresh");
+  els.refresh.title = t("refresh");
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
+  byId("overviewTitle").textContent = t("overview");
+  byId("settingsTitle").textContent = t("settings");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
-function campaigns() {
+export function campaigns() {
   return state.snapshot?.campaigns || [];
 }
 
-function platforms() {
+export function platforms() {
   return state.snapshot?.platforms || [];
 }
 
@@ -227,56 +396,79 @@ export function adjustments() {
   return state.snapshot?.adjustments || [];
 }
 
-function syncLog() {
+export function syncLog() {
   return state.snapshot?.sync_log || [];
 }
 
-function metrics() {
+export function metrics() {
   return state.snapshot?.metrics || {};
 }
 
+const ID_FIELD = { campaigns: "campaign_id", anomalies: "anomaly_id", adjustments: "adjustment_id" };
+
+// Loaded page first, then a record fetched on its own for the URL.
+export function recordById(view, id) {
+  if (!id) return null;
+  const key = baseFor(view) || view;
+  const rows = state.snapshot?.[key] || [];
+  return rows.find((item) => item[ID_FIELD[key]] === id) || state.extra[key]?.get(id) || null;
+}
+
 export function campaignById(campaignId) {
-  return campaigns().find((item) => item.campaign_id === campaignId);
+  return recordById("campaigns", campaignId);
 }
 
 export function adjustmentById(adjustmentId) {
-  return adjustments().find((item) => item.adjustment_id === adjustmentId);
+  return recordById("adjustments", adjustmentId);
 }
 
 export function anomalyById(anomalyId) {
-  return anomalies().find((item) => item.anomaly_id === anomalyId);
+  return recordById("alerts", anomalyId);
+}
+
+// A campaign reference is a business id (`amz-sp-…`). Resolve it to a name;
+// when the campaign is not on the loaded page, say so — never print the id.
+export function campaignName(campaignId) {
+  if (!campaignId) return "";
+  return campaignById(campaignId)?.name || t("notLoaded");
+}
+
+export function reviewCount() {
+  return adjustments().filter((item) => item.status === "needs_review").length;
+}
+
+export function openAlertCount() {
+  return anomalies().filter((item) => item.state === "open").length;
 }
 
 function renderShell() {
   applyI18n();
-  const m = metrics();
-  const reviewCount = adjustments().filter((item) => item.status === "needs_review").length;
-  const openAlerts = anomalies().filter((item) => item.state === "open").length;
-  const budgetRisk = Number(m.budget_at_risk_today || 0);
-  els.syncStatus.textContent =
-    state.snapshot?.generated_at && Date.parse(state.snapshot.generated_at) > 0
-      ? `${recordCountLabel("campaigns", campaigns().length)} ${t("campaigns").toLowerCase()}`
-      : t("empty");
-  if (els.reviewCount) els.reviewCount.textContent = reviewCount;
+  const review = reviewCount();
+  const openAlerts = openAlertCount();
+  // Where the data comes from — the counts already sit in the attention block.
+  els.syncStatus.textContent = !state.snapshot ? t("loading") : state.settings?.demo ? t("demoData") : t("liveData");
+  if (els.reviewCount) els.reviewCount.textContent = review;
   if (els.alertCount) els.alertCount.textContent = openAlerts;
-  if (els.budgetCount) els.budgetCount.textContent = budgetRisk;
+  if (els.budgetCount) els.budgetCount.textContent = Number(metrics().budget_at_risk_today || 0);
   if (els.mobileViewTitle) els.mobileViewTitle.textContent = viewLabel(state.route.view);
   if (els.mobileViewMeta) {
-    els.mobileViewMeta.textContent = reviewCount
-      ? `${reviewCount} ${t("needReview")}`
+    els.mobileViewMeta.textContent = review
+      ? `${review} ${t("needReview")}`
       : openAlerts
         ? `${openAlerts} ${t("openAlerts")}`
-        : `${recordCountLabel("campaigns", campaigns().length)} ${t("campaigns").toLowerCase()}`;
+        : state.settings?.demo
+          ? t("demoData")
+          : t("liveData");
   }
   document.querySelectorAll("[data-route]").forEach((link) => {
     link.classList.toggle("active", link.dataset.route === state.route.view);
   });
 }
 
-function viewLabel(view) {
+export function viewLabel(view) {
   if (view === "campaigns") return t("campaigns");
-  if (view === "alerts") return t("alerts");
-  if (view === "adjustments") return t("adjustments");
+  if (view === "alerts") return t("alertsFeed");
+  if (view === "adjustments") return t("adjustmentsQueue");
   if (view === "settings") return t("settings");
   return t("overview");
 }
@@ -287,6 +479,10 @@ function statusDot(status) {
 
 export function statusBadge(status) {
   return `<span class="status-badge ${escapeHtml(status || "unknown")}">${statusDot(status)}${escapeHtml(enumLabel(status))}</span>`;
+}
+
+export function platformDot(status) {
+  return statusDot(status);
 }
 
 export function platformBadge(platformId) {
@@ -317,7 +513,7 @@ export function trendArrow(trend) {
 export function budgetBar(pctSpent) {
   const value = Math.max(0, Math.min(100, Number(pctSpent || 0)));
   const cls = value >= 100 ? "crit" : value >= 85 ? "warn" : "";
-  return `<div class="budget-bar ${cls}"><i style="width:${value}%"></i></div>`;
+  return `<span class="budget-bar ${cls}"><i style="width:${value}%"></i></span>`;
 }
 
 export function notice() {
@@ -331,10 +527,8 @@ export function lockBanner() {
   return `<div class="warnings"><div class="warning"><strong>${t("lockActive")}</strong><span>${escapeHtml(lock.owner || "")}: ${escapeHtml(lock.message || "")}</span></div></div>`;
 }
 
-export function warnings(campaignId = "") {
-  const items = (state.snapshot?.warnings || []).filter(
-    (item) => !campaignId || !item.campaign_id || item.campaign_id === campaignId,
-  );
+export function warnings(filter = () => true) {
+  const items = (state.snapshot?.warnings || []).filter(filter);
   if (!items.length) return "";
   return `<div class="warnings">${items
     .map(
@@ -348,276 +542,97 @@ export function warnings(campaignId = "") {
     .join("")}</div>`;
 }
 
-function dailyTotals() {
-  const byDate = new Map();
-  for (const campaign of campaigns()) {
-    for (const day of campaign.daily || []) {
-      const entry = byDate.get(day.date) || { date: day.date, spend: 0, revenue: 0 };
-      entry.spend += Number(day.spend || 0);
-      entry.revenue += Number(day.revenue || 0);
-      byDate.set(day.date, entry);
-    }
-  }
-  return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date)).slice(-14);
-}
-
-function spendRevenueChart() {
-  const days = dailyTotals();
-  if (!days.length) return `<div class="empty">${t("empty")}</div>`;
-  const width = 720;
-  const height = 190;
-  const padX = 8;
-  const padTop = 10;
-  const padBottom = 22;
-  const max = Math.max(...days.map((day) => Math.max(day.spend, day.revenue)), 1);
-  const slot = (width - padX * 2) / days.length;
-  const barW = Math.max(4, Math.min(14, slot * 0.32));
-  const yFor = (value) => padTop + (1 - value / max) * (height - padTop - padBottom);
-  const bars = days
-    .map((day, index) => {
-      const x = padX + index * slot + slot / 2;
-      const spendY = yFor(day.spend);
-      const revenueY = yFor(day.revenue);
-      const label =
-        index % 2 === 0
-          ? `<text class="axis-label" x="${x}" y="${height - 6}" text-anchor="middle">${escapeHtml(date(day.date))}</text>`
-          : "";
-      return `
-      <rect class="bar-spend" x="${(x - barW - 1).toFixed(1)}" y="${spendY.toFixed(1)}" width="${barW.toFixed(1)}" height="${(height - padBottom - spendY).toFixed(1)}" rx="1.5"><title>${escapeHtml(day.date)} · ${t("spend")} ${escapeHtml(money(day.spend))}</title></rect>
-      <rect class="bar-revenue" x="${(x + 1).toFixed(1)}" y="${revenueY.toFixed(1)}" width="${barW.toFixed(1)}" height="${(height - padBottom - revenueY).toFixed(1)}" rx="1.5"><title>${escapeHtml(day.date)} · ${t("revenue")} ${escapeHtml(money(day.revenue))}</title></rect>
-      ${label}
-    `;
-    })
-    .join("");
-  return `
-    <svg class="barchart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${t("spendVsRevenue")}" preserveAspectRatio="none">${bars}</svg>
-    <div class="chart-legend">
-      <span><i class="swatch-spend"></i>${t("spend")}</span>
-      <span><i class="swatch-revenue"></i>${t("revenue")}</span>
-    </div>
-  `;
-}
-
-export function campaignChart(campaign) {
-  const days = [...(campaign.daily || [])].sort((a, b) => a.date.localeCompare(b.date)).slice(-14);
-  if (!days.length) return `<div class="empty">${t("empty")}</div>`;
-  const width = 720;
-  const height = 190;
-  const padX = 8;
-  const padTop = 10;
-  const padBottom = 22;
-  const maxSpend = Math.max(...days.map((day) => Number(day.spend || 0)), 1);
-  const roasValues = days.map((day) => (Number(day.spend) > 0 ? Number(day.revenue || 0) / Number(day.spend) : 0));
-  const maxRoas = Math.max(...roasValues, 1);
-  const slot = (width - padX * 2) / days.length;
-  const barW = Math.max(6, Math.min(22, slot * 0.5));
-  const ySpend = (value) => padTop + (1 - value / maxSpend) * (height - padTop - padBottom);
-  const yRoas = (value) => padTop + (1 - value / maxRoas) * (height - padTop - padBottom);
-  const bars = days
-    .map((day, index) => {
-      const x = padX + index * slot + (slot - barW) / 2;
-      const y = ySpend(Number(day.spend || 0));
-      const label =
-        index % 2 === 0
-          ? `<text class="axis-label" x="${(x + barW / 2).toFixed(1)}" y="${height - 6}" text-anchor="middle">${escapeHtml(date(day.date))}</text>`
-          : "";
-      return `<rect class="bar-spend" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${(height - padBottom - y).toFixed(1)}" rx="2"><title>${escapeHtml(day.date)} · ${t("spend")} ${escapeHtml(money(day.spend))} · ROAS ${roasValues[index].toFixed(2)}</title></rect>${label}`;
-    })
-    .join("");
-  const line = roasValues
-    .map((value, index) => {
-      const x = padX + index * slot + slot / 2;
-      return `${index === 0 ? "M" : "L"}${x.toFixed(1)},${yRoas(value).toFixed(1)}`;
-    })
-    .join(" ");
-  return `
-    <svg class="linechart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${t("dailySeries")}" preserveAspectRatio="none">
-      ${bars}
-      <path class="roas-line" d="${line}"></path>
-    </svg>
-    <div class="chart-legend">
-      <span><i class="swatch-spend"></i>${t("spend")}</span>
-      <span><i class="swatch-roas"></i>${t("roas")}</span>
-    </div>
-  `;
-}
-
-function kpiCards() {
-  const m = metrics();
-  const lastMonth = Number(m.spend_last_month || 0);
-  const acos = Number(m.blended_acos_pct || 0);
-  const target = Number(m.acos_target_pct || 0);
-  const acosClass = target && acos > target ? "over-target" : "on-target";
-  return `
-    <div class="metrics">
-      <div class="metric"><span>${t("spendMtd")}</span><strong>${money(m.spend_mtd)}</strong><small>${t("lastMonth")} ${money(lastMonth)}</small></div>
-      <div class="metric"><span>${t("blendedRoas")}</span><strong>${Number(m.blended_roas || 0).toFixed(2)}</strong><small>${t("spend")} ${money(m.spend_14d)} · ${t("revenue")} ${money(m.revenue_14d)}</small></div>
-      <div class="metric"><span>${t("blendedAcos")}</span><strong class="${acosClass}">${acos.toFixed(1)}%</strong><small>${t("acosTarget")} ${target.toFixed(0)}%</small></div>
-      <div class="metric"><span>${t("conversions14d")}</span><strong>${Number(m.conversions_14d || 0)}</strong><small>${m.campaigns_active || 0} / ${m.campaigns_total || 0} ${enumLabel("active")}</small></div>
-    </div>
-  `;
-}
-
-function platformCards() {
-  return `
-    <div class="platform-grid">
-      ${platforms()
-        .map(
-          (platform) => `
-        <div class="platform-card">
-          <div class="row between">
-            <strong>${statusDot(platform.status)}${escapeHtml(platform.name)}</strong>
-            ${platformBadge(platform.platform_id)}
-          </div>
-          <div class="platform-nums">
-            <span>${t("spend")} <b>${money(platform.spend_14d, platform.currency)}</b></span>
-            <span>ROAS <b>${Number(platform.roas || 0).toFixed(2)}</b></span>
-            <span>ACOS <b>${Number(platform.acos_pct || 0).toFixed(1)}%</b></span>
-          </div>
-          <div class="muted">${platform.campaign_count || 0} ${t("campaigns").toLowerCase()} · ${t("lastSync")} ${dateTime(platform.last_sync_at)}</div>
-        </div>
-      `,
-        )
-        .join("")}
-    </div>
-  `;
-}
-
-function worstOffenders() {
-  const rows = [];
-  for (const campaign of campaigns()) {
-    for (const target of campaign.targets || []) {
-      if (Number(target.conversions || 0) === 0 && Number(target.spend_14d || 0) >= 25) {
-        rows.push({ campaign, target });
-      }
-    }
-  }
-  rows.sort((a, b) => Number(b.target.spend_14d) - Number(a.target.spend_14d));
-  if (!rows.length) return `<div class="empty">${t("empty")}</div>`;
-  return rows
-    .slice(0, 6)
-    .map(
-      ({ campaign, target }) => `
-    <a class="attention-row" href="#/campaigns/${encodeURIComponent(campaign.campaign_id)}">
-      <span><strong>${escapeHtml(target.text)}</strong><small>${escapeHtml(campaign.name)} · ${escapeHtml(String(target.clicks || 0))} ${t("clicks").toLowerCase()}</small></span>
-      <span class="badges">${platformBadge(campaign.platform)}<span class="acos-badge crit">${escapeHtml(money(target.spend_14d))} · ${t("zeroOrders")}</span></span>
-    </a>
-  `,
-    )
-    .join("");
-}
-
-function renderOverview() {
-  els.title.textContent = t("overview");
-  els.subtitle.textContent =
-    state.snapshot?.generated_at && Date.parse(state.snapshot.generated_at) > 0
-      ? `${t("generated")} ${new Date(state.snapshot.generated_at).toLocaleString()}`
-      : t("empty");
-  const needsDecision = adjustments().filter((item) => item.status === "needs_review");
-  const critical = anomalies().filter((item) => item.state === "open" && item.severity === "critical");
-  const budgetRisk = campaigns().filter(
-    (item) => item.status === "active" && Number(item.budget_spent_today_pct || 0) >= 85,
-  );
-  els.content.innerHTML = `
-    ${notice()}
-    ${warnings()}
-    ${kpiCards()}
-    ${platformCards()}
-    <section class="overview-grid">
-      <div class="overview-panel">
-        <h2>${t("humanWorkTitle")}</h2>
-        ${needsDecision
-          .map(
-            (item) => `
-          <a class="attention-row" href="#/adjustments/${encodeURIComponent(item.adjustment_id)}">
-            <span><strong>${t("adjustmentRef")} #${item.ref} · ${escapeHtml(item.title)}</strong><small>${escapeHtml(item.reason)}</small></span>
-            <span class="badges">${adjTypeBadge(item.type)}</span>
-          </a>
-        `,
-          )
-          .join("")}
-        ${critical
-          .map(
-            (item) => `
-          <a class="attention-row" href="#/alerts">
-            <span><strong>${escapeHtml(campaignById(item.campaign_id)?.name || item.campaign_id)}</strong><small>${escapeHtml(item.evidence)}</small></span>
-            <span class="badges">${typeBadge(item.type)}${statusBadge(item.severity)}</span>
-          </a>
-        `,
-          )
-          .join("")}
-        ${budgetRisk
-          .map(
-            (item) => `
-          <a class="attention-row" href="#/campaigns/${encodeURIComponent(item.campaign_id)}">
-            <span><strong>${escapeHtml(item.name)}</strong><small>${t("dailyBudget")} ${money(item.daily_budget, item.currency)} · ${Number(item.budget_spent_today_pct || 0)}% ${t("spentToday")}</small></span>
-            <span class="badges">${platformBadge(item.platform)}</span>
-          </a>
-        `,
-          )
-          .join("")}
-        ${!needsDecision.length && !critical.length && !budgetRisk.length ? `<div class="empty">${t("empty")}</div>` : ""}
-      </div>
-      <div class="overview-panel">
-        <h2>${t("worstOffenders")}</h2>
-        ${worstOffenders()}
-      </div>
-      <div class="overview-panel wide">
-        <h2>${t("spendVsRevenue")}</h2>
-        ${spendRevenueChart()}
-      </div>
-      <div class="overview-panel">
-        <h2>${t("dataFreshness")}</h2>
-        <div class="freshness">
-          ${
-            platforms()
-              .map(
-                (platform) => `
-            <div class="freshness-item"><span>${statusDot(platform.status)}${escapeHtml(platform.name)}</span><strong>${dateTime(platform.last_sync_at)}</strong></div>
-          `,
-              )
-              .join("") || `<div class="empty">${t("empty")}</div>`
-          }
-        </div>
-      </div>
-      <div class="overview-panel">
-        <h2>${t("syncActivity")}</h2>
-        ${
-          syncLog()
-            .slice(0, 6)
-            .map(
-              (entry) => `
-          <div class="sync-row">
-            <span class="sync-meta"><small>${dateTime(entry.at)}</small><span class="badge">${escapeHtml(enumLabel(entry.kind, "kind"))}</span>${entry.platform ? platformBadge(entry.platform) : ""}</span>
-            <span class="sync-message">${escapeHtml(entry.message)}</span>
-          </div>
-        `,
-            )
-            .join("") || `<div class="empty">${t("empty")}</div>`
-        }
-      </div>
-    </section>
-  `;
+function matches(values, query) {
+  return values.filter(Boolean).some((value) => String(value).toLowerCase().includes(query));
 }
 
 export function filteredCampaigns() {
-  const query = state.query.trim().toLowerCase();
+  const query = state.route.query.trim().toLowerCase();
   if (!query) return campaigns();
   return campaigns().filter((campaign) =>
-    [campaign.name, campaign.product, campaign.sku, campaign.platform, campaign.status]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query)),
+    matches(
+      [
+        campaign.name,
+        campaign.product,
+        campaign.sku,
+        enumLabel(campaign.platform, "platform"),
+        enumLabel(campaign.status),
+        campaign.platform,
+        campaign.status,
+      ],
+      query,
+    ),
+  );
+}
+
+export function filteredAnomalies() {
+  const query = state.route.query.trim().toLowerCase();
+  const order = { critical: 0, warning: 1, info: 2 };
+  const stateOrder = { open: 0, actioned: 1, dismissed: 2, resolved: 3 };
+  const rows = [...anomalies()].sort(
+    (a, b) =>
+      (stateOrder[a.state] ?? 9) - (stateOrder[b.state] ?? 9) || (order[a.severity] ?? 9) - (order[b.severity] ?? 9),
+  );
+  if (!query) return rows;
+  return rows.filter((item) =>
+    matches(
+      [
+        item.type,
+        item.severity,
+        item.state,
+        enumLabel(item.type, "type"),
+        enumLabel(item.severity),
+        enumLabel(item.state),
+        item.evidence,
+        item.platform,
+        campaignById(item.campaign_id)?.name,
+      ],
+      query,
+    ),
+  );
+}
+
+export function filteredAdjustments() {
+  const query = state.route.query.trim().toLowerCase();
+  const order = { needs_review: 0, changes_requested: 1, approved: 2, blocked: 3, done: 4 };
+  const rows = [...adjustments()].sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9) || a.ref - b.ref);
+  if (!query) return rows;
+  return rows.filter((item) =>
+    matches(
+      [
+        item.title,
+        item.reason,
+        item.type,
+        item.status,
+        enumLabel(item.type, "adjtype"),
+        enumLabel(item.status),
+        item.note,
+        item.platform,
+        `#${item.ref}`,
+      ],
+      query,
+    ),
   );
 }
 
 export function render() {
   renderShell();
-  if (state.route.view === "campaigns" && state.route.id) renderCampaignDetail();
-  else if (state.route.view === "campaigns") renderCampaigns();
-  else if (state.route.view === "alerts") renderAlerts();
-  else if (state.route.view === "adjustments" && state.route.id) renderAdjustmentDetail();
-  else if (state.route.view === "adjustments") renderAdjustments();
-  else if (state.route.view === "settings") renderSettings();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && modeFor(view) === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
   else renderOverview();
 }
 
@@ -635,14 +650,50 @@ export function escapeHtml(value) {
   );
 }
 
+// ── Events ─────────────────────────────────────────────────────────────────
+els.listPanel.addEventListener("click", (event) => {
+  const pager = event.target.closest("[data-goto-page]");
+  if (pager) {
+    const [key, page] = pager.dataset.gotoPage.split(":");
+    goToPage(key, Number(page));
+    return;
+  }
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+els.detailBody.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-verdict]");
+  if (!button) return;
+  const card = button.closest("[data-adjustment]");
+  if (card) submitDecision(card.dataset.adjustment, button.dataset.verdict);
+});
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  // Escape inside the note only leaves the field; a second Escape closes.
+  if (event.target.closest?.("textarea, input")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", () => setMobileSidebarOpen(true));
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
+  replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`);
 });
 els.refresh.addEventListener("click", () => loadState());
 els.mobileRefresh?.addEventListener("click", () => loadState());
@@ -663,118 +714,13 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
-
-const PAGE_BINDINGS = {
-  campaigns: { key: "campaigns", path: "snapshot.campaigns" },
-  alerts: { key: "anomalies", path: "snapshot.anomalies" },
-  adjustments: { key: "adjustments", path: "snapshot.adjustments" },
-};
-
-function pageSize(key) {
-  return appConfig.bases.find((entry) => entry.key === key)?.readLimit || 50;
-}
-
-function pageCount(key) {
-  const total = state.totals?.[key];
-  return total == null ? null : Math.max(1, Math.ceil(total / pageSize(key)));
-}
-
-function replacePageRows(path, rows) {
-  const parts = path.split(".");
-  let target = state;
-  for (const part of parts.slice(0, -1)) {
-    target = target?.[part];
-    if (!target) return;
-  }
-  target[parts.at(-1)] = rows;
-}
-
-async function goToPage(key, targetPage) {
-  if (state.pageLoading[key] || !state.pageCursors[key]) return;
-  const binding = Object.values(PAGE_BINDINGS).find((entry) => entry.key === key);
-  if (!binding) return;
-  const totalPages = pageCount(key);
-  const page = totalPages == null ? Math.max(1, targetPage) : Math.min(Math.max(1, targetPage), totalPages);
-  if (page === state.currentPage[key]) return;
-  state.pageLoading[key] = true;
-  if (typeof render === "function") render();
-  else route();
-  try {
-    const provider = await getProvider();
-    let result;
-    for (let next = state.pageCursors[key].length; next <= page; next += 1) {
-      const cursor = state.pageCursors[key][next - 1];
-      if (next > 1 && !cursor) return;
-      result = await provider.fetchPage(key, cursor);
-      state.pageCursors[key][next] = result.nextCursor;
-    }
-    if (!result || state.pageCursors[key].length > page + 1) {
-      result = await provider.fetchPage(key, state.pageCursors[key][page - 1]);
-      state.pageCursors[key][page] = result.nextCursor;
-    }
-    replacePageRows(binding.path, result.rows);
-    state.currentPage[key] = page;
-  } finally {
-    state.pageLoading[key] = false;
-    if (typeof render === "function") render();
-    else route();
-  }
-}
-
-function pagerMessage(key, fallback) {
-  return typeof t === "function" ? t(key) : fallback;
-}
-
-export function recordCountLabel(key, loadedCount, filtered = false) {
-  if (filtered) return loadedCount;
-  const total = state.totals?.[key];
-  if (total != null) return total;
-  const current = state.currentPage?.[key] || 1;
-  return `${loadedCount}${state.pageCursors?.[key]?.[current] ? "+" : ""}`;
-}
-
-export function pagerControl(key) {
-  if (!state.pageCursors[key]) return "";
-  const total = pageCount(key);
-  const current = state.currentPage[key] || 1;
-  const loading = Boolean(state.pageLoading[key]);
-  const hasNext = total == null ? Boolean(state.pageCursors[key][current]) : current < total;
-  if ((total === 1 || total == null) && current === 1 && !hasNext) return "";
-  const pages =
-    total == null
-      ? []
-      : total <= 7
-        ? Array.from({ length: total }, (_, index) => index + 1)
-        : [...new Set([1, total, current - 1, current, current + 1].filter((page) => page >= 1 && page <= total))].sort(
-            (a, b) => a - b,
-          );
-  const items = [];
-  let previous = 0;
-  for (const page of pages) {
-    if (previous && page - previous > 1) items.push('<span class="pager-ellipsis">…</span>');
-    items.push(
-      `<button type="button" class="pager-page ${page === current ? "active" : ""}" data-goto-page="${key}:${page}" ${loading || page === current ? "disabled" : ""}>${page}</button>`,
-    );
-    previous = page;
-  }
-  return `<nav class="pager" aria-label="${pagerMessage("pagination", "Pagination")}">
-    <button type="button" class="pager-nav" data-goto-page="${key}:${current - 1}" ${loading || current <= 1 ? "disabled" : ""}>${pagerMessage("prevPage", "Prev")}</button>
-    ${items.join("")}
-    <button type="button" class="pager-nav" data-goto-page="${key}:${current + 1}" ${loading || !hasNext ? "disabled" : ""}>${pagerMessage("nextPage", "Next")}</button>
-    ${total == null ? "" : `<span class="pager-summary">${pagerMessage("pageOf", "Page {current} of {total}").replace("{current}", current).replace("{total}", total)}</span>`}
-  </nav>`;
-}
-
-document.querySelector("#content")?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-goto-page]");
-  if (!button) return;
-  const [key, page] = button.dataset.gotoPage.split(":");
-  goToPage(key, Number(page));
-});
-
 boot();

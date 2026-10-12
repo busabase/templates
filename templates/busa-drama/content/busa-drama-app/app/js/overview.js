@@ -2,11 +2,12 @@ import { bindForm } from "./actions.js";
 import { escapeHtml, formatBytes } from "./format.js";
 import { seriesForm } from "./forms.js";
 import { t } from "./i18n.js";
+import { shotReadiness } from "./shots.js";
 import { $, project, store } from "./store.js";
 
 function overviewCard(title, body, target, tag) {
   return `
-    <button class="item-card overview-row" data-go="${target}">
+    <button type="button" class="overview-row" data-go="${target}">
       <span class="row-key">${escapeHtml(tag)}</span>
       <span class="row-main">
         <strong>${escapeHtml(title)}</strong>
@@ -112,26 +113,54 @@ function hyperframeOverview(p) {
     </section>`;
 }
 
+// At most three numbers, none of them already on screen: per-Base totals sit
+// next to the nav items and the attention counts in the sidebar block. Shots
+// have no nav item of their own (they live inside episodes).
+function overviewMetrics(p) {
+  const shots = p.shots || [];
+  const shotsMore = store.state.pagination?.shots ? "+" : "";
+  const episodesMore = store.state.pagination?.episodes ? "+" : "";
+  const totalShots = store.state.totalCount?.shots ?? store.state.totals?.shots;
+  const ready = shots.filter((shot) => shotReadiness(shot).ready).length;
+  const imaged = shots.filter((shot) => shot.image_asset).length;
+  const approved = (p.episodes || []).filter((episode) => ["approved", "done"].includes(episode.status)).length;
+  // Ready / imaged / approved are computed from the loaded page: "n+" while
+  // more pages exist, so a partial count never reads as the total.
+  const cells = [
+    [t("overview_metric_shots"), Number.isFinite(totalShots) ? String(totalShots) : `${shots.length}${shotsMore}`],
+    [t("overview_metric_video_ready"), `${ready}${shotsMore}`, t("overview_metric_video_ready_title").replace("{n}", imaged)],
+    [t("overview_metric_episodes_approved"), `${approved}${episodesMore}`],
+  ];
+  return cells
+    .map(
+      ([label, value, title]) =>
+        `<div${title ? ` title="${escapeHtml(title)}"` : ""}><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`,
+    )
+    .join("");
+}
+
 export function renderOverview() {
   const p = project();
-  $("itemCount").textContent = t("overview_label");
-  $("newItemButton").style.visibility = "hidden";
-  const list = $("list");
-  list.innerHTML = `
-    <div class="metrics">
-      <div class="metric"><strong>${store.state.totals?.characters ?? p.characters?.length ?? 0}</strong><span>${t("overview_metric_characters")}</span></div>
-      <div class="metric"><strong>${store.state.totals?.relationships ?? p.relationships?.length ?? 0}</strong><span>${t("overview_metric_relationships")}</span></div>
-      <div class="metric"><strong>${store.state.totals?.episodes ?? p.episodes?.length ?? 0}</strong><span>${t("overview_metric_episodes")}</span></div>
-      <div class="metric"><strong>${store.state.totals?.shots ?? p.shots?.length ?? 0}</strong><span>${t("overview_metric_shots")}</span></div>
+  const series = p.series || {};
+  $("overviewContext").textContent = [series.genre, series.format].filter(Boolean).join(" · ");
+  $("overviewTitle").textContent = series.title || t("project_unnamed");
+  $("overviewSummary").textContent = series.logline || t("view_overview_sub");
+  $("overviewMetrics").innerHTML = overviewMetrics(p);
+  $("overviewBody").innerHTML = `
+    <div class="overview-main">
+      <section class="card overview-steps">
+        <div class="section-label">${t("overview_next_steps")}</div>
+        ${overviewCard(t("overview_card_char_consistency"), t("overview_card_char_consistency_hint"), "characters", t("view_characters"))}
+        ${overviewCard(t("overview_card_plot"), t("overview_card_plot_body").replace("{n}", store.state.completeness.episodes_missing_cliffhanger), "episodes", t("view_episodes"))}
+        ${overviewCard(t("overview_card_storyboard"), t("overview_card_storyboard_hint"), "episodes", t("stat_shots"))}
+        ${overviewCard(t("overview_card_relationship"), t("overview_card_relationship_body").replace("{n}", store.state.completeness.relationships_missing_evidence), "relationships", t("view_relationships"))}
+      </section>
+      <section class="card overview-side">
+        ${hyperframeOverview(p)}
+        ${visualBiblePreview(series.visual_bible || {})}
+      </section>
     </div>
-    <div class="section-label">${t("overview_next_steps")}</div>
-    ${overviewCard(t("overview_card_char_consistency"), t("overview_card_char_consistency_body").replace("{n}", store.state.completeness.characters_missing_views), "characters", t("view_characters"))}
-    ${overviewCard(t("overview_card_plot"), t("overview_card_plot_body").replace("{n}", store.state.completeness.episodes_missing_cliffhanger), "episodes", t("view_episodes"))}
-    ${overviewCard(t("overview_card_storyboard"), t("overview_card_storyboard_body").replace("{n}", store.state.completeness.shots_missing_prompt), "episodes", t("stat_shots"))}
-    ${overviewCard(t("overview_card_relationship"), t("overview_card_relationship_body").replace("{n}", store.state.completeness.relationships_missing_evidence), "relationships", t("view_relationships"))}
-    ${hyperframeOverview(p)}
-    ${visualBiblePreview(p.series?.visual_bible || {})}
+    <div class="card overview-series">${seriesForm(series)}</div>
   `;
-  $("detail").innerHTML = seriesForm(p.series || {});
   bindForm();
 }

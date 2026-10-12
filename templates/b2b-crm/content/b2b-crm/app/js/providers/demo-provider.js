@@ -80,6 +80,12 @@ export const demoProvider = {
       changeRequests: [...pendingRequests],
       changeRequestPageInfo: { nextCursor: null, limit: 20 },
       overviewCounts: demoOverviewCounts(records),
+      baseTotals: Object.fromEntries(
+        appConfig.schema.bases.map((base) => [
+          base.key,
+          records.filter((record) => record.baseKey === base.key).length,
+        ]),
+      ),
     };
   },
   async queryBase(baseKey, options = {}) {

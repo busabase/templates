@@ -12,6 +12,10 @@ export const appConfig = {
     slug: "busa-expo-leads",
   },
   airApp: { name: "Busa Expo Leads", slug: "busa-expo-leads-app", resourceKey: "busa-expo-leads-app" },
+  // Where a record opens, per view (see app.js for the reasoning). Batches and
+  // Settings have no record view of their own: a batch is a filter on Leads,
+  // and the settings row is shown read-only on Help & Settings.
+  ui: { detail_modes: { leads: "drawer", followups: "split" } },
   bases: [
     {
       key: "batches",
@@ -182,7 +186,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

@@ -8,10 +8,10 @@ gives the operator a roadmap decision queue.
 
 ## What It Shows
 
-- **Overview**: what needs a decision, feedback inflow this week by channel, sentiment split, top clusters by momentum, and source freshness.
-- **Inbox**: the raw feedback stream with channel badges, sentiment, and triage state; detail pages carry full text, user context, and triage actions that write straight to Busabase.
+- **Overview**: a three-number band (negative share, paying-customer share, share linked to a request), feedback inflow this week by channel, sentiment split, top clusters by momentum, source freshness, and the current roadmap lanes.
+- **Inbox**: the raw feedback stream with channel badges, sentiment, and triage state; a row opens in a side drawer with full text, user context, and triage actions that write straight to Busabase.
 - **Requests**: clustered feature requests with frequency, weighted score (frequency × user revenue weight, always recomputed client-side), trend, and status; detail pages carry the agent-drafted problem statement, spec summary, representative quotes, and decision history.
-- **Roadmap**: the decision queue — agent-proposed changes (promote to Now/Next/Later, decline with a drafted reply, merge duplicates) with reason, evidence, editable drafts, review notes, and Approve / Request changes / Block buttons that write directly to Busabase — plus the current roadmap lanes read-only.
+- **Roadmap**: the decision queue — agent-proposed changes (promote to Now/Next/Later, decline with a drafted reply, merge duplicates) with reason, evidence, editable drafts, review notes, and Approve / Request changes / Block buttons that write directly to Busabase, worked as a queue beside the selected proposal.
 - **Help & Settings**: sanitized config summary (products, sources, scoring weights, env readiness) and the sync log.
 - The AirApp never calls a feedback platform, posts a reply, or publishes a changelog. Every outbound action is approval-required and executed by the agent via other skills, only after the matching proposal is approved.
 

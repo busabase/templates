@@ -134,18 +134,25 @@ first time the app runs in a Space.
 
 ## Views
 
-- `#/overview`: lifecycle pipeline, key metrics, upcoming renewals, and
-  at-risk obligations.
-- `#/contracts`: searchable contract inventory.
+- `#/overview`: lifecycle pipeline, a three-number summary (renewal or
+  notice in 90 days, obligations due in 30 days, high-risk contracts),
+  upcoming renewals, and at-risk obligations.
+- `#/contracts`: searchable contract inventory; a contract opens as a full
+  page, `#/contracts/<id>`, with its obligations, approvals, and an inline
+  edit form (direct update).
 - `#/contracts/new`: new contract form (direct create).
-- `#/contracts/<id>`: contract detail with dates, owners, obligations, and
-  an inline edit form (direct update).
 - `#/obligations`: obligation tracker by owner, due date, and status, with a
-  mark-done/reopen action per row.
-- `#/renewals`: renewal and notice-deadline board, with an acknowledge
-  action per contract carrying a notice deadline.
-- `#/approvals`: approval/reminder queue; approve / request-changes / block
-  write the decision directly onto the approval record.
+  mark-done/reopen action per row; an obligation opens in a drawer,
+  `#/obligations?peek=<id>`.
+- `#/renewals`: renewal and notice-deadline queue, worked in a split view
+  (`#/renewals?peek=<id>`) with an acknowledge action per contract carrying a
+  notice deadline.
+- `#/approvals`: approval/reminder inbox in a split view
+  (`#/approvals?peek=<id>`); approve / request-changes / block, with an
+  optional decision note, write the decision directly onto the approval
+  record.
+- Any drawer or split record also has a full page at `#/<view>/<id>`; every
+  record view keeps its search in `?q=`.
 - `#/settings`: boundary and demo/config summary.
 
 ## Demo Mode

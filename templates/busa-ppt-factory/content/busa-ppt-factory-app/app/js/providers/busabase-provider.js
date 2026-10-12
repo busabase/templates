@@ -7,7 +7,10 @@ import {
   baseSlideFields,
   buildSnapshot,
   normalizeDeckRow,
+  normalizeExportRow,
+  normalizeProjectRow,
   normalizeSlideRow,
+  normalizeStyleRow,
   statusFromDecision,
 } from "../ppt-model.js?v=0.1.0";
 
@@ -104,7 +107,29 @@ async function countReviewRecords(status) {
   return counts.some((value) => value === null) ? null : counts[0] + counts[1];
 }
 
+// A supporting Base the screen can live without (style kits, QA evidence,
+// exports, settings): a denied or failed read leaves it empty instead of
+// failing the whole app.
+async function readOptionalPage(key) {
+  try {
+    return await readPage(key);
+  } catch {
+    return { rows: [], nextCursor: null, failed: true };
+  }
+}
+
+// Business-id field per route, for opening a record named by the URL that is
+// not on the loaded page (one records.get, never another page).
+const RECORD_LOOKUP = {
+  projects: { key: "projects", field: "project-id", normalize: normalizeProjectRow },
+  decks: { key: "decks", field: "deck-id", normalize: normalizeDeckRow },
+  slides: { key: "slide-cards", field: "slide-id", normalize: normalizeSlideRow },
+  style: { key: "style-systems", field: "style-system-id", normalize: normalizeStyleRow },
+  exports: { key: "exports", field: "export-id", normalize: normalizeExportRow },
+};
+
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -115,7 +140,7 @@ async function findRecord(key, idFieldSlug, idValue) {
 }
 
 async function readSettingsRow() {
-  const { rows } = await readPage("settings");
+  const { rows } = await readOptionalPage("settings");
   return rows.find((row) => row.record_id === "config") || {};
 }
 
@@ -142,13 +167,14 @@ export const busabaseProvider = {
       reviewNeeds,
       reviewChanges,
       reviewApproved,
+      qaOpen,
     ] = await Promise.all([
       readPage("projects"),
       readPage("decks"),
       readPage("slide-cards"),
-      readPage("style-systems"),
-      readPage("qa-checks"),
-      readPage("exports"),
+      readOptionalPage("style-systems"),
+      readOptionalPage("qa-checks"),
+      readOptionalPage("exports"),
       readSettingsRow(),
       Promise.all(keys.map((key) => countRecords(key))),
       countStatus("slide-cards", "needs_review"),
@@ -159,6 +185,11 @@ export const busabaseProvider = {
       countReviewRecords("needs_review"),
       countReviewRecords("changes_requested"),
       countReviewRecords("approved"),
+      Promise.all(
+        ["warn", "fail", "manual"].map((result) =>
+          countRecords("qa-checks", [{ fieldSlug: "result", fieldType: "text", operator: "equals", value: result }]),
+        ),
+      ),
     ]);
     const snapshot = buildSnapshot({
       projects: projects.rows,
@@ -175,6 +206,7 @@ export const busabaseProvider = {
     if (slidesNeedsReview !== null && slidesChangesRequested !== null)
       snapshot.metrics.slides_needs_review = slidesNeedsReview + slidesChangesRequested;
     if (decksGenerated !== null) snapshot.metrics.decks_generated = decksGenerated;
+    if (!qaOpen.includes(null)) snapshot.metrics.qa_warnings = qaOpen[0] + qaOpen[1] + qaOpen[2];
     return {
       app: appConfig.appId,
       demo: false,
@@ -223,6 +255,17 @@ export const busabaseProvider = {
   async fetchPage(key, cursor) {
     await ensureResources();
     return readPage(key, cursor);
+  },
+
+  // One record named by the URL (`#/decks/<id>`, `?peek=<id>`) that is not on
+  // the loaded page. Returns the normalized row, or null when it is gone.
+  async getRecord(view, id) {
+    const lookup = RECORD_LOOKUP[view];
+    if (!lookup || !id) return null;
+    await ensureResources();
+    const record = await findRecord(lookup.key, lookup.field, id);
+    if (!record) return null;
+    return lookup.normalize(normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields));
   },
 
   // Human verdict on a slide card or deck, written directly onto its own

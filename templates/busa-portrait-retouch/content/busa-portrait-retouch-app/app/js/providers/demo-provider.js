@@ -1,4 +1,11 @@
-import { demoSnapshot } from "../retouch-model.js?v=0.1.0";
+import { STATUSES, demoSnapshot } from "../retouch-model.js?v=0.1.0";
+
+// The demo holds every row, so its per-status totals are exact.
+const demoCounts = (snapshot) => ({
+  ...snapshot,
+  counts: Object.fromEntries(STATUSES.map((status) => [status, snapshot.metrics[status] || 0])),
+  next_cursor: null,
+});
 
 export const demoProvider = {
   kind: "demo",
@@ -14,8 +21,14 @@ export const demoProvider = {
         change_request_id: null,
         safe_context: { mode: "read-only-demo" },
       },
-      snapshot: demoSnapshot(),
+      snapshot: demoCounts(demoSnapshot()),
     };
+  },
+  async loadMoreCandidates() {
+    return { candidates: [], next_cursor: null };
+  },
+  async getCandidate(candidate_id) {
+    return demoSnapshot().candidates.find((item) => item.candidate_id === candidate_id) || null;
   },
   async submitDecision() {
     throw new Error("Demo mode is read-only.");

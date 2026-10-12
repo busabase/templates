@@ -7,7 +7,10 @@
   --accent-strong: #18523f;
   --accent-soft: #e8f3ed;
   --accent-line: #b7d5c5;
+  --ws-first-col: 26%;
 }
+
+/* ── Sidebar ─────────────────────────────────────────────────────────── */
 .sidebar-footer {
   margin-top: auto;
   display: flex;
@@ -15,86 +18,225 @@
   align-items: center;
 }
 .sidebar-footer select,
-.toolbar select {
+.ws-actions select {
   background: var(--surface);
   color: var(--ink);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
-  padding: 8px;
   max-width: 100%;
 }
-.toolbar {
-  margin: 0 24px;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-  padding-bottom: 12px;
+.sidebar-footer select {
+  padding: 8px;
 }
-.toolbar .search {
-  max-width: 320px;
-  width: 100%;
+/* Overview / Needs attention carry no count: their only span is the label,
+ * not the count pill the shared `span:last-child` rule styles. */
+.nav-item span:only-child {
+  min-width: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-size: var(--text-md);
+  text-align: left;
 }
-.toolbar .eyebrow {
-  margin-left: auto;
+/* A full record page replaces the list, so the list's filters step aside. */
+body.ws-detail-page .ws-actions {
+  display: none;
 }
-.record-row {
-  position: relative;
-}
-.record-row .badge {
-  font-size: var(--text-sm);
-  color: var(--accent);
-  background: var(--accent-soft);
-  padding: 3px 7px;
-  border-radius: var(--radius-sm);
-  align-self: flex-start;
-}
-.record-row .row-main {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.record-row .reason {
-  color: var(--warning);
-  font-size: var(--text-sm);
-}
-.detail-fields h3 {
-  margin: 20px 0 10px;
-  font-size: var(--text-lg);
-}
+.nav-item,
+.attention,
+.ledger-card,
+.ws-metrics > a,
 .timeline-row {
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
 }
-.timeline-row p {
-  color: var(--ink-soft);
-  margin: 4px 0;
-  line-height: 1.6;
+.attention {
+  transition: border-color var(--ease);
 }
-.page-note {
-  color: var(--muted);
-  font-size: var(--text-sm);
-  line-height: 1.6;
-}
-.field-row strong {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  max-width: 66%;
+.attention:hover,
+.attention.active {
+  border-color: var(--accent);
 }
 #closeNav {
   display: none;
 }
-.workspace-header h1 {
-  font-size: var(--text-2xl);
+
+/* ── Notices above whichever page is showing ─────────────────────────── */
+.state-message.notice {
+  max-width: none;
+  margin: 0;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--warning);
+  font-size: var(--text-base);
+  text-align: left;
 }
-.main {
+
+/* ── Overview ────────────────────────────────────────────────────────── */
+.page-hero .button svg {
+  width: 16px;
+  height: 16px;
+}
+.ws-metrics > a {
+  transition: background var(--ease);
+}
+.ws-metrics > a:hover {
+  background: var(--surface-hover);
+}
+.ledger-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.ledger-card {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  transition: border-color var(--ease);
+}
+.ledger-card:hover {
+  border-color: var(--accent-line);
+}
+.ledger-card p {
+  color: var(--muted);
+  font-size: var(--text-base);
+}
+.ledger-foot {
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
 }
+.ledger-foot strong {
+  color: var(--ink);
+  font-size: var(--text-xl);
+  font-variant-numeric: tabular-nums;
+}
+.ledger-open {
+  margin-left: auto;
+  color: var(--accent);
+  font-weight: 550;
+}
+
+/* ── Record view toolbar ─────────────────────────────────────────────── */
+.ws-actions select {
+  height: 34px;
+  max-width: 180px;
+  padding: 0 6px;
+  font-size: var(--text-base);
+}
+.search-label {
+  min-width: 0;
+}
+.search-label .search-field {
+  width: min(260px, 26vw);
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-base);
+}
+
+/* ── Table ───────────────────────────────────────────────────────────── */
+.ws-table .cell-primary {
+  font-weight: 580;
+}
+.ws-table .col-status {
+  width: 14%;
+}
+.ws-table .col-reason {
+  width: 18%;
+}
+.ws-table .col-date {
+  width: 128px;
+  font-variant-numeric: tabular-nums;
+}
+.ws-table .col-code {
+  width: 108px;
+}
+/* Only the first two columns survive in the split queue: the second takes the rest. */
+body.ws-layout-split .ws-table :is(.col-status, .col-reason) {
+  width: auto;
+}
+.ws-table .col-status .badge {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+}
+.ws-list .empty-state {
+  margin: 40px auto;
+}
+
+/* ── Detail ──────────────────────────────────────────────────────────── */
+a.button {
+  text-decoration: none;
+}
+#detail {
+  max-width: 820px;
+}
+#detail h2 {
+  margin: 0 0 10px;
+  font-size: var(--text-xl);
+  overflow-wrap: anywhere;
+}
+.detail-badges {
+  margin-bottom: 18px;
+}
+.field-row {
+  grid-template-columns: minmax(120px, 32%) minmax(0, 1fr);
+  gap: 16px;
+}
+.field-row strong {
+  white-space: pre-wrap;
+  font-variant-numeric: tabular-nums;
+}
+.field-row a {
+  color: var(--accent);
+}
+.reason {
+  color: var(--warning);
+}
+.evidence-note,
+.related {
+  margin-top: 22px;
+}
+.evidence-note h3,
+.related h3 {
+  margin: 0 0 8px;
+  font-size: var(--text-md);
+}
+.evidence-note p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: var(--text-base);
+  line-height: 1.7;
+}
+.timeline-row {
+  display: block;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  transition: background var(--ease);
+}
+.timeline-row:hover strong {
+  color: var(--accent);
+}
+.timeline-row p {
+  color: var(--ink-soft);
+  margin: 4px 0 0;
+  font-size: var(--text-base);
+  line-height: 1.6;
+}
+
+/* ── Help dialog ─────────────────────────────────────────────────────── */
 dialog.modal {
+  padding: 0;
   color: var(--ink);
   background: var(--surface);
   border: 1px solid var(--line);
@@ -111,17 +253,7 @@ dialog.modal::backdrop {
   color: var(--ink-soft);
   line-height: 1.6;
 }
-.content-split {
-  flex-shrink: 1;
-  min-height: 0;
-  flex: 1;
-}
-.record-list {
-  overflow: auto;
-}
-.state-message:empty {
-  display: none;
-}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --accent: #7ec5a8;
@@ -131,40 +263,44 @@ dialog.modal::backdrop {
   }
 }
 @media (max-width: 720px) {
-  .toolbar {
-    margin: 0;
-  }
-  .toolbar .search input {
-    width: 100%;
-  }
   #closeNav {
     display: block;
   }
-  .toolbar {
-    gap: 8px;
+  .page-hero {
+    flex-wrap: wrap;
+    align-items: start;
   }
-  .toolbar .search {
-    max-width: none;
+  .ws-toolbar {
+    flex-wrap: nowrap;
   }
-  .toolbar .eyebrow {
-    margin-left: 0;
+  .ws-title {
+    flex: 0 0 auto;
   }
-  .workspace-header {
-    padding-bottom: 10px;
+  .ws-table :is(.col-status, .col-reason) {
+    width: auto;
   }
-  .workspace-header h1 {
-    font-size: var(--text-xl);
+  /* A record replaces the list on a phone; its own bar carries Back. */
+  body.ws-detail-open .ws-toolbar {
+    display: none;
+  }
+  .ws-actions {
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+  }
+  .ws-actions select {
+    max-width: 112px;
+  }
+  .search-label {
+    flex: 1 1 auto;
+  }
+  .search-label .search-field {
+    width: 100%;
+  }
+  .state-message.notice {
+    padding: 8px 14px;
   }
   .field-row {
-    flex-wrap: wrap;
-  }
-  .field-row strong {
-    max-width: 100%;
-  }
-  .detail-panel article {
-    padding-bottom: 24px;
-  }
-  .toolbar select {
-    max-width: 160px;
+    grid-template-columns: minmax(105px, 40%) minmax(0, 1fr);
+    gap: 10px;
   }
 }

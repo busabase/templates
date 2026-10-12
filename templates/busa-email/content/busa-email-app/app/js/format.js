@@ -16,8 +16,7 @@ export function shortSender(value) {
 export function parseEmailAddresses(value) {
   const results = [];
   const pattern = /(?:"?([^"<,]*)"?\s*)?<([^<>@\s]+@[^<>\s]+)>|([^<>,\s]+@[^<>,\s]+)/g;
-  let match;
-  while ((match = pattern.exec(value || ""))) {
+  for (const match of String(value || "").matchAll(pattern)) {
     results.push({
       name: (match[1] || "").trim(),
       address: (match[2] || match[3] || "").trim().toLowerCase(),

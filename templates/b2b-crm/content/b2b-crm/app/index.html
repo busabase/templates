@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light dark">
     <title>B2B CRM</title>
     <link rel="stylesheet" href="./base-ui.css">
-    <link rel="stylesheet" href="./styles.css?v=recording-ui-9">
+    <link rel="stylesheet" href="./styles.css?v=ws-layout-1">
   </head>
   <body>
     <div class="app-shell">
@@ -20,6 +20,7 @@
           <span class="eyebrow" id="attentionTitle"><i data-lucide="alarm-clock"></i>Follow-up attention</span>
           <strong id="attentionValue">0</strong>
           <span id="attentionCopy">due in the loaded window</span>
+          <span class="attention-pending" id="attentionPending">No requests awaiting review</span>
         </section>
         <nav class="main-nav" id="mainNav" aria-label="CRM navigation">
           <button class="nav-item active" type="button" data-screen="overview"><span class="nav-label"><i data-lucide="layout-dashboard"></i><span>Overview</span></span><span class="nav-count" aria-hidden="true"></span></button>
@@ -36,47 +37,57 @@
           <strong id="mobileTitle">Overview</strong>
           <button class="icon-button" id="mobileSettings" type="button" aria-label="Open settings" title="Open settings"><i data-lucide="circle-help"></i></button>
         </header>
-        <section class="workspace-header">
-          <div><span class="eyebrow" id="viewEyebrow">Sales command</span><h1 id="viewTitle">Sales Overview</h1><p id="viewSummary">Your pipeline, relationship momentum, and follow-ups for today.</p></div>
-          <div class="overview-header-actions" id="overviewHeaderActions">
-            <button class="secondary-button" id="overviewFollowUps" type="button"><i data-lucide="calendar-clock"></i><span>View Follow-Ups</span></button>
-            <button class="primary-button" id="overviewAddDeal" type="button"><i data-lucide="plus"></i><span>Add Deal</span></button>
-          </div>
-          <label class="search" id="workspaceSearch" hidden><span class="sr-only" id="searchLabel">Search directory</span><input id="searchInput" type="search" autocomplete="off" placeholder="Search companies"></label>
-        </section>
         <div class="state-message workspace-state" id="loadingState" role="status">Loading the configured CRM data window...</div>
         <div class="state-message error workspace-state" id="errorState" role="alert" hidden></div>
-        <section class="overview-page" id="overviewPage" aria-label="Sales overview" hidden></section>
-        <section class="metrics" id="metrics" aria-label="CRM summary" hidden></section>
-        <section class="control-bar" id="controlBar" hidden>
-          <div class="segmented" id="directoryTabs" aria-label="Directory type">
-            <button class="active" type="button" data-directory-tab="companies">Companies</button>
-            <button type="button" data-directory-tab="contacts">Contacts</button>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section class="ws-overview overview-page" id="overviewPage" aria-label="Sales overview" hidden>
+          <header class="page-hero overview-hero">
+            <div><h1 id="overviewTitle">Sales Overview</h1><p id="overviewSummary">Your pipeline, relationship momentum, and follow-ups for today.</p></div>
+            <div class="page-actions">
+              <button class="secondary-button" id="overviewFollowUps" type="button"><i data-lucide="calendar-clock"></i><span>View Follow-Ups</span></button>
+              <button class="primary-button" id="overviewAddDeal" type="button"><i data-lucide="plus"></i><span>Add Deal</span></button>
+            </div>
+          </header>
+          <div class="overview-body" id="overviewBody"></div>
+        </section>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section class="ws-view" id="viewPage" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title"><h1 id="viewTitle">Directory</h1><span class="ws-count" id="viewCount"></span></div>
+            <div class="ws-actions">
+              <div class="segmented" id="directoryTabs" aria-label="Directory type">
+                <button class="active" type="button" data-directory-tab="companies">Companies</button>
+                <button type="button" data-directory-tab="contacts">Contacts</button>
+              </div>
+              <label class="filter-control"><span id="filterLabel">Relationship</span><select id="recordFilter" aria-label="Filter records"></select><span class="select-chevron" aria-hidden="true"></span></label>
+              <label class="search"><span class="sr-only" id="searchLabel">Search companies</span><input id="searchInput" type="search" autocomplete="off" placeholder="Search companies"></label>
+              <button class="primary-button" id="addDealOpen" type="button" hidden><i data-lucide="plus"></i><span>Add Deal</span></button>
+            </div>
+          </header>
+          <div class="ws-workspace" id="workspaceContent">
+            <div class="ws-list" id="listPanel">
+              <table class="ws-table record-table" id="recordTable"><thead id="recordHead"></thead><tbody id="recordList"></tbody></table>
+              <div class="list-footer"><button class="load-more" id="loadMore" type="button" hidden>Load more</button></div>
+            </div>
+            <aside class="ws-detail" id="detailPanel" aria-label="Record details">
+              <div class="ws-detail-bar" id="detailBar">
+                <button class="secondary-button back-button" id="backButton" type="button"><i data-lucide="arrow-left"></i><span>Back to list</span></button>
+                <div class="detail-bar-actions">
+                  <a class="secondary-button" id="detailExpand" href="#/overview" hidden><span>Open full page</span></a>
+                  <button class="icon-button detail-close" id="detailClose" type="button" aria-label="Close details" title="Close details"><i data-lucide="x"></i></button>
+                </div>
+              </div>
+              <div class="ws-detail-empty" id="detailEmpty"></div>
+              <article class="detail-article" id="detailContent" hidden>
+                <header class="detail-header"><h2 id="detailTitle"></h2><div class="detail-actions" id="detailActions"><button class="secondary-button" id="stageChangeOpen" type="button" hidden><i data-lucide="pencil"></i><span>Change Stage</span></button><button class="primary-button" id="logActivityOpen" type="button" hidden><i data-lucide="plus"></i><span>Log Activity</span></button></div></header>
+                <div class="audit-line" id="auditLine"></div>
+                <div class="detail-fields" id="detailFields"></div>
+                <section class="related-section" id="relatedContactsSection" hidden><div class="section-heading"><h3>Contacts</h3><span id="relatedContactsCount"></span></div><div class="related-list" id="relatedContacts"></div></section>
+                <section class="related-section" id="relatedActivitiesSection" hidden><div class="section-heading"><h3>Recent activity</h3><span id="relatedActivitiesCount"></span></div><div class="related-list" id="relatedActivities"></div></section>
+              </article>
+            </aside>
           </div>
-          <label class="filter-control"><span id="filterLabel">Relationship</span><select id="recordFilter" aria-label="Filter records"></select><span class="select-chevron" aria-hidden="true"></span></label>
-          <button class="primary-button control-action" id="addDealOpen" type="button" hidden><i data-lucide="plus"></i><span>Add Deal</span></button>
-          <span class="window-note" id="windowNote">Showing one bounded data window</span>
         </section>
-        <section class="content-split" id="workspaceContent" hidden>
-          <section class="list-panel" id="listPanel">
-            <div class="panel-heading"><div><span class="eyebrow" id="listEyebrow">Directory</span><h2 id="listTitle">Companies</h2></div><span class="count" id="recordCount">0</span></div>
-            <div class="record-list" id="recordList"></div>
-            <button class="load-more" id="loadMore" type="button" hidden>Load more</button>
-          </section>
-          <aside class="detail-panel" id="detailPanel" aria-label="Record details">
-            <button class="icon-button detail-close" id="detailClose" type="button" aria-label="Close details" title="Close details"><i data-lucide="x"></i></button>
-            <button class="back-button" id="backButton" type="button"><i data-lucide="arrow-left"></i><span>Back to list</span></button>
-            <div class="detail-empty" id="detailEmpty"><strong>Select a company</strong><span>Relationship details and recent activity will appear here.</span></div>
-            <article id="detailContent" hidden>
-              <header class="detail-header"><div><span class="eyebrow" id="detailEyebrow">Company</span><h2 id="detailTitle"></h2></div><div class="detail-actions"><button class="secondary-button" id="stageChangeOpen" type="button" hidden><i data-lucide="pencil"></i><span>Change Stage</span></button><button class="primary-button" id="logActivityOpen" type="button" hidden><i data-lucide="plus"></i><span>Log Activity</span></button></div></header>
-              <div class="audit-line" id="auditLine"></div>
-              <div class="detail-fields" id="detailFields"></div>
-              <section class="related-section" id="relatedContactsSection" hidden><div class="section-heading"><h3>Contacts</h3><span id="relatedContactsCount"></span></div><div class="related-list" id="relatedContacts"></div></section>
-              <section class="related-section" id="relatedActivitiesSection" hidden><div class="section-heading"><h3>Recent activity</h3><span id="relatedActivitiesCount"></span></div><div class="related-list" id="relatedActivities"></div></section>
-            </article>
-          </aside>
-        </section>
-        <button class="detail-scrim" id="detailScrim" type="button" aria-label="Close details" hidden></button>
       </main>
     </div>
 
@@ -168,6 +179,6 @@
         </form>
       </section>
     </div>
-    <script type="module" src="./js/app.js?v=recording-ui-9"></script>
+    <script type="module" src="./js/app.js?v=ws-layout-1"></script>
   </body>
 </html>

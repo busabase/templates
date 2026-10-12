@@ -13,6 +13,8 @@ export const appConfig = {
     slug: "busa-devops",
   },
   airApp: { name: "Busa DevOps", slug: "busa-devops-app", resourceKey: "busa-devops-app" },
+  // Where a record opens, per view (see app.js for the reasoning).
+  ui: { detail_modes: { services: "drawer", expiries: "drawer", spend: "drawer", actions: "split" } },
   bases: [
     {
       key: "services",
@@ -142,7 +144,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

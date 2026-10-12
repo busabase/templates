@@ -148,6 +148,23 @@ async function readSettingsRows() {
   return new Map(rows.map((row) => [row.record_id || row.kind, row]));
 }
 
+// Launch Items is the page; Channels, Runbook and Settings only decorate it.
+// A side Base this app may not read (or that fails) becomes a warning instead
+// of taking the whole page down with it.
+async function readSide(label, read, fallback, warnings) {
+  try {
+    return await read();
+  } catch (error) {
+    warnings.push({
+      id: `side-read-${label}`,
+      severity: "warning",
+      message: `${label} could not be read.`,
+      detail: error instanceof Error ? error.message : String(error),
+    });
+    return fallback;
+  }
+}
+
 function withPagination(data) {
   return {
     ...data,
@@ -163,14 +180,16 @@ export const busabaseProvider = {
     for (const key of Object.keys(initialPageCursors)) delete initialPageCursors[key];
     for (const key of Object.keys(initialTotalCounts)) delete initialTotalCounts[key];
     await ensureResources();
+    const sideWarnings = [];
     const [items, channels, runbook, settings] = await Promise.all([
       readFirstPage("items"),
-      readFirstPage("channels"),
-      readFirstPage("runbook"),
-      readSettingsRows(),
+      readSide("Channels", () => readFirstPage("channels"), [], sideWarnings),
+      readSide("Runbook", () => readFirstPage("runbook"), [], sideWarnings),
+      readSide("Settings", readSettingsRows, new Map(), sideWarnings),
     ]);
     currentPageContext = { items, channels, runbook };
     const snapshot = buildSnapshot(currentPageContext);
+    snapshot.warnings = [...snapshot.warnings, ...sideWarnings];
     const profileRow = settings.get("busa-launch-profile") || {};
     const lockRow = settings.get("busa-launch-lock") || {};
     const profile = parsePayload(profileRow.payload);
@@ -215,6 +234,18 @@ export const busabaseProvider = {
     };
     await upsert("items", "item-id", itemId, fields, `Decision on item ${itemId}: ${action}`);
     return { ok: true };
+  },
+
+  // One record by its business id, for a `?peek=` / `/record` URL whose record
+  // is not on the loaded page — one records.get instead of paging to find it.
+  async getRecord(key, id) {
+    if (!allowedReads.has("records.get")) return null;
+    await ensureResources();
+    const idField = key === "runbook" ? "step-id" : "item-id";
+    const record = await findRecord(key, idField, id);
+    if (!record) return null;
+    const row = normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields);
+    return buildSnapshot({ [key]: [row] })[key]?.[0] || null;
   },
 
   async fetchPage(key, cursor) {

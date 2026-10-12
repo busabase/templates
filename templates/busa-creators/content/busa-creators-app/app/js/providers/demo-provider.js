@@ -529,6 +529,10 @@ export const demoProvider = {
     };
   },
 
+  async getRecord(_view, creatorId) {
+    return buildSnapshot({ creators: demoCreators() }).creators.find((item) => item.creator_id === creatorId) || null;
+  },
+
   async applyDecision() {
     throw new Error("Demo mode is read-only.");
   },

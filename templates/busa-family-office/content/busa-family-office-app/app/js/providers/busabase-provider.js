@@ -111,11 +111,25 @@ export const busabaseProvider = {
     await ensureResources();
     initialCursors.clear();
     const recordCountsPromise = Promise.all(BROWSED_KEYS.map((key) => countRecords(key)));
+    // Entities and holdings are the page itself; accounts and settings are side
+    // reads. A denied or failed side read degrades to a stated warning (an
+    // "Unassigned" institution, USD with 1:1 FX) instead of failing the page.
+    const sideWarnings = [];
+    const sideRead = (promise, fallback, message) =>
+      promise.catch((error) => {
+        sideWarnings.push({
+          id: `side-read-${message}`,
+          severity: "warning",
+          message: `Could not read ${message}.`,
+          detail: error instanceof Error ? error.message : String(error),
+        });
+        return fallback;
+      });
     const [entityRows, accountRows, holdingRows, settings] = await Promise.all([
       readPageRows("entities"),
-      readPageRows("accounts"),
+      sideRead(readPageRows("accounts"), [], "Accounts"),
       readPageRows("holdings"),
-      readSettingsRows(),
+      sideRead(readSettingsRows(), new Map(), "Settings (base currency, FX rates)"),
     ]);
 
     const entities = entityRows.map(normalizeEntityRow);
@@ -161,6 +175,7 @@ export const busabaseProvider = {
       accounts,
       holdings,
       source: "busa-family-office",
+      warnings: sideWarnings,
     });
     snapshot.insights = computeInsights(snapshot, target_allocation);
 
@@ -169,6 +184,9 @@ export const busabaseProvider = {
       app: "busa-family-office",
       demo: false,
       data_provider: "busabase",
+      // Totals and allocations are sums over the loaded holdings page; when more
+      // holdings exist the UI labels those sums as partial.
+      partial: { holdings: Boolean(initialCursors.get("holdings")) },
       pagination: Object.fromEntries(BROWSED_KEYS.map((key) => [key, initialCursors.get(key) || null])),
       totals: Object.fromEntries(BROWSED_KEYS.map((key, index) => [key, recordCounts[index]])),
       onboarding: { completed: Boolean(onboarding.completed), ...onboarding },

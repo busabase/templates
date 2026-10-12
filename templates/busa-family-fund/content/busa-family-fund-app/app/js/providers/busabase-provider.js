@@ -5,7 +5,9 @@ import { buildSnapshot, computeInsights } from "../fund-model.js?v=0.1.0";
 
 const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
-const BROWSED_KEYS = ["families", "expenses"];
+// Bases whose real total (records.count) feeds the sidebar counts; families
+// and expenses are also paged by the UI (Prev/Next).
+const COUNTED_KEYS = ["families", "expenses", "income"];
 
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
@@ -85,6 +87,17 @@ async function readSettingsRows() {
   return new Map(rows.map((row) => [row.record_id || row.kind, row]));
 }
 
+// A side read (fund meta, elder names) that is denied or fails must not take
+// the whole ledger down with it: fall back and let the screen say "not loaded".
+async function softRead(read, fallback) {
+  try {
+    return await read();
+  } catch (error) {
+    console.warn("[busa-family-fund] side read failed", error);
+    return fallback;
+  }
+}
+
 function parsePayload(value) {
   if (!value) return {};
   try {
@@ -97,7 +110,7 @@ function parsePayload(value) {
 
 function normalizeExpenseRow(row = {}) {
   return {
-    id: row.expense_id || "",
+    id: row.expense_id || row.__recordId || "",
     month: row.month || "",
     date: row.date || "",
     category: row.category || "misc",
@@ -112,7 +125,7 @@ function normalizeExpenseRow(row = {}) {
 
 function normalizeFamilyRow(row = {}) {
   return {
-    id: row.family_id || "",
+    id: row.family_id || row.__recordId || "",
     name: row.name || row.family_id || "",
     head: row.head || "",
     members_count: Number(row.members_count) || 0,
@@ -126,13 +139,13 @@ export const busabaseProvider = {
   async getState() {
     await ensureResources();
     initialCursors.clear();
-    const recordCountsPromise = Promise.all(BROWSED_KEYS.map((key) => countRecords(key)));
+    const recordCountsPromise = Promise.all(COUNTED_KEYS.map((key) => countRecords(key)));
     const [beneficiaryRows, familyRows, incomeRows, expenseRows, settings] = await Promise.all([
-      readPageRows("beneficiaries"),
+      softRead(() => readPageRows("beneficiaries"), []),
       readPageRows("families"),
       readPageRows("income"),
       readPageRows("expenses"),
-      readSettingsRows(),
+      softRead(readSettingsRows, new Map()),
     ]);
 
     const beneficiaries = beneficiaryRows.map((row) => ({
@@ -143,7 +156,7 @@ export const busabaseProvider = {
     }));
     const families = familyRows.map(normalizeFamilyRow);
     const income = incomeRows.map((row) => ({
-      id: row.income_id || "",
+      id: row.income_id || row.__recordId || "",
       month: row.month || "",
       beneficiary_id: row.beneficiary_id || "",
       amount: Number(row.amount) || 0,
@@ -177,8 +190,10 @@ export const busabaseProvider = {
       app: "busa-family-fund",
       demo: false,
       data_provider: "busabase",
-      pagination: Object.fromEntries(BROWSED_KEYS.map((key) => [key, initialCursors.get(key) || null])),
-      totals: Object.fromEntries(BROWSED_KEYS.map((key, index) => [key, recordCounts[index]])),
+      // income is tracked (never paged in the UI) so a partial income read is
+      // marked as partial instead of silently understating the balance.
+      pagination: Object.fromEntries(COUNTED_KEYS.map((key) => [key, initialCursors.get(key) || null])),
+      totals: Object.fromEntries(COUNTED_KEYS.map((key, index) => [key, recordCounts[index]])),
       onboarding: { completed: Boolean(onboarding.completed), ...onboarding },
       config_summary: {
         config_path: "busabase:base/busa-family-fund-settings",

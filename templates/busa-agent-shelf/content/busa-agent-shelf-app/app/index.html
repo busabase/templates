@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
     <link rel="stylesheet" href="./accent-theme.css">
   </head>
-  <body>
+  <body class="ws-has-mobile-bar">
     <div id="app" class="app-shell">
       <aside class="sidebar" id="appSidebar">
         <div class="brand">
@@ -36,19 +36,19 @@
             <a href="#/fixes" data-route="fixes">
               <span><strong id="count-high-risk">0</strong> <span data-i18n="highRiskOpen">high-risk fixes open</span></span>
             </a>
-            <a href="#/fixes/all" data-route="fixes">
+            <a href="#/fixes?status=all" data-route="fixes">
               <span><strong id="count-unsourced">0</strong> <span data-i18n="unsourcedFixes">unsourced values</span></span>
             </a>
           </div>
         </section>
         <div class="sidebar-separator"></div>
         <nav class="filters" aria-label="Main">
-          <a href="#/overview" data-route="overview" data-i18n="overview">Overview</a>
-          <a href="#/questions" data-route="questions" data-i18n="questions">Buyer questions</a>
-          <a href="#/answers" data-route="answers" data-i18n="answers">Agent answers</a>
-          <a href="#/competitors" data-route="competitors" data-i18n="competitors">Competitors</a>
-          <a href="#/fixes" data-route="fixes" data-i18n="fixes">Listing fixes</a>
-          <a href="#/settings" data-route="settings" data-i18n="settings">Settings</a>
+          <a href="#/overview" data-route="overview"><span data-i18n="overview">Overview</span></a>
+          <a href="#/questions" data-route="questions"><span data-i18n="questions">Buyer questions</span><span class="nav-count" data-nav-count="questions"></span></a>
+          <a href="#/answers" data-route="answers"><span data-i18n="answers">Agent answers</span><span class="nav-count" data-nav-count="observations"></span></a>
+          <a href="#/competitors" data-route="competitors"><span data-i18n="competitors">Competitors</span><span class="nav-count" data-nav-count="competitors"></span></a>
+          <a href="#/fixes" data-route="fixes"><span data-i18n="fixes">Listing fixes</span><span class="nav-count" data-nav-count="fixes"></span></a>
+          <a href="#/settings" data-route="settings"><span data-i18n="settings">Settings</span></a>
         </nav>
         <div class="sidebar-footer">
           <label for="language" data-i18n="language">Language</label>
@@ -70,16 +70,55 @@
           </div>
           <button id="mobileRefresh" class="mobile-refresh-button" type="button" title="Refresh" aria-label="Refresh">↻</button>
         </div>
-        <header class="topbar">
-          <div class="topbar-copy">
-            <h1 id="page-title">Overview</h1>
-            <p id="page-subtitle" class="muted"></p>
+        <div id="loadState" class="load-state" role="status" aria-live="polite"></div>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 id="overviewTitle">Overview</h1>
+              <p id="overviewSummary"></p>
+            </div>
+            <div class="page-actions">
+              <button id="refresh" class="button" type="button">Refresh</button>
+            </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" aria-label="Share of shelf summary"></div>
+          <div id="overviewBody" class="overview-body"></div>
+        </section>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <div id="fixFilters" class="segmented fix-filters" role="tablist" hidden></div>
+              <select id="fixStatus" class="toolbar-select fix-status-select" hidden></select>
+              <select id="answerAgent" class="toolbar-select" hidden></select>
+              <select id="answerQuestion" class="toolbar-select answer-question-select" hidden></select>
+              <input id="search" class="search-field toolbar-search" type="search" autocomplete="off">
+              <button id="viewRefresh" class="button icon-only" type="button">↻</button>
+            </div>
+          </header>
+          <div id="viewNotice" class="view-notice" hidden></div>
+          <div id="workspace" class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar">
+                <button id="detailBack" class="button" type="button">Close</button>
+                <a id="detailExpand" class="button" hidden>Open full page</a>
+              </div>
+              <div id="detailBody"></div>
+            </aside>
           </div>
-          <div class="topbar-actions">
-            <button id="refresh" class="button" type="button">Refresh</button>
-          </div>
-        </header>
-        <section id="content" class="content" aria-live="polite"></section>
+        </section>
+        <section id="settingsPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title"><h1 id="settingsTitle">Settings</h1></div>
+          </header>
+          <div id="settingsBody" class="settings-scroll"></div>
+        </section>
       </main>
     </div>
     <div id="sidebarScrim" class="sidebar-scrim" hidden></div>

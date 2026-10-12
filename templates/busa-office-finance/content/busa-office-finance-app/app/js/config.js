@@ -15,6 +15,21 @@ export const appConfig = {
     description:
       "Expense evidence, invoice requests, monthly actuals and filing deadlines in one review desk. / 集中复核报销依据、开票申请、月度实际报告和申报期限。",
   },
+  // Mirrors `ui` in airapp-blueprint.json (scripts/check.mjs keeps them equal).
+  // expenses / invoices / filings — drawer: a claim, request or deadline is a
+  //   fact reviewers scan many of, check one or two fields, and return to.
+  // reports — page: a monthly actual is reviewed against the close pack for
+  //   minutes, revenue, cost, evidence and notes side by side.
+  // attention (not a Base, so app-only) — split: a queue worked top to bottom.
+  ui: {
+    detail_modes: {
+      expenses: "drawer",
+      invoices: "drawer",
+      reports: "page",
+      filings: "drawer",
+    },
+    attention_detail_mode: "split",
+  },
   airApp: {
     slug: "busa-office-finance-app",
     resourceKey: "busa-office-finance-app",

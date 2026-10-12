@@ -678,6 +678,12 @@ export const appConfig = {
   },
   "ui": {
     "primary_base": "companies",
+    "detail_modes": {
+      "companies": "page",
+      "contacts": "drawer",
+      "activities": "split",
+      "deals": "page"
+    },
     "summary": "Find the right account, understand the people involved, and capture the next follow-up.",
     "screens": [
       {

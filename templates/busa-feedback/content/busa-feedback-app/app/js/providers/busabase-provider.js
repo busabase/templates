@@ -76,6 +76,9 @@ async function readPage(key, cursor) {
   return { rows, nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
 }
 
+// The business-id field each record view is addressed by in the URL.
+const ID_FIELD_SLUG = { feedback: "feedback-id", requests: "request-id", proposals: "proposal-id" };
+
 const initialPageCursors = {};
 const initialTotalCounts = {};
 
@@ -221,15 +224,26 @@ export const busabaseProvider = {
     for (const key of Object.keys(initialPageCursors)) delete initialPageCursors[key];
     for (const key of Object.keys(initialTotalCounts)) delete initialTotalCounts[key];
     await ensureResources();
+    // feedback/requests/proposals are what the app is for, so a failed read
+    // there fails the load. The rest only decorate it (product names, source
+    // freshness, roadmap lanes, sync log, scoring settings): a denied or
+    // failed read of one of those degrades to empty plus a named warning
+    // instead of taking the whole app down.
+    const sideFailures = [];
+    const side = (key, read) =>
+      read().catch(() => {
+        sideFailures.push(key);
+        return key === "settings" ? {} : [];
+      });
     const [products, sources, feedback, requests, roadmap, proposals, sync_log, settings] = await Promise.all([
-      readFirstPage("products"),
-      readFirstPage("sources"),
+      side("products", () => readFirstPage("products")),
+      side("sources", () => readFirstPage("sources")),
       readFirstPage("feedback"),
       readFirstPage("requests"),
-      readFirstPage("roadmap"),
+      side("roadmap", () => readFirstPage("roadmap")),
       readFirstPage("proposals"),
-      readFirstPage("sync-log"),
-      readSettingsRow(),
+      side("sync-log", () => readFirstPage("sync-log")),
+      side("settings", () => readSettingsRow()),
     ]);
     currentPageContext = { products, sources, feedback, requests, roadmap, proposals, sync_log };
     const snapshot = buildSnapshot(currentPageContext);
@@ -242,7 +256,24 @@ export const busabaseProvider = {
       lock: null,
       config_summary,
       snapshot,
+      side_read_failures: sideFailures,
     });
+  },
+
+  // One record by its business id, for a URL that names a record which is
+  // not on the loaded page — a single records.get instead of paging to it.
+  async getRecord(key, businessId) {
+    const slug = ID_FIELD_SLUG[key];
+    if (!slug || !allowedReads.has("records.get")) return null;
+    await ensureResources();
+    const record = await findRecord(key, slug, businessId);
+    if (!record) return null;
+    const row = {
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    };
+    return buildSnapshot({ [key]: [row] })[key][0] || null;
   },
 
   // Human verdict on a roadmap decision (approve/request_changes/block/revise),

@@ -229,7 +229,6 @@
   }
 
   body.sidebar-collapsed .brand-copy,
-  body.sidebar-collapsed .sidebar-search,
   body.sidebar-collapsed .human-work,
   body.sidebar-collapsed .sidebar-separator,
   body.sidebar-collapsed .filters,
@@ -340,8 +339,8 @@
     display: grid;
     place-items: center;
     border-radius: var(--radius-sm);
-    background: #202124;
-    color: var(--accent-contrast);
+    background: var(--ink);
+    color: var(--surface);
     font-size: var(--text-lg);
   }
 
@@ -383,6 +382,8 @@
   .filters a {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     min-height: 32px;
     padding: 7px 9px;
     border-radius: var(--radius-sm);
@@ -400,6 +401,13 @@
     color: var(--text);
     font-weight: 650;
     box-shadow: var(--shadow);
+  }
+
+  .nav-count {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
   }
 
   .sidebar-footer {
@@ -425,8 +433,8 @@
     min-width: 0;
     min-height: 0;
     height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
   }
 
@@ -435,30 +443,31 @@
     display: none;
   }
 
-  .topbar {
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    min-height: 58px;
-    padding: 10px 18px;
-    border-bottom: 1px solid var(--line);
-    background: var(--surface-blur);
+  .load-state {
+    padding: 24px;
+    color: var(--muted);
   }
 
-  .topbar h1 {
-    line-height: 1.2;
+  .load-state.error {
+    color: var(--danger);
   }
 
-  .topbar p {
-    margin: 2px 0 0;
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
-  .topbar-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
+  .toolbar-search {
+    flex: 0 1 240px;
+    min-width: 160px;
+  }
+
+  .toolbar-search input {
+    min-height: 34px;
   }
 
   button,
@@ -493,11 +502,5 @@
   button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-  }
-
-  .content {
-    min-height: 0;
-    overflow: auto;
-    padding: 16px 18px 24px;
   }
 }

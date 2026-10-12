@@ -98,6 +98,7 @@ async function countRecords(key, filters) {
 }
 
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -188,6 +189,21 @@ export const busabaseProvider = {
     await ensureResources();
     const page = await readPage(key, cursor);
     return { ...page, rows: page.rows.map(normalizeDraft) };
+  },
+
+  // A draft named by the URL (`/drafts/<id>` or `?peek=<id>`) but not on the
+  // loaded page, read on its own by business id instead of loading more pages
+  // to find it.
+  async getRecord(key, id) {
+    if (key !== "drafts") return null;
+    await ensureResources();
+    const record = await findRecord("drafts", "draft-id", id);
+    if (!record) return null;
+    return normalizeDraft({
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    });
   },
 
   // Human verdict: writes status/decision_note/decided_at (and, if edited,

@@ -21,6 +21,7 @@ const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 const NORMALIZE_ROW_BY_KEY = { items: normalizeItemRow, entities: normalizeEntityRow, checks: normalizeCheckRow };
+const RECORD_ID_SLUG = { items: "item-id", entities: "entity-id", checks: "check-id" };
 
 // A deployed AirApp is served through the ambient Busabase session (a Busabase
 // iframe/preview host, or same-origin proxy under /api/airapp-preview/); a
@@ -180,11 +181,21 @@ export const busabaseProvider = {
 
   async getState() {
     await ensureResources();
+    // Case records are the page; the library, checks and settings are side
+    // reads. A denied or failing side read empties its own panel and says so
+    // instead of failing the whole app.
+    const sideFailures = [];
+    const sideRead = (key, promise, fallback) =>
+      promise.catch(() => {
+        sideFailures.push(key);
+        return fallback;
+      });
+    const emptyPage = { rows: [], nextCursor: null };
     const [itemPage, entityPage, checkPage, settings, totals, checkStatusCounts, ...statusCounts] = await Promise.all([
       readPage("items"),
-      readPage("entities"),
-      readPage("checks"),
-      readSettingsRow(),
+      sideRead("entities", readPage("entities"), emptyPage),
+      sideRead("checks", readPage("checks"), emptyPage),
+      sideRead("settings", readSettingsRow(), {}),
       Promise.all(["items", "entities", "checks"].map((key) => countRecords(key))),
       Promise.all(
         ["pass", "warn", "fail"].map((status) =>
@@ -215,6 +226,7 @@ export const busabaseProvider = {
       lock: null,
       config_summary,
       snapshot,
+      unavailable: sideFailures,
       pagination: { items: itemPage.nextCursor, entities: entityPage.nextCursor, checks: checkPage.nextCursor },
       totalCount: { items: totals[0], entities: totals[1], checks: totals[2] },
       workflowCount: Object.fromEntries(
@@ -233,6 +245,19 @@ export const busabaseProvider = {
     return { rows: normalize ? page.rows.map(normalize) : page.rows, nextCursor: page.nextCursor };
   },
 
+  // One record named by a URL but not on the loaded page — one records.get by
+  // its business id, never a walk through more pages to find it.
+  async getRecord(key, id) {
+    const idSlug = RECORD_ID_SLUG[key];
+    const normalize = NORMALIZE_ROW_BY_KEY[key];
+    if (!idSlug || !normalize || !id) return null;
+    if (!allowedReads.has("records.get")) return null;
+    await ensureResources();
+    const record = await findRecord(key, idSlug, id);
+    if (!record) return null;
+    return normalize(normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields));
+  },
+
   // Human verdict on a case record, written directly onto the item record.
   // Ported from the retired local-file DataProvider's applyDecision(): every
   // action maps through statusFromDecision()'s table and is recorded
@@ -246,6 +271,7 @@ export const busabaseProvider = {
       throw new Error(`action must be one of: ${[...DECISION_ACTIONS].join(", ")}`);
     }
     await ensureResources();
+    if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
     const existing = await findRecord("items", "item-id", id);
     if (!existing) throw new Error(`Unknown item: ${id}`);
     const current = normalizeFields(existing.headCommit?.payload || existing.headCommit?.fields || existing.fields);

@@ -700,15 +700,15 @@
       display: none;
     }
 
-    .content {
-      padding: 12px;
+    .settings-scroll,
+    .crisis-scroll {
+      padding: 0 14px 24px;
     }
 
     .metrics,
     .post-metrics,
     .settings-account,
-    .kpi-grid,
-    .account-grid {
+    .kpi-grid {
       grid-template-columns: 1fr;
     }
 
@@ -742,16 +742,9 @@
       grid-template-columns: minmax(70px, 110px) minmax(0, 1fr) 48px;
     }
 
-    .table-wrap {
-      max-width: 100%;
-      border-left: 1px solid var(--line);
-      border-right: 1px solid var(--line);
-      border-radius: var(--radius-sm);
-    }
-
-    table {
-      min-width: 760px;
-    }
+    /* `.table-wrap` / bare `table` min-width rules used to live here; dead
+     * now that every table is `.ws-table` (base-ui.css handles its own
+     * responsive sizing, including the phone column cut). */
   }
 }
 

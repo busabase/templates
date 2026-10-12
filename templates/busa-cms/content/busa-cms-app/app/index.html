@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="./styles/shell.css" />
     <link rel="stylesheet" href="./styles/setup-wizard.css" />
     <link rel="stylesheet" href="./styles/help-modal.css" />
-    <link rel="stylesheet" href="./styles/list-detail.css" />
     <link rel="stylesheet" href="./styles/cms.css" />
   </head>
   <body>
@@ -35,12 +34,11 @@
           ><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
         </div>
 
-        <div class="search sidebar-search">
-          <input id="searchInput" data-i18n-placeholder="search.placeholder" placeholder="Search…" />
-        </div>
-
         <nav class="filters" id="filters" data-i18n-aria-label="nav.aria" aria-label="Content types">
-          <button data-mode="posts" class="active has-tooltip" data-i18n-tooltip="nav.posts.tooltip">
+          <button data-mode="overview" class="active has-tooltip" data-i18n-tooltip="nav.overview.tooltip">
+            <span data-i18n="nav.overview">Overview</span>
+          </button>
+          <button data-mode="posts" class="has-tooltip" data-i18n-tooltip="nav.posts.tooltip">
             <span data-i18n="nav.posts">Posts</span> <span id="count-posts">0</span>
           </button>
           <button data-mode="pages" class="has-tooltip" data-i18n-tooltip="nav.pages.tooltip">
@@ -71,31 +69,57 @@
           ><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
           <div class="mobile-topbar-copy">
             <div id="mobileViewTitle" class="mobile-view-title">Posts</div>
-            <div id="mobileViewMeta" class="mobile-view-meta">0 items</div>
+            <div id="mobileViewMeta" class="mobile-view-meta" data-i18n="brand.subtitle">Website content</div>
           </div>
           <button id="mobileHelpButton" class="mobile-help-button" type="button" data-i18n="help.title" aria-label="Help & Settings">Help &amp; Settings</button>
         </div>
 
-        <section class="content">
-          <div class="list-panel">
-            <div class="list-head">
-              <div class="list-head-filters" id="statusTabs" role="group" data-i18n-aria-label="filter.status_aria" aria-label="Status">
-                <button type="button" data-status-filter="all" class="active" data-i18n="filter.all">All</button>
-                <button type="button" data-status-filter="published" data-i18n="filter.published">Published</button>
-                <button type="button" data-status-filter="draft" data-i18n="filter.draft">Drafts</button>
-              </div>
-              <select id="localeFilter" class="list-head-select" data-i18n-aria-label="filter.all_locales" aria-label="Locale"></select>
-              <span id="listCount" class="list-head-count">0 items</span>
+        <!-- Overview is the only page with a hero and the metrics band. -->
+        <section id="overviewPage" class="ws-overview">
+          <header class="page-hero">
+            <div>
+              <h1 data-i18n="overview.title">What your site serves</h1>
+              <p id="overviewSummary"></p>
             </div>
-            <div class="list-actions">
-              <button type="button" id="addNew" class="primary has-tooltip" data-i18n-tooltip="action.add.tooltip" data-i18n="action.add_post">Add new post</button>
+            <div class="page-actions">
+              <button type="button" id="overviewConnect" class="button" data-i18n="overview.connect">Connect your site</button>
+              <button type="button" id="overviewAddPost" class="button primary" data-i18n="action.add_post">Add new post</button>
             </div>
-            <div id="contentList" class="message-list"></div>
-          </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" data-i18n-aria-label="overview.metrics_aria" aria-label="Site summary"></div>
+          <div id="overviewBody" class="overview-grid"></div>
+        </section>
 
-          <aside class="detail-panel" id="detailPanel">
-            <div class="empty-detail" data-i18n="empty.select">Select something on the left to see it.</div>
-          </aside>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle">Posts</h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <div class="segmented" id="statusTabs" role="group" data-i18n-aria-label="filter.status_aria" aria-label="Status">
+                <button type="button" class="segment active" data-status-filter="all" data-i18n="filter.all">All</button>
+                <button type="button" class="segment" data-status-filter="published" data-i18n="filter.published">Published</button>
+                <button type="button" class="segment" data-status-filter="draft" data-i18n="filter.draft">Drafts</button>
+              </div>
+              <select id="localeFilter" class="toolbar-select" data-i18n-aria-label="filter.all_locales" aria-label="Locale"></select>
+              <label class="search toolbar-search">
+                <input id="searchInput" type="search" autocomplete="off" data-i18n-placeholder="search.placeholder" placeholder="Search…" data-i18n-aria-label="search.label" aria-label="Search" />
+              </label>
+              <button type="button" id="addNew" class="button primary" data-i18n="action.add_post">Add new post</button>
+            </div>
+          </header>
+          <div id="workspace" class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div id="detailBar" class="ws-detail-bar" hidden>
+                <button type="button" id="detailBack" class="button" data-i18n="detail.back">← Back to list</button>
+                <div id="detailActions" class="detail-bar-actions"></div>
+              </div>
+              <div id="detailBody"></div>
+            </aside>
+          </div>
         </section>
       </main>
     </div>

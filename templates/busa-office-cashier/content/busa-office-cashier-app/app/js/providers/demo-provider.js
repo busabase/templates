@@ -39,6 +39,9 @@ export const demoProvider = {
       reviewTime: Date.parse("2026-09-29T10:00:00+08:00"),
     };
   },
+  async getRecord() {
+    throw Error("NOT_FOUND");
+  },
   async loadMore() {
     throw Error("Demo has no more pages");
   },

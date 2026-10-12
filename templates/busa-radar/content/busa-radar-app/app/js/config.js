@@ -13,6 +13,19 @@ export const appConfig = {
     slug: "busa-radar",
   },
   airApp: { name: "Busa Radar", slug: "busa-radar-app", resourceKey: "busa-radar-app" },
+  // Where a record opens, per Base (see app.js for the reasoning). Briefs and
+  // reports have no list of their own: they open inside their question's page.
+  ui: {
+    detail_modes: {
+      signals: "split",
+      watchlist: "page",
+      questions: "page",
+      briefs: "page",
+      reports: "page",
+      movers: "drawer",
+      opportunities: "drawer",
+    },
+  },
   bases: [
     {
       key: "watchlist",
@@ -187,7 +200,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

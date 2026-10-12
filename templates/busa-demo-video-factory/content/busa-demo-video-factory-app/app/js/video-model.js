@@ -8,6 +8,38 @@
 // names, same rollup shape, same "pending" default for a shot with no
 // recording-status value yet.
 
+export const VIDEO_STATUSES = ["idea", "needs_review", "approved", "recording", "post_production", "done"];
+export const SHOT_STATUSES = ["pending", "recorded", "needs_reshoot"];
+
+// Option ids never reach the screen; these are their human labels.
+const STATUS_LABELS = {
+  idea: "Idea",
+  needs_review: "Needs review",
+  approved: "Approved",
+  recording: "Recording",
+  post_production: "Post-production",
+  done: "Done",
+  pending: "Pending",
+  recorded: "Recorded",
+  needs_reshoot: "Needs reshoot",
+};
+
+export function statusLabel(status) {
+  if (!status) return "";
+  return STATUS_LABELS[status] || String(status).replaceAll("_", " ");
+}
+
+// A relation comes back as a record id, or an array of them. Keep ids only;
+// display code resolves them to names.
+const relationIds = (value) => {
+  if (Array.isArray(value)) {
+    return value.map((item) => (typeof item === "string" ? item : item?.id || item?.recordId || "")).filter(Boolean);
+  }
+  if (typeof value === "string" && value) return [value];
+  if (value && typeof value === "object") return [value.id || value.recordId || ""].filter(Boolean);
+  return [];
+};
+
 export function normalizeVideoRow(row = {}) {
   return {
     id: row.__recordId || row.id || "",
@@ -22,13 +54,15 @@ export function normalizeVideoRow(row = {}) {
     hyperframe_path: row.hyperframe_path || "",
     final_video_url: row.final_video_url || "",
     owner: row.owner || "",
+    shot_ids: relationIds(row.shots),
   };
 }
 
 export function normalizeShotRow(row = {}) {
   return {
     id: row.__recordId || row.id || "",
-    video: row.video || "",
+    title: row.title || "",
+    video: relationIds(row.video)[0] || "",
     shot_number: Number(row.shot_number) || 0,
     timecode: row.timecode || "",
     scene: row.scene || "",
@@ -36,6 +70,7 @@ export function normalizeShotRow(row = {}) {
     script_line: row.script_line || "",
     note: row.note || "",
     recording_status: row.recording_status || "pending",
+    asset_count: Array.isArray(row.asset) ? row.asset.length : 0,
   };
 }
 
@@ -54,9 +89,24 @@ export function shotCounts(shots, videoId) {
   return { total: mine.length, byStatus };
 }
 
-/** Videos joined with their shot-recording rollup, ready for the list view. */
+/**
+ * Videos joined with their shot-recording rollup, ready for the list view.
+ * `linked` is the shot count the video's own `shots` relation records — it
+ * stays right when the loaded shot page is only part of the Base, where
+ * `total` (counted from loaded shots) would undercount.
+ */
 export function withShotRollup(videos, shots) {
-  return videos.map((video) => ({ ...video, shots: shotCounts(shots, video.id) }));
+  return videos.map((video) => {
+    const counts = shotCounts(shots, video.id);
+    return { ...video, shots: { ...counts, linked: Math.max(counts.total, video.shot_ids?.length || 0) } };
+  });
+}
+
+/** Status → count over a set of rows. */
+export function countBy(rows, key, statuses) {
+  const counts = Object.fromEntries(statuses.map((status) => [status, 0]));
+  for (const row of rows) counts[row[key]] = (counts[row[key]] ?? 0) + 1;
+  return counts;
 }
 
 export function buildState(videos, shots, { demo = false } = {}) {

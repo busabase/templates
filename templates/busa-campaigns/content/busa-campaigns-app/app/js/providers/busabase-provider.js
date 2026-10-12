@@ -148,6 +148,32 @@ async function readSettingsRows() {
   return new Map(rows.map((row) => [row.record_id || row.kind, row]));
 }
 
+// Side reads (segment names, the suppression list, the profile row) must not
+// take the send queue down with them: a denied or failed read is reported for
+// that one surface and the rest of the desk still renders.
+async function readSide(read, fallback, key, readErrors) {
+  try {
+    return await read();
+  } catch (error) {
+    readErrors[key] = error instanceof Error ? error.message : String(error);
+    return fallback;
+  }
+}
+
+// Exact per-status totals for the review queue — one cheap records.count per
+// status (text equals stays a SQL COUNT), so the attention block and the
+// status filter do not depend on which page of sends is loaded.
+const SEND_STATUSES = ["needs_review", "changes_requested", "approved", "done", "blocked"];
+async function countSendStatuses() {
+  const entries = await Promise.all(
+    SEND_STATUSES.map(async (status) => [
+      status,
+      await countRecords("sends", [{ fieldSlug: "status", operator: "equals", value: status }]),
+    ]),
+  );
+  return entries.some(([, value]) => value == null) ? null : Object.fromEntries(entries);
+}
+
 function withPagination(data) {
   return {
     ...data,
@@ -163,11 +189,13 @@ export const busabaseProvider = {
     for (const key of Object.keys(initialPageCursors)) delete initialPageCursors[key];
     for (const key of Object.keys(initialTotalCounts)) delete initialTotalCounts[key];
     await ensureResources();
-    const [segments, sends, suppressionRows, settings] = await Promise.all([
-      readFirstPage("segments"),
+    const readErrors = {};
+    const [segments, sends, suppressionRows, settings, statusCounts] = await Promise.all([
+      readSide(() => readFirstPage("segments"), [], "segments", readErrors),
       readFirstPage("sends"),
-      readFirstPage("suppression"),
-      readSettingsRows(),
+      readSide(() => readFirstPage("suppression"), [], "suppression", readErrors),
+      readSide(() => readSettingsRows(), new Map(), "settings", readErrors),
+      countSendStatuses(),
     ]);
     currentPageContext = { segments, sends, suppression: suppressionRows };
     const snapshot = buildSnapshot(currentPageContext);
@@ -197,6 +225,8 @@ export const busabaseProvider = {
       },
       lock: lockRow.locked ? { locked: true, message: lockRow.message || "", owner: lockRow.owner || "" } : null,
       decisions: {},
+      read_errors: readErrors,
+      status_counts: statusCounts,
       suppression: { updated_at: new Date().toISOString(), entries: suppressionRows },
       snapshot,
     });
@@ -221,6 +251,22 @@ export const busabaseProvider = {
     };
     await upsert("sends", "send-id", sendId, fields, `Decision on send ${sendId}: ${action}`);
     return { ok: true };
+  },
+
+  // A record named by the URL but not on the loaded page: one records.get by
+  // its business id, never a walk through pages to find it.
+  async getRecord(key, id) {
+    await ensureResources();
+    const idSlug = key === "suppression" ? "entry-id" : "send-id";
+    const record = await findRecord(key, idSlug, id);
+    if (!record) return null;
+    const row = {
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    };
+    if (key !== "sends") return row;
+    return buildSnapshot({ ...currentPageContext, sends: [row] }).sends[0] || null;
   },
 
   async fetchPage(key, cursor) {

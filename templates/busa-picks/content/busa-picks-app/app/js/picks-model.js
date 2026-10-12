@@ -257,7 +257,9 @@ export function normalizeSyncLogEntry({
 export function computeMetrics(snapshot = {}) {
   const candidates = snapshot.candidates || [];
   const proposals = snapshot.proposals || [];
-  const now = Date.now();
+  // "This week" is relative to when the snapshot was read, so a demo or an
+  // older snapshot does not silently report zero.
+  const now = Date.parse(snapshot.generated_at || "") || Date.now();
   const weekAgo = now - 7 * 24 * 3600 * 1000;
   const approved = candidates.filter((item) => item.stage === "develop");
   const marginOf = (item) => Number(item.margin_card?.margin_pct || 0);

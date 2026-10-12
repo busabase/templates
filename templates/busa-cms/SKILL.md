@@ -96,9 +96,12 @@ Rules the site depends on, in the order they bite:
 
 ## What the app does
 
-Four lists in the sidebar — Posts, Pages, Categories, Tags — a Published/Drafts
-filter above the list, and a detail pane with **Edit** and **Publish** /
-**Move to draft**. New posts and pages start as drafts.
+An Overview of what the site serves and what needs attention, then four lists in
+the sidebar — Posts, Pages, Categories, Tags — each a table with a
+Published/Drafts filter, a locale filter and search in its toolbar. A post or
+page opens as a full page with **Edit** and **Publish** / **Move to draft**; a
+category or tag opens in a drawer beside its list. New posts and pages start as
+drafts.
 
 Two things the tables cannot tell you, which the app does:
 

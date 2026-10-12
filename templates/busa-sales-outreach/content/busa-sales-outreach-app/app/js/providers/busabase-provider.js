@@ -101,9 +101,24 @@ export const busabaseProvider = {
   },
   async getState() {
     if (!runtimeClient || !runtimeBases.size) await this.getReadinessState();
-    const pages = await Promise.all(
+    // One Base denied or temporarily unreadable must not blank the whole desk:
+    // a seller reviewing `companies` should still see it even if `leads` (say)
+    // fails this request. Each Base is read independently and a failure drops
+    // only that Base's records, logged rather than silently hidden.
+    const settled = await Promise.allSettled(
       [...runtimeBases.values()].map(async (base) => [base.key, await readAllPages(runtimeClient, base)]),
     );
+    const records = [];
+    const pageInfo = {};
+    for (const outcome of settled) {
+      if (outcome.status === "rejected") {
+        console.error("Busa Sales Outreach: a Base failed to load", outcome.reason);
+        continue;
+      }
+      const [key, page] = outcome.value;
+      records.push(...page.records);
+      pageInfo[key] = { nextCursor: page.nextCursor, limit: page.limit };
+    }
     return {
       provider: {
         ok: true,
@@ -112,10 +127,8 @@ export const busabaseProvider = {
         readOnly: false,
         pendingReview: !isStandaloneLocalRuntime(),
       },
-      records: pages.flatMap(([, page]) => page.records),
-      pageInfo: Object.fromEntries(
-        pages.map(([key, page]) => [key, { nextCursor: page.nextCursor, limit: page.limit }]),
-      ),
+      records,
+      pageInfo,
     };
   },
   async loadMore(baseKey, cursor) {

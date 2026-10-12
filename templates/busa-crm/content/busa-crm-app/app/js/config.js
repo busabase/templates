@@ -12,6 +12,8 @@ export const appConfig = {
     slug: "busa-crm",
   },
   airApp: { name: "Busa CRM", slug: "busa-crm-app", resourceKey: "busa-crm-app" },
+  // Where each view opens a record (see DETAIL_MODES in app.js for the why).
+  ui: { detail_modes: { deals: "page", contacts: "drawer", followups: "split" } },
   bases: [
     {
       key: "companies",
@@ -134,7 +136,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

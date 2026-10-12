@@ -133,7 +133,18 @@ export const demoProvider = {
       onboarding: { completed: true, completed_at: batch.generated_at, config_version: "demo" },
       lock: null,
       batch,
+      warnings: [],
+      counts: {
+        approved_drafts: batch.drafts.filter((item) => item.status === "approved").length,
+        unconfigured_sources: batch.sources.filter((item) => item.status === "needs_config").length,
+      },
     };
+  },
+
+  // Everything the demo has is already loaded; a URL naming anything else is
+  // simply not in the demo batch.
+  async getRecord() {
+    return null;
   },
 
   // Demo mode is read-only, but the review buttons are still interactive so

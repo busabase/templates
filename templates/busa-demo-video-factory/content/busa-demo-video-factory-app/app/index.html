@@ -19,24 +19,77 @@
             <div id="sync-status" class="brand-subtitle">Loading</div>
           </div>
         </div>
+        <section class="human-work" aria-label="Needs attention">
+          <div class="human-work-eyebrow">Needs attention</div>
+          <a class="human-work-primary" href="#/videos?status=needs_review" title="Videos waiting for a human to review the script">
+            <strong id="count-review">—</strong>
+            <span>videos need review</span>
+          </a>
+          <a class="human-work-secondary" href="#/shots?status=needs_reshoot" title="Shots marked for a reshoot">
+            <strong id="count-reshoot">—</strong>
+            <span>shots need a reshoot</span>
+          </a>
+        </section>
         <nav class="filters" aria-label="Main">
-          <a href="#/videos" data-route="videos">Videos</a>
+          <a href="#/overview" data-route="overview">Overview</a>
+          <a href="#/videos" data-route="videos">Videos <span id="nav-count-videos" class="nav-count"></span></a>
+          <a href="#/shots" data-route="shots">Shots <span id="nav-count-shots" class="nav-count"></span></a>
         </nav>
-        <div id="videoNav" class="video-nav"></div>
       </aside>
       <main class="main">
-        <header class="topbar">
-          <div>
-            <h1 id="page-title">Videos</h1>
-            <p id="page-subtitle" class="muted"></p>
+        <div class="mobile-topbar">
+          <button id="mobileSidebarToggle" class="icon-button" type="button" aria-controls="appSidebar" aria-label="Open navigation" title="Open navigation">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h11"/></svg>
+          </button>
+          <div id="mobileViewTitle" class="mobile-view-title">Demo Video Factory</div>
+          <button id="mobileRefresh" class="icon-button" type="button" aria-label="Refresh" title="Refresh">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.6M13 2.5v3h-3"/></svg>
+          </button>
+        </div>
+        <div id="loadState" class="load-state" role="status">Loading</div>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1>Video pipeline</h1>
+              <p>Every demo video from idea to published, with its storyboard and recording progress.</p>
+            </div>
+            <div class="page-actions">
+              <button id="refresh" class="button" type="button">Refresh</button>
+              <a class="button primary" href="#/videos">Open videos</a>
+            </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" aria-label="Pipeline summary"></div>
+          <div id="overviewBody" class="overview-grid"></div>
+        </section>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <select id="statusSelect" class="status-select" aria-label="Status"></select>
+              <input id="search" class="search-input" type="search" autocomplete="off" placeholder="Search loaded rows" aria-label="Search">
+              <button id="viewRefresh" class="button" type="button" title="Refresh">Refresh</button>
+            </div>
+          </header>
+          <div id="viewNotice" class="view-notice" hidden></div>
+          <div id="workspace" class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div id="detailBar" class="ws-detail-bar">
+                <button id="detailBack" class="button" type="button">Back to list</button>
+                <a id="detailExpand" class="button" hidden>Open full page</a>
+              </div>
+              <div id="detailBody"></div>
+            </aside>
           </div>
-          <div class="topbar-actions">
-            <button id="refresh" type="button" title="Refresh" aria-label="Refresh">Refresh</button>
-          </div>
-        </header>
-        <section id="content" class="content"></section>
+        </section>
       </main>
     </div>
+    <div id="sidebarScrim" class="sidebar-scrim" hidden></div>
     <script type="module" src="./app.js"></script>
   </body>
 </html>

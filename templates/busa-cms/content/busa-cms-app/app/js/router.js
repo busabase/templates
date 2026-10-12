@@ -1,93 +1,120 @@
 import { toast } from "./api.js";
-import { MODES, store } from "./store.js";
+import { appConfig } from "./config.js";
+import { ROUTE_MODES, store } from "./store.js";
 
 // closeHelp/openHelp (help-modal.js), refresh/renderList/renderDetail
-// (list-detail.js), and syncModeButtons/isMobileLayout/setMobileDetailOpen
-// (shell.js) all need routing and vice versa. Rather than import across that
-// whole cycle, main.js registers the real implementations once every module
-// has loaded.
+// (list-detail.js), and syncModeButtons (shell.js) all need routing and vice
+// versa. Rather than import across that whole cycle, app.js registers the real
+// implementations once every module has loaded.
 const hooks = {
   isHelpOpen: () => false,
   openHelp: () => {},
   closeHelp: () => {},
   activeHelpTab: () => "guide",
   syncModeButtons: () => {},
-  isMobileLayout: () => false,
-  setMobileDetailOpen: () => {},
   refresh: async () => {},
-  renderList: () => {},
-  renderDetail: () => {},
+  render: () => {},
 };
 
 export function registerRouterHooks(overrides) {
   Object.assign(hooks, overrides);
 }
 
-export function routeModes() {
-  return MODES;
-}
+/**
+ * Where each Base opens a record — declared once, in config.js `ui.detail_modes`
+ * (the why is there). A `/<record>` path is always the full page; `?peek=` is the
+ * drawer. On a phone every mode is a page (base-ui.css handles that).
+ */
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+
+const STATUS_FILTERS = ["all", "published", "draft"];
 
 export function helpTabs() {
   return ["guide", "connect", "resources", "appearance"];
 }
 
-function encodeRoutePart(value) {
-  return encodeURIComponent(String(value || ""));
-}
-
-function decodeRoutePart(value) {
+const decodeRoutePart = (value) => {
   try {
     return decodeURIComponent(value || "");
   } catch {
     return value || "";
   }
-}
+};
 
-export function routeFor() {
-  const modalOpen = hooks.isHelpOpen();
-  if (modalOpen) {
-    const activeTab = hooks.activeHelpTab() || "guide";
-    return `/settings/${activeTab}`;
-  }
-  const modePart = routeModes().includes(store.mode) ? store.mode : "posts";
-  return store.selectedId ? `/${modePart}/${encodeRoutePart(store.selectedId)}` : `/${modePart}`;
-}
-
+/**
+ * `#/<mode>[/<record>][?q=…&status=…&locale=…&peek=…]`. Search and both filters
+ * live in the URL, so refresh, a shared link and Back restore the same list.
+ * `#/settings/<tab>` opens Help & Settings over whatever was on screen.
+ */
 export function parseHashRoute() {
   const raw = (window.location.hash || "").replace(/^#\/?/, "");
-  const parts = raw.split("/").filter(Boolean).map(decodeRoutePart);
+  const [pathPart, queryPart = ""] = raw.split("?");
+  const parts = pathPart.split("/").filter(Boolean).map(decodeRoutePart);
   if (parts[0] === "settings") {
     const requestedTab = parts[1] === "language" ? "appearance" : parts[1];
-    return {
-      settingsTab: helpTabs().includes(requestedTab) ? requestedTab : "guide",
-      mode: store.mode,
-      selectedId: store.selectedId,
-    };
+    return { settingsTab: helpTabs().includes(requestedTab) ? requestedTab : "guide" };
   }
+  const params = new URLSearchParams(queryPart);
+  const mode = ROUTE_MODES.includes(parts[0]) ? parts[0] : "overview";
+  const detailMode = DETAIL_MODES[mode];
+  const id = detailMode ? parts[1] || "" : "";
+  const peek = detailMode && detailMode !== "page" && !id ? params.get("peek") || "" : "";
+  const status = params.get("status") || "all";
   return {
     settingsTab: null,
-    mode: routeModes().includes(parts[0]) ? parts[0] : store.mode,
-    selectedId: parts[1] || null,
+    mode,
+    selectedId: id || peek || null,
+    presentation: id ? "page" : peek ? detailMode : null,
+    query: params.get("q") || "",
+    statusFilter: STATUS_FILTERS.includes(status) ? status : "all",
+    localeFilter: params.get("locale") || "all",
   };
 }
 
-export function hashHasSelection() {
-  return Boolean(parseHashRoute().selectedId);
+const listQuery = (extra = {}) => {
+  const params = new URLSearchParams();
+  if (store.query) params.set("q", store.query);
+  if (["posts", "pages"].includes(store.mode) && store.statusFilter !== "all") {
+    params.set("status", store.statusFilter);
+  }
+  if (store.localeFilter !== "all") params.set("locale", store.localeFilter);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+export function routeFor() {
+  if (hooks.isHelpOpen()) return `/settings/${hooks.activeHelpTab() || "guide"}`;
+  const mode = ROUTE_MODES.includes(store.mode) ? store.mode : "overview";
+  if (mode === "overview") return "/overview";
+  if (store.selectedId && store.presentation === "page") {
+    return `/${mode}/${encodeURIComponent(store.selectedId)}${listQuery()}`;
+  }
+  if (store.selectedId && store.presentation) return `/${mode}${listQuery({ peek: store.selectedId })}`;
+  return `/${mode}${listQuery()}`;
+}
+
+/** The full-page URL of a record, whatever its Base's mode ("Open full page"). */
+export function fullPageHash(mode, recordId) {
+  return `#/${mode}/${encodeURIComponent(recordId)}${mode === store.mode ? listQuery() : ""}`;
 }
 
 export function applyRouteFromHash({ refreshData = false } = {}) {
   store.isApplyingRoute = true;
   store.routeNeedsReplace = false;
   const route = parseHashRoute();
-  store.mode = route.mode;
-  store.selectedId = route.selectedId;
-  if (hooks.isMobileLayout()) hooks.setMobileDetailOpen(Boolean(store.selectedId));
-  hooks.syncModeButtons();
   if (route.settingsTab) {
     hooks.openHelp(route.settingsTab);
-  } else if (hooks.isHelpOpen()) {
-    hooks.closeHelp({ skipRoute: true });
+  } else {
+    store.mode = route.mode;
+    store.selectedId = route.selectedId;
+    store.presentation = route.presentation;
+    store.query = route.query;
+    store.statusFilter = route.statusFilter;
+    store.localeFilter = route.localeFilter;
+    if (hooks.isHelpOpen()) hooks.closeHelp({ skipRoute: true });
   }
+  hooks.syncModeButtons();
   store.isApplyingRoute = false;
   if (refreshData) hooks.refresh({ preserveScroll: false }).catch((error) => toast(error.message));
 }
@@ -103,26 +130,32 @@ export function syncRoute({ push = false } = {}) {
   else history.replaceState(null, "", target);
 }
 
-export function navigateTo(next = {}, { replace = false, refreshData = false } = {}) {
+/**
+ * Change what is on screen. `selectedId` without an explicit `presentation`
+ * opens the record in its Base's declared mode.
+ */
+export function navigateTo(next = {}, { replace = false, state = null } = {}) {
   if ("mode" in next) store.mode = next.mode;
-  if ("selectedId" in next) store.selectedId = next.selectedId;
+  for (const key of ["query", "statusFilter", "localeFilter"]) if (key in next) store[key] = next[key];
+  if ("selectedId" in next) {
+    store.selectedId = next.selectedId || null;
+    store.presentation = store.selectedId
+      ? next.presentation || DETAIL_MODES[store.mode] || "page"
+      : null;
+  }
   hooks.syncModeButtons();
   const target = `#${routeFor()}`;
   if (window.location.hash === target) {
-    if (refreshData) hooks.refresh({ preserveScroll: false }).catch((error) => toast(error.message));
-    else {
-      hooks.renderList();
-      hooks.renderDetail();
-    }
+    hooks.render();
     return;
   }
   if (replace) {
-    history.replaceState(null, "", target);
-    if (refreshData) hooks.refresh({ preserveScroll: false }).catch((error) => toast(error.message));
-    else {
-      hooks.renderList();
-      hooks.renderDetail();
-    }
+    history.replaceState(state ?? history.state, "", target);
+    hooks.render();
+  } else if (state) {
+    // pushState does not fire hashchange, so draw here.
+    history.pushState(state, "", target);
+    hooks.render();
   } else {
     window.location.hash = target;
   }

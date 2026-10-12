@@ -17,6 +17,13 @@ const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 const BROWSED_KEYS = ["intake", "proposals", "tickets"];
+// Route (hash view name) -> Base key / business id field / normalizer, shared
+// by fetchPage() and getRecord() below.
+const ROUTE_TO_RECORD = {
+  intake: { key: "intake", idField: "intake-id", normalize: normalizeIntakeRow },
+  dispatch: { key: "proposals", idField: "proposal-id", normalize: normalizeProposalRow },
+  board: { key: "tickets", idField: "ticket-id", normalize: normalizeTicketRow },
+};
 
 // A deployed AirApp sits inside the Busabase review boundary; only a standalone
 // run may merge its own writes. That is far too consequential to infer from the
@@ -101,6 +108,7 @@ async function countRecords(key, filters) {
 }
 
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -346,6 +354,20 @@ export const busabaseProvider = {
     const page = await readPage(key, cursor);
     const normalize = { intake: normalizeIntakeRow, proposals: normalizeProposalRow, tickets: normalizeTicketRow }[key];
     return { ...page, rows: normalize ? page.rows.map(normalize) : page.rows };
+  },
+
+  // A record named by the URL (route view + business id) but not on the
+  // loaded page, read on its own via records.get instead of loading more
+  // pages to find it. Used for #/intake/<id>, #/board/<id>, and a dispatch
+  // `?peek=` id that fell off the first loaded page.
+  async getRecord(view, id) {
+    await ensureResources();
+    const entry = ROUTE_TO_RECORD[view];
+    if (!entry) return null;
+    const existing = await findRecord(entry.key, entry.idField, id);
+    if (!existing) return null;
+    const fields = normalizeFields(existing.headCommit?.payload || existing.headCommit?.fields || existing.fields);
+    return entry.normalize(fields);
   },
 
   async provisionResources() {

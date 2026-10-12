@@ -85,7 +85,23 @@ function loadMermaid() {
 function initializeMermaid(mermaid) {
   if (mermaidInitialized) return;
   const styles = getComputedStyle(document.documentElement);
-  const token = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
+  // A custom property reads back as written — `color-mix(…)` in dark mode —
+  // and even computed it is `color(srgb …)`; Mermaid parses neither. Resolve
+  // each token through a probe element and paint it to one canvas pixel to get
+  // a plain hex colour.
+  const probe = document.createElement("span");
+  probe.hidden = true;
+  document.body.append(probe);
+  const pixel = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+  const token = (name, fallback) => {
+    if (!styles.getPropertyValue(name).trim() || !pixel) return fallback;
+    probe.style.color = `var(${name})`;
+    pixel.clearRect(0, 0, 1, 1);
+    pixel.fillStyle = getComputedStyle(probe).color;
+    pixel.fillRect(0, 0, 1, 1);
+    const [r, g, b] = pixel.getImageData(0, 0, 1, 1).data;
+    return `#${[r, g, b].map((value) => value.toString(16).padStart(2, "0")).join("")}`;
+  };
   mermaid.initialize({
     startOnLoad: false,
     securityLevel: "strict",
@@ -114,6 +130,7 @@ function initializeMermaid(mermaid) {
       noteBorderColor: token("--line-strong", "#dcdfe4"),
     },
   });
+  probe.remove();
   mermaidInitialized = true;
 }
 

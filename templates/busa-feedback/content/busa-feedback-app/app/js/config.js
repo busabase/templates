@@ -12,6 +12,12 @@ export const appConfig = {
     slug: "busa-feedback",
   },
   airApp: { name: "Busa Feedback", slug: "busa-feedback-app", resourceKey: "busa-feedback-app" },
+  // Where a record opens, per Base that has its own record view (see app.js):
+  //   feedback  → drawer: a fact scanned in a wide table; triage changes one field.
+  //   requests  → page:   a workplace — spec, quotes, linked feedback, history.
+  //   proposals → split:  the roadmap decision queue, worked one proposal after the next.
+  // products, sources, roadmap lanes, sync-log and settings have no record view.
+  ui: { detail_modes: { feedback: "drawer", requests: "page", proposals: "split" } },
   bases: [
     {
       key: "products",
@@ -155,7 +161,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

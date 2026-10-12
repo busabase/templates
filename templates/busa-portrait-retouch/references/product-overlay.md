@@ -55,8 +55,14 @@ only safe node IDs, Base IDs, schema version, and resolved asset URLs.
 
 ## Screens And Delivery
 
-The AirApp uses the queue, approved, exported, and blocked views; a desktop
-list/detail workbench; a separate phone detail flow; and Help & Settings. Native
+The AirApp opens on an Overview (the only page with a hero and the metrics
+band: first-review and changes-requested totals, plus flagged checks) followed
+by the queue, approved, exported, and blocked views. Each view is one toolbar
+row over a full-bleed table. Detail modes (`ui.detail_modes` in the app
+config): the queue is a `split` — worked top to bottom, the comparison beside
+the list; approved, exported and blocked open a `drawer`. Any candidate can
+open as a full page (`#/<view>/<id>`), and on a phone every mode is a page.
+Help & Settings is a dialog. Native
 Views are not required because the human decision depends on an image comparison
 surface unavailable in a generic table/gallery. The canonical project is
 `content/busa-portrait-retouch-app/`; local Hono preview and AirApp deployment use the same source. Demo mode

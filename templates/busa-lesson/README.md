@@ -4,10 +4,10 @@ Busa Lesson is a Busabase App-in-Skill desk for a dean of studies (教导主任)
 
 ## What It Shows
 
-- Overview: KPI cards (plans total / approved / in revision, compliance pass rate), coverage by grade and subject, per-teacher status, recent activity.
-- Plans: the plan library with source badges (agent draft / teacher import), compliance scores, and workflow status; detail pages render the full structured plan (objectives, lesson-flow stages with timing, board plan, homework, and more) next to its compliance panel.
-- Checks: every compliance rule per plan with pass/warn/fail/agent-review badges and evidence snippets, filterable by rule, teacher, and result.
-- Review: the queue with approve / request changes / block decisions, agent suggestions, and an editable feedback-to-teacher draft per plan (`Plan #1` refs).
+- Overview: plans total, approved, and compliance pass rate, coverage by grade and subject, per-teacher status, recent activity.
+- Plans: the plan library with source badges (agent draft / teacher import), compliance scores, and workflow status; a plan opens as a full page with the full structured plan (objectives, lesson-flow stages with timing, board plan, homework, and more) next to its compliance panel.
+- Checks: every compliance rule per plan with pass/warn/fail/agent-review badges and evidence snippets, filterable by rule, teacher, and result; a check opens in a drawer.
+- Review: the queue, worked as a split view, with approve / request changes / block decisions, agent suggestions, and an editable feedback-to-teacher draft per plan (`Plan #1` refs).
 - Settings: sanitized school profile, template sections, compliance rules, subjects/grades, and export preferences.
 
 ## App UI Screenshots

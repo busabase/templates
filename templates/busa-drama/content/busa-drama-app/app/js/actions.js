@@ -3,8 +3,7 @@ import { storyboardPromptPreview } from "./drama-model.js?v=0.1.0";
 import { arr } from "./format.js";
 import { t } from "./i18n.js";
 import { openImageModal, openPromptModal } from "./modal.js";
-import { navigateTo, syncRoute } from "./router.js";
-import { isMobileLayout, setMobileDetailOpen } from "./shell.js";
+import { navigateTo, openRecord, syncRoute } from "./router.js";
 import { project, store } from "./store.js";
 
 // bindForm is called from every view-render function (overview.js, episodes.js,
@@ -201,58 +200,20 @@ export function newItem() {
     tasks: { id: `task-new-${timestamp}`, kind: "episode", status: "needs_review", title: "New task", note: "" },
   };
   const item = templates[store.view];
-  store.selectedId = item.id;
+  if (!item) return;
   store.state.project[store.view].push(item);
-  navigateTo({
-    selectedId: item.id,
-    episodeMode: store.view === "episodes" ? "detail" : store.episodeMode,
-    episodeTab: "summary",
-  });
+  openRecord(item.id);
 }
 
 export function bindForm() {
   document.querySelectorAll("[data-go]").forEach((node) => {
     node.addEventListener("click", () => {
-      navigateTo({ view: node.dataset.go, selectedId: null, episodeMode: "list", episodeTab: "summary" });
-    });
-  });
-  document.querySelectorAll("[data-select]").forEach((node) => {
-    node.addEventListener("click", () => {
-      if (isMobileLayout()) setMobileDetailOpen(true);
-      navigateTo({ selectedId: node.dataset.select });
-    });
-  });
-  document.querySelectorAll("[data-episode-detail]").forEach((node) => {
-    node.addEventListener("click", () => {
-      if (isMobileLayout()) setMobileDetailOpen(true);
-      navigateTo({
-        view: "episodes",
-        selectedId: node.dataset.episodeDetail,
-        episodeMode: "detail",
-        episodeTab: "summary",
-      });
-    });
-  });
-  document.querySelectorAll("[data-row-episode]").forEach((node) => {
-    node.addEventListener("click", (event) => {
-      if (event.target.closest("button")) return;
-      if (isMobileLayout()) setMobileDetailOpen(true);
-      navigateTo({
-        view: "episodes",
-        selectedId: node.dataset.rowEpisode,
-        episodeMode: "detail",
-        episodeTab: "summary",
-      });
-    });
-  });
-  document.querySelectorAll("[data-episode-list]").forEach((node) => {
-    node.addEventListener("click", () => {
-      navigateTo({ view: "episodes", selectedId: null, episodeMode: "list", episodeTab: "summary" });
+      navigateTo({ view: node.dataset.go, selectedId: null });
     });
   });
   document.querySelectorAll("[data-episode-tab]").forEach((node) => {
     node.addEventListener("click", () => {
-      navigateTo({ view: "episodes", episodeMode: "detail", episodeTab: node.dataset.episodeTab });
+      navigateTo({ episodeTab: node.dataset.episodeTab }, { replace: true });
     });
   });
   document.querySelectorAll("[data-shot-toggle]").forEach((node) => {
@@ -269,7 +230,10 @@ export function bindForm() {
     expandAll.addEventListener("click", () => {
       const shots = hooks.shotsForEpisode(store.selectedId);
       const allOpen = shots.every((s) => store.expandedShots.has(s.id));
-      shots.forEach((s) => (allOpen ? store.expandedShots.delete(s.id) : store.expandedShots.add(s.id)));
+      for (const s of shots) {
+        if (allOpen) store.expandedShots.delete(s.id);
+        else store.expandedShots.add(s.id);
+      }
       hooks.render();
     });
   }
@@ -399,7 +363,13 @@ export function bindForm() {
   });
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    await saveForm(form);
+    // A refused write (demo mode, a denied procedure, invalid beats JSON) is
+    // reported, not left as an unhandled rejection with no feedback.
+    try {
+      await saveForm(form);
+    } catch (error) {
+      toast(error?.message || t("toast_save_failed"));
+    }
   });
   const deleteButton = form.querySelector("[data-delete]");
   if (deleteButton) {
@@ -407,11 +377,15 @@ export function bindForm() {
       if (!confirm(t("confirm_delete"))) return;
       const kind = form.dataset.kind;
       const id = form.dataset.id;
-      const provider = await getProvider();
-      store.state = await provider.deleteItem(kind, id);
-      store.selectedId = null;
+      try {
+        const provider = await getProvider();
+        store.state = await provider.deleteItem(kind, id);
+      } catch (error) {
+        toast(error?.message || t("toast_save_failed"));
+        return;
+      }
       toast(t("toast_deleted"));
-      hooks.render();
+      navigateTo({ selectedId: null, presentation: null }, { replace: true });
     });
   }
 }

@@ -1,13 +1,14 @@
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
+import { appConfig } from "./js/config.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
-import { bindContentEvents, renderReview, renderSettings, renderStudio, renderVendors } from "./js/studio-views.js";
+import { renderRecordView, renderSettings, renderStudio } from "./js/studio-views.js";
 const messages = {
   en: {
     attention: "Need attention",
     humanWorkTitle: "What needs your attention",
     needReview: "checks need review",
-    fixOpen: "fix items",
-    providerRoutes: "routes",
+    changesOpen: "sent back",
+    blockedOpen: "blocked",
     overview: "Overview",
     review: "Review Queue",
     studio: "Studio",
@@ -71,13 +72,26 @@ const messages = {
     saved: "Saved.",
     search: "Search",
     empty: "No matching items.",
+    loading: "Loading",
+    demoData: "Demo data",
+    liveData: "Busabase data",
+    backToList: "Back to list",
+    openFullPage: "Open full page",
+    selectCheck: "Pick a check from the queue to read its evidence and record a verdict.",
+    notFound: "This item is not in the list.",
+    vendorRoute: "Vendor / route",
+    matchingPipeline: "Matching pipeline",
+    stages: "Stages",
+    readinessCaption: "QA baseline {passed}/{total} passed",
+    decisionFailed: "Decision failed",
+    projectContext: "{path} · {name}",
   },
   zh: {
     attention: "需要关注",
     humanWorkTitle: "需要你处理的事项",
     needReview: "项待审",
-    fixOpen: "项返修",
-    providerRoutes: "条路径",
+    changesOpen: "项已打回",
+    blockedOpen: "项已阻止",
     overview: "总览",
     review: "审核队列",
     studio: "Studio",
@@ -140,16 +154,35 @@ const messages = {
     saved: "已保存。",
     search: "搜索",
     empty: "没有匹配项。",
+    loading: "加载中",
+    demoData: "演示数据",
+    liveData: "Busabase 数据",
+    backToList: "返回列表",
+    openFullPage: "打开完整页面",
+    selectCheck: "从队列中选择一项检查，查看证据并给出结论。",
+    notFound: "列表中没有这一项。",
+    vendorRoute: "服务商 / 路径",
+    matchingPipeline: "对应链路",
+    stages: "环节",
+    readinessCaption: "QA 基线 {passed}/{total} 项通过",
+    decisionFailed: "保存结论失败",
+    projectContext: "{path} · {name}",
   },
 };
+
+// Detail mode per view, declared in config.js `ui.detail_modes`:
+//   qa      → split: the review queue is worked top to bottom, one check after the next.
+//   vendors → drawer: a vendor is a fact people compare against the others and return to the list.
+// A `/<id>` path always opens the full page; `?peek=<id>` drives drawer/split.
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+const TOOL_VIEWS = ["studio", "settings"];
+export const QA_STATES = ["all", "needs_review", "approved", "changes_requested", "blocked"];
 
 export const state = {
   snapshot: null,
   settings: null,
   route: parseRoute(),
-  query: "",
-  statusFilter: "all",
-  selectedId: "",
   edits: {},
   notice: "",
   busy: false,
@@ -173,40 +206,128 @@ const DECISION_STATUS = {
   block: "blocked",
 };
 
+const byId = (id) => document.getElementById(id);
+
 export const els = {
-  content: document.querySelector("#content"),
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  reviewCount: document.querySelector("#count-review"),
-  fixCount: document.querySelector("#count-fix"),
-  routeCount: document.querySelector("#count-routes"),
-  statusFilters: document.querySelector("#statusFilters"),
-  language: document.querySelector("#language"),
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  overviewSummary: byId("overviewSummary"),
+  overviewMetrics: byId("overviewMetrics"),
+  overviewBody: byId("overviewBody"),
+  viewPage: byId("viewPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  viewFilters: byId("viewFilters"),
+  statusSelect: byId("statusSelect"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  studioPage: byId("studioPage"),
+  studioTitle: byId("studioTitle"),
+  studioBody: byId("studioBody"),
+  settingsPage: byId("settingsPage"),
+  settingsTitle: byId("settingsTitle"),
+  settingsBody: byId("settingsBody"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  reviewCount: byId("count-review"),
+  changesCount: byId("count-changes"),
+  blockedCount: byId("count-blocked"),
+  navCountQa: byId("navCountQa"),
+  navCountVendors: byId("navCountVendors"),
+  language: byId("language"),
 };
 
-export function t(key) {
-  return messages[state.lang]?.[key] || messages.en[key] || key;
+export function t(key, vars) {
+  const text = messages[state.lang]?.[key] || messages.en[key] || key;
+  return vars ? text.replace(/\{(\w+)\}/g, (_, name) => String(vars[name] ?? "")) : text;
 }
 
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&status=…&peek=…]`. Search, the QA status filter
+// and the peeked record live in the URL so refresh, shared links and Back
+// restore the same list context.
 function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] || "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  if (view === "review") view = "qa";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && !TOOL_VIEWS.includes(view)) view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  const status = params.get("status") || "all";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+    status: view === "qa" && QA_STATES.includes(status) ? status : "all",
+  };
 }
+
+export const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  if (route.view === "qa" && route.status !== "all") params.set("status", route.status);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) => `#/${view}/${encodeURIComponent(id)}${routeQuery({})}`;
+// What a row opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) =>
+  DETAIL_MODES[view] === "page" ? detailUrl(id, view) : `#/${view}${routeQuery({ peek: id })}`;
+
+let previousRouteWasList = false;
 
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
   state.notice = "";
-  if (state.route.id) state.selectedId = state.route.id;
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
   render();
+}
+
+// Replace the current entry without a hashchange: search keystrokes and filter
+// clicks should not each become a Back step.
+export function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  state.route = parseRoute();
+  render();
+}
+
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
 }
 
 export function isMobileLayout() {
@@ -242,13 +363,13 @@ function syncResponsiveShell() {
   }
 }
 
+// ── Data ───────────────────────────────────────────────────────────────────
 async function loadState() {
   const provider = await getProvider();
   const data = await provider.getState();
   closeConnectGate();
   state.settings = data;
   state.snapshot = data.snapshot;
-  if (!state.selectedId) state.selectedId = filteredChecks()[0]?.id || state.snapshot?.qa_checks?.[0]?.id || "";
   window.dispatchEvent(new CustomEvent("busa-digital-human:state", { detail: data }));
   render();
   startAnimation();
@@ -261,8 +382,16 @@ function applyI18n() {
   });
   els.search.placeholder = t("search");
   els.refresh.textContent = t("refresh");
+  els.refresh.title = t("refresh");
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
   if (els.language) els.language.value = state.lang;
+  byId("overviewTitle").textContent = t("overview");
+  els.settingsTitle.textContent = t("settings");
+  els.studioTitle.textContent = t("studioTitle");
+  // The description lives in the title's tooltip, not as a second line.
+  els.studioTitle.title = t("studioSubtitle");
+  els.detailBack.textContent = t("backToList");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
 export function decisionFor(id) {
@@ -277,10 +406,11 @@ export function effectiveStatus(check) {
   return "needs_review";
 }
 
-export function statusClass(status) {
-  if (status === "approved" || status === "pass" || status === "SHIP" || status === "ready_for_demo") return "pass";
-  if (status === "blocked" || status === "block" || status === "BLOCK") return "block";
-  return "fix";
+// Badge tone from the shared `.badge` vocabulary (one `--dot` per status).
+export function statusTone(status) {
+  if (status === "approved" || status === "pass" || status === "SHIP" || status === "ready_for_demo") return "positive";
+  if (status === "blocked" || status === "block" || status === "BLOCK") return "danger";
+  return "warning";
 }
 
 export function statusLabel(status) {
@@ -288,13 +418,30 @@ export function statusLabel(status) {
   if (status === "changes_requested") return t("changesRequested");
   if (status === "approved") return t("approved");
   if (status === "blocked") return t("blocked");
+  if (status === "all") return t("all");
   return String(status || "").replaceAll("_", " ");
+}
+
+// A stored decision action (`request_changes`) shown as the words a reviewer uses.
+export function actionLabel(action) {
+  if (action === "approve") return t("approve");
+  if (action === "request_changes") return t("requestChanges");
+  if (action === "block") return t("block");
+  return "-";
+}
+
+export function statusBadge(status) {
+  return `<span class="badge ${statusTone(status)}">${esc(statusLabel(status))}</span>`;
 }
 
 export function pathLabel(path) {
   if (path === "2d_fast") return state.lang === "zh" ? "2D 快上线" : "2D fast";
   if (path === "3d_custom") return state.lang === "zh" ? "3D 定制" : "3D custom";
   return "Hybrid";
+}
+
+export function pathBadge(path) {
+  return `<span class="badge path-badge ${path === "3d_custom" ? "custom" : "fast"}">${esc(pathLabel(path))}</span>`;
 }
 
 export function esc(value) {
@@ -305,70 +452,85 @@ export function esc(value) {
     .replace(/"/g, "&quot;");
 }
 
-function checks() {
+export function checks() {
   return state.snapshot?.qa_checks || [];
 }
 
+export function vendors() {
+  return state.snapshot?.vendors || [];
+}
+
+const matches = (values, query) => values.some((value) => String(value || "").toLowerCase().includes(query));
+
 export function filteredChecks() {
-  const query = state.query.trim().toLowerCase();
+  const query = state.route.query.trim().toLowerCase();
   return checks().filter((check) => {
-    const statusOk = state.statusFilter === "all" || effectiveStatus(check) === state.statusFilter;
-    const queryOk =
-      !query ||
-      [check.label, check.owner, check.evidence, check.status].some((value) =>
-        String(value || "")
-          .toLowerCase()
-          .includes(query),
-      );
-    return statusOk && queryOk;
+    const status = effectiveStatus(check);
+    if (state.route.status !== "all" && status !== state.route.status) return false;
+    return !query || matches([check.label, check.owner, check.evidence, statusLabel(status)], query);
   });
 }
 
-export function selectedCheck() {
-  return checks().find((check) => check.id === state.selectedId) || filteredChecks()[0] || checks()[0] || null;
+export function filteredVendors() {
+  const query = state.route.query.trim().toLowerCase();
+  if (!query) return vendors();
+  return vendors().filter((vendor) =>
+    matches([vendor.label, pathLabel(vendor.path), vendor.integration, vendor.cost, vendor.risk], query),
+  );
 }
 
 function renderShell() {
   applyI18n();
-  const reviewCount = checks().filter((check) => effectiveStatus(check) === "needs_review").length;
-  const fixCount = checks().filter((check) => check.status === "fix").length;
-  els.syncStatus.textContent = `${state.snapshot?.project?.readiness_score || 0} ${t("readiness")}`;
-  els.reviewCount.textContent = reviewCount;
-  els.fixCount.textContent = fixCount;
-  els.routeCount.textContent = state.snapshot?.pipelines?.length || 0;
+  const snapshot = state.snapshot;
+  const counts = { needs_review: 0, changes_requested: 0, blocked: 0 };
+  for (const check of checks()) {
+    const status = effectiveStatus(check);
+    if (status in counts) counts[status] += 1;
+  }
+  // Where the data comes from; the counts already sit in the attention block.
+  els.syncStatus.textContent = !snapshot ? t("loading") : state.demo ? t("demoData") : t("liveData");
+  els.reviewCount.textContent = counts.needs_review;
+  els.changesCount.textContent = counts.changes_requested;
+  els.blockedCount.textContent = counts.blocked;
+  els.navCountQa.textContent = snapshot ? checks().length : "";
+  els.navCountVendors.textContent = snapshot ? vendors().length : "";
   els.mobileViewTitle.textContent = viewLabel(state.route.view);
-  els.mobileViewMeta.textContent = `${reviewCount} ${t("needReview")}`;
+  els.mobileViewMeta.textContent = `${counts.needs_review} ${t("needReview")}`;
   document.querySelectorAll("[data-route]").forEach((link) => {
     link.classList.toggle("active", link.dataset.route === state.route.view);
   });
-  els.statusFilters.querySelectorAll("[data-status]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.status === state.statusFilter);
-  });
 }
 
-function viewLabel(view) {
-  if (view === "qa") return t("qa");
-  if (view === "review") return t("review");
+export function viewLabel(view) {
+  if (view === "qa") return t("review");
   if (view === "studio") return t("studio");
   if (view === "vendors") return t("vendors");
   if (view === "settings") return t("settings");
   return t("overview");
 }
 
-function render() {
-  if (!state.snapshot) return;
+export function render() {
   renderShell();
-  const views = {
-    overview: renderOverview,
-    qa: renderReview,
-    review: renderReview,
-    studio: renderStudio,
-    vendors: renderVendors,
-    settings: renderSettings,
-  };
-  const renderer = views[state.route.view] || renderOverview;
-  renderer();
-  bindContentEvents();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query || state.route.status !== "all"));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.studioPage.hidden = !ready || view !== "studio";
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (view !== "studio") streamStore.waveContext = null;
+  if (onRecordView) renderRecordView();
+  else if (view === "studio") renderStudio();
+  else if (view === "settings") renderSettings();
+  else renderOverview();
 }
 
 export function noticeBanner() {
@@ -379,63 +541,86 @@ export function isBusy() {
   return Boolean(state.busy);
 }
 
-function metric(label, value, percent) {
-  return `<div class="metric">
-    <span>${esc(label)}</span>
-    <strong>${esc(value)}</strong>
-    <div class="meter" style="--value:${Math.max(4, Math.min(100, percent))}%"><i></i></div>
-  </div>`;
-}
-
+// ── Overview ───────────────────────────────────────────────────────────────
+// The only page with the hero and the metrics band. Three numbers, none of
+// them shown anywhere else: the review counts sit in the sidebar, readiness
+// and the QA baseline in the readiness card below.
 function renderOverview() {
   const snapshot = state.snapshot;
+  const project = snapshot.project;
   const pipelines = snapshot.pipelines || [];
   const fast = pipelines.find((item) => item.path === "2d_fast");
   const custom = pipelines.find((item) => item.path === "3d_custom");
   const primary = fast || custom || pipelines[0] || null;
-  els.title.textContent = t("overview");
-  els.subtitle.textContent = `${t("generated")} ${new Date(snapshot.generated_at).toLocaleString()}`;
-  els.content.innerHTML = `
+  const metrics = snapshot.metrics;
+  els.overviewSummary.textContent = project.launch_goal;
+  els.overviewMetrics.innerHTML = [
+    [t("latency"), `${metrics.current_latency_ms} / ${metrics.target_latency_ms} ms`],
+    [t("lipSync"), `${metrics.lip_sync_score}%`],
+    [t("stability"), `${metrics.stream_stability}%`],
+  ]
+    .map(([label, value]) => `<div><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`)
+    .join("");
+  const score = Math.max(0, Math.min(100, Number(project.readiness_score) || 0));
+  els.overviewBody.innerHTML = `
     ${noticeBanner()}
-    <div class="overview-workspace">
-      <section class="readiness-band gate-${esc(snapshot.project.verdict)}">
-        <div>
-          <div class="eyebrow">${t("currentPath")}</div>
-          <h2>${pathLabel(snapshot.project.recommended_path)} · ${esc(snapshot.project.name)}</h2>
-          <p>${esc(snapshot.project.launch_goal)}</p>
-        </div>
-        <div class="score-ring" style="background: conic-gradient(var(--accent) 0 ${snapshot.project.readiness_score}%, #e5e7eb ${snapshot.project.readiness_score}% 100%)">
-          <div><strong>${snapshot.project.readiness_score}</strong><span>${t("readiness")}</span></div>
-        </div>
-      </section>
-      <section class="metric-grid">
-        ${metric(t("latency"), `${snapshot.metrics.current_latency_ms}ms / ${snapshot.metrics.target_latency_ms}ms`, 72)}
-        ${metric(t("lipSync"), `${snapshot.metrics.lip_sync_score}%`, snapshot.metrics.lip_sync_score)}
-        ${metric(t("stability"), `${snapshot.metrics.stream_stability}%`, snapshot.metrics.stream_stability)}
-        <a class="metric metric-link" href="#/qa"><span>${t("qa")}</span><strong>${snapshot.metrics.qa_passed}/${snapshot.metrics.qa_total}</strong><em class="status-badge ${statusClass(snapshot.project.verdict)}">${snapshot.project.verdict}</em></a>
-      </section>
-      <section class="path-grid">
-        ${fast ? pathPanel(t("fastPath"), fast, "fast", "Ship a polished web demo in days through an existing 2D digital-human service.") : ""}
-        ${custom ? pathPanel(t("customPath"), custom, "custom", "Build a reusable brand character with owned motion and engine-rendered scenes.") : ""}
-      </section>
-      <section class="panel">
-        <div class="section-head">
-          <div><h2>${t("pipeline")}</h2><p class="muted">${esc(primary?.provider || "")}</p></div>
-          <a class="quiet-link" href="#/studio">${t("studio")} →</a>
-        </div>
-        <div class="pipeline">
-          ${(primary?.stages || []).map((stage, index) => `<div class="stage"><strong>${index + 1}. ${esc(stage)}</strong><span>${pipelineCaption(stage)}</span></div>`).join("")}
-        </div>
-      </section>
-    </div>
+    <section class="card readiness-card">
+      <div>
+        <div class="readiness-label">${t("currentPath")}</div>
+        <h2>${esc(t("projectContext", { path: pathLabel(project.recommended_path), name: project.name }))}</h2>
+        <p class="readiness-line">
+          ${statusBadge(project.verdict === "SHIP" ? "approved" : project.verdict === "BLOCK" ? "blocked" : "needs_review")}
+          <a class="quiet-link" href="#/qa">${esc(t("readinessCaption", { passed: metrics.qa_passed, total: metrics.qa_total }))} →</a>
+        </p>
+      </div>
+      <div class="score-ring" style="--score:${score}%">
+        <div><strong>${score}</strong><span>${t("readiness")}</span></div>
+      </div>
+    </section>
+    <section class="path-grid">
+      ${fast ? pathPanel(t("fastPath"), fast, "Ship a polished web demo in days through an existing 2D digital-human service.") : ""}
+      ${custom ? pathPanel(t("customPath"), custom, "Build a reusable brand character with owned motion and engine-rendered scenes.") : ""}
+    </section>
+    <section class="card">
+      <div class="section-head">
+        <div><h2>${t("pipeline")}</h2><p class="muted">${esc(primary?.provider || "")}</p></div>
+        <a class="quiet-link" href="#/studio">${t("studio")} →</a>
+      </div>
+      <div class="pipeline">
+        ${(primary?.stages || []).map((stage, index) => `<div class="stage"><strong>${index + 1}. ${esc(stage)}</strong><span>${pipelineCaption(stage)}</span></div>`).join("")}
+      </div>
+    </section>
+    <section class="card">
+      <div class="section-head">
+        <h2>${t("architecture")}</h2>
+        <a class="quiet-link" href="#/vendors">${t("vendors")} →</a>
+      </div>
+      <div class="architecture">
+        ${ARCHITECTURE.map(
+          ([label, copy], index) => `<div class="arch-node">
+            <span class="node-index">${index + 1}</span>
+            <div><strong>${esc(label)}</strong><p class="muted">${esc(copy)}</p></div>
+          </div>`,
+        ).join("")}
+      </div>
+    </section>
   `;
 }
 
-function pathPanel(title, pipeline, kind, copy) {
-  return `<article class="path-panel ${kind}">
+const ARCHITECTURE = [
+  ["Input stream", "Text, TTS audio, uploaded audio, or live voice after approval."],
+  ["Reasoning or script", "LLM answer, support macro, product script, or human-approved copy."],
+  ["TTS / voice", "Vendor voice, cloned voice with consent, or existing audio stream."],
+  ["Avatar renderer", "2D service for speed; UE/Unity for custom brand character."],
+  ["RTC / web player", "Embed as live stream, clip, WebRTC track, or controlled demo player."],
+  ["QA and fallback", "Block unsafe claims, missing consent, stream failure, and bad lip sync."],
+];
+
+function pathPanel(title, pipeline, copy) {
+  return `<article class="card path-panel">
     <div class="path-head">
       <h2>${esc(title)}</h2>
-      <span class="path-badge ${kind}">${pathLabel(pipeline.path)}</span>
+      ${pathBadge(pipeline.path)}
     </div>
     <p>${esc(copy)}</p>
     <dl>
@@ -473,7 +658,7 @@ export async function submitDecision(checkId, action, card) {
     state.notice = t("saved");
     await loadState();
   } catch (error) {
-    state.notice = `Decision failed: ${error?.message || error}`;
+    state.notice = `${t("decisionFailed")}: ${error?.message || error}`;
     render();
   } finally {
     state.busy = false;
@@ -496,7 +681,7 @@ function startAnimation() {
 }
 
 export function updateMouth() {
-  const avatar = document.querySelector("#avatar");
+  const avatar = document.querySelector("#dhAvatar");
   if (avatar) avatar.style.setProperty("--mouth-open", String(Math.max(0.08, Math.min(1, streamStore.audioLevel))));
 }
 
@@ -522,6 +707,70 @@ function drawWave(time) {
   streamStore.waveContext.stroke();
 }
 
+// ── Events ─────────────────────────────────────────────────────────────────
+// Delegated on containers that are never re-rendered, so a re-render never
+// leaves a control without its listener.
+els.listPanel.addEventListener("click", (event) => {
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list it was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+els.listPanel.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter") return;
+  const row = event.target.closest("tr[data-id]");
+  if (row) row.click();
+});
+els.viewFilters.addEventListener("click", (event) => {
+  const segment = event.target.closest("[data-status]");
+  if (!segment) return;
+  replaceRoute(`#/qa${routeQuery({ peek: state.route.peek }, { ...state.route, status: segment.dataset.status })}`);
+});
+els.statusSelect.addEventListener("change", (event) => {
+  replaceRoute(`#/qa${routeQuery({ peek: state.route.peek }, { ...state.route, status: event.target.value })}`);
+});
+els.detailBody.addEventListener("input", (event) => {
+  const field = event.target.closest("[data-field]");
+  const card = field?.closest("[data-check]");
+  if (card) state.edits[card.dataset.check] = { ...state.edits[card.dataset.check], [field.dataset.field]: field.value };
+});
+els.detailBody.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+  const card = button.closest("[data-check]");
+  submitDecision(card.dataset.check, button.dataset.action, card);
+});
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  // Escape inside a note only leaves the field; a second Escape closes.
+  if (event.target.closest?.("textarea, input, select")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
+els.studioBody.addEventListener("change", (event) => {
+  const control = event.target.closest("[data-control]");
+  if (control?.dataset.control === "persona") streamStore.currentPersona = control.value;
+  else if (control?.dataset.control === "provider") streamStore.currentProvider = control.value;
+  else return;
+  renderStudio();
+});
+els.studioBody.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-stream-action]");
+  if (!button) return;
+  if (button.dataset.streamAction === "reset") streamStore.audioLevel = 0.24;
+  streamStore.running = button.dataset.streamAction === "reset" ? true : !streamStore.running;
+  renderStudio();
+});
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.sidebarToggle.addEventListener("click", toggleSidebar);
@@ -530,24 +779,18 @@ els.sidebarScrim.addEventListener("click", () => setMobileSidebarOpen(false));
 els.refresh.addEventListener("click", loadState);
 els.mobileRefresh.addEventListener("click", loadState);
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  if (state.route.view === "review" || state.route.view === "qa") renderReview();
-});
-els.statusFilters.querySelectorAll("[data-status]").forEach((button) => {
-  button.addEventListener("click", () => {
-    state.statusFilter = button.dataset.status;
-    if (state.route.view !== "review" && state.route.view !== "qa") location.hash = "#/qa";
-    else render();
-  });
+  replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`);
 });
 els.language.addEventListener("change", () => {
   state.lang = els.language.value;
   const url = new URL(location.href);
   url.searchParams.set("lang", state.lang);
-  history.replaceState(null, "", url.pathname + url.search + url.hash);
+  history.replaceState(history.state, "", url.pathname + url.search + url.hash);
   render();
 });
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
 
 async function boot() {
@@ -560,7 +803,9 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty-inline">${esc(error.message || error)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 

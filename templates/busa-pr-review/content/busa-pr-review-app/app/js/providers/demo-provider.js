@@ -267,6 +267,11 @@ export const demoProvider = {
     };
   },
 
+  async getReview(itemId) {
+    const snapshot = buildSnapshot({ records: demoRowsForLang(activeLangIsZh()) });
+    return snapshot.items.find((item) => item.id === itemId) || null;
+  },
+
   async applyDecision() {
     throw new Error("Demo mode is read-only.");
   },

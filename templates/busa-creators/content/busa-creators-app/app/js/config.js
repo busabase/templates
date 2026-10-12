@@ -6,6 +6,8 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Where a record opens, per view (see app.js for why each was chosen).
+  ui: { detail_modes: { creators: "page", outreach: "split", roi: "drawer" } },
   folder: {
     name: "Busa Creators",
     description: "Influencer/creator marketing command desk — discovery, outreach, briefs, contracts, and ROI",
@@ -66,7 +68,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

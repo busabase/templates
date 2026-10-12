@@ -216,3 +216,27 @@ test("mail readiness is separate from profile readiness", () => {
   assert.equal(profile.ready, true);
   assert.equal(profile.mailReady, false);
 });
+
+test("exact server totals drive the counts while the loaded page drives the rows", () => {
+  const desk = createJobhuntDesk(sample, { totals: { all: 140, queued: 12, sent: 30 }, partial: { companies: true } });
+  assert.deepEqual(desk.counts, { all: 140, "to-send": 98, sent: 42, queued: 12 });
+  assert.equal(desk.loaded.all, 3);
+  assert.equal(desk.exact, true);
+  assert.equal(desk.attention.toSend, 98);
+});
+
+test("without totals a partly loaded Base is marked as a lower bound", () => {
+  const desk = createJobhuntDesk(sample, { partial: { companies: true } });
+  assert.equal(desk.exact, false);
+  assert.equal(desk.counts.all, 3);
+});
+
+test("a company whose addresses are on an unloaded page is not reported as missing one", () => {
+  const records = sample.filter((item) => item.id !== "lead-a1" && item.id !== "lead-a2");
+  const complete = createJobhuntDesk(records);
+  assert.equal(complete.attention.blocked, 2);
+  const partial = createJobhuntDesk(records, { partial: { leads: true } });
+  const lanxi = partial.companies.find((company) => company.key === "lanxi");
+  assert.equal(lanxi.leadsUnknown, true);
+  assert.equal(partial.attention.blocked, 0);
+});

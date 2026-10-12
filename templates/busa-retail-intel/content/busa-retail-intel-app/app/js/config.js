@@ -114,8 +114,22 @@ export const appConfig = {
       ],
     },
   ],
+  // Where a record opens, per view — chosen by what people do with it:
+  //   signals → split:  the day's signals are a review queue worked top to
+  //                     bottom (read the evidence, decide, next), so the queue
+  //                     stays beside the record.
+  //   actions → drawer: an action is a short fact — owner, priority, next
+  //                     step — scanned among many, decided, and left.
+  //   drafts  → page:   a draft is long copy edited in place before handoff;
+  //                     it needs the full width and people stay a while.
+  //   sources → drawer: a source is a config fact read for its coverage note.
+  // `settings` holds one batch-metadata row shown on Help & Settings; it has
+  // no record view of its own.
+  ui: {
+    detail_modes: { signals: "split", actions: "drawer", drafts: "page", sources: "drawer" },
+  },
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

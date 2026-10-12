@@ -7,8 +7,9 @@ This is outbound marketing to a subscriber list — distinct from `busa-email`, 
 ## What It Shows
 
 - **Overview**: upcoming sends, list health (subscribers, bounce/complaint/churn rates, avg open/click), and a SEND-phase breakdown.
-- **Campaigns**: the review queue of drafted sends with type + phase + quality-gate badges, segment and audience size, deliverability risk, an editable body draft, an A/B subject picker, review notes, and Approve / Request changes / Block decisions that write straight to Busabase.
-- **Deliverability**: a pre-send QA table — SPF/DKIM/DMARC, spam score, inbox readiness, and the SEND verdict per send — plus the read-only consent/suppression list.
+- **Campaigns**: the review queue, worked top to bottom — the queue stays beside the selected send, which shows its type + phase + quality-gate badges, segment and audience size, deliverability risk, an editable body draft, an A/B subject picker, review notes, and Approve / Request changes / Block decisions that write straight to Busabase.
+- **Deliverability**: a pre-send QA table — SPF/DKIM/DMARC, spam score, inbox readiness, and the SEND verdict per send; a send opens in a drawer over the table.
+- **Suppression**: the read-only consent/suppression list, with the sends each entry affects.
 - **Performance**: open / click / unsub / bounce by sent campaign.
 - The AirApp never sends anything. Approved sends are scheduled by the skill through the configured ESP only after explicit approval, and a BLOCK verdict (or high deliverability risk) is a hard stop.
 
@@ -53,6 +54,7 @@ Busabase connection:
 /?demo=campaigns&lang=en#/campaigns
 /?demo=deliverability&lang=en#/deliverability
 /?demo=performance&lang=en#/performance
+/?demo=suppression&lang=en#/suppression
 /?demo=detail&lang=en#/campaigns/send-summer-launch
 ```
 

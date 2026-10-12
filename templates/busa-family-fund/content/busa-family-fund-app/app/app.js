@@ -2,15 +2,34 @@ import { messages } from "./i18n/messages.js";
 import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
 import { buildSnapshot, computeInsights } from "./js/fund-model.js?v=0.1.0";
+import { renderOverview, renderRecordView, renderSettings } from "./js/fund-views.js?v=0.1.0";
 import { createPagination } from "./js/pagination.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
 
-const state = {
+// Where a record opens, per view. Chosen by what people do with the record:
+//   ledger   → drawer: an entry is a fact you scan many of, read, and return
+//                      to the timeline.
+//   family   → page:   a family is a workplace of its own — its fairness facts
+//                      plus its directed and shared expense lists.
+//   category → drawer: a category total is scanned, its entries peeked at,
+//                      then you move to the next one.
+// A `/record` path always opens the full page; `?peek=` drives the drawer.
+// On a phone every mode is a page (base-ui.css handles that).
+// Declared once, in config.js `ui.detail_modes`.
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+// Views whose list a search box narrows.
+const SEARCH_VIEWS = ["ledger", "family"];
+
+export const state = {
   snapshot: null,
   settings: null,
-  route: parseRoute(),
-  query: "",
+  route: null,
+  // "" means every month. Shared by Overview and the Ledger; the URL carries
+  // it on the Ledger (`?month=`) so refresh and shared links keep the filter.
   month: "",
+  monthTouched: false,
+  pageError: "",
   lang: normalizeLang(
     new URLSearchParams(location.search).get("lang") || localStorage.getItem("busa-family-fund-language") || "auto",
   ),
@@ -19,30 +38,44 @@ const state = {
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-family-fund.sidebarCollapsed";
 
-const DONUT_COLORS = ["#334155", "#0d9488", "#2563eb", "#9333ea", "#d97706", "#dc2626", "#65a30d", "#0891b2"];
-
-const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  monthSelect: document.querySelector("#monthSelect"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  balanceCount: document.querySelector("#count-balance"),
-  familyCount: document.querySelector("#count-families"),
-  entryCount: document.querySelector("#count-entries"),
-  language: document.querySelector("#language"),
+const byId = (id) => document.getElementById(id);
+export const els = {
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  overviewTitle: byId("overviewTitle"),
+  overviewSummary: byId("overviewSummary"),
+  overviewMonth: byId("overviewMonth"),
+  overviewMetrics: byId("overviewMetrics"),
+  overviewBody: byId("overviewBody"),
+  viewPage: byId("viewPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  monthSelect: byId("monthSelect"),
+  searchBox: byId("searchBox"),
+  search: byId("search"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  settingsPage: byId("settingsPage"),
+  settingsTitle: byId("settingsTitle"),
+  settingsBody: byId("settingsBody"),
+  refresh: byId("refresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  balanceCount: byId("count-balance"),
+  familyCount: byId("count-families"),
+  entryCount: byId("count-entries"),
+  language: byId("language"),
 };
 
-const PAGINATED_KEYS = ["families", "expenses"];
-const pagination = createPagination({
+export const pagination = createPagination({
   getProvider,
   pageSizes: Object.fromEntries(appConfig.bases.map((base) => [base.key, base.readLimit])),
   applyPage: (key, rows) => {
@@ -95,7 +128,7 @@ function syncResponsiveShell() {
   }
 }
 
-function activeLang() {
+export function activeLang() {
   if (state.lang !== "auto") return state.lang;
   return navigator.languages?.some((lang) => lang.toLowerCase().startsWith("zh")) ? "zh" : "en";
 }
@@ -108,21 +141,17 @@ function normalizeLang(lang) {
     : lang || "auto";
 }
 
-function t(key) {
+export function t(key) {
   return messages[activeLang()]?.[key] || messages.en[key] || key;
 }
 
-function categoryLabel(value) {
+export function categoryLabel(value) {
   if (!value) return "";
   const key = String(value);
   return messages[activeLang()]?.enum?.category?.[key] || messages.en.enum?.category?.[key] || key;
 }
 
-function baseCurrency() {
-  return state.snapshot?.base_currency || "CNY";
-}
-
-function money(value, currency = baseCurrency()) {
+export function money(value, currency = state.snapshot?.base_currency || "CNY") {
   return new Intl.NumberFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
     style: "currency",
     currency,
@@ -130,25 +159,107 @@ function money(value, currency = baseCurrency()) {
   }).format(Number(value || 0));
 }
 
-function pct(value) {
+export function pct(value) {
   return `${(Number(value) || 0).toFixed(1)}%`;
 }
 
-function signedPct(value) {
+export function signedPct(value) {
   const n = Number(value) || 0;
   return `${n > 0 ? "+" : ""}${n.toFixed(1)}%`;
 }
 
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&month=…&peek=…]`. Search, the ledger month and the
+// peeked record live in the URL so refresh, shared links and Back restore the
+// same list context.
 function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] || "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: SEARCH_VIEWS.includes(view) ? params.get("q") || "" : "",
+    month: params.has("month") ? params.get("month") || "all" : null,
+  };
 }
 
+export const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  if (route.view === "ledger" && state.monthTouched) params.set("month", state.month || "all");
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) => {
+  const route = view === state.route.view ? state.route : { view, query: "" };
+  return `#/${view}/${encodeURIComponent(id)}${routeQuery({}, route)}`;
+};
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) => {
+  if (DETAIL_MODES[view] === "page") return detailUrl(id, view);
+  const route = view === state.route.view ? state.route : { view, query: "" };
+  return `#/${view}${routeQuery({ peek: id }, route)}`;
+};
+
+function applyRouteMonth() {
+  if (state.route.month == null) return;
+  state.month = state.route.month === "all" ? "" : state.route.month;
+  state.monthTouched = true;
+}
+
+let previousRouteWasList = false;
+
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
+  applyRouteMonth();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous?.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
   render();
 }
 
+// Replace the current entry without a hashchange: search keystrokes and filter
+// changes should not each become a Back step.
+function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  applyRouteMonth();
+  previousRouteWasList = previousWasList;
+  render();
+}
+
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── Data ───────────────────────────────────────────────────────────────────
 async function loadState() {
   const provider = await getProvider();
   const data = await provider.getState();
@@ -156,21 +267,13 @@ async function loadState() {
   closeConnectGate();
   state.snapshot = data.snapshot;
   state.settings = data;
+  state.pageError = "";
   window.dispatchEvent(new CustomEvent("busa-family-fund:state", { detail: data }));
   const monthKeys = months().map((m) => m.month);
-  if (!monthKeys.includes(state.month)) state.month = monthKeys.length ? monthKeys[monthKeys.length - 1] : "";
+  if (state.month && !monthKeys.includes(state.month)) state.monthTouched = false;
+  if (!state.monthTouched) state.month = monthKeys.length ? monthKeys[monthKeys.length - 1] : "";
   applyDemoRoute();
   render();
-}
-
-async function boot() {
-  const ready = await passConnectGate({ onReady: boot });
-  if (!ready) return;
-  try {
-    await loadState();
-  } catch (error) {
-    renderSetupRequired(error, boot);
-  }
 }
 
 function applyDemoRoute() {
@@ -186,6 +289,115 @@ function applyDemoRoute() {
   const route = map[scenario] || "#/overview";
   history.replaceState(null, "", `${location.pathname}${location.search}${route}`);
   state.route = parseRoute();
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+}
+
+export function fund() {
+  return state.snapshot?.fund || {};
+}
+
+export function beneficiaries() {
+  return state.snapshot?.beneficiaries || [];
+}
+
+export function families() {
+  return state.snapshot?.families || [];
+}
+
+export function incomeRows() {
+  return state.snapshot?.income || [];
+}
+
+export function expenseRows() {
+  return state.snapshot?.expenses || [];
+}
+
+export function months() {
+  return state.snapshot?.months || [];
+}
+
+export function totals() {
+  return state.snapshot?.totals || {};
+}
+
+export function byCategory() {
+  return state.snapshot?.by_category || [];
+}
+
+export function byFamily() {
+  return state.snapshot?.by_family || [];
+}
+
+export function hasData() {
+  return months().length > 0;
+}
+
+// A relation that points at a record outside the loaded page says so instead
+// of printing the raw id.
+export function familyName(familyId) {
+  if (!familyId) return "";
+  return families().find((f) => f.id === familyId)?.name || t("notLoaded");
+}
+
+export function beneficiaryName(id) {
+  if (!id) return "";
+  return beneficiaries().find((b) => b.id === id)?.name || t("notLoaded");
+}
+
+// Income and expenses merged into one timeline; `id` is each entry's own id.
+export function allLedgerEntries() {
+  const entries = [];
+  for (const row of incomeRows()) {
+    entries.push({
+      id: row.id,
+      kind: "income",
+      month: row.month,
+      date: row.month,
+      category: "",
+      amount: row.amount,
+      label: beneficiaryName(row.beneficiary_id),
+      occasion: row.note || "",
+      note: "",
+      family_id: null,
+      shared: false,
+    });
+  }
+  for (const row of expenseRows()) {
+    entries.push({
+      id: row.id,
+      kind: "expense",
+      month: row.month,
+      date: row.date || row.month,
+      category: row.category,
+      amount: row.amount,
+      label: row.payee || "",
+      occasion: row.occasion || "",
+      note: row.note || "",
+      family_id: row.family_id,
+      shared: row.shared,
+    });
+  }
+  return entries.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+}
+
+export function ledgerEntries() {
+  const query = state.route.query.trim().toLowerCase();
+  return allLedgerEntries().filter((entry) => {
+    if (state.month && entry.month !== state.month) return false;
+    if (!query) return true;
+    return [entry.label, entry.occasion, categoryLabel(entry.category), familyName(entry.family_id)]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(query));
+  });
+}
+
+export function filteredFamilies() {
+  const query = state.route.query.trim().toLowerCase();
+  if (!query) return byFamily();
+  return byFamily().filter((row) => {
+    const family = families().find((f) => f.id === row.family_id) || {};
+    return [row.name, family.head].some((value) => String(value || "").toLowerCase().includes(query));
+  });
 }
 
 function applyI18n() {
@@ -200,98 +412,48 @@ function applyI18n() {
   }
   els.search.placeholder = t("search");
   els.refresh.textContent = t("refresh");
+  els.refresh.title = t("refresh");
+  els.detailBack.textContent = t("backToList");
+  els.detailExpand.textContent = t("openFullPage");
+  els.overviewMonth.setAttribute("aria-label", t("month"));
+  els.monthSelect.setAttribute("aria-label", t("month"));
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
-}
-
-function fund() {
-  return state.snapshot?.fund || {};
-}
-
-function beneficiaries() {
-  return state.snapshot?.beneficiaries || [];
-}
-
-function families() {
-  return state.snapshot?.families || [];
-}
-
-function incomeRows() {
-  return state.snapshot?.income || [];
-}
-
-function expenseRows() {
-  return state.snapshot?.expenses || [];
-}
-
-function months() {
-  return state.snapshot?.months || [];
-}
-
-function totals() {
-  return state.snapshot?.totals || {};
-}
-
-function byCategory() {
-  return state.snapshot?.by_category || [];
-}
-
-function byFamily() {
-  return state.snapshot?.by_family || [];
-}
-
-function hasData() {
-  return months().length > 0;
-}
-
-function monthRow(month) {
-  return months().find((m) => m.month === month) || {};
-}
-
-function maxDeviation() {
-  const rows = byFamily();
-  if (!rows.length) return 0;
-  return rows.reduce((best, row) => (Math.abs(row.deviation_pct) > Math.abs(best) ? row.deviation_pct : best), 0);
-}
-
-function syncMonthSelect() {
-  if (!els.monthSelect) return;
-  const monthKeys = months().map((m) => m.month);
-  const showSelect = ["overview", "ledger"].includes(state.route.view) && monthKeys.length > 0;
-  els.monthSelect.hidden = !showSelect;
-  if (!showSelect) return;
-  const options = [`<option value="">${escapeHtml(t("allMonths"))}</option>`].concat(
-    monthKeys.map((m) => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`),
-  );
-  els.monthSelect.innerHTML = options.join("");
-  els.monthSelect.value = state.month || "";
 }
 
 function renderShell() {
   applyI18n();
   const balance = totals().balance || 0;
   const familyCount = pagination.total("families", families().length);
-  const expenseCount = pagination.total("expenses", expenseRows().length);
-  const entries =
-    typeof expenseCount === "number"
-      ? incomeRows().length + expenseCount
-      : `${incomeRows().length + expenseRows().length}${String(expenseCount).endsWith("+") ? "+" : ""}`;
-  els.syncStatus.textContent = hasData() ? `${entries} ${t("entryCount")}` : t("needsEntry");
+  els.syncStatus.textContent = !state.snapshot
+    ? t("loading")
+    : !hasData()
+      ? t("needsEntry")
+      : state.settings?.demo
+        ? t("demoData")
+        : t("liveData");
   if (els.balanceCount) els.balanceCount.textContent = money(balance);
   if (els.familyCount) els.familyCount.textContent = familyCount;
-  if (els.entryCount) els.entryCount.textContent = entries;
+  if (els.entryCount) els.entryCount.textContent = entryTotal();
   if (els.mobileViewTitle) els.mobileViewTitle.textContent = viewLabel(state.route.view);
   if (els.mobileViewMeta) {
-    els.mobileViewMeta.textContent = hasData()
-      ? `${money(balance)} · ${familyCount} ${t("familyCount")}`
-      : t("needsEntry");
+    els.mobileViewMeta.textContent = hasData() ? `${money(balance)} · ${familyCount} ${t("familyCount")}` : t("needsEntry");
   }
   document.querySelectorAll("[data-route]").forEach((link) => {
     link.classList.toggle("active", link.dataset.route === state.route.view);
   });
-  syncMonthSelect();
 }
 
-function viewLabel(view) {
+// Income + expense entries; records.count totals when the provider has them,
+// otherwise the loaded rows with a "+" while more pages exist.
+function entryTotal() {
+  const income = pagination.total("income", incomeRows().length);
+  const expenses = pagination.total("expenses", expenseRows().length);
+  const partial = [income, expenses].some((value) => String(value).endsWith("+"));
+  const sum = Number.parseInt(income, 10) + Number.parseInt(expenses, 10);
+  return `${Number.isFinite(sum) ? sum : 0}${partial ? "+" : ""}`;
+}
+
+export function viewLabel(view) {
   if (view === "ledger") return t("ledger");
   if (view === "family") return t("family");
   if (view === "category") return t("category");
@@ -299,485 +461,28 @@ function viewLabel(view) {
   return t("overview");
 }
 
-function subtitleLine() {
-  if (!hasData()) return t("needsEntry");
-  const monthKeys = months().map((m) => m.month);
-  const last = monthKeys[monthKeys.length - 1] || "";
-  return `${fund().name || t("fund")} · ${t("statsAsOf")} ${last} · ${families().length} ${t("familyCount")}`;
-}
-
-function donut(rows, labelFn, valueFn) {
-  const data = rows.map((row) => ({ row, value: Number(valueFn(row)) || 0 })).filter((item) => item.value > 0);
-  const sum = data.reduce((acc, item) => acc + item.value, 0);
-  if (!data.length || sum <= 0) return `<div class="empty">${t("empty")}</div>`;
-  const radius = 60;
-  const circumference = 2 * Math.PI * radius;
-  let offset = 0;
-  const segments = data
-    .map((item, index) => {
-      const fraction = item.value / sum;
-      const dash = fraction * circumference;
-      const seg = `<circle r="${radius}" cx="80" cy="80" fill="none" stroke="${DONUT_COLORS[index % DONUT_COLORS.length]}" stroke-width="28" stroke-dasharray="${dash} ${circumference - dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 80 80)"></circle>`;
-      offset += dash;
-      return seg;
-    })
-    .join("");
-  const legend = data
-    .map(
-      (item, index) => `
-      <div class="legend-row">
-        <span class="legend-swatch" style="background:${DONUT_COLORS[index % DONUT_COLORS.length]}"></span>
-        <span>${escapeHtml(labelFn(item.row))}</span>
-        <span class="legend-value">${pct((item.value / sum) * 100)}</span>
-      </div>
-    `,
-    )
-    .join("");
-  return `
-    <div class="alloc-panel">
-      <svg class="donut" width="160" height="160" viewBox="0 0 160 160" role="img" aria-label="Allocation">
-        ${segments}
-        <circle r="46" cx="80" cy="80" fill="var(--panel)"></circle>
-      </svg>
-      <div class="legend">${legend}</div>
-    </div>
-  `;
-}
-
-function allocBars(rows, labelFn, valueFn, metaFn) {
-  if (!rows.length) return `<div class="empty">${t("empty")}</div>`;
-  const max = Math.max(...rows.map((row) => Number(valueFn(row)) || 0), 1);
-  return `
-    <div class="alloc-list">
-      ${rows
-        .map(
-          (row) => `
-        <div class="alloc-row">
-          <span class="alloc-label">${escapeHtml(labelFn(row))}</span>
-          <span class="alloc-track"><span class="alloc-fill" style="width:${Math.max(((Number(valueFn(row)) || 0) / max) * 100, 2)}%"></span></span>
-          <span class="alloc-value">${escapeHtml(metaFn(row))}</span>
-        </div>
-      `,
-        )
-        .join("")}
-    </div>
-  `;
-}
-
-function balanceTrend() {
-  const rows = months();
-  if (!rows.length) return `<div class="empty">${t("empty")}</div>`;
-  const values = rows.map((row) => Number(row.balance_end) || 0);
-  const max = Math.max(...values, 1);
-  return `
-    <div class="alloc-list">
-      ${rows
-        .map(
-          (row) => `
-        <div class="alloc-row">
-          <span class="alloc-label">${escapeHtml(row.month)}</span>
-          <span class="alloc-track"><span class="alloc-fill" style="width:${Math.max(((Number(row.balance_end) || 0) / max) * 100, 2)}%"></span></span>
-          <span class="alloc-value">${money(row.balance_end)} · <span class="${(row.net || 0) < 0 ? "negative" : "positive"}">${money(row.net)}</span></span>
-        </div>
-      `,
-        )
-        .join("")}
-    </div>
-  `;
-}
-
-function insightText(insight) {
-  const templates = messages[activeLang()]?.insightTemplates || messages.en.insightTemplates || {};
-  const template = templates[insight.code] || messages.en.insightTemplates?.[insight.code] || insight.code;
-  const params = insight.params || {};
-  return template.replace(/\{(\w+)\}/g, (_match, key) => {
-    let value = params[key];
-    if (value === undefined || value === null) return "";
-    if (key === "amount") value = money(value);
-    else if (key === "delta") {
-      const n = Number(value) || 0;
-      value = `${n > 0 ? "+" : ""}${n.toFixed(1)}`;
-    } else if (key === "pct") value = (Number(value) || 0).toFixed(1);
-    return escapeHtml(String(value));
-  });
-}
-
-function insightsPanel() {
-  const items = state.snapshot?.insights || [];
-  const body = items.length
-    ? items
-        .map(
-          (insight) => `
-      <div class="insight-row">
-        <span class="badge sev-${escapeHtml(insight.severity || "info")}">${escapeHtml(severityLabel(insight.severity))}</span>
-        <span class="insight-text">${insightText(insight)}</span>
-      </div>
-    `,
-        )
-        .join("")
-    : `<div class="muted insight-empty">${t("noFlags")}</div>`;
-  return `
-    <div class="overview-panel wide">
-      <h2>${t("insights")}</h2>
-      <div class="muted insight-note">${t("insightsNote")}</div>
-      <div class="insight-list">${body}</div>
-    </div>
-  `;
-}
-
-function severityLabel(severity) {
-  if (severity === "high") return t("sevHigh");
-  if (severity === "watch") return t("sevWatch");
-  return t("sevInfo");
-}
-
-function metricsCards() {
-  const total = totals();
-  const row = monthRow(state.month || months()[months().length - 1]?.month);
-  const net = row.net || 0;
-  const dev = maxDeviation();
-  return `
-    <div class="metrics">
-      <div class="metric"><span>${t("balance")}</span><strong>${money(total.balance)}</strong></div>
-      <div class="metric"><span>${t("monthIncome")}</span><strong>${money(row.income_total)}</strong></div>
-      <div class="metric"><span>${t("monthExpense")}</span><strong>${money(row.expense_total)}</strong></div>
-      <div class="metric"><span>${t("monthNet")}</span><strong class="${net < 0 ? "negative" : "positive"}">${money(net)}</strong></div>
-    </div>
-    <div class="metrics">
-      <div class="metric"><span>${t("careTotal")}</span><strong>${money(total.care_total)}</strong></div>
-      <div class="metric"><span>${t("familyTotal")}</span><strong>${money(total.family_total)}</strong></div>
-      <div class="metric"><span>${t("avgBenefit")}</span><strong>${money(total.avg_family_benefit)}</strong></div>
-      <div class="metric"><span>${t("maxDeviation")}</span><strong class="${Math.abs(dev) >= 20 ? "negative" : "positive"}">${signedPct(dev)}</strong></div>
-    </div>
-  `;
-}
-
-function renderOverview() {
-  els.title.textContent = t("overview");
-  els.subtitle.textContent = subtitleLine();
-  const cats = byCategory();
-  els.content.innerHTML = `
-    ${metricsCards()}
-    <section class="overview-grid">
-      <div class="overview-panel">
-        <h2>${t("headlineAllocation")}</h2>
-        ${donut(
-          cats,
-          (row) => categoryLabel(row.category),
-          (row) => row.amount,
-        )}
-      </div>
-      <div class="overview-panel">
-        <h2>${t("balanceTrend")}</h2>
-        ${balanceTrend()}
-      </div>
-      ${insightsPanel()}
-    </section>
-  `;
-}
-
-function familyName(familyId) {
-  if (!familyId) return "";
-  return families().find((f) => f.id === familyId)?.name || familyId;
-}
-
-function ledgerEntries() {
-  const query = state.query.trim().toLowerCase();
-  const entries = [];
-  for (const row of incomeRows()) {
-    entries.push({
-      kind: "income",
-      month: row.month,
-      date: row.month,
-      category: "",
-      amount: row.amount,
-      label: beneficiaryName(row.beneficiary_id),
-      occasion: row.note || "",
-      family_id: null,
-      shared: false,
-    });
-  }
-  for (const row of expenseRows()) {
-    entries.push({
-      kind: "expense",
-      month: row.month,
-      date: row.date || row.month,
-      category: row.category,
-      amount: row.amount,
-      label: row.payee || "",
-      occasion: row.occasion || "",
-      family_id: row.family_id,
-      shared: row.shared,
-    });
-  }
-  return entries
-    .filter((entry) => {
-      if (state.month && entry.month !== state.month) return false;
-      if (!query) return true;
-      return [entry.label, entry.occasion, categoryLabel(entry.category), familyName(entry.family_id)]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(query));
-    })
-    .sort((a, b) => String(b.date).localeCompare(String(a.date)));
-}
-
-function beneficiaryName(id) {
-  return beneficiaries().find((b) => b.id === id)?.name || id;
-}
-
-function familyTag(entry) {
-  if (entry.kind === "income") return `<span class="badge">${t("income")}</span>`;
-  if (entry.category === "care") return `<span class="badge">${t("care")}</span>`;
-  if (entry.shared) return `<span class="badge">${t("sharedTag")}</span>`;
-  if (entry.family_id) return `<span class="badge">${escapeHtml(familyName(entry.family_id))}</span>`;
-  return "";
-}
-
-function renderLedger() {
-  els.title.textContent = t("ledger");
-  els.subtitle.textContent = subtitleLine();
-  const entries = ledgerEntries();
-  els.content.innerHTML = entries.length
-    ? `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>${t("date")}</th><th>${t("type")}</th><th>${t("payee")}</th><th>${t("occasion")}</th><th>${t("directedTo")}</th><th>${t("amount")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${entries
-            .map(
-              (entry) => `
-            <tr>
-              <td>${escapeHtml(entry.date)}</td>
-              <td>${entry.kind === "income" ? `<span class="badge sev-info">${t("income")}</span>` : `<span class="badge">${escapeHtml(categoryLabel(entry.category))}</span>`}</td>
-              <td><div class="strong">${escapeHtml(entry.label)}</div></td>
-              <td>${escapeHtml(entry.occasion)}</td>
-              <td>${familyTag(entry)}</td>
-              <td class="num ${entry.kind === "income" ? "positive" : ""}">${entry.kind === "income" ? "+" : "-"}${money(entry.amount)}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  `
-    : `<div class="empty">${t("empty")}</div>`;
-}
-
-function renderFamily() {
-  els.title.textContent = t("fairnessTitle");
-  els.subtitle.textContent = `${t("avgBenefit")} ${money(totals().avg_family_benefit)} · ${pagination.total("families", families().length)} ${t("familyCount")}`;
-  const rows = byFamily();
-  const maxBenefit = Math.max(...rows.map((row) => row.benefit_total || 0), 1);
-  els.content.innerHTML = `
-    <div class="overview-panel">
-      <div class="muted insight-note">${t("fairnessNote")}</div>
-      <div class="fairness-list">
-        ${rows
-          .map((row) => {
-            const dev = Number(row.deviation_pct) || 0;
-            const cls = Math.abs(dev) >= 20 ? "negative" : dev >= 0 ? "positive" : "muted-num";
-            return `
-          <a class="fairness-row" href="#/family/${encodeURIComponent(row.family_id)}">
-            <span class="fairness-name"><strong>${escapeHtml(row.name)}</strong></span>
-            <span class="fairness-track"><span class="fairness-fill" style="width:${Math.max(((row.benefit_total || 0) / maxBenefit) * 100, 2)}%"></span></span>
-            <span class="fairness-benefit num">${money(row.benefit_total)}</span>
-            <span class="fairness-share num">${pct(row.share_pct)}</span>
-            <span class="fairness-dev num ${cls}">${signedPct(dev)}</span>
-          </a>
-        `;
-          })
-          .join("")}
-      </div>
-    </div>
-  `;
-}
-
-function renderFamilyDetail() {
-  const family = families().find((f) => f.id === state.route.id);
-  if (!family) {
-    renderFamily();
-    return;
-  }
-  const roll = byFamily().find((row) => row.family_id === family.id) || {};
-  const numFamilies = families().length || 1;
-  const directed = expenseRows().filter((row) => row.category !== "care" && !row.shared && row.family_id === family.id);
-  const shared = expenseRows().filter((row) => row.category !== "care" && row.shared);
-  els.title.textContent = family.name;
-  els.subtitle.textContent = `${t("benefit")} ${money(roll.benefit_total)} · ${signedPct(roll.deviation_pct)}`;
-  els.content.innerHTML = `
-    <section class="detail">
-      <div class="detail-main">
-        <div class="metrics">
-          <div class="metric"><span>${t("benefit")}</span><strong>${money(roll.benefit_total)}</strong></div>
-          <div class="metric"><span>${t("sharePct")}</span><strong>${pct(roll.share_pct)}</strong></div>
-          <div class="metric"><span>${t("deviation")}</span><strong class="${Math.abs(roll.deviation_pct || 0) >= 20 ? "negative" : "positive"}">${signedPct(roll.deviation_pct)}</strong></div>
-          <div class="metric"><span>${t("avgBenefit")}</span><strong>${money(totals().avg_family_benefit)}</strong></div>
-        </div>
-        <h2 style="margin:8px 0">${t("directedExpenses")}</h2>
-        ${expenseTable(directed, false)}
-        <h2 style="margin:16px 0 8px">${t("sharedShare")}</h2>
-        ${expenseTable(shared, true, numFamilies)}
-      </div>
-      <aside class="detail-side">
-        <h2>${t("familyDetail")}</h2>
-        <dl>
-          <dt>${t("head")}</dt><dd>${escapeHtml(family.head || "")}</dd>
-          <dt>${t("members")}</dt><dd>${escapeHtml(String(family.members_count || 0))}</dd>
-          <dt>${t("family")}</dt><dd>${escapeHtml(family.id)}</dd>
-        </dl>
-      </aside>
-    </section>
-  `;
-}
-
-function expenseTable(rows, shared, numFamilies = 1) {
-  if (!rows.length) return `<div class="empty">${t("empty")}</div>`;
-  return `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>${t("date")}</th><th>${t("type")}</th><th>${t("occasion")}</th><th>${shared ? t("sharedShare") : t("amount")}</th></tr>
-        </thead>
-        <tbody>
-          ${rows
-            .map(
-              (row) => `
-            <tr>
-              <td>${escapeHtml(row.date || row.month)}</td>
-              <td><span class="badge">${escapeHtml(categoryLabel(row.category))}</span></td>
-              <td>${escapeHtml(row.occasion || row.payee || "")}</td>
-              <td class="num">${money(shared ? (row.amount || 0) / numFamilies : row.amount)}${shared ? `<div class="muted">${money(row.amount)} ÷ ${numFamilies}</div>` : ""}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-function renderCategory() {
-  els.title.textContent = t("categoryTitle");
-  els.subtitle.textContent = subtitleLine();
-  const rows = byCategory();
-  const total = totals();
-  const careVsFamily = [
-    { key: "care", label: t("care"), amount: total.care_total || 0 },
-    { key: "family", label: t("familyTotal"), amount: total.family_total || 0 },
-  ];
-  els.content.innerHTML = `
-    <section class="overview-grid">
-      <div class="overview-panel">
-        <h2>${t("allocation")}</h2>
-        ${donut(
-          rows,
-          (row) => categoryLabel(row.category),
-          (row) => row.amount,
-        )}
-      </div>
-      <div class="overview-panel">
-        <h2>${t("careVsFamily")}</h2>
-        ${allocBars(
-          careVsFamily,
-          (row) => row.label,
-          (row) => row.amount,
-          (row) => `${money(row.amount)} · ${pct(total.expense_total ? (row.amount / total.expense_total) * 100 : 0)}`,
-        )}
-      </div>
-    </section>
-    <div class="table-wrap" style="margin-top:14px">
-      <table>
-        <thead><tr><th>${t("category")}</th><th>${t("amount")}</th><th>${t("pctOfExpense")}</th></tr></thead>
-        <tbody>
-          ${rows
-            .map(
-              (row) =>
-                `<tr><td class="strong">${escapeHtml(categoryLabel(row.category))}</td><td class="num">${money(row.amount)}</td><td class="num">${pct(row.pct)}</td></tr>`,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-function renderSettings() {
-  els.title.textContent = t("settings");
-  els.subtitle.textContent = t("localFilesOnly");
-  const summary = state.settings?.config_summary || {};
-  const fundMeta = summary.fund || fund();
-  els.content.innerHTML = `
-    <div class="settings">
-      <section>
-        <h2>${t("configuration")}</h2>
-        <dl>
-          <dt>${t("dataProvider")}</dt><dd>${escapeHtml(state.settings?.data_provider || "busabase")}</dd>
-          <dt>${t("baseCurrency")}</dt><dd>${escapeHtml(summary.base_currency || "CNY")}</dd>
-          <dt>${t("fundName")}</dt><dd>${escapeHtml(fundMeta.name || "")}</dd>
-          <dt>${t("steward")}</dt><dd>${escapeHtml(fundMeta.steward || "")}</dd>
-          <dt>${t("deviationThreshold")}</dt><dd>${escapeHtml(String(summary.deviation_threshold_pct ?? 20))}%</dd>
-          <dt>${t("configPath")}</dt><dd>${escapeHtml(summary.config_path || "")}</dd>
-          <dt>${t("onboarding")}</dt><dd>${state.settings?.onboarding?.completed ? t("completed") : t("incomplete")}</dd>
-        </dl>
-      </section>
-      <section>
-        <h2>${t("beneficiaries")}</h2>
-        ${
-          (summary.beneficiaries || beneficiaries())
-            .map(
-              (b) => `
-          <div class="settings-account">
-            <strong>${escapeHtml(b.name)}</strong>
-            <span>${escapeHtml(b.relation || "")}</span>
-            <span>${t("pensionMonthly")} ${money(b.pension_monthly)}</span>
-          </div>
-        `,
-            )
-            .join("") || `<div class="empty">${t("setupNeeded")}</div>`
-        }
-      </section>
-      <section>
-        <h2>${t("families")}</h2>
-        ${
-          (summary.families || families())
-            .map(
-              (f) => `
-          <div class="settings-account">
-            <strong>${escapeHtml(f.name)}</strong>
-            <span>${escapeHtml(f.head || "")}</span>
-            <span>${t("members")} ${escapeHtml(String(f.members_count || 0))}</span>
-          </div>
-        `,
-            )
-            .join("") || `<div class="empty">${t("setupNeeded")}</div>`
-        }
-      </section>
-    </div>
-  `;
-}
-
-function renderPagedList(renderList, key) {
-  renderList();
-  els.content.insertAdjacentHTML("beforeend", `${pagination.control(key)}`);
-}
-
-function render() {
+export function render() {
   renderShell();
-  if (state.route.view === "family" && state.route.id) renderFamilyDetail();
-  else if (state.route.view === "family") renderPagedList(renderFamily, "families");
-  else if (state.route.view === "ledger") renderPagedList(renderLedger, "expenses");
-  else if (state.route.view === "category") renderPagedList(renderCategory, "expenses");
-  else if (state.route.view === "settings") renderSettings();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", false);
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
   else renderOverview();
 }
 
-function escapeHtml(value) {
+export function escapeHtml(value) {
   return String(value ?? "").replace(
     /[&<>"']/g,
     (char) =>
@@ -791,19 +496,55 @@ function escapeHtml(value) {
   );
 }
 
-pagination.bind(els.content);
-
+// ── Events ─────────────────────────────────────────────────────────────────
+pagination.bind(els.listPanel);
+els.listPanel.addEventListener("click", (event) => {
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while the drawer is open replaces the entry, so Close
+  // still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+// Rows inside a detail (a family's expenses, a category's entries) open that
+// entry in the Ledger.
+els.detailBody.addEventListener("click", (event) => {
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-href]");
+  if (row) location.hash = row.dataset.href;
+});
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  if (event.target.closest?.("input, select, textarea")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", () => setMobileSidebarOpen(true));
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
+  const route = { ...state.route, query: els.search.value };
+  replaceRoute(`#/${route.view}${routeQuery({ peek: state.route.peek }, route)}`);
 });
-els.monthSelect?.addEventListener("change", () => {
+els.monthSelect.addEventListener("change", () => {
   state.month = els.monthSelect.value;
+  state.monthTouched = true;
+  replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek })}`);
+});
+els.overviewMonth.addEventListener("change", () => {
+  state.month = els.overviewMonth.value;
+  state.monthTouched = true;
   render();
 });
 els.refresh.addEventListener("click", () => loadState());
@@ -815,5 +556,19 @@ els.language.addEventListener("change", () => {
   render();
 });
 
+async function boot() {
+  const ready = await passConnectGate({ onReady: boot });
+  if (!ready) return;
+  try {
+    await loadState();
+  } catch (error) {
+    renderSetupRequired(error, boot);
+  }
+}
+
+state.route = parseRoute();
+applyRouteMonth();
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
 boot();

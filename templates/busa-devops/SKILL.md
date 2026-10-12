@@ -142,11 +142,11 @@ requested.
 
 Required app views (hash routes):
 
-- `#/overview`: ops command desk. Human-attention panel (actions needing decision, items expiring within 14 days, services down), fleet summary cards (services up/total, certs ok/expiring, domains ok/expiring, month-to-date spend vs last month), recent events feed, and check freshness per check type.
-- `#/services` and `#/services/<id>`: monitored endpoints with name, product, URL, status (up/degraded/down), latency, 7-day uptime, and cert days-left. Detail shows recent check history with an inline SVG latency sparkline, certificate summary (issuer, expiry), response metadata, and warnings.
-- `#/expiries` and `#/expiries/<id>`: one expiry ledger across types (domain, ssl_cert, api_key_rotation, plan_renewal) with item, product, type badge, expiry date, color-coded days-left (<7 red, <30 amber), auto-renew flag, and linked action. Detail shows renewal guidance.
-- `#/spend`: per-provider cards (MTD, last month, delta %, anomaly flag) and a per-product allocation table. Anomaly cards link to their action card.
-- `#/actions` and `#/actions/<id>`: the review queue with workflow states `needs_review`, `changes_requested`, `approved`, `done`, `blocked`. Each card shows a stable ref (`Action #1`), type, reason, evidence, concrete plan, editable review note, and decision buttons (approve / request changes / block / save note) that write the verdict directly onto the action record through `busabase-sdk`.
+- `#/overview`: ops command desk. A three-number band (services up/total, month-to-date spend with its change vs last month, spend anomalies), the human-attention list (actions needing decision, items expiring within 14 days, services not up), recent events feed, and check freshness per check type.
+- `#/services` (`?peek=<id>` opens a service in a drawer, `#/services/<id>` as a full page): monitored endpoints with name, status (up/degraded/down), product, URL, latency, 7-day uptime, and cert days-left. Detail shows recent check history with an inline SVG latency sparkline, certificate summary (issuer, expiry), response metadata, and warnings.
+- `#/expiries` (`?peek=<id>` drawer, `#/expiries/<id>` full page): one expiry ledger across types (domain, ssl_cert, api_key_rotation, plan_renewal), soonest first, with item, color-coded days-left (<7 red, <30 amber), type badge, product, expiry date, auto-renew flag, and linked action. Detail shows renewal guidance.
+- `#/spend` (`?by=products` for the per-product allocation): per-provider table (MTD, last month, delta %, anomaly flag, note, linked action card); `?peek=<id>` opens a provider in a drawer.
+- `#/actions` (`?peek=<id>` selects a card beside the queue, `#/actions/<id>` full page): the review queue with workflow states `needs_review`, `changes_requested`, `approved`, `done`, `blocked`. Each card shows a stable ref (`Action #1`), type, reason, evidence, concrete plan, editable review note, and decision buttons (approve / request changes / block / save note) that write the verdict directly onto the action record through `busabase-sdk`.
 - `#/settings`: sanitized config summary. Monitored services/domains/key-rotation rosters derived from the same live Busabase rows, thresholds, and onboarding state. Never exposes secret values.
 
 Demo mode:

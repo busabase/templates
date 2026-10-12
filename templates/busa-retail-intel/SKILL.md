@@ -126,10 +126,10 @@ requested.
 Required app views (hash routes):
 
 - `#/overview`: human-attention panel — today's needs-review/approved/blocked counts, top signals, and ready (approved) actions.
-- `#/signals` and `#/signals/<id>`: source-backed signals with evidence links, buyer-intent interpretation, confidence, risk badges, and a decision panel (Approve / Request changes / Block) with a review note.
-- `#/actions` and `#/actions/<id>`: approved/blocked/reviewable operating or sales actions with owner, priority, reason, next step, linked signals, and the same decision panel.
-- `#/drafts` and `#/drafts/<id>`: editable staff brief, IG story, store sign drafts with the decision panel plus a `Save revision` action that writes an edited body directly onto the draft record.
-- `#/sources`: configured source categories, freshness, and gaps.
+- `#/signals`, `#/signals?peek=<id>` (queue beside the record) and `#/signals/<id>` (full page): source-backed signals with evidence links, buyer-intent interpretation, confidence, risk badges, and a decision panel (Approve / Request changes / Block) with a review note.
+- `#/actions`, `#/actions?peek=<id>` (drawer) and `#/actions/<id>` (full page): approved/blocked/reviewable operating or sales actions with owner, priority, reason, next step, linked signals, and the same decision panel.
+- `#/drafts` and `#/drafts/<id>` (full page): editable staff brief, IG story, store sign drafts with the decision panel plus a `Save revision` action that writes an edited body directly onto the draft record.
+- `#/sources` and `#/sources?peek=<id>` (drawer): configured source categories, freshness, and gaps.
 - `#/settings`: sanitized batch metadata, data provider, onboarding state.
 
 Demo mode:

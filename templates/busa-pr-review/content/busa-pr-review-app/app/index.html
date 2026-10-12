@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
     <link rel="stylesheet" href="./accent-theme.css">
   </head>
-  <body>
+  <body class="ws-has-mobile-bar">
     <div class="app-shell">
       <aside class="sidebar" id="appSidebar">
         <div class="sidebar-top">
@@ -21,34 +21,18 @@
           </div>
           <button id="sidebarToggle" class="icon-button sidebar-toggle" type="button" aria-controls="appSidebar" aria-expanded="true" aria-label="Toggle sidebar" title="Toggle sidebar"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
         </div>
-        <div class="sidebar-controls">
-          <input id="searchInput" placeholder="Search title, repo, author" data-i18n-placeholder="search.placeholder" />
-          <label class="repo-picker">
-            <span data-i18n="repo">Repo</span>
-            <select id="repoFilter" aria-label="Filter by repository">
-              <option value="all">All repos</option>
-            </select>
-          </label>
-        </div>
         <nav class="filters" id="filters" aria-label="Workflow filters">
-          <button data-mode="needs_review" class="active has-tooltip" data-tooltip="PRs that still need a decision"><span data-i18n="filter.needs_review">Needs your review</span> <span id="count-needs_review">0</span></button>
-          <button data-mode="to_approve" class="has-tooltip" data-tooltip="Agent-prepared reviews waiting for approval"><span data-i18n="filter.to_approve">Ready to approve</span> <span id="count-to_approve">0</span></button>
-          <button data-mode="approved" class="has-tooltip" data-tooltip="Approved and ready for execution"><span data-i18n="filter.approved">Approved</span> <span id="count-approved">0</span></button>
-          <button data-mode="needs_test" class="has-tooltip" data-tooltip="Merged PRs waiting for manual test verification"><span data-i18n="filter.needs_test">Needs test</span> <span id="count-needs_test">0</span></button>
-          <button data-mode="tested" class="has-tooltip" data-tooltip="Merged PRs with test evidence"><span data-i18n="filter.tested">Tested</span> <span id="count-tested">0</span></button>
-          <button data-mode="blocked" class="has-tooltip" data-tooltip="Blocked by risk, missing context, or access"><span data-i18n="filter.blocked">Blocked</span> <span id="count-blocked">0</span></button>
-          <button data-mode="done" class="has-tooltip" data-tooltip="Already executed or intentionally skipped"><span data-i18n="filter.done">Done</span> <span id="count-done">0</span></button>
-          <button data-mode="all" class="has-tooltip" data-tooltip="Everything in the current review batch"><span data-i18n="filter.all">All</span> <span id="count-all">0</span></button>
+          <button data-mode="overview" class="nav-overview"><span data-i18n="nav.overview">Overview</span></button>
+          <button data-mode="needs_review"><span data-i18n="filter.needs_review">Needs your review</span> <span id="count-needs_review" class="nav-count">0</span></button>
+          <button data-mode="to_approve"><span data-i18n="filter.to_approve">Ready to approve</span> <span id="count-to_approve" class="nav-count">0</span></button>
+          <button data-mode="approved"><span data-i18n="filter.approved">Approved</span> <span id="count-approved" class="nav-count">0</span></button>
+          <button data-mode="needs_test"><span data-i18n="filter.needs_test">Needs test</span> <span id="count-needs_test" class="nav-count">0</span></button>
+          <button data-mode="tested"><span data-i18n="filter.tested">Tested</span> <span id="count-tested" class="nav-count">0</span></button>
+          <button data-mode="blocked"><span data-i18n="filter.blocked">Blocked</span> <span id="count-blocked" class="nav-count">0</span></button>
+          <button data-mode="done"><span data-i18n="filter.done">Done</span> <span id="count-done" class="nav-count">0</span></button>
+          <button data-mode="all"><span data-i18n="filter.all">All</span> <span id="count-all" class="nav-count">0</span></button>
         </nav>
         <div class="setup-card" id="setupCard">
-          <div class="next-step" id="nextStep">
-            <div class="progress-ring"></div>
-            <div>
-              <strong id="nextTitle">Next step: generate a review batch</strong>
-              <p id="nextBody">Run /busa-pr-review to fetch pull requests with gh CLI.</p>
-            </div>
-            <button id="refreshButton" class="primary" data-i18n="refresh">Refresh</button>
-          </div>
           <div class="setup-title" data-i18n="setup.title">Setup</div>
           <div id="setupBody" class="muted" data-i18n="loading.config">Loading configuration...</div>
           <button id="helpButton" class="flat-button" data-i18n="help.title">Help & Settings</button>
@@ -56,44 +40,61 @@
       </aside>
 
       <main class="main">
-        <button id="mobileSidebarToggle" class="mobile-sidebar-toggle" type="button" aria-controls="appSidebar" aria-label="Open sidebar" title="Open sidebar"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
-        <div id="lockBanner" class="lock-banner is-hidden">
+        <div class="mobile-topbar">
+          <button id="mobileSidebarToggle" class="mobile-sidebar-toggle" type="button" aria-controls="appSidebar" aria-label="Open sidebar" title="Open sidebar"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
+          <div id="mobileViewTitle" class="mobile-view-title">Busa PR Review</div>
+        </div>
+        <div id="lockBanner" class="lock-banner" hidden>
           <strong data-i18n="locked">Locked</strong>
           <span id="lockMessage">Busabase is updating this record for a moment.</span>
         </div>
+        <div id="loadState" class="load-state" role="status" data-i18n="loading">Loading…</div>
 
-        <section class="content">
-          <div class="list-panel">
-            <div class="list-toolbar">
-              <button class="chevron" title="Collapse section">⌄</button>
-              <div class="list-title">
-                <div class="page-title" data-i18n="page.inbox">Inbox</div>
-                <div class="page-subtitle" id="batchMeta">No pull requests yet</div>
-                <h1 id="sectionTitle">Needs your review</h1>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 data-i18n="overview.title">Overview</h1>
+              <p id="batchMeta">No pull requests yet</p>
+            </div>
+            <div class="page-actions">
+              <select id="overviewRepoFilter" class="repo-select" aria-label="Filter by repository"></select>
+              <button id="refreshButton" class="button" type="button" data-i18n="refresh">Refresh</button>
+            </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" aria-label="Review summary"></div>
+          <div id="overviewBody" class="overview-grid"></div>
+        </section>
+
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="sectionTitle">Needs your review</h1>
+              <span id="listCount" class="ws-count">0</span>
+            </div>
+            <div class="ws-actions">
+              <input id="searchInput" class="toolbar-search" type="search" autocomplete="off" placeholder="Search title, repo, author" data-i18n-placeholder="search.placeholder" />
+              <select id="repoFilter" class="repo-select" aria-label="Filter by repository"></select>
+              <button id="reloadButton" class="button icon-only" type="button" title="Refresh" aria-label="Refresh">↻</button>
+            </div>
+          </header>
+          <div id="workspace" class="ws-workspace">
+            <div id="prList" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar">
+                <button id="detailBack" class="button" type="button" data-i18n="back_to_list">Back to list</button>
+                <a id="detailExpand" class="button" hidden data-i18n="open_full_page">Open full page</a>
               </div>
-              <span id="listCount">0</span>
-              <div class="spacer"></div>
-              <button id="reloadButton" title="Reload">↻</button>
-            </div>
-            <div class="table-head">
-              <span></span>
-              <span data-i18n="table.title">Title</span>
-              <span data-i18n="table.status">Status</span>
-              <span data-i18n="table.changes">Changes</span>
-              <span data-i18n="table.updated">Updated</span>
-            </div>
-            <div id="prList" class="pr-list"></div>
+              <div id="detailBody"></div>
+            </aside>
           </div>
-
-          <aside class="detail-panel" id="detailPanel">
-            <div class="empty-detail" data-i18n="empty.detail">Select a pull request</div>
-          </aside>
         </section>
       </main>
     </div>
     <div id="sidebarScrim" class="sidebar-scrim" hidden></div>
 
-    <div id="helpModal" class="modal-backdrop is-hidden" aria-hidden="true">
+    <div id="helpModal" class="modal-backdrop" hidden aria-hidden="true">
       <section class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
         <div class="modal-head">
           <div>

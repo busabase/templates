@@ -52,10 +52,6 @@ h2 {
   letter-spacing: 0;
 }
 
-h1 {
-  font-size: var(--text-2xl);
-}
-
 h2 {
   font-size: var(--text-md);
 }
@@ -309,8 +305,8 @@ body.sidebar-collapsed .sidebar-footer {
   display: grid;
   place-items: center;
   border-radius: var(--radius-sm);
-  background: #202124;
-  color: var(--accent-contrast);
+  background: var(--ink);
+  color: var(--surface);
   font-size: var(--text-lg);
 }
 
@@ -392,10 +388,12 @@ body.sidebar-collapsed .sidebar-footer {
 }
 
 /* Controls */
+/* Native controls only: `.button` / `.segment` come from base-ui.css, and an
+ * unlayered element rule here would beat those layered classes outright. */
 select,
 input,
 textarea,
-button {
+button:not(.button, .segment) {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -423,14 +421,14 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.12);
 }
 
-button {
+button:not(.button, .segment) {
   min-height: 34px;
   padding: 0 14px;
   background: var(--panel);
   cursor: pointer;
 }
 
-button:hover {
+button:not(.button, .segment):hover {
   border-color: var(--line-strong);
   background: var(--surface-soft);
 }
@@ -447,9 +445,31 @@ textarea:disabled {
   min-width: 0;
   min-height: 0;
   height: 100vh;
-  display: grid;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+}
+
+.load-state {
+  padding: 24px;
+  color: var(--muted);
+}
+
+.load-state.error {
+  color: var(--danger);
+}
+
+.load-state[hidden] {
+  display: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .mobile-topbar {
@@ -460,141 +480,96 @@ textarea:disabled {
   display: none;
 }
 
-.topbar {
-  position: static;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 58px;
-  padding: 10px 18px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-blur);
+/* Toolbar search */
+.toolbar-search {
+  flex: 0 1 240px;
+  min-width: 160px;
 }
 
-.topbar h1 {
-  font-size: var(--text-xl);
-  line-height: 1.2;
+/* The status filter is a segmented control on desktop and a native select on
+ * phones, where six segments would wrap the toolbar into three rows. */
+.status-select {
+  display: none;
 }
 
-.topbar-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.content {
-  min-height: 0;
-  overflow: auto;
-  padding: 16px 18px 24px;
-}
-
-/* Metrics */
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.metric,
-.overview-panel,
-.agent-panel,
-.detail-side,
-.settings section,
-.empty,
-.warnings {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--panel);
-  box-shadow: none;
-}
-
-.metric {
-  padding: 12px;
-}
-
-.metric span {
-  display: block;
+/* Overview metrics band: base-ui lays out the cells; label and value are ours. */
+.ws-metrics span {
+  overflow: hidden;
   color: var(--muted);
   font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.metric strong {
-  display: block;
-  margin-top: 6px;
+.ws-metrics strong {
   font-size: var(--text-xl);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* `hidden` must win over base-ui classes that set display (.button, the
+ * detail bar); the UA [hidden] rule alone loses to any class. */
+[hidden] {
+  display: none !important;
+}
+
+/* Record tables: the first column names the record and is the widest; the
+ * free-text column takes what is left. */
+.deals-table th:nth-child(1) { width: 20%; }
+.deals-table th:nth-child(2) { width: 13%; }
+.deals-table th:nth-child(3) { width: 13%; }
+.deals-table th:nth-child(4) { width: 13%; }
+.deals-table th:nth-child(5) { width: 9%; }
+.deals-table th:nth-child(6) { width: 8%; }
+.deals-table th:nth-child(7) { width: auto; }
+.deals-table th:nth-child(8) { width: 8%; }
+
+.contacts-table th:nth-child(1) { width: 18%; }
+.contacts-table th:nth-child(2) { width: 15%; }
+.contacts-table th:nth-child(3) { width: 16%; }
+.contacts-table th:nth-child(4) { width: 11%; }
+.contacts-table th:nth-child(5) { width: auto; }
+.contacts-table th:nth-child(6) { width: 11%; }
+.contacts-table th:nth-child(7) { width: 11%; }
+
+/* The review queue needs room for a status badge beside the subject. */
+body.ws-layout-split .ws-workspace {
+  grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
+}
+
+body.ws-layout-split .followups-table th:first-child {
+  width: 62%;
+}
+
+.crm-table td a {
+  color: var(--accent-text, var(--accent));
 }
 
 .pager {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  padding: 16px 0;
-}
-
-.pager-page {
-  min-width: 34px;
-  padding: 0 8px;
-}
-
-.pager-page.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: white;
-  cursor: default;
-}
-
-.pager-ellipsis {
-  color: var(--muted-soft);
-  padding: 0 2px;
+  gap: 12px;
+  padding: 14px 0 18px;
 }
 
 .pager-summary {
   color: var(--muted);
   font-size: var(--text-sm);
-  margin-left: 8px;
-}
-
-/* Tables */
-.table-wrap {
-  overflow: auto;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  background: var(--panel);
-}
-
-table {
-  width: 100%;
-  min-width: 980px;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  padding: 11px 12px;
-  border-bottom: 1px solid var(--line);
-  text-align: left;
-  vertical-align: top;
-}
-
-th {
-  color: var(--muted);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  background: var(--surface-hover);
+  font-variant-numeric: tabular-nums;
 }
 
 .strong {
-  font-weight: 700;
+  font-weight: 650;
 }
 
 .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+.crm-table th.num {
+  text-align: right;
 }
 
 /* Badges */
@@ -706,6 +681,10 @@ th {
   padding: 16px;
 }
 
+.overview-panel p {
+  margin: 8px 0 0;
+}
+
 .stage-row {
   display: grid;
   grid-template-columns: 130px minmax(0, 1fr) 90px;
@@ -795,40 +774,46 @@ th {
   border-bottom: 0;
 }
 
-.network-grid {
+.overview-wide {
+  grid-column: 1 / -1;
+}
+
+.overview-panel h2,
+.detail h3,
+.detail-stack h3,
+.agent-panel h3 {
+  margin: 0 0 4px;
+  font-size: var(--text-md);
+}
+
+/* Detail — one markup for page, drawer and split. */
+.detail-head {
+  margin-bottom: 16px;
+}
+
+.detail-head h2 {
+  font-size: var(--text-xl);
+}
+
+.detail-head p {
+  margin: 4px 0 0;
+  font-size: var(--text-base);
+}
+
+.detail-stack {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 10px;
+  gap: 18px;
 }
 
-.network-grid a {
-  display: grid;
-  gap: 2px;
-  padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--panel-subtle);
+.detail-stack dl {
+  margin: 0;
 }
 
-.network-grid a:hover {
-  border-color: var(--line-strong);
+body.ws-detail-drawer .detail,
+body.ws-layout-split .detail {
+  grid-template-columns: 1fr;
 }
 
-.network-grid strong {
-  font-size: var(--text-lg);
-}
-
-.network-grid span {
-  color: var(--muted);
-  font-size: var(--text-xs);
-}
-
-.owner-note {
-  margin-top: 10px;
-}
-
-/* Detail */
 .detail {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
@@ -844,6 +829,10 @@ th {
 
 .detail-side {
   padding: 16px;
+}
+
+.detail-side dl {
+  margin: 0;
 }
 
 .agent-panel {
@@ -871,46 +860,11 @@ dd {
   overflow-wrap: anywhere;
 }
 
-/* Follow-up queue */
-.queue-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.queue-filter {
-  min-height: 30px;
-  padding: 0 10px;
-  border-radius: 999px;
-  font-size: var(--text-sm);
-  color: var(--ink-soft);
-}
-
-.queue-filter small {
-  color: var(--muted-soft);
-}
-
-.queue-filter.active {
-  border-color: var(--accent);
-  background: var(--accent-weak);
-  color: var(--accent);
-  font-weight: 650;
-}
-
-.queue {
-  display: grid;
-  gap: 14px;
-  max-width: 880px;
-}
-
-.queue-card {
+/* Follow-up review (split detail) */
+.followup-detail {
   display: grid;
   gap: 10px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--panel);
+  max-width: 820px;
 }
 
 .queue-head {
@@ -940,7 +894,7 @@ dd {
 }
 
 .queue-subject {
-  font-size: var(--text-md);
+  font-size: var(--text-xl);
 }
 
 .queue-reason {
@@ -996,7 +950,6 @@ dd {
 /* Banners */
 .lock-banner,
 .notice-banner {
-  margin-bottom: 14px;
   padding: 10px 14px;
   border: 1px solid color-mix(in srgb, var(--warning) 34%, var(--line));
   border-radius: var(--radius-sm);
@@ -1014,7 +967,7 @@ dd {
   display: grid;
   gap: 8px;
   margin-bottom: 14px;
-  padding: 16px;
+  padding: 12px 16px;
   color: var(--warn);
 }
 
@@ -1025,6 +978,13 @@ dd {
 }
 
 /* Settings */
+.settings-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 24px 32px;
+}
+
 .settings {
   display: grid;
   gap: 14px;
@@ -1062,9 +1022,11 @@ dd {
   margin-top: 8px;
 }
 
-.empty {
-  padding: 16px;
-  color: var(--muted);
+.agent-panel,
+.warnings {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
 }
 
 .empty-inline {
@@ -1081,10 +1043,6 @@ dd {
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 220px minmax(0, 1fr);
-  }
-
-  .metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .overview-grid,
@@ -1222,26 +1180,54 @@ dd {
     padding: 0;
   }
 
-  .topbar {
+  /* The mobile top bar already names the view; the toolbar keeps the count. */
+  .ws-title h1,
+  #detailExpand {
     display: none;
   }
 
-  .content {
-    padding: 12px;
+  .ws-toolbar,
+  .ws-actions {
+    flex-wrap: nowrap;
   }
 
-  .metrics,
-  .network-grid,
+  .ws-actions {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .toolbar-search {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  #viewFilters {
+    display: none;
+  }
+
+  .status-select:not([hidden]) {
+    display: block;
+    flex: 0 1 44%;
+    min-width: 0;
+  }
+
+  .ws-metrics > * {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 10px 12px;
+  }
+
+  .ws-metrics strong {
+    font-size: var(--text-lg);
+  }
+
   .settings-channel {
     grid-template-columns: 1fr;
   }
 
-  .metrics {
-    gap: 8px;
-  }
-
-  .metric {
-    padding: 10px 12px;
+  .settings-scroll {
+    padding: 0 14px 24px;
   }
 
   .overview-grid {
@@ -1252,20 +1238,6 @@ dd {
   .stage-row {
     grid-template-columns: 110px minmax(0, 1fr) 80px;
     gap: 8px;
-  }
-
-  .table-wrap {
-    max-width: 100%;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-  }
-
-  table {
-    min-width: 760px;
-  }
-
-  .queue-card {
-    padding: 12px;
   }
 
   .queue-due {

@@ -60,8 +60,17 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    // records.get is used both by applyDecision's pre-write lookup and by
+    // getRecord() peeking a draft that is not on the loaded page — it must be
+    // declared here or the runtime denies it even though the provider calls it.
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
+  },
+  ui: {
+    // drafts → split: the review queue is worked top to bottom, one draft
+    // after the next, so the queue stays beside the record (same workflow as
+    // busa-crm's followups). The only record view in this app.
+    detail_modes: { drafts: "split" },
   },
 };

@@ -100,6 +100,9 @@ test("share of shelf matches the canonical demo dataset", () => {
   assert.equal(byAgent["meta-muse"].share, 0.8);
   assert.ok(Math.abs(byAgent["meta-muse"].delta - 0.6) < 1e-9);
   assert.equal(byAgent["amazon-rufus"].share, 0.8);
+  // 15 of 20 agent answers showed us on 09-24; 8 of 20 on 09-17.
+  assert.equal(result.overall.share, 0.75);
+  assert.ok(Math.abs(result.overall.delta - 0.35) < 1e-9);
 });
 
 test("position grid shows each agent's latest position per question", () => {

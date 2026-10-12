@@ -140,8 +140,16 @@ export const appConfig = {
     "videos.shots": "video-shots",
     "video-shots.video": "videos",
   },
+  // Where a record opens, per Base — chosen by what people do with it:
+  //   videos      → page:  a video is a workplace (brief, verified claims, the
+  //                        whole storyboard); people open one and stay.
+  //   video-shots → split: a recording session works the shot list top to
+  //                        bottom, reading one script line after the next.
+  ui: {
+    detail_modes: { videos: "page", "video-shots": "split" },
+  },
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: [],
   },

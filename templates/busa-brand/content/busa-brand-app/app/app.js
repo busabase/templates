@@ -1,19 +1,44 @@
 import { messages } from "./i18n/messages.js";
-import { overallGate } from "./js/brand-model.js?v=0.1.0";
+import { normalizeDriftAlertRow, normalizeItemRow } from "./js/brand-model.js?v=0.1.0";
+import { renderOverview, renderRecordView, renderSettings, submitDecision } from "./js/brand-views.js";
 import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
 
-const state = {
+// Where a record opens, per view. Chosen by what people do with the record:
+//   narrative → page:   a positioning statement, pillar or guardrail is the
+//                       canonical message itself — a long draft you edit and
+//                       decide on, with the drift alerts that cite it; you stay.
+//   stories   → drawer: the story bank is a library — scan many stories and
+//                       proof points, check one's evidence, return to the list.
+//   drift     → split:  drift alerts are a queue worked top to bottom, resolve
+//                       or dismiss one and move to the next.
+// A `/record` path always opens the full page; `?peek=` drives drawer/split.
+// On a phone every mode is a page (base-ui.css handles that).
+// Declared once, in config.js `ui.detail_modes`.
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+// Narrative and Stories are two views over the one Narrative Items Base.
+export const VIEW_BASE = { narrative: "items", stories: "items", drift: "drift-alerts" };
+export const NARRATIVE_TYPES = ["positioning", "message_pillar", "vocabulary", "guardrail"];
+export const STORY_TYPES = ["story", "proof_point"];
+const ASSET_STATES = ["all", "needs_review", "changes_requested", "approved", "done", "blocked"];
+
+export const state = {
+  snapshot: null,
+  settings: null,
+  provider: null,
+  // Prev/Next pager per Base. records.list only exposes a forward keyset
+  // cursor, so pageCursors[key][i] is the cursor that fetches page i+1. Only
+  // neighbouring pages are reachable — one click, one request; there is no
+  // "jump to page N" because reaching it would mean reading every page between.
   pageCursors: {},
   currentPage: {},
   pageLoading: {},
   totals: {},
-  snapshot: null,
-  settings: null,
+  // Records opened by URL that are not on the loaded page (records.get).
+  extra: { items: new Map(), "drift-alerts": new Map() },
   route: parseRoute(),
-  query: "",
-  statusFilter: "all",
   edits: {},
   notice: "",
   lang: normalizeLang(
@@ -24,27 +49,38 @@ const state = {
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-brand.sidebarCollapsed";
 
-const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  reviewCount: document.querySelector("#count-review"),
-  driftCount: document.querySelector("#count-drift"),
-  canonicalCount: document.querySelector("#count-canonical"),
-  statusFilters: document.querySelector("#statusFilters"),
-  language: document.querySelector("#language"),
+const byId = (id) => document.getElementById(id);
+export const els = {
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  viewFilters: byId("viewFilters"),
+  statusSelect: byId("statusSelect"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  reviewLink: byId("reviewLink"),
+  reviewCount: byId("count-review"),
+  driftCount: byId("count-drift"),
+  canonicalCount: byId("count-canonical"),
+  language: byId("language"),
 };
 
-function isMobileLayout() {
+export function isMobileLayout() {
   return window.matchMedia("(max-width: 720px)").matches;
 }
 
@@ -95,68 +131,216 @@ function normalizeLang(lang) {
     : lang || "auto";
 }
 
-function t(key) {
+export function t(key) {
   return messages[activeLang()]?.[key] || messages.en[key] || key;
 }
 
-function enumLabel(value, group = "status") {
+export function enumLabel(value, group = "status") {
   if (!value) return "";
   const key = String(value);
   return messages[activeLang()]?.enum?.[group]?.[key] || messages.en.enum?.[group]?.[key] || key.replaceAll("_", " ");
 }
 
-function date(value) {
+export function date(value) {
   if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
   return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
     month: "short",
     day: "2-digit",
     year: "numeric",
-  }).format(new Date(value));
+  }).format(parsed);
 }
 
-function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] || "" };
+export function dateTime(value) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? "" : parsed.toLocaleString(activeLang() === "zh" ? "zh-Hans" : "en-US");
 }
+
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&status=…&peek=…]`. Search, the asset status filter
+// and the peeked record live in the URL so refresh, shared links and Back
+// restore the same list context.
+function parseRoute() {
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  const status = params.get("status") || "all";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+    status: hasStatusFilter(view) && ASSET_STATES.includes(status) ? status : "all",
+  };
+}
+
+function hasStatusFilter(view) {
+  return view === "narrative" || view === "stories";
+}
+
+export const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  if (hasStatusFilter(route.view) && route.status !== "all") params.set("status", route.status);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+const routeFor = (view) => (view === state.route.view ? state.route : { view, query: "", status: "all" });
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) =>
+  `#/${view}/${encodeURIComponent(id)}${routeQuery({}, routeFor(view))}`;
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) => {
+  if (DETAIL_MODES[view] === "page") return detailUrl(id, view);
+  return `#/${view}${routeQuery({ peek: id }, routeFor(view))}`;
+};
+
+let previousRouteWasList = false;
+let routeSerial = 0;
 
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
   state.notice = "";
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
+  render();
+  ensureSelectedRecord();
+}
+
+// Replace the current entry without a hashchange: search keystrokes and filter
+// clicks should not each become a Back step.
+export function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
   render();
 }
 
-async function loadState() {
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── Data ───────────────────────────────────────────────────────────────────
+export async function loadState() {
   const provider = await getProvider();
+  state.provider = provider;
   const data = await provider.getState();
+  closeConnectGate();
+  state.snapshot = data.snapshot;
+  state.settings = data;
+  state.totals = data.totals || {};
+  state.extra = { items: new Map(), "drift-alerts": new Map() };
+  // Seed each paginated Base's cursor list with page 1 (no cursor) and the
+  // page-2 cursor getState() learned while fetching page 1.
   state.pageCursors = {};
   state.currentPage = {};
   state.pageLoading = {};
-  state.totals = data.totals || {};
   for (const [key, nextCursor] of Object.entries(data.pagination || {})) {
     state.pageCursors[key] = [undefined, nextCursor];
     state.currentPage[key] = 1;
   }
-  closeConnectGate();
-  state.snapshot = data.snapshot;
-  state.settings = data;
   window.dispatchEvent(new CustomEvent("busa-brand:state", { detail: data }));
   applyDemoRoute();
   render();
+  ensureSelectedRecord();
+}
+
+// True while a Base holds only part of its rows — more pages exist, or the user
+// is on a later page. Anything counted from loaded rows must say so.
+export function isPartial(key) {
+  const cursors = state.pageCursors[key];
+  if (!cursors) return false;
+  const current = state.currentPage[key] || 1;
+  return current > 1 || Boolean(cursors[current]);
+}
+
+export const countLabel = (count, key) => `${count}${isPartial(key) ? "+" : ""}`;
+
+const SNAPSHOT_FIELD = { items: "items", "drift-alerts": "drift_alerts" };
+const NORMALIZE_ROW = { items: normalizeItemRow, "drift-alerts": normalizeDriftAlertRow };
+
+// Replaces the displayed page for `key` with a NEIGHBOURING page: exactly one
+// request per click, using a cursor already learned. Never appends.
+export async function goToPage(key, targetPage) {
+  if (state.pageLoading[key]) return;
+  const cursors = state.pageCursors[key];
+  if (!cursors) return;
+  const current = state.currentPage[key] || 1;
+  if (Math.abs(targetPage - current) !== 1 || targetPage < 1) return;
+  if (targetPage > current && !cursors[current]) return; // no next page
+  state.pageLoading[key] = true;
+  render();
+  try {
+    const provider = await getProvider();
+    if (typeof provider.fetchPage !== "function") return;
+    const { rows, nextCursor } = await provider.fetchPage(key, cursors[targetPage - 1]);
+    state.snapshot[SNAPSHOT_FIELD[key]] = rows;
+    cursors[targetPage] = nextCursor;
+    state.currentPage[key] = targetPage;
+  } catch (error) {
+    state.notice = error instanceof Error ? error.message : String(error);
+  } finally {
+    state.pageLoading[key] = false;
+    render();
+  }
+}
+
+// A record named by the URL but not on the loaded page is read on its own
+// (records.get by its business id) instead of loading more pages to find it.
+async function ensureSelectedRecord() {
+  const { view, selectedId } = state.route;
+  if (!state.snapshot || !selectedId || !RECORD_VIEWS.includes(view)) return;
+  const key = VIEW_BASE[view];
+  if (recordById(view, selectedId) || state.extra[key].has(selectedId)) return;
+  const provider = state.provider;
+  if (typeof provider?.getRecord !== "function") {
+    state.extra[key].set(selectedId, null);
+    render();
+    return;
+  }
+  const serial = ++routeSerial;
+  state.extra[key].set(selectedId, undefined);
+  try {
+    const row = await provider.getRecord(key, selectedId);
+    state.extra[key].set(selectedId, row || null);
+  } catch {
+    state.extra[key].set(selectedId, null);
+  }
+  if (serial === routeSerial) render();
 }
 
 function applyDemoRoute() {
   if (!state.settings?.demo || location.hash) return;
   const scenario = state.settings.demo_scenario || "overview";
-  const route =
-    scenario === "narrative"
-      ? "#/narrative"
-      : scenario === "stories"
-        ? "#/stories"
-        : scenario === "drift"
-          ? "#/drift"
-          : scenario === "settings"
-            ? "#/settings"
-            : "#/overview";
+  const route = ["narrative", "stories", "drift", "settings"].includes(scenario) ? `#/${scenario}` : "#/overview";
   history.replaceState(null, "", `${location.pathname}${location.search}${route}`);
   state.route = parseRoute();
 }
@@ -166,10 +350,6 @@ function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach((node) => {
     node.textContent = t(node.dataset.i18n);
   });
-  els.statusFilters?.querySelectorAll("[data-status]").forEach((button) => {
-    const status = button.dataset.status;
-    button.textContent = status === "all" ? t("all") : status === "approved" ? t("canonical") : enumLabel(status);
-  });
   const languageLabels =
     activeLang() === "zh" ? { auto: "自动", en: "English", zh: "中文" } : { auto: "Auto", en: "English", zh: "中文" };
   for (const option of els.language.options) {
@@ -177,449 +357,158 @@ function applyI18n() {
   }
   els.search.placeholder = t("search");
   els.refresh.textContent = t("refresh");
+  els.refresh.title = t("refresh");
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
+  byId("overviewTitle").textContent = t("messageHouse");
+  byId("settingsTitle").textContent = t("settings");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
-function effectiveStatus(item) {
-  return item.status;
-}
-
-function driftStatus(alert) {
-  return alert.status;
-}
-
-function items() {
+export function items() {
   return state.snapshot?.items || [];
 }
 
-function itemsOfType(type) {
+export function itemsOfType(type) {
   return items().filter((item) => item.type === type);
 }
 
-function driftAlerts() {
+export function driftAlerts() {
   return state.snapshot?.drift_alerts || [];
 }
 
-function itemById(itemId) {
-  return items().find((item) => item.item_id === itemId) || null;
+export const viewItems = (view) => {
+  const types = view === "stories" ? STORY_TYPES : NARRATIVE_TYPES;
+  return items()
+    .filter((item) => types.includes(item.type))
+    .sort((a, b) => types.indexOf(a.type) - types.indexOf(b.type) || a.ref - b.ref);
+};
+
+// Which view owns an item: proof points and stories live in the story bank.
+export const viewForItem = (item) => (STORY_TYPES.includes(item?.type) ? "stories" : "narrative");
+
+// Loaded page first, then a record fetched on its own for the URL.
+export function recordById(view, id) {
+  if (!id) return null;
+  const key = VIEW_BASE[view];
+  if (key === "drift-alerts") {
+    return driftAlerts().find((alert) => alert.alert_id === id) || state.extra[key]?.get(id) || null;
+  }
+  return items().find((item) => item.item_id === id) || state.extra[key]?.get(id) || null;
 }
 
-function channelName(channelId) {
+export function itemById(itemId) {
+  return recordById("narrative", itemId);
+}
+
+export function channelName(channelId) {
   const channels = state.settings?.config_summary?.channels || [];
   return channels.find((channel) => channel.channel_id === channelId)?.display_name || channelId || "";
 }
 
 function renderShell() {
   applyI18n();
-  const reviewCount = items().filter((item) => effectiveStatus(item) === "needs_review").length;
-  const canonicalCount = items().filter((item) => effectiveStatus(item) === "approved").length;
-  const driftOpen = driftAlerts().filter((alert) => driftStatus(alert) === "open").length;
-  els.syncStatus.textContent = items().length ? `${canonicalCount} ${t("canonical")}` : t("empty");
-  if (els.reviewCount) els.reviewCount.textContent = reviewCount;
-  if (els.driftCount) els.driftCount.textContent = driftOpen;
-  if (els.canonicalCount) els.canonicalCount.textContent = canonicalCount;
+  const reviewItems = items().filter((item) => item.status === "needs_review");
+  const canonicalCount = items().filter((item) => item.status === "approved").length;
+  const driftOpen = driftAlerts().filter((alert) => alert.status === "open").length;
+  // Where the data comes from — the counts already sit in the attention block.
+  els.syncStatus.textContent = !state.snapshot
+    ? t("loading")
+    : state.settings?.demo
+      ? t("demoData")
+      : state.snapshot.brand_name || t("liveData");
+  els.reviewCount.textContent = countLabel(reviewItems.length, "items");
+  els.driftCount.textContent = countLabel(driftOpen, "drift-alerts");
+  els.canonicalCount.textContent = countLabel(canonicalCount, "items");
+  // Review work can sit in either view; send the reviewer to where it is.
+  const reviewView =
+    reviewItems.length && !reviewItems.some((item) => viewForItem(item) === "narrative") ? "stories" : "narrative";
+  els.reviewLink.href = `#/${reviewView}?status=needs_review`;
+  const navCounts = {
+    narrative: countLabel(viewItems("narrative").length, "items"),
+    stories: countLabel(viewItems("stories").length, "items"),
+    drift: state.totals?.["drift-alerts"] ?? countLabel(driftAlerts().length, "drift-alerts"),
+  };
+  for (const [view, count] of Object.entries(navCounts)) {
+    byId(`nav-count-${view}`).textContent = state.snapshot ? count : "";
+  }
   if (els.mobileViewTitle) els.mobileViewTitle.textContent = viewLabel(state.route.view);
   if (els.mobileViewMeta) {
-    els.mobileViewMeta.textContent = reviewCount
-      ? `${reviewCount} ${t("needReview")}`
+    els.mobileViewMeta.textContent = reviewItems.length
+      ? `${reviewItems.length} ${t("needReview")}`
       : `${canonicalCount} ${t("canonical")}`;
   }
   document.querySelectorAll("[data-route]").forEach((link) => {
     link.classList.toggle("active", link.dataset.route === state.route.view);
   });
-  els.statusFilters?.querySelectorAll("[data-status]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.status === state.statusFilter);
-  });
 }
 
-function viewLabel(view) {
+export function viewLabel(view) {
   if (view === "narrative") return t("narrative");
   if (view === "stories") return t("stories");
-  if (view === "drift") return t("drift");
+  if (view === "drift") return t("driftAlerts");
   if (view === "settings") return t("settings");
   return t("overview");
 }
 
-function statusBadge(status) {
-  return `<span class="status-badge ${escapeHtml(status)}">${escapeHtml(enumLabel(status))}</span>`;
+function matches(values, query) {
+  return values.filter(Boolean).some((value) => String(value).toLowerCase().includes(query));
 }
 
-function typeBadge(type) {
-  return `<span class="type-badge type-${escapeHtml(type)}">${escapeHtml(enumLabel(type, "type"))}</span>`;
-}
-
-function phaseBadge(phase) {
-  if (!phase) return "";
-  return `<span class="phase-badge phase-${escapeHtml(phase)}">${escapeHtml(enumLabel(phase, "phase"))}</span>`;
-}
-
-function gateBadge(gate) {
-  if (!gate) return "";
-  return `<span class="gate-badge gate-${escapeHtml(gate)}">${escapeHtml(enumLabel(gate, "gate"))}</span>`;
-}
-
-function severityBadge(severity) {
-  if (!severity) return "";
-  return `<span class="severity-badge sev-${escapeHtml(severity)}">${escapeHtml(enumLabel(severity, "severity"))}</span>`;
-}
-
-function nqsChip(nqs) {
-  if (!nqs || typeof nqs.score !== "number") return "";
-  return `<span class="nqs-chip"><span class="nqs-label">${t("nqs")}</span><strong>${nqs.score}</strong>${gateBadge(nqs.gate)}</span>`;
-}
-
-function lockBanner() {
-  if (!state.settings?.lock) return "";
-  const message = state.settings.lock.message ? ` — ${escapeHtml(state.settings.lock.message)}` : "";
-  return `<div class="lock-banner">${t("lockedBanner")}${message}</div>`;
-}
-
-function noticeBanner() {
-  if (!state.notice) return "";
-  return `<div class="notice-banner">${escapeHtml(state.notice)}</div>`;
-}
-
-function warnings() {
-  const list = state.snapshot?.warnings || [];
-  if (!list.length) return "";
-  return `<div class="warnings">${list
-    .map(
-      (item) => `
-    <div class="${escapeHtml(item.severity || "warning")}">
-      <strong>${escapeHtml(item.message)}</strong>
-      ${item.detail ? `<span>${escapeHtml(item.detail)}</span>` : ""}
-    </div>
-  `,
-    )
-    .join("")}</div>`;
-}
-
-function matchesQuery(item) {
-  const query = state.query.trim().toLowerCase();
-  if (!query) return true;
-  return [item.title, item.draft, item.reason, item.type, item.phase, item.sub_skill, item.evidence?.source]
-    .filter(Boolean)
-    .some((value) => String(value).toLowerCase().includes(query));
-}
-
-function matchesStatus(item) {
-  if (state.statusFilter === "all") return true;
-  return effectiveStatus(item) === state.statusFilter;
-}
-
-function renderOverview() {
-  els.title.textContent = t("messageHouse");
-  els.subtitle.textContent = state.snapshot?.generated_at
-    ? `${t("generated")} ${new Date(state.snapshot.generated_at).toLocaleString()}`
-    : t("empty");
-  const metrics = state.snapshot?.metrics || {};
-  const positioning = state.snapshot?.positioning || {};
-  const pillars = itemsOfType("message_pillar");
-  const overallNqs = metrics.overall_nqs || 0;
-  const overallGateValue = overallGate(overallNqs);
-  const driftOpen = driftAlerts().filter((alert) => driftStatus(alert) === "open").length;
-  els.content.innerHTML = `
-    ${warnings()}
-    <section class="house">
-      <div class="house-roof">
-        <div class="house-roof-label">${t("positioningStatement")} ${positioning.status ? statusBadge(effectiveStatus(itemById(positioning.item_id) || positioning)) : ""}</div>
-        <p class="house-statement">${escapeHtml(positioning.statement || t("empty"))}</p>
-      </div>
-      <div class="house-metrics">
-        <div class="metric nqs-metric gate-tint-${overallGateValue}">
-          <span>${t("overallNqs")}</span>
-          <strong>${overallNqs} ${gateBadge(overallGateValue)}</strong>
-        </div>
-        <a class="metric" href="#/narrative"><span>${t("canonical")}</span><strong>${metrics.canonical_count || 0}</strong></a>
-        <a class="metric" href="#/narrative"><span>${t("toReview")}</span><strong>${metrics.needs_review_count || 0}</strong></a>
-        <a class="metric ${driftOpen ? "metric-alert" : ""}" href="#/drift"><span>${t("driftAlerts")}</span><strong>${driftOpen}</strong></a>
-      </div>
-      <div class="house-pillars">
-        <h2>${t("messagePillars")}</h2>
-        <div class="pillar-grid">
-          ${
-            pillars
-              .map(
-                (pillar) => `
-            <a class="pillar-card" href="#/narrative">
-              <div class="pillar-head">${escapeHtml(pillar.title)} ${statusBadge(effectiveStatus(pillar))}</div>
-              <p>${escapeHtml(pillar.draft)}</p>
-              <div class="pillar-foot">${nqsChip(pillar.nqs)}${phaseBadge(pillar.phase)}</div>
-            </a>
-          `,
-              )
-              .join("") || `<div class="empty-inline">${t("noItems")}</div>`
-          }
-        </div>
-      </div>
-    </section>
-  `;
-}
-
-function renderItemCard(item, { editable }) {
-  const status = effectiveStatus(item);
-  const edits = state.edits[item.item_id] || {};
-  const draft = edits.draft ?? item.draft ?? "";
-  const note = edits.note ?? item.decision_note ?? "";
-  const locked = Boolean(state.settings?.lock);
-  const disabled = locked || !editable ? "disabled" : "";
-  return `
-    <article class="asset-card status-${escapeHtml(status)}" data-item="${escapeHtml(item.item_id)}">
-      <header class="asset-head">
-        <span class="asset-ref">#${item.ref}</span>
-        ${typeBadge(item.type)}
-        ${phaseBadge(item.phase)}
-        ${statusBadge(status)}
-        ${nqsChip(item.nqs)}
-      </header>
-      <div class="asset-title strong">${escapeHtml(item.title)}</div>
-      ${item.sub_skill ? `<div class="asset-subskill muted">${t("subSkill")}: ${escapeHtml(item.sub_skill)}</div>` : ""}
-      <label class="asset-label">${t("draft")}</label>
-      <textarea class="asset-draft" data-field="draft" rows="5" ${disabled}>${escapeHtml(draft)}</textarea>
-      ${
-        item.type === "proof_point"
-          ? `<div class="asset-evidence">${
-              item.evidence
-                ? `<span class="ev-label">${t("evidence")}:</span> <strong>${escapeHtml(item.evidence.source || "")}</strong> — ${escapeHtml(item.evidence.stat || "")}${item.evidence.url ? ` <a href="${escapeHtml(item.evidence.url)}" target="_blank" rel="noopener">↗</a>` : ""}`
-                : `<span class="ev-missing">${t("evidence")}: —</span>`
-            }</div>`
-          : ""
-      }
-      ${item.reason ? `<p class="asset-reason"><span class="muted">${t("reason")}:</span> ${escapeHtml(item.reason)}</p>` : ""}
-      <label class="asset-label">${t("reviewNote")}</label>
-      <textarea class="asset-note" data-field="note" rows="2" placeholder="${escapeHtml(t("reviewNotePlaceholder"))}" ${disabled}>${escapeHtml(note)}</textarea>
-      <div class="asset-actions">
-        <button type="button" class="approve" data-action="approve" title="${t("adopt")}" ${disabled}>${t("adopt")}</button>
-        <button type="button" data-action="request_changes" title="${t("requestChanges")}" ${disabled}>${t("requestChanges")}</button>
-        <button type="button" class="danger" data-action="block" title="${t("block")}" ${disabled}>${t("block")}</button>
-        ${item.decided_at ? `<span class="asset-decision muted">${t("decision")}: ${escapeHtml(new Date(item.decided_at).toLocaleString())}</span>` : ""}
-      </div>
-    </article>
-  `;
-}
-
-function renderAssetList(list) {
-  const filtered = list.filter((item) => matchesStatus(item) && matchesQuery(item));
-  if (!filtered.length) return `<div class="empty">${t("noItems")}</div>`;
-  return `<div class="asset-list">${filtered.map((item) => renderItemCard(item, { editable: true })).join("")}</div>`;
-}
-
-function sectionHeading(label, count) {
-  return `<h2 class="section-heading">${escapeHtml(label)} <small>${count}</small></h2>`;
-}
-
-function renderNarrative() {
-  els.title.textContent = t("narrative");
-  const pillars = itemsOfType("message_pillar");
-  const vocab = itemsOfType("vocabulary");
-  const guardrails = itemsOfType("guardrail");
-  const positioning = itemsOfType("positioning");
-  const reviewCount = items().filter((item) => effectiveStatus(item) === "needs_review").length;
-  els.subtitle.textContent = `${reviewCount} ${t("needReview")}`;
-  const guardrailVocab = [...vocab, ...guardrails];
-  const positioningList = positioning.filter((item) => matchesStatus(item) && matchesQuery(item));
-  els.content.innerHTML = `
-    ${lockBanner()}
-    ${noticeBanner()}
-    ${warnings()}
-    ${positioningList.length ? `${sectionHeading(t("positioning"), positioningList.length)}${renderAssetList(positioning)}` : ""}
-    ${sectionHeading(t("messagePillars"), pillars.length)}
-    ${renderAssetList(pillars)}
-    ${sectionHeading(t("guardrailsAndVocab"), guardrailVocab.length)}
-    ${renderAssetList(guardrailVocab)}
-    ${pagerControl("items")}
-  `;
-  bindAssetEvents();
-}
-
-function renderStories() {
-  els.title.textContent = t("stories");
-  const stories = itemsOfType("story");
-  const proofPoints = itemsOfType("proof_point");
-  const reviewCount = [...stories, ...proofPoints].filter((item) => effectiveStatus(item) === "needs_review").length;
-  els.subtitle.textContent = `${reviewCount} ${t("needReview")}`;
-  els.content.innerHTML = `
-    ${lockBanner()}
-    ${noticeBanner()}
-    ${warnings()}
-    ${sectionHeading(t("storyBank"), stories.length)}
-    ${renderAssetList(stories)}
-    ${sectionHeading(t("proofPoints"), proofPoints.length)}
-    ${renderAssetList(proofPoints)}
-    ${pagerControl("items")}
-  `;
-  bindAssetEvents();
-}
-
-function bindAssetEvents() {
-  els.content.querySelectorAll(".asset-card textarea").forEach((textarea) => {
-    textarea.addEventListener("input", () => {
-      const id = textarea.closest(".asset-card").dataset.item;
-      const field = textarea.dataset.field;
-      state.edits[id] = { ...state.edits[id], [field]: textarea.value };
-    });
-  });
-  els.content.querySelectorAll(".asset-actions button[data-action]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const card = button.closest(".asset-card");
-      submitDecision(card.dataset.item, button.dataset.action, card);
-    });
-  });
-}
-
-function renderDrift() {
-  els.title.textContent = t("driftAlerts");
-  const alerts = driftAlerts().filter((alert) => {
-    const query = state.query.trim().toLowerCase();
+export function filteredItems(view) {
+  const query = state.route.query.trim().toLowerCase();
+  return viewItems(view).filter((item) => {
+    if (state.route.status !== "all" && item.status !== state.route.status) return false;
     if (!query) return true;
-    return [alert.title, alert.offending_usage, alert.canonical_guidance, channelName(alert.channel_id)]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query));
-  });
-  const open = alerts.filter((alert) => driftStatus(alert) === "open").length;
-  els.subtitle.textContent = `${open} ${t("driftOpen")}`;
-  const locked = Boolean(state.settings?.lock);
-  const disabled = locked ? "disabled" : "";
-  els.content.innerHTML = `
-    ${lockBanner()}
-    ${noticeBanner()}
-    <div class="drift-list">
-      ${
-        alerts
-          .map((alert) => {
-            const status = driftStatus(alert);
-            const guardrail = itemById(alert.guardrail_item_id);
-            return `
-          <article class="drift-card drift-${escapeHtml(status)}" data-alert="${escapeHtml(alert.alert_id)}">
-            <header class="drift-head">
-              ${severityBadge(alert.severity)}
-              <span class="drift-channel badge">${escapeHtml(channelName(alert.channel_id))}</span>
-              ${statusBadge(status)}
-              <span class="drift-date muted">${date(alert.detected_at)}</span>
-            </header>
-            <div class="drift-title strong">${escapeHtml(alert.title)}</div>
-            <div class="drift-compare">
-              <div class="drift-offending">
-                <span class="drift-label">${t("offending")}</span>
-                <p>${escapeHtml(alert.offending_usage)}</p>
-              </div>
-              <div class="drift-canonical">
-                <span class="drift-label">${t("guidance")}</span>
-                <p>${escapeHtml(alert.canonical_guidance)}</p>
-                ${guardrail ? `<a class="drift-ref" href="#/narrative">${escapeHtml(guardrail.title)} →</a>` : ""}
-              </div>
-            </div>
-            <div class="drift-actions">
-              <button type="button" class="approve" data-action="resolve_drift" title="${t("resolveFix")}" ${disabled}>${t("resolveFix")}</button>
-              <button type="button" data-action="dismiss_drift" title="${t("dismissFix")}" ${disabled}>${t("dismissFix")}</button>
-              ${alert.decided_at ? `<span class="asset-decision muted">${t("decision")}: ${escapeHtml(new Date(alert.decided_at).toLocaleString())}</span>` : ""}
-            </div>
-          </article>
-        `;
-          })
-          .join("") || `<div class="empty">${t("noDrift")}</div>`
-      }
-    </div>
-    ${pagerControl("drift-alerts")}
-  `;
-  els.content.querySelectorAll(".drift-actions button[data-action]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const card = button.closest(".drift-card");
-      submitDecision(card.dataset.alert, button.dataset.action, card);
-    });
+    return matches(
+      [
+        item.title,
+        item.draft,
+        item.reason,
+        enumLabel(item.type, "type"),
+        enumLabel(item.phase, "phase"),
+        item.sub_skill,
+        item.evidence?.source,
+        item.evidence?.stat,
+      ],
+      query,
+    );
   });
 }
 
-async function submitDecision(itemId, action, card) {
-  if (state.settings?.demo) {
-    state.notice = t("demoNotice");
-    render();
-    return;
-  }
-  const draft = card.querySelector('[data-field="draft"]')?.value ?? "";
-  const note = card.querySelector('[data-field="note"]')?.value ?? "";
-  try {
-    const provider = await getProvider();
-    await provider.applyDecision(itemId, { action, comment: note, draft });
-  } catch (error) {
-    state.notice = error.message || "Decision failed";
-    render();
-    return;
-  }
-  delete state.edits[itemId];
-  state.notice = t("saved");
-  await loadState();
+export function filteredDrift() {
+  const query = state.route.query.trim().toLowerCase();
+  if (!query) return driftAlerts();
+  return driftAlerts().filter((alert) =>
+    matches([alert.title, alert.offending_usage, alert.canonical_guidance, channelName(alert.channel_id)], query),
+  );
 }
 
-function renderSettings() {
-  els.title.textContent = t("settings");
-  els.subtitle.textContent = t("localFilesOnly");
-  const summary = state.settings?.config_summary || {};
-  const brand = summary.brand || {};
-  els.content.innerHTML = `
-    <div class="settings">
-      <section>
-        <h2>${t("configuration")}</h2>
-        <dl>
-          <dt>${t("dataProvider")}</dt><dd>${escapeHtml(state.settings?.data_provider || "busabase")}</dd>
-          <dt>${t("configPath")}</dt><dd>${escapeHtml(summary.config_path || "")}</dd>
-          <dt>${t("onboarding")}</dt><dd>${state.settings?.onboarding?.completed ? t("completed") : t("incomplete")}</dd>
-        </dl>
-      </section>
-      <section>
-        <h2>${t("brand")}</h2>
-        <dl>
-          <dt>${t("brand")}</dt><dd>${escapeHtml(brand.name || "")}</dd>
-          <dt>${t("type")}</dt><dd>${escapeHtml(brand.category || "")}</dd>
-          <dt>${t("mission")}</dt><dd>${escapeHtml(brand.mission || "")}</dd>
-          <dt>${t("framework")}</dt><dd>${escapeHtml(brand.framework || "TALE")}</dd>
-          <dt>${t("tone")}</dt><dd>${escapeHtml(summary.style_tone || "")}</dd>
-          <dt>${t("readingLevel")}</dt><dd>${escapeHtml(summary.reading_level || "")}</dd>
-        </dl>
-      </section>
-      <section>
-        <h2>${t("guardrails")}</h2>
-        <dl>
-          <dt>${t("banned")}</dt><dd>${(summary.banned_phrases || []).map((phrase) => `<span class="tag">${escapeHtml(phrase)}</span>`).join(" ") || "—"}</dd>
-          <dt>${t("regulated")}</dt><dd>${(summary.regulated_claims || []).map((phrase) => `<span class="tag">${escapeHtml(phrase)}</span>`).join(" ") || "—"}</dd>
-        </dl>
-      </section>
-      <section>
-        <h2>${t("officialUrls")}</h2>
-        <dl>
-          ${(summary.official_urls || []).map((entry) => `<dt>${escapeHtml(entry.key)}</dt><dd>${escapeHtml(entry.url)}</dd>`).join("") || "<dd>—</dd>"}
-        </dl>
-      </section>
-      <section>
-        <h2>${t("channels")}</h2>
-        ${
-          (summary.channels || [])
-            .map(
-              (channel) => `
-          <div class="settings-channel">
-            <strong>${escapeHtml(channel.display_name)}</strong>
-            <span>${escapeHtml(channel.type)}${channel.monitored ? ` · ${t("drift")}` : ""}</span>
-            <span class="${channel.secrets_ready ? "ok" : "warn"}">${channel.secrets_ready ? t("secretsReady") : t("missingSecrets")}</span>
-          </div>
-        `,
-            )
-            .join("") || `<div class="empty">${t("setupNeeded")}</div>`
-        }
-      </section>
-    </div>
-  `;
+export function assetStates() {
+  return ASSET_STATES;
 }
 
-function render() {
+export function render() {
   renderShell();
-  if (state.route.view === "narrative") renderNarrative();
-  else if (state.route.view === "stories") renderStories();
-  else if (state.route.view === "drift") renderDrift();
-  else if (state.route.view === "settings") renderSettings();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
   else renderOverview();
 }
 
-function escapeHtml(value) {
+export function escapeHtml(value) {
   return String(value ?? "").replace(
     /[&<>"']/g,
     (char) =>
@@ -633,24 +522,63 @@ function escapeHtml(value) {
   );
 }
 
+// ── Events ─────────────────────────────────────────────────────────────────
+els.listPanel.addEventListener("click", (event) => {
+  const pager = event.target.closest("[data-goto-page]");
+  if (pager) {
+    const [key, page] = pager.dataset.gotoPage.split(":");
+    goToPage(key, Number(page));
+    return;
+  }
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+const setStatus = (status) =>
+  replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, status })}`);
+els.viewFilters.addEventListener("click", (event) => {
+  const segment = event.target.closest("[data-status]");
+  if (segment) setStatus(segment.dataset.status);
+});
+els.statusSelect.addEventListener("change", (event) => setStatus(event.target.value));
+els.detailBody.addEventListener("input", (event) => {
+  const field = event.target.closest("textarea[data-field]");
+  if (!field) return;
+  const id = field.closest("[data-record]")?.dataset.record;
+  if (id) state.edits[id] = { ...state.edits[id], [field.dataset.field]: field.value };
+});
+els.detailBody.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+  const card = button.closest("[data-record]");
+  submitDecision(card.dataset.record, button.dataset.action, card);
+});
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  // Escape inside a draft only leaves the field; a second Escape closes.
+  if (event.target.closest?.("textarea, input")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", () => setMobileSidebarOpen(true));
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
-});
-els.statusFilters?.querySelectorAll("[data-status]").forEach((button) => {
-  button.addEventListener("click", () => {
-    state.statusFilter = button.dataset.status;
-    if (!["narrative", "stories"].includes(state.route.view)) {
-      location.hash = "#/narrative";
-    } else {
-      render();
-    }
-  });
+  replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`);
 });
 els.refresh.addEventListener("click", () => loadState());
 els.mobileRefresh?.addEventListener("click", () => loadState());
@@ -671,118 +599,13 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
-
-const PAGE_BINDINGS = {
-  narrative: { key: "items", path: "snapshot.items" },
-  stories: { key: "items", path: "snapshot.items" },
-  drift: { key: "drift-alerts", path: "snapshot.drift_alerts" },
-};
-
-function pageSize(key) {
-  return appConfig.bases.find((entry) => entry.key === key)?.readLimit || 50;
-}
-
-function pageCount(key) {
-  const total = state.totals?.[key];
-  return total == null ? null : Math.max(1, Math.ceil(total / pageSize(key)));
-}
-
-function replacePageRows(path, rows) {
-  const parts = path.split(".");
-  let target = state;
-  for (const part of parts.slice(0, -1)) {
-    target = target?.[part];
-    if (!target) return;
-  }
-  target[parts.at(-1)] = rows;
-}
-
-async function goToPage(key, targetPage) {
-  if (state.pageLoading[key] || !state.pageCursors[key]) return;
-  const binding = Object.values(PAGE_BINDINGS).find((entry) => entry.key === key);
-  if (!binding) return;
-  const totalPages = pageCount(key);
-  const page = totalPages == null ? Math.max(1, targetPage) : Math.min(Math.max(1, targetPage), totalPages);
-  if (page === state.currentPage[key]) return;
-  state.pageLoading[key] = true;
-  if (typeof render === "function") render();
-  else route();
-  try {
-    const provider = await getProvider();
-    let result;
-    for (let next = state.pageCursors[key].length; next <= page; next += 1) {
-      const cursor = state.pageCursors[key][next - 1];
-      if (next > 1 && !cursor) return;
-      result = await provider.fetchPage(key, cursor);
-      state.pageCursors[key][next] = result.nextCursor;
-    }
-    if (!result || state.pageCursors[key].length > page + 1) {
-      result = await provider.fetchPage(key, state.pageCursors[key][page - 1]);
-      state.pageCursors[key][page] = result.nextCursor;
-    }
-    replacePageRows(binding.path, result.rows);
-    state.currentPage[key] = page;
-  } finally {
-    state.pageLoading[key] = false;
-    if (typeof render === "function") render();
-    else route();
-  }
-}
-
-function pagerMessage(key, fallback) {
-  return typeof t === "function" ? t(key) : fallback;
-}
-
-export function recordCountLabel(key, loadedCount, filtered = false) {
-  if (filtered) return loadedCount;
-  const total = state.totals?.[key];
-  if (total != null) return total;
-  const current = state.currentPage?.[key] || 1;
-  return `${loadedCount}${state.pageCursors?.[key]?.[current] ? "+" : ""}`;
-}
-
-export function pagerControl(key) {
-  if (!state.pageCursors[key]) return "";
-  const total = pageCount(key);
-  const current = state.currentPage[key] || 1;
-  const loading = Boolean(state.pageLoading[key]);
-  const hasNext = total == null ? Boolean(state.pageCursors[key][current]) : current < total;
-  if ((total === 1 || total == null) && current === 1 && !hasNext) return "";
-  const pages =
-    total == null
-      ? []
-      : total <= 7
-        ? Array.from({ length: total }, (_, index) => index + 1)
-        : [...new Set([1, total, current - 1, current, current + 1].filter((page) => page >= 1 && page <= total))].sort(
-            (a, b) => a - b,
-          );
-  const items = [];
-  let previous = 0;
-  for (const page of pages) {
-    if (previous && page - previous > 1) items.push('<span class="pager-ellipsis">…</span>');
-    items.push(
-      `<button type="button" class="pager-page ${page === current ? "active" : ""}" data-goto-page="${key}:${page}" ${loading || page === current ? "disabled" : ""}>${page}</button>`,
-    );
-    previous = page;
-  }
-  return `<nav class="pager" aria-label="${pagerMessage("pagination", "Pagination")}">
-    <button type="button" class="pager-nav" data-goto-page="${key}:${current - 1}" ${loading || current <= 1 ? "disabled" : ""}>${pagerMessage("prevPage", "Prev")}</button>
-    ${items.join("")}
-    <button type="button" class="pager-nav" data-goto-page="${key}:${current + 1}" ${loading || !hasNext ? "disabled" : ""}>${pagerMessage("nextPage", "Next")}</button>
-    ${total == null ? "" : `<span class="pager-summary">${pagerMessage("pageOf", "Page {current} of {total}").replace("{current}", current).replace("{total}", total)}</span>`}
-  </nav>`;
-}
-
-document.querySelector("#content")?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-goto-page]");
-  if (!button) return;
-  const [key, page] = button.dataset.gotoPage.split(":");
-  goToPage(key, Number(page));
-});
-
 boot();

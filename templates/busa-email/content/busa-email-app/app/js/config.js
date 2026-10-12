@@ -157,6 +157,12 @@ export const appConfig = {
     description: "Email HTML and attachment artifacts",
   },
   vaultNamespace: "busa-email",
+  ui: {
+    // Email Reviews is a queue worked top to bottom (read, decide, next), so
+    // the list stays beside the message. Contacts and Settings have no record
+    // view in this app: the agent writes Contacts, Settings feed Help & Settings.
+    detail_modes: { reviews: "split" },
+  },
   permissions: {
     readProcedures: [
       "nodes.list",

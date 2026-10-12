@@ -3,6 +3,7 @@ import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js?v=0.1.0";
 import {
   DECISIONS,
+  STATUSES,
   candidateFields,
   candidateFromRow,
   metrics,
@@ -32,14 +33,66 @@ async function ensureResources() {
   return resources;
 }
 
-async function rows(key) {
+const rowFromRecord = (record) => ({
+  ...normalize(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+  __recordId: record.id,
+  __headCommitId: record.headCommitId || record.headCommit?.id,
+});
+
+// One page per call. Reading another page is the user's "Load more" click.
+async function page(key, cursor) {
   const base = bases.get(key);
-  const result = await client.records.list({ baseId: base.baseId, limit: base.readLimit });
-  return (Array.isArray(result) ? result : result.records || []).map((record) => ({
-    ...normalize(record.headCommit?.payload || record.headCommit?.fields || record.fields),
-    __recordId: record.id,
-    __headCommitId: record.headCommitId || record.headCommit?.id,
-  }));
+  const result = await client.records.list({
+    baseId: base.baseId,
+    limit: base.readLimit,
+    ...(cursor ? { cursor } : {}),
+  });
+  const records = Array.isArray(result) ? result : result.records || [];
+  return { rows: records.map(rowFromRecord), nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
+}
+
+async function rows(key) {
+  return (await page(key)).rows;
+}
+
+const allowedReads = new Set(appConfig.permissions.readProcedures);
+
+// Exact per-status totals for the nav and the overview band — never a tally of
+// the loaded page. `status` is a text field, which `records.groupBy` rejects,
+// so this is one `records.count` per status (five, in parallel). A denied or
+// failed count returns null and the UI falls back to the loaded rows, marked
+// with "+" when more pages exist.
+async function countByStatus() {
+  if (!allowedReads.has("records.count") || typeof client.records.count !== "function") return null;
+  const base = bases.get("candidates");
+  try {
+    const totals = await Promise.all(
+      STATUSES.map((status) =>
+        client.records.count({
+          baseId: base.baseId,
+          filters: [{ fieldSlug: "status", operator: "equals", value: status }],
+        }),
+      ),
+    );
+    return Object.fromEntries(STATUSES.map((status, index) => [status, Number(totals[index]?.total ?? 0)]));
+  } catch {
+    return null;
+  }
+}
+
+// Bounded fan-out for the two asset lookups each candidate needs: a 50-row
+// page used to fire 100 parallel `assets.get` calls at once.
+async function mapBounded(items, limit, fn) {
+  const results = new Array(items.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const index = next++;
+      results[index] = await fn(items[index]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
 }
 
 async function findRecord(key, fieldSlug, valueText) {
@@ -113,7 +166,7 @@ function runtimeNotReady(error) {
         reason: raw.replace(/^[A-Z_]+:\s*/, ""),
       },
     },
-    snapshot: { candidates: [], metrics: metrics([]), settings: {} },
+    snapshot: { candidates: [], metrics: metrics([]), counts: null, next_cursor: null, settings: {} },
   };
 }
 
@@ -134,18 +187,37 @@ export const busabaseProvider = {
         demo: false,
         data_provider: "busabase",
         readiness: readiness(onboarding, resources),
-        snapshot: { candidates: [], metrics: metrics([]), settings: onboarding.settings },
+        snapshot: { candidates: [], metrics: metrics([]), counts: null, next_cursor: null, settings: onboarding.settings },
       };
     }
     pendingOnboardingCr = null;
-    const candidates = await Promise.all((await rows("candidates")).map(hydrateCandidate));
+    const [first, counts] = await Promise.all([page("candidates"), countByStatus()]);
+    const candidates = await mapBounded(first.rows, 6, hydrateCandidate);
     return {
       app: appConfig.appId,
       demo: false,
       data_provider: "busabase",
       readiness: readiness(onboarding, resources),
-      snapshot: { candidates, metrics: metrics(candidates), settings: onboarding.settings },
+      snapshot: {
+        candidates,
+        metrics: metrics(candidates),
+        counts,
+        next_cursor: first.nextCursor,
+        settings: onboarding.settings,
+      },
     };
+  },
+  async loadMoreCandidates(cursor) {
+    await ensureResources();
+    const next = await page("candidates", cursor);
+    return { candidates: await mapBounded(next.rows, 6, hydrateCandidate), next_cursor: next.nextCursor };
+  },
+  // A record named by the URL that is not on the loaded page.
+  async getCandidate(candidate_id) {
+    if (!candidate_id) return null;
+    await ensureResources();
+    const record = await findRecord("candidates", "candidate-id", candidate_id);
+    return record ? hydrateCandidate(rowFromRecord(record)) : null;
   },
   async submitDecision({ candidate_id, action, comment = "", strength } = {}) {
     if (!candidate_id || !DECISIONS.has(action)) throw new Error("A candidate and valid decision are required");

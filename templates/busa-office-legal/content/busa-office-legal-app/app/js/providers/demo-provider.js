@@ -1,5 +1,6 @@
 import { appConfig } from "../config.js";
 import { seedRecords } from "../demo-data.js";
+import { matchesValueFilters, metricQueries } from "../model.js";
 export const demoProvider = {
   name: "demo",
   async getState() {
@@ -36,13 +37,29 @@ export const demoProvider = {
             : records.filter((r) => r.baseKey === b.key).length,
         ]),
       ),
+      metrics: Object.fromEntries(
+        metricQueries.map((q) => [
+          q.key,
+          mode === "partial"
+            ? null
+            : records.filter(
+                (r) =>
+                  r.baseKey === q.baseKey &&
+                  matchesValueFilters(r.fields, q.valueFilters),
+              ).length,
+        ]),
+      ),
       errors:
         mode === "partial" ? ["Preview demonstrates a partial result"] : [],
+      failures: [],
       loadedAt:
         mode === "stale" ? "2026-01-01T00:00:00Z" : new Date().toISOString(),
     };
   },
   async loadMore() {
     return { records: [], nextCursor: null };
+  },
+  async getRecord() {
+    return null;
   },
 };

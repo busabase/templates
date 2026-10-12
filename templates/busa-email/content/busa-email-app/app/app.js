@@ -5,16 +5,12 @@
 import { toast } from "./js/api.js";
 import { activeHelpTab, closeHelp, isHelpOpen, openHelp, setHelpTab } from "./js/help-modal.js";
 import { applyTranslations, onLanguageChange, setLanguageMode, t } from "./js/i18n.js";
-import { decide, loadMore, refresh, renderBulkActions, renderCounts, renderDetail, renderList } from "./js/list-detail.js";
+import { decide, loadMore, refresh, renderAll, wireList } from "./js/list-detail.js";
 import { applyRouteFromHash, navigateTo, registerRouterHooks, syncRoute } from "./js/router.js";
-import { applyProviderGate, copySetupPrompt, ensureLocalBusabaseConnection, registerSetupHooks } from "./js/setup.js";
+import { copySetupPrompt, ensureLocalBusabaseConnection, registerSetupHooks } from "./js/setup.js";
 import {
-  applyLockState,
   closeDetailActionMenu,
-  isLocked,
-  isMobileLayout,
   pollLock,
-  setMobileDetailOpen,
   setMobileSidebarOpen,
   syncModeButtons,
   syncResponsiveShell,
@@ -32,15 +28,9 @@ registerRouterHooks({
   closeHelp,
   activeHelpTab,
   syncModeButtons,
-  isMobileLayout,
-  setMobileDetailOpen,
 });
 onLanguageChange(() => {
-  renderCounts();
-  renderList();
-  renderDetail();
-  applyProviderGate();
-  applyLockState();
+  renderAll();
 });
 
 function wire() {
@@ -53,8 +43,14 @@ function wire() {
     if (event.target.id === "helpModal") closeHelp();
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && isHelpOpen()) closeHelp();
-    if (event.key === "Escape") closeDetailActionMenu();
+    if (event.key !== "Escape") return;
+    if (isHelpOpen()) return closeHelp();
+    if (store.openActionMenu) return closeDetailActionMenu();
+    // Escape closes the split selection (not a full page, which has Back).
+    const editing = event.target instanceof HTMLElement && event.target.matches("input, textarea, select");
+    if (!editing && store.page === "view" && store.selectedId && store.presentation !== "page") {
+      navigateTo({ selectedId: null });
+    }
   });
   document.addEventListener("click", (event) => {
     if (!event.target.closest(".action-cluster")) closeDetailActionMenu();
@@ -76,10 +72,11 @@ function wire() {
   $("sidebarToggle").onclick = toggleSidebar;
   $("mobileSidebarToggle").onclick = () => setMobileSidebarOpen(true);
   $("sidebarScrim").onclick = () => setMobileSidebarOpen(false);
-  $("detailPanel").addEventListener("click", (event) => {
-    if (event.target.closest(".back-to-list")) setMobileDetailOpen(false);
+  $("detailBack").onclick = () => navigateTo({ selectedId: null });
+  window.addEventListener("resize", () => {
+    syncResponsiveShell();
+    renderAll();
   });
-  window.addEventListener("resize", syncResponsiveShell);
   document.querySelectorAll("[data-help-tab]").forEach((button) => {
     button.onclick = () => {
       setHelpTab(button.dataset.helpTab);
@@ -98,30 +95,21 @@ function wire() {
       event.target.value = "";
     });
   };
-  $("selectAll").onchange = (event) => {
-    if (isLocked()) {
-      event.target.checked = false;
-      return toast(t("lock.processing"));
-    }
-    if (event.target.checked) store.state.items.forEach((item) => store.checked.add(item.id));
-    else store.checked.clear();
-    renderList();
-    renderBulkActions();
-  };
+  wireList();
   $("loadMore").onclick = () => loadMore();
   $("searchInput").addEventListener("input", () => refresh({ preserveScroll: false }));
-  document.querySelectorAll("#filters button").forEach((button) => {
+  $("overviewRefresh").onclick = () => refresh({ preserveScroll: false }).catch((error) => toast(error.message));
+  $("overviewOpenQueue").onclick = () => navigateTo({ page: "view", mode: "needs_review", selectedId: null });
+  document.querySelectorAll("[data-mode]").forEach((button) => {
     button.onclick = () => {
       setMobileSidebarOpen(false);
-      setMobileDetailOpen(false);
-      navigateTo({ mode: button.dataset.mode, selectedId: null }, { refreshData: true });
+      navigateTo({ page: "view", mode: button.dataset.mode, selectedId: null }, { refresh: true });
     };
   });
-  document.querySelectorAll(".human-work [data-mode]").forEach((button) => {
+  document.querySelectorAll("[data-page]").forEach((button) => {
     button.onclick = () => {
       setMobileSidebarOpen(false);
-      setMobileDetailOpen(false);
-      navigateTo({ mode: button.dataset.mode, selectedId: null }, { refreshData: true });
+      navigateTo({ page: button.dataset.page, selectedId: null }, { refresh: true });
     };
   });
 }

@@ -111,7 +111,41 @@ function normalizePageRows(key, rows) {
   return normalize ? rows.map(normalize) : rows;
 }
 
+// Exact server-side totals for the numbers the sidebar and the overview band
+// show. Each is a cheap SQL COUNT on an exact text match; a denied or failed
+// count is null so the UI falls back to the loaded page (and says so) instead
+// of failing the whole read.
+async function readCounts() {
+  const equals = (fieldSlug, value) => [{ fieldSlug, operator: "equals", value }];
+  const [needsReview, changesRequested, approved, checksPass, checksWarn, checksFail] = await Promise.all([
+    countRecords("issues", equals("status", "needs_review")),
+    countRecords("issues", equals("status", "changes_requested")),
+    countRecords("issues", equals("status", "approved")),
+    countRecords("checks", equals("result", "pass")),
+    countRecords("checks", equals("result", "warn")),
+    countRecords("checks", equals("result", "fail")),
+  ]);
+  return {
+    issues_needs_review: needsReview,
+    issues_changes_requested: changesRequested,
+    issues_approved: approved,
+    checks_pass: checksPass,
+    checks_warn: checksWarn,
+    checks_fail: checksFail,
+  };
+}
+
+// The business-id field each record view addresses its records by.
+const RECORD_ID_FIELD = {
+  contracts: "contract-id",
+  issues: "issue-id",
+  checks: "check-id",
+  claims: "claim-id",
+  "claim-rules": "rule-id",
+};
+
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -213,13 +247,14 @@ export const busabaseProvider = {
     for (const key of Object.keys(initialPageCursors)) delete initialPageCursors[key];
     for (const key of Object.keys(initialTotalCounts)) delete initialTotalCounts[key];
     await ensureResources();
-    const [contracts, issues, checks, claims, claimRules, settings] = await Promise.all([
+    const [contracts, issues, checks, claims, claimRules, settings, counts] = await Promise.all([
       readFirstPage("contracts"),
       readFirstPage("issues"),
       readFirstPage("checks"),
       readFirstPage("claims"),
       readFirstPage("claim-rules"),
       readSettingsRow(),
+      readCounts(),
     ]);
     const normalizedContracts = contracts.map(normalizeContractRow);
     const normalizedIssues = issues.map(normalizeIssueRow);
@@ -235,6 +270,7 @@ export const busabaseProvider = {
       data_provider: "busabase",
       onboarding: { completed: normalizedIssues.length > 0, config_version: "1" },
       lock: null,
+      counts,
       config_summary: buildConfigSummary({ settings }),
       claims: {
         updated_at: new Date().toISOString(),
@@ -274,6 +310,22 @@ export const busabaseProvider = {
     };
     await upsert("issues", "issue-id", issue_id, nextFields, `Decision on issue ${issue_id}: ${action}`);
     return { ok: true };
+  },
+
+  // One record named by the URL that is not on the loaded page — read on its
+  // own by its business id instead of paging until it turns up.
+  async getRecord(key, id) {
+    const idField = RECORD_ID_FIELD[key];
+    if (!idField || !id) return null;
+    await ensureResources();
+    const record = await findRecord(key, idField, id);
+    if (!record) return null;
+    const row = {
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    };
+    return normalizePageRows(key, [row])[0] || null;
   },
 
   async fetchPage(key, cursor) {

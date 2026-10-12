@@ -67,6 +67,23 @@ const findRecord = (recordId) => {
   return null;
 };
 
+/**
+ * `?demoLimit=N` pages the demo the way a real Base pages at its readLimit, so
+ * "Load more" can be exercised without a workspace. Without it every seeded row
+ * fits on the first page, exactly as it would in a fresh install.
+ */
+const demoLimit = () => {
+  const value = Number.parseInt(new URLSearchParams(window.location.search).get("demoLimit") || "", 10);
+  return Number.isInteger(value) && value > 0 ? value : 0;
+};
+
+const pageOf = (rows, offset) => {
+  const limit = demoLimit();
+  if (!limit) return { records: rows.slice(offset), nextCursor: null };
+  const end = offset + limit;
+  return { records: rows.slice(offset, end), nextCursor: end < rows.length ? String(end) : null };
+};
+
 // The demo's Bases are the declaration itself, so the health check is clean by
 // construction — which is exactly what a correctly installed Space looks like.
 const demoSchemaHealth = () =>
@@ -111,13 +128,27 @@ export const demoProvider = {
 
     const empty = scenario === "empty";
     const loaded = await load();
-    const rows = empty
+    const all = empty
       ? Object.fromEntries(appConfig.schema.bases.map((base) => [base.key, []]))
       : loaded;
-    const analysis = analyze(rows);
+    const pages = Object.fromEntries(Object.entries(all).map(([key, rows]) => [key, pageOf(rows, 0)]));
+    const rows = Object.fromEntries(Object.entries(pages).map(([key, page]) => [key, page.records]));
+    const analysis = analyze(all);
+    const live = (key) => all[key].filter((row) => row.fields.status === "published").length;
 
     return {
       records: rows,
+      cursors: Object.fromEntries(Object.entries(pages).map(([key, page]) => [key, page.nextCursor])),
+      // The demo holds every row, so its totals are exact — what records.count
+      // would answer for the same Folder.
+      totals: {
+        posts: all.posts.length,
+        pages: all.pages.length,
+        categories: all.categories.length,
+        tags: all.tags.length,
+        livePosts: live("posts"),
+        livePages: live("pages"),
+      },
       connection,
       schemaHealth: demoSchemaHealth(),
       provider_status: { ok: true, provider: "demo", mode: "deterministic_local_demo" },
@@ -134,6 +165,16 @@ export const demoProvider = {
           : { configured: true, state: "ready", publishedCount: analysis.counts.live },
       },
     };
+  },
+
+  async loadMore(key, cursor) {
+    const rows = (await load())[key] ?? [];
+    return pageOf(rows, Number.parseInt(cursor, 10) || 0);
+  },
+
+  async getRecord(recordId) {
+    await load();
+    return findRecord(recordId);
   },
 
   async save({ kind, recordId, fields }) {

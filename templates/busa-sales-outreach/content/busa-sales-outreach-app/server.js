@@ -20,7 +20,7 @@ const app = new Hono();
  */
 const gateway = createBusabaseAirAppLocalGateway({
   appId: AIRAPP_ID,
-  successPath: "/#/to-send",
+  successPath: "/",
   errorPath: "/",
 });
 

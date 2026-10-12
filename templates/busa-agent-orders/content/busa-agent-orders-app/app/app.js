@@ -29,6 +29,26 @@ const ORDER_STATUSES = ["paid", "fulfilled", "refunded", "disputed"];
 const PROPOSAL_VIEWS = ["", "approved", "applied", "blocked", "all"];
 const EXCEPTION_VIEWS = ["", "resolved", "accepted", "all"];
 
+// Where a record opens, per view. Chosen by what people do with the record:
+//   orders     → drawer: an order is a fact you scan many of — check paid vs
+//                listed and whether an exception covers it, then go back.
+//   proposals  → split:  the price review queue is worked top to bottom, one
+//                decision after the next, so the queue stays beside it.
+//   exceptions → split:  the same — open exceptions are closed one by one.
+//   guardrails → drawer: a per-SKU reference row, looked up and dismissed.
+// A `/<record>` path always opens the full page; `?peek=` drives drawer/split.
+// On a phone every mode is a page (base-ui.css handles that).
+// Declared once, in config.js `ui.detail_modes`.
+const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+// The view's one-line description lives in the toolbar title's tooltip.
+const VIEW_HINT = {
+  orders: "ordersSubtitle",
+  proposals: "proposalsSubtitle",
+  exceptions: "exceptionsSubtitle",
+  guardrails: "guardrailsSubtitle",
+};
+
 const state = {
   data: null,
   route: parseRoute(),
@@ -42,29 +62,47 @@ const state = {
   pageError: "",
   drafts: {},
   noteErrors: {},
-  orderFilter: { agent: "", status: "" },
 };
 
+const byId = (id) => document.getElementById(id);
 const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  countBreaching: document.querySelector("#count-breaching"),
-  countOpen: document.querySelector("#count-open"),
-  countUncovered: document.querySelector("#count-uncovered"),
-  countWaiting: document.querySelector("#count-waiting"),
-  language: document.querySelector("#language"),
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  overviewTitle: byId("overviewTitle"),
+  overviewSummary: byId("overviewSummary"),
+  overviewMetrics: byId("overviewMetrics"),
+  overviewBody: byId("overviewBody"),
+  viewPage: byId("viewPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  viewActions: byId("viewActions"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  settingsPage: byId("settingsPage"),
+  settingsTitle: byId("settingsTitle"),
+  settingsBody: byId("settingsBody"),
+  refresh: byId("refresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  countBreaching: byId("count-breaching"),
+  countOpen: byId("count-open"),
+  countUncovered: byId("count-uncovered"),
+  countWaiting: byId("count-waiting"),
+  language: byId("language"),
 };
 
 // ── shell ────────────────────────────────────────────────────────────────────
+
+const PHONE_QUERY = "(max-width: 720px)";
+const isPhone = () => window.matchMedia(PHONE_QUERY).matches;
 
 function isMobileLayout() {
   return window.matchMedia("(max-width: 760px)").matches;
@@ -183,6 +221,7 @@ const signedPct = (value, digits = 1) =>
 const rows = (key) => state.data?.rows?.[key] || [];
 const settings = () => state.data?.settings || null;
 const ordersById = () => new Map(rows("orders").map((row) => [row.id, row]));
+const recordById = (key, id) => (id ? rows(key).find((row) => row.id === id) || null : null);
 
 function loadedLabel(key) {
   const loaded = rows(key).length;
@@ -194,13 +233,15 @@ function loadedLabel(key) {
 function loadMoreControl(key) {
   if (!state.data?.cursors?.[key]) return "";
   const busy = Boolean(state.loadingMore[key]);
+  const label = key === state.route.view ? t("loadMore") : t("loadMoreOf", { name: t(key) });
   return `<div class="load-more">
-    <span class="muted">${esc(loadedLabel(key))}</span>
-    <button type="button" class="button" data-load-more="${key}" ${busy ? "disabled" : ""}>${esc(busy ? t("loadingMore") : t("loadMore"))}</button>
+    <span class="muted">${esc(key === state.route.view ? loadedLabel(key) : `${t(key)} · ${loadedLabel(key)}`)}</span>
+    <button type="button" class="button" data-load-more="${key}" ${busy ? "disabled" : ""}>${esc(busy ? t("loadingMore") : label)}</button>
     ${state.pageError ? `<span class="inline-error" role="alert">${esc(t("loadFailed", { error: state.pageError }))}</span>` : ""}
   </div>`;
 }
 
+// One page per click: append the next page without duplicates. Never loops.
 async function loadMore(key) {
   const cursor = state.data?.cursors?.[key];
   if (!cursor || state.loadingMore[key]) return;
@@ -221,20 +262,99 @@ async function loadMore(key) {
   }
 }
 
-// ── routing & loading ───────────────────────────────────────────────────────
+// ── routing ─────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?peek=…&view=…&agent=…&status=…&flagged=1]`. Filters and
+// the peeked record live in the URL so refresh, shared links and Back restore
+// the same list context. Legacy `#/orders/flagged` and `#/proposals/approved`
+// style links still open the filtered list.
 
 function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] ? decodeURIComponent(parts[1]) : "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  let flagged = params.get("flagged") === "1";
+  let filter = params.get("view") || "";
+  if (view === "orders" && id === "flagged") [id, flagged] = ["", true];
+  if (view === "proposals" && PROPOSAL_VIEWS.includes(id)) [id, filter] = ["", id];
+  if (view === "exceptions" && EXCEPTION_VIEWS.includes(id)) [id, filter] = ["", id];
+  const views = view === "proposals" ? PROPOSAL_VIEWS : view === "exceptions" ? EXCEPTION_VIEWS : [""];
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  const status = params.get("status") || "";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    filter: views.includes(filter) ? filter : "",
+    agent: params.get("agent") || "",
+    status: ORDER_STATUSES.includes(status) ? status : "",
+    flagged,
+  };
 }
 
+function routeQuery(extra = {}, route = state.route) {
+  const params = new URLSearchParams();
+  if (route.view === "orders") {
+    if (route.agent) params.set("agent", route.agent);
+    if (route.status) params.set("status", route.status);
+    if (route.flagged) params.set("flagged", "1");
+  }
+  if (route.filter) params.set("view", route.filter);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+}
+
+const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+const otherView = (view) => (view === state.route.view ? state.route : { view, filter: "" });
+// The full page: the record in the path. Always a page, whatever the view's mode.
+const detailUrl = (id, view = state.route.view) => `#/${view}/${encodeURIComponent(id)}${routeQuery({}, otherView(view))}`;
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+const recordUrl = (id, view = state.route.view) =>
+  DETAIL_MODES[view] === "page" ? detailUrl(id, view) : `#/${view}${routeQuery({ peek: id }, otherView(view))}`;
+
+let previousRouteWasList = false;
+
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
-  state.notice = null;
+  // A detail opened from its own list replaces nothing but remembers where it
+  // came from, so Back/Close/Escape step back to that exact list entry.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  if (previous.view !== state.route.view || previous.selectedId !== state.route.selectedId) state.notice = null;
   setMobileSidebarOpen(false);
   render();
-  els.content.scrollTop = 0;
+  if (previous.view !== state.route.view) els.listPanel.scrollTop = 0;
+  els.detailPanel.scrollTop = 0;
 }
+
+// Filter changes replace the current entry: they should not each be a Back step.
+function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  state.route = parseRoute();
+  render();
+}
+
+function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── loading ─────────────────────────────────────────────────────────────────
 
 let loadToken = 0;
 async function loadState() {
@@ -265,10 +385,20 @@ function applyI18n() {
   els.sidebarToggle.setAttribute("aria-label", t("toggleSidebar"));
   els.mobileSidebarToggle.title = t("openSidebar");
   els.mobileSidebarToggle.setAttribute("aria-label", t("openSidebar"));
+  els.overviewTitle.textContent = t("overview");
+  els.overviewMetrics.setAttribute("aria-label", t("channelTitle"));
+  els.settingsTitle.textContent = t("settings");
+  els.settingsTitle.title = t("settingsSubtitle");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
 const currentAttention = () =>
   attentionList({ orders: rows("orders"), guardrails: rows("guardrails"), proposals: rows("proposals"), exceptions: rows("exceptions") });
+
+function syncLabel() {
+  if (!state.data) return t("loading");
+  return state.data.demo ? t("demoNote") : t("liveNote", { time: formatTime(state.data.loaded_at) });
+}
 
 function renderShell() {
   applyI18n();
@@ -277,22 +407,16 @@ function renderShell() {
   els.countOpen.textContent = String(attention.counts.open);
   els.countUncovered.textContent = String(attention.counts.uncovered);
   els.countWaiting.textContent = String(rows("proposals").filter((row) => DECIDABLE_PROPOSALS.has(row.status)).length);
-  els.syncStatus.textContent = !state.data
-    ? t("loading")
-    : state.data.demo
-      ? t("demoNote")
-      : t("liveNote", { time: formatTime(state.data.loaded_at) });
+  els.syncStatus.textContent = syncLabel();
+  els.mobileViewMeta.textContent = syncLabel();
   els.language.value = state.lang;
   document.querySelectorAll("nav [data-route]").forEach((link) => {
     link.classList.toggle("active", link.dataset.route === state.route.view);
   });
 }
 
-function setPage(title, subtitle = "") {
-  els.title.textContent = title;
-  els.subtitle.textContent = subtitle;
+function setTitle(title) {
   els.mobileViewTitle.textContent = title;
-  els.mobileViewMeta.textContent = subtitle;
   document.title = `${title} · ${t("appTitle")}`;
 }
 
@@ -306,7 +430,7 @@ function emptyState(title, body, action = "") {
   return `<div class="empty-state">
     <div class="empty-state-icon" aria-hidden="true">○</div>
     <strong>${esc(title)}</strong>
-    <p>${esc(body)}</p>
+    ${body ? `<p>${esc(body)}</p>` : ""}
     ${action}
   </div>`;
 }
@@ -316,25 +440,53 @@ function noticeBar() {
   return `<div class="notice ${state.notice.tone || ""}" role="status">${esc(state.notice.text)}</div>`;
 }
 
-function segments(base, views, labelFor, countFor, active) {
-  return `<div class="segmented view-tabs" role="tablist">${views
-    .map(
-      (id) =>
-        `<a class="segment ${active === id ? "active" : ""}" href="#/${base}${id ? `/${id}` : ""}" data-route="${base}">${esc(labelFor(id))} <b>${countFor(id)}</b></a>`,
-    )
-    .join("")}</div>`;
-}
+const cell = (html, { title = "", className = "" } = {}) =>
+  `<td${className ? ` class="${className}"` : ""}${title ? ` title="${esc(title)}"` : ""}>${html}</td>`;
 
-// ── screens ─────────────────────────────────────────────────────────────────
+const tableHead = (columns) =>
+  `<thead><tr>${columns.map(([label, className = ""]) => `<th${className ? ` class="${className}"` : ""}>${esc(label)}</th>`).join("")}</tr></thead>`;
+
+const rowOpen = (id, extraClass = "") => {
+  const classes = [extraClass, id === state.route.selectedId ? "ws-selected" : ""].filter(Boolean).join(" ");
+  return `<tr data-id="${esc(id)}" tabindex="0"${classes ? ` class="${classes}"` : ""}>`;
+};
+
+// ── overview ────────────────────────────────────────────────────────────────
 
 const unitsLine = (totals) => t("ordersUnits", { orders: tn("countOrders", totals.orders), units: tn("countUnits", totals.units) });
 
+// Three numbers the sidebar does not already show. Revenue is quantity × unit
+// price paid — per-row arithmetic with no server aggregate — so it is computed
+// from the loaded orders and says so when more orders exist than are loaded.
+function metricsBand(totals, attention) {
+  const partial = Boolean(state.data?.cursors?.orders);
+  const scope = partial ? ` · ${t("loadedScope")}` : "";
+  const now = totals.total.current.revenue;
+  const before = totals.total.previous.revenue;
+  const delta = totals.latest && totals.total.previous.orders ? now - before : null;
+  const deltaPct = before > 0 ? ((now - before) / before) * 100 : null;
+  const cells = [
+    [t("metricRevenue") + scope, totals.latest ? money(now) : "—", ""],
+    [
+      t("metricDelta") + scope,
+      delta == null ? "—" : `${signedMoney(delta)}${deltaPct == null ? "" : ` (${signedPct(deltaPct, 0)})`}`,
+      delta == null ? "" : delta > 0 ? "up" : delta < 0 ? "down" : "",
+    ],
+    [t("metricImpact"), attention.open.length ? signedMoney(attention.impact) : money(0), attention.impact < 0 ? "down" : ""],
+  ];
+  return cells
+    .map(([label, value, tone]) => `<div><span title="${esc(label)}">${esc(label)}</span><strong class="${tone}">${esc(value)}</strong></div>`)
+    .join("");
+}
+
 function renderOverview() {
+  setTitle(t("overview"));
   const store = settings()?.store_name;
-  setPage(t("overview"), store ? t("overviewSubtitle", { store }) : t("overviewSubtitleNoStore"));
   const orders = rows("orders");
   const totals = agentTotals({ orders, settings: settings() });
   const attention = currentAttention();
+  els.overviewSummary.textContent = store ? t("overviewSubtitle", { store }) : t("overviewSubtitleNoStore");
+  els.overviewMetrics.innerHTML = metricsBand(totals, attention);
 
   const deltaLine = (item) => {
     if (!item.previous.orders) return `<span class="muted">${esc(t("noEarlier"))}</span>`;
@@ -348,8 +500,8 @@ function renderOverview() {
     : `<section class="card">
         <div class="card-heading">
           <div>
-            <h2>${esc(t("channelTitle"))}</h2>
-            <p>${esc(t("channelHint", { current: formatRange(totals.current), previous: formatRange(totals.previous) }))}</p>
+            <h2>${esc(t("channelByAgent"))}</h2>
+            <p class="muted">${esc(t("channelHint", { current: formatRange(totals.current), previous: formatRange(totals.previous) }))}</p>
           </div>
           <a class="text-link" href="#/orders">${esc(t("viewOrders"))}</a>
         </div>
@@ -365,21 +517,8 @@ function renderOverview() {
               </article>`,
             )
             .join("")}
-          <article class="agent-cell total">
-            <div class="agent-name">${esc(t("allAgents"))}</div>
-            <div class="agent-value">${esc(money(totals.total.current.revenue))}</div>
-            <div class="muted">${esc(unitsLine(totals.total.current))}</div>
-            ${deltaLine({
-              previous: totals.total.previous,
-              delta: {
-                orders: totals.total.current.orders - totals.total.previous.orders,
-                revenue: totals.total.current.revenue - totals.total.previous.revenue,
-                revenue_pct: totals.total.previous.revenue > 0 ? (totals.total.current.revenue - totals.total.previous.revenue) / totals.total.previous.revenue : null,
-              },
-            })}
-          </article>
         </div>
-        <p class="footnote muted">${esc(t("revenueGross"))}${state.data?.cursors?.orders ? ` · ${esc(t("loadedOnly", { count: orders.length }))}` : ""}</p>
+        <p class="footnote muted">${esc(t("revenueGross"))} · ${esc(t("allAgentsUnits", { line: unitsLine(totals.total.current) }))}${state.data?.cursors?.orders ? ` · ${esc(t("loadedOnly", { count: orders.length }))}` : ""}</p>
       </section>`;
 
   const breaching = attention.breaching.length
@@ -387,7 +526,7 @@ function renderOverview() {
         .map(
           ({ proposal, check }) => `<li class="attention-item">
             <div class="attention-main">
-              <a href="#/proposals">${esc(proposal.title)}</a>
+              <a href="${recordUrl(proposal.id, "proposals")}">${esc(proposal.title)}</a>
               <div class="muted">${esc(proposal.sku)} · ${esc(money(proposal.current_price))} → ${esc(money(proposal.proposed_price))} (${esc(signedPct(check.change_pct))})</div>
             </div>
             <div class="badge-row">${check.computed.map((item) => badge(t(`kind_${item.kind}`), "danger")).join("")}${check.mismatch.length ? badge("≠", "warning") : ""}</div>
@@ -402,8 +541,8 @@ function renderOverview() {
         .map(
           (row) => `<li class="attention-item">
             <div class="attention-main">
-              <a href="#/exceptions">${esc(row.title)}</a>
-              <div class="muted">${esc(enumLabel("exceptionType", row.type))} · ${esc(lookup.get(row.order)?.order_no || row.sku)}</div>
+              <a href="${recordUrl(row.id, "exceptions")}">${esc(row.title)}</a>
+              <div class="muted">${esc(enumLabel("exceptionType", row.type))}${lookup.get(row.order)?.order_no || row.sku ? ` · ${esc(lookup.get(row.order)?.order_no || row.sku)}` : ""}</div>
             </div>
             <span class="impact ${row.impact < 0 ? "negative" : ""}">${esc(row.impact == null ? "—" : signedMoney(row.impact))}</span>
           </li>`,
@@ -416,7 +555,7 @@ function renderOverview() {
         .map(
           (order) => `<li class="attention-item">
             <div class="attention-main">
-              <a href="#/orders/flagged">${esc(order.order_no)} · ${esc(order.sku)}</a>
+              <a href="${recordUrl(order.id, "orders")}">${esc(order.order_no)} · ${esc(order.sku)}</a>
               <div class="muted">${esc(t("uncoveredLine", { agent: agentName(order.agent), paid: money(order.paid_price, order.currency), listed: money(order.listed_price, order.currency), date: formatDay(order.ordered_on) }))}</div>
             </div>
             ${badge(t("belowListed", { amount: money(orderFlags(order, rows("guardrails")).shortfall, order.currency) }), "warning")}
@@ -425,108 +564,325 @@ function renderOverview() {
         .join("")}</ul>`
     : `<p class="muted">${esc(t("uncoveredEmpty"))}</p>`;
 
-  els.content.innerHTML = `
-    ${noticeBar()}
+  els.overviewBody.innerHTML = `
     ${channelCard}
     <div class="overview-columns">
       <section class="card">
         <div class="card-heading">
-          <h2>${esc(t("breachingTitle"))} <span class="count-pill">${attention.counts.breaching}</span></h2>
+          <h2>${esc(t("breachingTitle"))}</h2>
           <a class="text-link" href="#/proposals">${esc(t("reviewAll"))}</a>
         </div>
         ${breaching}
       </section>
       <section class="card">
         <div class="card-heading">
-          <div>
-            <h2>${esc(t("exceptionsTitle"))} <span class="count-pill">${attention.counts.open}</span></h2>
-            <p>${esc(t("exceptionsImpact", { amount: signedMoney(attention.impact) }))}</p>
-          </div>
+          <h2>${esc(t("exceptionsTitle"))}</h2>
           <a class="text-link" href="#/exceptions">${esc(t("viewAll"))}</a>
         </div>
         ${openList}
-        <h3 class="subhead">${esc(t("uncoveredTitle"))} <span class="count-pill">${attention.counts.uncovered}</span></h3>
+        <h3 class="subhead">${esc(t("uncoveredTitle"))}</h3>
         ${uncovered}
       </section>
     </div>`;
 }
 
-function renderOrders() {
-  setPage(t("orders"), t("ordersSubtitle"));
-  const orders = rows("orders");
-  const guardrails = guardrailIndex(rows("guardrails"));
-  const flagged = state.route.id === "flagged";
-  const filter = state.orderFilter;
-  const list = filterOrders(orders, { ...filter, flagged }, rows("guardrails"));
-  const agents = [...new Set(orders.map((row) => row.agent).filter(Boolean))];
-  els.content.innerHTML = `
-    <section class="card flush">
-      <div class="toolbar">
-        <select id="orderAgent" aria-label="${esc(t("allAgents"))}">
-          <option value="">${esc(t("allAgents"))}</option>
-          ${agents.map((agent) => `<option value="${esc(agent)}" ${filter.agent === agent ? "selected" : ""}>${esc(agentName(agent))}</option>`).join("")}
-        </select>
-        <select id="orderStatus" aria-label="${esc(t("allStatuses"))}">
-          <option value="">${esc(t("allStatuses"))}</option>
-          ${ORDER_STATUSES.map((status) => `<option value="${status}" ${filter.status === status ? "selected" : ""}>${esc(enumLabel("orderStatus", status))}</option>`).join("")}
-        </select>
-        <label class="toggle-filter"><input id="orderFlagged" type="checkbox" ${flagged ? "checked" : ""}> ${esc(t("onlyFlagged"))}</label>
-      </div>
-      <p class="filter-note muted">${esc(t("filterNote", { count: orders.length }))}</p>
-      ${
-        list.length
-          ? `<table class="table stack-table orders-table">
-        <thead><tr><th>${esc(t("order"))}</th><th>${esc(t("agent"))}</th><th>${esc(t("sku"))}</th><th class="num">${esc(t("qty"))}</th><th class="num">${esc(t("paid"))}</th><th class="num">${esc(t("listed"))}</th><th class="num">${esc(t("revenue"))}</th><th>${esc(t("status"))}</th></tr></thead>
-        <tbody>
-          ${list
-            .map((order) => {
-              const flags = orderFlags(order, guardrails);
-              const problem = flags.below_listed || flags.below_floor;
-              return `<tr class="${problem ? "flagged" : ""}" data-order="${esc(order.id)}">
-                <td data-label="${esc(t("order"))}"><div class="cell-identity"><div><strong>${esc(order.order_no)}</strong><span>${esc(formatDay(order.ordered_on))}${order.store ? ` · ${esc(enumLabel("store", order.store))}` : ""}</span></div></div></td>
-                <td data-label="${esc(t("agent"))}">${esc(agentName(order.agent))}</td>
-                <td data-label="${esc(t("sku"))}"><code>${esc(order.sku)}</code></td>
-                <td class="num" data-label="${esc(t("qty"))}">${esc(order.quantity)}</td>
-                <td class="num" data-label="${esc(t("paid"))}">
-                  <span class="${problem ? "paid-below" : ""}">${esc(money(order.paid_price, order.currency))}</span>
-                  ${flags.below_listed ? `<div class="price-flag">${esc(t("belowListed", { amount: money(flags.shortfall, order.currency) }))}</div>` : ""}
-                  ${flags.below_floor ? `<div class="price-flag danger">${esc(t("belowFloor"))}</div>` : ""}
-                </td>
-                <td class="num" data-label="${esc(t("listed"))}">${esc(money(order.listed_price, order.currency))}</td>
-                <td class="num" data-label="${esc(t("revenue"))}">${esc(money(orderRevenue(order), order.currency))}</td>
-                <td data-label="${esc(t("status"))}">${badge(enumLabel("orderStatus", order.status), toneForOrder(order.status))}</td>
-              </tr>`;
-            })
-            .join("")}
-        </tbody>
-      </table>`
-          : emptyState(t("noMatchingOrders"), t("noMatchingOrdersBody"))
-      }
-    </section>
-    ${loadMoreControl("orders")}`;
+// ── record views ────────────────────────────────────────────────────────────
+
+const proposalMatches = (row, id) => (id === "all" ? true : id ? row.status === id : DECIDABLE_PROPOSALS.has(row.status));
+const exceptionMatches = (row, id) => (id === "all" ? true : id ? row.status === id : row.status === "open");
+
+// Segmented tabs on a wide screen; the same choices as one select on a phone,
+// so the toolbar stays a single row there.
+function segments(views, labelFor, countFor, active) {
+  const tabs = `<div class="segmented view-tabs" role="tablist">${views
+    .map(
+      (id) =>
+        `<button type="button" role="tab" aria-selected="${active === id}" class="segment ${active === id ? "active" : ""}" data-filter="${id}">${esc(labelFor(id))} <b>${countFor(id)}</b></button>`,
+    )
+    .join("")}</div>`;
+  const select = `<select class="filter-select" data-filter-select aria-label="${esc(t("status"))}">${views
+    .map((id) => `<option value="${id}" ${active === id ? "selected" : ""}>${esc(labelFor(id))} (${countFor(id)})</option>`)
+    .join("")}</select>`;
+  return tabs + select;
 }
 
-function renderProposals() {
-  const view = PROPOSAL_VIEWS.includes(state.route.id) ? state.route.id : "";
+const refreshButton = () => `<button type="button" class="button" data-refresh>${esc(t("refresh"))}</button>`;
+
+function ordersList() {
+  const route = state.route;
+  const orders = rows("orders");
+  const guardrails = guardrailIndex(rows("guardrails"));
+  const list = filterOrders(orders, { agent: route.agent, status: route.status, flagged: route.flagged }, rows("guardrails"));
+  const agents = [...new Set(orders.map((row) => row.agent).filter(Boolean))];
+  const actions = `
+    <select data-order-filter="agent" aria-label="${esc(t("agent"))}">
+      <option value="">${esc(t("allAgents"))}</option>
+      ${agents.map((agent) => `<option value="${esc(agent)}" ${route.agent === agent ? "selected" : ""}>${esc(agentName(agent))}</option>`).join("")}
+    </select>
+    <select data-order-filter="status" aria-label="${esc(t("status"))}">
+      <option value="">${esc(t("allStatuses"))}</option>
+      ${ORDER_STATUSES.map((status) => `<option value="${status}" ${route.status === status ? "selected" : ""}>${esc(enumLabel("orderStatus", status))}</option>`).join("")}
+    </select>
+    <label class="toggle-filter" title="${esc(t("filterNote", { count: orders.length }))}"><input data-order-filter="flagged" type="checkbox" ${route.flagged ? "checked" : ""}> ${esc(t("onlyFlagged"))}</label>
+    ${refreshButton()}`;
+  const table = `<table class="ws-table orders-table">
+    ${tableHead([
+      [t("order")],
+      [t("orderedOn"), "ws-col-narrow"],
+      [t("agent")],
+      [t("sku")],
+      [t("qty"), "col-qty num"],
+      [t("paid"), "ws-col-num ws-split-keep"],
+      [t("listed"), "ws-col-num"],
+      [t("revenue"), "ws-col-num"],
+      [t("priceCheck"), "ws-col-wide"],
+      [t("status"), "ws-col-narrow"],
+    ])}
+    <tbody>
+      ${list
+        .map((order) => {
+          const flags = orderFlags(order, guardrails);
+          const problem = flags.below_listed || flags.below_floor;
+          const checks = [
+            flags.below_floor ? badge(t("belowFloor"), "danger") : "",
+            flags.below_listed ? badge(t("belowListed", { amount: money(flags.shortfall, order.currency) }), "warning") : "",
+          ].join("");
+          return `${rowOpen(order.id, problem ? "flagged" : "")}
+            ${cell(`<strong>${esc(order.order_no)}</strong>`, { title: order.order_no })}
+            ${cell(esc(formatDay(order.ordered_on)), { className: "ws-col-narrow" })}
+            ${cell(esc(agentName(order.agent)))}
+            ${cell(`<code>${esc(order.sku)}</code>`, { title: order.sku })}
+            ${cell(esc(order.quantity), { className: "col-qty num" })}
+            ${cell(`<span class="${problem ? "paid-below" : ""}">${esc(money(order.paid_price, order.currency))}</span>`, { className: "ws-col-num ws-split-keep" })}
+            ${cell(esc(money(order.listed_price, order.currency)), { className: "ws-col-num" })}
+            ${cell(esc(money(orderRevenue(order), order.currency)), { className: "ws-col-num" })}
+            ${cell(checks || `<span class="muted">—</span>`, { className: "ws-col-wide" })}
+            ${cell(badge(enumLabel("orderStatus", order.status), toneForOrder(order.status)), { className: "ws-col-narrow" })}
+          </tr>`;
+        })
+        .join("")}
+    </tbody>
+  </table>`;
+  return {
+    actions,
+    count: list.length,
+    narrowed: Boolean(route.agent || route.status || route.flagged),
+    list: `${list.length ? table : emptyState(t("noMatchingOrders"), t("noMatchingOrdersBody"))}${loadMoreControl("orders")}`,
+  };
+}
+
+function proposalsList() {
+  const view = state.route.filter;
   const index = guardrailIndex(rows("guardrails"));
   const all = reviewQueue(rows("proposals"), rows("guardrails"));
-  const matches = (row, id) => (id === "all" ? true : id ? row.status === id : DECIDABLE_PROPOSALS.has(row.status));
-  const list = all.filter((row) => matches(row, view));
-  setPage(t("proposals"), t("proposalsSubtitle"));
-  els.content.innerHTML = `
-    ${noticeBar()}
-    ${segments(
-      "proposals",
-      PROPOSAL_VIEWS,
-      (id) => (id === "" ? t("toDecide") : id === "all" ? t("all") : enumLabel("proposalStatus", id)),
-      (id) => all.filter((row) => matches(row, id)).length,
-      view,
-    )}
-    <div class="card-list">
-      ${list.length ? list.map((row) => proposalCard(row, index)).join("") : `<section class="card">${emptyState(t("noProposals"), t("noProposalsBody"))}</section>`}
+  const list = all.filter((row) => proposalMatches(row, view));
+  const actions = `${segments(
+    PROPOSAL_VIEWS,
+    (id) => (id === "" ? t("toDecide") : id === "all" ? t("all") : enumLabel("proposalStatus", id)),
+    (id) => all.filter((row) => proposalMatches(row, id)).length,
+    view,
+  )}${refreshButton()}`;
+  const table = `<table class="ws-table queue-table proposals-table">
+    ${tableHead([[t("proposal")], [t("status")], [t("changePct"), "ws-col-num ws-split-keep"]])}
+    <tbody>
+      ${list
+        .map((row) => {
+          const check = evaluateProposal(row, index);
+          const breach = check.computed.length > 0;
+          return `${rowOpen(row.id)}
+            ${cell(`${breach ? `<span class="breach-dot" title="${esc(t("guardrailCheck"))}" aria-label="${esc(t("guardrailCheck"))}"></span>` : ""}<span class="row-title">${esc(row.title)}</span>`, { title: row.title })}
+            ${cell(badge(enumLabel("proposalStatus", row.status), toneForProposal(row.status)))}
+            ${cell(`<span class="${check.computed.some((item) => item.kind === "step") ? "paid-below" : ""}">${esc(signedPct(check.change_pct))}</span>`, { className: "ws-col-num ws-split-keep" })}
+          </tr>`;
+        })
+        .join("")}
+    </tbody>
+  </table>`;
+  return {
+    actions,
+    count: list.length,
+    narrowed: false,
+    list: `${list.length ? table : emptyState(t("noProposals"), t("noProposalsBody"))}${loadMoreControl("proposals")}${loadMoreControl("guardrails")}`,
+  };
+}
+
+function exceptionsList() {
+  const view = state.route.filter;
+  const all = exceptionQueue(rows("exceptions"));
+  const list = all.filter((row) => exceptionMatches(row, view));
+  const actions = `${segments(
+    EXCEPTION_VIEWS,
+    (id) => (id === "" ? t("exceptionsOpen") : id === "all" ? t("all") : enumLabel("exceptionStatus", id)),
+    (id) => all.filter((row) => exceptionMatches(row, id)).length,
+    view,
+  )}${refreshButton()}`;
+  const table = `<table class="ws-table queue-table exceptions-table">
+    ${tableHead([[t("exception")], [t("status")], [t("impact"), "ws-col-num ws-split-keep"]])}
+    <tbody>
+      ${list
+        .map(
+          (row) => `${rowOpen(row.id)}
+            ${cell(`<span class="row-title">${esc(row.title)}</span>`, { title: row.title })}
+            ${cell(badge(enumLabel("exceptionStatus", row.status), toneForException(row.status)))}
+            ${cell(`<span class="impact ${row.impact < 0 ? "negative" : ""}">${esc(row.impact == null ? "—" : signedMoney(row.impact))}</span>`, { className: "ws-col-num ws-split-keep" })}
+          </tr>`,
+        )
+        .join("")}
+    </tbody>
+  </table>`;
+  return {
+    actions,
+    count: list.length,
+    narrowed: false,
+    list: `${list.length ? table : emptyState(t("noExceptions"), t("noExceptionsBody"))}${loadMoreControl("exceptions")}${loadMoreControl("orders")}`,
+  };
+}
+
+function guardrailsList() {
+  const list = [...rows("guardrails")].sort((a, b) => a.sku.localeCompare(b.sku));
+  const table = `<table class="ws-table guardrails-table">
+    ${tableHead([
+      [t("sku")],
+      [t("floor"), "ws-col-num"],
+      [t("ceiling"), "ws-col-num"],
+      [t("maxChange"), "ws-col-num"],
+      [t("samePrice")],
+      [t("owner")],
+    ])}
+    <tbody>
+      ${list
+        .map(
+          (row) => `${rowOpen(row.id)}
+            ${cell(`<code>${esc(row.sku)}</code>`, { title: row.sku })}
+            ${cell(esc(money(row.floor_price)), { className: "ws-col-num" })}
+            ${cell(esc(money(row.ceiling_price)), { className: "ws-col-num" })}
+            ${cell(row.max_change_pct == null ? "—" : `±${esc(row.max_change_pct)}%`, { className: "ws-col-num" })}
+            ${cell(row.same_price_everywhere ? badge(t("yes"), "active") : `<span class="muted">${esc(t("no"))}</span>`)}
+            ${cell(esc(row.owner || "—"), { title: row.owner })}
+          </tr>`,
+        )
+        .join("")}
+    </tbody>
+  </table>`;
+  return {
+    actions: refreshButton(),
+    count: list.length,
+    narrowed: false,
+    list: `${list.length ? table : emptyState(t("noGuardrails"), t("noGuardrailsBody"))}${loadMoreControl("guardrails")}`,
+  };
+}
+
+const LISTS = { orders: ordersList, proposals: proposalsList, exceptions: exceptionsList, guardrails: guardrailsList };
+
+function renderRecordView() {
+  const { view } = state.route;
+  setTitle(t(view));
+  els.viewTitle.textContent = t(view);
+  els.viewTitle.title = t(VIEW_HINT[view]);
+  const model = LISTS[view]();
+  els.viewCount.textContent = String(model.count);
+  document.body.classList.toggle("ws-searching", model.narrowed);
+  // Keep a focused control (a select the user just changed) across re-renders.
+  const focused = document.activeElement?.dataset || {};
+  const focusSelector =
+    focused.orderFilter != null
+      ? `[data-order-filter="${focused.orderFilter}"]`
+      : focused.filterSelect != null
+        ? "[data-filter-select]"
+        : focused.filter != null
+          ? `[data-filter="${focused.filter}"]`
+          : "";
+  els.viewActions.innerHTML = model.actions;
+  if (focusSelector && els.viewActions.contains(document.activeElement) === false) els.viewActions.querySelector(focusSelector)?.focus();
+  els.listPanel.innerHTML = model.list;
+  renderDetail();
+}
+
+// ── detail (one markup for drawer, split and full page) ─────────────────────
+
+const DETAIL_RENDERERS = {
+  orders: (row) => orderDetail(row),
+  proposals: (row) => proposalDetail(row),
+  exceptions: (row) => exceptionDetail(row),
+  guardrails: (row) => guardrailDetail(row),
+};
+const EMPTY_PROMPT = { proposals: "selectProposal", exceptions: "selectException" };
+
+function renderDetail() {
+  const { view, selectedId, presentation } = state.route;
+  els.detailBack.textContent = presentation === "page" || isPhone() ? t("backToList") : t("close");
+  els.detailExpand.hidden = !selectedId || presentation === "page" || isPhone();
+  if (selectedId) els.detailExpand.href = detailUrl(selectedId, view);
+  els.detailPanel.querySelector(".ws-detail-bar").hidden = !selectedId;
+  if (!selectedId) {
+    els.detailBody.innerHTML = DETAIL_MODES[view] === "split" ? `<div class="ws-detail-empty">${esc(t(EMPTY_PROMPT[view]))}</div>` : "";
+    return;
+  }
+  const row = recordById(view, selectedId);
+  // A record named by the URL that is not on a loaded page. This app has no
+  // records.get permission, so it says so instead of reading more pages.
+  els.detailBody.innerHTML = row
+    ? `${noticeBar()}${DETAIL_RENDERERS[view](row)}`
+    : emptyState(t("recordMissing"), state.data?.cursors?.[view] ? t("recordMissingMore") : t("recordMissingBody"));
+}
+
+const detailHead = (title, sub, badges) => `<header class="detail-head">
+    <div class="detail-title">
+      <h2>${esc(title)}</h2>
+      ${sub ? `<div class="muted">${sub}</div>` : ""}
     </div>
-    ${loadMoreControl("proposals")}
-    ${loadMoreControl("guardrails")}`;
+    <div class="badge-row">${badges}</div>
+  </header>`;
+
+const fact = (label, value) => `<div><dt>${esc(label)}</dt><dd>${value}</dd></div>`;
+
+function orderDetail(order) {
+  const guardrails = guardrailIndex(rows("guardrails"));
+  const flags = orderFlags(order, guardrails);
+  const guardrail = guardrails.get(order.sku) || null;
+  const covering = rows("exceptions").filter((row) => row.order === order.id);
+  const checks = [
+    flags.below_floor
+      ? `<div class="notice danger compact">${esc(t("orderBelowFloor", { floor: money(guardrail?.floor_price, order.currency) }))}</div>`
+      : "",
+    flags.below_listed
+      ? `<div class="notice warning compact">${esc(t("orderBelowListed", { amount: money(flags.shortfall, order.currency) }))}</div>`
+      : "",
+    flags.below_listed && !covering.length ? `<div class="notice compact">${esc(t("orderUncovered"))}</div>` : "",
+  ].join("");
+  return `<article class="record-detail">
+    ${detailHead(order.order_no, `${esc(agentName(order.agent))} · ${esc(formatDay(order.ordered_on))}`, badge(enumLabel("orderStatus", order.status), toneForOrder(order.status)))}
+    ${checks}
+    <dl class="facts">
+      ${order.store ? fact(t("store"), esc(enumLabel("store", order.store))) : ""}
+      ${fact(t("sku"), `<code>${esc(order.sku)}</code>`)}
+      ${fact(t("quantity"), esc(order.quantity))}
+      ${fact(t("unitPaid"), `<span class="${flags.below_listed || flags.below_floor ? "paid-below" : ""}">${esc(money(order.paid_price, order.currency))}</span>`)}
+      ${fact(t("listedAt"), esc(money(order.listed_price, order.currency)))}
+      ${fact(t("revenue"), esc(money(orderRevenue(order), order.currency)))}
+    </dl>
+    <section class="detail-section">
+      <h3>${esc(t("guardrailFor", { sku: order.sku }))}</h3>
+      ${
+        guardrail
+          ? `<a class="related-row" href="${recordUrl(guardrail.id, "guardrails")}"><span>${esc(t("checkFloor", { limit: money(guardrail.floor_price) }))} · ${esc(t("checkCeiling", { limit: money(guardrail.ceiling_price) }))}${guardrail.max_change_pct == null ? "" : ` · ${esc(t("checkStep", { limit: guardrail.max_change_pct }))}`}</span></a>`
+          : `<p class="muted">${esc(t("noGuardrailFor"))}</p>`
+      }
+    </section>
+    <section class="detail-section">
+      <h3>${esc(t("exceptions"))}</h3>
+      ${
+        covering.length
+          ? covering
+              .map(
+                (row) =>
+                  `<a class="related-row" href="${recordUrl(row.id, "exceptions")}"><span>${esc(row.title)}</span>${badge(enumLabel("exceptionStatus", row.status), toneForException(row.status))}</a>`,
+              )
+              .join("")
+          : `<p class="muted">${esc(t("noExceptionForOrder"))}</p>`
+      }
+    </section>
+  </article>`;
 }
 
 function checkMarkup(proposal, check) {
@@ -546,24 +902,19 @@ function checkMarkup(proposal, check) {
   return `<ul class="check-list">${items.join("")}</ul>`;
 }
 
-function proposalCard(row, index) {
-  const check = evaluateProposal(row, index);
+function proposalDetail(row) {
+  const check = evaluateProposal(row, guardrailIndex(rows("guardrails")));
   const decidable = DECIDABLE_PROPOSALS.has(row.status);
   const key = `proposals:${row.id}`;
   const anyBusy = Boolean(state.busy);
   const noteError = state.noteErrors[key];
   const unsourced = !row.source.trim() || /^\(?none\)?$/i.test(row.source.trim());
-  return `<article class="card decision-card" data-proposal="${esc(row.id)}">
-    <div class="card-head">
-      <div class="card-title">
-        <h3>${esc(row.title)}</h3>
-        <div class="muted"><code>${esc(row.sku)}</code>${row.channels ? ` · ${esc(t("channels"))}: ${esc(row.channels)}` : ""}</div>
-      </div>
-      <div class="badge-row">
-        ${check.computed.length ? badge(t("guardrailCheck"), "danger") : ""}
-        ${badge(enumLabel("proposalStatus", row.status), toneForProposal(row.status))}
-      </div>
-    </div>
+  return `<article class="record-detail decision-card" data-proposal="${esc(row.id)}">
+    ${detailHead(
+      row.title,
+      `<code>${esc(row.sku)}</code>${row.channels ? ` · ${esc(t("channels"))}: ${esc(row.channels)}` : ""}`,
+      `${check.computed.length ? badge(t("guardrailCheck"), "danger") : ""}${badge(enumLabel("proposalStatus", row.status), toneForProposal(row.status))}`,
+    )}
     <div class="price-change">
       <div class="price-side before"><span class="diff-label">${esc(t("current"))}</span><strong>${esc(money(row.current_price))}</strong></div>
       <div class="diff-arrow" aria-hidden="true">→</div>
@@ -584,10 +935,10 @@ function proposalCard(row, index) {
     ${check.same_price_rule ? `<div class="notice compact">${esc(t("samePriceRule"))}</div>` : ""}
     ${!check.same_price_rule && check.same_price_noted ? `<div class="notice compact">${esc(t("samePriceNoted"))}</div>` : ""}
     <dl class="facts">
-      ${row.reason ? `<div><dt>${esc(t("reason"))}</dt><dd>${esc(row.reason)}</dd></div>` : ""}
-      <div><dt>${esc(t("source"))}</dt><dd>${unsourced ? `<span class="inline-error">${esc(t("noSource"))}</span>` : esc(row.source)}</dd></div>
-      ${row.decision_note ? `<div><dt>${esc(t("decisionNote"))}</dt><dd>${esc(row.decision_note)}</dd></div>` : ""}
-      ${row.applied_on ? `<div><dt>${esc(enumLabel("proposalStatus", "applied"))}</dt><dd>${esc(t("appliedOn", { date: formatDay(row.applied_on) }))}</dd></div>` : ""}
+      ${row.reason ? fact(t("reason"), esc(row.reason)) : ""}
+      ${fact(t("source"), unsourced ? `<span class="inline-error">${esc(t("noSource"))}</span>` : esc(row.source))}
+      ${row.decision_note ? fact(t("decisionNote"), esc(row.decision_note)) : ""}
+      ${row.applied_on ? fact(enumLabel("proposalStatus", "applied"), esc(t("appliedOn", { date: formatDay(row.applied_on) }))) : ""}
     </dl>
     ${
       decidable
@@ -606,57 +957,34 @@ function proposalCard(row, index) {
   </article>`;
 }
 
-function renderExceptions() {
-  const view = EXCEPTION_VIEWS.includes(state.route.id) ? state.route.id : "";
-  const all = exceptionQueue(rows("exceptions"));
-  const matches = (row, id) => (id === "all" ? true : id ? row.status === id : row.status === "open");
-  const list = all.filter((row) => matches(row, view));
-  setPage(t("exceptions"), t("exceptionsSubtitle"));
-  const lookup = ordersById();
-  els.content.innerHTML = `
-    ${noticeBar()}
-    ${segments(
-      "exceptions",
-      EXCEPTION_VIEWS,
-      (id) => (id === "" ? t("exceptionsOpen") : id === "all" ? t("all") : enumLabel("exceptionStatus", id)),
-      (id) => all.filter((row) => matches(row, id)).length,
-      view,
-    )}
-    <div class="card-list">
-      ${list.length ? list.map((row) => exceptionCard(row, lookup)).join("") : `<section class="card">${emptyState(t("noExceptions"), t("noExceptionsBody"))}</section>`}
-    </div>
-    ${loadMoreControl("exceptions")}
-    ${loadMoreControl("orders")}`;
-}
-
-function exceptionCard(row, lookup) {
+function exceptionDetail(row) {
   const key = `exceptions:${row.id}`;
   const anyBusy = Boolean(state.busy);
   const noteError = state.noteErrors[key];
-  const order = row.order ? lookup.get(row.order) : null;
+  const order = row.order ? recordById("orders", row.order) : null;
+  // A relation is a record id: resolve it to the order number, or say it is
+  // not loaded — never print the id.
   const orderLine = !row.order
     ? `<span class="muted">${esc(t("noOrderLinked"))}</span>`
     : !order
       ? `<span class="muted">${esc(t("orderNotLoaded"))}</span>`
-      : esc(
+      : `<a class="text-link" href="${recordUrl(order.id, "orders")}">${esc(
           t("orderLine", {
             order: order.order_no,
             agent: agentName(order.agent),
             paid: money(order.paid_price, order.currency),
             listed: order.listed_price == null ? "" : t("orderListedPart", { listed: money(order.listed_price, order.currency) }),
           }),
-        );
-  return `<article class="card decision-card" data-exception="${esc(row.id)}">
-    <div class="card-head">
-      <div class="card-title">
-        <h3>${esc(row.title)}</h3>
-        <div class="muted">${esc(enumLabel("exceptionType", row.type))}${row.sku ? ` · <code>${esc(row.sku)}</code>` : ""} · ${esc(t("detectedOn", { date: formatDay(row.detected_on) }))}</div>
-      </div>
-      <div class="badge-row">${badge(enumLabel("exceptionStatus", row.status), toneForException(row.status))}</div>
-    </div>
+        )}</a>`;
+  return `<article class="record-detail decision-card" data-exception="${esc(row.id)}">
+    ${detailHead(
+      row.title,
+      `${esc(enumLabel("exceptionType", row.type))}${row.sku ? ` · <code>${esc(row.sku)}</code>` : ""} · ${esc(t("detectedOn", { date: formatDay(row.detected_on) }))}`,
+      badge(enumLabel("exceptionStatus", row.status), toneForException(row.status)),
+    )}
     <dl class="facts">
-      <div><dt>${esc(t("order"))}</dt><dd>${orderLine}</dd></div>
-      <div><dt>${esc(t("impact"))}</dt><dd><span class="impact ${row.impact < 0 ? "negative" : ""}">${esc(row.impact == null ? "—" : signedMoney(row.impact))}</span></dd></div>
+      ${fact(t("order"), orderLine)}
+      ${fact(t("impact"), `<span class="impact ${row.impact < 0 ? "negative" : ""}">${esc(row.impact == null ? "—" : signedMoney(row.impact))}</span>`)}
       ${row.resolution ? `<div><dt>${esc(t("resolution"))}</dt><dd class="wrap">${esc(row.resolution)}</dd></div>` : ""}
     </dl>
     ${
@@ -675,43 +1003,57 @@ function exceptionCard(row, lookup) {
   </article>`;
 }
 
-function renderGuardrails() {
-  setPage(t("guardrails"), t("guardrailsSubtitle"));
-  const list = [...rows("guardrails")].sort((a, b) => a.sku.localeCompare(b.sku));
-  if (!list.length) {
-    els.content.innerHTML = `<section class="card">${emptyState(t("noGuardrails"), t("noGuardrailsBody"))}</section>${loadMoreControl("guardrails")}`;
-    return;
-  }
-  els.content.innerHTML = `
-    <section class="card flush">
-      <table class="table stack-table">
-        <thead><tr><th>${esc(t("sku"))}</th><th class="num">${esc(t("floor"))}</th><th class="num">${esc(t("ceiling"))}</th><th class="num">${esc(t("maxChange"))}</th><th>${esc(t("samePrice"))}</th><th>${esc(t("owner"))}</th></tr></thead>
-        <tbody>
-          ${list
-            .map(
-              (row) => `<tr>
-                <td data-label="${esc(t("sku"))}"><code>${esc(row.sku)}</code></td>
-                <td class="num" data-label="${esc(t("floor"))}">${esc(money(row.floor_price))}</td>
-                <td class="num" data-label="${esc(t("ceiling"))}">${esc(money(row.ceiling_price))}</td>
-                <td class="num" data-label="${esc(t("maxChange"))}">${row.max_change_pct == null ? "—" : `±${esc(row.max_change_pct)}%`}</td>
-                <td data-label="${esc(t("samePrice"))}">${row.same_price_everywhere ? badge(t("yes"), "active") : `<span class="muted">${esc(t("no"))}</span>`}</td>
-                <td data-label="${esc(t("owner"))}">${esc(row.owner || "—")}</td>
-              </tr>`,
-            )
-            .join("")}
-        </tbody>
-      </table>
+function guardrailDetail(row) {
+  const proposals = rows("proposals").filter((item) => item.sku === row.sku);
+  const index = guardrailIndex(rows("guardrails"));
+  const belowFloor = rows("orders").filter((order) => order.sku === row.sku && orderFlags(order, index).below_floor);
+  return `<article class="record-detail">
+    ${detailHead(row.sku, row.owner ? `${esc(t("owner"))}: ${esc(row.owner)}` : "", "")}
+    <dl class="facts">
+      ${fact(t("floor"), esc(money(row.floor_price)))}
+      ${fact(t("ceiling"), esc(money(row.ceiling_price)))}
+      ${fact(t("maxChange"), row.max_change_pct == null ? "—" : `±${esc(row.max_change_pct)}%`)}
+      ${fact(t("samePrice"), esc(row.same_price_everywhere ? t("yes") : t("no")))}
+    </dl>
+    <p class="muted">${esc(t("guardrailsReadOnly"))}</p>
+    <section class="detail-section">
+      <h3>${esc(t("proposals"))}</h3>
+      ${
+        proposals.length
+          ? proposals
+              .map(
+                (item) =>
+                  `<a class="related-row" href="${recordUrl(item.id, "proposals")}"><span>${esc(item.title)}</span>${badge(enumLabel("proposalStatus", item.status), toneForProposal(item.status))}</a>`,
+              )
+              .join("")
+          : `<p class="muted">${esc(t("noProposalsForSku"))}</p>`
+      }
     </section>
-    ${loadMoreControl("guardrails")}`;
+    <section class="detail-section">
+      <h3>${esc(t("ordersBelowFloor"))}</h3>
+      ${
+        belowFloor.length
+          ? belowFloor
+              .map(
+                (order) =>
+                  `<a class="related-row" href="${recordUrl(order.id, "orders")}"><span>${esc(order.order_no)} · ${esc(agentName(order.agent))} · ${esc(formatDay(order.ordered_on))}</span><span class="paid-below">${esc(money(order.paid_price, order.currency))}</span></a>`,
+              )
+              .join("")
+          : `<p class="muted">${esc(t("noOrdersBelowFloor"))}</p>`
+      }
+    </section>
+  </article>`;
 }
 
+// ── settings ────────────────────────────────────────────────────────────────
+
 function renderSettings() {
-  setPage(t("settings"), t("settingsSubtitle"));
+  setTitle(t("settings"));
   const current = settings();
   const channels = current?.agent_channels?.length ? current.agent_channels.map(agentName).join(", ") : t("notSet");
-  els.content.innerHTML = `
+  els.settingsBody.innerHTML = `
     <section class="card settings-card">
-      <h2>${esc(t("settings"))}</h2>
+      <h2>${esc(t("storeSettings"))}</h2>
       <dl class="settings-grid">
         <div><dt>${esc(t("storeLabel"))}</dt><dd>${esc(current?.store_name || t("notSet"))}</dd></div>
         <div><dt>${esc(t("channelsLabel"))}</dt><dd>${esc(channels)}</dd></div>
@@ -730,23 +1072,36 @@ function renderSettings() {
     <section class="settings" id="settingsContent"></section>`;
 }
 
+// ── render ──────────────────────────────────────────────────────────────────
+
 function render() {
   renderShell();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.data) && !state.error;
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  if (!onRecordView) body.remove("ws-searching");
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
   if (state.error) {
-    setPage(t("errorTitle"));
-    els.content.innerHTML = `<section class="card">${emptyState(t("errorTitle"), state.error, `<button type="button" class="button" data-retry>${esc(t("retry"))}</button>`)}</section>`;
+    setTitle(t("errorTitle"));
+    els.loadState.classList.add("error");
+    els.loadState.innerHTML = emptyState(t("errorTitle"), state.error, `<button type="button" class="button" data-retry>${esc(t("retry"))}</button>`);
     return;
   }
   if (!state.data) {
-    setPage(t("loading"));
-    els.content.innerHTML = `<section class="card"><p class="muted">${esc(t("loadingData"))}</p><div class="skeleton skeleton-block"></div></section>`;
+    setTitle(t("loading"));
+    els.loadState.classList.remove("error");
+    els.loadState.innerHTML = `<p class="muted">${esc(t("loadingData"))}</p><div class="skeleton skeleton-block"></div>`;
     return;
   }
-  const view = state.route.view;
-  if (view === "orders") renderOrders();
-  else if (view === "proposals") renderProposals();
-  else if (view === "exceptions") renderExceptions();
-  else if (view === "guardrails") renderGuardrails();
+  if (onRecordView) renderRecordView();
   else if (view === "settings") renderSettings();
   else renderOverview();
 }
@@ -793,13 +1148,29 @@ async function decide(key, id, action) {
 
 // ── events ──────────────────────────────────────────────────────────────────
 
+function openRow(id) {
+  const url = recordUrl(id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+}
+
+function refresh() {
+  state.notice = null;
+  loadState().catch(showFatal);
+}
+
 function bindEvents() {
   window.addEventListener("hashchange", setRoute);
-  window.addEventListener("resize", syncResponsiveShell);
-  const refresh = () => {
-    state.notice = null;
-    loadState().catch(showFatal);
-  };
+  window.addEventListener("resize", () => {
+    syncResponsiveShell();
+    if (state.data && RECORD_VIEWS.includes(state.route.view)) renderDetail();
+  });
   els.refresh.addEventListener("click", refresh);
   els.mobileRefresh.addEventListener("click", refresh);
   els.sidebarToggle.addEventListener("click", toggleSidebar);
@@ -810,32 +1181,61 @@ function bindEvents() {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, state.lang);
     const url = new URL(window.location.href);
     url.searchParams.set("lang", state.lang);
-    history.replaceState(null, "", `${url.pathname}${url.search}${location.hash}`);
+    history.replaceState(history.state, "", `${url.pathname}${url.search}${location.hash}`);
     render();
   });
-  els.content.addEventListener("click", (event) => {
+  els.viewActions.addEventListener("click", (event) => {
+    if (event.target.closest("[data-refresh]")) return void refresh();
+    const segment = event.target.closest("[data-filter]");
+    if (segment) replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, filter: segment.dataset.filter })}`);
+  });
+  els.viewActions.addEventListener("change", (event) => {
+    const select = event.target.closest("[data-filter-select]");
+    if (select) {
+      replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, filter: select.value })}`);
+      return;
+    }
+    const control = event.target.closest("[data-order-filter]");
+    if (!control) return;
+    const name = control.dataset.orderFilter;
+    const next = { ...state.route, [name]: name === "flagged" ? control.checked : control.value };
+    replaceRoute(`#/orders${routeQuery({ peek: state.route.peek }, next)}`);
+  });
+  els.listPanel.addEventListener("click", (event) => {
     const more = event.target.closest("[data-load-more]");
     if (more) return void loadMore(more.dataset.loadMore);
-    const decision = event.target.closest("[data-decide]");
-    if (decision) return void decide(decision.dataset.key, decision.dataset.id, decision.dataset.decide);
-    if (event.target.closest("[data-retry]")) {
-      state.error = "";
-      render();
-      boot();
-    }
+    if (event.target.closest("a, button")) return;
+    const row = event.target.closest("tr[data-id]");
+    if (row) openRow(row.dataset.id);
   });
-  els.content.addEventListener("input", (event) => {
+  els.listPanel.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    const row = event.target.closest("tr[data-id]");
+    if (row) openRow(row.dataset.id);
+  });
+  els.detailBack.addEventListener("click", closeDetail);
+  els.detailBody.addEventListener("click", (event) => {
+    const decision = event.target.closest("[data-decide]");
+    if (decision) decide(decision.dataset.key, decision.dataset.id, decision.dataset.decide);
+  });
+  els.detailBody.addEventListener("input", (event) => {
     const note = event.target.closest("[data-note]");
     if (note) state.drafts[note.dataset.note] = note.value;
   });
-  els.content.addEventListener("change", (event) => {
-    if (event.target.id === "orderAgent") state.orderFilter.agent = event.target.value;
-    else if (event.target.id === "orderStatus") state.orderFilter.status = event.target.value;
-    else if (event.target.id === "orderFlagged") {
-      location.hash = event.target.checked ? "#/orders/flagged" : "#/orders";
-      return;
-    } else return;
+  els.loadState.addEventListener("click", (event) => {
+    if (!event.target.closest("[data-retry]")) return;
+    state.error = "";
     render();
+    boot();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    // Escape inside a note only leaves the field; a second Escape closes.
+    if (event.target.closest?.("textarea, input, select")) {
+      event.target.blur();
+      return;
+    }
+    if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
   });
 }
 
@@ -844,6 +1244,7 @@ function showFatal(error) {
   render();
 }
 
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
 bindEvents();
 render();

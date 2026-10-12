@@ -11,6 +11,8 @@ export const appConfig = {
     description: "Outbound email-marketing desk built on the SEND discipline",
     slug: "busa-campaigns",
   },
+  // Where a record opens, per view (see app.js for why each one).
+  ui: { detail_modes: { campaigns: "split", deliverability: "drawer", performance: "drawer", suppression: "drawer" } },
   airApp: { name: "Busa Campaigns", slug: "busa-campaigns-app", resourceKey: "busa-campaigns-app" },
   bases: [
     {
@@ -91,7 +93,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

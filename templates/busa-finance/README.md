@@ -9,8 +9,8 @@ or written back to the source-of-truth books.
 
 ## What It Shows
 
-- **Overview**: model KPI cards (revenue, gross margin, ending cash, free cash flow) with a five-year forecast table (revenue → gross profit → EBITDA → net income → ending cash → free cash flow) and a "needs attention" panel counting checks that need a note, are ready for the agent, or are blocked.
-- **Checks**: the model-audit review queue — balance-sheet ties, cash roll-forward, net income → retained earnings, depreciation ↔ PP&E, debt/interest linkage, working-capital movements — each with evidence and approve / request-changes / block / dismiss controls.
+- **Overview**: a three-number band (revenue CAGR, final-year gross margin, balance check) with a five-year forecast table (revenue → gross profit → EBITDA → net income → ending cash → free cash flow) and a "waiting on you" list of checks that still need a note or decision.
+- **Checks**: the model-audit review queue, worked top to bottom with the selected check beside it — balance-sheet ties, cash roll-forward, net income → retained earnings, depreciation ↔ PP&E, debt/interest linkage, working-capital movements — each with evidence and approve / request-changes / block / dismiss controls.
 - **Workbook**: the generated workbook path and its tab contract (Assumptions, Income Statement, Balance Sheet, Cash Flow, Checks).
 
 ## App UI Screenshots
@@ -21,8 +21,8 @@ or written back to the source-of-truth books.
     <td width="50%"><img src="assets/screenshots/checks.webp" alt="Busa Finance model audit checks"></td>
   </tr>
   <tr>
-    <td><strong>Overview</strong><br>Model KPI cards and a five-year forecast table (revenue through free cash flow), with a needs-attention summary.</td>
-    <td><strong>Model audit checks</strong><br>Review queue for statement ties, hardcodes, formula direction, and debt/working-capital linkage — each check approvable, blockable, or sent back with a note.</td>
+    <td><strong>Overview</strong><br>A three-number band (revenue CAGR, final-year gross margin, balance check), the five-year forecast table (revenue through free cash flow), and the checks still waiting on a decision.</td>
+    <td><strong>Model audit checks</strong><br>A full-width queue beside the selected check (split view) for statement ties, hardcodes, formula direction, and debt/working-capital linkage — each check approvable, blockable, or sent back with a note.</td>
   </tr>
   <tr>
     <td width="50%"><img src="assets/screenshots/workbook.webp" alt="Busa Finance workbook tab contract"></td>
@@ -76,8 +76,8 @@ agent outside the app after human review.
 
 Busa Finance 是一个基于 Busabase 的 App-in-Skill **FP&A 与公司财务建模桌面**：用无依赖的 Python 脚本搭建规范的三表起始模型，并提供一个安静的浏览器操作台，用于查看模型 KPI、逐项过一遍检查队列、留备注、批准或拦截、把返工交还给代理——一切都在交付给投资人或写回源账本之前完成。
 
-- **总览**：营收、毛利率、期末现金、自由现金流等 KPI 卡片，配五年预测表（营收→毛利→EBITDA→净利→期末现金→自由现金流），以及统计"需处理"检查项的提醒面板。
-- **检查**：模型审计审核队列——资产负债表勾稽、现金滚动、净利→留存收益、折旧↔固定资产、债务/利息联动、营运资本变动——每项带证据，可批准 / 要求修改 / 拦截 / 忽略。
+- **总览**：收入复合增长率、末年毛利率、平衡检查三个数字，配五年预测表（营收→毛利→EBITDA→净利→期末现金→自由现金流），以及仍等你决定的检查项列表。
+- **检查**：模型审计审核队列（左侧队列、右侧当前检查项，自上而下逐项处理）——资产负债表勾稽、现金滚动、净利→留存收益、折旧↔固定资产、债务/利息联动、营运资本变动——每项带证据，可批准 / 要求修改 / 拦截 / 忽略。
 - **工作簿**：生成的工作簿路径与其页签契约（假设、利润表、资产负债表、现金流量表、检查）。
 
 演示模式（`?demo=1`，可加 `lang=zh`）打开一个确定性的离线模型（虚构公司 ExampleCo），不读取或写入 Busabase。App 只读写自己的 Busabase Base，绝不连接银行/ERP、发送文件或转移资金；任何对外动作都需人工审核后由代理在 App 外执行。

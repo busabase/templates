@@ -540,7 +540,7 @@ function demoAdjustments() {
       "approved",
       "tt-spark-lunchbox",
       "tiktok",
-      { kind: "budget", id: "g-brand-search", text: "→ tt-spark-lunchbox" },
+      { kind: "budget", id: "g-brand-search", text: "→ Spark Ads — Viral Lunchbox Video" },
       "Google Brand $20/day (spending ~$9) · TikTok $30/day (capped)",
       "Google Brand $10/day · TikTok $40/day",
       "TikTok Spark Ads exhausts its budget by early afternoon at ROAS 3.9 while Google Brand Search cannot spend half its budget.",

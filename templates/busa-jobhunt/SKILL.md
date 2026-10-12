@@ -295,8 +295,9 @@ Goal: the user's own mailbox sends the letters they approved.
 
 - **Research** — `/busa-jobhunt research` collects companies and addresses with
   their sources and drafts one letter each.
-- **Plan** — the desk sorts by match score and gives each row a stable `#n`, so
-  a conversation can say "改第 3 条" unambiguously.
+- **Plan** — the desk sorts by evidence, then match score, and gives each row a
+  stable `#n`, so a conversation can say "改第 3 条" unambiguously. (With more
+  than 100 companies, `#n` counts within the loaded rows.)
 - **Action** — the operator reviews, edits, picks an address, and approves;
   `status: queued` plus `sent-to` and `approved-at` are written. The trusted
   sender then sends and writes `status: sent` plus `sent-at`.
@@ -314,9 +315,12 @@ Goal: the user's own mailbox sends the letters they approved.
 - Read and write every persistent value through `busabase-sdk`. The browser
   writes exactly two things: profile fields, and a company's approval verdict
   plus its edited draft.
-- Transport pagination is owned by the provider, not declared per Base. Follow
-  `nextCursor` to exhaustion — `research` routinely produces more than one page
-  of contact addresses, and a desk that stops at one page silently hides them.
+- Transport pagination is owned by the provider, not declared per Base. The
+  desk reads one page (100 rows) per Base per user action and shows exact
+  totals from `records.count`; further pages are a visible 加载更多 click. A
+  company whose addresses sit on an unloaded page shows 邮箱未加载 (never
+  未找到邮箱), and opening it reads just its own addresses. The trusted
+  scripts, which are not interactive, still follow `nextCursor` to exhaustion.
 - Writes auto-merge only on a standalone loopback preview. A deployed AirApp
   submits each write as a ChangeRequest for review.
 - A standalone OAuth connection verifies accessible Spaces before reading app

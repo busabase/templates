@@ -132,6 +132,14 @@ export const messages = {
     noItems: "Nothing here yet",
     upcoming: "Upcoming",
     opFailed: "Operation failed",
+    backToList: "Back to list",
+    close: "Close",
+    openFullPage: "Open full page",
+    selectRecord: "Select a row to see its detail here.",
+    noMatches: "No matches",
+    recordMissing: "Record not found",
+    recordMissingDetail: "This record is not on the loaded page.",
+    loading: "Loading…",
     enum: {
       platform: {
         x: "X",
@@ -346,6 +354,14 @@ export const messages = {
     noItems: "这里还没有内容",
     upcoming: "即将发布",
     opFailed: "操作失败",
+    backToList: "返回列表",
+    close: "关闭",
+    openFullPage: "打开完整页面",
+    selectRecord: "选择一行以在此查看详情。",
+    noMatches: "没有匹配项",
+    recordMissing: "未找到该记录",
+    recordMissingDetail: "该记录不在已加载的页面中。",
+    loading: "加载中…",
     enum: {
       platform: {
         x: "X",

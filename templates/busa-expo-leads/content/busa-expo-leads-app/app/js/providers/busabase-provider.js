@@ -1,7 +1,7 @@
 import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js?v=0.1.0";
-import { buildSnapshot, statusForAction } from "../expo-leads-model.js?v=0.1.0";
+import { buildSnapshot, NORMALIZE_ROW_BY_KEY, statusForAction } from "../expo-leads-model.js?v=0.1.0";
 
 const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
@@ -60,17 +60,40 @@ function base(key) {
 // list the way a contact/deal table might, so there is no pager to wire up.
 // If leads genuinely outgrows one page in practice, it needs the same
 // cursor-cached pager treatment other Busa templates give a browsed list --
-// not a bigger readLimit.
+// not a bigger readLimit. Until then `hasMore` records that a Base holds more
+// rows than were read, so the UI can say "50+" instead of presenting the
+// loaded page as the whole table.
+const hasMore = new Map();
+
+const recordToRow = (record) => ({
+  ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+  __recordId: record.id,
+  __headCommitId: record.headCommitId || record.headCommit?.id,
+});
+
 async function readPage(key) {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
   const declared = base(key);
   const result = await runtimeClient.records.list({ baseId: declared.baseId, limit: declared.readLimit });
   const records = Array.isArray(result) ? result : result.records || [];
-  return records.map((record) => ({
-    ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
-    __recordId: record.id,
-    __headCommitId: record.headCommitId || record.headCommit?.id,
-  }));
+  hasMore.set(key, Boolean(!Array.isArray(result) && result.nextCursor));
+  return records.map(recordToRow);
+}
+
+// A real, exact server-side total (records.count). Returns null -- never a
+// fabricated number -- when the procedure is denied or fails, so a denied side
+// read leaves the loaded-page figure in place instead of failing the page.
+async function countRecords(key, filters) {
+  if (!allowedReads.has("records.count")) return null;
+  try {
+    const { total } = await runtimeClient.records.count({
+      baseId: base(key).baseId,
+      ...(filters ? { filters } : {}),
+    });
+    return Number.isFinite(total) ? total : null;
+  } catch {
+    return null;
+  }
 }
 
 async function readSettingsRow() {
@@ -99,16 +122,23 @@ export const busabaseProvider = {
 
   async getState() {
     await ensureResources();
-    const [batches, leads, followups, settings] = await Promise.all([
+    const [batches, leads, followups, settings, leadTotal, reviewTotal] = await Promise.all([
       readPage("batches"),
       readPage("leads"),
       readPage("followups"),
       readSettingsRow(),
+      countRecords("leads"),
+      countRecords("followups", [{ fieldSlug: "status", fieldType: "select", operator: "equals", value: "needs_review" }]),
     ]);
     const snapshot = buildSnapshot({ batches, leads, followups, settings });
+    // lead_count / followups_needs_review were page lengths; overwrite them
+    // with the real totals when records.count answered.
+    if (leadTotal !== null) snapshot.metrics.lead_count = leadTotal;
+    if (reviewTotal !== null) snapshot.metrics.followups_needs_review = reviewTotal;
     return {
       app: "busa-expo-leads",
       data_provider: "busabase",
+      partial: { leads: Boolean(hasMore.get("leads")), followups: Boolean(hasMore.get("followups")) },
       onboarding: { completed: Boolean(settings.record_id), config_version: "1" },
       lock: null,
       config_summary: {
@@ -125,6 +155,16 @@ export const busabaseProvider = {
       },
       snapshot,
     };
+  },
+
+  // One record named by the URL (a shared link, a refresh) that is not on the
+  // loaded page: a single records.get by its record id, never a scan for it.
+  async getRecord(key, recordId) {
+    if (!allowedReads.has("records.get") || !NORMALIZE_ROW_BY_KEY[key] || !recordId) return null;
+    await ensureResources();
+    const record = await runtimeClient.records.get({ recordId });
+    if (!record || (record.baseId && record.baseId !== base(key).baseId)) return null;
+    return NORMALIZE_ROW_BY_KEY[key](recordToRow(record));
   },
 
   async applyDecision(payload = {}) {

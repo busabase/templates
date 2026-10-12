@@ -6,6 +6,19 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Where a record opens, per Base (and per queue view over a Base). Chosen by
+  // what people do with the record — see the comment in app.js. `settings` is
+  // a single config row shown in Help & Settings, so it has no record view.
+  ui: {
+    detail_modes: {
+      contracts: "page",
+      issues: "page",
+      review: "split",
+      checks: "drawer",
+      claims: "drawer",
+      "claim-rules": "drawer",
+    },
+  },
   folder: {
     name: "Busa Legal Contracts",
     description:
@@ -162,7 +175,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

@@ -1,4 +1,5 @@
 import {
+  baseKeyFor,
   byteLength,
   charLength,
   checks,
@@ -6,31 +7,44 @@ import {
   claimStatusBadge,
   claimsRegistry,
   contractById,
+  contractName,
   contracts,
+  countOf,
   date,
+  detailUrl,
   els,
   enumLabel,
   escapeHtml,
+  filteredChecks,
+  filteredClaims,
+  filteredContracts,
   filteredIssues,
+  filteredReviewItems,
+  isMobileLayout,
+  isPartial,
   issueById,
   issueLabel,
   issues,
   loadState,
   localeBadge,
-  metricCards,
   noticeBanner,
   pagerControl,
   platformBadge,
   platformRulesFor,
   recordCountLabel,
+  recordFor,
+  recordPending,
+  recordUrl,
   render,
   resultBadge,
   reviewForIssue,
   reviewItems,
-  ruleById,
+  reviewStates,
+  ruleName,
   rules,
   scoreCell,
   severityBadge,
+  sourceBadge,
   state,
   statusBadge,
   t,
@@ -38,49 +52,565 @@ import {
 } from "../app.js";
 import { getProvider } from "./providers/index.js?v=0.1.0";
 
-export function renderIssues() {
-  els.title.textContent = t("issues");
-  const items = filteredIssues();
-  els.subtitle.textContent = `${recordCountLabel("issues", items.length, Boolean(state.query))} ${t("issuesLower")}`;
-  els.content.innerHTML = `
-    ${metricCards()}
-    ${warnings()}
-    ${
-      items.length
-        ? `
-      <div class="table-wrap">
-        <table>
-          <thead>
+const cell = (html, title = "", className = "") =>
+  `<td${className ? ` class="${className}"` : ""}${title ? ` title="${escapeHtml(title)}"` : ""}>${html}</td>`;
+const emptyState = (title, detail = "") =>
+  `<div class="empty-state"><strong>${escapeHtml(title)}</strong>${detail ? `<p>${escapeHtml(detail)}</p>` : ""}</div>`;
+const tableHead = (columns) =>
+  `<thead><tr>${columns.map(([label, className = ""]) => `<th${className ? ` class="${className}"` : ""}>${escapeHtml(label)}</th>`).join("")}</tr></thead>`;
+const rowOpen = (id) =>
+  `<tr data-id="${escapeHtml(id)}"${id === state.route.selectedId ? ' class="ws-selected"' : ""}>`;
+const issueRef = (issue) => `${t("issueRef")} #${issue?.ref ?? ""}`;
+
+// ── Overview ───────────────────────────────────────────────────────────────
+// Three numbers the sidebar does not already show (it carries awaiting
+// review, failed checks and ready-to-export). Counts are exact records.count
+// totals when the provider has them; "exported this week" compares dates,
+// which no server count can, so it is tallied from the loaded issues and says
+// so when more issues exist than are loaded.
+function metricsBand() {
+  const pass = countOf("checks_pass");
+  const warn = countOf("checks_warn");
+  const fail = countOf("checks_fail");
+  const resolved = pass.value + warn.value + fail.value;
+  const passRate = resolved ? `${Math.round((pass.value / resolved) * 100)}%` : "—";
+  const passScope = pass.exact && warn.exact && fail.exact ? "" : ` · ${t("loadedScope")}`;
+  const revision = countOf("issues_changes_requested");
+  const weekAgo = Date.now() - 7 * 24 * 3600 * 1000;
+  const exported = issues().filter(
+    (issue) => issue.status === "done" && Date.parse(issue.updated_at || 0) >= weekAgo,
+  ).length;
+  const exportScope = isPartial("issues") ? ` · ${t("loadedScope")}` : "";
+  return [
+    [t("passRate") + passScope, passRate],
+    [t("inRevision") + (revision.exact ? "" : ` · ${t("loadedScope")}`), revision.value],
+    [t("exportedThisWeek") + exportScope, exported],
+  ]
+    .map(([label, value]) => `<div><span title="${escapeHtml(label)}">${escapeHtml(label)}</span><strong>${value}</strong></div>`)
+    .join("");
+}
+
+function matrixCell(contract, platform) {
+  if (!(contract.platforms || []).includes(platform)) return { state: "none", issues: [] };
+  const cellIssues = issues().filter(
+    (issue) => issue.contract_id === contract.contract_id && issue.platform === platform,
+  );
+  if (!cellIssues.length) return { state: "none", issues: [] };
+  const statuses = cellIssues.map((issue) => issue.status);
+  if (statuses.includes("done")) return { state: "exported", issues: cellIssues };
+  if (statuses.every((status) => status === "approved")) return { state: "approved", issues: cellIssues };
+  return { state: "draft", issues: cellIssues };
+}
+
+function statusMatrix() {
+  const platforms = (state.settings?.config_summary?.platforms || []).map((entry) => entry.platform);
+  const allPlatforms = platforms.length ? platforms : [...new Set(issues().map((issue) => issue.platform))];
+  if (!contracts().length) return `<div class="empty-inline">${t("noContracts")}</div>`;
+  return `
+    <div class="matrix-grid">
+      <table class="matrix-table">
+        <thead>
+          <tr><th>${t("contract")}</th>${allPlatforms.map((platform) => `<th>${escapeHtml(enumLabel(platform, "platform"))}</th>`).join("")}</tr>
+        </thead>
+        <tbody>
+          ${contracts()
+            .map(
+              (contract) => `
             <tr>
-              <th>${t("issue")}</th><th>${t("contract")}</th><th>${t("platform")}</th><th>${t("locale")}</th><th>${t("title")}</th><th>${t("score")}</th><th>${t("status")}</th><th>${t("lastUpdated")}</th>
+              <td><a class="strong" href="${detailUrl(contract.contract_id, "contracts")}">${escapeHtml(contract.name)}</a><div class="muted">${escapeHtml(contract.sku)}</div></td>
+              ${allPlatforms
+                .map((platform) => {
+                  const matrix = matrixCell(contract, platform);
+                  const first = matrix.issues[0];
+                  const label = enumLabel(matrix.state, "cell");
+                  if (matrix.state === "none")
+                    return `<td><span class="matrix-cell none">${escapeHtml(label)}</span></td>`;
+                  return `<td><a class="matrix-cell ${escapeHtml(matrix.state)}" href="${detailUrl(first.issue_id, "issues")}">${escapeHtml(label)}${matrix.issues.length > 1 ? ` ×${matrix.issues.length}` : ""}</a></td>`;
+                })
+                .join("")}
             </tr>
-          </thead>
-          <tbody>
-            ${items
-              .map((item) => {
-                const contract = contractById(item.contract_id);
-                const title = item.fields?.title || "";
-                return `
-                <tr>
-                  <td><a href="#/issues/${encodeURIComponent(item.issue_id)}"><span class="strong">${t("issueRef")} #${item.ref}</span></a></td>
-                  <td><a href="#/contracts/${encodeURIComponent(item.contract_id)}">${escapeHtml(contract?.name || item.contract_id)}</a></td>
-                  <td>${platformBadge(item.platform)}</td>
-                  <td>${localeBadge(item.locale)}</td>
-                  <td class="title-cell">${escapeHtml(title.length > 90 ? `${title.slice(0, 90)}…` : title)}</td>
-                  <td>${scoreCell(item.compliance_score)}</td>
-                  <td>${statusBadge(item.status)}</td>
-                  <td>${date(item.updated_at)}</td>
-                </tr>
-              `;
-              })
-              .join("")}
-          </tbody>
-        </table>
+          `,
+            )
+            .join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+export function renderOverview() {
+  const generated = state.snapshot?.generated_at ? new Date(state.snapshot.generated_at).toLocaleString() : "";
+  document.getElementById("overviewSummary").textContent = [
+    state.snapshot?.seller?.brand || "",
+    `${recordCountLabel("contracts", contracts().length)} ${t("contractsLower")}`,
+    `${recordCountLabel("issues", issues().length)} ${t("issuesLower")}`,
+    generated ? `${t("generated")} ${generated}` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  document.getElementById("overviewMetrics").innerHTML = metricsBand();
+  const awaiting = reviewItems().filter((item) => item.status === "needs_review");
+  const activity = (state.snapshot?.activity_log || [])
+    .slice()
+    .sort((a, b) => String(b.at).localeCompare(String(a.at)))
+    .slice(0, 8);
+  document.getElementById("overviewBody").innerHTML = `
+    ${warnings()}
+    <section class="overview-grid">
+      <div class="overview-panel wide">
+        <h2>${t("matrix")}</h2>
+        ${statusMatrix()}
       </div>
-    `
-        : `<div class="empty">${t("noIssues")}</div>`
-    }
-    ${pagerControl("issues")}
+      <div class="overview-panel">
+        <h2>${t("reviewQueue")}</h2>
+        ${
+          awaiting
+            .map((item) => {
+              const issue = issueById(item.issue_id);
+              return `
+            <a class="due-row" href="${recordUrl(item.issue_id, "review")}">
+              <span><strong>${issueRef(item)} · ${escapeHtml(issue ? issueLabel(issue) : t("notLoaded"))}</strong><small>${escapeHtml(item.compliance_summary || "")}</small></span>
+              <span class="due-meta">${statusBadge(item.status)}${issue ? `<small>${scoreCell(issue.compliance_score)}</small>` : ""}</span>
+            </a>
+          `;
+            })
+            .join("") || `<div class="empty-inline">${t("noReviewItems")}</div>`
+        }
+      </div>
+      <div class="overview-panel">
+        <h2>${t("activities")}</h2>
+        ${
+          activity
+            .map(
+              (item) => `
+          <div class="activity-row">
+            <span class="badge">${escapeHtml(enumLabel(item.actor, "actor"))}</span>
+            <span><small>${escapeHtml(item.detail)}</small></span>
+            <span class="muted">${date(item.at)}</span>
+          </div>
+        `,
+            )
+            .join("") || `<div class="empty-inline">${t("noActivity")}</div>`
+        }
+      </div>
+    </section>
+  `;
+}
+
+// ── Record views ───────────────────────────────────────────────────────────
+// The description each view used to print under its title lives in the
+// title's tooltip now; the view's name is already in the nav.
+const VIEW_HINT = {
+  contracts: "contractsHint",
+  issues: "issuesHint",
+  checks: "checksHint",
+  claims: "claimsIntro",
+  review: "reviewHint",
+};
+
+function contractOverall(contract) {
+  const own = issues().filter((issue) => issue.contract_id === contract.contract_id);
+  if (!own.length) return { own, status: "" };
+  const exported = own.filter((issue) => issue.status === "done").length;
+  const status = own.some((issue) => issue.status === "needs_review")
+    ? "needs_review"
+    : own.some((issue) => issue.status === "changes_requested")
+      ? "changes_requested"
+      : exported === own.length
+        ? "done"
+        : "approved";
+  return { own, status };
+}
+
+function contractsTable(items) {
+  return `
+    <table class="ws-table lc-table contracts-table">
+      ${tableHead([
+        [t("contract")],
+        [t("sku")],
+        [t("category")],
+        [t("source")],
+        [t("platforms")],
+        [t("issues"), "ws-col-num"],
+        [t("status")],
+        [t("lastUpdated")],
+      ])}
+      <tbody>
+        ${items
+          .map((item) => {
+            const { own, status } = contractOverall(item);
+            return `${rowOpen(item.contract_id)}
+              ${cell(`<span class="strong">${escapeHtml(item.name)}</span>`, item.name)}
+              ${cell(escapeHtml(item.sku || ""), item.sku)}
+              ${cell(escapeHtml(item.category || ""), item.category)}
+              ${cell(sourceBadge(item.source))}
+              ${cell((item.platforms || []).map(platformBadge).join(" "))}
+              ${cell(String(own.length), "", "ws-col-num")}
+              ${cell(status ? statusBadge(status) : `<span class="muted">${enumLabel("none", "cell")}</span>`)}
+              ${cell(date(item.updated_at))}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function issuesTable(items) {
+  return `
+    <table class="ws-table lc-table issues-table">
+      ${tableHead([
+        [t("title")],
+        [t("contract")],
+        [t("platform")],
+        [t("locale")],
+        [t("score"), "ws-col-num"],
+        [t("status")],
+        [t("lastUpdated")],
+      ])}
+      <tbody>
+        ${items
+          .map((item) => {
+            const title = item.fields?.title || "";
+            const contract = contractById(item.contract_id);
+            return `${rowOpen(item.issue_id)}
+              ${cell(`<span class="row-ref">#${escapeHtml(item.ref)}</span> <span class="strong">${escapeHtml(title)}</span>`, title)}
+              ${cell(
+                contract
+                  ? `<a href="${detailUrl(contract.contract_id, "contracts")}">${escapeHtml(contract.name)}</a>`
+                  : `<span class="muted">${t("notLoaded")}</span>`,
+                contract?.name,
+              )}
+              ${cell(platformBadge(item.platform))}
+              ${cell(localeBadge(item.locale))}
+              ${cell(scoreCell(item.compliance_score), "", "ws-col-num")}
+              ${cell(statusBadge(item.status))}
+              ${cell(date(item.updated_at))}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function checksTable(items) {
+  return `
+    <table class="ws-table lc-table checks-table">
+      ${tableHead([[t("rule")], [t("issue")], [t("platform")], [t("severity")], [t("result")], [t("evidence")]])}
+      <tbody>
+        ${items
+          .map((item) => {
+            const issue = issueById(item.issue_id);
+            const name = ruleName(item.rule_id);
+            const issueText = issue ? `${issueRef(issue)} · ${contractName(issue.contract_id)}` : t("notLoaded");
+            return `${rowOpen(item.check_id)}
+              ${cell(`<span class="strong">${escapeHtml(name)}</span>`, name)}
+              ${cell(issue ? `<a href="${detailUrl(issue.issue_id, "issues")}">${escapeHtml(issueText)}</a>` : `<span class="muted">${escapeHtml(issueText)}</span>`, issueText)}
+              ${cell(issue ? `${platformBadge(issue.platform)} ${localeBadge(issue.locale)}` : "")}
+              ${cell(severityBadge(item.severity))}
+              ${cell(resultBadge(item.result))}
+              ${cell(escapeHtml(item.evidence || ""), item.evidence)}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function claimsTable(items) {
+  if (state.route.tab === "rules") {
+    return `
+      <table class="ws-table lc-table rules-table">
+        ${tableHead([[t("phrase")], [t("severity")], [t("type")], [t("reason")], [t("alternative")]])}
+        <tbody>
+          ${items
+            .map(
+              (rule) => `${rowOpen(rule.rule_id)}
+              ${cell(`<span class="strong">${escapeHtml(rule.phrase)}</span>`, rule.phrase)}
+              ${cell(severityBadge(rule.severity || "error"))}
+              ${cell(`<span class="tag">${escapeHtml(enumLabel(rule.type, "claim"))}</span>`)}
+              ${cell(escapeHtml(rule.reason || ""), rule.reason)}
+              ${cell(escapeHtml(rule.alternative || ""), rule.alternative)}
+            </tr>`,
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
+  }
+  return `
+    <table class="ws-table lc-table claims-table">
+      ${tableHead([[t("claimText")], [t("claimStatus")], [t("category")], [t("substantiation")], [t("claimEvidence")]])}
+      <tbody>
+        ${items
+          .map(
+            (claim) => `${rowOpen(claim.claim_id)}
+            ${cell(`<span class="strong">${escapeHtml(claim.text)}</span>`, claim.text)}
+            ${cell(claimStatusBadge(claim.status))}
+            ${cell(escapeHtml(claim.category || ""), claim.category)}
+            ${cell(escapeHtml(claim.substantiation || claim.notes || ""), claim.substantiation || claim.notes)}
+            ${cell(escapeHtml((claim.evidence || []).join(", ")), (claim.evidence || []).join(", "))}
+          </tr>`,
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function reviewTable(items) {
+  return `
+    <table class="ws-table lc-table review-table">
+      ${tableHead([[t("issue")], [t("status")], [t("score"), "ws-col-num ws-split-keep"]])}
+      <tbody>
+        ${items
+          .map((item) => {
+            const issue = issueById(item.issue_id);
+            const label = issue ? issueLabel(issue) : t("notLoaded");
+            return `${rowOpen(item.issue_id)}
+              ${cell(`<span class="row-ref">#${escapeHtml(item.ref)}</span> <span class="strong">${escapeHtml(label)}</span>`, `${issueRef(item)} · ${label}`)}
+              ${cell(statusBadge(item.status))}
+              ${cell(issue ? scoreCell(issue.compliance_score) : "", "", "ws-col-num ws-split-keep")}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function reviewFilterCount(value) {
+  return value === "all" ? reviewItems().length : reviewItems().filter((item) => item.status === value).length;
+}
+
+function renderToolbar(view, count, partial) {
+  els.viewTitle.textContent = view === "claims" ? t("claimsRegistry") : t(view);
+  els.viewTitle.title = t(VIEW_HINT[view]);
+  els.viewCount.textContent = `${count}${partial ? "+" : ""}`;
+
+  els.viewTabs.hidden = view !== "claims";
+  els.viewTabs.innerHTML =
+    view === "claims"
+      ? [
+          ["", t("approvedClaims"), (claimsRegistry().claims || []).length],
+          ["rules", t("bannedPhrases"), (claimsRegistry().rules || []).length],
+        ]
+          .map(
+            ([tab, label, total]) =>
+              `<button type="button" class="segment ${state.route.tab === tab ? "active" : ""}" data-tab="${tab}">${escapeHtml(label)} <b>${total}</b></button>`,
+          )
+          .join("")
+      : "";
+
+  els.viewFilters.hidden = view !== "review";
+  els.statusSelect.hidden = view !== "review";
+  if (view === "review") {
+    els.viewFilters.innerHTML = reviewStates()
+      .map((value) => {
+        const label = value === "all" ? t("all") : enumLabel(value);
+        return `<button type="button" class="segment ${state.route.status === value ? "active" : ""}" data-status="${value}">${escapeHtml(label)} <b>${reviewFilterCount(value)}</b></button>`;
+      })
+      .join("");
+    els.statusSelect.innerHTML = reviewStates()
+      .map((value) => {
+        const label = value === "all" ? t("all") : enumLabel(value);
+        return `<option value="${value}"${state.route.status === value ? " selected" : ""}>${escapeHtml(label)} (${reviewFilterCount(value)})</option>`;
+      })
+      .join("");
+  } else {
+    els.viewFilters.innerHTML = "";
+    els.statusSelect.innerHTML = "";
+  }
+
+  els.checkFilters.hidden = view !== "checks";
+  if (view === "checks") {
+    const { rule, platform, contract, result } = state.route.filters;
+    const platforms = [...new Set(issues().map((issue) => issue.platform))];
+    const select = (key, label, current, options) =>
+      `<select data-filter="${key}" aria-label="${escapeHtml(label)}">
+        <option value="all">${t("all")} · ${escapeHtml(label)}</option>
+        ${options.map(([value, text]) => `<option value="${escapeHtml(value)}" ${current === value ? "selected" : ""}>${escapeHtml(text)}</option>`).join("")}
+      </select>`;
+    els.checkFilters.innerHTML = [
+      select(
+        "rule",
+        t("rule"),
+        rule,
+        rules().map((item) => [item.rule_id, item.name]),
+      ),
+      select(
+        "platform",
+        t("platform"),
+        platform,
+        platforms.map((value) => [value, enumLabel(value, "platform")]),
+      ),
+      select(
+        "contract",
+        t("contract"),
+        contract,
+        contracts().map((item) => [item.contract_id, item.name]),
+      ),
+      select(
+        "result",
+        t("result"),
+        result,
+        ["pass", "warn", "fail"].map((value) => [value, enumLabel(value, "result")]),
+      ),
+    ].join("");
+  } else {
+    els.checkFilters.innerHTML = "";
+  }
+}
+
+export function renderRecordView() {
+  const { view, tab } = state.route;
+  const key = baseKeyFor(view, tab);
+  const items =
+    view === "contracts"
+      ? filteredContracts()
+      : view === "issues"
+        ? filteredIssues()
+        : view === "checks"
+          ? filteredChecks()
+          : view === "claims"
+            ? filteredClaims()
+            : filteredReviewItems();
+  const narrowed =
+    Boolean(state.route.query) ||
+    (view === "review" && state.route.status !== "all") ||
+    Object.values(state.route.filters).some((value) => value !== "all");
+  renderToolbar(view, items.length, !narrowed && isPartial(key));
+  const table =
+    view === "contracts"
+      ? contractsTable(items)
+      : view === "issues"
+        ? issuesTable(items)
+        : view === "checks"
+          ? checksTable(items)
+          : view === "claims"
+            ? claimsTable(items)
+            : reviewTable(items);
+  const emptyKey =
+    view === "contracts"
+      ? "noContracts"
+      : view === "issues"
+        ? "noIssues"
+        : view === "checks"
+          ? "noChecks"
+          : view === "claims"
+            ? tab === "rules"
+              ? "noClaimRules"
+              : "noClaims"
+            : "noReviewItems";
+  const empty = emptyState(narrowed ? t("noMatches") : t(emptyKey));
+  els.listPanel.innerHTML = `${items.length ? table : empty}${pagerControl(key)}`;
+  renderDetail();
+}
+
+function renderDetail() {
+  const { view, tab, selectedId, presentation } = state.route;
+  const key = baseKeyFor(view, tab);
+  els.detailBack.textContent = presentation === "page" || isMobileLayout() ? t("backToList") : t("close");
+  // Drawer and split always offer the full page (a review item's page is its
+  // issue's workbench); the same detail markup renders in every mode.
+  els.detailExpand.hidden = !selectedId || presentation === "page";
+  if (selectedId) els.detailExpand.href = detailUrl(selectedId, view, tab);
+  els.detailPanel.querySelector(".ws-detail-bar").hidden = !selectedId;
+
+  if (!selectedId) {
+    els.detailBody.innerHTML = presentation === "split" ? emptyState(t("selectReview")) : "";
+    return;
+  }
+  const item = recordFor(key, selectedId);
+  if (!item) {
+    els.detailBody.innerHTML = recordPending(key, selectedId)
+      ? `<div class="empty-inline">${t("loading")}</div>`
+      : emptyState(t("recordMissing"), t("recordMissingDetail"));
+    return;
+  }
+  els.detailBody.innerHTML =
+    view === "contracts"
+      ? contractDetail(item)
+      : view === "issues"
+        ? issueDetail(item)
+        : view === "checks"
+          ? checkDetail(item)
+          : view === "claims"
+            ? tab === "rules"
+              ? claimRuleDetail(item)
+              : claimDetail(item)
+            : reviewDetail(item);
+}
+
+// ── Details ────────────────────────────────────────────────────────────────
+const detailHead = (title, meta) => `
+  <header class="detail-head">
+    <h2>${escapeHtml(title)}</h2>
+    ${meta ? `<p class="muted">${escapeHtml(meta)}</p>` : ""}
+  </header>`;
+
+function contractDetail(contract) {
+  const own = issues().filter((issue) => issue.contract_id === contract.contract_id);
+  return `
+    ${detailHead(contract.name, [contract.sku, contract.category, enumLabel(contract.source, "source")].filter(Boolean).join(" · "))}
+    <section class="detail">
+      <div class="detail-main">
+        <div class="section-block">
+          <h3>${t("specs")}</h3>
+          <dl class="spec-list">
+            ${(contract.specs || []).map((spec) => `<dt>${escapeHtml(spec.name)}</dt><dd>${escapeHtml(spec.value)}</dd>`).join("")}
+          </dl>
+        </div>
+        <div class="section-block">
+          <h3>${t("features")}</h3>
+          <ul>${(contract.features || []).map((feature) => `<li>${escapeHtml(feature)}</li>`).join("")}</ul>
+        </div>
+        <div class="section-block">
+          <h3>${t("keywords")}</h3>
+          <div class="chip-list">${(contract.keywords || []).map((keyword) => `<span class="tag">${escapeHtml(keyword)}</span>`).join("")}</div>
+        </div>
+        <div class="section-block">
+          <h3>${t("linkedIssues")}</h3>
+          ${
+            own
+              .map(
+                (issue) => `
+            <a class="due-row" href="${detailUrl(issue.issue_id, "issues")}">
+              <span><strong>${issueRef(issue)} · ${escapeHtml(enumLabel(issue.platform, "platform"))} ${escapeHtml(issue.locale || "")}</strong><small>${escapeHtml(issue.fields?.title || "")}</small></span>
+              <span class="due-meta">${statusBadge(issue.status)}<small>${scoreCell(issue.compliance_score)}</small></span>
+            </a>
+          `,
+              )
+              .join("") || `<div class="empty-inline">${t("noIssues")}</div>`
+          }
+        </div>
+      </div>
+      <aside class="detail-side">
+        <div>
+          <dl>
+            <dt>${t("platforms")}</dt><dd>${(contract.platforms || []).map(platformBadge).join(" ")}</dd>
+            <dt>${t("locales")}</dt><dd>${(contract.locales || []).map(localeBadge).join(" ")}</dd>
+            <dt>${t("lastUpdated")}</dt><dd>${date(contract.updated_at)}</dd>
+          </dl>
+          ${contract.notes ? `<p class="muted product-notes">${escapeHtml(contract.notes)}</p>` : ""}
+        </div>
+        <div>
+          <h3>${t("imageChecklist")}</h3>
+          ${(contract.images || [])
+            .map(
+              (image) => `
+            <div class="check-row">
+              <span class="image-tick ${escapeHtml(image.status)}" aria-hidden="true">${image.status === "ready" ? "✓" : image.status === "missing" ? "✕" : "…"}</span>
+              <span><strong>${escapeHtml(image.name)}</strong><small>${escapeHtml(enumLabel(image.status, "image"))}</small></span>
+            </div>
+          `,
+            )
+            .join("")}
+        </div>
+      </aside>
+    </section>
   `;
 }
 
@@ -158,7 +688,7 @@ function localeTabs(issue) {
       ${variants
         .map(
           (variant) => `
-        <a role="tab" aria-selected="${variant.issue_id === issue.issue_id}" class="locale-tab ${variant.issue_id === issue.issue_id ? "active" : ""}" href="#/issues/${encodeURIComponent(variant.issue_id)}">${escapeHtml(variant.locale || variant.issue_id)}</a>
+        <a role="tab" aria-selected="${variant.issue_id === issue.issue_id}" class="locale-tab ${variant.issue_id === issue.issue_id ? "active" : ""}" href="${detailUrl(variant.issue_id, "issues")}">${escapeHtml(variant.locale || `#${variant.ref}`)}</a>
       `,
         )
         .join("")}
@@ -166,41 +696,34 @@ function localeTabs(issue) {
   `;
 }
 
-export function renderIssueDetail() {
-  const issue = issueById(state.route.id);
-  if (!issue) {
-    renderIssues();
-    return;
-  }
+function issueDetail(issue) {
   const contract = contractById(issue.contract_id);
   const issueChecks = checks().filter((item) => item.issue_id === issue.issue_id);
   const review = reviewForIssue(issue.issue_id);
-  els.title.textContent = `${t("issueRef")} #${issue.ref} · ${contract?.name || issue.contract_id}`;
-  els.subtitle.textContent = `${enumLabel(issue.platform, "platform")} · ${issue.locale || ""} · ${enumLabel(issue.status)}`;
-  els.content.innerHTML = `
+  return `
+    ${detailHead(`${issueRef(issue)} · ${contractName(issue.contract_id)}`, "")}
     ${noticeBanner()}
     ${warnings(issue.issue_id)}
     <section class="detail">
       <div class="detail-main">
         ${localeTabs(issue)}
         <div class="section-block workbench" data-issue="${escapeHtml(issue.issue_id)}">
-          <h2>${t("editFields")}</h2>
+          <h3>${t("editFields")}</h3>
           ${issueFieldsEditor(issue)}
           <div class="notes-actions">
-            <button id="saveFields" type="button" ${!review ? "disabled" : ""}>${t("saveEdits")}</button>
+            <button id="saveFields" class="button" type="button" ${!review ? "disabled" : ""}>${t("saveEdits")}</button>
             <span class="muted">${t("fieldsSavedHint")}</span>
           </div>
         </div>
       </div>
       <aside class="detail-side">
         <div>
-          <h2>${t("issueDetail")}</h2>
           <dl>
             <dt>${t("status")}</dt><dd>${statusBadge(issue.status)}</dd>
             <dt>${t("score")}</dt><dd>${scoreCell(issue.compliance_score)}</dd>
             <dt>${t("platform")}</dt><dd>${platformBadge(issue.platform)}</dd>
             <dt>${t("locale")}</dt><dd>${localeBadge(issue.locale)}</dd>
-            <dt>${t("contract")}</dt><dd><a href="#/contracts/${encodeURIComponent(issue.contract_id)}">${escapeHtml(contract?.name || issue.contract_id)}</a></dd>
+            <dt>${t("contract")}</dt><dd>${contract ? `<a href="${detailUrl(contract.contract_id, "contracts")}">${escapeHtml(contract.name)}</a>` : `<span class="muted">${t("notLoaded")}</span>`}</dd>
             <dt>${t("sku")}</dt><dd>${escapeHtml(contract?.sku || "")}</dd>
             <dt>${t("lastUpdated")}</dt><dd>${date(issue.updated_at)}</dd>
           </dl>
@@ -209,14 +732,14 @@ export function renderIssueDetail() {
           issue.keyword_strategy
             ? `
           <div class="agent-panel">
-            <h2>${t("keywordStrategy")}</h2>
+            <h3>${t("keywordStrategy")}</h3>
             <p>${escapeHtml(issue.keyword_strategy)}</p>
           </div>
         `
             : ""
         }
         <div>
-          <h2>${t("complianceChecks")}</h2>
+          <h3>${t("complianceChecks")}</h3>
           ${
             issueChecks
               .map(
@@ -224,7 +747,7 @@ export function renderIssueDetail() {
             <div class="check-row">
               ${resultBadge(item.result)}
               <span>
-                <strong>${escapeHtml(ruleById(item.rule_id)?.name || item.rule_id)}</strong>
+                <a href="${recordUrl(item.check_id, "checks")}"><strong>${escapeHtml(ruleName(item.rule_id))}</strong></a>
                 <small>${escapeHtml(item.evidence || "")}</small>
                 ${claimRefLinks(item.refs)}
               </span>
@@ -237,16 +760,116 @@ export function renderIssueDetail() {
       </aside>
     </section>
   `;
-  bindWorkbenchEvents(issue, review);
 }
 
-function bindWorkbenchEvents(issue, review) {
-  const workbench = els.content.querySelector(".workbench");
-  if (!workbench) return;
-  workbench.querySelectorAll("textarea.field-input").forEach((input) => {
-    input.addEventListener("input", () => {
+function checkDetail(item) {
+  const issue = issueById(item.issue_id);
+  return `
+    ${detailHead(ruleName(item.rule_id), "")}
+    <div class="detail-stack">
+      <dl class="detail-fields">
+        <dt>${t("result")}</dt><dd>${resultBadge(item.result)}</dd>
+        <dt>${t("severity")}</dt><dd>${severityBadge(item.severity)}</dd>
+        <dt>${t("issue")}</dt><dd>${issue ? `<a href="${detailUrl(issue.issue_id, "issues")}">${escapeHtml(`${issueRef(issue)} · ${issue.fields?.title || ""}`)}</a>` : `<span class="muted">${t("notLoaded")}</span>`}</dd>
+        <dt>${t("contract")}</dt><dd>${issue ? escapeHtml(contractName(issue.contract_id)) : ""}</dd>
+        <dt>${t("platform")}</dt><dd>${issue ? `${platformBadge(issue.platform)} ${localeBadge(issue.locale)}` : ""}</dd>
+        <dt>${t("checkedAt")}</dt><dd>${date(item.checked_at)}</dd>
+      </dl>
+      <section>
+        <h3>${t("evidence")}</h3>
+        <p>${escapeHtml(item.evidence || "—")}</p>
+        ${claimRefLinks(item.refs)}
+      </section>
+    </div>
+  `;
+}
+
+function claimDetail(claim) {
+  return `
+    ${detailHead(claim.text, claim.category || "")}
+    <div class="detail-stack">
+      <dl class="detail-fields">
+        <dt>${t("claimStatus")}</dt><dd>${claimStatusBadge(claim.status)}</dd>
+        <dt>${t("substantiation")}</dt><dd>${escapeHtml(claim.substantiation || "—")}</dd>
+        <dt>${t("claimEvidence")}</dt><dd>${(claim.evidence || []).map((entry) => `<span class="tag">${escapeHtml(entry)}</span>`).join(" ") || "—"}</dd>
+        <dt>${t("approvedBy")}</dt><dd>${escapeHtml(claim.approved_by || "—")}</dd>
+        <dt>${t("approvedAt")}</dt><dd>${date(claim.approved_at) || "—"}</dd>
+      </dl>
+      ${claim.notes ? `<section><h3>${t("notes")}</h3><p>${escapeHtml(claim.notes)}</p></section>` : ""}
+    </div>
+  `;
+}
+
+function claimRuleDetail(rule) {
+  return `
+    ${detailHead(rule.phrase, "")}
+    <div class="detail-stack">
+      <dl class="detail-fields">
+        <dt>${t("severity")}</dt><dd>${severityBadge(rule.severity || "error")}</dd>
+        <dt>${t("type")}</dt><dd><span class="tag">${escapeHtml(enumLabel(rule.type, "claim"))}</span></dd>
+        <dt>${t("reason")}</dt><dd>${escapeHtml(rule.reason || "—")}</dd>
+        <dt>${t("alternative")}</dt><dd>${escapeHtml(rule.alternative || "—")}</dd>
+      </dl>
+    </div>
+  `;
+}
+
+function reviewDetail(issue) {
+  const item = reviewForIssue(issue.issue_id) || {
+    review_id: issue.issue_id,
+    ref: issue.ref,
+    status: issue.status,
+    compliance_summary: issue.compliance_summary,
+    suggestions: issue.suggestions,
+  };
+  const edits = state.edits[item.review_id] || {};
+  const note = edits.note ?? issue.decision_note ?? "";
+  const disabled = state.settings?.demo ? "disabled" : "";
+  return `
+    <article class="review-detail status-${escapeHtml(item.status)}" data-review="${escapeHtml(item.review_id)}">
+      <header class="queue-head">
+        <span class="queue-ref">${issueRef(item)}</span>
+        ${statusBadge(item.status)}
+        ${platformBadge(issue.platform)}
+        ${localeBadge(issue.locale)}
+        <span class="queue-score muted">${t("score")} ${scoreCell(issue.compliance_score)}</span>
+      </header>
+      <h2 class="queue-subject">${escapeHtml(issue.fields?.title || "")}</h2>
+      <div class="queue-meta">${contractById(issue.contract_id) ? `<a href="${detailUrl(issue.contract_id, "contracts")}">${escapeHtml(contractName(issue.contract_id))}</a>` : escapeHtml(contractName(issue.contract_id))}</div>
+      ${warnings(issue.issue_id)}
+      <p class="queue-summary"><span class="muted">${t("complianceSummary")}:</span> ${escapeHtml(item.compliance_summary || "")}</p>
+      ${issue.keyword_strategy ? `<p class="queue-summary"><span class="muted">${t("keywordStrategy")}:</span> ${escapeHtml(issue.keyword_strategy)}</p>` : ""}
+      ${
+        item.suggestions?.length
+          ? `
+        <span class="queue-label">${t("suggestions")}</span>
+        <ul class="queue-suggestions">${item.suggestions.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("")}</ul>
+      `
+          : ""
+      }
+      <label class="queue-label" for="note-${escapeHtml(item.review_id)}">${t("reviewNote")}</label>
+      <textarea id="note-${escapeHtml(item.review_id)}" class="queue-note" data-field="note" rows="3" placeholder="${escapeHtml(t("reviewNotePlaceholder"))}" ${disabled}>${escapeHtml(note)}</textarea>
+      ${noticeBanner()}
+      <div class="queue-actions">
+        <button type="button" class="approve" data-action="approve" title="${t("approve")}" ${disabled}>${t("approve")}</button>
+        <button type="button" data-action="request_changes" title="${t("requestChanges")}" ${disabled}>${t("requestChanges")}</button>
+        <button type="button" class="danger" data-action="block" title="${t("block")}" ${disabled}>${t("block")}</button>
+        ${issue.decision_action ? `<span class="queue-decision muted">${t("decision")}: ${escapeHtml(enumLabel(issue.decision_action, "action"))} · ${escapeHtml(issue.decided_at ? new Date(issue.decided_at).toLocaleString() : "")}</span>` : ""}
+      </div>
+    </article>
+  `;
+}
+
+// One set of delegated listeners on the detail panel — the markup inside it is
+// re-rendered on every route change.
+export function bindDetailEvents() {
+  els.detailBody.addEventListener("input", (event) => {
+    const input = event.target;
+    const workbench = input.closest?.(".workbench");
+    if (workbench && input.matches("textarea.field-input")) {
+      const issueId = workbench.dataset.issue;
       const key = input.dataset.field;
-      const edits = state.fieldEdits[issue.issue_id] || (state.fieldEdits[issue.issue_id] = {});
+      const edits = state.fieldEdits[issueId] || (state.fieldEdits[issueId] = {});
       if (input.dataset.kind === "list") {
         const values = input.value
           .split("\n")
@@ -274,229 +897,27 @@ function bindWorkbenchEvents(issue, review) {
           counter.classList.toggle("over", Boolean(max) && current > max);
         }
       }
-    });
-  });
-  workbench.querySelector("#saveFields")?.addEventListener("click", () => {
-    if (!review) return;
-    submitDecision(issue.issue_id, "revise", { fields: editedFields(issue) });
-  });
-}
-
-function filteredChecks() {
-  const query = state.query.trim().toLowerCase();
-  return checks().filter((item) => {
-    if (state.checkRuleFilter !== "all" && item.rule_id !== state.checkRuleFilter) return false;
-    const issue = issueById(item.issue_id);
-    if (state.checkPlatformFilter !== "all" && issue?.platform !== state.checkPlatformFilter) return false;
-    if (state.checkContractFilter !== "all" && issue?.contract_id !== state.checkContractFilter) return false;
-    if (state.checkResultFilter !== "all" && item.result !== state.checkResultFilter) return false;
-    if (!query) return true;
-    return [ruleById(item.rule_id)?.name, item.evidence, item.result, issue ? issueLabel(issue) : ""]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query));
-  });
-}
-
-export function renderChecks() {
-  els.title.textContent = t("checks");
-  const items = filteredChecks();
-  const all = checks();
-  const passCount = all.filter((item) => item.result === "pass").length;
-  const warnCount = all.filter((item) => item.result === "warn").length;
-  const failCount = all.filter((item) => item.result === "fail").length;
-  const checkTotal = recordCountLabel("checks", all.length);
-  els.subtitle.textContent = `${checkTotal} ${t("checksTotal")} · ${failCount} ${t("failedChecks")}`;
-  const platforms = [...new Set(issues().map((issue) => issue.platform))];
-  els.content.innerHTML = `
-    ${warnings()}
-    <div class="metrics">
-      <div class="metric"><span>${t("checks")}</span><strong>${checkTotal}</strong></div>
-      <div class="metric"><span>${enumLabel("pass", "result")}</span><strong>${passCount}</strong></div>
-      <div class="metric"><span>${enumLabel("warn", "result")}</span><strong>${warnCount}</strong></div>
-      <div class="metric"><span>${enumLabel("fail", "result")}</span><strong>${failCount}</strong></div>
-    </div>
-    <div class="check-filters">
-      <select id="ruleFilter" aria-label="${t("rule")}">
-        <option value="all">${t("all")} · ${t("rule")}</option>
-        ${rules()
-          .map(
-            (rule) =>
-              `<option value="${escapeHtml(rule.rule_id)}" ${state.checkRuleFilter === rule.rule_id ? "selected" : ""}>${escapeHtml(rule.name)}</option>`,
-          )
-          .join("")}
-      </select>
-      <select id="platformFilter" aria-label="${t("platform")}">
-        <option value="all">${t("all")} · ${t("platform")}</option>
-        ${platforms.map((platform) => `<option value="${escapeHtml(platform)}" ${state.checkPlatformFilter === platform ? "selected" : ""}>${escapeHtml(enumLabel(platform, "platform"))}</option>`).join("")}
-      </select>
-      <select id="contractFilter" aria-label="${t("contract")}">
-        <option value="all">${t("all")} · ${t("contract")}</option>
-        ${contracts()
-          .map(
-            (contract) =>
-              `<option value="${escapeHtml(contract.contract_id)}" ${state.checkContractFilter === contract.contract_id ? "selected" : ""}>${escapeHtml(contract.name)}</option>`,
-          )
-          .join("")}
-      </select>
-      <select id="resultFilter" aria-label="${t("result")}">
-        <option value="all">${t("all")} · ${t("result")}</option>
-        ${["pass", "warn", "fail"].map((result) => `<option value="${result}" ${state.checkResultFilter === result ? "selected" : ""}>${escapeHtml(enumLabel(result, "result"))}</option>`).join("")}
-      </select>
-    </div>
-    ${
-      items.length
-        ? `
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>${t("issue")}</th><th>${t("platform")}</th><th>${t("rule")}</th><th>${t("severity")}</th><th>${t("result")}</th><th>${t("evidence")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${items
-              .map((item) => {
-                const issue = issueById(item.issue_id);
-                const rule = ruleById(item.rule_id);
-                return `
-                <tr>
-                  <td><a href="#/issues/${encodeURIComponent(item.issue_id)}"><span class="strong">${t("issueRef")} #${issue?.ref || ""} · ${escapeHtml(issue ? contractById(issue.contract_id)?.name || "" : item.issue_id)}</span></a><div class="muted">${escapeHtml(issue?.locale || "")}</div></td>
-                  <td>${issue ? platformBadge(issue.platform) : ""}</td>
-                  <td>${escapeHtml(rule?.name || item.rule_id)}</td>
-                  <td>${severityBadge(item.severity)}</td>
-                  <td>${resultBadge(item.result)}</td>
-                  <td class="evidence-cell">${escapeHtml(item.evidence || "")}</td>
-                </tr>
-              `;
-              })
-              .join("")}
-          </tbody>
-        </table>
-      </div>
-    `
-        : `<div class="empty">${t("noChecks")}</div>`
+      return;
     }
-    ${pagerControl("checks")}
-  `;
-  const bind = (id, prop) => {
-    els.content.querySelector(id)?.addEventListener("change", (event) => {
-      state[prop] = event.target.value;
-      render();
-    });
-  };
-  bind("#ruleFilter", "checkRuleFilter");
-  bind("#platformFilter", "checkPlatformFilter");
-  bind("#contractFilter", "checkContractFilter");
-  bind("#resultFilter", "checkResultFilter");
-}
-
-function filteredReviewItems() {
-  const query = state.query.trim().toLowerCase();
-  return reviewItems().filter((item) => {
-    if (state.reviewFilter !== "all" && item.status !== state.reviewFilter) return false;
-    if (!query) return true;
-    const issue = issueById(item.issue_id);
-    return [issue ? issueLabel(issue) : item.issue_id, item.compliance_summary, item.status, issue?.fields?.title]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query));
+    const card = input.closest?.("[data-review]");
+    if (card && input.matches("textarea[data-field]")) {
+      const id = card.dataset.review;
+      state.edits[id] = { ...state.edits[id], [input.dataset.field]: input.value };
+    }
   });
-}
-
-function reviewFilters() {
-  const stateValues = ["all", "needs_review", "changes_requested", "approved", "done", "blocked"];
-  return `
-    <div class="queue-filters">
-      ${stateValues
-        .map((value) => {
-          const count =
-            value === "all" ? reviewItems().length : reviewItems().filter((item) => item.status === value).length;
-          const label = value === "all" ? t("all") : enumLabel(value);
-          return `<button type="button" class="queue-filter ${state.reviewFilter === value ? "active" : ""}" data-filter="${value}">${escapeHtml(label)} <small>${count}</small></button>`;
-        })
-        .join("")}
-    </div>
-  `;
-}
-
-export function renderReview() {
-  els.title.textContent = t("review");
-  const items = filteredReviewItems();
-  const reviewCount = reviewItems().filter((item) => item.status === "needs_review").length;
-  els.subtitle.textContent = `${reviewCount} ${t("awaitingReview")}`;
-  const demo = Boolean(state.settings?.demo);
-  const disabled = demo ? "disabled" : "";
-  els.content.innerHTML = `
-    ${noticeBanner()}
-    ${warnings()}
-    ${reviewFilters()}
-    <div class="queue">
-      ${
-        items
-          .map((item) => {
-            const issue = issueById(item.issue_id);
-            const edits = state.edits[item.review_id] || {};
-            const note = edits.note ?? issue?.decision_note ?? "";
-            return `
-          <article class="queue-card status-${escapeHtml(item.status)}" data-review="${escapeHtml(item.review_id)}">
-            <header class="queue-head">
-              <span class="queue-ref">${t("issueRef")} #${item.ref}</span>
-              ${statusBadge(item.status)}
-              ${issue ? platformBadge(issue.platform) : ""}
-              ${issue ? localeBadge(issue.locale) : ""}
-              <span class="queue-score muted">${t("score")} ${issue ? scoreCell(issue.compliance_score) : ""}</span>
-            </header>
-            <div class="queue-meta">
-              ${issue ? `<a href="#/issues/${encodeURIComponent(issue.issue_id)}">${escapeHtml(contractById(issue.contract_id)?.name || issue.issue_id)}</a> · ${escapeHtml(issue.fields?.title?.slice(0, 110) || "")}` : escapeHtml(item.issue_id)}
-            </div>
-            <p class="queue-summary"><span class="muted">${t("complianceSummary")}:</span> ${escapeHtml(item.compliance_summary || "")}</p>
-            ${issue?.keyword_strategy ? `<p class="queue-summary"><span class="muted">${t("keywordStrategy")}:</span> ${escapeHtml(issue.keyword_strategy)}</p>` : ""}
-            ${
-              item.suggestions?.length
-                ? `
-              <span class="queue-label">${t("suggestions")}</span>
-              <ul class="queue-suggestions">${item.suggestions.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("")}</ul>
-            `
-                : ""
-            }
-            <label class="queue-label">${t("reviewNote")}</label>
-            <textarea class="queue-note" data-field="note" rows="2" placeholder="${escapeHtml(t("reviewNotePlaceholder"))}" ${disabled}>${escapeHtml(note)}</textarea>
-            <div class="queue-actions">
-              <button type="button" class="approve" data-action="approve" title="${t("approve")}" ${disabled}>${t("approve")}</button>
-              <button type="button" data-action="request_changes" title="${t("requestChanges")}" ${disabled}>${t("requestChanges")}</button>
-              <button type="button" class="danger" data-action="block" title="${t("block")}" ${disabled}>${t("block")}</button>
-              ${issue?.decision_action ? `<span class="queue-decision muted">${t("decision")}: ${escapeHtml(enumLabel(issue.decision_action, "action"))} · ${escapeHtml(issue.decided_at ? new Date(issue.decided_at).toLocaleString() : "")}</span>` : ""}
-            </div>
-          </article>
-        `;
-          })
-          .join("") || `<div class="empty">${t("noReviewItems")}</div>`
-      }
-    </div>
-    ${pagerControl("issues")}
-  `;
-  bindReviewEvents();
-}
-
-function bindReviewEvents() {
-  els.content.querySelectorAll(".queue-filter").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.reviewFilter = button.dataset.filter;
-      render();
-    });
-  });
-  els.content.querySelectorAll(".queue-card textarea").forEach((textarea) => {
-    textarea.addEventListener("input", () => {
-      const id = textarea.closest(".queue-card").dataset.review;
-      const field = textarea.dataset.field;
-      state.edits[id] = { ...state.edits[id], [field]: textarea.value };
-    });
-  });
-  els.content.querySelectorAll(".queue-actions button[data-action]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const card = button.closest(".queue-card");
-      const note = card.querySelector('[data-field="note"]')?.value ?? "";
-      submitDecision(card.dataset.review, button.dataset.action, { comment: note });
-    });
+  els.detailBody.addEventListener("click", (event) => {
+    if (event.target.closest("#saveFields")) {
+      const issueId = event.target.closest(".workbench")?.dataset.issue;
+      const issue = issueById(issueId);
+      if (!issue || !reviewForIssue(issueId)) return;
+      submitDecision(issueId, "revise", { fields: editedFields(issue) });
+      return;
+    }
+    const button = event.target.closest(".queue-actions button[data-action]");
+    if (!button) return;
+    const card = button.closest("[data-review]");
+    const note = card.querySelector('[data-field="note"]')?.value ?? "";
+    submitDecision(card.dataset.review, button.dataset.action, { comment: note });
   });
 }
 
@@ -515,93 +936,20 @@ async function submitDecision(issueId, action, { comment = "", fields } = {}) {
     return;
   }
   delete state.edits[issueId];
-  state.notice = t("saved");
+  delete state.fieldEdits[issueId];
   await loadState();
+  state.notice = t("saved");
+  render();
 }
 
-export function renderClaims() {
-  els.title.textContent = t("claimsRegistry");
-  const registry = claimsRegistry();
-  const query = state.query.trim().toLowerCase();
-  const matches = (haystack) =>
-    !query ||
-    String(haystack || "")
-      .toLowerCase()
-      .includes(query);
-  const claims = (registry.claims || []).filter(
-    (claim) => matches(claim.text) || matches(claim.substantiation) || matches(claim.category),
-  );
-  const claimRules = (registry.rules || []).filter(
-    (rule) => matches(rule.phrase) || matches(rule.reason) || matches(rule.alternative),
-  );
-  const approvedCount = (registry.claims || []).filter((claim) => claim.status === "approved").length;
-  els.subtitle.textContent = `${approvedCount} ${t("approved")} · ${(registry.rules || []).length} ${t("bannedPhrases")}`;
-  els.content.innerHTML = `
-    ${warnings()}
-    <div class="warnings"><div class="info"><strong>${t("claimsIntro")}</strong></div></div>
-    <div class="section-block">
-      <h2>${t("approvedClaims")}</h2>
-      ${
-        claims.length
-          ? `<div class="table-wrap"><table>
-        <thead><tr>
-          <th>${t("claimText")}</th><th>${t("claimStatus")}</th><th>${t("category")}</th><th>${t("substantiation")}</th><th>${t("claimEvidence")}</th>
-        </tr></thead>
-        <tbody>
-          ${claims
-            .map(
-              (claim) => `
-            <tr id="claim-${escapeHtml(claim.claim_id)}">
-              <td class="strong">${escapeHtml(claim.text)}</td>
-              <td>${claimStatusBadge(claim.status)}</td>
-              <td>${escapeHtml(claim.category || "")}</td>
-              <td>${escapeHtml(claim.substantiation || "")}</td>
-              <td>${(claim.evidence || []).map((entry) => `<span class="tag">${escapeHtml(entry)}</span>`).join(" ")}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody></table></div>`
-          : `<div class="empty-inline">${t("noClaims")}</div>`
-      }
-    </div>
-    <div class="section-block">
-      <h2>${t("bannedPhrases")}</h2>
-      ${
-        claimRules.length
-          ? `<div class="table-wrap"><table>
-        <thead><tr>
-          <th>${t("phrase")}</th><th>${t("severity")}</th><th>${t("reason")}</th><th>${t("alternative")}</th>
-        </tr></thead>
-        <tbody>
-          ${claimRules
-            .map(
-              (rule) => `
-            <tr id="claimrule-${escapeHtml(rule.rule_id)}">
-              <td class="strong">${escapeHtml(rule.phrase)}</td>
-              <td>${severityBadge(rule.severity || "error")} <span class="tag">${escapeHtml(enumLabel(rule.type, "claim"))}</span></td>
-              <td>${escapeHtml(rule.reason || "")}</td>
-              <td>${rule.alternative ? `<span class="tag">${escapeHtml(rule.alternative)}</span>` : ""}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody></table></div>`
-          : `<div class="empty-inline">${t("noClaimRules")}</div>`
-      }
-    </div>
-    ${pagerControl("claims")}
-  `;
-}
-
+// ── Help & Settings ────────────────────────────────────────────────────────
 export function renderSettings() {
-  els.title.textContent = t("settings");
-  els.subtitle.textContent = t("localFilesOnly");
+  document.getElementById("settingsTitle").title = t("localFilesOnly");
   const summary = state.settings?.config_summary || {};
   const seller = summary.seller || {};
   const exportPrefs = summary.export || {};
   const publish = summary.publish || {};
-  els.content.innerHTML = `
+  document.getElementById("settingsBody").innerHTML = `
     <div class="settings">
       <section>
         <h2>${t("configuration")}</h2>

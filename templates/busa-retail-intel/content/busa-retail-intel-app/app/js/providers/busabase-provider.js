@@ -9,6 +9,7 @@ import {
   normalizeAction,
   normalizeDraft,
   normalizeSignal,
+  normalizeSource,
   parseBatchMeta,
   statusForAction,
 } from "../retail-model.js?v=0.1.0";
@@ -99,6 +100,7 @@ async function countRecords(key, filters) {
 }
 
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -117,15 +119,16 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
   const normalized = toBusabaseFields(fields);
   const autoMerge = isStandaloneLocalRuntime();
   if (!existing) {
-    return runtimeClient.bases.createChangeRequest({
+    await runtimeClient.bases.createChangeRequest({
       baseId: declared.baseId,
       fields: normalized,
       message,
       submittedBy: appConfig.appId,
       autoMerge,
     });
+    return { autoMerge };
   }
-  return runtimeClient.records.changeRequest({
+  await runtimeClient.records.changeRequest({
     recordId: existing.id,
     operation: "update",
     fields: normalized,
@@ -134,13 +137,37 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
     baseCommitId: existing.headCommitId,
     autoMerge,
   });
+  return { autoMerge };
 }
 
+// Side reads: the batch-metadata row and the source list decorate the
+// cockpit, they are not the review work. A denied or failed side read degrades
+// to defaults instead of failing the whole page.
 async function readBatchMeta() {
-  const { rows } = await readPage("settings");
-  const row = rows.find((item) => item.kind === "batch");
-  return parseBatchMeta(row?.payload || "");
+  try {
+    const { rows } = await readPage("settings");
+    const row = rows.find((item) => item.kind === "batch");
+    return parseBatchMeta(row?.payload || "");
+  } catch {
+    return parseBatchMeta("");
+  }
 }
+
+async function readSources() {
+  try {
+    return await readPage("sources");
+  } catch {
+    return { rows: [], nextCursor: null };
+  }
+}
+
+const ID_FIELD = { signals: "signal-id", actions: "action-id", drafts: "draft-id", sources: "source-id" };
+const NORMALIZE = {
+  signals: normalizeSignal,
+  actions: normalizeAction,
+  drafts: normalizeDraft,
+  sources: normalizeSource,
+};
 
 async function requireRecord(key, idFieldSlug, id, label) {
   const existing = await findRecord(key, idFieldSlug, id);
@@ -168,7 +195,7 @@ export const busabaseProvider = {
         readPage("signals"),
         readPage("actions"),
         readPage("drafts"),
-        readPage("sources"),
+        readSources(),
         readBatchMeta(),
         countRecords("signals"),
         countRecords("actions"),
@@ -193,6 +220,7 @@ export const busabaseProvider = {
         signals: signalsPage.nextCursor,
         actions: actionsPage.nextCursor,
         drafts: draftsPage.nextCursor,
+        sources: sourcesPage.nextCursor,
       },
     };
   },
@@ -200,8 +228,23 @@ export const busabaseProvider = {
   async fetchPage(key, cursor) {
     await ensureResources();
     const page = await readPage(key, cursor);
-    const normalize = { signals: normalizeSignal, actions: normalizeAction, drafts: normalizeDraft }[key];
+    const normalize = NORMALIZE[key];
     return { ...page, rows: normalize ? page.rows.map(normalize) : page.rows };
+  },
+
+  // A record named by the URL but not on the loaded page: one records.get by
+  // its business id, never a walk through more pages to find it.
+  async getRecord(key, id) {
+    if (!ID_FIELD[key] || !id) return null;
+    await ensureResources();
+    const record = await findRecord(key, ID_FIELD[key], id);
+    if (!record) return null;
+    const row = {
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    };
+    return NORMALIZE[key](row);
   },
 
   // Human verdict on a signal/action/draft (approve/request_changes/block,
@@ -215,11 +258,12 @@ export const busabaseProvider = {
     if (!allowed.includes(action)) return { ok: false, status: 400, error: `Unknown action for ${kind}: ${action}` };
     await ensureResources();
     const now = new Date().toISOString();
+    let written = { autoMerge: false };
 
     try {
       if (kind === "signal") {
         const { current } = await requireRecord("signals", "signal-id", id, "signal");
-        await upsert(
+        written = await upsert(
           "signals",
           "signal-id",
           id,
@@ -235,7 +279,7 @@ export const busabaseProvider = {
         );
       } else if (kind === "action") {
         const { current } = await requireRecord("actions", "action-id", id, "action");
-        await upsert(
+        written = await upsert(
           "actions",
           "action-id",
           id,
@@ -251,7 +295,7 @@ export const busabaseProvider = {
         );
       } else if (kind === "draft") {
         const { current } = await requireRecord("drafts", "draft-id", id, "draft");
-        await upsert(
+        written = await upsert(
           "drafts",
           "draft-id",
           id,
@@ -270,7 +314,9 @@ export const busabaseProvider = {
     } catch (error) {
       return { ok: false, status: 400, error: error instanceof Error ? error.message : String(error) };
     }
-    return { ok: true, decision: { id, kind, action, comment, decided_at: now } };
+    // A hosted AirApp's write is a pending ChangeRequest: the record keeps its
+    // old status until someone merges it, and the UI has to say so.
+    return { ok: true, pending: !written.autoMerge, decision: { id, kind, action, comment, decided_at: now } };
   },
 
   async provisionResources() {

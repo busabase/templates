@@ -25,7 +25,7 @@ metadata:
 
 <table>
   <tr>
-    <td width="50%"><img src="assets/screenshots/overview.webp" alt="Busa MV concept view"></td>
+    <td width="50%"><img src="assets/screenshots/overview.webp" alt="Busa MV overview"></td>
     <td width="50%"><img src="assets/screenshots/storyboard.webp" alt="Busa MV storyboard"></td>
   </tr>
   <tr>

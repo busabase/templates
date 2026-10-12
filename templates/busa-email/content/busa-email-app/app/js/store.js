@@ -69,6 +69,10 @@ export const store = {
   checked: new Set(),
   refreshTimer: null,
   lockTimer: null,
+  // page: "overview" | "view"; presentation: "peek" (split) | "page" | null.
+  page: null,
+  presentation: null,
+  demoMode: modeForDemo(demoScenario),
   mode: modeForDemo(demoScenario),
   languageMode:
     queryLanguage ||
@@ -81,7 +85,6 @@ export const store = {
   isApplyingRoute: false,
   routeNeedsReplace: false,
   openActionMenu: false,
-  mobileDetailOpen: false,
   localAuth: null,
   loadingMore: false,
   loadMoreError: "",

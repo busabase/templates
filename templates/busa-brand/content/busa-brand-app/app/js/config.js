@@ -12,6 +12,9 @@ export const appConfig = {
     slug: "busa-brand",
   },
   airApp: { name: "Busa Brand", slug: "busa-brand-app", resourceKey: "busa-brand-app" },
+  // Where a record opens, per view (see app.js). Narrative and Stories are two
+  // views over the one `items` Base; `settings` is not a record view.
+  ui: { detail_modes: { narrative: "page", stories: "drawer", drift: "split" } },
   bases: [
     {
       key: "items",
@@ -76,7 +79,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

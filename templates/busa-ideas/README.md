@@ -6,9 +6,12 @@ carries it through BRD, MRD, and PRD.
 
 ## What It Shows
 
-- Idea vault: every idea, its current rung, and its derived clarity score.
-- BRD / MRD / PRD: the document for the currently selected idea, or a pick-
-  list of ideas that have one.
+- Idea vault: every idea as one row — what it needs next, its rung, its
+  derived clarity score — filterable by what it needs from you.
+- Overview: what is waiting on you, what is ready to advance, and what is
+  parked, with three totals the sidebar does not already show.
+- BRD / MRD / PRD: a reading queue of every idea that has that document, with
+  the open document beside it (opening on the idea you last looked at).
 - Idea detail: overview (one-liner, who, problem, why-now), the consultant's
   questions and your answers, and the advance gate — blocked with a reason,
   or ready with one click.
@@ -35,11 +38,11 @@ carries it through BRD, MRD, and PRD.
   </tr>
   <tr>
     <td width="50%"><img src="assets/screenshots/questions.webp" alt="Busa Ideas consultant questions"></td>
-    <td width="50%"><img src="assets/screenshots/documents.webp" alt="Busa Ideas PRD document"></td>
+    <td width="50%"><img src="assets/screenshots/documents.webp" alt="Busa Ideas BRD reading queue"></td>
   </tr>
   <tr>
     <td><strong>Consultant questions</strong><br>Each question shows why it's being asked, and an answer/skip action.</td>
-    <td><strong>PRD</strong><br>A completed document, with its status, version, and any recorded gaps.</td>
+    <td><strong>BRD / MRD / PRD</strong><br>Every idea's document of one kind as a reading queue beside the open document, with its status, version, and any recorded gaps.</td>
   </tr>
 </table>
 

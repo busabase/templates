@@ -1,8 +1,15 @@
 import { bindForm } from "./actions.js";
 import { escapeHtml, formActions, input, statusBadge, statusSelect, textarea } from "./format.js";
 import { t } from "./i18n.js";
-import { collectionFor, loadMoreControl, matches } from "./list-detail.js";
-import { syncRoute } from "./router.js";
+import {
+  collectionFor,
+  emptyList,
+  loadMoreControl,
+  renderCount,
+  renderDetailBar,
+  rowClass,
+  visibleItems,
+} from "./list-detail.js";
 import { shotPreview, shotReadiness, shotsForEpisode } from "./shots.js";
 import { $, store } from "./store.js";
 
@@ -12,41 +19,31 @@ function episodeRow(episode) {
   const shots = shotsForEpisode(episode.id);
   const summary = episode.summary || episode.promise || "";
   return `
-    <tr class="${episode.id === store.selectedId ? "active" : ""}" data-row-episode="${escapeHtml(episode.id)}">
-      <td class="episode-no">${escapeHtml(String(episode.number || "").padStart(3, "0"))}</td>
-      <td>
-        <button class="episode-link" data-episode-detail="${escapeHtml(episode.id)}">${escapeHtml(episode.title || episode.id)}</button>
-        <div class="table-sub">${escapeHtml(episode.source_chapter?.chapter_title || "")}</div>
-      </td>
-      <td>${escapeHtml(summary).slice(0, 86)}</td>
-      <td>${statusBadge(episode.status)}</td>
-      <td><span class="badge">${shots.length}</span></td>
-      <td><button class="mini-button table-action" data-episode-detail="${escapeHtml(episode.id)}">${t("episode_view_detail")}</button></td>
+    <tr class="${rowClass(episode.id)}" data-id="${escapeHtml(episode.id)}">
+      <td><span class="cell-name"><span class="episode-no">${escapeHtml(String(episode.number || "").padStart(3, "0"))}</span><strong>${escapeHtml(episode.title || t("untitled"))}</strong></span></td>
+      <td class="ws-col-wide episode-summary-cell">${escapeHtml(summary || "—")}</td>
+      <td class="ws-col-narrow">${statusBadge(episode.status)}</td>
+      <td class="ws-col-num">${shots.length}</td>
+      <td class="ws-col-wide">${escapeHtml(episode.cliffhanger || "—")}</td>
     </tr>`;
 }
 
 function episodeTable(items) {
-  if (!items.length) {
-    return `<div class="item-card"><h3>${t("episode_empty")}</h3><p>${t("episode_empty_hint")}</p></div>`;
-  }
   return `
-    <div class="episode-table-wrap">
-      <table class="episode-table">
-        <thead>
-          <tr>
-            <th>${t("episode_table_ep")}</th>
-            <th>${t("episode_table_title")}</th>
-            <th>${t("episode_table_summary")}</th>
-            <th>${t("episode_table_status")}</th>
-            <th>${t("episode_table_shots")}</th>
-            <th>${t("episode_table_actions")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items.map((episode) => episodeRow(episode)).join("")}
-        </tbody>
-      </table>
-    </div>`;
+    <table class="ws-table episode-table">
+      <thead>
+        <tr>
+          <th>${t("episode_table_title")}</th>
+          <th class="ws-col-wide">${t("episode_table_summary")}</th>
+          <th class="ws-col-narrow">${t("episode_table_status")}</th>
+          <th class="ws-col-num">${t("episode_table_shots")}</th>
+          <th class="ws-col-wide">${t("episode_table_cliffhanger")}</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${items.map((episode) => episodeRow(episode)).join("")}
+      </tbody>
+    </table>`;
 }
 
 function scriptPreview(item) {
@@ -176,16 +173,20 @@ function episodeShotsTab(item, shots) {
 
 function episodeDetail(item) {
   if (!item)
-    return `<div class="detail-card"><h2>${t("episode_select_hint")}</h2><p class="muted">${t("episode_select_hint_sub")}</p></div>`;
+    return `<div class="ws-detail-empty"><strong>${t("record_missing")}</strong><br />${t("record_missing_hint")}</div>`;
   const shots = shotsForEpisode(item.id);
+  const meta = [
+    item.number ? `${t("episode_short")} ${item.number}` : "",
+    item.source_chapter?.work || "",
+    item.source_chapter?.chapter_number ? String(item.source_chapter.chapter_number) : "",
+    item.runtime || "",
+  ].filter(Boolean);
   return `
     <form class="detail-card episode-detail" data-kind="episodes" data-id="${escapeHtml(item.id)}">
-      <button type="button" class="back-button" data-episode-list>${t("episode_back")}</button>
       <div class="detail-head">
         <div>
-          <div class="eyebrow">${t("episode_detail_eyebrow")}</div>
-          <h2>${escapeHtml(item.title || "New episode")}</h2>
-          <p>${escapeHtml(item.source_chapter?.work || "")}${item.source_chapter?.work ? " · " : ""}${escapeHtml(item.source_chapter?.chapter_number || item.number || "")}${item.source_chapter?.chapter_number || item.number ? " · " : ""}${escapeHtml(item.runtime || "")}</p>
+          <h2>${escapeHtml(item.title || t("untitled"))}</h2>
+          ${meta.length ? `<p>${escapeHtml(meta.join(" · "))}</p>` : ""}
         </div>
         ${statusBadge(item.status)}
       </div>
@@ -201,29 +202,12 @@ function episodeDetail(item) {
 }
 
 export function renderEpisodesWorkspace() {
-  $("newItemButton").style.visibility = "visible";
-  const allEpisodes = collectionFor("episodes");
-  const items = allEpisodes.filter(matches).sort((a, b) => (a.number || 0) - (b.number || 0));
-  $("itemCount").textContent = store.query
-    ? `${items.length}${store.state.pagination?.episodes ? "+" : ""}`
-    : String(store.state.totalCount?.episodes ?? `${items.length}${store.state.pagination?.episodes ? "+" : ""}`);
-  if (
-    store.episodeMode === "detail" &&
-    (!store.selectedId || !allEpisodes.some((item) => item.id === store.selectedId))
-  ) {
-    store.selectedId = items[0]?.id || null;
-    syncRoute({ replace: true });
-  }
-  const workspace = document.querySelector(".workspace");
-  workspace?.classList.toggle("episode-detail-mode", store.episodeMode === "detail");
-  workspace?.classList.toggle("episodes-list-layout", store.episodeMode === "list");
-  const selected = allEpisodes.find((item) => item.id === store.selectedId) || null;
-  if (store.episodeMode === "detail") {
-    $("list").innerHTML = episodeDetail(selected);
-    $("detail").innerHTML = "";
-  } else {
-    $("list").innerHTML = `${episodeTable(items)}${loadMoreControl("episodes")}`;
-    $("detail").innerHTML = "";
-  }
+  const items = visibleItems("episodes");
+  renderCount(items);
+  $("list").innerHTML = `${items.length ? episodeTable(items) : emptyList()}${loadMoreControl("episodes")}`;
+  renderDetailBar();
+  $("detail").innerHTML = store.selectedId
+    ? episodeDetail(collectionFor("episodes").find((item) => item.id === store.selectedId) || null)
+    : "";
   bindForm();
 }

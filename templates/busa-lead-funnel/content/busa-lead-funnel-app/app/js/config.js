@@ -12,6 +12,11 @@ export const appConfig = {
       "Deal sourcing pipeline for a BD/sourcing team triaging merchant and business financing leads: a kanban board across new/data-verified/scored/term-sheet-ready/rejected stages with deterministic rule-based lead scoring, notes, and stage history — never outreach, term sheets, or money movement",
     slug: "busa-lead-funnel",
   },
+  // Where a record opens. leads → drawer: a lead is a fact the sourcing team
+  // scans many of, reads the score, moves one field (its stage) or leaves a
+  // note, and returns to the board or list. settings has no record view — its
+  // one config row renders as the Help & Settings page.
+  ui: { detail_modes: { leads: "drawer", settings: "page" } },
   airApp: { name: "Busa Lead Funnel", slug: "busa-lead-funnel-app", resourceKey: "busa-lead-funnel-app" },
   bases: [
     {
@@ -53,7 +58,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

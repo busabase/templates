@@ -1981,7 +1981,13 @@ export const appConfig = {
       "en": "Contracts and payroll review",
       "zh-CN": "合同与工资复核"
     },
-    "primary_base": "employees"
+    "primary_base": "employees",
+    "detail_modes": {
+      "employees": "drawer",
+      "labor-contracts": "drawer",
+      "salary-changes": "drawer",
+      "payroll": "split"
+    }
   },
   "boundary": {
     "en": "Proposed salaries never replace confirmed salaries. Employee headcount comes only from employee records, never contract or payroll row counts. Calculate a payroll draft only from explicitly confirmed inputs; missing inputs remain missing. Changes use ChangeRequests and require the user's requested approval evidence. Do not submit payments, send payslips or infer tax or legal obligations. Restrict employee information with workspace permissions.",

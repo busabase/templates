@@ -14,6 +14,9 @@ export const appConfig = {
   spaceId: "",
   schemaVersion: 1,
   accent: "#3E6B5A",
+  // Where a record opens, per view (justified next to DETAIL_MODES in app.js).
+  // A `/<record>` path always opens the full page; `?peek=` drives drawer/split.
+  ui: { detail_modes: { orders: "drawer", proposals: "split", exceptions: "split", guardrails: "drawer" } },
   folder: {
     name: "Busa Agent Orders",
     description:

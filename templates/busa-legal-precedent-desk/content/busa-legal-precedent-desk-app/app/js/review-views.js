@@ -1,261 +1,35 @@
 import {
+  DETAIL_MODES,
   STATUS_ROUTES,
   activeLang,
+  baseForView,
   checks,
-  currentProfile,
+  detailUrl,
   els,
-  entities,
+  enumLabel,
   escapeAttr,
   escapeHtml,
-  filteredItems,
   items,
-  itemsForRoute,
   lockBanner,
+  recordById,
+  recordUrl,
+  rowsForRoute,
   state,
   t,
   viewLabel,
 } from "../app.js";
-export function renderReview() {
-  els.title.textContent = viewLabel(state.route.view);
-  els.subtitle.textContent = state.snapshot.workspace?.subtitle || "";
-  const list = itemsForRoute();
-  const selected = itemById(state.route.id) || list[0] || items()[0];
-  els.content.innerHTML = splitLayout(list, selected);
-}
 
-export function renderItems() {
-  els.title.textContent = t("items");
-  els.subtitle.textContent = state.snapshot.workspace?.subtitle || "";
-  const list = filteredItems();
-  const selected = itemById(state.route.id) || list[0];
-  els.content.innerHTML = splitLayout(list, selected);
-}
+const VIEW_HINT = {
+  items: "allItemsHint",
+  review: "reviewHint",
+  approved: "approvedHint",
+  done: "doneHint",
+  blocked: "blockedHint",
+  checks: "checksHint",
+  entities: "entitiesHint",
+};
 
-function splitLayout(list, selected) {
-  return `
-    ${lockBanner()}
-    <div class="split">
-      <section class="list-panel">
-        <div class="list-head"><strong>${itemCount(list)} ${escapeHtml(t("allItems"))}</strong></div>
-        <div class="list">${list.map(rowHtml).join("") || emptyText()}</div>
-        ${loadMoreControl("items")}
-      </section>
-      <aside class="detail-panel">${selected ? detailHtml(selected) : `<div class="empty">${escapeHtml(t("noSelection"))}</div>`}</aside>
-    </div>`;
-}
-
-function itemCount(list) {
-  if (state.query) return `${list.length}${state.pagination.items ? "+" : ""}`;
-  const status =
-    state.route.view === "review" ? "needs_review" : STATUS_ROUTES.has(state.route.view) ? state.route.view : null;
-  return (
-    (status ? state.workflowCount?.[status] : state.totalCount.items) ??
-    `${list.length}${state.pagination.items ? "+" : ""}`
-  );
-}
-
-function loadMoreControl(key) {
-  if (!state.pagination[key]) return "";
-  return `<div class="load-more"><button type="button" data-load-more="${escapeAttr(key)}" ${state.loadingMore[key] ? "disabled" : ""}>${escapeHtml(state.loadingMore[key] ? t("loadingMore") : t("loadMore"))}</button>${state.loadMoreError[key] ? `<span role="alert">${escapeHtml(t("loadMoreFailed"))}</span>` : ""}</div>`;
-}
-
-export function rowHtml(item) {
-  const base = state.route.view === "review" || STATUS_ROUTES.has(state.route.view) ? state.route.view : "items";
-  const href = `#/${base}/${encodeURIComponent(item.id)}`;
-  return `<a class="row ${state.route.id === item.id ? "active" : ""}" href="${href}">
-    <div class="row-top"><strong>${escapeHtml(item.ref || item.title)}</strong><span class="status ${escapeHtml(item.status)}">${escapeHtml(statusLabel(item.status))}</span></div>
-    <div class="row-title">${escapeHtml(item.title)}</div>
-    <p>${escapeHtml(item.summary || "")}</p>
-    <div class="badges">${badge(item.category)}${(item.risk || []).map(badge).join("")}</div>
-  </a>`;
-}
-
-function detailHtml(item) {
-  const noteValue = state.edits.note[item.id] ?? item.review_note ?? "";
-  const draftValue = state.edits.draft[item.id] ?? item.draft ?? "";
-  const disabled = state.settings?.lock ? "disabled" : "";
-  const profile = currentProfile();
-  return `
-    <div class="detail-actions">
-      <a class="back-link" href="#/${state.route.view || "items"}">← ${escapeHtml(viewLabel(state.route.view))}</a>
-      <button type="button" data-action="approve" data-id="${escapeAttr(item.id)}" title="${escapeAttr(t("approve"))}" ${disabled}>${escapeHtml(t("approve"))}</button>
-      <button type="button" data-action="request_changes" data-id="${escapeAttr(item.id)}" title="${escapeAttr(t("requestChanges"))}" ${disabled}>${escapeHtml(t("requestChanges"))}</button>
-      <button type="button" data-action="block" data-id="${escapeAttr(item.id)}" title="${escapeAttr(t("block"))}" ${disabled}>${escapeHtml(t("block"))}</button>
-    </div>
-    <article class="detail">
-      <div class="detail-kicker">${escapeHtml(item.ref || "")} · ${escapeHtml(statusLabel(item.status))}</div>
-      <h2>${escapeHtml(item.title)}</h2>
-      <p class="summary">${escapeHtml(item.summary || "")}</p>
-      <dl class="meta">
-        <div><dt>${escapeHtml(t("owner"))}</dt><dd>${escapeHtml(item.owner || "")}</dd></div>
-        <div><dt>${escapeHtml(t("category"))}</dt><dd>${escapeHtml(item.category || "")}</dd></div>
-        <div><dt>${escapeHtml(t("risk"))}</dt><dd>${escapeHtml((item.risk || []).join(", "))}</dd></div>
-      </dl>
-      ${item.body ? `<section><h3>Context</h3><p>${escapeHtml(item.body)}</p></section>` : ""}
-      ${item.recommendation ? `<section><h3>${escapeHtml(t("recommendation"))}</h3><p>${escapeHtml(item.recommendation)}</p></section>` : ""}
-      ${businessDetailHtml(profile, item)}
-      ${(item.evidence || []).length ? `<section><h3>${escapeHtml(t("evidence"))}</h3><ul>${item.evidence.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul></section>` : ""}
-      <label class="field"><span>${escapeHtml(t("editableDraft"))}</span><textarea data-draft="${escapeAttr(item.id)}">${escapeHtml(draftValue)}</textarea></label>
-      <label class="field"><span>${escapeHtml(t("reviewNote"))}</span><textarea data-note="${escapeAttr(item.id)}">${escapeHtml(noteValue)}</textarea></label>
-      <button class="secondary" type="button" data-action="revise" data-id="${escapeAttr(item.id)}" title="${escapeAttr(t("saveRevision"))}" ${disabled}>${escapeHtml(t("saveRevision"))}</button>
-    </article>`;
-}
-
-function businessDetailHtml(profile, item) {
-  if (profile.id === "precedent") {
-    return `<section class="business-detail precedent-detail">
-      <h3>${activeLang() === "zh" ? "类案匹配" : "Precedent matches"}</h3>
-      <div class="match-stack detail-stack">${matchMeterHtml(item)}</div>
-      <div class="citation-grid">${(item.evidence || []).map((x) => `<span>${escapeHtml(x)}</span>`).join("")}</div>
-      ${fieldTile(activeLang() === "zh" ? "裁判尺度" : "Court pattern", field(item, "court_pattern", item.body))}
-    </section>`;
-  }
-  if (profile.id === "matter") {
-    return `<section class="business-detail matter-detail">
-      <h3>${activeLang() === "zh" ? "争议策略结构" : "Strategy structure"}</h3>
-      <div class="issue-board detail-board">
-        ${issueTree(activeLang() === "zh" ? "争点树" : "Issue tree", field(item, "issue_tree", [item.category]))}
-        ${issueColumn(activeLang() === "zh" ? "证据缺口" : "Evidence gaps", listValue(field(item, "evidence_gaps_list", field(item, "evidence_gaps"))))}
-        ${issueColumn(activeLang() === "zh" ? "谈判选项" : "Negotiation options", listValue(field(item, "negotiation_options", [])))}
-      </div>
-      ${fieldTile(activeLang() === "zh" ? "文书大纲" : "Pleading outline", field(item, "pleading_outline", item.draft))}
-    </section>`;
-  }
-  if (profile.id === "firm") {
-    return `<section class="business-detail firm-detail">
-      <h3>${activeLang() === "zh" ? "经营分析字段" : "Management analytics"}</h3>
-      <div class="field-grid">
-        ${fieldTile(activeLang() === "zh" ? "样本量" : "Sample size", field(item, "sample_size", ""))}
-        ${fieldTile(activeLang() === "zh" ? "可公开案例" : "Public-citable", field(item, "public_citable", ""))}
-        ${fieldTile(activeLang() === "zh" ? "律师数" : "Lawyers", field(item, "lawyer_count", ""))}
-        ${fieldTile(activeLang() === "zh" ? "可见范围" : "Visibility", field(item, "visibility", ""))}
-      </div>
-      ${issueColumn(activeLang() === "zh" ? "质量指标" : "Quality indicators", listValue(field(item, "quality_indicators", item.evidence || [])))}
-    </section>`;
-  }
-  return `<section class="business-detail casebase-detail">
-    <h3>${activeLang() === "zh" ? "入库抽取与脱敏" : "Ingest extraction and redaction"}</h3>
-    <div class="field-grid">
-      ${fieldTile(activeLang() === "zh" ? "法院" : "Court", field(item, "court", ""))}
-      ${fieldTile(activeLang() === "zh" ? "案由" : "Cause", field(item, "cause", item.category))}
-      ${fieldTile(activeLang() === "zh" ? "程序" : "Procedure", field(item, "procedure", ""))}
-      ${fieldTile(activeLang() === "zh" ? "裁判结果" : "Outcome", field(item, "outcome", ""))}
-      ${fieldTile(activeLang() === "zh" ? "抽取置信度" : "Extraction confidence", percentText(field(item, "extraction_confidence", "")))}
-      ${fieldTile(activeLang() === "zh" ? "重复分" : "Duplicate score", field(item, "duplicate_score", ""))}
-    </div>
-    <div class="redaction-rail">
-      ${redactionStep(activeLang() === "zh" ? "当事人" : "Parties", field(item, "parties_redacted", true))}
-      ${redactionStep(activeLang() === "zh" ? "账号电话" : "Accounts/contact", field(item, "contacts_redacted", true))}
-      ${redactionStep(activeLang() === "zh" ? "商业秘密" : "Business secrets", !listValue(item.risk).includes("business_secret"))}
-    </div>
-  </section>`;
-}
-
-export function renderChecks() {
-  els.title.textContent = t("checks");
-  els.subtitle.textContent = state.snapshot.workspace?.subtitle || "";
-  els.content.innerHTML = `<section class="panel checks">${
-    checks()
-      .map(
-        (check) =>
-          `<div class="check ${escapeHtml(check.status)}"><strong>${escapeHtml(check.label)}</strong><span>${escapeHtml(t(check.status))}</span><p>${escapeHtml(check.detail || "")}</p></div>`,
-      )
-      .join("") || emptyText()
-  }${loadMoreControl("checks")}</section>`;
-}
-
-function entityCard(entity) {
-  return `<article class="entity business-entity">
-    <div class="entity-meta">${escapeHtml(entity.meta || "")}</div>
-    <h2>${escapeHtml(entity.title)}</h2>
-    <p>${escapeHtml(entity.summary || "")}</p>
-    <dl class="entity-facts">
-      ${entity.owner ? `<div><dt>${escapeHtml(t("owner"))}</dt><dd>${escapeHtml(entity.owner)}</dd></div>` : ""}
-      <div><dt>${escapeHtml(t("status"))}</dt><dd><span class="status ${escapeHtml(entity.status || "")}">${escapeHtml(statusLabel(entity.status))}</span></dd></div>
-    </dl>
-    ${
-      entity.metrics
-        ? `<div class="mini-metrics">${Object.entries(entity.metrics)
-            .slice(0, 3)
-            .map(([key, value]) => `<span><b>${escapeHtml(value)}</b>${escapeHtml(key.replaceAll("_", " "))}</span>`)
-            .join("")}</div>`
-        : ""
-    }
-    <div class="badges">${(entity.tags || []).map(badge).join("")}</div>
-  </article>`;
-}
-
-export function renderEntities() {
-  const profile = currentProfile();
-  els.title.textContent = t("entities");
-  els.subtitle.textContent = state.snapshot.workspace?.subtitle || "";
-  const list = entities();
-  if (!list.length) {
-    els.content.innerHTML = `${emptyText()}${loadMoreControl("entities")}`;
-    return;
-  }
-  // Firm radar presents lawyer/practice-area profile cards; the other desks group their library.
-  if (profile.id === "firm") {
-    els.content.innerHTML = `<section class="entity-grid ${escapeAttr(profile.id)}-entities">${list.map(entityCard).join("")}</section>${loadMoreControl("entities")}`;
-    return;
-  }
-  const order = ["needs_review", "changes_requested", "approved", "done", "blocked"];
-  const groups = new Map();
-  for (const entity of list) {
-    const key = entity.status || "other";
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(entity);
-  }
-  const keys = [...groups.keys()].sort((a, b) => order.indexOf(a) - order.indexOf(b));
-  els.content.innerHTML =
-    keys
-      .map(
-        (key) => `<section class="entity-group">
-      <div class="panel-head"><h2>${escapeHtml(statusLabel(key))}</h2><span>${groups.get(key).length}</span></div>
-      <div class="entity-grid ${escapeAttr(profile.id)}-entities">${groups.get(key).map(entityCard).join("")}</div>
-    </section>`,
-      )
-      .join("") + loadMoreControl("entities");
-}
-
-export function renderSettings() {
-  els.title.textContent = t("settings");
-  els.subtitle.textContent = state.snapshot.workspace?.subtitle || "";
-  const config = state.settings?.config_summary || {};
-  els.content.innerHTML = `
-    <section class="panel settings">
-      <h2>${escapeHtml(t("config"))}</h2>
-      ${jsonBlock(config)}
-    </section>
-    <section class="panel settings">
-      <h2>${escapeHtml(t("onboarding"))}</h2>
-      ${jsonBlock(state.settings?.onboarding || {})}
-    </section>
-    <section class="panel settings">
-      <h2>${escapeHtml(t("executionReport"))}</h2>
-      ${jsonBlock(state.settings?.execution_report || {})}
-    </section>`;
-}
-
-function itemById(id) {
-  return items().find((item) => item.id === id);
-}
-
-function statusLabel(status) {
-  const labels = {
-    needs_review: t("needsReview"),
-    changes_requested: t("changesRequested"),
-    approved: t("approved"),
-    done: t("done"),
-    blocked: t("blocked"),
-  };
-  return labels[status] || status;
-}
-
-function badge(value) {
-  return value ? `<span class="badge">${escapeHtml(value)}</span>` : "";
-}
-
+// ── Small helpers ──────────────────────────────────────────────────────────
 export function field(item, key, fallback = "") {
   const fields = item?.fields && typeof item.fields === "object" ? item.fields : item?.metrics;
   return fields?.[key] ?? item?.[key] ?? fallback;
@@ -267,90 +41,473 @@ export function listValue(value) {
   return [];
 }
 
-export function sumField(key) {
-  return items().reduce((sum, item) => sum + (Number(field(item, key, 0)) || 0), 0);
+const cell = (html, { title = "", className = "" } = {}) =>
+  `<td${className ? ` class="${className}"` : ""}${title ? ` title="${escapeAttr(title)}"` : ""}>${html}</td>`;
+
+const tableHead = (columns) =>
+  `<thead><tr>${columns.map(([label, className = ""]) => `<th${className ? ` class="${className}"` : ""}>${escapeHtml(label)}</th>`).join("")}</tr></thead>`;
+
+const rowOpen = (id) =>
+  `<tr data-id="${escapeAttr(id)}"${id === state.route.selectedId ? ' class="ws-selected"' : ""}>`;
+
+const emptyState = (title, detail = "") =>
+  `<div class="empty-state"><strong>${escapeHtml(title)}</strong>${detail ? `<p>${escapeHtml(detail)}</p>` : ""}</div>`;
+
+const muted = (text) => `<span class="muted">${escapeHtml(text)}</span>`;
+
+export function statusLabel(status) {
+  const labels = {
+    needs_review: t("needsReview"),
+    changes_requested: t("changesRequested"),
+    approved: t("approved"),
+    done: t("done"),
+    blocked: t("blocked"),
+    pass: t("pass"),
+    warn: t("warn"),
+    fail: t("fail"),
+  };
+  return labels[status] || enumLabel("enumStatus", status);
 }
 
-export function percentText(value) {
-  if (value === "" || value === null || value === undefined) return "";
+const STATUS_TONE = {
+  needs_review: "warning",
+  changes_requested: "active",
+  approved: "positive",
+  done: "positive",
+  blocked: "danger",
+  pass: "positive",
+  warn: "warning",
+  fail: "danger",
+};
+
+export function statusBadge(status) {
+  if (!status) return "";
+  return `<span class="badge ${STATUS_TONE[status] || ""}">${escapeHtml(statusLabel(status))}</span>`;
+}
+
+const riskBadges = (risks) =>
+  listValue(risks)
+    .map((risk) => `<span class="badge">${escapeHtml(enumLabel("enumRisk", risk))}</span>`)
+    .join(" ");
+
+function dateTime(value) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(parsed);
+}
+
+const isPartial = (key) => Boolean(state.pagination[key]);
+
+const numberOrNull = (value) => {
+  if (value === undefined || value === null || value === "") return null;
   const number = Number(value);
-  if (!Number.isFinite(number)) return String(value);
-  return `${Math.round((number > 1 ? number : number * 100) * 10) / 10}%`;
+  return Number.isFinite(number) ? number : null;
+};
+
+// Similarity is stored as 0–1 (0.86) or, from older imports, 0–100 (86).
+function similarityPct(value) {
+  const number = numberOrNull(value);
+  if (number === null) return null;
+  return Math.max(0, Math.min(100, Math.round(number > 1 ? number : number * 100)));
 }
 
-export function fieldTile(label, value) {
-  const display = Array.isArray(value) ? value.join(", ") : value;
-  return `<div class="field-tile"><span>${escapeHtml(label)}</span><strong>${escapeHtml(display || "—")}</strong></div>`;
-}
+const pctText = (value) => {
+  const pct = similarityPct(value);
+  return pct === null ? "—" : `${pct}%`;
+};
 
-export function redactionStep(label, passed) {
-  return `<div class="redaction-step ${passed ? "pass" : "warn"}"><span></span><strong>${escapeHtml(label)}</strong></div>`;
-}
+const countText = (value) => {
+  const number = numberOrNull(value);
+  return number === null ? "—" : String(number);
+};
 
-export function matchMeterHtml(item) {
-  const score = Number(field(item, "top_similarity", field(item, "avg_similarity", 0.78))) || 0.78;
-  const pct = Math.max(8, Math.min(100, Math.round((score > 1 ? score / 100 : score) * 100)));
-  return `<a class="match-meter" href="#/items/${encodeURIComponent(item.id)}">
-    <div><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(field(item, "jurisdiction", item.category || ""))}</span></div>
-    <div class="meter"><span style="width:${pct}%"></span></div>
-    <b>${pct}%</b>
+// One bar per pack: its best-matching internal case. No similarity → no bar
+// (the previous version drew a made-up 78%).
+function matchMeter(item, href) {
+  const pct = similarityPct(field(item, "top_similarity", ""));
+  const jurisdiction = field(item, "jurisdiction", "");
+  return `<a class="match-meter" href="${href}">
+    <span class="match-copy"><strong>${escapeHtml(field(item, "query", "") || item.title)}</strong><small>${escapeHtml(
+      [jurisdiction, item.title].filter(Boolean).join(" · "),
+    )}</small></span>
+    <span class="meter">${pct === null ? "" : `<span style="width:${pct}%"></span>`}</span>
+    <b class="num">${pct === null ? "—" : `${pct}%`}</b>
   </a>`;
 }
 
-export function issueColumn(title, values) {
-  const list = listValue(values);
-  return `<div class="issue-column"><h3>${escapeHtml(title)}</h3>${(list.length ? list : ["—"])
-    .slice(0, 5)
-    .map((value) => `<span>${escapeHtml(value)}</span>`)
-    .join("")}</div>`;
+function noticeBanner() {
+  return state.notice ? `<div class="notice-banner" role="status">${escapeHtml(state.notice)}</div>` : "";
 }
 
-// Renders an issue tree: nested {label, children} nodes become an indented hierarchy;
-// a flat string array falls back to a simple list.
-export function issueTree(title, values) {
-  const raw = Array.isArray(values) ? values : listValue(values);
-  const nodes = raw.length ? raw : ["—"];
-  return `<div class="issue-column issue-tree"><h3>${escapeHtml(title)}</h3><ul class="tree">${nodes
-    .slice(0, 6)
-    .map((node) => {
-      if (node && typeof node === "object") {
-        const label = node.label || node.issue || node.title || "";
-        const children = listValue(node.children || node.subs || node.sub_issues);
-        return `<li><span class="tree-node">${escapeHtml(label)}</span>${
-          children.length ? `<ul>${children.map((child) => `<li>${escapeHtml(child)}</li>`).join("")}</ul>` : ""
-        }</li>`;
-      }
-      return `<li><span class="tree-node">${escapeHtml(node)}</span></li>`;
-    })
-    .join("")}</ul></div>`;
+// ── Overview ───────────────────────────────────────────────────────────────
+// Three numbers the sidebar does not already show (it carries needs-review,
+// approved and blocked). The pinned SDK has no records.groupBy, so the
+// high-match sum is exact only when every research pack is loaded; otherwise
+// it shows "—" rather than a partial sum dressed as a total.
+function metricsBand() {
+  const metrics = state.snapshot?.metrics || {};
+  const loaded = items();
+  const partial = isPartial("items");
+  const total = state.totalCount.items ?? (partial ? `${loaded.length}+` : loaded.length);
+  const high =
+    metrics.high_matches ??
+    (partial ? "—" : loaded.reduce((sum, item) => sum + (numberOrNull(field(item, "high_match_count", "")) || 0), 0));
+  const checksTotal = state.totalCount.checks ?? checks().length;
+  const passing = metrics.checks_pass ?? checks().filter((check) => check.status === "pass").length;
+  const checksPartial = state.totalCount.checks == null && isPartial("checks");
+  return [
+    [t("researchPacks"), total, ""],
+    [t("highMatches"), high, high === "—" ? t("exactNeedsAll") : ""],
+    [t("citationChecks"), `${passing}/${checksTotal}${checksPartial ? "+" : ""}`, t("citationChecksHint")],
+  ]
+    .map(
+      ([label, value, title]) =>
+        `<div${title ? ` title="${escapeAttr(title)}"` : ""}><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`,
+    )
+    .join("");
 }
 
-export function practiceBarHtml(entity) {
-  const size = Number(field(entity, "case_count", field(entity, "sample_size", 24))) || 24;
-  const width = Math.max(18, Math.min(100, size * 2));
-  return `<div class="practice-bar">
-    <div><strong>${escapeHtml(entity.title)}</strong><span>${escapeHtml(entity.meta || "")}</span></div>
-    <div class="bar"><span style="width:${width}%"></span></div>
-    <b>${escapeHtml(size)}</b>
-  </div>`;
+export function renderOverview() {
+  const workspace = state.snapshot.workspace || {};
+  document.getElementById("overviewTitle").textContent = t("overview");
+  document.getElementById("overviewSummary").textContent = [
+    t("overviewLead"),
+    workspace.firm,
+    workspace.jurisdiction,
+    state.snapshot.generated_at ? `${t("generated")} ${dateTime(state.snapshot.generated_at)}` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  document.getElementById("overviewMetrics").innerHTML = metricsBand();
+
+  const loaded = items();
+  const queue = loaded.filter((item) => item.status === "needs_review");
+  const patterns = loaded.filter((item) => field(item, "court_pattern", "")).slice(0, 4);
+  const activity = (state.snapshot.activity_log || []).slice(0, 5);
+  document.getElementById("overviewBody").innerHTML = `
+    ${lockBanner()}
+    <div class="overview-grid">
+      <section class="card overview-panel research-panel">
+        <div class="panel-head">
+          <h2>${escapeHtml(t("researchLab"))}</h2>
+          <a href="#/items">${escapeHtml(t("allItems"))}</a>
+        </div>
+        <div class="match-head"><span>${escapeHtml(t("researchQuestion"))}</span><span>${escapeHtml(t("topSimilarity"))}</span></div>
+        ${
+          loaded
+            .slice(0, 6)
+            .map((item) => matchMeter(item, detailUrl(item.id, "items")))
+            .join("") || emptyState(t("empty"))
+        }
+      </section>
+      <div class="overview-side">
+        <section class="card overview-panel">
+          <div class="panel-head"><h2>${escapeHtml(t("reviewQueue"))}</h2><a href="#/review">${escapeHtml(t("needsReview"))}</a></div>
+          ${
+            queue
+              .slice(0, 5)
+              .map(
+                (item) => `<a class="queue-row" href="${recordUrl(item.id, "review")}">
+              <span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml([item.ref, item.owner].filter(Boolean).join(" · "))}</small></span>
+              <small class="num">${escapeHtml(pctText(field(item, "top_similarity", "")))}</small>
+            </a>`,
+              )
+              .join("") || `<div class="empty-inline">${escapeHtml(t("queueEmpty"))}</div>`
+          }
+        </section>
+        <section class="card overview-panel">
+          <h2>${escapeHtml(t("courtPattern"))}</h2>
+          ${
+            patterns
+              .map(
+                (item) =>
+                  `<div class="pattern-note"><b>${escapeHtml(field(item, "jurisdiction", "") || item.category || "—")}</b><span>${escapeHtml(field(item, "court_pattern", ""))}</span></div>`,
+              )
+              .join("") || `<div class="empty-inline">${escapeHtml(t("empty"))}</div>`
+          }
+        </section>
+      </div>
+      <section class="card overview-panel overview-wide">
+        <h2>${escapeHtml(t("activity"))}</h2>
+        <div class="activity-list">${
+          activity
+            .map(
+              (entry) =>
+                `<div><b>${escapeHtml(enumLabel("enumActivity", entry.action))}</b><span>${escapeHtml(entry.detail || "")}</span><small class="muted">${escapeHtml(dateTime(entry.at))}</small></div>`,
+            )
+            .join("") || `<div class="empty-inline">${escapeHtml(t("empty"))}</div>`
+        }</div>
+      </section>
+    </div>`;
 }
 
-export function activeHtml(zh, en) {
-  return escapeHtml(activeLang() === "zh" ? zh : en);
+// ── Record views ───────────────────────────────────────────────────────────
+function itemsTable(rows, view) {
+  // A status view already filters to one status; the column would repeat it.
+  const withStatus = !STATUS_ROUTES.has(view) && view !== "review";
+  const columns = [
+    [t("pack")],
+    ...(withStatus ? [[t("status"), "ws-col-narrow status-col"]] : []),
+    [t("jurisdiction"), "jurisdiction-col"],
+    [t("category")],
+    [t("matches"), "ws-col-num"],
+    [t("topSimilarity"), "ws-col-num"],
+    [t("citations"), "ws-col-num"],
+    [t("owner"), "ws-col-narrow"],
+  ];
+  return `<table class="ws-table pack-table">
+    ${tableHead(columns)}
+    <tbody>${rows
+      .map((item) => {
+        const jurisdiction = field(item, "jurisdiction", "");
+        return `${rowOpen(item.id)}
+        ${cell(`<span class="strong">${escapeHtml(item.title)}</span>${item.ref ? ` ${muted(item.ref)}` : ""}`, { title: item.title })}
+        ${withStatus ? cell(statusBadge(item.status), { className: "status-col" }) : ""}
+        ${cell(escapeHtml(jurisdiction || "—"), { title: jurisdiction })}
+        ${cell(escapeHtml(item.category || ""), { title: item.category })}
+        ${cell(escapeHtml(countText(field(item, "match_count", ""))), { className: "ws-col-num" })}
+        ${cell(escapeHtml(pctText(field(item, "top_similarity", ""))), { className: "ws-col-num" })}
+        ${cell(escapeHtml(countText(field(item, "citation_count", ""))), { className: "ws-col-num" })}
+        ${cell(escapeHtml(item.owner || ""), { title: item.owner })}
+      </tr>`;
+      })
+      .join("")}</tbody>
+  </table>`;
 }
 
-export function emptyText() {
-  return `<div class="empty">${escapeHtml(t("empty"))}</div>`;
+// A check names its research pack by business id; show the pack's title, or
+// say it is not loaded — never the id.
+function packLink(itemId) {
+  if (!itemId) return "";
+  const pack = recordById("items", itemId);
+  return pack ? `<a href="${detailUrl(pack.id, "items")}">${escapeHtml(pack.title)}</a>` : muted(t("notLoaded"));
+}
+
+function checksTable(rows) {
+  return `<table class="ws-table">
+    ${tableHead([
+      [t("check")],
+      [t("status"), "ws-col-narrow"],
+      [t("severity"), "ws-col-narrow"],
+      [t("researchPack"), "ws-col-wide"],
+      [t("detail")],
+    ])}
+    <tbody>${rows
+      .map(
+        (check) => `${rowOpen(check.id)}
+        ${cell(`<span class="strong">${escapeHtml(check.label)}</span>`, { title: check.label })}
+        ${cell(statusBadge(check.status))}
+        ${cell(escapeHtml(enumLabel("enumSeverity", check.severity)))}
+        ${cell(packLink(check.item_id), { title: recordById("items", check.item_id)?.title || "" })}
+        ${cell(escapeHtml(check.detail || ""), { title: check.detail })}
+      </tr>`,
+      )
+      .join("")}</tbody>
+  </table>`;
+}
+
+function entitiesTable(rows) {
+  return `<table class="ws-table">
+    ${tableHead([
+      [t("cluster")],
+      [t("status"), "ws-col-narrow"],
+      [t("meta"), "ws-col-wide"],
+      [t("owner"), "ws-col-narrow"],
+      [t("caseCount"), "ws-col-num"],
+      [t("avgSimilarity"), "ws-col-num"],
+      [t("citations"), "ws-col-num"],
+    ])}
+    <tbody>${rows
+      .map(
+        (entity) => `${rowOpen(entity.id)}
+        ${cell(`<span class="strong">${escapeHtml(entity.title)}</span>`, { title: entity.title })}
+        ${cell(statusBadge(entity.status))}
+        ${cell(escapeHtml(entity.meta || ""), { title: entity.meta })}
+        ${cell(escapeHtml(entity.owner || ""), { title: entity.owner })}
+        ${cell(escapeHtml(countText(entity.metrics?.case_count)), { className: "ws-col-num" })}
+        ${cell(escapeHtml(pctText(entity.metrics?.avg_similarity)), { className: "ws-col-num" })}
+        ${cell(escapeHtml(countText(entity.metrics?.citation_count)), { className: "ws-col-num" })}
+      </tr>`,
+      )
+      .join("")}</tbody>
+  </table>`;
+}
+
+function loadMoreControl(key) {
+  if (!state.pagination[key]) return "";
+  return `<div class="load-more"><button type="button" class="button" data-load-more="${escapeAttr(key)}" ${state.loadingMore[key] ? "disabled" : ""}>${escapeHtml(state.loadingMore[key] ? t("loadingMore") : t("loadMore"))}</button>${state.loadMoreError[key] ? `<span role="alert">${escapeHtml(t("loadMoreFailed"))}</span>` : ""}</div>`;
+}
+
+export function renderRecordView() {
+  const { view } = state.route;
+  const key = baseForView(view);
+  els.viewTitle.textContent = viewLabel(view);
+  els.viewTitle.title = t(VIEW_HINT[view]);
+  const rows = rowsForRoute();
+  els.viewCount.textContent = `${rows.length}${isPartial(key) ? "+" : ""}`;
+  if (els.search.value !== state.route.query) els.search.value = state.route.query;
+  const sideError = state.settings?.sideErrors?.[key];
+  const table =
+    view === "checks" ? checksTable(rows) : view === "entities" ? entitiesTable(rows) : itemsTable(rows, view);
+  els.listPanel.innerHTML = sideError
+    ? emptyState(t("sideReadFailed"), sideError)
+    : `${rows.length ? table : emptyState(state.route.query ? t("noMatches") : t("empty"))}${loadMoreControl(key)}`;
+  renderDetail();
+}
+
+function renderDetail() {
+  const { view, selectedId, presentation } = state.route;
+  const phone = window.matchMedia("(max-width: 720px)").matches;
+  els.detailBack.textContent = presentation === "page" || phone ? t("backToList") : t("close");
+  els.detailExpand.hidden = !selectedId || presentation === "page";
+  if (selectedId) els.detailExpand.href = detailUrl(selectedId, view);
+  els.detailPanel.querySelector(".ws-detail-bar").hidden = !selectedId;
+  if (!selectedId) {
+    els.detailBody.innerHTML = DETAIL_MODES[view] === "split" ? emptyState(t("selectPack")) : "";
+    return;
+  }
+  const key = baseForView(view);
+  const record = recordById(key, selectedId);
+  if (!record) {
+    const pending = state.extra[key]?.has(selectedId) && state.extra[key].get(selectedId) === undefined;
+    els.detailBody.innerHTML = pending
+      ? `<div class="empty-inline">${escapeHtml(t("loading"))}</div>`
+      : emptyState(t("recordMissing"));
+    return;
+  }
+  els.detailBody.innerHTML =
+    key === "checks" ? checkDetail(record) : key === "entities" ? entityDetail(record) : itemDetail(record);
+}
+
+const section = (title, body) =>
+  body ? `<section class="detail-section"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(body)}</p></section>` : "";
+
+function itemDetail(item) {
+  const noteValue = state.edits.note[item.id] ?? item.review_note ?? "";
+  const draftValue = state.edits.draft[item.id] ?? item.draft ?? "";
+  const disabled = state.settings?.lock ? "disabled" : "";
+  const decision = item.decision_action
+    ? `${statusLabel(
+        { approve: "approved", request_changes: "changes_requested", block: "blocked", revise: "needs_review" }[
+          item.decision_action
+        ],
+      )}${item.decided_at ? ` · ${dateTime(item.decided_at)}` : ""}`
+    : "";
+  const matchCount = numberOrNull(field(item, "match_count", ""));
+  const highCount = numberOrNull(field(item, "high_match_count", ""));
+  const matchesText =
+    matchCount === null ? "—" : highCount === null ? String(matchCount) : t("matchesOfHigh").replace("{n}", matchCount).replace("{high}", highCount);
+  const evidence = listValue(item.evidence);
+  const related = checks().filter((check) => check.item_id === item.id);
+  return `<article class="pack-detail">
+    <header class="detail-head">
+      <h2>${escapeHtml(item.title)}</h2>
+      <div class="detail-sub">${statusBadge(item.status)}${escapeHtml([item.ref, item.owner, item.category].filter(Boolean).join(" · "))}</div>
+    </header>
+    ${lockBanner()}
+    ${noticeBanner()}
+    <div class="detail-actions">
+      <button type="button" class="button primary" data-action="approve" data-id="${escapeAttr(item.id)}" ${disabled}>${escapeHtml(t("approve"))}</button>
+      <button type="button" class="button" data-action="request_changes" data-id="${escapeAttr(item.id)}" ${disabled}>${escapeHtml(t("requestChanges"))}</button>
+      <button type="button" class="button danger" data-action="block" data-id="${escapeAttr(item.id)}" ${disabled}>${escapeHtml(t("block"))}</button>
+    </div>
+    ${item.summary ? `<p class="detail-summary">${escapeHtml(item.summary)}</p>` : ""}
+    <dl class="detail-fields">
+      <dt>${escapeHtml(t("researchQuestion"))}</dt><dd>${escapeHtml(field(item, "query", "") || "—")}</dd>
+      <dt>${escapeHtml(t("jurisdiction"))}</dt><dd>${escapeHtml(field(item, "jurisdiction", "") || "—")}</dd>
+      <dt>${escapeHtml(t("matches"))}</dt><dd class="num">${escapeHtml(matchesText)}</dd>
+      <dt>${escapeHtml(t("similarity"))}</dt><dd class="num">${escapeHtml(
+        t("similarityPair")
+          .replace("{top}", pctText(field(item, "top_similarity", "")))
+          .replace("{avg}", pctText(field(item, "avg_similarity", ""))),
+      )}</dd>
+      <dt>${escapeHtml(t("citations"))}</dt><dd class="num">${escapeHtml(countText(field(item, "citation_count", "")))}</dd>
+      <dt>${escapeHtml(t("risk"))}</dt><dd>${riskBadges(item.risk) || "—"}</dd>
+      ${item.proposed_action ? `<dt>${escapeHtml(t("proposedAction"))}</dt><dd>${escapeHtml(enumLabel("enumAction", item.proposed_action))}</dd>` : ""}
+      ${decision ? `<dt>${escapeHtml(t("decision"))}</dt><dd>${escapeHtml(decision)}</dd>` : ""}
+    </dl>
+    ${section(t("context"), item.body)}
+    ${section(t("courtPattern"), field(item, "court_pattern", ""))}
+    ${section(t("recommendation"), item.recommendation)}
+    ${evidence.length ? `<section class="detail-section"><h3>${escapeHtml(t("citedCases"))}</h3><ul class="citation-list">${evidence.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul></section>` : ""}
+    ${
+      related.length
+        ? `<section class="detail-section"><h3>${escapeHtml(t("checks"))}</h3>${related
+            .map(
+              (check) =>
+                `<a class="queue-row" href="${recordUrl(check.id, "checks")}"><span><strong>${escapeHtml(check.label)}</strong><small>${escapeHtml(check.detail || "")}</small></span>${statusBadge(check.status)}</a>`,
+            )
+            .join("")}</section>`
+        : ""
+    }
+    <label class="field"><span>${escapeHtml(t("editableDraft"))}</span><textarea data-draft="${escapeAttr(item.id)}" rows="6" ${disabled}>${escapeHtml(draftValue)}</textarea></label>
+    <label class="field"><span>${escapeHtml(t("reviewNote"))}</span><textarea data-note="${escapeAttr(item.id)}" rows="3" ${disabled}>${escapeHtml(noteValue)}</textarea></label>
+    <div class="detail-actions">
+      <button class="button" type="button" data-action="revise" data-id="${escapeAttr(item.id)}" ${disabled}>${escapeHtml(t("saveRevision"))}</button>
+    </div>
+  </article>`;
+}
+
+function checkDetail(check) {
+  const pack = recordById("items", check.item_id);
+  return `<article class="pack-detail">
+    <header class="detail-head">
+      <h2>${escapeHtml(check.label)}</h2>
+      <div class="detail-sub">${statusBadge(check.status)}${escapeHtml(enumLabel("enumSeverity", check.severity))}</div>
+    </header>
+    ${check.detail ? `<p class="detail-summary">${escapeHtml(check.detail)}</p>` : ""}
+    <dl class="detail-fields">
+      <dt>${escapeHtml(t("researchPack"))}</dt><dd>${packLink(check.item_id) || "—"}</dd>
+      ${pack ? `<dt>${escapeHtml(t("status"))}</dt><dd>${statusBadge(pack.status)}</dd>` : ""}
+      ${pack ? `<dt>${escapeHtml(t("jurisdiction"))}</dt><dd>${escapeHtml(field(pack, "jurisdiction", "") || "—")}</dd>` : ""}
+      ${pack ? `<dt>${escapeHtml(t("topSimilarity"))}</dt><dd class="num">${escapeHtml(pctText(field(pack, "top_similarity", "")))}</dd>` : ""}
+    </dl>
+  </article>`;
+}
+
+function metricLabel(key) {
+  const known = { case_count: "caseCount", avg_similarity: "avgSimilarity", citation_count: "citations" };
+  return known[key] ? t(known[key]) : key.replaceAll("_", " ");
+}
+
+function metricDisplay(key, value) {
+  return key.includes("similarity") ? pctText(value) : String(value ?? "—");
+}
+
+function entityDetail(entity) {
+  const metrics = Object.entries(entity.metrics || {});
+  return `<article class="pack-detail">
+    <header class="detail-head">
+      <h2>${escapeHtml(entity.title)}</h2>
+      <div class="detail-sub">${statusBadge(entity.status)}${escapeHtml(entity.meta || "")}</div>
+    </header>
+    ${entity.summary ? `<p class="detail-summary">${escapeHtml(entity.summary)}</p>` : ""}
+    <dl class="detail-fields">
+      <dt>${escapeHtml(t("owner"))}</dt><dd>${escapeHtml(entity.owner || "—")}</dd>
+      ${metrics.map(([key, value]) => `<dt>${escapeHtml(metricLabel(key))}</dt><dd class="num">${escapeHtml(metricDisplay(key, value))}</dd>`).join("")}
+      <dt>${escapeHtml(t("tags"))}</dt><dd>${(entity.tags || []).map((tag) => `<span class="badge">${escapeHtml(tag)}</span>`).join(" ") || "—"}</dd>
+    </dl>
+  </article>`;
+}
+
+// ── Settings ───────────────────────────────────────────────────────────────
+export function renderSettings() {
+  document.getElementById("settingsTitle").title = t("settingsHint");
+  const config = state.settings?.config_summary || {};
+  const sideErrors = Object.entries(state.settings?.sideErrors || {});
+  document.getElementById("settingsContent").innerHTML = `
+    <div class="settings">
+      ${sideErrors.length ? `<div class="notice-banner">${sideErrors.map(([key, message]) => `${escapeHtml(t("sideReadFailed"))} (${escapeHtml(key)}): ${escapeHtml(message)}`).join("<br>")}</div>` : ""}
+      <section class="card"><h2>${escapeHtml(t("config"))}</h2>${jsonBlock(config)}</section>
+      <section class="card"><h2>${escapeHtml(t("onboarding"))}</h2>${jsonBlock(state.settings?.onboarding || {})}</section>
+      <section class="card"><h2>${escapeHtml(t("executionReport"))}</h2>${jsonBlock(state.settings?.execution_report || {})}</section>
+    </div>`;
 }
 
 function jsonBlock(value) {
   return `<pre>${escapeHtml(JSON.stringify(value, null, 2))}</pre>`;
-}
-
-export function dateTime(value) {
-  if (!value) return "";
-  return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
 }

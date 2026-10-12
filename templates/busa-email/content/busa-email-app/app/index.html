@@ -33,9 +33,6 @@
             aria-label="Toggle sidebar"
           ><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
         </div>
-        <div class="search sidebar-search">
-          <input id="searchInput" data-i18n-placeholder="search.placeholder" placeholder="Search sender, subject, summary" />
-        </div>
         <section class="human-work" aria-labelledby="humanWorkTitle">
           <div class="human-work-eyebrow" data-i18n="human_work.eyebrow">Needs You</div>
           <div id="humanWorkTitle" class="human-work-title" data-i18n="human_work.title">What needs your attention</div>
@@ -49,52 +46,36 @@
               <span data-i18n="human_work.needs_review">Need a note or decision</span>
             </span>
           </button>
-          <div class="human-work-secondary">
-            <button
-              data-mode="approved"
-              class="has-tooltip"
-              data-i18n-tooltip="human_work.approved.tooltip"
-            >
-              <strong id="count-human-approved">0</strong>
-              <span data-i18n="human_work.approved">Ready for AI next</span>
-            </button>
-            <button
-              data-mode="blocked"
-              class="has-tooltip"
-              data-i18n-tooltip="human_work.blocked.tooltip"
-            >
-              <strong id="count-human-blocked">0</strong>
-              <span data-i18n="human_work.blocked">Blocked</span>
-            </button>
-          </div>
         </section>
         <div class="sidebar-separator"></div>
-        <nav class="filters" id="filters">
+        <nav class="filters" id="filters" data-i18n-aria-label="nav.aria" aria-label="Main">
+          <button data-page="overview" class="nav-overview"><span data-i18n="nav.overview">Overview</span></button>
+          <div class="filters-label" data-i18n="nav.queue">Review queue</div>
           <button
             data-mode="all"
-            class="active has-tooltip"
+            class="has-tooltip"
             data-i18n-tooltip="filter.all.tooltip"
-          ><span data-i18n="filter.all">All</span> <span id="count-all">0</span></button>
+          ><span data-i18n="filter.all">All</span><span id="count-all" class="nav-count">0</span></button>
           <button
             data-mode="needs_review"
             class="has-tooltip"
             data-i18n-tooltip="filter.needs_review.tooltip"
-          ><span data-i18n="filter.needs_review">Needs Review</span> <span id="count-needs_review">0</span></button>
+          ><span data-i18n="filter.needs_review">Needs Review</span></button>
           <button
             data-mode="approved"
             class="has-tooltip"
             data-i18n-tooltip="filter.approved.tooltip"
-          ><span data-i18n="filter.approved">Approved</span> <span id="count-approved">0</span></button>
+          ><span data-i18n="filter.approved">Approved</span><span id="count-approved" class="nav-count">0</span></button>
           <button
             data-mode="done"
             class="has-tooltip"
             data-i18n-tooltip="filter.done.tooltip"
-          ><span data-i18n="filter.done">Done</span> <span id="count-done">0</span></button>
+          ><span data-i18n="filter.done">Done</span><span id="count-done" class="nav-count">0</span></button>
           <button
             data-mode="blocked"
             class="has-tooltip"
             data-i18n-tooltip="filter.blocked.tooltip"
-          ><span data-i18n="filter.blocked">Blocked</span> <span id="count-blocked">0</span></button>
+          ><span data-i18n="filter.blocked">Blocked</span><span id="count-blocked" class="nav-count">0</span></button>
         </nav>
         <div class="help-box">
           <button
@@ -132,64 +113,96 @@
           <strong data-i18n="lock.title">Locked</strong>
           <span id="lockMessage" data-i18n="lock.default">The provider state is locked for a moment.</span>
         </div>
-        <section class="content">
-          <div class="list-panel">
-            <div class="list-head">
-              <label><input type="checkbox" id="selectAll" /> <span data-i18n="list.select">Select</span></label>
-              <span id="listCount">0 items</span>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 id="overviewTitle" data-i18n="overview.title">Inbox review</h1>
+              <p id="overviewSummary"></p>
             </div>
-            <div class="bulk-actions is-hidden" id="bulkActions" aria-live="polite">
-              <span id="selectedCount" class="bulk-selected">0 selected</span>
-              <button
-                id="approveSelected"
-                class="has-tooltip"
-                data-i18n-tooltip="bulk.approve.tooltip"
-                data-i18n="action.approve_plan"
-              >Approve plan</button>
-              <button
-                id="archiveSelected"
-                class="has-tooltip"
-                data-i18n-tooltip="detail.archive.tooltip"
-                data-i18n="action.approve_archive"
-              >Approve archive</button>
-              <button
-                id="draftSelected"
-                class="has-tooltip"
-                data-i18n-tooltip="detail.draft.tooltip"
-                data-i18n="action.draft_reply"
-              >Draft reply</button>
-              <button
-                id="reviewSelected"
-                class="has-tooltip"
-                data-i18n-tooltip="bulk.review.tooltip"
-                data-i18n="action.needs_review"
-              >Needs review</button>
-              <button
-                id="noActionSelected"
-                class="has-tooltip"
-                data-i18n-tooltip="bulk.no_action.tooltip"
-                data-i18n="action.no_action"
-              >No action</button>
-              <label class="bulk-more">
-                <span data-i18n="bulk.more_label">More</span>
-                <select id="bulkDecisionSelect" data-i18n-aria-label="bulk.more_aria">
-                  <option value="" data-i18n="bulk.more_placeholder">Choose decision</option>
-                  <option value="approve_mark_read" data-i18n="action.approve_read">Approve mark read</option>
-                  <option value="approve_send" data-i18n="action.approve_send">Approve send</option>
-                  <option value="revise" data-i18n="action.revise">Revise</option>
-                </select>
+            <div class="page-actions">
+              <button id="overviewRefresh" class="button" type="button" data-i18n="overview.refresh">Refresh</button>
+              <button id="overviewOpenQueue" class="button primary" type="button" data-i18n="overview.open_queue">Open review queue</button>
+            </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" data-i18n-aria-label="overview.metrics_aria" aria-label="Review summary"></div>
+          <div id="overviewBody" class="overview-grid"></div>
+        </section>
+        <!-- Record view: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle">All</h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <div class="bulk-actions" id="bulkActions" aria-live="polite" hidden>
+                <span id="selectedCount" class="bulk-selected">0 selected</span>
+                <button
+                  id="approveSelected"
+                  class="has-tooltip"
+                  data-i18n-tooltip="bulk.approve.tooltip"
+                  data-i18n="action.approve_plan"
+                >Approve plan</button>
+                <button
+                  id="archiveSelected"
+                  class="has-tooltip"
+                  data-i18n-tooltip="detail.archive.tooltip"
+                  data-i18n="action.approve_archive"
+                >Approve archive</button>
+                <button
+                  id="draftSelected"
+                  class="has-tooltip"
+                  data-i18n-tooltip="detail.draft.tooltip"
+                  data-i18n="action.draft_reply"
+                >Draft reply</button>
+                <button
+                  id="reviewSelected"
+                  class="has-tooltip"
+                  data-i18n-tooltip="bulk.review.tooltip"
+                  data-i18n="action.needs_review"
+                >Needs review</button>
+                <button
+                  id="noActionSelected"
+                  class="has-tooltip"
+                  data-i18n-tooltip="bulk.no_action.tooltip"
+                  data-i18n="action.no_action"
+                >No action</button>
+                <label class="bulk-more">
+                  <span class="sr-only" data-i18n="bulk.more_label">More</span>
+                  <select id="bulkDecisionSelect" data-i18n-aria-label="bulk.more_aria">
+                    <option value="" data-i18n="bulk.more_placeholder">Choose decision</option>
+                    <option value="approve_mark_read" data-i18n="action.approve_read">Approve mark read</option>
+                    <option value="approve_send" data-i18n="action.approve_send">Approve send</option>
+                    <option value="revise" data-i18n="action.revise">Revise</option>
+                  </select>
+                </label>
+              </div>
+              <label class="search toolbar-search">
+                <span class="sr-only" data-i18n="search.label">Search</span>
+                <input id="searchInput" type="search" autocomplete="off" data-i18n-placeholder="search.placeholder" placeholder="Search sender, subject, summary" />
               </label>
             </div>
-            <div id="messageList" class="message-list"></div>
-            <div id="loadMoreControl" class="load-more is-hidden">
-              <button id="loadMore" type="button" data-i18n="list.load_more">Load more</button>
-              <span id="loadMoreStatus" role="status"></span>
+          </header>
+          <div id="workspace" class="ws-workspace">
+            <div id="listPanel" class="ws-list">
+              <div id="messageList"></div>
+              <div id="loadMoreControl" class="load-more" hidden>
+                <button id="loadMore" type="button" data-i18n="list.load_more">Load more</button>
+                <span id="loadMoreStatus" role="status"></span>
+              </div>
             </div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar" id="detailBar" hidden>
+                <div class="detail-bar-nav">
+                  <button id="detailBack" class="button" type="button" data-i18n="detail.close">Close</button>
+                  <a id="detailExpand" class="button" hidden data-i18n="detail.open_full">Open full page</a>
+                </div>
+                <div id="detailActions"></div>
+              </div>
+              <div id="detailBody"></div>
+            </aside>
           </div>
-
-          <aside class="detail-panel" id="detailPanel">
-            <div class="empty-detail" data-i18n="empty.select_message">Select a message</div>
-          </aside>
         </section>
       </main>
     </div>

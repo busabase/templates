@@ -1,31 +1,10 @@
 @layer list-detail {
-  body.is-locked .message-row,
-  body.provider-unavailable .message-row {
-    cursor: not-allowed;
-  }
-
-  body.is-locked .message-row:hover,
-  body.provider-unavailable .message-row:hover {
-    background: inherit;
-  }
-
+  /* Bulk decisions sit in the toolbar row while messages are checked. */
   .bulk-actions {
-    position: sticky;
-    top: 46px;
-    z-index: 7;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    flex-wrap: nowrap;
     gap: 6px;
-    border-bottom: 1px solid var(--line);
-    background: var(--surface-soft);
-    padding: 8px 12px;
-    overflow-x: auto;
-    scrollbar-width: thin;
-  }
-
-  .bulk-actions.is-hidden {
-    display: none;
   }
 
   .bulk-selected {
@@ -65,63 +44,6 @@
     font-weight: 650;
   }
 
-  .content {
-    display: grid;
-    grid-template-columns: minmax(360px, 38%) minmax(0, 1fr);
-    min-height: 0;
-    overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: var(--surface);
-    box-shadow: var(--shadow-card);
-  }
-
-  .list-panel,
-  .detail-panel {
-    min-height: 0;
-    height: 100%;
-    overflow: auto;
-  }
-
-  .list-panel {
-    border-right: 1px solid var(--line);
-    background: var(--panel);
-  }
-
-  .list-head {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--line);
-    background: var(--surface-blur);
-    padding: 8px 12px;
-    color: var(--muted);
-    font-size: var(--text-sm);
-    backdrop-filter: blur(12px);
-  }
-
-  .message-row {
-    display: grid;
-    grid-template-columns: 24px 1fr;
-    gap: 7px;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--line);
-    cursor: pointer;
-    transition: background var(--ease), box-shadow var(--ease), border-color var(--ease);
-  }
-
-  .message-row:hover {
-    background: var(--accent-soft);
-  }
-
-  .message-row.selected {
-    background: var(--accent-soft);
-    box-shadow: inset 2px 0 0 var(--accent), inset 0 1px 0 color-mix(in srgb, var(--surface) 62%, transparent);
-  }
-
   .load-more {
     display: flex;
     align-items: center;
@@ -131,32 +53,6 @@
     padding: 10px 12px;
     color: var(--muted);
     font-size: var(--text-sm);
-  }
-
-  .load-more.is-hidden,
-  .load-more button.is-hidden {
-    display: none;
-  }
-
-  .row-top {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 10px;
-  }
-
-  .sender-line {
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .sender {
-    font-weight: 620;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: var(--text-base);
   }
 
   .review-ref {
@@ -176,56 +72,9 @@
     font-size: var(--text-sm);
   }
 
-  .subject {
-    margin-top: 2px;
-    font-weight: 560;
-    font-size: var(--text-base);
-    line-height: 1.32;
-  }
-
-  .summary {
-    margin-top: 3px;
-    color: var(--muted);
-    line-height: 1.38;
-    font-size: var(--text-sm);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .row-account {
-    margin-top: 3px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    min-width: 0;
-    color: var(--muted);
-    font-size: var(--text-xs);
-    line-height: 1.35;
-  }
-
-  .row-account span {
-    flex: 0 0 auto;
-  }
-
-  .row-account strong {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--ink-soft);
-    font-weight: 620;
-  }
-
-  .badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: 7px;
-  }
-
   .badge {
+    display: inline-block;
+    white-space: nowrap;
     border: 1px solid var(--line);
     background: var(--surface-soft);
     color: var(--muted);
@@ -288,34 +137,25 @@
     color: var(--accent-text);
   }
 
-  .date {
-    color: var(--muted);
-    font-size: var(--text-xs);
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .detail-panel {
-    background: var(--surface);
-    padding: 0 22px 24px;
-  }
-
-  .back-to-list {
-    display: none;
-  }
-
-  .empty-detail {
-    color: var(--muted);
-    padding: 40px;
-    text-align: center;
-  }
-
   .detail-title {
     font-size: var(--text-xl);
     line-height: 1.25;
     font-weight: 680;
-    margin: 18px 0 12px;
+    margin: 4px 0 6px;
     letter-spacing: 0;
+  }
+
+  .detail-summary {
+    margin: 0 0 14px;
+    color: var(--ink-soft);
+    font-size: var(--text-md);
+    line-height: 1.5;
+  }
+
+  .detail-bar-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .detail-meta {
@@ -376,17 +216,6 @@
     padding: 14px 0 16px;
     border-bottom: 1px solid var(--line);
     overflow: visible;
-  }
-
-  .detail-actions-top {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    margin: 0 -22px;
-    padding: 10px 22px;
-    background: var(--surface-blur);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 1px 0 var(--line);
   }
 
   .action-cluster {
@@ -587,176 +416,9 @@
     box-shadow: inset 0 -14px 18px -18px color-mix(in srgb, var(--ink) 45%, transparent);
   }
 
-  @media (max-width: 900px) {
-    .bulk-actions {
-      padding: 8px 10px;
-    }
-
-    .bulk-actions button {
-      min-width: 0;
-      padding-left: 7px;
-      padding-right: 7px;
-    }
-
-    .content {
-      grid-template-columns: minmax(300px, 42%) minmax(0, 1fr);
-    }
-
-    .list-panel {
-      border-right: 1px solid var(--line);
-      border-bottom: 0;
-    }
-
-    .detail-panel {
-      padding: 0 16px 18px;
-    }
-
-    .detail-title {
-      font-size: var(--text-lg);
-      margin-top: 14px;
-    }
-
-    .detail-actions {
-      gap: 6px;
-    }
-
-    .detail-actions button {
-      padding: 6px 8px;
-    }
-  }
-
   @media (max-width: 720px) {
-    .content {
-      border: 0;
-      border-radius: 0;
-      box-shadow: none;
-    }
-
-    .bulk-actions {
-      display: flex;
-      gap: 6px;
-      padding: 8px 10px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
-    .bulk-actions.is-hidden {
-      display: none;
-    }
-
-    .bulk-actions::-webkit-scrollbar {
-      display: none;
-    }
-
-    .bulk-actions button {
-      flex: 0 0 auto;
-      white-space: nowrap;
-    }
-
-    .content {
-      grid-template-columns: 1fr;
-      grid-template-rows: minmax(0, 1fr);
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .list-panel {
-      border-right: 0;
-      border-bottom: 0;
-      min-height: 0;
-      height: 100%;
-    }
-
-    body.mobile-detail-open .list-panel {
-      display: none;
-    }
-
-    .detail-panel {
-      display: none;
-    }
-
-    body.mobile-detail-open .detail-panel {
-      display: block;
-      min-height: 0;
-      height: 100%;
-      overflow: auto;
-    }
-
-    .list-head {
-      padding: 7px 10px;
-    }
-
-    .message-row {
-      grid-template-columns: 22px minmax(0, 1fr);
-      gap: 6px;
-      padding: 9px 10px;
-    }
-
-    .message-row > div:last-child,
-    .sender-line,
-    .row-account,
-    .subject,
-    .summary {
-      min-width: 0;
-    }
-
-    .row-top {
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-    }
-
-    .sender {
-      font-size: var(--text-sm);
-    }
-
-    .subject {
-      font-size: var(--text-sm);
-      overflow-wrap: anywhere;
-    }
-
-    .summary {
-      -webkit-line-clamp: 1;
-    }
-
-    .badges {
-      gap: 3px;
-      margin-top: 6px;
-    }
-
-    .badge {
-      font-size: var(--text-xs);
-      padding: 1px 5px;
-      max-width: 100%;
-      overflow-wrap: anywhere;
-    }
-
-    .detail-panel {
-      padding: 0 12px 18px;
-    }
-
-    .back-to-list {
-      position: sticky;
-      top: 0;
-      z-index: 3;
-      display: inline-flex;
-      align-items: center;
-      margin: 0 -12px 10px;
-      width: calc(100% + 24px);
-      border-width: 0 0 1px;
-      border-radius: 0;
-      padding: 10px 12px;
-      background: var(--surface-blur);
-      box-shadow: none;
-      backdrop-filter: blur(12px);
-    }
-
-    .empty-detail {
-      padding: 28px 14px;
-    }
-
     .detail-title {
       font-size: var(--text-lg);
-      margin: 14px 0 10px;
       overflow-wrap: anywhere;
     }
 
@@ -788,45 +450,8 @@
       gap: 4px;
     }
 
-    .review-advice dt {
-      margin-top: 5px;
-    }
-
-    .detail-actions {
-      flex-wrap: wrap;
-      gap: 6px;
-      margin: 0 -12px;
-      padding: 12px 12px 14px;
-      overflow: visible;
-    }
-
-    .detail-actions-top {
-      margin: 0 -12px;
-      top: 41px;
-      padding: 10px 12px 12px;
-    }
-
-    .detail-actions button {
-      flex: 0 0 auto;
-      white-space: nowrap;
-    }
-
-    .action-cluster {
-      max-width: 100%;
-    }
-
     .detail-primary-action {
       min-width: 0;
-    }
-
-    .detail-action-menu {
-      right: auto;
-      left: 0;
-      max-width: calc(100vw - 32px);
-    }
-
-    .section-title {
-      margin-top: 16px;
     }
 
     .body-box,
@@ -836,14 +461,6 @@
       padding: 10px;
     }
 
-    .draft-box {
-      min-height: 220px;
-    }
-
-    .comment-box {
-      min-height: 96px;
-    }
-
     .attachment-preview-pdf {
       height: 340px;
     }
@@ -851,25 +468,253 @@
     .html-preview {
       height: 640px;
     }
-
-    .attachment-preview-image {
-      max-height: 320px;
-    }
-  }
-
-  @media (max-width: 380px) {
-    .bulk-selected {
-      max-width: 86px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
   }
 
   .detail-action-menu {
     box-shadow: none;
   }
+}
 
-  .message-row:hover {
-    box-shadow: none;
+/* ── Review queue on the shared ws- primitives ─────────────────────────────
+ * Unlayered on purpose: base-ui's "Record views" block is unlayered, so a
+ * layered rule here could never adjust it. Only class selectors that load
+ * after base-ui, and only the tunables and columns this queue needs. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* A queue reads sender and subject together, so the split list is wider than
+ * the scaffold's default and keeps the state column beside them. */
+body.ws-layout-split {
+  --ws-split-list: minmax(420px, 40%);
+}
+
+.message-table {
+  --ws-first-col: 34%;
+}
+
+.message-table th:nth-child(2) {
+  width: 16%;
+}
+
+.message-table th:nth-child(3) {
+  width: 17%;
+}
+
+.message-table th:nth-child(4),
+.message-table th:nth-child(5) {
+  width: 13%;
+}
+
+body.ws-layout-split .message-table th:first-child {
+  width: 54%;
+}
+
+body.ws-layout-split .message-table th:nth-child(2) {
+  width: 20%;
+}
+
+body.ws-layout-split .message-table th:nth-child(3) {
+  width: auto;
+}
+
+.row-subject {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.row-subject strong {
+  overflow: hidden;
+  font-weight: 560;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-subject input {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.row-subject .review-ref {
+  flex: 0 0 auto;
+}
+
+.row-state .badge {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.ws-detail-bar a.button {
+  text-decoration: none;
+}
+
+.row-date {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+body.is-locked .message-table tbody tr,
+body.provider-unavailable .message-table tbody tr {
+  cursor: not-allowed;
+}
+
+.toolbar-search input {
+  width: 300px;
+  height: 34px;
+}
+
+.toolbar-search::after {
+  top: 21px;
+}
+
+.ws-detail-bar #detailActions:empty {
+  display: none;
+}
+
+/* Overview: a summary of the batch, linking into the queues. */
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.overview-panel {
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+}
+
+.overview-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.overview-panel-head h2 {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 650;
+}
+
+.overview-panel-head a {
+  color: var(--accent-text);
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+
+.overview-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  text-decoration: none;
+  transition: background var(--ease);
+}
+
+a.overview-row:hover {
+  background: var(--surface-hover);
+}
+
+.overview-row-main {
+  display: grid;
+  min-width: 0;
+}
+
+.overview-row-main strong,
+.overview-row-main small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overview-row-main strong {
+  font-size: var(--text-base);
+  font-weight: 560;
+}
+
+.overview-row-main small {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.overview-row-state {
+  flex: 0 0 auto;
+}
+
+.overview-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-base);
+}
+
+@media (max-width: 900px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .ws-overview .page-hero {
+    display: grid;
+    gap: 12px;
+  }
+
+  .ws-overview .page-hero h1 {
+    font-size: var(--text-2xl);
+  }
+
+  /* The phone top bar names the queue and its count. */
+  body.ws-has-mobile-bar .ws-view .ws-title {
+    display: none;
+  }
+
+  .ws-view .ws-actions,
+  .toolbar-search,
+  .toolbar-search input {
+    width: 100%;
+  }
+
+  /* A message on a phone is a page: no search row above it, and no "Open
+   * full page" because it already is one. */
+  body.ws-detail-open .ws-view .ws-toolbar,
+  #detailExpand {
+    display: none;
+  }
+
+  body.ws-layout-split .ws-list {
+    border-right: 0;
+  }
+
+  /* Subject and state only; the sender is the first line of the detail. */
+  .message-table :is(th, td):nth-child(2) {
+    display: none;
+  }
+
+  body.ws-layout-split .message-table th:first-child,
+  .message-table th:first-child {
+    width: 66%;
+  }
+
+  .bulk-actions button {
+    padding-inline: 8px;
+    white-space: nowrap;
   }
 }

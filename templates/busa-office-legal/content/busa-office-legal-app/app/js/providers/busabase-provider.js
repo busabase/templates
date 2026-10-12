@@ -2,6 +2,7 @@ import { inspectProvisionedResources } from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js";
 import { resolveOwnedConfig } from "../resource-binding.js";
+import { metricQueries } from "../model.js";
 /** @type {import('busabase-sdk').BusabaseClient} */
 let client;
 /** @type {Map<string, import('busabase-sdk/airapp').AirAppProvisionedBase>} */
@@ -30,10 +31,17 @@ async function readPage(base, cursor) {
     nextCursor: page.nextCursor || null,
   };
 }
-async function count(base) {
-  requireRead("records.count");
+// A count is never fatal: a denied or unsupported `records.count` returns
+// null and the UI shows "—" instead of failing the page.
+async function count(base, valueFilters) {
+  if (!base || !allowed.has("records.count")) return null;
   try {
-    return (await client.records.count({ baseId: base.baseId })).total;
+    return (
+      await client.records.count({
+        baseId: base.baseId,
+        ...(valueFilters ? { valueFilters } : {}),
+      })
+    ).total;
   } catch {
     return null;
   }
@@ -62,6 +70,9 @@ export const busabaseProvider = {
         };
       }),
     );
+    const metricValues = await Promise.all(
+      metricQueries.map((q) => count(bases.get(q.baseKey), q.valueFilters)),
+    );
     if (results.every((r) => !r.page))
       throw new Error(
         "No declared ledger could be read. Check permissions and retry.",
@@ -72,7 +83,11 @@ export const busabaseProvider = {
         results.map((r) => [r.key, { nextCursor: r.page?.nextCursor || null }]),
       ),
       totalCount: Object.fromEntries(results.map((r) => [r.key, r.total])),
+      metrics: Object.fromEntries(
+        metricQueries.map((q, i) => [q.key, metricValues[i]]),
+      ),
       errors: results.filter((r) => r.error).map((r) => r.error),
+      failures: results.filter((r) => r.error).map((r) => r.key),
       loadedAt: new Date().toISOString(),
     };
   },
@@ -81,5 +96,18 @@ export const busabaseProvider = {
     if (!base || !cursor)
       throw new Error("Unknown declared resource or cursor");
     return readPage(base, cursor);
+  },
+  // A record named by the URL (`/<id>` or `?peek=<id>`) that is not on the
+  // loaded page. Only returned when it belongs to the expected Base.
+  async getRecord(key, recordId) {
+    const base = bases.get(key);
+    if (!base || !allowed.has("records.get")) return null;
+    try {
+      const record = await client.records.get({ recordId });
+      if (record.baseId !== base.baseId) return null;
+      return normalizeRecords([record], key)[0];
+    } catch {
+      return null;
+    }
   },
 };

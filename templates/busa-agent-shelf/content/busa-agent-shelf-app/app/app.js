@@ -5,7 +5,6 @@ import { getProvider } from "./js/providers/index.js?v=0.1.0";
 import {
   DECIDABLE_STATUSES,
   attentionList,
-  checkDates,
   filterObservations,
   freshness,
   isUnsourced,
@@ -26,7 +25,19 @@ const AGENT_NAMES = {
   perplexity: "Perplexity",
   other: "Other",
 };
+// Fix queue filters; "" is the default "To decide" queue.
 const FIX_VIEWS = ["", "approved", "applied", "blocked", "all"];
+
+// Record views and the Base each one lists. Where a record opens is declared
+// per Base in config.js `ui.detail_modes` (the reasons live there):
+// questions/answers/competitors → drawer, fixes → split. A `/<record>` path
+// always opens the full page; `?peek=<record>` drives the drawer/split. On a
+// phone every mode is a page (base-ui.css handles that).
+const VIEW_BASE = { questions: "questions", answers: "observations", competitors: "competitors", fixes: "fixes" };
+const RECORD_VIEWS = Object.keys(VIEW_BASE);
+const DETAIL_MODES = Object.fromEntries(
+  RECORD_VIEWS.map((view) => [view, appConfig.ui?.detail_modes?.[VIEW_BASE[view]] || "drawer"]),
+);
 
 const state = {
   data: null,
@@ -41,32 +52,61 @@ const state = {
   pageError: "",
   drafts: {},
   noteErrors: {},
-  answerFilter: { agent: "", question: "", query: "" },
+  // Records opened by URL that are not on the loaded page (records.get).
+  // A value of `undefined` means the read is in flight; `null` means not found.
+  extra: emptyExtra(),
 };
 
+function emptyExtra() {
+  return Object.fromEntries(BROWSED_KEYS.map((key) => [key, new Map()]));
+}
+
+const byId = (id) => document.getElementById(id);
 const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  countProposed: document.querySelector("#count-proposed"),
-  countMissing: document.querySelector("#count-missing"),
-  countHighRisk: document.querySelector("#count-high-risk"),
-  countUnsourced: document.querySelector("#count-unsourced"),
-  language: document.querySelector("#language"),
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  overviewTitle: byId("overviewTitle"),
+  overviewSummary: byId("overviewSummary"),
+  overviewMetrics: byId("overviewMetrics"),
+  overviewBody: byId("overviewBody"),
+  viewPage: byId("viewPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  viewNotice: byId("viewNotice"),
+  fixFilters: byId("fixFilters"),
+  fixStatus: byId("fixStatus"),
+  answerAgent: byId("answerAgent"),
+  answerQuestion: byId("answerQuestion"),
+  search: byId("search"),
+  viewRefresh: byId("viewRefresh"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  settingsPage: byId("settingsPage"),
+  settingsTitle: byId("settingsTitle"),
+  settingsBody: byId("settingsBody"),
+  refresh: byId("refresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  countProposed: byId("count-proposed"),
+  countMissing: byId("count-missing"),
+  countHighRisk: byId("count-high-risk"),
+  countUnsourced: byId("count-unsourced"),
+  language: byId("language"),
 };
 
 // ── shell ────────────────────────────────────────────────────────────────────
 
+// Same breakpoint as base-ui.css's record-view phone rules.
 function isMobileLayout() {
-  return window.matchMedia("(max-width: 760px)").matches;
+  return window.matchMedia("(max-width: 720px)").matches;
 }
 
 function setSidebarCollapsed(collapsed, { persist = true } = {}) {
@@ -167,7 +207,20 @@ function safeUrl(value) {
 
 const rows = (key) => state.data?.rows?.[key] || [];
 const settings = () => state.data?.settings || null;
-const questionsById = () => new Map(rows("questions").map((row) => [row.id, row]));
+const extraRows = (key) => [...state.extra[key].values()].filter(Boolean);
+/** Loaded questions plus any fetched on their own for a shared link. */
+const knownQuestions = () => {
+  const loaded = rows("questions");
+  const seen = new Set(loaded.map((row) => row.id));
+  return [...loaded, ...extraRows("questions").filter((row) => !seen.has(row.id))];
+};
+const questionsById = () => new Map(knownQuestions().map((row) => [row.id, row]));
+
+/** Loaded page first, then a record read on its own for the URL. */
+function recordById(key, id) {
+  if (!id) return null;
+  return rows(key).find((row) => row.id === id) || state.extra[key].get(id) || null;
+}
 
 /** A relation shows the target's question text, or says it is not loaded — never the id. */
 function questionLabel(id, lookup = questionsById()) {
@@ -187,16 +240,31 @@ function loadedLabel(key) {
   return state.data?.cursors?.[key] ? t("loadedPlus", { loaded }) : String(loaded);
 }
 
+/** The per-Base total for the nav: records.count when known, else loaded rows. */
+function navCount(key) {
+  const total = state.data?.totals?.[key];
+  if (total != null) return String(total);
+  return `${rows(key).length}${state.data?.cursors?.[key] ? "+" : ""}`;
+}
+
 function loadMoreControl(key) {
   if (!state.data?.cursors?.[key]) return "";
   const busy = Boolean(state.loadingMore[key]);
+  const label = key === "observations" && state.route.view === "questions" ? `${t("answers")}: ` : "";
   return `<div class="load-more">
-    <span class="muted">${esc(loadedLabel(key))}</span>
+    <span class="muted">${esc(label + loadedLabel(key))}</span>
     <button type="button" class="button" data-load-more="${key}" ${busy ? "disabled" : ""}>${esc(busy ? t("loadingMore") : t("loadMore"))}</button>
     ${state.pageError ? `<span class="inline-error" role="alert">${esc(t("loadFailed", { error: state.pageError }))}</span>` : ""}
   </div>`;
 }
 
+/** A Base whose first page could not be read says so where its rows would be. */
+function readErrorNote(key) {
+  const error = state.data?.errors?.[key];
+  return error ? `<div class="notice danger read-error" role="alert">${esc(t("readFailed", { error }))}</div>` : "";
+}
+
+// One explicit page per click; never a loop over nextCursor.
 async function loadMore(key) {
   const cursor = state.data?.cursors?.[key];
   if (!cursor || state.loadingMore[key]) return;
@@ -217,20 +285,114 @@ async function loadMore(key) {
   }
 }
 
-// ── routing & loading ───────────────────────────────────────────────────────
+// ── routing ─────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&status=…&agent=…&question=…&peek=…]`. Search,
+// filters and the peeked record live in the URL so refresh, shared links and
+// Back restore the same list context.
+
+function safeDecode(value) {
+  try {
+    return value ? decodeURIComponent(value) : "";
+  } catch {
+    return "";
+  }
+}
 
 function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] ? decodeURIComponent(parts[1]) : "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  let id = RECORD_VIEWS.includes(view) ? safeDecode(parts[1]) : "";
+  let status = params.get("status") || "";
+  // Older links put the fix filter in the path: `#/fixes/all`.
+  if (view === "fixes" && FIX_VIEWS.includes(id)) {
+    status = id || status;
+    id = "";
+  }
+  if (!FIX_VIEWS.includes(status)) status = "";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && !id ? params.get("peek") || "" : "";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode,
+    query: params.get("q") || "",
+    status: view === "fixes" ? status : "",
+    agent: view === "answers" ? params.get("agent") || "" : "",
+    question: view === "answers" ? params.get("question") || "" : "",
+  };
 }
 
+const blankRoute = (view) => ({ view, query: "", status: "", agent: "", question: "" });
+
+function routeQuery(route, extra = {}) {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  if (route.status) params.set("status", route.status);
+  if (route.agent) params.set("agent", route.agent);
+  if (route.question) params.set("question", route.question);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+}
+
+const contextFor = (view, route) => route || (view === state.route.view ? state.route : blankRoute(view));
+const listUrl = (route = state.route) => `#/${route.view}${routeQuery(route)}`;
+/** The full page: the record in the path. Always a page, whatever the view's mode. */
+const detailUrl = (id, view = state.route.view, route) =>
+  `#/${view}/${encodeURIComponent(id)}${routeQuery(contextFor(view, route))}`;
+/** What a row or a cross-link opens: the page for a `page` view, else `?peek=`. */
+function recordUrl(id, view = state.route.view, route) {
+  if (DETAIL_MODES[view] === "page") return detailUrl(id, view, route);
+  return `#/${view}${routeQuery(contextFor(view, route), { peek: id })}`;
+}
+/** A fix link from elsewhere: decided fixes are outside the default queue. */
+const fixUrl = (fix) =>
+  recordUrl(fix.id, "fixes", { ...blankRoute("fixes"), status: DECIDABLE_STATUSES.has(fix.status) ? "" : "all" });
+
+let previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
-  state.notice = null;
+  // A record opened from its own list marks the entry, so Close/Escape step
+  // back to that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  if (previous.view !== state.route.view) state.notice = null;
+  els.search.value = state.route.query;
   setMobileSidebarOpen(false);
   render();
-  els.content.scrollTop = 0;
+  if (previous.view !== state.route.view) {
+    els.overviewPage.scrollTop = 0;
+    els.listPanel.scrollTop = 0;
+  }
+  ensureSelectedRecord();
 }
+
+/** Replace the entry without a hashchange: keystrokes and filter clicks are not Back steps. */
+function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const keep = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = keep;
+  render();
+  ensureSelectedRecord();
+}
+
+function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── loading ─────────────────────────────────────────────────────────────────
 
 let loadToken = 0;
 async function loadState() {
@@ -240,8 +402,33 @@ async function loadState() {
   if (token !== loadToken) return;
   closeConnectGate();
   state.data = data;
+  state.extra = emptyExtra();
   state.error = "";
   state.pageError = "";
+  render();
+  ensureSelectedRecord();
+}
+
+// A record named by the URL but not on the loaded page is read on its own
+// (records.get) instead of loading more pages to find it.
+async function ensureSelectedRecord() {
+  const { view, selectedId } = state.route;
+  const key = VIEW_BASE[view];
+  if (!state.data || !selectedId || !key) return;
+  if (rows(key).some((row) => row.id === selectedId) || state.extra[key].has(selectedId)) return;
+  const provider = await getProvider();
+  if (typeof provider.getRecord !== "function") {
+    state.extra[key].set(selectedId, null);
+    render();
+    return;
+  }
+  state.extra[key].set(selectedId, undefined);
+  render();
+  try {
+    state.extra[key].set(selectedId, (await provider.getRecord(key, selectedId)) || null);
+  } catch {
+    state.extra[key].set(selectedId, null);
+  }
   render();
 }
 
@@ -255,12 +442,25 @@ function applyI18n() {
   const languageLabels = activeLang() === "zh" ? { auto: "自动" } : { auto: "Auto" };
   for (const option of els.language.options) if (languageLabels[option.value]) option.textContent = languageLabels[option.value];
   els.refresh.textContent = t("refresh");
-  els.mobileRefresh.title = t("refresh");
-  els.mobileRefresh.setAttribute("aria-label", t("refresh"));
+  for (const button of [els.mobileRefresh, els.viewRefresh]) {
+    button.title = t("refresh");
+    button.setAttribute("aria-label", t("refresh"));
+  }
   els.sidebarToggle.title = t("toggleSidebar");
   els.sidebarToggle.setAttribute("aria-label", t("toggleSidebar"));
   els.mobileSidebarToggle.title = t("openSidebar");
   els.mobileSidebarToggle.setAttribute("aria-label", t("openSidebar"));
+  els.overviewTitle.textContent = t("overview");
+  els.settingsTitle.textContent = t("settings");
+  els.settingsTitle.title = t("settingsSubtitle");
+  els.detailExpand.textContent = t("openFullPage");
+  els.answerAgent.setAttribute("aria-label", t("allAgents"));
+  els.answerQuestion.setAttribute("aria-label", t("allQuestions"));
+  els.fixStatus.setAttribute("aria-label", t("fixes"));
+}
+
+function viewLabel(view) {
+  return RECORD_VIEWS.includes(view) || view === "settings" ? t(view) : t("overview");
 }
 
 function renderShell() {
@@ -276,20 +476,23 @@ function renderShell() {
       ? t("demoNote")
       : t("liveNote", { time: formatTime(state.data.loaded_at) });
   els.language.value = state.lang;
+  document.querySelectorAll("[data-nav-count]").forEach((node) => {
+    node.textContent = state.data ? navCount(node.dataset.navCount) : "";
+  });
   document.querySelectorAll("nav [data-route]").forEach((link) => {
     link.classList.toggle("active", link.dataset.route === state.route.view);
   });
-}
-
-function setPage(title, subtitle = "") {
-  els.title.textContent = title;
-  els.subtitle.textContent = subtitle;
+  const title = state.error ? t("errorTitle") : state.data ? viewLabel(state.route.view) : t("loading");
   els.mobileViewTitle.textContent = title;
-  els.mobileViewMeta.textContent = subtitle;
+  els.mobileViewMeta.textContent = !state.data
+    ? ""
+    : attention.counts.proposed
+      ? `${attention.counts.proposed} ${t("fixesWaiting")}`
+      : settings()?.brand || t("appTitle");
   document.title = `${title} · ${t("appTitle")}`;
 }
 
-const badge = (label, tone = "") => `<span class="badge ${tone}">${esc(label)}</span>`;
+const badge = (label, tone = "") => (label ? `<span class="badge ${tone}">${esc(label)}</span>` : "");
 const toneForRisk = (risk) => ({ high: "danger", medium: "warning", low: "positive" })[risk] || "";
 const toneForStatus = (status) =>
   ({ proposed: "active", "changes-requested": "warning", approved: "positive", applied: "positive", blocked: "danger" })[
@@ -301,7 +504,7 @@ function emptyState(title, body, action = "") {
   return `<div class="empty-state">
     <div class="empty-state-icon" aria-hidden="true">○</div>
     <strong>${esc(title)}</strong>
-    <p>${esc(body)}</p>
+    ${body ? `<p>${esc(body)}</p>` : ""}
     ${action}
   </div>`;
 }
@@ -317,16 +520,45 @@ function positionChip(position) {
   return `<span class="position missing">${esc(t("notShown"))}</span>`;
 }
 
-// ── screens ─────────────────────────────────────────────────────────────────
+const cell = (html, { title = "", className = "", label = "" } = {}) =>
+  `<td${className ? ` class="${className}"` : ""}${title ? ` title="${esc(title)}"` : ""}${label ? ` data-label="${esc(label)}"` : ""}>${html}</td>`;
+const tableHead = (columns) =>
+  `<thead><tr>${columns.map(([label, className = ""]) => `<th${className ? ` class="${className}"` : ""}>${esc(label)}</th>`).join("")}</tr></thead>`;
+const rowOpen = (id) => `<tr data-id="${esc(id)}"${id === state.route.selectedId ? ' class="ws-selected"' : ""}>`;
+
+// ── overview ────────────────────────────────────────────────────────────────
 
 function renderOverview() {
   const brand = settings()?.brand;
-  setPage(t("overview"), brand ? t("overviewSubtitle", { brand }) : t("overviewSubtitleNoBrand"));
+  els.overviewSummary.textContent = brand ? t("overviewSubtitle", { brand }) : t("overviewSubtitleNoBrand");
   const observations = rows("observations");
   const share = shareOfShelf({ questions: rows("questions"), observations, settings: settings() });
   const attention = attentionList({ questions: rows("questions"), observations, fixes: rows("fixes") });
   const fresh = freshness({ latest: share.latest, cadence: settings()?.cadence });
   const lookup = questionsById();
+
+  // Three numbers nothing else on screen shows: the per-agent cells below give
+  // each agent's share, the sidebar gives the attention counts.
+  const overallDelta = share.overall.delta == null ? null : Math.round(share.overall.delta * 100);
+  const metrics = [
+    [t("overallShare"), percent(share.overall.share), ""],
+    [
+      share.previous ? t("overallChange", { previous: formatDay(share.previous) }) : t("overallChangeNone"),
+      overallDelta == null ? "—" : `${overallDelta > 0 ? "+" : overallDelta < 0 ? "−" : "±"}${Math.abs(overallDelta)} ${t("pts")}`,
+      overallDelta > 0 ? "up" : overallDelta < 0 ? "down" : "",
+    ],
+    [
+      t("daysSinceCheck", { limit: fresh.limit }),
+      fresh.days == null ? "—" : String(fresh.days),
+      fresh.stale ? "stale" : "",
+    ],
+  ];
+  els.overviewMetrics.innerHTML = metrics
+    .map(
+      ([label, value, tone]) =>
+        `<div class="metric-cell ${tone}"><span title="${esc(label)}">${esc(label)}</span><strong>${esc(value)}</strong></div>`,
+    )
+    .join("");
 
   const shareCard = !share.latest
     ? `<section class="card">${emptyState(t("noChecks"), t("noChecksBody"))}</section>`
@@ -336,8 +568,8 @@ function renderOverview() {
             <h2>${esc(t("shareTitle"))}</h2>
             <p>${esc(share.previous ? t("shareHint", { latest: formatDay(share.latest) }) : t("shareHintNoPrev", { latest: formatDay(share.latest) }))}</p>
           </div>
+          <a class="text-link" href="#/questions">${esc(t("openGrid"))}</a>
         </div>
-        ${fresh.stale ? `<div class="notice warning">${esc(t("stale", { days: fresh.days, limit: fresh.limit }))}</div>` : ""}
         <div class="share-grid">
           ${share.agents
             .map((item) => {
@@ -361,202 +593,77 @@ function renderOverview() {
         ${state.data?.cursors?.observations ? `<p class="footnote muted">${esc(t("loadedOnly", { count: observations.length }))}</p>` : ""}
       </section>`;
 
-  const attentionItems = [
-    ...attention.missing.map(
-      (item) => `<li class="attention-item">
-        <div class="attention-main">
-          <a href="#/questions">${esc(item.question.question)}</a>
-          <div class="muted">${esc(t("missingLine", { date: formatDay(item.checked_on) }))}${item.picked_instead ? ` · ${esc(t("pickedInstead"))}: ${esc(item.picked_instead)}` : ""}</div>
-        </div>
-        ${badge(enumLabel("priority", "high"), "danger")}
-      </li>`,
-    ),
-    ...attention.fixes.map(
-      (item) => `<li class="attention-item">
-        <div class="attention-main">
-          <a href="#/fixes/${item.fix.status === "proposed" || item.fix.status === "changes-requested" ? "" : "all"}">${esc(item.fix.title)}</a>
-          <div class="muted">${esc(item.fix.product)} · ${esc(enumLabel("fixStatus", item.fix.status))}</div>
-        </div>
-        <div class="badge-row">${item.reasons.map((reason) => badge(t(`reason_${reason}`), reason === "proposed" ? "active" : reason === "high-risk" ? "danger" : "warning")).join("")}</div>
-      </li>`,
-    ),
-  ];
-  const waiting = reviewQueue(rows("fixes")).filter((fix) => fix.status === "proposed");
+  const missingItems = attention.missing.map(
+    (item) => `<li class="attention-item">
+      <div class="attention-main">
+        <a href="${esc(recordUrl(item.question.id, "questions"))}">${esc(item.question.question)}</a>
+        <div class="muted">${esc(t("missingLine", { date: formatDay(item.checked_on) }))}${item.picked_instead ? ` · ${esc(t("pickedInstead"))}: ${esc(item.picked_instead)}` : ""}</div>
+      </div>
+      ${badge(enumLabel("priority", "high"), "danger")}
+    </li>`,
+  );
+  const fixItems = attention.fixes.map(
+    (item) => `<li class="attention-item">
+      <div class="attention-main">
+        <a href="${esc(fixUrl(item.fix))}">${esc(item.fix.title)}</a>
+        <div class="muted">${esc(item.fix.product)} · ${esc(enumLabel("fixStatus", item.fix.status))}${item.fix.question ? ` · ${questionText(item.fix.question, lookup)}` : ""}</div>
+      </div>
+      <div class="badge-row">${item.reasons.map((reason) => badge(t(`reason_${reason}`), reason === "proposed" ? "active" : reason === "high-risk" ? "danger" : "warning")).join("")}</div>
+    </li>`,
+  );
 
-  els.content.innerHTML = `
+  els.overviewBody.innerHTML = `
     ${noticeBar()}
+    ${["questions", "observations", "fixes", "settings"].map(readErrorNote).join("")}
     ${shareCard}
     <div class="overview-columns">
       <section class="card">
-        <div class="card-heading"><h2>${esc(t("attentionTitle"))}</h2></div>
+        <div class="card-heading"><h2>${esc(t("missingTitle"))}</h2></div>
         ${
-          attentionItems.length
-            ? `<ul class="attention-list">${attentionItems.join("")}</ul>`
-            : emptyState(t("attentionEmpty"), t("attentionEmptyBody"))
+          missingItems.length
+            ? `<ul class="attention-list">${missingItems.join("")}</ul>`
+            : `<p class="muted">${esc(t("missingEmpty"))}</p>`
         }
       </section>
       <section class="card">
         <div class="card-heading">
-          <h2>${esc(t("fixesWaitingTitle"))}</h2>
+          <h2>${esc(t("fixesNeedYou"))}</h2>
           <a class="text-link" href="#/fixes">${esc(t("reviewAll"))}</a>
         </div>
         ${
-          waiting.length
-            ? `<ul class="waiting-list">${waiting
-                .map(
-                  (fix) => `<li>
-                    <div class="attention-main">
-                      <a href="#/fixes">${esc(fix.title)}</a>
-                      <div class="muted">${esc(fix.product)} · ${esc(enumLabel("gap", fix.gap_type))}${fix.question ? ` · ${questionText(fix.question, lookup)}` : ""}</div>
-                    </div>
-                    ${badge(enumLabel("risk", fix.risk), toneForRisk(fix.risk))}
-                  </li>`,
-                )
-                .join("")}</ul>`
+          fixItems.length
+            ? `<ul class="attention-list">${fixItems.join("")}</ul>`
             : `<p class="muted">${esc(t("noFixesWaiting"))}</p>`
         }
       </section>
     </div>`;
 }
 
-function renderQuestions() {
-  setPage(t("questions"), t("questionsSubtitle"));
-  const grid = positionGrid({ questions: rows("questions"), observations: rows("observations"), settings: settings() });
-  if (!grid.rows.length) {
-    els.content.innerHTML = `<section class="card">${emptyState(t("noQuestions"), t("noQuestionsBody"))}</section>`;
-    return;
-  }
-  els.content.innerHTML = `
-    <section class="card flush">
-      <div class="card-heading"><p>${esc(t("legend"))}</p></div>
-      <table class="table grid-table">
-        <thead><tr><th>${esc(t("question"))}</th>${grid.agents.map((agent) => `<th class="agent-col">${esc(agentName(agent))}</th>`).join("")}</tr></thead>
-        <tbody>
-          ${grid.rows
-            .map(({ question, loaded, cells }) => {
-              const head = loaded
-                ? `<div class="question-cell">
-                    <strong>${esc(question.question)}</strong>
-                    <div class="badge-row">
-                      ${badge(enumLabel("priority", question.priority), toneForPriority(question.priority))}
-                      ${question.status === "paused" ? badge(enumLabel("questionStatus", "paused")) : ""}
-                      ${question.market ? `<span class="muted">${esc(enumLabel("market", question.market))}</span>` : ""}
-                      ${question.intent ? `<span class="muted">· ${esc(enumLabel("intent", question.intent))}</span>` : ""}
-                    </div>
-                    ${question.target_products ? `<div class="muted">${esc(t("targetProducts"))}: ${esc(question.target_products)}</div>` : ""}
-                  </div>`
-                : `<div class="question-cell"><strong class="muted">${esc(t("notLoaded"))}</strong><div class="muted">${esc(t("notLoadedHint"))}</div></div>`;
-              return `<tr>
-                <td>${head}</td>
-                ${cells
-                  .map(
-                    (cell) =>
-                      `<td class="agent-col" data-label="${esc(agentName(cell.agent))}"${cell.checked_on ? ` title="${esc(t("checkedOn", { date: formatDay(cell.checked_on) }))}"` : ""}>${positionChip(cell.position)}</td>`,
-                  )
-                  .join("")}
-              </tr>`;
-            })
-            .join("")}
-        </tbody>
-      </table>
-    </section>
-    ${loadMoreControl("questions")}
-    ${loadMoreControl("observations")}`;
+// ── record views ────────────────────────────────────────────────────────────
+
+const matches = (values, needle) => !needle || values.join(" ").toLowerCase().includes(needle);
+const needle = () => state.route.query.trim().toLowerCase();
+
+function questionGrid() {
+  const grid = positionGrid({ questions: knownQuestions(), observations: rows("observations"), settings: settings() });
+  const query = needle();
+  return {
+    ...grid,
+    rows: grid.rows.filter(({ question, loaded }) =>
+      loaded ? matches([question.question, question.category, question.target_products, question.notes], query) : !query,
+    ),
+  };
 }
 
-function renderAnswers() {
-  setPage(t("answers"), t("answersSubtitle"));
-  const observations = rows("observations");
-  const lookup = questionsById();
-  const filter = state.answerFilter;
-  const list = filterObservations(observations, filter);
-  const agents = [...new Set(observations.map((row) => row.agent).filter(Boolean))];
-  const questionIds = [...new Set(observations.map((row) => row.question).filter(Boolean))];
-  els.content.innerHTML = `
-    <section class="card flush">
-      <div class="toolbar">
-        <select id="answerAgent" aria-label="${esc(t("allAgents"))}">
-          <option value="">${esc(t("allAgents"))}</option>
-          ${agents.map((agent) => `<option value="${esc(agent)}" ${filter.agent === agent ? "selected" : ""}>${esc(agentName(agent))}</option>`).join("")}
-        </select>
-        <select id="answerQuestion" aria-label="${esc(t("allQuestions"))}">
-          <option value="">${esc(t("allQuestions"))}</option>
-          ${questionIds
-            .map((id) => `<option value="${esc(id)}" ${filter.question === id ? "selected" : ""}>${esc(questionLabel(id, lookup) || t("notLoaded"))}</option>`)
-            .join("")}
-        </select>
-        <input id="answerQuery" class="search-field" type="search" value="${esc(filter.query)}" placeholder="${esc(t("searchAnswers"))}" aria-label="${esc(t("searchAnswers"))}">
-      </div>
-      <p class="filter-note muted">${esc(t("filterNote", { count: observations.length }))}</p>
-      <div id="answerList" class="answer-list">${answerListMarkup(list, lookup)}</div>
-    </section>
-    ${loadMoreControl("observations")}`;
-}
+const filteredAnswers = () =>
+  filterObservations(rows("observations"), {
+    agent: state.route.agent,
+    question: state.route.question,
+    query: state.route.query,
+  });
 
-function answerListMarkup(list, lookup) {
-  if (!list.length) return emptyState(t("noAnswers"), t("noAnswersBody"));
-  return list
-    .map((row) => {
-      const link = safeUrl(row.evidence_url);
-      return `<article class="answer">
-        <div class="answer-head">
-          <div class="answer-title">
-            <strong>${questionText(row.question, lookup)}</strong>
-            <div class="muted">${esc(agentName(row.agent))} · ${esc(formatDay(row.checked_on))}</div>
-          </div>
-          ${positionChip(row.our_position)}
-        </div>
-        <dl class="answer-facts">
-          ${row.our_product ? `<div><dt>${esc(t("ourProduct"))}</dt><dd>${esc(row.our_product)}</dd></div>` : ""}
-          ${row.picked_instead ? `<div><dt>${esc(t("pickedInstead"))}</dt><dd>${esc(row.picked_instead)}</dd></div>` : ""}
-          ${row.reason_given ? `<div><dt>${esc(t("reasonGiven"))}</dt><dd>${esc(row.reason_given)}</dd></div>` : ""}
-        </dl>
-        ${row.answer_excerpt ? `<blockquote class="excerpt" aria-label="${esc(t("excerpt"))}">${esc(row.answer_excerpt)}</blockquote>` : ""}
-        ${link ? `<a class="text-link" href="${esc(link)}" target="_blank" rel="noopener noreferrer">${esc(t("evidenceLink"))} ↗</a>` : ""}
-      </article>`;
-    })
-    .join("");
-}
-
-function refreshAnswerList() {
-  const list = filterObservations(rows("observations"), state.answerFilter);
-  const container = document.querySelector("#answerList");
-  if (container) container.innerHTML = answerListMarkup(list, questionsById());
-}
-
-function renderCompetitors() {
-  setPage(t("competitors"), t("competitorsSubtitle"));
-  const list = rankCompetitors(rows("competitors"));
-  if (!list.length) {
-    els.content.innerHTML = `<section class="card">${emptyState(t("noCompetitors"), t("noCompetitorsBody"))}</section>${loadMoreControl("competitors")}`;
-    return;
-  }
-  els.content.innerHTML = `
-    <section class="card flush">
-      <table class="table stack-table">
-        <thead><tr><th>${esc(t("product"))}</th><th class="num">${esc(t("timesPicked"))}</th><th class="num">${esc(t("price"))}</th><th>${esc(t("whatTheyHave"))}</th></tr></thead>
-        <tbody>
-          ${list
-            .map((row) => {
-              const link = safeUrl(row.url);
-              return `<tr>
-                <td data-label="${esc(t("product"))}">
-                  <div class="cell-identity"><div>
-                    <strong>${link ? `<a class="text-link" href="${esc(link)}" target="_blank" rel="noopener noreferrer">${esc(row.product)} ↗</a>` : esc(row.product)}</strong>
-                    <span>${esc(row.brand)}</span>
-                  </div></div>
-                </td>
-                <td class="num" data-label="${esc(t("timesPicked"))}">${esc(row.times_picked)}</td>
-                <td class="num" data-label="${esc(t("price"))}">${esc(money(row.price))}</td>
-                <td class="wrap" data-label="${esc(t("whatTheyHave"))}">${esc(row.what_they_have)}</td>
-              </tr>`;
-            })
-            .join("")}
-        </tbody>
-      </table>
-    </section>
-    ${loadMoreControl("competitors")}`;
-}
+const filteredCompetitors = () =>
+  rankCompetitors(rows("competitors")).filter((row) => matches([row.product, row.brand, row.what_they_have], needle()));
 
 function fixMatchesView(fix, view) {
   if (view === "all") return true;
@@ -564,44 +671,324 @@ function fixMatchesView(fix, view) {
   return fix.status === view;
 }
 
-function renderFixes() {
-  const view = FIX_VIEWS.includes(state.route.id) ? state.route.id : "";
-  const all = reviewQueue(rows("fixes"));
-  const list = all.filter((fix) => fixMatchesView(fix, view));
-  const toDecide = all.filter((fix) => DECIDABLE_STATUSES.has(fix.status)).length;
-  setPage(t("fixes"), t("fixesSubtitle"));
-  const segments = FIX_VIEWS.map((id) => {
-    const label = id === "" ? t("toDecide") : id === "all" ? t("all") : enumLabel("fixStatus", id);
-    const count = id === "" ? toDecide : all.filter((fix) => fixMatchesView(fix, id)).length;
-    return `<a class="segment ${view === id ? "active" : ""}" href="#/fixes${id ? `/${id}` : ""}" data-route="fixes">${esc(label)} <b>${count}</b></a>`;
-  }).join("");
-  const lookup = questionsById();
-  els.content.innerHTML = `
-    ${noticeBar()}
-    <div class="segmented fix-views" role="tablist">${segments}</div>
-    <div class="fix-list">
-      ${list.length ? list.map((fix) => fixCard(fix, lookup)).join("") : `<section class="card">${emptyState(t("noFixes"), t("noFixesBody"))}</section>`}
-    </div>
-    ${loadMoreControl("fixes")}`;
+const filteredFixes = () =>
+  reviewQueue(rows("fixes")).filter(
+    (fix) =>
+      fixMatchesView(fix, state.route.status) &&
+      matches([fix.title, fix.product, fix.field_name, fix.proposed_value, fix.source], needle()),
+  );
+
+/** True while a search or filter narrows the list, so the toolbar shows its count. */
+function isNarrowed() {
+  const { view, query, agent, question } = state.route;
+  return Boolean(query || (view === "answers" && (agent || question)));
 }
 
-function fixCard(fix, lookup) {
+function renderToolbar(view, count) {
+  els.viewTitle.textContent = t(view);
+  els.viewTitle.title = [t(`${view}Subtitle`), view === "questions" ? t("legend") : ""].filter(Boolean).join("\n");
+  els.viewCount.textContent = count;
+  els.search.placeholder = t(view === "answers" ? "searchAnswers" : "searchLoaded");
+  els.search.setAttribute("aria-label", els.search.placeholder);
+  els.search.title = view === "answers" ? t("filterNote", { count: rows("observations").length }) : "";
+
+  els.fixFilters.hidden = view !== "fixes";
+  els.fixStatus.hidden = view !== "fixes";
+  if (view === "fixes") {
+    const all = rows("fixes");
+    const labelFor = (id) => (id === "" ? t("toDecide") : id === "all" ? t("all") : enumLabel("fixStatus", id));
+    const countFor = (id) => all.filter((fix) => fixMatchesView(fix, id)).length;
+    els.fixFilters.innerHTML = FIX_VIEWS.map(
+      (id) =>
+        `<button type="button" role="tab" class="segment ${state.route.status === id ? "active" : ""}" aria-selected="${state.route.status === id}" data-status="${id}">${esc(labelFor(id))} <b>${countFor(id)}</b></button>`,
+    ).join("");
+    els.fixStatus.innerHTML = FIX_VIEWS.map(
+      (id) => `<option value="${id}" ${state.route.status === id ? "selected" : ""}>${esc(labelFor(id))} (${countFor(id)})</option>`,
+    ).join("");
+  }
+
+  els.answerAgent.hidden = view !== "answers";
+  els.answerQuestion.hidden = view !== "answers";
+  if (view === "answers") {
+    const observations = rows("observations");
+    const lookup = questionsById();
+    const agents = [...new Set(observations.map((row) => row.agent).filter(Boolean))];
+    const questionIds = [...new Set(observations.map((row) => row.question).filter(Boolean))];
+    els.answerAgent.innerHTML = `<option value="">${esc(t("allAgents"))}</option>${agents
+      .map((agent) => `<option value="${esc(agent)}" ${state.route.agent === agent ? "selected" : ""}>${esc(agentName(agent))}</option>`)
+      .join("")}`;
+    els.answerQuestion.innerHTML = `<option value="">${esc(t("allQuestions"))}</option>${questionIds
+      .map(
+        (id) =>
+          `<option value="${esc(id)}" ${state.route.question === id ? "selected" : ""}>${esc(questionLabel(id, lookup) || t("notLoaded"))}</option>`,
+      )
+      .join("")}`;
+  }
+}
+
+function questionsTable(grid) {
+  return `<table class="ws-table shelf-table questions-table">
+    ${tableHead([[t("question")], [t("priority"), "col-badge"], ...grid.agents.map((agent) => [agentName(agent), "agent-col"])])}
+    <tbody>
+      ${grid.rows
+        .map(({ question, loaded, cells }) => {
+          const status =
+            question.status === "paused"
+              ? badge(enumLabel("questionStatus", "paused"))
+              : badge(enumLabel("priority", question.priority), toneForPriority(question.priority));
+          return `${rowOpen(question.id)}
+            ${
+              loaded
+                ? cell(`<span class="strong">${esc(question.question)}</span>`, { title: question.question })
+                : cell(`<span class="muted">${esc(t("notLoaded"))}</span>`, { title: t("notLoadedHint") })
+            }
+            ${cell(loaded ? status : "", { className: "col-badge" })}
+            ${cells
+              .map((item) =>
+                cell(positionChip(item.position), {
+                  className: "agent-col",
+                  title: item.checked_on ? `${agentName(item.agent)} · ${t("checkedOn", { date: formatDay(item.checked_on) })}` : "",
+                }),
+              )
+              .join("")}
+          </tr>`;
+        })
+        .join("")}
+    </tbody>
+  </table>`;
+}
+
+function answersTable(list, lookup) {
+  return `<table class="ws-table shelf-table answers-table">
+    ${tableHead([[t("question")], [t("ourPosition"), "col-badge"], [t("agent")], [t("checked"), "ws-col-narrow"], [t("ourProduct")], [t("pickedInstead"), "ws-col-wide"]])}
+    <tbody>
+      ${list
+        .map(
+          (row) => `${rowOpen(row.id)}
+            ${cell(`<span class="strong">${questionText(row.question, lookup)}</span>`, { title: questionLabel(row.question, lookup) })}
+            ${cell(positionChip(row.our_position), { className: "col-badge" })}
+            ${cell(esc(agentName(row.agent)))}
+            ${cell(esc(formatDay(row.checked_on)), { className: "ws-col-narrow" })}
+            ${cell(esc(row.our_product || "—"), { title: row.our_product })}
+            ${cell(esc(row.picked_instead), { title: row.picked_instead, className: "ws-col-wide" })}
+          </tr>`,
+        )
+        .join("")}
+    </tbody>
+  </table>`;
+}
+
+function competitorsTable(list) {
+  return `<table class="ws-table shelf-table competitors-table">
+    ${tableHead([[t("product")], [t("timesPicked"), "ws-col-num col-picks"], [t("brand")], [t("price"), "ws-col-num"], [t("whatTheyHave"), "ws-col-wide"]])}
+    <tbody>
+      ${list
+        .map(
+          (row) => `${rowOpen(row.id)}
+            ${cell(`<span class="strong">${esc(row.product)}</span>`, { title: row.product })}
+            ${cell(esc(row.times_picked), { className: "ws-col-num col-picks" })}
+            ${cell(esc(row.brand), { title: row.brand })}
+            ${cell(esc(money(row.price)), { className: "ws-col-num" })}
+            ${cell(esc(row.what_they_have), { title: row.what_they_have, className: "ws-col-wide" })}
+          </tr>`,
+        )
+        .join("")}
+    </tbody>
+  </table>`;
+}
+
+function fixesTable(list) {
+  return `<table class="ws-table shelf-table fixes-table">
+    ${tableHead([[t("fix")], [t("risk"), "ws-split-keep col-risk"], [t("status"), "ws-split-keep col-status"]])}
+    <tbody>
+      ${list
+        .map(
+          (fix) => `${rowOpen(fix.id)}
+            ${cell(`<span class="strong">${esc(fix.title)}</span>`, { title: `${fix.title} · ${fix.product}` })}
+            ${cell(badge(enumLabel("riskShort", fix.risk), toneForRisk(fix.risk)), { className: "ws-split-keep col-risk" })}
+            ${cell(badge(enumLabel("fixStatus", fix.status), toneForStatus(fix.status)), { className: "ws-split-keep col-status" })}
+          </tr>`,
+        )
+        .join("")}
+    </tbody>
+  </table>`;
+}
+
+function renderRecordView() {
+  const { view } = state.route;
+  const key = VIEW_BASE[view];
+  const partial = state.data?.cursors?.[key] ? "+" : "";
+  let count = 0;
+  let body = "";
+  if (view === "questions") {
+    const grid = questionGrid();
+    count = grid.rows.length;
+    body = grid.rows.length
+      ? questionsTable(grid)
+      : state.route.query
+        ? emptyState(t("noMatches"), t("noMatchesBody"))
+        : emptyState(t("noQuestions"), t("noQuestionsBody"));
+    body += loadMoreControl("questions") + loadMoreControl("observations");
+  } else if (view === "answers") {
+    const list = filteredAnswers();
+    count = list.length;
+    body = (list.length ? answersTable(list, questionsById()) : emptyState(t("noAnswers"), t("noAnswersBody"))) + loadMoreControl("observations");
+  } else if (view === "competitors") {
+    const list = filteredCompetitors();
+    count = list.length;
+    body = list.length
+      ? competitorsTable(list)
+      : state.route.query
+        ? emptyState(t("noMatches"), t("noMatchesBody"))
+        : emptyState(t("noCompetitors"), t("noCompetitorsBody"));
+    body += loadMoreControl("competitors");
+  } else {
+    const list = filteredFixes();
+    count = list.length;
+    body = (list.length ? fixesTable(list) : emptyState(t("noFixes"), t("noFixesBody"))) + loadMoreControl("fixes");
+  }
+  renderToolbar(view, `${count}${partial}`);
+  els.viewNotice.hidden = !state.notice;
+  els.viewNotice.innerHTML = noticeBar();
+  els.listPanel.innerHTML = readErrorNote(key) + body;
+  renderDetail();
+}
+
+// ── detail (one markup for drawer, split and full page) ─────────────────────
+
+function renderDetail() {
+  const { view, selectedId, presentation } = state.route;
+  const key = VIEW_BASE[view];
+  els.detailBack.textContent = presentation === "page" || isMobileLayout() ? t("backToList") : t("close");
+  els.detailExpand.hidden = !selectedId || presentation === "page";
+  if (selectedId) els.detailExpand.href = detailUrl(selectedId, view);
+  els.detailPanel.querySelector(".ws-detail-bar").hidden = !selectedId;
+  if (!selectedId) {
+    els.detailBody.innerHTML = DETAIL_MODES[view] === "split" ? `<div class="ws-detail-empty">${esc(t("selectFix"))}</div>` : "";
+    return;
+  }
+  const item = recordById(key, selectedId);
+  if (view === "questions") {
+    // A question referenced by answers renders its answers even when the
+    // question row itself could not be read.
+    const pending = state.extra.questions.has(selectedId) && state.extra.questions.get(selectedId) === undefined;
+    els.detailBody.innerHTML = pending ? `<p class="muted">${esc(t("loading"))}</p>` : questionDetail(selectedId, item);
+    return;
+  }
+  if (!item) {
+    const pending = state.extra[key].has(selectedId) && state.extra[key].get(selectedId) === undefined;
+    els.detailBody.innerHTML = pending
+      ? `<p class="muted">${esc(t("loading"))}</p>`
+      : emptyState(t("recordMissing"), t("recordMissingBody"));
+    return;
+  }
+  if (view === "answers") els.detailBody.innerHTML = answerDetail(item);
+  else if (view === "competitors") els.detailBody.innerHTML = competitorDetail(item);
+  else els.detailBody.innerHTML = `${noticeBar()}${fixDetail(item, questionsById())}`;
+}
+
+const fact = (label, html) => (html ? `<div><dt>${esc(label)}</dt><dd>${html}</dd></div>` : "");
+
+function questionDetail(id, question) {
+  const grid = positionGrid({ questions: knownQuestions(), observations: rows("observations"), settings: settings() });
+  const gridRow = grid.rows.find((row) => row.question.id === id);
+  const fixes = reviewQueue(rows("fixes").filter((fix) => fix.question === id));
+  if (!question && !gridRow) return emptyState(t("recordMissing"), t("recordMissingBody"));
+  const head = question
+    ? `<header class="detail-head">
+        <h2>${esc(question.question)}</h2>
+        <div class="badge-row">
+          ${badge(enumLabel("priority", question.priority), toneForPriority(question.priority))}
+          ${question.status === "paused" ? badge(enumLabel("questionStatus", "paused")) : ""}
+          ${question.market ? `<span class="muted">${esc(enumLabel("market", question.market))}</span>` : ""}
+          ${question.intent ? `<span class="muted">· ${esc(enumLabel("intent", question.intent))}</span>` : ""}
+          ${question.category ? `<span class="muted">· ${esc(question.category)}</span>` : ""}
+        </div>
+      </header>
+      <dl class="detail-facts">
+        ${fact(t("targetProducts"), esc(question.target_products))}
+        ${fact(t("notes"), question.notes ? `<span class="wrap">${esc(question.notes)}</span>` : "")}
+      </dl>`
+    : `<header class="detail-head"><h2 class="muted">${esc(t("notLoaded"))}</h2><p class="muted">${esc(t("notLoadedHint"))}</p></header>`;
+  const answers = (gridRow?.cells || [])
+    .map(
+      (item) => `<li>
+        <span class="detail-list-main"><strong>${esc(agentName(item.agent))}</strong>${item.checked_on ? `<small class="muted">${esc(t("checkedOn", { date: formatDay(item.checked_on) }))}</small>` : ""}</span>
+        ${item.observation_id ? `<a href="${esc(recordUrl(item.observation_id, "answers"))}">${positionChip(item.position)}</a>` : positionChip(item.position)}
+      </li>`,
+    )
+    .join("");
+  return `${head}
+    <section class="detail-section">
+      <h3>${esc(t("latestPerAgent"))}</h3>
+      ${answers ? `<ul class="detail-list">${answers}</ul>` : `<p class="muted">${esc(t("noAnswersForQuestion"))}</p>`}
+    </section>
+    <section class="detail-section">
+      <h3>${esc(t("fixesForQuestion"))}</h3>
+      ${
+        fixes.length
+          ? `<ul class="detail-list">${fixes
+              .map(
+                (fix) => `<li>
+                  <span class="detail-list-main"><a href="${esc(fixUrl(fix))}">${esc(fix.title)}</a><small class="muted">${esc(fix.product)}</small></span>
+                  ${badge(enumLabel("fixStatus", fix.status), toneForStatus(fix.status))}
+                </li>`,
+              )
+              .join("")}</ul>`
+          : `<p class="muted">${esc(t("noFixesForQuestion"))}</p>`
+      }
+    </section>`;
+}
+
+function answerDetail(row) {
+  const lookup = questionsById();
+  const link = safeUrl(row.evidence_url);
+  return `<header class="detail-head">
+      <h2>${questionText(row.question, lookup)}</h2>
+      <div class="badge-row">${positionChip(row.our_position)}<span class="muted">${esc(agentName(row.agent))} · ${esc(formatDay(row.checked_on))}</span></div>
+    </header>
+    <dl class="detail-facts">
+      ${fact(t("ourProduct"), esc(row.our_product))}
+      ${fact(t("pickedInstead"), esc(row.picked_instead))}
+      ${fact(t("reasonGiven"), esc(row.reason_given))}
+    </dl>
+    ${row.answer_excerpt ? `<section class="detail-section"><h3>${esc(t("excerpt"))}</h3><blockquote class="excerpt">${esc(row.answer_excerpt)}</blockquote></section>` : ""}
+    <div class="detail-links">
+      ${row.question ? `<a class="text-link" href="${esc(recordUrl(row.question, "questions"))}">${esc(t("openQuestion"))}</a>` : ""}
+      ${link ? `<a class="text-link" href="${esc(link)}" target="_blank" rel="noopener noreferrer">${esc(t("evidenceLink"))} ↗</a>` : ""}
+    </div>`;
+}
+
+function competitorDetail(row) {
+  const link = safeUrl(row.url);
+  return `<header class="detail-head">
+      <h2>${esc(row.product)}</h2>
+      ${row.brand ? `<p class="muted">${esc(row.brand)}</p>` : ""}
+    </header>
+    <dl class="detail-facts">
+      ${fact(t("timesPicked"), esc(row.times_picked))}
+      ${fact(t("price"), esc(money(row.price)))}
+      ${fact(t("listing"), link ? `<a class="text-link" href="${esc(link)}" target="_blank" rel="noopener noreferrer">${esc(link)} ↗</a>` : "")}
+      ${fact(t("whatTheyHave"), row.what_they_have ? `<span class="wrap">${esc(row.what_they_have)}</span>` : "")}
+    </dl>`;
+}
+
+function fixDetail(fix, lookup) {
   const decidable = DECIDABLE_STATUSES.has(fix.status);
   const busy = state.busyFix === fix.id;
   const anyBusy = Boolean(state.busyFix);
   const unsourced = isUnsourced(fix);
   const noteError = state.noteErrors[fix.id];
-  return `<article class="card fix-card" data-fix="${esc(fix.id)}">
-    <div class="fix-head">
-      <div class="fix-title">
-        <h3>${esc(fix.title)}</h3>
-        <div class="muted">${esc(fix.product)}${fix.gap_type ? ` · ${esc(enumLabel("gap", fix.gap_type))}` : ""}${fix.question ? ` · ${esc(t("forQuestion"))}: ${questionText(fix.question, lookup)}` : ""}</div>
-      </div>
+  return `<article class="fix-detail" data-fix="${esc(fix.id)}">
+    <header class="detail-head">
+      <h2>${esc(fix.title)}</h2>
       <div class="badge-row">
         ${badge(enumLabel("risk", fix.risk), toneForRisk(fix.risk))}
         ${badge(enumLabel("fixStatus", fix.status), toneForStatus(fix.status))}
+        <span class="muted">${esc(fix.product)}${fix.gap_type ? ` · ${esc(enumLabel("gap", fix.gap_type))}` : ""}</span>
       </div>
-    </div>
+      ${fix.question ? `<p class="muted">${esc(t("forQuestion"))}: <a href="${esc(recordUrl(fix.question, "questions"))}">${questionText(fix.question, lookup)}</a></p>` : ""}
+    </header>
     <div class="diff">
       ${fix.field_name ? `<div class="diff-field">${esc(t("field"))}: <code>${esc(fix.field_name)}</code></div>` : ""}
       <div class="diff-grid">
@@ -610,11 +997,11 @@ function fixCard(fix, lookup) {
         <div class="diff-side after"><span class="diff-label">${esc(t("proposed"))}</span><div>${esc(fix.proposed_value)}</div></div>
       </div>
     </div>
-    <dl class="fix-facts">
+    <dl class="detail-facts">
       <div><dt>${esc(t("source"))}</dt><dd>${unsourced ? `<span class="inline-error">${esc(t("noSource"))}</span>` : esc(fix.source)}</dd></div>
-      ${fix.evidence ? `<div><dt>${esc(t("evidence"))}</dt><dd>${esc(fix.evidence)}</dd></div>` : ""}
-      ${fix.decision_note ? `<div><dt>${esc(t("decisionNote"))}</dt><dd>${esc(fix.decision_note)}</dd></div>` : ""}
-      ${fix.applied_on ? `<div><dt>${esc(enumLabel("fixStatus", "applied"))}</dt><dd>${esc(t("appliedOn", { date: formatDay(fix.applied_on) }))}</dd></div>` : ""}
+      ${fact(t("evidence"), esc(fix.evidence))}
+      ${fact(t("decisionNote"), esc(fix.decision_note))}
+      ${fact(enumLabel("fixStatus", "applied"), fix.applied_on ? esc(t("appliedOn", { date: formatDay(fix.applied_on) })) : "")}
     </dl>
     ${
       decidable
@@ -633,48 +1020,64 @@ function fixCard(fix, lookup) {
   </article>`;
 }
 
+// ── settings ────────────────────────────────────────────────────────────────
+
 function renderSettings() {
-  setPage(t("settings"), t("settingsSubtitle"));
   const current = settings();
   const agents = current?.agents?.length ? current.agents.map(agentName).join(", ") : t("notSet");
-  els.content.innerHTML = `
-    <section class="card settings-card">
-      <h2>${esc(t("settings"))}</h2>
-      <dl class="settings-grid">
-        <div><dt>${esc(t("brandLabel"))}</dt><dd>${esc(current?.brand || t("notSet"))}</dd></div>
-        <div><dt>${esc(t("agentsLabel"))}</dt><dd>${esc(agents)}</dd></div>
-        <div><dt>${esc(t("cadenceLabel"))}</dt><dd>${esc(enumLabel("cadence", current?.cadence) || t("notSet"))}</dd></div>
-        <div class="span-2"><dt>${esc(t("policyLabel"))}</dt><dd class="wrap">${esc(current?.review_policy || t("notSet"))}</dd></div>
-      </dl>
-    </section>
-    <section class="card settings-card">
-      <h2>${esc(t("dataSource"))}</h2>
-      <dl class="settings-grid">
-        <div><dt>${esc(t("dataSource"))}</dt><dd>${esc(state.data?.demo ? t("sourceDemo") : t("sourceLive"))}</dd></div>
-        <div><dt>${esc(t("onboarding"))}</dt><dd>${esc(current?.brand ? t("onboardingDone") : t("onboardingTodo"))}</dd></div>
-        ${BROWSED_KEYS.map((key) => `<div><dt>${esc(t(key === "observations" ? "answers" : key))}</dt><dd>${esc(loadedLabel(key))}</dd></div>`).join("")}
-      </dl>
-    </section>
-    <section class="settings" id="settingsContent"></section>`;
+  els.settingsBody.innerHTML = `
+    <div class="settings-stack">
+      ${readErrorNote("settings")}
+      <section class="card settings-card">
+        <h2>${esc(t("trackingSetup"))}</h2>
+        <dl class="settings-grid">
+          <div><dt>${esc(t("brandLabel"))}</dt><dd>${esc(current?.brand || t("notSet"))}</dd></div>
+          <div><dt>${esc(t("agentsLabel"))}</dt><dd>${esc(agents)}</dd></div>
+          <div><dt>${esc(t("cadenceLabel"))}</dt><dd>${esc(enumLabel("cadence", current?.cadence) || t("notSet"))}</dd></div>
+          <div class="span-2"><dt>${esc(t("policyLabel"))}</dt><dd class="wrap">${esc(current?.review_policy || t("notSet"))}</dd></div>
+        </dl>
+      </section>
+      <section class="card settings-card">
+        <h2>${esc(t("dataSource"))}</h2>
+        <dl class="settings-grid">
+          <div><dt>${esc(t("dataSource"))}</dt><dd>${esc(state.data?.demo ? t("sourceDemo") : t("sourceLive"))}</dd></div>
+          <div><dt>${esc(t("onboarding"))}</dt><dd>${esc(current?.brand ? t("onboardingDone") : t("onboardingTodo"))}</dd></div>
+          ${BROWSED_KEYS.map((key) => `<div><dt>${esc(t(key === "observations" ? "answers" : key))}</dt><dd>${esc(loadedLabel(key))}</dd></div>`).join("")}
+        </dl>
+      </section>
+      <section class="settings" id="settingsContent"></section>
+    </div>`;
+}
+
+// ── render ──────────────────────────────────────────────────────────────────
+
+function renderLoadState() {
+  els.loadState.innerHTML = state.error
+    ? emptyState(t("errorTitle"), state.error, `<button type="button" class="button" data-retry>${esc(t("retry"))}</button>`)
+    : `<p class="muted">${esc(t("loadingData"))}</p><div class="skeleton skeleton-block"></div>`;
 }
 
 function render() {
   renderShell();
-  if (state.error) {
-    setPage(t("errorTitle"));
-    els.content.innerHTML = `<section class="card">${emptyState(t("errorTitle"), state.error, `<button type="button" class="button" data-retry>${esc(t("retry"))}</button>`)}</section>`;
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.data) && !state.error;
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && presentation === "split");
+  body.toggle("ws-searching", onRecordView && isNarrowed());
+  body.toggle("view-fixes", onRecordView && view === "fixes");
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) {
+    renderLoadState();
     return;
   }
-  if (!state.data) {
-    setPage(t("loading"));
-    els.content.innerHTML = `<section class="card"><p class="muted">${esc(t("loadingData"))}</p><div class="skeleton skeleton-block"></div></section>`;
-    return;
-  }
-  const view = state.route.view;
-  if (view === "questions") renderQuestions();
-  else if (view === "answers") renderAnswers();
-  else if (view === "competitors") renderCompetitors();
-  else if (view === "fixes") renderFixes();
+  if (onRecordView) renderRecordView();
   else if (view === "settings") renderSettings();
   else renderOverview();
 }
@@ -683,7 +1086,7 @@ function render() {
 
 async function decide(fixId, action) {
   if (state.busyFix) return;
-  const fix = rows("fixes").find((row) => row.id === fixId);
+  const fix = recordById("fixes", fixId);
   if (!fix) return;
   const note = String(state.drafts[fixId] || "").trim();
   if ((action === "request-changes" || action === "block") && !note) {
@@ -692,6 +1095,11 @@ async function decide(fixId, action) {
     document.querySelector(`[data-note="${CSS.escape(fixId)}"]`)?.focus();
     return;
   }
+  // The queue is worked top to bottom: remember the neighbours so the split
+  // can move on once this fix leaves the current filter.
+  const queue = filteredFixes();
+  const index = queue.findIndex((item) => item.id === fixId);
+  const neighbours = index === -1 ? [] : [queue[index + 1], queue[index - 1]].filter(Boolean);
   state.noteErrors[fixId] = "";
   state.busyFix = fixId;
   state.notice = null;
@@ -704,10 +1112,18 @@ async function decide(fixId, action) {
       result.outcome === "demo"
         ? { text: t("decisionDemo"), tone: "positive" }
         : result.outcome === "pending"
-          ? { text: t("decisionPending", { id: result.changeRequestId || "—" }), tone: "positive" }
+          ? { text: t("decisionPending"), tone: "positive" }
           : { text: t("decisionSaved", { title: fix.title }), tone: "positive" };
     state.busyFix = "";
     await loadState();
+    const { view, presentation, selectedId } = state.route;
+    if (view === "fixes" && presentation === "split" && selectedId === fixId) {
+      const remaining = new Set(filteredFixes().map((item) => item.id));
+      if (!remaining.has(fixId)) {
+        const next = neighbours.find((item) => remaining.has(item.id));
+        replaceRoute(next ? recordUrl(next.id) : listUrl());
+      }
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     state.notice = { text: t("decisionFailed", { error: message === "NOTE_REQUIRED" ? t("noteRequired") : message }), tone: "danger" };
@@ -718,16 +1134,24 @@ async function decide(fixId, action) {
 
 // ── events ──────────────────────────────────────────────────────────────────
 
-let queryTimer;
+function showFatal(error) {
+  state.error = error instanceof Error ? error.message : String(error);
+  render();
+}
+
 function bindEvents() {
   window.addEventListener("hashchange", setRoute);
-  window.addEventListener("resize", syncResponsiveShell);
+  window.addEventListener("resize", () => {
+    syncResponsiveShell();
+    if (RECORD_VIEWS.includes(state.route.view) && state.data) renderDetail();
+  });
   const refresh = () => {
     state.notice = null;
     loadState().catch(showFatal);
   };
   els.refresh.addEventListener("click", refresh);
   els.mobileRefresh.addEventListener("click", refresh);
+  els.viewRefresh.addEventListener("click", refresh);
   els.sidebarToggle.addEventListener("click", toggleSidebar);
   els.mobileSidebarToggle.addEventListener("click", toggleSidebar);
   els.sidebarScrim.addEventListener("click", () => setMobileSidebarOpen(false));
@@ -736,47 +1160,68 @@ function bindEvents() {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, state.lang);
     const url = new URL(window.location.href);
     url.searchParams.set("lang", state.lang);
-    history.replaceState(null, "", `${url.pathname}${url.search}${location.hash}`);
+    history.replaceState(history.state, "", `${url.pathname}${url.search}${location.hash}`);
     render();
   });
-  els.content.addEventListener("click", (event) => {
+  els.loadState.addEventListener("click", (event) => {
+    if (!event.target.closest("[data-retry]")) return;
+    state.error = "";
+    render();
+    boot();
+  });
+
+  // Toolbar: search and filters replace the entry (keeping any peek).
+  const withRoute = (patch) =>
+    replaceRoute(`#/${state.route.view}${routeQuery({ ...state.route, ...patch }, { peek: state.route.peek })}`);
+  els.search.addEventListener("input", () => withRoute({ query: els.search.value }));
+  els.fixFilters.addEventListener("click", (event) => {
+    const segment = event.target.closest("[data-status]");
+    if (segment) withRoute({ status: segment.dataset.status });
+  });
+  els.fixStatus.addEventListener("change", () => withRoute({ status: els.fixStatus.value }));
+  els.answerAgent.addEventListener("change", () => withRoute({ agent: els.answerAgent.value }));
+  els.answerQuestion.addEventListener("change", () => withRoute({ question: els.answerQuestion.value }));
+
+  els.listPanel.addEventListener("click", (event) => {
     const more = event.target.closest("[data-load-more]");
     if (more) return void loadMore(more.dataset.loadMore);
-    const decision = event.target.closest("[data-decide]");
-    if (decision) return void decide(decision.dataset.fixId, decision.dataset.decide);
-    if (event.target.closest("[data-retry]")) {
-      state.error = "";
-      render();
-      boot();
+    if (event.target.closest("a, button")) return;
+    const row = event.target.closest("tr[data-id]");
+    if (!row) return;
+    const url = recordUrl(row.dataset.id);
+    // Switching records while a drawer/split is open replaces the entry, so
+    // Close still steps back to the list it was opened from.
+    if (state.route.peek) {
+      history.replaceState(history.state, "", url);
+      setRoute();
+    } else {
+      location.hash = url;
     }
   });
-  els.content.addEventListener("input", (event) => {
+  els.detailBack.addEventListener("click", closeDetail);
+  els.detailBody.addEventListener("click", (event) => {
+    const decision = event.target.closest("[data-decide]");
+    if (decision) decide(decision.dataset.fixId, decision.dataset.decide);
+  });
+  els.detailBody.addEventListener("input", (event) => {
     const note = event.target.closest("[data-note]");
-    if (note) {
-      state.drafts[note.dataset.note] = note.value;
+    if (note) state.drafts[note.dataset.note] = note.value;
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    // Escape inside a field only leaves the field; a second Escape closes.
+    if (event.target.closest?.("textarea, input, select")) {
+      event.target.blur();
       return;
     }
-    if (event.target.id === "answerQuery") {
-      state.answerFilter.query = event.target.value;
-      clearTimeout(queryTimer);
-      queryTimer = setTimeout(refreshAnswerList, 150);
-    }
+    const { selectedId, presentation } = state.route;
+    if (selectedId && (presentation === "drawer" || presentation === "split")) closeDetail();
   });
-  els.content.addEventListener("change", (event) => {
-    if (event.target.id === "answerAgent") state.answerFilter.agent = event.target.value;
-    else if (event.target.id === "answerQuestion") state.answerFilter.question = event.target.value;
-    else return;
-    refreshAnswerList();
-  });
-}
-
-function showFatal(error) {
-  state.error = error instanceof Error ? error.message : String(error);
-  render();
 }
 
 syncResponsiveShell();
 bindEvents();
+els.search.value = state.route.query;
 render();
 
 async function boot() {

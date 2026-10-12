@@ -90,6 +90,21 @@ async function countRecords(key, filters) {
   }
 }
 
+// Exact sidebar counts for the two attention numbers that are plain
+// equality matches on a stored field. A denied or failed count is null, and
+// the shell falls back to the loaded page (never a fabricated zero).
+function countWhere(key, fieldSlug, value) {
+  return countRecords(key, [{ fieldSlug, fieldType: "text", operator: "equals", value }]);
+}
+
+// Business-id field per paginated/peekable Base, for records.get.
+const ID_FIELD_SLUG = {
+  services: "service-id",
+  expiries: "expiry-id",
+  actions: "action-id",
+  "spend-providers": "provider-id",
+};
+
 function normalizePageRows(key, rows) {
   const snapshotKey = key.replaceAll("-", "_");
   currentPageContext = { ...currentPageContext, [snapshotKey]: rows };
@@ -155,15 +170,18 @@ export const busabaseProvider = {
     for (const key of Object.keys(initialPageCursors)) delete initialPageCursors[key];
     for (const key of Object.keys(initialTotalCounts)) delete initialTotalCounts[key];
     await ensureResources();
-    const [services, expiries, spend_providers, spend_products, actions, events, settings] = await Promise.all([
-      readFirstPage("services"),
-      readFirstPage("expiries"),
-      readFirstPage("spend-providers"),
-      readFirstPage("spend-products"),
-      readFirstPage("actions"),
-      readFirstPage("events"),
-      readSettingsRow(),
-    ]);
+    const [services, expiries, spend_providers, spend_products, actions, events, settings, reviewTotal, downTotal] =
+      await Promise.all([
+        readFirstPage("services"),
+        readFirstPage("expiries"),
+        readFirstPage("spend-providers"),
+        readFirstPage("spend-products"),
+        readFirstPage("actions"),
+        readFirstPage("events"),
+        readSettingsRow(),
+        countWhere("actions", "status", "needs_review"),
+        countWhere("services", "status", "down"),
+      ]);
     currentPageContext = { services, expiries, spend_providers, spend_products, actions, events, settings };
     const snapshot = buildSnapshot(currentPageContext);
     const config_summary = buildConfigSummary({ services, expiries: snapshot.expiries, settings });
@@ -175,7 +193,31 @@ export const busabaseProvider = {
       lock: null,
       config_summary,
       snapshot,
+      counts: { needs_review: reviewTotal, services_down: downTotal },
     });
+  },
+
+  // One record named by a URL (a shared link, a refresh on page 2) that is not
+  // on the loaded page: a single records.get by its business id, never a scan.
+  // Cert expiry rows are derived from Services, so they have no record of
+  // their own to fetch.
+  async getRecord(view, businessId) {
+    const key = view === "spend" ? "spend-providers" : view;
+    if (!allowedReads.has("records.get") || !ID_FIELD_SLUG[key]) return null;
+    if (key === "expiries" && businessId.startsWith("cert-")) return null;
+    await ensureResources();
+    const record = await findRecord(key, ID_FIELD_SLUG[key], businessId);
+    if (!record) return null;
+    const row = {
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    };
+    const snapshotKey = key.replaceAll("-", "_");
+    const snapshot = buildSnapshot({ ...currentPageContext, [snapshotKey]: [row] });
+    if (key === "spend-providers") return snapshot.spend.providers[0] || null;
+    if (key === "expiries") return snapshot.expiries.find((item) => item.expiry_id === businessId) || null;
+    return snapshot[snapshotKey]?.[0] || null;
   },
 
   // Human verdict on an action card, written directly onto the action

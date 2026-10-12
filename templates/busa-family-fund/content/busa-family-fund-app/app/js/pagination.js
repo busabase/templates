@@ -33,29 +33,25 @@ export function createPagination({ getProvider, pageSizes, applyPage, render, la
     return `${fallback}${state.cursors[key]?.[1] ? "+" : ""}`;
   }
 
+  // Replaces the displayed page with a NEIGHBOURING one: exactly one request
+  // per click, using a cursor already learned. records.list only exposes a
+  // forward keyset cursor, so a "jump to page N" would have to read every page
+  // in between — a full scan in disguise — and is deliberately not offered.
   async function goToPage(key, targetPage) {
     if (state.loading[key] || !state.cursors[key]) return;
-    const totalPages = pageCount(key);
-    const page = totalPages == null ? Math.max(1, targetPage) : Math.min(Math.max(1, targetPage), totalPages);
-    if (page === state.current[key]) return;
+    const current = state.current[key] || 1;
+    if (targetPage < 1 || Math.abs(targetPage - current) !== 1) return;
+    const cursor = state.cursors[key][targetPage - 1];
+    if (targetPage > 1 && !cursor) return;
     state.loading[key] = true;
     state.error = "";
     render();
     try {
       const provider = await getProvider();
-      let result;
-      for (let next = state.cursors[key].length; next <= page; next += 1) {
-        const cursor = state.cursors[key][next - 1];
-        if (next > 1 && !cursor) return;
-        result = await provider.fetchPage(key, cursor);
-        state.cursors[key][next] = result.nextCursor;
-      }
-      if (!result || state.cursors[key].length > page + 1) {
-        result = await provider.fetchPage(key, state.cursors[key][page - 1]);
-        state.cursors[key][page] = result.nextCursor;
-      }
+      const result = await provider.fetchPage(key, cursor);
+      state.cursors[key][targetPage] = result.nextCursor;
       applyPage(key, result.rows);
-      state.current[key] = page;
+      state.current[key] = targetPage;
     } catch (error) {
       state.error = error instanceof Error ? error.message : String(error);
       onError?.(error);
@@ -65,35 +61,27 @@ export function createPagination({ getProvider, pageSizes, applyPage, render, la
     }
   }
 
+  // True while a Base holds only part of its rows (more pages, or a later page).
+  function isPartial(key) {
+    const cursors = state.cursors[key];
+    if (!cursors) return false;
+    const current = state.current[key] || 1;
+    return current > 1 || Boolean(cursors[current]);
+  }
+
   function control(key) {
     if (!state.cursors[key]) return "";
     const total = pageCount(key);
     const current = state.current[key] || 1;
     const loading = Boolean(state.loading[key]);
-    const hasNext = total == null ? Boolean(state.cursors[key][current]) : current < total;
-    if ((total === 1 || total == null) && current === 1 && !hasNext) return "";
-    const pages =
-      total == null
-        ? []
-        : total <= 7
-          ? Array.from({ length: total }, (_, index) => index + 1)
-          : [
-              ...new Set([1, total, current - 1, current, current + 1].filter((page) => page >= 1 && page <= total)),
-            ].sort((a, b) => a - b);
-    const items = [];
-    let previous = 0;
-    for (const page of pages) {
-      if (previous && page - previous > 1) items.push('<span class="pager-ellipsis">…</span>');
-      items.push(
-        `<button type="button" class="pager-page ${page === current ? "active" : ""}" data-goto-page="${key}:${page}" ${loading || page === current ? "disabled" : ""}>${page}</button>`,
-      );
-      previous = page;
-    }
+    const hasNext = Boolean(state.cursors[key][current]);
+    if (current === 1 && !hasNext) return "";
+    const summary =
+      total == null ? String(current) : text("pageOf").replace("{current}", current).replace("{total}", total);
     return `<nav class="pager" aria-label="${text("pagination")}">
-      <button type="button" class="pager-nav" data-goto-page="${key}:${current - 1}" ${loading || current <= 1 ? "disabled" : ""}>${text("prevPage")}</button>
-      ${items.join("")}
-      <button type="button" class="pager-nav" data-goto-page="${key}:${current + 1}" ${loading || !hasNext ? "disabled" : ""}>${text("nextPage")}</button>
-      ${total == null ? "" : `<span class="pager-summary">${text("pageOf").replace("{current}", current).replace("{total}", total)}</span>`}
+      <button type="button" class="button" data-goto-page="${key}:${current - 1}" ${loading || current <= 1 ? "disabled" : ""}>${text("prevPage")}</button>
+      <span class="pager-summary">${summary}</span>
+      <button type="button" class="button" data-goto-page="${key}:${current + 1}" ${loading || !hasNext ? "disabled" : ""}>${text("nextPage")}</button>
       ${state.error ? `<span class="pager-error" role="alert">${state.error.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char])}</span>` : ""}
     </nav>`;
   }
@@ -107,5 +95,5 @@ export function createPagination({ getProvider, pageSizes, applyPage, render, la
     });
   }
 
-  return { reset, goToPage, control, bind, total };
+  return { reset, goToPage, control, bind, total, isPartial };
 }

@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark">
+  <link rel="stylesheet" href="./base-ui.css">
   <title>Administration Desk</title><link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./office.css"><link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
 </head>
-<body>
+<body class="ws-has-mobile-bar">
 <div class="app-shell">
   <aside class="sidebar" id="sidebar">
     <div class="brand-row"><div class="brand-mark" aria-hidden="true">O</div><div class="brand-copy"><strong id="brandName"></strong><span id="brandDescription"></span></div><button class="icon-button panel-button" id="sidebarClose" type="button" title="Close"><i data-lucide="panel-left-close"></i></button></div>
@@ -14,15 +15,27 @@
   </aside>
   <main class="main">
     <header class="mobile-bar"><button class="icon-button" id="sidebarOpen" type="button" title="Open navigation"><i data-lucide="menu"></i></button><strong id="mobileTitle"></strong><button class="icon-button" id="refreshMobile" type="button" title="Refresh"><i data-lucide="refresh-cw"></i></button></header>
-    <section class="workspace-header"><div><span class="eyebrow" id="viewEyebrow"></span><h1 id="viewTitle"></h1><p id="viewSummary"></p></div><button class="icon-button" id="refresh" type="button" title="Refresh"><i data-lucide="refresh-cw"></i></button></section>
-    <section class="metrics" id="metrics" aria-label="Review metrics"></section>
-    <section class="content-split">
-      <section class="list-panel"><div class="panel-heading"><div><span class="eyebrow" id="listEyebrow"></span><h2 id="listTitle"></h2></div><span class="count" id="recordCount"></span></div>
-        <div class="toolbar"><label class="search-label"><span class="sr-only" id="searchLabel"></span><input id="searchInput" class="search-field" type="search" autocomplete="off"></label><select id="statusFilter" aria-label="Status"></select><select id="periodFilter" aria-label="Payroll month" hidden></select></div>
-        <div class="state-message" id="loadingState" role="status"></div><div class="state-message error" id="errorState" role="alert" hidden></div><div class="state-message" id="partialState" role="status" hidden></div><div class="state-message" id="staleState" role="status" hidden></div><button class="button retry" id="retry" type="button" hidden></button>
-        <div class="record-list" id="recordList"></div><button class="load-more" id="loadMore" type="button" hidden></button>
-      </section>
-      <aside class="detail-panel"><button class="back-button" id="backButton" type="button"></button><div class="detail-empty" id="detailEmpty"></div><article id="detailContent" hidden><span class="eyebrow" id="detailEyebrow"></span><h2 id="detailTitle"></h2><div id="detailBadge"></div><div class="detail-fields" id="detailFields"></div><section class="evidence-note"><h3 id="evidenceTitle"></h3><p id="detailNotes"></p></section></article></aside>
+    <div class="state-stack"><div class="state-message" id="loadingState" role="status"></div><div class="state-message error" id="errorState" role="alert" hidden></div><div class="state-message" id="partialState" role="status" hidden></div><div class="state-message" id="staleState" role="status" hidden></div><button class="button retry" id="retry" type="button" hidden></button></div>
+    <!-- Overview is the only page with a hero and the metrics band. -->
+    <section class="ws-overview" id="overviewPage" hidden>
+      <header class="page-hero"><div><h1 id="overviewTitle"></h1><p id="overviewSummary"></p></div><div class="page-actions"><button class="button" id="refresh" type="button"><i data-lucide="refresh-cw"></i><span id="refreshLabel"></span></button></div></header>
+      <section class="ws-metrics" id="metrics" aria-label="Review metrics"></section>
+      <div class="overview-grid" id="overviewBody"></div>
+    </section>
+    <!-- Record views: one toolbar row over a full-bleed table. -->
+    <section class="ws-view" id="viewPage" hidden>
+      <header class="ws-toolbar">
+        <div class="ws-title"><h1 id="viewTitle"></h1><span class="ws-count" id="recordCount"></span></div>
+        <div class="ws-actions"><select id="statusFilter" class="toolbar-select" aria-label="Status"></select><label class="search-label"><span class="sr-only" id="searchLabel"></span><input id="searchInput" class="search-field" type="search" autocomplete="off"></label><button class="icon-button" id="refreshView" type="button" title="Refresh"><i data-lucide="refresh-cw"></i></button></div>
+      </header>
+      <div class="ws-workspace" id="workspace">
+        <div class="ws-list" id="listPanel"><div id="recordList"></div><button class="load-more" id="loadMore" type="button" hidden></button></div>
+        <aside class="ws-detail" id="detailPanel" aria-live="polite">
+          <div class="ws-detail-bar" id="detailBar"><button class="button" id="backButton" type="button"></button><a class="button" id="openFull" hidden></a></div>
+          <div class="ws-detail-empty" id="detailEmpty" hidden></div>
+          <article class="record-detail" id="detailContent" hidden><span class="eyebrow" id="detailEyebrow" hidden></span><h2 id="detailTitle"></h2><div id="detailBadge"></div><div class="detail-fields" id="detailFields"></div><section class="evidence-note"><h3 id="evidenceTitle"></h3><p id="detailNotes"></p></section></article>
+        </aside>
+      </div>
     </section>
   </main>
 </div>

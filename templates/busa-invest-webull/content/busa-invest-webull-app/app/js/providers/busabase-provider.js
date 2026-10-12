@@ -97,6 +97,7 @@ function parsePayload(value) {
 
 function normalizePositionRow(row = {}) {
   return {
+    position_id: row.position_id || "",
     symbol: row.symbol || "",
     name: row.name || "",
     asset_type: row.asset_type || "OTHER",
@@ -192,6 +193,30 @@ export const busabaseProvider = {
     const page = await readPage(key, cursor);
     const normalize = { accounts: normalizeAccountRow, positions: normalizePositionRow }[key];
     return { ...page, rows: normalize ? page.rows.map(normalize) : page.rows };
+  },
+
+  // A record named by the URL but not on the loaded page is read on its own
+  // (records.get by its business key) instead of paging forward to find it.
+  // Positions are addressed by position-id, falling back to the symbol for
+  // links written before position ids were routed.
+  async getRecord(key, id) {
+    if (!allowedReads.has("records.get") || !id) return null;
+    await ensureResources();
+    const lookups = { accounts: ["account-id"], positions: ["position-id", "symbol"] }[key] || [];
+    const normalize = { accounts: normalizeAccountRow, positions: normalizePositionRow }[key];
+    for (const fieldSlug of lookups) {
+      let record = null;
+      try {
+        record = await runtimeClient.records.get({ baseId: base(key).baseId, fieldSlug, valueText: String(id) });
+      } catch (error) {
+        if (error?.status === 404 || error?.code === "NOT_FOUND") continue;
+        throw error;
+      }
+      if (!record) continue;
+      const row = normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields);
+      return normalize ? normalize(row) : row;
+    }
+    return null;
   },
 
   async provisionResources() {

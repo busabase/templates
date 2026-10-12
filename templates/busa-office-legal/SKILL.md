@@ -111,7 +111,7 @@ Recoveries and costs are positive nonnegative amounts labeled by kind (recovery 
 
 ### Views, attention and limits
 
-Overview and attention derive only from loaded rows and display that scope. Attention includes missing feedback, unverified evidence, blocked approvals and overdue unfinished work. Closed/complete/accepted records never become overdue merely because an old date is present. The legal chronological timeline sorts strict valid dates first; missing or invalid dates are explicitly unknown. Search and status filters apply only to the loaded rows. Load more requests exactly one next page and deduplicates results. Live failure never falls back to sample data.
+The overview's three numbers (active cases, deadlines awaiting verification, recoveries and costs without verified evidence) are exact server-side counts; when a count cannot be read they show "—". Attention and the per-ledger attention figures derive only from loaded rows and display that scope. Attention includes missing feedback, unverified evidence, blocked approvals and overdue unfinished work. Closed/complete/accepted records never become overdue merely because an old date is present. The legal chronological timeline sorts strict valid dates first; missing or invalid dates are explicitly unknown. Search and status filters apply only to the loaded rows. Load more requests exactly one next page and deduplicates results. Live failure never falls back to sample data.
 
 ### Example data and language
 
@@ -213,7 +213,7 @@ All installed seed rows and screenshots are fictional. Replace them via reviewed
 
 ### 视图、关注事项与限制
 
-总览及关注事项只从已加载记录计算，并显示该范围。关注事项包括缺少反馈、未核验的证据、受阻的审批以及已逾期且未完成的工作。已关闭、已完成或已接受的记录，不得仅因旧日期而被视为逾期。案件时间线优先按严格有效的日期排序，缺失或无效日期明确标为未知。搜索与状态筛选只针对已加载记录；加载更多每次准确请求下一页，并对结果去重。实时读取失败时绝不回退到示例数据。
+总览的三个数字（在办案件、待核验期限、凭证未核验的回款与成本）是服务器端的精确计数，读取失败时显示“—”。关注事项及各台账的关注数只从已加载记录计算，并显示该范围。关注事项包括缺少反馈、未核验的证据、受阻的审批以及已逾期且未完成的工作。已关闭、已完成或已接受的记录，不得仅因旧日期而被视为逾期。案件时间线优先按严格有效的日期排序，缺失或无效日期明确标为未知。搜索与状态筛选只针对已加载记录；加载更多每次准确请求下一页，并对结果去重。实时读取失败时绝不回退到示例数据。
 
 ### 示例数据与语言
 

@@ -7,7 +7,8 @@
 // snapshot format.
 import { demoSnapshot } from "../finance-model.js?v=0.1.0";
 
-function activeLang() {
+function activeLang(requested) {
+  if (requested) return String(requested).toLowerCase();
   const params = new URLSearchParams(window.location.search);
   const lang = String(params.get("lang") || "").toLowerCase();
   if (lang) return lang;
@@ -17,8 +18,10 @@ function activeLang() {
 export const demoProvider = {
   kind: "demo",
 
-  async getState() {
-    const lang = activeLang();
+  // `lang` is the app's resolved language, so the sidebar language switch
+  // re-renders the demo copy too (it used to follow only `?lang=`).
+  async getState({ lang: requested } = {}) {
+    const lang = activeLang(requested);
     const snapshot = demoSnapshot(lang);
     return {
       app: "busa-finance",

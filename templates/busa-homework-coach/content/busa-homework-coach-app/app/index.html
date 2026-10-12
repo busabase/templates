@@ -8,10 +8,68 @@
     <link rel="stylesheet" href="./base-ui.css">
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
-    <link rel="stylesheet" href="./accent-theme.css" />
+    <link rel="stylesheet" href="./accent-theme.css">
   </head>
-  <body>
-    <div id="app" class="app-shell"></div>
+  <body class="ws-has-mobile-bar">
+    <div id="app" class="app-shell">
+      <aside class="sidebar" id="appSidebar">
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true">HC</div>
+          <div class="brand-copy">
+            <div class="brand-title" data-i18n="appTitle">Homework Coach</div>
+            <div class="brand-subtitle" data-i18n="appSubtitle">Student desk + review queue</div>
+          </div>
+          <button class="sidebar-toggle" data-toggle-sidebar type="button" aria-label="Toggle sidebar"><span class="panel-icon"></span></button>
+        </div>
+        <section class="human-work">
+          <strong data-i18n="humanWork">Needs a kind decision</strong>
+          <div id="attention" class="attention-grid"></div>
+        </section>
+        <nav id="nav" class="nav" aria-label="Main"></nav>
+        <div class="sidebar-footer">
+          <button class="nav-link" data-route="settings" type="button"><span data-i18n="settings">Settings</span></button>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="mobile-topbar">
+          <button class="mobile-sidebar-toggle" data-open-sidebar type="button" aria-label="Open sidebar"><span class="panel-icon"></span></button>
+          <div id="mobileTitle" class="mobile-title">Homework Coach</div>
+          <button class="icon-button" data-route="settings" type="button" aria-label="Settings">...</button>
+        </div>
+        <div id="loadState" class="load-state" role="status">Loading…</div>
+        <!-- Overview (#/student) is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden></section>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <div id="viewFilters" class="segmented" hidden></div>
+              <select id="statusSelect" class="status-select" aria-label="Status" hidden></select>
+              <input id="search" class="search" type="search" autocomplete="off" placeholder="Search" />
+            </div>
+          </header>
+          <div id="workspace" class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar">
+                <div class="detail-bar-start">
+                  <button id="detailBack" class="button" type="button">Back to list</button>
+                  <a id="detailExpand" class="button" hidden>Open full page</a>
+                </div>
+                <div id="detailActions" class="detail-actions"></div>
+              </div>
+              <div id="detailNotice"></div>
+              <div id="detailBody"></div>
+            </aside>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div id="modalRoot"></div>
     <div id="sidebarScrim" class="sidebar-scrim" hidden></div>
     <script type="module" src="./app.js"></script>
     <script type="module" src="./accent-theme.js"></script>

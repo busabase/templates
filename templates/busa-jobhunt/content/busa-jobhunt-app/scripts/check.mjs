@@ -109,16 +109,29 @@ if (
 ) {
   throw new Error("Lazy Busabase resource provisioning is incomplete");
 }
-// Transport pagination belongs to the provider. A per-Base readLimit is how a
-// desk ends up silently showing only the first page.
+// Transport pagination belongs to the provider, never to a per-Base readLimit.
+// One page per Base per user action: no cursor loop, no fan-out over pages,
+// and totals from records.count instead of draining the Base.
 if (/readLimit/.test(configSource) || /readLimit/.test(JSON.stringify(manifest))) {
   throw new Error("Busabase transport pagination must not be configured per Base");
 }
-if (!providerSource.includes("BUSABASE_RECORD_PAGE_SIZE") || !providerSource.includes("readAllPages")) {
-  throw new Error("Provider must own the page size and follow nextCursor to exhaustion");
+if (!providerSource.includes("BUSABASE_RECORD_PAGE_SIZE")) {
+  throw new Error("Provider must own the page size");
 }
-if (!providerSource.includes("PAGINATION_LOOP")) {
-  throw new Error("Pagination must guard against a repeating cursor");
+if (/readAllPages|while\s*\(|do\s*\{|for\s*\(;;\)/.test(providerSource)) {
+  throw new Error("Provider must read one page per user action, never loop through cursors");
+}
+if (!providerSource.includes("client.records.count") || !appConfig.permissions.readProcedures.includes("records.count")) {
+  throw new Error("Totals must come from records.count, declared in readProcedures");
+}
+if (!/data-load-more/.test(appSource)) {
+  throw new Error("Further pages must be a visible Load more action");
+}
+// Every record view declares where its record opens.
+for (const view of ["to-send", "sent", "all"]) {
+  if (!["page", "drawer", "split"].includes(appConfig.ui?.detail_modes?.[view])) {
+    throw new Error(`ui.detail_modes.${view} must be page, drawer or split`);
+  }
 }
 if (/创建并审批|写入部署配置/.test(appSource)) {
   throw new Error("Setup UI must not delegate resource creation to the user");

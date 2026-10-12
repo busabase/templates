@@ -13,6 +13,8 @@ export const appConfig = {
     slug: "busa-audit",
   },
   airApp: { name: "Busa Audit", slug: "busa-audit-app", resourceKey: "busa-audit-app" },
+  // Where a record opens, per record view — see app.js for why each one.
+  ui: { detail_modes: { orders: "page", invoices: "drawer", anomalies: "split" } },
   bases: [
     {
       key: "orders",
@@ -141,7 +143,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

@@ -151,16 +151,18 @@ requested.
 
 Required app views (hash routes):
 
-- `#/overview`: messaging command desk. Human-attention numbers (conversations needing a reply decision, approved replies waiting for send, blocked), oldest-waiting indicator, per-platform account cards (unread, conversations, last sync, connector method), and recent activity.
-- `#/inbox` and `#/inbox/<conversation_id>`: the unified inbox. Left: conversations across all platforms sorted by latest activity with platform badge, title, preview, unread dot, and waiting time. Right: chat transcript (incoming left, the operator's outgoing right, sender names, timestamps, channel/workspace metadata) plus a reply composer with an agent-`suggested_reply` prefill when present, a note field, and a `Queue reply` button. Queued replies appear as dashed "queued" bubbles.
-- `#/outbox`: review queue over outgoing replies with workflow states `needs_review` / `changes_requested` / `approved` / `done` / `blocked`, stable refs (`Reply #1`), editable draft text, reason/context, and decision buttons (approve / request changes / save edit / block) that write the verdict directly onto the reply record through `busabase-sdk`.
-- `#/accounts`: connected accounts with platform, workspace, connector method, env readiness boolean, last sync, conversation/unread counts, and warnings.
+Overview is the default route and the only page with a summary; every other view is one toolbar row (name, search, refresh) over a full-width list. The sidebar's attention block carries the needs-reply / ready-to-send / blocked counts.
+
+- `#/overview`: messaging command desk. Three numbers the sidebar does not show (unread conversations, oldest waiting, accounts needing attention), per-platform account rows (unread, conversations, last sync, connector method), and recent activity.
+- `#/inbox` (split view): one line per conversation across all platforms, sorted by latest activity — platform dot, title, latest message, unread dot, waiting time. `#/inbox?peek=<conversation_id>` opens it beside the queue; `#/inbox/<conversation_id>` opens it as a full page. The conversation shows the chat transcript (incoming left, the operator's outgoing right, sender names, timestamps, channel/workspace metadata) plus a reply composer with an agent-`suggested_reply` prefill when present, a note field, and a `Queue reply` button. Queued replies appear as dashed "queued" bubbles.
+- `#/outbox` (split view, `?status=<state>` filter, `?peek=<reply_id>` / `#/outbox/<reply_id>`): review queue over outgoing replies with workflow states `needs_review` / `changes_requested` / `approved` / `done` / `blocked`, stable refs (`Reply #1`), editable draft text, reason/context, and decision buttons (approve / request changes / save edit / block) that write the verdict directly onto the reply record through `busabase-sdk`.
+- `#/accounts` (drawer, `?peek=<account_id>` / `#/accounts/<account_id>`): connected accounts with platform, workspace, connector method, env readiness boolean, last sync, conversation/unread counts; the drawer adds warnings, the account's conversations and its recent sync runs.
 - `#/settings`: sanitized config summary (reply style, sync cadence, accounts with env readiness booleans), sync log, and last execution report. Never secrets.
 
 Demo mode:
 
 - `?demo=overview`, `?demo=inbox`, `?demo=chat` (opens the featured conversation `wa-lena-pricing` with an agent-suggested reply prefilled), `?demo=outbox`, and `?demo=accounts` select named deterministic mock scenes.
-- `lang=en` or `lang=zh` forces UI chrome language for screenshots. Deep links such as `/?demo=chat&lang=en#/inbox/wa-lena-pricing` work.
+- `lang=en` or `lang=zh` forces UI chrome language for screenshots. Deep links such as `/?demo=chat&lang=en#/inbox?peek=wa-lena-pricing` work. Escape closes an open drawer/split record; on a phone every record opens as a full page.
 - Demo mode never reads or writes Busabase. Composer and outbox buttons still work but act on in-memory state only and show a demo notice.
 
 UI language: English and Chinese chrome with `Auto` default following the browser language; explicit selector persisted locally. Keep message content, sender names, and chat titles in their original language.

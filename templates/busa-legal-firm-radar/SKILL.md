@@ -99,10 +99,10 @@ Default behavior is AirApp-first — give the user the clickable AirApp URL. Sta
 Required app views (hash routes):
 
 - `#/overview`: firm analytics desk with practice mix, outcome trends, talent signals, and review queue.
-- `#/review`: approval queue for management insights, brand proof points, and staffing recommendations.
+- `#/review`: approval queue for management insights, brand proof points, and staffing recommendations. The insight views (`#/items`, `#/review`, `#/approved`, `#/done`, `#/blocked`) keep the queue beside the selected insight (`?peek=<item-id>`); `#/<view>/<item-id>` opens it as a full page.
 - `#/items`: insight workbench with methodology, evidence, suggested action, and visibility limits.
 - `#/checks`: analytics QA checks for sample size, privacy, attribution, and unsupported claims.
-- `#/entities`: lawyer and practice-area profile cards from anonymized metadata.
+- `#/entities`: lawyer and practice-area profiles from anonymized metadata; `?peek=<entity-id>` opens one in a side drawer.
 - `#/settings`: sanitized taxonomy, provider, and onboarding state.
 
 Demo mode:

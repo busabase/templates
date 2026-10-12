@@ -22,7 +22,7 @@ const isDemo = () => new URLSearchParams(window.location.search).has("demo");
 
 const gate = createAirAppConnectGate({
   appName: "Busa Lead Funnel",
-  demoHref: "?demo=1#/board",
+  demoHref: "?demo=1#/overview",
   shouldGate: () => !isDemo() && shouldUseLocalGateway(),
   onProvision: async () => (await getProvider()).provisionResources(),
 });

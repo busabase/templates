@@ -172,6 +172,32 @@ function withPagination(data) {
   };
 }
 
+// Sidebar attention numbers as exact server-side counts (records.count with
+// provably-exact text filters), so they do not shrink to whatever happens to
+// be on the first loaded page. Each value is null when the count is denied or
+// fails; the UI then falls back to the loaded rows and marks them partial.
+const eq = (fieldSlug, value) => ({ fieldSlug, operator: "equals", value });
+const present = (fieldSlug) => ({ fieldSlug, operator: "not_empty" });
+const absent = (fieldSlug) => ({ fieldSlug, operator: "is_empty" });
+const sum = (...values) => (values.some((value) => value == null) ? null : values.reduce((a, b) => a + b, 0));
+
+async function readAttentionCounts() {
+  const [approvals, atRisk, blocked, withNotice, renewalOnly, highRisk] = await Promise.all([
+    countRecords("approvals", [eq("status", "needs_review")]),
+    countRecords("obligations", [eq("status", "at_risk")]),
+    countRecords("obligations", [eq("status", "blocked")]),
+    countRecords("contracts", [present("notice-deadline")]),
+    countRecords("contracts", [present("renewal-date"), absent("notice-deadline")]),
+    countRecords("contracts", [eq("risk", "high")]),
+  ]);
+  return {
+    approvals,
+    risks: sum(atRisk, blocked),
+    renewals: sum(withNotice, renewalOnly),
+    high_risk: highRisk,
+  };
+}
+
 export const busabaseProvider = {
   kind: "busabase",
 
@@ -179,10 +205,11 @@ export const busabaseProvider = {
     for (const key of Object.keys(initialPageCursors)) delete initialPageCursors[key];
     for (const key of Object.keys(initialTotalCounts)) delete initialTotalCounts[key];
     await ensureResources();
-    const [contracts, obligations, approvals] = await Promise.all([
+    const [contracts, obligations, approvals, attention] = await Promise.all([
       readContracts(),
       readObligations(),
       readApprovals(),
+      readAttentionCounts(),
     ]);
     return withPagination({
       ...buildState(contracts, obligations, approvals, {
@@ -190,6 +217,7 @@ export const busabaseProvider = {
         demo: false,
         profile: { company: "", boundary: "Local handoff only" },
       }),
+      attention,
       data_provider: "busabase",
       onboarding: { completed: contracts.length > 0 || obligations.length > 0, config_version: "1" },
     });
@@ -282,6 +310,21 @@ export const busabaseProvider = {
     };
     await updateRecord(existing, approvalToFields(next), `Record decision for ${next.title || next.id}`);
     return next;
+  },
+
+  // A record named by the URL but not on the loaded page: read that one record
+  // (records.get by its business id) instead of paging until it turns up.
+  async getRecord(key, id) {
+    if (!id || !allowedReads.has("records.get")) return null;
+    await ensureResources();
+    const idField = { contracts: "contract-id", obligations: "obligation-id", approvals: "approval-id" }[key];
+    if (!idField) return null;
+    const existing = await findRecord(key, idField, id);
+    if (!existing) return null;
+    const [row] = normalizePageRows(key, [
+      normalizeFields(existing.headCommit?.payload || existing.headCommit?.fields || existing.fields),
+    ]);
+    return row || null;
   },
 
   async fetchPage(key, cursor) {

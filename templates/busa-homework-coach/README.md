@@ -43,6 +43,7 @@ Then open the printed URL with one of these demo paths:
 
 ```text
 /?demo=student&lang=en#/student
+/?demo=questions&lang=en#/questions
 /?demo=mistakes&lang=en#/mistakes
 /?demo=papers&lang=en#/papers
 /?demo=review&lang=en#/review

@@ -1,4 +1,5 @@
 import { messages } from "./i18n/messages.js";
+import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
 import {
   deriveActivityLog,
@@ -11,19 +12,33 @@ import {
   normalizeStyleRow,
 } from "./js/ppt-model.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
+import { renderOverview, renderRecordView, renderSettings, submitDecision } from "./js/ppt-views.js";
 
-const state = {
-  data: null,
-  route: { view: "overview", id: "" },
-  query: "",
-  lang: "en",
-  edits: {},
-  pagination: {},
-  totalCount: {},
-  workflowCount: {},
-  reviewTotal: null,
-  loadingMore: {},
-  loadMoreError: {},
+// Where a record opens, per view. Chosen by what people do with the record:
+//   projects → page:   a project is a workplace — it owns its decks and people
+//                      stay on it while planning a batch.
+//   decks    → page:   a deck owns its slide cards and QA evidence; reviewing
+//                      a deliverable takes minutes, not a glance.
+//   slides   → drawer: slide cards are scanned many at a time — read one,
+//                      check its copy, move to the next row.
+//   review   → split:  the review queue is worked top to bottom, one decision
+//                      after the next, so the queue stays beside the record.
+//   style    → drawer: a style kit is reference you glance at and return from.
+//   exports  → drawer: an export is a log entry — path, status, QA summary.
+// A `/<record>` path always opens the full page; `?peek=` drives drawer/split.
+// On a phone every mode is a page (base-ui.css handles that).
+// Declared once, in config.js `ui.detail_modes`.
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+
+// Route → the paginated Base(s) it lists, for Load more and partial counts.
+export const VIEW_BASES = {
+  projects: ["projects"],
+  decks: ["decks"],
+  slides: ["slide-cards"],
+  review: ["decks", "slide-cards"],
+  style: ["style-systems"],
+  exports: ["exports"],
 };
 
 const PAGE_TARGETS = {
@@ -31,36 +46,64 @@ const PAGE_TARGETS = {
   decks: { snapshotKey: "decks", idKey: "deck_id", normalize: normalizeDeckRow },
   "slide-cards": { snapshotKey: "slide_cards", idKey: "slide_id", normalize: normalizeSlideRow },
   "style-systems": { snapshotKey: "style_systems", idKey: "style_system_id", normalize: normalizeStyleRow },
-  "qa-checks": { snapshotKey: "qa_checks", idKey: "qa_check_id", normalize: normalizeQaRow },
+  "qa-checks": { snapshotKey: "qa_checks", idKey: "check_id", normalize: normalizeQaRow },
   exports: { snapshotKey: "exports", idKey: "export_id", normalize: normalizeExportRow },
 };
 
-const els = {
-  title: document.getElementById("pageTitle"),
-  subtitle: document.getElementById("pageSubtitle"),
-  list: document.getElementById("listPanel"),
-  detail: document.getElementById("detailPanel"),
-  search: document.getElementById("searchInput"),
-  attention: document.getElementById("attentionCount"),
-  approved: document.getElementById("approvedCount"),
-  ready: document.getElementById("readyCount"),
-  mobileTitle: document.getElementById("mobileViewTitle"),
-  mobileMeta: document.getElementById("mobileViewMeta"),
-  sidebar: document.getElementById("appSidebar"),
-  scrim: document.getElementById("sidebarScrim"),
-  settings: document.getElementById("settingsDialog"),
-  settingsContent: document.getElementById("settingsContent"),
-  langSelect: document.getElementById("languageSelect"),
+export const state = {
+  data: null,
+  route: parseRoute(),
+  lang: "en",
+  edits: {},
+  notice: "",
+  pagination: {},
+  totalCount: {},
+  workflowCount: {},
+  reviewTotal: null,
+  loadingMore: {},
+  loadMoreError: {},
+  // Records opened by URL that are not on the loaded page (records.get).
+  extra: emptyExtra(),
 };
 
+function emptyExtra() {
+  return Object.fromEntries(RECORD_VIEWS.map((view) => [view, new Map()]));
+}
+
+const byId = (id) => document.getElementById(id);
+export const els = {
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  search: byId("searchInput"),
+  attention: byId("attentionCount"),
+  approved: byId("approvedCount"),
+  ready: byId("readyCount"),
+  syncStatus: byId("syncStatus"),
+  mobileTitle: byId("mobileViewTitle"),
+  mobileMeta: byId("mobileViewMeta"),
+  sidebarToggle: byId("sidebarToggle"),
+  scrim: byId("sidebarScrim"),
+  langSelect: byId("languageSelect"),
+};
+
+// ── i18n ───────────────────────────────────────────────────────────────────
 function pickLang() {
   const params = new URLSearchParams(location.search);
   const forced = params.get("lang") || localStorage.getItem("busa-ppt-factory-language") || "auto";
-  if (forced === "zh" || (forced === "auto" && navigator.language.toLowerCase().startsWith("zh"))) return "zh";
+  if (forced.startsWith("zh") || (forced === "auto" && navigator.language.toLowerCase().startsWith("zh"))) return "zh";
   return "en";
 }
 
-function t(key) {
+export function t(key) {
   const parts = key.split(".");
   let value = messages[state.lang];
   for (const part of parts) value = value?.[part];
@@ -68,138 +111,185 @@ function t(key) {
   return value ?? key;
 }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function parseRoute() {
-  const raw = location.hash.replace(/^#\/?/, "") || "overview";
-  const [view = "overview", id = ""] = raw.split("/");
-  state.route = { view, id: decodeURIComponent(id || "") };
-}
-
-function snapshot() {
-  return state.data?.snapshot || {};
-}
-function projects() {
-  return snapshot().projects || [];
-}
-function decks() {
-  return snapshot().decks || [];
-}
-function slides() {
-  return snapshot().slide_cards || [];
-}
-function reviews() {
-  return snapshot().review_items || [];
-}
-function checks() {
-  return snapshot().qa_checks || [];
-}
-function exportsList() {
-  return snapshot().exports || [];
-}
-function styleSystems() {
-  return snapshot().style_systems || [];
-}
-
-function projectById(id) {
-  return projects().find((item) => item.project_id === id) || null;
-}
-function deckById(id) {
-  return decks().find((item) => item.deck_id === id) || null;
-}
-function slideById(id) {
-  return slides().find((item) => item.slide_id === id) || null;
-}
-function reviewByTarget(id) {
-  return reviews().find((item) => item.target_id === id) || null;
-}
-// Busabase writes the decision's resulting status directly onto the deck's
-// or slide card's own row (see js/providers/busabase-provider.js's
-// decideItem()), so the row's `status` is already the effective status —
-// there is no separate decisions overlay to reconcile against, unlike the
-// retired local-file shape's decisions.json + effectiveStatus() indirection.
-function statusLabel(status) {
-  return t(`status.${status}`);
-}
-function typeLabel(type) {
-  return t(`type.${type}`);
-}
-function statusBadge(status) {
-  return `<span class="status status-${escapeHtml(status)}">${escapeHtml(statusLabel(status))}</span>`;
-}
-function listCountMeta(count, label) {
-  els.mobileMeta.textContent = `${count} ${label}`;
-}
-function countDisplay(key, loaded) {
-  if (state.query) return `${loaded}${state.pagination[key] ? "+" : ""}`;
-  return state.totalCount[key] ?? `${loaded}${state.pagination[key] ? "+" : ""}`;
-}
-function loadMoreControl(...keys) {
-  return keys
-    .filter((key) => state.pagination[key])
-    .map(
-      (key) =>
-        `<div class="load-more"><button type="button" data-load-more="${escapeHtml(key)}" ${state.loadingMore[key] ? "disabled" : ""}>${state.loadingMore[key] ? t("loadingMore") : t("loadMore")}</button>${state.loadMoreError[key] ? `<span role="alert">${t("loadMoreFailed")}</span>` : ""}</div>`,
-    )
-    .join("");
-}
-function date(value) {
+// An option value (status, stage, slide type, …) as words. Unknown values are
+// humanized rather than printed as their raw `snake_case` id.
+export function label(group, value) {
   if (!value) return "";
-  return new Date(value).toLocaleString(state.lang === "zh" ? "zh-CN" : "en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  const key = String(value);
+  const known = messages[state.lang]?.[group]?.[key] ?? messages.en[group]?.[key];
+  return typeof known === "string" ? known : key.replace(/[-_]+/g, " ");
 }
-function includesQuery(values) {
-  const q = state.query.trim().toLowerCase();
-  if (!q) return true;
-  return values.some((value) =>
-    String(value || "")
-      .toLowerCase()
-      .includes(q),
+
+export function escapeHtml(value) {
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char],
   );
 }
 
-function applyI18n() {
-  document.querySelectorAll("[data-i18n]").forEach((node) => {
-    node.textContent = t(node.getAttribute("data-i18n"));
+export function date(value, withTime = true) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toLocaleString(state.lang === "zh" ? "zh-CN" : "en-US", {
+    dateStyle: "medium",
+    ...(withTime ? { timeStyle: "short" } : {}),
   });
-  els.search.placeholder = t("search");
-  els.langSelect.value = localStorage.getItem("busa-ppt-factory-language") || "auto";
 }
 
-function applyDemoRoute() {
-  if (location.hash) return;
-  const demo = new URLSearchParams(location.search).get("demo");
-  if (!demo) return;
-  const scenes = new Set(["overview", "projects", "decks", "slides", "review", "style", "exports", "settings"]);
-  const view = scenes.has(demo) ? demo : "overview";
-  history.replaceState(null, "", `${location.pathname}${location.search}#/${view}`);
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&peek=…]`. Search and the peeked record live in the
+// URL so refresh, shared links and Back restore the same list context.
+function parseRoute() {
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts.slice(1).join("/")) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+  };
 }
 
-async function loadState() {
-  state.lang = pickLang();
-  applyI18n();
+const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) => {
+  const route = view === state.route.view ? state.route : { view, query: "" };
+  return `#/${view}/${encodeURIComponent(id)}${routeQuery({}, route)}`;
+};
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) => {
+  if (DETAIL_MODES[view] === "page") return detailUrl(id, view);
+  const route = view === state.route.view ? state.route : { view, query: "" };
+  return `#/${view}${routeQuery({ peek: id }, route)}`;
+};
+
+let previousRouteWasList = false;
+let routeSerial = 0;
+
+function setRoute() {
+  const previous = state.route;
+  state.route = parseRoute();
+  // A detail opened from its own list steps back to that exact list entry.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  if (previous.selectedId !== state.route.selectedId || previous.view !== state.route.view) state.notice = "";
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
+  render();
+  ensureSelectedRecord();
+}
+
+// Replace the current entry without a hashchange: search keystrokes should not
+// each become a Back step.
+function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
+  render();
+}
+
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── Data ───────────────────────────────────────────────────────────────────
+export function snapshot() {
+  return state.data?.snapshot || {};
+}
+export const projects = () => snapshot().projects || [];
+export const decks = () => snapshot().decks || [];
+export const slides = () => snapshot().slide_cards || [];
+export const reviews = () => snapshot().review_items || [];
+export const checks = () => snapshot().qa_checks || [];
+export const exportsList = () => snapshot().exports || [];
+export const styleSystems = () => snapshot().style_systems || [];
+
+const VIEW_ROWS = {
+  projects: [projects, "project_id"],
+  decks: [decks, "deck_id"],
+  slides: [slides, "slide_id"],
+  review: [reviews, "review_id"],
+  style: [styleSystems, "style_system_id"],
+  exports: [exportsList, "export_id"],
+};
+
+// Loaded page first, then a record fetched on its own for the URL.
+export function recordById(view, id) {
+  if (!id || !VIEW_ROWS[view]) return null;
+  const [rows, key] = VIEW_ROWS[view];
+  return rows().find((item) => item[key] === id) || state.extra[view]?.get(id) || null;
+}
+export const projectById = (id) => recordById("projects", id);
+export const deckById = (id) => recordById("decks", id);
+export const slideById = (id) => recordById("slides", id);
+export const reviewTarget = (item) =>
+  item?.target_type === "slide" ? slideById(item.target_id) : deckById(item?.target_id);
+
+// True while a view holds only part of its rows (another page exists).
+export function isPartial(view) {
+  return (VIEW_BASES[view] || []).some((key) => Boolean(state.pagination[key]));
+}
+
+// The nav total for a view: a real count when the provider has one, else the
+// loaded rows marked `+` while more pages exist.
+export function viewTotal(view) {
+  const totals = {
+    projects: state.totalCount.projects,
+    decks: state.totalCount.decks,
+    slides: state.totalCount["slide-cards"],
+    review: state.reviewTotal,
+    style: state.totalCount["style-systems"],
+    exports: state.totalCount.exports,
+  };
+  if (totals[view] !== null && totals[view] !== undefined) return String(totals[view]);
+  const [rows] = VIEW_ROWS[view];
+  return `${rows().length}${isPartial(view) ? "+" : ""}`;
+}
+
+export async function loadState() {
   const provider = await getProvider();
   state.data = await provider.getState();
   state.pagination = state.data.pagination || {};
   state.totalCount = state.data.totalCount || {};
   state.workflowCount = state.data.workflowCount || {};
   state.reviewTotal = state.data.reviewTotal ?? null;
+  state.extra = emptyExtra();
   closeConnectGate();
   applyDemoRoute();
   window.dispatchEvent(new CustomEvent("busa-ppt-factory:state", { detail: state.data }));
-  updateAttention();
   render();
+  ensureSelectedRecord();
 }
 
-async function loadMore(key) {
+// Load more appends exactly one page of one Base, without duplicates.
+export async function loadMore(key) {
   const cursor = state.pagination[key];
   const target = PAGE_TARGETS[key];
   if (!cursor || !target || state.loadingMore[key]) return;
@@ -220,334 +310,211 @@ async function loadMore(key) {
     state.loadMoreError[key] = true;
   } finally {
     state.loadingMore[key] = false;
-    updateAttention();
     render();
   }
 }
 
-function updateAttention() {
-  const needs = reviews().filter((item) => ["needs_review", "changes_requested"].includes(item.status)).length;
-  const approved = reviews().filter((item) => item.status === "approved").length;
-  const ready = decks().filter((item) => ["approved", "generated"].includes(item.status)).length;
+// A record named by the URL but not on the loaded page is read on its own
+// (records.get by its business id) instead of loading more pages to find it.
+async function ensureSelectedRecord() {
+  const { view, selectedId } = state.route;
+  if (!state.data || !selectedId || !RECORD_VIEWS.includes(view)) return;
+  if (recordById(view, selectedId) || state.extra[view].has(selectedId)) return;
+  const provider = await getProvider();
+  if (typeof provider.getRecord !== "function") {
+    state.extra[view].set(selectedId, null);
+    render();
+    return;
+  }
+  const serial = ++routeSerial;
+  state.extra[view].set(selectedId, undefined);
+  try {
+    if (view === "review") {
+      // A review id is `<deck|slide>:<business id>`; read the row it sits on.
+      const [kind, ...rest] = selectedId.split(":");
+      const targetView = kind === "deck" ? "decks" : "slides";
+      const row = await provider.getRecord(targetView, rest.join(":"));
+      if (row) state.extra[targetView].set(rest.join(":"), row);
+      const item = row
+        ? deriveReviewItems(kind === "deck" ? [row] : [], kind === "deck" ? [] : [row]).find(
+            (entry) => entry.review_id === selectedId,
+          )
+        : null;
+      state.extra.review.set(selectedId, item || null);
+    } else {
+      state.extra[view].set(selectedId, (await provider.getRecord(view, selectedId)) || null);
+    }
+  } catch {
+    state.extra[view].set(selectedId, null);
+  }
+  if (serial === routeSerial) render();
+}
+
+function applyDemoRoute() {
+  if (location.hash) return;
+  const demo = new URLSearchParams(location.search).get("demo");
+  if (!demo) return;
+  const view = [...RECORD_VIEWS, "overview", "settings"].includes(demo) ? demo : "overview";
+  history.replaceState(null, "", `${location.pathname}${location.search}#/${view}`);
+  state.route = parseRoute();
+}
+
+// ── Shell ──────────────────────────────────────────────────────────────────
+function applyI18n() {
+  document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
+  document.querySelectorAll("[data-i18n]").forEach((node) => {
+    node.textContent = t(node.getAttribute("data-i18n"));
+  });
+  els.search.placeholder = t("search");
+  els.langSelect.value = localStorage.getItem("busa-ppt-factory-language") || "auto";
+  byId("overviewTitle").textContent = t("overview");
+  byId("settingsTitle").textContent = t("settings");
+  els.detailExpand.textContent = t("openFullPage");
+}
+
+export function viewLabel(view) {
+  const keys = {
+    projects: "projects",
+    decks: "decks",
+    slides: "slideCards",
+    review: "review",
+    style: "styleSystem",
+    exports: "exports",
+    settings: "settings",
+  };
+  return t(keys[view] || "overview");
+}
+
+function renderShell() {
+  applyI18n();
+  const ready = Boolean(state.data);
+  const items = reviews();
+  const needs = items.filter((item) => ["needs_review", "changes_requested"].includes(item.status)).length;
+  const approved = items.filter((item) => item.status === "approved").length;
+  const readyDecks = decks().filter((item) => ["approved", "generated"].includes(item.status)).length;
   els.attention.textContent = String(state.workflowCount.needsReview ?? needs);
   els.approved.textContent = String(state.workflowCount.approved ?? approved);
-  els.ready.textContent = String(state.workflowCount.ready ?? ready);
-}
-
-function setTitle(title, subtitle = "") {
-  els.title.textContent = title;
-  els.subtitle.textContent = subtitle;
-  els.mobileTitle.textContent = title;
-}
-
-function row({ href, active, eyebrow, title, meta, status, extra = "" }) {
-  return `<a class="row ${active ? "active" : ""}" href="${href}">
-    <span class="row-main"><small>${escapeHtml(eyebrow || "")}</small><strong>${escapeHtml(title || "")}</strong><em>${escapeHtml(meta || "")}</em></span>
-    <span class="row-side">${status ? statusBadge(status) : ""}${extra}</span>
-  </a>`;
-}
-
-function metric(label, value) {
-  return `<div class="metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
-}
-
-function renderOverview() {
-  const metrics = snapshot().metrics || {};
-  setTitle(t("overview"), t("subtitle"));
-  const reviewRows = reviews()
-    .slice(0, 4)
-    .map((item) => {
-      const target = item.target_type === "slide" ? slideById(item.target_id) : deckById(item.target_id);
-      return row({
-        href: `#/review/${item.review_id}`,
-        eyebrow: `${t("review")} #${item.ref}`,
-        title: target?.title || item.target_id,
-        meta: item.summary,
-        status: item.status,
-        active: false,
-      });
-    });
-  els.list.innerHTML = `<div class="overview-grid">
-    ${metric(t("projects"), metrics.project_count || 0)}
-    ${metric(t("decks"), metrics.deck_count || 0)}
-    ${metric(t("slides"), metrics.slide_count || 0)}
-    ${metric(t("needsReview"), metrics.slides_needs_review || 0)}
-    ${metric(t("decksGenerated"), metrics.decks_generated || 0)}
-    ${metric(t("avgStyleScore"), `${metrics.avg_style_score || 0}`)}
-  </div>
-  <section class="panel"><h2>${t("humanQueue")}</h2><div class="rows">${reviewRows.join("")}</div>${loadMoreControl("qa-checks")}</section>`;
-  els.detail.innerHTML = renderStyleDetail(styleSystems()[0]);
-  const reviewTotal =
-    state.reviewTotal ?? `${reviews().length}${state.pagination.decks || state.pagination["slide-cards"] ? "+" : ""}`;
-  listCountMeta(reviewTotal, t("review"));
-}
-
-function renderProjects() {
-  const items = projects().filter((item) => includesQuery([item.title, item.course, item.stage, item.owner]));
-  setTitle(t("projects"), `${items.length} ${t("projects")}`);
-  els.list.innerHTML = `<div class="rows">${items.map((item) => row({ href: `#/projects/${item.project_id}`, active: state.route.id === item.project_id, eyebrow: `Project #${item.ref}`, title: item.title, meta: `${item.course} · ${item.deck_count} ${t("decks")} · ${item.slide_count} ${t("slides")}`, status: item.status })).join("")}</div>${loadMoreControl("projects")}`;
-  els.detail.innerHTML = renderProjectDetail(projectById(state.route.id) || items[0]);
-  listCountMeta(countDisplay("projects", items.length), t("projects"));
-}
-
-function renderDecks() {
-  const items = decks().filter((item) =>
-    includesQuery([item.title, item.theme, item.level, projectById(item.project_id)?.title]),
-  );
-  setTitle(t("decks"), `${items.length} ${t("decks")}`);
-  els.list.innerHTML = `<div class="rows">${items.map((item) => row({ href: `#/decks/${item.deck_id}`, active: state.route.id === item.deck_id, eyebrow: `Deck #${item.ref}`, title: item.title, meta: `${item.theme} · ${item.level} · ${item.approved_slide_count}/${item.target_slide_count} ${t("approved")}`, status: item.status, extra: `<small>${item.style_score}</small>` })).join("")}</div>${loadMoreControl("decks")}`;
-  els.detail.innerHTML = renderDeckDetail(deckById(state.route.id) || items[0]);
-  listCountMeta(countDisplay("decks", items.length), t("decks"));
-}
-
-function renderSlides() {
-  const items = slides().filter((item) =>
-    includesQuery([item.title, item.objective, item.slide_type, deckById(item.deck_id)?.title]),
-  );
-  setTitle(t("slideCards"), `${items.length} ${t("slideCards")}`);
-  els.list.innerHTML = `<div class="rows">${items.map((item) => row({ href: `#/slides/${item.slide_id}`, active: state.route.id === item.slide_id, eyebrow: `${t("slide")} #${item.ref} · ${typeLabel(item.slide_type)}`, title: item.title, meta: `${deckById(item.deck_id)?.title || ""} · ${item.layout}`, status: item.status })).join("")}</div>${loadMoreControl("slide-cards")}`;
-  els.detail.innerHTML = renderSlideDetail(slideById(state.route.id) || items[0]);
-  listCountMeta(countDisplay("slide-cards", items.length), t("slideCards"));
-}
-
-function renderReview() {
-  const items = reviews().filter((item) => {
-    const target = item.target_type === "slide" ? slideById(item.target_id) : deckById(item.target_id);
-    return includesQuery([item.summary, item.draft_note, target?.title, item.target_type]);
+  els.ready.textContent = String(state.workflowCount.ready ?? readyDecks);
+  els.syncStatus.textContent = !ready ? t("loading") : state.data.demo ? t("demoData") : t("appSubtitle");
+  document.querySelectorAll(".nav-count").forEach((node) => {
+    node.textContent = ready ? viewTotal(node.dataset.count) : "";
   });
-  setTitle(t("review"), `${items.length} ${t("review")}`);
-  els.list.innerHTML = `<div class="rows">${items
-    .map((item) => {
-      const target = item.target_type === "slide" ? slideById(item.target_id) : deckById(item.target_id);
-      return row({
-        href: `#/review/${item.review_id}`,
-        active: state.route.id === item.review_id,
-        eyebrow: `${t("review")} #${item.ref} · ${item.target_type}`,
-        title: target?.title || item.target_id,
-        meta: item.summary,
-        status: item.status,
-      });
-    })
-    .join("")}</div>${loadMoreControl("decks", "slide-cards")}`;
-  els.detail.innerHTML = renderReviewDetail(reviews().find((item) => item.review_id === state.route.id) || items[0]);
-  attachDecisionHandlers();
-  listCountMeta(`${items.length}${state.pagination.decks || state.pagination["slide-cards"] ? "+" : ""}`, t("review"));
+  document.querySelectorAll(".filters a").forEach((node) => {
+    node.classList.toggle("active", node.dataset.route === state.route.view);
+  });
+  const { view } = state.route;
+  els.mobileTitle.textContent = viewLabel(view);
+  els.mobileMeta.textContent =
+    ready && RECORD_VIEWS.includes(view)
+      ? `${viewTotal(view)} · ${t("needsReview")} ${els.attention.textContent}`
+      : ready
+        ? `${t("needsReview")} ${els.attention.textContent}`
+        : "";
 }
 
-function renderStyle() {
-  setTitle(t("styleSystem"), `${styleSystems().length} ${t("styleSystem")}`);
-  els.list.innerHTML = `<div class="rows">${styleSystems()
-    .map((item) =>
-      row({
-        href: `#/style/${item.style_system_id}`,
-        active: state.route.id === item.style_system_id,
-        eyebrow: t("styleSystem"),
-        title: item.name,
-        meta: `${item.palette.length} ${t("palette")} · ${item.component_library.length} ${t("components")}`,
-        status: "approved",
-      }),
-    )
-    .join("")}</div>${loadMoreControl("style-systems")}`;
-  els.detail.innerHTML = renderStyleDetail(
-    styleSystems().find((item) => item.style_system_id === state.route.id) || styleSystems()[0],
-  );
-  listCountMeta(countDisplay("style-systems", styleSystems().length), t("styleSystem"));
+export function statusBadge(status) {
+  if (!status) return "";
+  return `<span class="badge status-${escapeHtml(status)}">${escapeHtml(label("status", status))}</span>`;
 }
 
-function renderExports() {
-  const items = exportsList().filter((item) =>
-    includesQuery([item.path, item.qa_summary, deckById(item.deck_id)?.title]),
-  );
-  setTitle(t("exports"), `${items.length} ${t("exports")}`);
-  els.list.innerHTML = `<div class="rows">${items.map((item) => row({ href: `#/exports/${item.export_id}`, active: state.route.id === item.export_id, eyebrow: item.format.toUpperCase(), title: deckById(item.deck_id)?.title || item.deck_id, meta: item.path, status: item.status })).join("")}</div>${loadMoreControl("exports")}`;
-  els.detail.innerHTML = renderExportDetail(
-    exportsList().find((item) => item.export_id === state.route.id) || items[0],
-  );
-  listCountMeta(countDisplay("exports", items.length), t("exports"));
+export function resultBadge(result) {
+  return `<span class="badge status-${escapeHtml(result)}">${escapeHtml(label("result", result))}</span>`;
 }
 
-function detailShell(title, body, actions = "") {
-  return `<button class="back-to-list" type="button" data-back>${t("back")}</button><div class="detail-head"><div><small>${t("target")}</small><h2>${escapeHtml(title || t("noSelection"))}</h2></div>${actions}</div>${body || ""}`;
-}
-
-function renderProjectDetail(item) {
-  if (!item) return detailShell(t("noSelection"), "");
-  const projectDecks = decks().filter((deck) => deck.project_id === item.project_id);
-  return detailShell(
-    item.title,
-    `<dl class="facts"><dt>${t("brand")}</dt><dd>${snapshot().brand_profiles?.find((brand) => brand.client_id === item.client_id)?.name || item.client_id}</dd><dt>${t("status")}</dt><dd>${statusBadge(item.status)}</dd><dt>${t("decks")}</dt><dd>${item.deck_count}</dd><dt>${t("slides")}</dt><dd>${item.slide_count}</dd><dt>${t("generatedAt")}</dt><dd>${date(item.updated_at)}</dd></dl><h3>${t("decks")}</h3><div class="mini-list">${projectDecks.map((deck) => `<a href="#/decks/${deck.deck_id}">${escapeHtml(deck.title)} ${statusBadge(deck.status)}</a>`).join("")}</div>`,
-  );
-}
-
-function renderDeckDetail(item) {
-  if (!item) return detailShell(t("noSelection"), "");
-  const deckSlides = slides().filter((slide) => slide.deck_id === item.deck_id);
-  const deckChecks = checks().filter((check) => check.target_id === item.deck_id);
-  return detailShell(
-    item.title,
-    `<dl class="facts"><dt>${t("projects")}</dt><dd>${projectById(item.project_id)?.title || item.project_id}</dd><dt>${t("status")}</dt><dd>${statusBadge(item.status)}</dd><dt>${t("slides")}</dt><dd>${item.generated_slide_count}/${item.target_slide_count} ${t("generated")}</dd><dt>${t("avgStyleScore")}</dt><dd>${item.style_score}</dd><dt>PPTX</dt><dd>${escapeHtml(item.pptx_path || "")}</dd><dt>${t("renderPath")}</dt><dd>${escapeHtml(item.render_path || "")}</dd></dl><h3>${t("slideCards")}</h3><div class="mini-list">${deckSlides.map((slide) => `<a href="#/slides/${slide.slide_id}">${escapeHtml(slide.title)} ${statusBadge(slide.status)}</a>`).join("")}</div><h3>${t("checks")}</h3>${renderChecks(deckChecks)}`,
-  );
-}
-
-function renderSlideDetail(item) {
-  if (!item) return detailShell(t("noSelection"), "");
-  const c = item.content || {};
-  const review = reviewByTarget(item.slide_id);
-  const reviewLink = review ? `<a class="small-link" href="#/review/${review.review_id}">${t("review")}</a>` : "";
-  return detailShell(
-    item.title,
-    `<dl class="facts"><dt>${t("deck")}</dt><dd>${deckById(item.deck_id)?.title || item.deck_id}</dd><dt>${t("status")}</dt><dd>${statusBadge(item.status)}</dd><dt>${t("layout")}</dt><dd>${escapeHtml(item.layout)}</dd><dt>${t("content")}</dt><dd>${escapeHtml(typeLabel(item.slide_type))}</dd></dl><section class="slide-preview"><h3>${escapeHtml(c.title || item.title)}</h3>${c.subtitle ? `<p>${escapeHtml(c.subtitle)}</p>` : ""}<div class="zh-line">${escapeHtml(c.chinese || "")}</div><div class="pinyin-line">${escapeHtml(c.pinyin || "")}</div><div class="en-line">${escapeHtml(c.english || "")}</div></section><h3>${t("summary")}</h3><p>${escapeHtml(item.objective)}</p>${section(t("interaction"), c.interaction)}${section(t("teacherNotes"), c.teacher_notes)}${section(t("assetBrief"), item.asset_brief)}${listSection(t("styleChecks"), item.style_checks)}${listSection(t("qaFlags"), item.qa_flags)}${reviewLink}`,
-  );
-}
-
-function renderReviewDetail(item) {
-  if (!item) return detailShell(t("noSelection"), "");
-  const target = item.target_type === "slide" ? slideById(item.target_id) : deckById(item.target_id);
-  const note = state.edits[`review:${item.review_id}`] ?? target?.decision_note ?? item.draft_note ?? "";
-  const actions = `<div class="action-row"><button data-action="approve" data-review="${item.review_id}">${t("approve")}</button><button data-action="request_changes" data-review="${item.review_id}">${t("requestChanges")}</button><button data-action="revise" data-review="${item.review_id}">${t("saveRevision")}</button><button class="danger" data-action="block" data-review="${item.review_id}">${t("block")}</button></div>`;
-  return detailShell(
-    target?.title || item.target_id,
-    `<dl class="facts"><dt>${t("target")}</dt><dd>${item.target_type} · ${item.target_id}</dd><dt>${t("status")}</dt><dd>${statusBadge(item.status)}</dd><dt>${t("summary")}</dt><dd>${escapeHtml(item.summary)}</dd></dl>${listSection(t("suggestions"), item.suggestions)}<label class="field"><span>${t("reviewNote")}</span><textarea rows="6" data-review-note="${item.review_id}" placeholder="${escapeHtml(t("reviewNotePlaceholder"))}">${escapeHtml(note)}</textarea></label>`,
-    actions,
-  );
-}
-
-function renderStyleDetail(item) {
-  if (!item) return detailShell(t("noSelection"), "");
-  return detailShell(
-    item.name,
-    `<h3>${t("palette")}</h3><div class="swatches">${item.palette.map((color) => `<span style="--swatch:${escapeHtml(color)}"><b></b><em>${escapeHtml(color)}</em></span>`).join("")}</div><dl class="facts"><dt>Heading</dt><dd>${escapeHtml(item.fonts?.heading || "")}</dd><dt>Body</dt><dd>${escapeHtml(item.fonts?.body || "")}</dd><dt>CJK</dt><dd>${escapeHtml(item.fonts?.chinese || "")}</dd></dl>${listSection(t("visualRules"), item.visual_rules)}${listSection(t("layoutRules"), item.layout_rules)}${listSection(t("components"), item.component_library)}`,
-  );
-}
-
-function renderExportDetail(item) {
-  if (!item) return detailShell(t("noSelection"), "");
-  return detailShell(
-    deckById(item.deck_id)?.title || item.deck_id,
-    `<dl class="facts"><dt>${t("export")}</dt><dd>${item.format.toUpperCase()}</dd><dt>${t("status")}</dt><dd>${statusBadge(item.status)}</dd><dt>PPTX</dt><dd>${escapeHtml(item.path)}</dd><dt>${t("renderPath")}</dt><dd>${escapeHtml(item.render_path || deckById(item.deck_id)?.render_path || "")}</dd><dt>${t("generatedAt")}</dt><dd>${date(item.generated_at)}</dd><dt>QA</dt><dd>${escapeHtml(item.qa_summary || "")}</dd></dl>${renderChecks(checks().filter((check) => check.target_id === item.deck_id || check.target_id === item.export_id))}`,
-  );
-}
-
-function renderChecks(items) {
-  if (!items.length) return `<p class="muted">${t("checks")}: 0</p>`;
-  return `<div class="check-list">${items.map((item) => `<div><span class="status status-${escapeHtml(item.result)}">${escapeHtml(item.result)}</span><strong>${escapeHtml(item.rule)}</strong><p>${escapeHtml(item.evidence)}</p></div>`).join("")}</div>`;
-}
-function section(title, body) {
-  return body ? `<h3>${escapeHtml(title)}</h3><p>${escapeHtml(body)}</p>` : "";
-}
-function listSection(title, items = []) {
-  if (!items.length) return "";
-  return `<h3>${escapeHtml(title)}</h3><ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
-}
-
-function settingsHtml() {
-  const summary = state.data?.config_summary || {};
-  return `<h2>${t("settings")}</h2><dl class="facts"><dt>${t("dataProvider")}</dt><dd>${state.data?.data_provider || ""}</dd><dt>${t("onboarding")}</dt><dd>${state.data?.onboarding?.completed ? "complete" : "pending"}</dd><dt>${t("outDir")}</dt><dd>${escapeHtml(summary.export?.out_dir || "")}</dd><dt>${t("renderDir")}</dt><dd>${escapeHtml(summary.export?.render_dir || "")}</dd><dt>${t("requireRenderQa")}</dt><dd>${String(summary.export?.require_render_qa ?? "")}</dd></dl>${listSection(
-    t("brand"),
-    (summary.brand_profiles || []).map((item) => `${item.name} · ${item.audience}`),
-  )}${listSection(
-    t("styleSystem"),
-    styleSystems().map((item) => item.name),
-  )}`;
-}
-
-function renderSettings() {
-  els.settingsContent.innerHTML = settingsHtml();
-}
-
-function renderSettingsView() {
-  setTitle(t("settings"));
-  els.list.innerHTML = `<section class="panel settings-panel">${settingsHtml()}</section>`;
-  els.detail.innerHTML = "";
-}
-
-function render() {
-  parseRoute();
-  document.body.classList.remove("mobile-detail-open");
-  document
-    .querySelectorAll(".filters a")
-    .forEach((node) => node.classList.toggle("active", node.dataset.route === state.route.view));
-  if (state.route.view === "projects") renderProjects();
-  else if (state.route.view === "decks") renderDecks();
-  else if (state.route.view === "slides") renderSlides();
-  else if (state.route.view === "review") renderReview();
-  else if (state.route.view === "style") renderStyle();
-  else if (state.route.view === "exports") renderExports();
-  else if (state.route.view === "settings") renderSettingsView();
+export function render() {
+  renderShell();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.data);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
   else renderOverview();
-  if (state.route.id) document.body.classList.add("mobile-detail-open");
-  document
-    .querySelectorAll("[data-back]")
-    .forEach((button) => button.addEventListener("click", () => document.body.classList.remove("mobile-detail-open")));
 }
 
-function attachDecisionHandlers() {
-  document.querySelectorAll("[data-review-note]").forEach((node) => {
-    node.addEventListener("input", () => {
-      state.edits[`review:${node.dataset.reviewNote}`] = node.value;
-    });
-  });
-  document.querySelectorAll("[data-action]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const reviewId = button.dataset.review;
-      const item = reviews().find((entry) => entry.review_id === reviewId);
-      if (!item) return;
-      const note = document.querySelector(`[data-review-note="${CSS.escape(reviewId)}"]`)?.value || "";
-      button.disabled = true;
-      try {
-        const provider = await getProvider();
-        await provider.decideItem({
-          targetType: item.target_type,
-          id: item.target_id,
-          action: button.dataset.action,
-          comment: note,
-          draft: note,
-        });
-        await loadState();
-      } catch (error) {
-        alert(error instanceof Error ? error.message : "Could not save decision");
-        button.disabled = false;
-      }
-    });
-  });
+// ── Sidebar ────────────────────────────────────────────────────────────────
+const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-ppt-factory.sidebarCollapsed";
+const isMobileLayout = () => window.matchMedia("(max-width: 720px)").matches;
+
+function setMobileSidebarOpen(open) {
+  document.body.classList.toggle("sidebar-open", Boolean(open));
+  els.scrim.hidden = !open;
 }
 
+function setSidebarCollapsed(collapsed, { persist = true } = {}) {
+  document.body.classList.toggle("sidebar-collapsed", collapsed);
+  els.sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+  if (persist) localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, collapsed ? "1" : "0");
+}
+
+function syncResponsiveShell() {
+  setMobileSidebarOpen(false);
+  if (isMobileLayout()) document.body.classList.remove("sidebar-collapsed");
+  else setSidebarCollapsed(localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === "1", { persist: false });
+}
+
+// ── Events ─────────────────────────────────────────────────────────────────
+els.listPanel.addEventListener("click", (event) => {
+  const more = event.target.closest("[data-load-more]");
+  if (more) {
+    loadMore(more.dataset.loadMore);
+    return;
+  }
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list it was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+els.detailBody.addEventListener("input", (event) => {
+  const field = event.target.closest("textarea[data-review-note]");
+  if (field) state.edits[`review:${field.dataset.reviewNote}`] = field.value;
+});
+els.detailBody.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (button) submitDecision(button);
+});
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  // Escape inside the review note only leaves the field; a second one closes.
+  if (event.target.closest?.("textarea, input")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
+  replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`);
 });
-els.list.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-load-more]");
-  if (button) loadMore(button.dataset.loadMore);
+window.addEventListener("hashchange", setRoute);
+window.addEventListener("resize", syncResponsiveShell);
+els.sidebarToggle.addEventListener("click", () => {
+  if (isMobileLayout()) setMobileSidebarOpen(false);
+  else setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
 });
-window.addEventListener("hashchange", render);
-
-function openSidebar() {
-  document.body.classList.add("sidebar-open");
-  els.scrim.hidden = false;
-}
-function closeSidebar() {
-  document.body.classList.remove("sidebar-open");
-  els.scrim.hidden = true;
-}
-document.getElementById("mobileSidebarToggle").addEventListener("click", openSidebar);
-document
-  .getElementById("sidebarToggle")
-  .addEventListener("click", () => document.body.classList.toggle("sidebar-collapsed"));
-els.scrim.addEventListener("click", closeSidebar);
-document.querySelectorAll(".filters a").forEach((node) => node.addEventListener("click", closeSidebar));
-document.getElementById("settingsBtn").addEventListener("click", () => {
-  renderSettings();
-  els.settings.showModal();
-});
-document.getElementById("mobileSettingsBtn").addEventListener("click", () => {
-  renderSettings();
-  els.settings.showModal();
-});
+byId("mobileSidebarToggle").addEventListener("click", () => setMobileSidebarOpen(true));
+els.scrim.addEventListener("click", () => setMobileSidebarOpen(false));
 els.langSelect.addEventListener("change", () => {
   localStorage.setItem("busa-ppt-factory-language", els.langSelect.value);
   state.lang = pickLang();
-  applyI18n();
   render();
 });
 
@@ -561,8 +528,15 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.list.innerHTML = `<div class="empty">${escapeHtml(error instanceof Error ? error.message : String(error))}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
+state.lang = pickLang();
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+syncResponsiveShell();
+render();
 boot();

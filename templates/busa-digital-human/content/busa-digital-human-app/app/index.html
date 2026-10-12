@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="./styles.css">
     <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
   </head>
-  <body>
+  <body class="ws-has-mobile-bar">
     <div id="app" class="app-shell">
       <aside class="sidebar" id="appSidebar">
         <div class="brand">
@@ -31,46 +31,33 @@
           </button>
         </div>
 
-        <div class="search sidebar-search">
-          <input id="search" type="search" placeholder="Search" aria-label="Search">
-        </div>
-
         <section class="human-work" aria-labelledby="humanWorkTitle">
           <div class="human-work-eyebrow" data-i18n="attention">Need attention</div>
           <div id="humanWorkTitle" class="human-work-title" data-i18n="humanWorkTitle">What needs your attention</div>
-          <a class="human-work-primary" href="#/qa" data-route="qa" title="Review launch blockers">
+          <a class="human-work-primary" href="#/qa?status=needs_review" data-route="qa" title="Open the checks waiting for a verdict">
             <span>
               <strong id="count-review">0</strong>
               <span data-i18n="needReview">checks need review</span>
             </span>
           </a>
           <div class="human-work-secondary">
-            <a href="#/qa" data-route="qa" title="Open fixed issues">
-              <strong id="count-fix">0</strong>
-              <span data-i18n="fixOpen">fix items</span>
+            <a href="#/qa?status=changes_requested" data-route="qa" title="Checks sent back for changes">
+              <strong id="count-changes">0</strong>
+              <span data-i18n="changesOpen">sent back</span>
             </a>
-            <a href="#/vendors" data-route="vendors" title="Provider routes">
-              <strong id="count-routes">0</strong>
-              <span data-i18n="providerRoutes">routes</span>
+            <a href="#/qa?status=blocked" data-route="qa" title="Checks blocking launch">
+              <strong id="count-blocked">0</strong>
+              <span data-i18n="blockedOpen">blocked</span>
             </a>
           </div>
         </section>
 
         <div class="sidebar-separator"></div>
         <nav class="filters" aria-label="Views">
-          <a href="#/overview" data-route="overview" data-i18n="overview" title="Readiness dashboard">Overview</a>
-          <a href="#/qa" data-route="qa" data-i18n="review" title="QA review queue">Review Queue</a>
-          <a href="#/studio" data-route="studio" data-i18n="studio" title="Multimodal stream studio">Studio</a>
-          <a href="#/vendors" data-route="vendors" data-i18n="vendors" title="Vendor routes and architecture">Vendors</a>
-        </nav>
-
-        <div class="sidebar-separator"></div>
-        <nav class="status-filters" id="statusFilters" aria-label="Workflow">
-          <button type="button" class="status-filter" data-status="all" data-i18n="all">All</button>
-          <button type="button" class="status-filter" data-status="needs_review" data-i18n="needsReview">Needs Review</button>
-          <button type="button" class="status-filter" data-status="approved" data-i18n="approved">Approved</button>
-          <button type="button" class="status-filter" data-status="changes_requested" data-i18n="changesRequested">Changes Requested</button>
-          <button type="button" class="status-filter" data-status="blocked" data-i18n="blocked">Blocked</button>
+          <a href="#/overview" data-route="overview"><span data-i18n="overview">Overview</span></a>
+          <a href="#/qa" data-route="qa"><span data-i18n="review">Review Queue</span><span id="navCountQa" class="nav-count"></span></a>
+          <a href="#/studio" data-route="studio"><span data-i18n="studio">Studio</span></a>
+          <a href="#/vendors" data-route="vendors"><span data-i18n="vendors">Vendors</span><span id="navCountVendors" class="nav-count"></span></a>
         </nav>
 
         <div class="sidebar-footer">
@@ -95,17 +82,61 @@
           <button id="mobileRefresh" class="mobile-refresh-button" type="button" title="Refresh" aria-label="Refresh">↻</button>
         </div>
 
-        <header class="topbar">
-          <div>
-            <h1 id="page-title">Overview</h1>
-            <p id="page-subtitle" class="muted"></p>
+        <div id="loadState" class="load-state" role="status">Loading</div>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 id="overviewTitle">Overview</h1>
+              <p id="overviewSummary"></p>
+            </div>
+            <div class="page-actions">
+              <button id="refresh" class="button" type="button" title="Refresh">Refresh</button>
+            </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" aria-label="Stream quality"></div>
+          <div id="overviewBody" class="overview-body"></div>
+        </section>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <div id="viewFilters" class="segmented" role="group" aria-label="Status" hidden></div>
+              <select id="statusSelect" class="status-select" aria-label="Status" hidden></select>
+              <label class="search toolbar-search">
+                <span class="sr-only" data-i18n="search">Search</span>
+                <input id="search" type="search" autocomplete="off" placeholder="Search">
+              </label>
+            </div>
+          </header>
+          <div id="workspace" class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar">
+                <button id="detailBack" class="button" type="button">Back to list</button>
+                <a id="detailExpand" class="button" hidden>Open full page</a>
+              </div>
+              <div id="detailBody"></div>
+            </aside>
           </div>
-          <div class="topbar-actions">
-            <button id="refresh" type="button" title="Refresh" aria-label="Refresh">Refresh</button>
-          </div>
-        </header>
-
-        <section id="content" class="content"></section>
+        </section>
+        <!-- Tool pages: the same single toolbar row, then their own surface. -->
+        <section id="studioPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title"><h1 id="studioTitle">Studio</h1></div>
+          </header>
+          <div id="studioBody" class="page-scroll"></div>
+        </section>
+        <section id="settingsPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title"><h1 id="settingsTitle">Help &amp; Settings</h1></div>
+          </header>
+          <div id="settingsBody" class="page-scroll"></div>
+        </section>
       </main>
     </div>
     <div id="sidebarScrim" class="sidebar-scrim" hidden></div>

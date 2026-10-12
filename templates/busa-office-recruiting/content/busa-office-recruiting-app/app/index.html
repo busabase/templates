@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
     <title>Office management</title>
+    <link rel="stylesheet" href="./base-ui.css" />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./domain.css" />
     <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css" />
   </head>
-  <body>
+  <body class="ws-has-mobile-bar">
     <div class="app-shell">
       <aside class="sidebar">
         <div class="brand-row">
@@ -26,10 +27,10 @@
             ×
           </button>
         </div>
-        <section class="attention">
+        <a class="attention" id="attentionLink" href="#/attention">
           <span id="attentionLabel"></span><strong id="attentionCount">—</strong
           ><span id="attentionScope"></span>
-        </section>
+        </a>
         <nav id="nav" class="base-nav"></nav>
         <div class="sidebar-footer">
           <label
@@ -65,44 +66,51 @@
             title="Open navigation"
           >
             ☰</button
-          ><strong id="mobileBrand"></strong>
+          ><strong id="mobileTitle"></strong>
         </header>
-        <header class="workspace-header">
-          <div>
-            <span class="eyebrow" id="eyebrow"></span>
-            <h1 id="title"></h1>
-            <p id="summary"></p>
-          </div>
-        </header>
-        <section class="metrics" id="metrics"></section>
-        <div class="toolbar">
-          <label class="search"
-            ><input
-              id="search"
-              type="search"
-              autocomplete="off"
-              aria-label="Search loaded records" /></label
-          ><label
-            ><span class="sr-only" id="statusLabel">Status</span
-            ><select id="status"></select></label
-          ><span class="eyebrow" id="scope"></span>
-        </div>
         <div id="loading" class="state-message" role="status"></div>
         <div id="error" class="state-message error" role="alert" hidden></div>
-        <section class="content-split">
-          <section class="list-panel">
-            <div class="panel-heading">
-              <h2 id="listTitle"></h2>
-              <span class="count" id="resultCount"></span>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 id="overviewTitle"></h1>
+              <p id="overviewSummary"></p>
             </div>
-            <div id="recordList" class="record-list"></div>
-            <button id="more" class="load-more" hidden></button>
-          </section>
-          <aside class="detail-panel">
-            <button id="back" class="back-button"></button>
-            <div class="detail-empty" id="detailEmpty"></div>
-            <article id="detail" hidden></article>
-          </aside>
+          </header>
+          <div id="metrics" class="ws-metrics"></div>
+          <div id="overviewBody" class="overview-grid"></div>
+        </section>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <label
+                ><span class="sr-only" id="statusLabel">Status</span
+                ><select id="status" class="toolbar-select"></select></label
+              ><label class="search"
+                ><input
+                  id="search"
+                  type="search"
+                  autocomplete="off"
+                  aria-label="Search loaded records"
+              /></label>
+            </div>
+          </header>
+          <div id="workspace" class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar" id="detailBar">
+                <button id="back" class="button" type="button"></button>
+                <a id="expand" class="button" hidden></a>
+              </div>
+              <article id="detail"></article>
+            </aside>
+          </div>
         </section>
       </main>
     </div>

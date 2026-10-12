@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
     <title>Office management</title>
+    <link rel="stylesheet" href="./base-ui.css" />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./domain.css" />
     <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css" />
   </head>
-  <body>
+  <body class="ws-has-mobile-bar">
     <div class="app-shell">
       <aside class="sidebar">
         <div class="brand-row">
@@ -20,16 +21,17 @@
           <button
             class="icon-button"
             id="closeNav"
+            type="button"
             title="Close navigation"
             aria-label="Close navigation"
           >
             ×
           </button>
         </div>
-        <section class="attention">
+        <a class="attention" id="attentionLink" href="#/attention">
           <span id="attentionLabel"></span><strong id="attentionCount">—</strong
           ><span id="attentionScope"></span>
-        </section>
+        </a>
         <nav id="nav" class="base-nav"></nav>
         <div class="sidebar-footer">
           <label
@@ -41,6 +43,7 @@
           ><button
             class="icon-button"
             id="refresh"
+            type="button"
             title="Refresh"
             aria-label="Refresh"
           >
@@ -49,6 +52,7 @@
           <button
             class="icon-button"
             id="help"
+            type="button"
             title="Review and connection"
             aria-label="Review and connection"
           >
@@ -61,54 +65,74 @@
           <button
             class="icon-button"
             id="openNav"
+            type="button"
             aria-label="Open navigation"
             title="Open navigation"
           >
             ☰</button
           ><strong id="mobileBrand"></strong>
         </header>
-        <header class="workspace-header">
-          <div>
-            <span class="eyebrow" id="eyebrow"></span>
-            <h1 id="title"></h1>
-            <p id="summary"></p>
-          </div>
-        </header>
-        <section class="metrics" id="metrics"></section>
-        <div class="toolbar">
-          <label class="search"
-            ><input
-              id="search"
-              type="search"
-              autocomplete="off"
-              aria-label="Search loaded records" /></label
-          ><label
-            ><span class="sr-only" id="statusLabel">Status</span
-            ><select id="status"></select></label
-          ><span class="eyebrow" id="scope"></span>
-        </div>
         <div id="loading" class="state-message" role="status"></div>
         <div id="error" class="state-message error" role="alert" hidden></div>
-        <section class="content-split">
-          <section class="list-panel">
-            <div class="panel-heading">
-              <h2 id="listTitle"></h2>
-              <span class="count" id="resultCount"></span>
+        <div id="notice" class="state-message notice" role="status" hidden></div>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section class="ws-overview" id="overviewPage" hidden>
+          <header class="page-hero">
+            <div>
+              <span class="page-hero-context" id="overviewContext"></span>
+              <h1 id="overviewTitle"></h1>
+              <p id="overviewSummary"></p>
             </div>
-            <div id="recordList" class="record-list"></div>
-            <button id="more" class="load-more" hidden></button>
-          </section>
-          <aside class="detail-panel">
-            <button id="back" class="back-button"></button>
-            <div class="detail-empty" id="detailEmpty"></div>
-            <article id="detail" hidden></article>
-          </aside>
+            <div class="page-actions">
+              <button class="button" id="overviewHelp" type="button"></button>
+            </div>
+          </header>
+          <section class="ws-metrics" id="metrics"></section>
+          <section class="ledger-grid" id="ledgerGrid"></section>
+        </section>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section class="ws-view" id="viewPage" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span class="ws-count" id="resultCount"></span>
+            </div>
+            <div class="ws-actions">
+              <label
+                ><span class="sr-only" id="statusLabel">Status</span
+                ><select id="status"></select></label
+              ><label class="search-label"
+                ><span class="sr-only" id="searchLabel"></span
+                ><input
+                  id="search"
+                  class="search-field"
+                  type="search"
+                  autocomplete="off"
+                  aria-label="Search loaded records"
+              /></label>
+            </div>
+          </header>
+          <div class="ws-workspace">
+            <div class="ws-list" id="listPanel">
+              <div id="recordList"></div>
+              <button id="more" class="load-more" type="button" hidden></button>
+            </div>
+            <aside class="ws-detail" id="detailPanel" aria-live="polite">
+              <div class="ws-detail-bar" id="detailBar">
+                <button class="button" id="back" type="button"></button>
+                <a class="button" id="detailExpand" hidden></a>
+              </div>
+              <div class="ws-detail-empty" id="detailEmpty"></div>
+              <article id="detail" hidden></article>
+            </aside>
+          </div>
         </section>
       </main>
     </div>
     <button
       id="scrim"
       class="sidebar-scrim"
+      type="button"
       aria-label="Close navigation"
       hidden
     ></button>

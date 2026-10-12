@@ -275,7 +275,7 @@ body.sidebar-collapsed .sidebar-footer {
 }
 
 .sidebar-footer select,
-.toolbar select {
+.ws-actions select {
   min-height: 34px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
@@ -293,36 +293,6 @@ body.sidebar-collapsed .sidebar-footer {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 74px;
-  padding: 14px 24px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-blur);
-  backdrop-filter: blur(10px);
-}
-
-.topbar-copy {
-  min-width: 0;
-}
-
-.topbar p {
-  margin-top: 3px;
-}
-
-.content {
-  display: grid;
-  flex: 1;
-  align-content: start;
-  gap: 16px;
-  min-height: 0;
-  overflow: auto;
-  padding: 20px 24px 48px;
 }
 
 .mobile-topbar,
@@ -399,23 +369,6 @@ body.sidebar-collapsed .sidebar-footer {
 
 /* ── overview ──────────────────────────────────────────────────────────── */
 
-.agent-cell.total {
-  background: var(--surface-soft);
-}
-
-.count-pill {
-  display: inline-grid;
-  min-width: 22px;
-  place-items: center;
-  margin-left: 4px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: var(--surface-soft);
-  color: var(--ink-soft);
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-}
-
 .subhead {
   margin: 16px 0 10px;
   padding-top: 14px;
@@ -491,16 +444,14 @@ body.sidebar-collapsed .sidebar-footer {
   align-items: start;
 }
 
-.attention-list,
-.waiting-list {
+.attention-list {
   display: grid;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.attention-item,
-.waiting-list li {
+.attention-item {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -509,8 +460,7 @@ body.sidebar-collapsed .sidebar-footer {
   border-top: 1px solid var(--line);
 }
 
-.attention-item:first-child,
-.waiting-list li:first-child {
+.attention-item:first-child {
   border-top: 0;
   padding-top: 0;
 }
@@ -537,23 +487,10 @@ body.sidebar-collapsed .sidebar-footer {
 
 /* ── tables & filters ──────────────────────────────────────────────────── */
 
-.card.flush {
-  overflow: hidden;
-}
-
-.card.flush > .card-heading {
-  margin-bottom: 12px;
-}
-
-
-.toolbar select {
-  flex: 0 1 200px;
-  min-width: 0;
+.ws-actions select {
+  flex: 0 0 auto;
+  width: 160px;
   max-width: 100%;
-}
-
-.filter-note {
-  padding: 10px 20px 0;
 }
 
 .facts,
@@ -590,7 +527,7 @@ dd {
   white-space: nowrap;
 }
 
-.orders-table tr.flagged td {
+.orders-table tr.flagged:not(.ws-selected) td {
   background: color-mix(in srgb, var(--warning) 7%, var(--surface));
 }
 
@@ -599,38 +536,14 @@ dd {
   font-weight: 620;
 }
 
-.price-flag {
-  color: color-mix(in srgb, var(--warning) var(--badge-ink), var(--ink));
-  font-size: var(--text-sm);
-}
-
-.price-flag.danger {
-  color: var(--danger);
-}
-
-.table code,
-.card-title code,
+.ws-table code,
+.detail-title code,
 .muted code {
   padding: 1px 6px;
   border-radius: 6px;
   background: var(--surface-soft);
   color: var(--ink);
   font-size: var(--text-sm);
-}
-
-.table .num {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.stack-table td {
-  vertical-align: top;
-}
-
-.stack-table .cell-identity strong,
-.stack-table .cell-identity span {
-  white-space: normal;
 }
 
 /* ── decision cards ────────────────────────────────────────────────────── */
@@ -645,34 +558,30 @@ dd {
   text-decoration: none;
 }
 
-.card-list {
+.record-detail {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
 }
 
-.decision-card {
-  display: grid;
-  gap: 14px;
-}
-
-.card-head {
+.detail-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
-.card-title {
+.detail-title {
   display: grid;
   gap: 4px;
   min-width: 0;
 }
 
-.card-title h3 {
+.detail-title h2 {
   overflow-wrap: anywhere;
 }
 
-.card-head .badge-row {
+.detail-head .badge-row {
   flex: 0 0 auto;
   justify-content: flex-end;
 }
@@ -806,14 +715,6 @@ dd {
   gap: 8px;
 }
 
-.load-more {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
 /* ── settings ──────────────────────────────────────────────────────────── */
 
 .settings-card {
@@ -842,6 +743,213 @@ dd {
   box-shadow: var(--shadow-card);
 }
 
+/* ── record views (built on base-ui.css "Record views") ─────────────────── */
+
+.load-state {
+  padding: 24px;
+  color: var(--muted);
+}
+
+.load-state.error {
+  color: var(--danger);
+}
+
+/* The app's bare h1/p resets are unlayered and would beat base-ui's layered
+ * hero rules; restate the one large title on the one page that has it. */
+.page-hero h1 {
+  font-size: var(--text-3xl);
+  font-weight: 660;
+  letter-spacing: -0.02em;
+}
+
+.page-hero p {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.overview-body {
+  display: grid;
+  gap: 16px;
+}
+
+.ws-metrics strong.up {
+  color: var(--positive);
+}
+
+.ws-metrics strong.down {
+  color: var(--danger);
+}
+
+.ws-table code {
+  font-size: var(--text-xs);
+}
+
+.ws-table .num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.ws-table .badge + .badge {
+  margin-left: 4px;
+}
+
+/* Desktop column budget only: on a phone base-ui gives the name column 62%
+ * and the two surviving columns share the rest. */
+@media (min-width: 721px) {
+  .orders-table {
+    --ws-first-col: 10%;
+  }
+
+  .orders-table .ws-col-narrow {
+    width: 8%;
+  }
+
+  .orders-table .ws-col-num {
+    width: 9%;
+  }
+
+  .orders-table .col-qty {
+    width: 6%;
+  }
+
+  .orders-table .ws-col-wide {
+    width: 17%;
+  }
+
+  .orders-table th:last-child {
+    width: 12%;
+  }
+
+  .guardrails-table {
+    --ws-first-col: 22%;
+  }
+
+  .guardrails-table th:nth-child(4) {
+    width: 15%;
+  }
+}
+
+/* Orders keep a third column on a phone (Paid), so the name column gives
+ * up some of base-ui's 62% for the date. */
+@media (max-width: 720px) {
+  .orders-table {
+    --ws-first-col: 44%;
+  }
+
+  .orders-table th:not(:first-child) {
+    width: auto;
+  }
+}
+
+/* The two queues: the title, its status, and one number kept in the split. */
+body.ws-layout-split {
+  --ws-split-list: minmax(320px, 420px);
+}
+
+.queue-table :is(th, td) {
+  padding: 0 12px;
+}
+
+body.ws-layout-split .queue-table th:first-child {
+  width: 40%;
+}
+
+.queue-table .ws-col-num {
+  width: 22%;
+}
+
+body.ws-layout-split .exceptions-table th:first-child {
+  width: 44%;
+}
+
+.exceptions-table .ws-col-num {
+  width: 28%;
+}
+
+.filter-select {
+  display: none;
+}
+
+.breach-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 999px;
+  background: var(--danger);
+  vertical-align: 1px;
+}
+
+.ws-list > .empty-state {
+  margin: 32px auto;
+}
+
+.load-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 16px 18px;
+}
+
+.ws-detail .notice {
+  margin-bottom: 0;
+}
+
+.detail-head h2 {
+  font-size: var(--text-xl);
+}
+
+.detail-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.detail-section h3 {
+  font-size: var(--text-base);
+}
+
+.related-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  transition: background var(--ease);
+}
+
+.related-row:hover {
+  background: var(--surface-hover);
+}
+
+.related-row > :not(:first-child) {
+  flex: 0 0 auto;
+}
+
+.related-row > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-scroll {
+  display: grid;
+  flex: 1 1 auto;
+  align-content: start;
+  gap: 16px;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 24px 32px;
+}
+
 /* ── responsive ────────────────────────────────────────────────────────── */
 
 @media (max-width: 1080px) {
@@ -853,6 +961,13 @@ dd {
 @media (max-width: 760px) {
   .app-shell {
     display: block;
+  }
+
+  /* The shell is no longer a 100vh grid here, so the main column needs its
+   * own height for the list and the detail to scroll inside it. */
+  .main {
+    height: 100vh;
+    height: 100dvh;
   }
 
   .sidebar {
@@ -925,22 +1040,8 @@ dd {
     font-size: var(--text-sm);
   }
 
-  .topbar {
-    display: none;
-  }
-
-  .content {
-    height: calc(100vh - 56px);
-    padding: 12px 12px 40px;
-    gap: 12px;
-  }
-
   .card {
     padding: 16px;
-  }
-
-  .card.flush > .card-heading {
-    padding: 16px 16px 0;
   }
 
   .agent-grid {
@@ -951,62 +1052,32 @@ dd {
     font-size: var(--text-xl);
   }
 
-  /* Tables become stacked rows: each cell carries its column label. */
-  .stack-table thead {
+  .settings-scroll {
+    padding: 0 12px 24px;
+  }
+
+  /* One toolbar row on a phone: the count, then the filters beside it. The
+   * top bar already has Refresh, and the tabs collapse into a select. */
+  .ws-actions {
+    flex: 1 1 0;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+
+  .ws-actions [data-refresh],
+  .ws-actions .view-tabs {
     display: none;
   }
 
-  .stack-table,
-  .stack-table tbody,
-  .stack-table tr {
+  .ws-actions .filter-select {
     display: block;
-    width: 100%;
+    flex: 1 1 auto;
   }
 
-  .stack-table tr {
-    padding: 12px 16px;
-    border-top: 1px solid var(--line);
-  }
-
-  .stack-table td {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+  .ws-actions select {
+    flex: 1 1 40%;
     width: auto;
-    padding: 4px 0;
-    border: 0;
-    text-align: left;
-    white-space: normal;
-  }
-
-  .stack-table td:first-child {
-    display: block;
-    padding-bottom: 8px;
-  }
-
-  .stack-table td:not(:first-child)[data-label]::before {
-    color: var(--muted);
-    font-size: var(--text-base);
-    content: attr(data-label);
-  }
-
-  .stack-table td.wrap {
-    display: grid;
-    gap: 2px;
-  }
-
-  .toolbar {
-    padding: 12px 16px;
-  }
-
-  .toolbar select,
-  .toolbar .search-field {
-    flex: 1 1 100%;
-  }
-
-  .filter-note {
-    padding: 10px 16px 0;
+    min-width: 0;
   }
 
   .facts div {
@@ -1014,13 +1085,12 @@ dd {
     gap: 2px;
   }
 
-  .card-head,
-  .attention-item,
-  .waiting-list li {
+  .detail-head,
+  .attention-item {
     flex-direction: column;
   }
 
-  .card-head .badge-row,
+  .detail-head .badge-row,
   .attention-item .badge-row {
     justify-content: flex-start;
   }

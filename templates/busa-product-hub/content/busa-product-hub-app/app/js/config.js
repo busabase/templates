@@ -6,6 +6,16 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Where a record opens, per view (see app.js DETAIL_MODES for the why).
+  ui: {
+    detail_modes: {
+      products: "page",
+      inventory: "drawer",
+      channels: "drawer",
+      certificates: "drawer",
+      review: "split",
+    },
+  },
   folder: {
     name: "Busa Product Hub",
     description:
@@ -179,7 +189,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     // The browser only ever decides on a review item (records.changeRequest);
     // it never creates a product/channel/inventory/certificate row -- those

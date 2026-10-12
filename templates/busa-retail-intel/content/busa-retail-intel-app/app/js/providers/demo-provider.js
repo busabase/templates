@@ -36,10 +36,9 @@ function makeDemoBatch(now) {
     detected_at: nowIso,
     status: "needs_review",
     risk: index === 2 ? ["claims-review"] : [],
-    source: {
-      name: ["Official/news source", "Competitor/public page", "Trend/community signal"][index % 3],
-      url: `https://example.com/source-${index + 1}`,
-    },
+    // Flat, the way the Base stores them — normalizeSignal() builds `source`.
+    source_name: ["Official/news source", "Competitor/public page", "Trend/community signal"][index % 3],
+    source_url: `https://example.com/source-${index + 1}`,
     suggested_action_id: `action-${index + 1}`,
   }));
 
@@ -161,7 +160,15 @@ export const demoProvider = {
       item.effective_body = edited_body || item.body;
     }
     batch.metrics = computeMetrics(batch);
-    return { ok: true, decision: { id, kind, action, comment, decided_at: now } };
+    return { ok: true, pending: false, decision: { id, kind, action, comment, decided_at: now } };
+  },
+
+  async fetchPage() {
+    return { rows: [], nextCursor: null };
+  },
+
+  async getRecord(key, id) {
+    return demoBatch()[key]?.find((entry) => entry.id === id) || null;
   },
 
   async provisionResources() {

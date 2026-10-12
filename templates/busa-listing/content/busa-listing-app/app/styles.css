@@ -52,10 +52,6 @@ h2 {
   letter-spacing: 0;
 }
 
-h1 {
-  font-size: var(--text-2xl);
-}
-
 h2 {
   font-size: var(--text-md);
 }
@@ -309,8 +305,8 @@ body.sidebar-collapsed .sidebar-footer {
   display: grid;
   place-items: center;
   border-radius: var(--radius-sm);
-  background: #202124;
-  color: var(--accent-contrast);
+  background: var(--ink);
+  color: var(--surface);
   font-size: var(--text-lg);
 }
 
@@ -391,11 +387,13 @@ body.sidebar-collapsed .sidebar-footer {
   background: color-mix(in srgb, var(--surface) 72%, transparent);
 }
 
-/* Controls */
+/* Controls. Native controls only: `.button` / `.segment` come from
+ * base-ui.css, and an unlayered element rule here would beat those layered
+ * classes outright. */
 select,
 input,
 textarea,
-button {
+button:not(.button, .segment) {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -423,14 +421,14 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.12);
 }
 
-button {
+button:not(.button, .segment) {
   min-height: 34px;
   padding: 0 14px;
   background: var(--panel);
   cursor: pointer;
 }
 
-button:hover {
+button:not(.button, .segment):hover {
   border-color: var(--line-strong);
   background: var(--surface-soft);
 }
@@ -447,9 +445,27 @@ textarea:disabled {
   min-width: 0;
   min-height: 0;
   height: 100vh;
-  display: grid;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+}
+
+.load-state {
+  padding: 24px;
+  color: var(--muted);
+}
+
+.load-state.error {
+  color: var(--danger);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .mobile-topbar {
@@ -460,50 +476,33 @@ textarea:disabled {
   display: none;
 }
 
-.topbar {
-  position: static;
-  z-index: 1;
+/* Toolbar controls */
+.toolbar-search {
+  flex: 0 1 220px;
+  min-width: 150px;
+}
+
+.toolbar-selects {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 58px;
-  padding: 10px 18px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-blur);
+  gap: 6px;
+  min-width: 0;
 }
 
-.topbar h1 {
-  font-size: var(--text-xl);
-  line-height: 1.2;
+.toolbar-selects select {
+  width: 128px;
+  min-height: 32px;
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
 }
 
-.topbar-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+/* The review status filter is a segmented control on desktop and a native
+ * select on phones, where six segments would wrap the toolbar. */
+.status-select {
+  display: none;
 }
 
-.content {
-  min-height: 0;
-  overflow: auto;
-  padding: 16px 18px 24px;
-}
 
-/* Metrics */
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.metric,
-.overview-panel,
 .agent-panel,
-.detail-side,
-.settings section,
-.empty,
 .warnings {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
@@ -511,75 +510,70 @@ textarea:disabled {
   box-shadow: none;
 }
 
-.metric {
-  padding: 12px;
+/* Record tables: the first column names the record and is the widest; the
+ * free-text column takes what is left. */
+.products-table th:nth-child(1) { width: 24%; }
+.products-table th:nth-child(2) { width: 10%; }
+.products-table th:nth-child(3) { width: 12%; }
+.products-table th:nth-child(4) { width: 112px; }
+.products-table th:nth-child(5) { width: auto; }
+.products-table th:nth-child(6) { width: 72px; }
+.products-table th:nth-child(7) { width: 168px; }
+.products-table th:nth-child(8) { width: 116px; }
+
+.drafts-table th:nth-child(1) { width: 25%; }
+.drafts-table th:nth-child(2) { width: 120px; }
+.drafts-table th:nth-child(3) { width: 72px; }
+.drafts-table th:nth-child(4) { width: auto; }
+.drafts-table th:nth-child(5) { width: 72px; }
+.drafts-table th:nth-child(6) { width: 168px; }
+.drafts-table th:nth-child(7) { width: 116px; }
+
+.checks-table th:nth-child(1) { width: 20%; }
+.checks-table th:nth-child(2) { width: 96px; }
+.checks-table th:nth-child(3) { width: 24%; }
+.checks-table th:nth-child(4) { width: 120px; }
+.checks-table th:nth-child(5) { width: 108px; }
+.checks-table th:nth-child(6) { width: auto; }
+
+.claims-table th:nth-child(1) { width: 28%; }
+.claims-table th:nth-child(2) { width: 11%; }
+.claims-table th:nth-child(3) { width: 13%; }
+.claims-table th:nth-child(4) { width: auto; }
+.claims-table th:nth-child(5) { width: 18%; }
+
+.rules-table th:nth-child(1) { width: 22%; }
+.rules-table th:nth-child(2) { width: 10%; }
+.rules-table th:nth-child(3) { width: 14%; }
+.rules-table th:nth-child(4) { width: auto; }
+.rules-table th:nth-child(5) { width: 18%; }
+
+.review-table th:nth-child(1) { width: auto; }
+.review-table th:nth-child(2) { width: 172px; }
+.review-table th:nth-child(3) { width: 64px; }
+
+/* The review queue needs room for a status badge beside the draft name. */
+body.ws-layout-split .ws-workspace {
+  grid-template-columns: minmax(340px, 460px) minmax(0, 1fr);
 }
 
-.metric span {
-  display: block;
-  color: var(--muted);
-  font-size: var(--text-sm);
+body.ws-layout-split .review-table th:first-child {
+  width: auto;
 }
 
-.metric strong {
-  display: block;
-  margin-top: 6px;
-  font-size: var(--text-xl);
-}
-
-.metric-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 8px;
-}
-
-.metric-badges .platform-badge {
-  font-size: var(--text-xs);
-}
-
-/* Tables */
-.table-wrap {
-  overflow: auto;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  background: var(--panel);
-}
-
-table {
-  width: 100%;
-  min-width: 980px;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  padding: 11px 12px;
-  border-bottom: 1px solid var(--line);
-  text-align: left;
-  vertical-align: top;
-}
-
-th {
-  color: var(--muted);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  background: var(--surface-hover);
+.listing-table td a,
+.ws-detail dd a,
+.queue-meta a {
+  color: var(--accent-text, var(--accent));
 }
 
 .strong {
-  font-weight: 700;
+  font-weight: 650;
 }
 
 .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
-}
-
-.title-cell,
-.evidence-cell {
-  max-width: 420px;
-  overflow-wrap: anywhere;
 }
 
 /* Badges */
@@ -721,20 +715,51 @@ th {
   padding: 16px;
 }
 
-.overview-panel.wide {
+.overview-wide {
   grid-column: 1 / -1;
 }
 
-.overview-panel .table-wrap {
+.overview-panel h2,
+.detail h3,
+.detail-stack h3,
+.detail-side h3,
+.agent-panel h3,
+.review-checks-title {
+  margin: 0 0 6px;
+  font-size: var(--text-md);
+}
+
+/* Status matrix (a small summary grid on Overview, not a record table) */
+.matrix-wrap {
   margin-top: 10px;
-  border-left: 1px solid var(--line);
-  border-right: 1px solid var(--line);
+  overflow-x: auto;
+  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
 }
 
-/* Status matrix */
-.matrix-grid table {
-  min-width: 640px;
+.matrix-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+}
+
+.matrix-table th,
+.matrix-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.matrix-table th {
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+.matrix-table tbody tr:last-child td {
+  border-bottom: 0;
 }
 
 .matrix-cell {
@@ -817,12 +842,58 @@ a.matrix-cell:hover {
   border-bottom: 0;
 }
 
-/* Detail */
+/* Detail — one markup for page, drawer and split. */
+.detail-head {
+  margin-bottom: 16px;
+}
+
+.detail-head h2 {
+  font-size: var(--text-xl);
+  line-height: 1.3;
+}
+
+.detail-head p {
+  margin: 4px 0 0;
+  font-size: var(--text-base);
+}
+
+.detail-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.detail-stack dl {
+  margin: 0;
+}
+
+.detail-text {
+  margin: 0 0 8px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
 .detail {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-columns: minmax(0, 1fr) 320px;
   gap: 14px;
   align-items: start;
+}
+
+body.ws-detail-drawer .detail,
+body.ws-layout-split .detail {
+  grid-template-columns: 1fr;
+}
+
+.detail-side-stack {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.detail-link {
+  justify-self: start;
+  margin-top: 12px;
 }
 
 .detail-main {
@@ -833,8 +904,12 @@ a.matrix-cell:hover {
 
 .detail-side {
   display: grid;
-  gap: 14px;
+  gap: 10px;
   padding: 16px;
+}
+
+.detail-side dl {
+  margin: 0;
 }
 
 .agent-panel {
@@ -862,39 +937,21 @@ dd {
   overflow-wrap: anywhere;
 }
 
-/* Section blocks */
-.section-block {
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--panel);
-}
-
-.section-block h2 {
-  margin-bottom: 8px;
-}
-
-.section-block ul {
-  margin: 0;
-  padding-left: 20px;
+.plain-list {
   display: grid;
   gap: 4px;
-}
-
-.section-block p {
   margin: 0;
-  overflow-wrap: anywhere;
+  padding-left: 20px;
 }
 
-.spec-table {
-  overflow: auto;
-  border-left: 1px solid var(--line);
-  border-right: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+.spec-list {
+  grid-template-columns: minmax(110px, 30%) minmax(0, 1fr);
+  margin: 8px 0 0;
 }
 
-.spec-table table {
-  min-width: 0;
+.spec-list dt {
+  color: var(--ink-soft);
+  font-weight: 650;
 }
 
 .product-notes {
@@ -1036,59 +1093,21 @@ dd {
   align-items: center;
 }
 
-/* Checks view */
-.check-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.check-filters select {
-  min-width: 160px;
-  max-width: 100%;
-}
-
-/* Review queue */
-.queue-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.queue-filter {
-  min-height: 30px;
-  padding: 0 10px;
-  border-radius: 999px;
-  font-size: var(--text-sm);
-  color: var(--ink-soft);
-}
-
-.queue-filter small {
-  color: var(--muted-soft);
-}
-
-.queue-filter.active {
-  border-color: var(--accent);
-  background: var(--accent-weak);
-  color: var(--accent);
-  font-weight: 650;
-}
-
-.queue {
-  display: grid;
-  gap: 14px;
-  max-width: 880px;
-}
-
-.queue-card {
+/* Review (split detail) */
+.review-detail {
   display: grid;
   gap: 10px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--panel);
+  max-width: 860px;
+}
+
+.queue-subject {
+  font-size: var(--text-lg);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.review-checks-title {
+  margin-top: 12px;
 }
 
 .queue-head {
@@ -1203,6 +1222,13 @@ dd {
 }
 
 /* Settings */
+.settings-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 24px 32px;
+}
+
 .settings {
   display: grid;
   gap: 14px;
@@ -1249,11 +1275,6 @@ dd {
   overflow-wrap: anywhere;
 }
 
-.empty {
-  padding: 16px;
-  color: var(--muted);
-}
-
 .empty-inline {
   padding: 8px 0;
   color: var(--muted);
@@ -1268,10 +1289,6 @@ dd {
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 220px minmax(0, 1fr);
-  }
-
-  .metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .overview-grid,
@@ -1409,57 +1426,61 @@ dd {
     padding: 0;
   }
 
-  .topbar {
+  .ws-toolbar,
+  .ws-actions {
+    flex-wrap: nowrap;
+  }
+
+  .ws-actions {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .toolbar-search {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  #viewFilters,
+  #detailExpand {
     display: none;
   }
 
-  .content {
-    padding: 12px;
+  /* Claims tabs stay visible on a phone: they pick the table, not a filter. */
+  #viewFilters.view-tabs {
+    display: inline-flex;
+    flex: 0 0 auto;
   }
 
-  .metrics,
+  .toolbar-selects {
+    flex: 0 1 46%;
+  }
+
+  .toolbar-selects select:not([data-filter="result"]) {
+    display: none;
+  }
+
+  .toolbar-selects select {
+    width: 100%;
+  }
+
+  .status-select:not([hidden]) {
+    display: block;
+    flex: 0 1 44%;
+    min-width: 0;
+  }
+
   .settings-row {
     grid-template-columns: 1fr;
   }
 
-  .metrics {
-    gap: 8px;
-  }
-
-  .metric {
-    padding: 10px 12px;
+  .settings-scroll {
+    padding: 0 14px 24px;
   }
 
   .overview-grid {
     grid-template-columns: 1fr;
     gap: 12px;
-  }
-
-  .check-filters select {
-    flex: 1 1 100%;
-    min-width: 0;
-  }
-
-  .table-wrap {
-    max-width: 100%;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-  }
-
-  table {
-    min-width: 760px;
-  }
-
-  .matrix-grid table {
-    min-width: 560px;
-  }
-
-  .spec-table table {
-    min-width: 0;
-  }
-
-  .queue-card {
-    padding: 12px;
   }
 
   .queue-score {
@@ -1481,51 +1502,12 @@ dd {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  min-height: 2.5rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 0 18px;
 }
 
-.pager button {
-  min-width: 2.25rem;
-  height: 2.25rem;
-  border: 1px solid var(--border, currentColor);
-  border-radius: 0.375rem;
-  background: var(--surface, transparent);
-  color: var(--foreground, inherit);
-  cursor: pointer;
-}
-
-.pager button:hover:not(:disabled) {
-  border-color: var(--primary, currentColor);
-  color: var(--primary, inherit);
-}
-
-.pager button:disabled {
-  cursor: default;
-  opacity: 0.5;
-}
-
-.pager-page.active {
-  border-color: var(--primary, currentColor);
-  background: var(--primary, currentColor);
-  color: var(--primary-foreground, white);
-  opacity: 1;
-}
-
-.pager-nav {
-  padding-inline: 0.75rem;
-}
-
-.pager-ellipsis,
 .pager-summary {
-  color: var(--muted-foreground, inherit);
-}
-
-@media (max-width: 480px) {
-  .pager-summary {
-    width: 100%;
-    text-align: center;
-  }
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
 }

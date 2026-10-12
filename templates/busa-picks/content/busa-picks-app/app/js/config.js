@@ -13,6 +13,12 @@ export const appConfig = {
     slug: "busa-picks",
   },
   airApp: { name: "Busa Picks", slug: "busa-picks-app", resourceKey: "busa-picks-app" },
+  // Where a record opens, per browsed Base (see app.js for the reasons).
+  // sources / sync-log / settings have no record view of their own: they are
+  // read whole into Overview and Help & Settings.
+  ui: {
+    detail_modes: { candidates: "page", "trend-items": "drawer", proposals: "split" },
+  },
   bases: [
     {
       key: "candidates",
@@ -135,7 +141,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

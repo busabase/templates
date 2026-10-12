@@ -16,9 +16,6 @@ export const appConfig = {
     slug: "busa-insure-data-files",
     description: "Hong Kong insurance documents and source material",
   },
-  // Transport page size is the reader's own concern (js/insure-client.js),
-  // not a per-Base declaration — a Base is read to exhaustion regardless of
-  // how many records it holds.
   folder: {
     slug: "busa-insure-data",
     name: "Busa Insure Data",
@@ -26,6 +23,11 @@ export const appConfig = {
       "Insurance-industry App-in-Skill for read-only data governance, backed by an operator-provisioned Busabase workspace (one Drive node for the file drive plus four Bases for QA pairs, featured information, insurer notices, and user feedback) and trusted export/restore/PDF-text-backfill scripts. Use when the user invokes $busa-insure-data or /busa-insure-data, wants an insurance data workspace with UI, needs to review insurance files, metadata completeness, QA pairs, featured information, insurer notices, or user feedback, wants to back up or restore a Busa Insure Data Busabase workspace from local PDFs, or wants Busabase Drive/Base data surfaced for data quality review and ongoing data governance.",
   },
   airApp: { name: "Busa Insure Data", slug: "busa-insure-data-app", resourceKey: "busa-insure-data-app" },
+  // Where each view opens a record (the why is next to DETAIL_MODES in app.js).
+  ui: { detail_modes: { files: "drawer", qa: "split", news: "drawer", feedback: "split" } },
+  // Rows read per Base per user action (first load, or one "Load more" click).
+  // Totals come from records.count, never from reading the rest of the table.
+  readLimit: 50,
   bases: [
     {
       key: "featured",
@@ -135,7 +137,16 @@ export const appConfig = {
     },
   },
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.list", "records.list", "drives.get", "drives.files.list"],
+    readProcedures: [
+      "nodes.list",
+      "nodes.get",
+      "bases.list",
+      "records.list",
+      "records.get",
+      "records.count",
+      "drives.get",
+      "drives.files.list",
+    ],
     writeProcedures: [],
   },
 };

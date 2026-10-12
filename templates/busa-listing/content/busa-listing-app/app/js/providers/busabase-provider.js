@@ -198,13 +198,50 @@ function baseDraftFields(row, fieldsOverride) {
   };
 }
 
-function withPagination(data) {
+// Exact totals for the sidebar and Overview (records.count, a real SQL COUNT;
+// text `equals` stays the cheap exact path). Each entry is null when the count
+// is unavailable, so the UI falls back to loaded rows and marks them partial
+// instead of inventing a number.
+async function readCounts() {
+  const equals = (fieldSlug, value) => [{ fieldSlug, fieldType: "text", operator: "equals", value }];
+  const [needsReview, approved, changesRequested, pass, warn, fail] = await Promise.all([
+    countRecords("drafts", equals("status", "needs_review")),
+    countRecords("drafts", equals("status", "approved")),
+    countRecords("drafts", equals("status", "changes_requested")),
+    countRecords("checks", equals("result", "pass")),
+    countRecords("checks", equals("result", "warn")),
+    countRecords("checks", equals("result", "fail")),
+  ]);
+  return {
+    products_total: initialTotalCounts.products ?? null,
+    drafts_total: initialTotalCounts.drafts ?? null,
+    drafts_needs_review: needsReview,
+    drafts_approved: approved,
+    drafts_changes_requested: changesRequested,
+    checks_pass: pass,
+    checks_warn: warn,
+    checks_fail: fail,
+  };
+}
+
+function withPagination(data, counts) {
   return {
     ...data,
     pagination: { ...initialPageCursors },
     totals: { ...initialTotalCounts },
+    counts,
   };
 }
+
+// A record named by the URL but not on the loaded page: one records.get by its
+// business id, normalized like any listed row.
+const RECORD_ID_FIELD = {
+  products: "product-id",
+  drafts: "draft-id",
+  checks: "check-id",
+  claims: "claim-id",
+  "claim-rules": "rule-id",
+};
 
 export const busabaseProvider = {
   kind: "busabase",
@@ -221,6 +258,7 @@ export const busabaseProvider = {
       readFirstPage("claim-rules"),
       readSettingsRow(),
     ]);
+    const counts = await readCounts();
     const normalizedProducts = products.map(normalizeProductRow);
     const normalizedDrafts = drafts.map(normalizeDraftRow);
     const snapshot = assembleSnapshot({
@@ -242,7 +280,7 @@ export const busabaseProvider = {
         rules: claimRules.map(normalizeClaimRuleRow),
       },
       snapshot,
-    });
+    }, counts);
   },
 
   // Human verdict on a draft, written directly onto the draft record. Ported
@@ -274,6 +312,20 @@ export const busabaseProvider = {
     };
     await upsert("drafts", "draft-id", draft_id, nextFields, `Decision on draft ${draft_id}: ${action}`);
     return { ok: true };
+  },
+
+  async getRecord(key, id) {
+    const idField = RECORD_ID_FIELD[key];
+    if (!idField || !allowedReads.has("records.get")) return null;
+    await ensureResources();
+    const record = await findRecord(key, idField, id);
+    if (!record) return null;
+    const row = {
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    };
+    return normalizePageRows(key, [row])[0] || null;
   },
 
   async fetchPage(key, cursor) {

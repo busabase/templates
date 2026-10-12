@@ -12,6 +12,10 @@ export const appConfig = {
       "Unified chat inbox: WhatsApp/Discord/Slack/Telegram accounts, conversations, messages, and a reply outbox",
     slug: "busa-messenger",
   },
+  // Where each Base with its own record view opens a record (reasoning in
+  // app.js). messages, sync-log and settings have no list of their own: they
+  // render inside a conversation, an account and Help & Settings.
+  ui: { detail_modes: { conversations: "split", replies: "split", accounts: "drawer" } },
   airApp: { name: "Busa Messenger", slug: "busa-messenger-app", resourceKey: "busa-messenger-app" },
   bases: [
     {
@@ -135,7 +139,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

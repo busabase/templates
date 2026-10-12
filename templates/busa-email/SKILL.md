@@ -73,9 +73,10 @@ When changing the product, update the canonical `app/` source first and submit a
 
 Preserve the established approval-desk layout and visual quality:
 
-- Desktop uses a stable sidebar, dense list, and detail pane.
-- Mobile uses one-column navigation with explicit list/detail transitions and no horizontal overflow.
-- The top of the sidebar explains what needs human attention; primary filters are `All`, `Needs Review`, `Approved`, `Done`, and `Blocked`.
+- `Overview` is the first page and the only one with a hero and a three-number summary band.
+- Each review queue is one toolbar row (name, search, bulk decisions) over a full-bleed, one-line-per-message table, with the selected message split beside it (`#/<queue>?peek=<id>`) and one click from a full page (`#/<queue>/<id>`). Escape closes the selection.
+- Mobile uses one-column navigation; a message replaces the list, with Back to list, and nothing overflows horizontally.
+- The top of the sidebar explains what needs human attention; the queues are `All`, `Needs Review`, `Approved`, `Done`, and `Blocked`.
 - Categories are badges on messages, not primary navigation.
 - `Help & Settings` contains Guide, Files, Accounts, Profile, Style, Knowledge, Config, and appearance controls.
 - Onboarding is a full-screen readiness gate showing declared resources, Settings configuration, and Vault reference readiness. It never asks users to copy IDs or create nodes manually.

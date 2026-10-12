@@ -1,62 +1,79 @@
 import { messages } from "./i18n/messages.js";
 import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
-import { buildSnapshot } from "./js/money-model.js?v=0.1.0";
-import { createPagination } from "./js/pagination.js?v=0.1.0";
+import { summarizeAccounts } from "./js/money-model.js?v=0.1.0";
+import { renderOverview, renderRecordView, renderSettings } from "./js/money-views.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
 
-const state = {
+// Where a record opens, per view. Chosen by what people do with the record:
+//   ledger   → drawer: a transaction is a fact you scan many of — read the
+//                      amounts and its invoice, then go back to the list.
+//   accounts → page:   an account is a workplace — balances, sync health and
+//                      its own slice of the ledger; you stay a while.
+//   invoices → split:  reconciliation is a queue worked top to bottom, one
+//                      exception after the next, so the queue stays beside it.
+// A `/record` path always opens the full page; `?peek=` drives drawer/split.
+// On a phone every mode is a page (base-ui.css handles that).
+// Declared once, in config.js `ui.detail_modes`.
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+// Route name → Base key (and snapshot array) behind it.
+export const VIEW_BASE = { ledger: "transactions", accounts: "accounts", invoices: "invoices" };
+const ID_FIELD = { transactions: "transaction_id", accounts: "account_id", invoices: "invoice_id" };
+const INVOICE_STATES = ["all", "review", "matched"];
+
+export const state = {
   snapshot: null,
   settings: null,
+  provider: null,
+  // Load more: nextCursor per Base (null at the end). One click, one request,
+  // appended without duplicates — never a loop that drains the Base.
+  cursors: {},
+  loadingMore: {},
+  totals: {},
+  // Records opened by URL that are not on the loaded page (records.get).
+  extra: { transactions: new Map(), accounts: new Map(), invoices: new Map() },
+  // Matches looked up on their own, keyed `<field>:<value>`.
+  extraMatches: new Map(),
   route: parseRoute(),
-  query: "",
+  notice: "",
   lang: normalizeLang(
     new URLSearchParams(location.search).get("lang") || localStorage.getItem("busa-money-language") || "auto",
   ),
-  demo: new URLSearchParams(location.search).get("demo") || "",
 };
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-money.sidebarCollapsed";
 
-const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  attentionPrimary: document.querySelector("#attention-primary"),
-  attentionSecondary: document.querySelector("#attention-secondary"),
-  reviewCount: document.querySelector("#count-review"),
-  txCount: document.querySelector("#count-transactions"),
-  accountCount: document.querySelector("#count-accounts"),
-  language: document.querySelector("#language"),
+const byId = (id) => document.getElementById(id);
+export const els = {
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  viewFilters: byId("viewFilters"),
+  statusSelect: byId("statusSelect"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  viewRefresh: byId("viewRefresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  reviewCount: byId("count-review"),
+  txCount: byId("count-transactions"),
+  accountCount: byId("count-accounts"),
+  language: byId("language"),
 };
-
-const PAGINATED_KEYS = ["accounts", "transactions", "invoices"];
-const pagination = createPagination({
-  getProvider,
-  pageSizes: Object.fromEntries(appConfig.bases.map((base) => [base.key, base.readLimit])),
-  applyPage: (key, rows) => {
-    state.snapshot = buildSnapshot({
-      accounts: key === "accounts" ? rows : state.snapshot.accounts,
-      transactions: key === "transactions" ? rows : state.snapshot.transactions,
-      invoices: key === "invoices" ? rows : state.snapshot.invoices,
-      invoiceMatches: state.snapshot.invoice_matches,
-    });
-  },
-  render: () => render(),
-  label: (key) => t(key),
-  onError: (error) => {
-    state.pageError = error instanceof Error ? error.message : String(error);
-  },
-});
 
 function isMobileLayout() {
   return window.matchMedia("(max-width: 720px)").matches;
@@ -109,53 +126,229 @@ function normalizeLang(lang) {
     : lang || "auto";
 }
 
-function t(key) {
+export function t(key) {
   return messages[activeLang()]?.[key] || messages.en[key] || key;
 }
 
-function enumLabel(value, group = "status") {
+export function enumLabel(value, group = "status") {
   if (!value) return "";
   const key = String(value);
   return messages[activeLang()]?.enum?.[group]?.[key] || messages.en.enum?.[group]?.[key] || key.replaceAll("_", " ");
 }
 
-function money(value, currency = state.snapshot?.base_currency || "USD") {
-  return new Intl.NumberFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 2,
-  }).format(Number(value || 0));
+export function money(value, currency = state.snapshot?.base_currency || "USD") {
+  try {
+    return new Intl.NumberFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
+      style: "currency",
+      currency: currency || "USD",
+      maximumFractionDigits: 2,
+    }).format(Number(value || 0));
+  } catch {
+    return `${Number(value || 0).toFixed(2)} ${currency}`;
+  }
 }
 
-function date(value) {
+export function date(value, withTime = false) {
   if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
   return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
     month: "short",
     day: "2-digit",
     year: "numeric",
-  }).format(new Date(value));
+    ...(withTime ? { hour: "2-digit", minute: "2-digit" } : {}),
+  }).format(parsed);
 }
 
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&status=…&peek=…]`. Search, the invoice match
+// filter and the peeked record live in the URL so refresh, shared links and
+// Back restore the same list context.
 function parseRoute() {
-  const parts = (location.hash || "#/ledger").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "ledger", id: parts[1] || "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  const status = params.get("status") || "all";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+    status: view === "invoices" && INVOICE_STATES.includes(status) ? status : "all",
+  };
 }
+
+export const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  if (route.view === "invoices" && route.status !== "all") params.set("status", route.status);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+const sameViewRoute = (view) => (view === state.route.view ? state.route : { view, query: "", status: "all" });
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) =>
+  `#/${view}/${encodeURIComponent(id)}${routeQuery({}, sameViewRoute(view))}`;
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) =>
+  DETAIL_MODES[view] === "page" ? detailUrl(id, view) : `#/${view}${routeQuery({ peek: id }, sameViewRoute(view))}`;
+
+let previousRouteWasList = false;
+let routeSerial = 0;
 
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  state.notice = "";
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
+  render();
+  ensureSelectedRecord();
+}
+
+// Replace the current entry without a hashchange: search keystrokes and filter
+// clicks should not each become a Back step.
+export function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
   render();
 }
 
-async function loadState() {
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── Data ───────────────────────────────────────────────────────────────────
+export async function loadState() {
   const provider = await getProvider();
+  state.provider = provider;
   const data = await provider.getState();
-  pagination.reset(data.pagination, data.totals);
   closeConnectGate();
   state.snapshot = data.snapshot;
   state.settings = data;
+  state.cursors = { ...(data.pagination || {}) };
+  state.loadingMore = {};
+  state.totals = data.totals || {};
+  state.extra = { transactions: new Map(), accounts: new Map(), invoices: new Map() };
+  state.extraMatches = new Map();
   window.dispatchEvent(new CustomEvent("busa-money:state", { detail: data }));
   applyDemoRoute();
   render();
+  ensureSelectedRecord();
+}
+
+// True while a Base holds only part of its rows. Anything counted or summed
+// from loaded rows must say so.
+export function isPartial(key) {
+  return Boolean(state.cursors[key]);
+}
+
+// Matches are read one page at a time too; when that page is not the whole
+// Base (or the read failed), "no match found" means "not loaded", not "missing".
+export function matchesIncomplete() {
+  return isPartial("invoice-matches") || Boolean(state.settings?.side_errors?.["invoice-matches"]);
+}
+
+// The real total for a Base when records.count answered, else the loaded rows
+// marked `+` while more pages exist.
+export function totalLabel(key, loaded) {
+  const total = state.totals[key];
+  if (total != null) return String(total);
+  return `${loaded}${isPartial(key) ? "+" : ""}`;
+}
+
+// Appends exactly one more page for `key` — one request per click.
+export async function loadMore(key) {
+  const cursor = state.cursors[key];
+  if (!cursor || state.loadingMore[key]) return;
+  const provider = state.provider;
+  if (typeof provider?.fetchPage !== "function") return;
+  state.loadingMore[key] = true;
+  render();
+  try {
+    const { rows, nextCursor } = await provider.fetchPage(key, cursor);
+    const idField = ID_FIELD[key];
+    const existing = state.snapshot[key] || [];
+    const seen = new Set(existing.map((row) => row[idField]));
+    state.snapshot[key] = [...existing, ...rows.filter((row) => !seen.has(row[idField]))];
+    state.cursors[key] = nextCursor || null;
+    if (key === "accounts") {
+      const { metrics, warnings } = summarizeAccounts(state.snapshot.accounts, state.snapshot.transactions.length);
+      state.snapshot.metrics = metrics;
+      state.snapshot.warnings = warnings;
+    }
+  } catch (error) {
+    state.notice = error instanceof Error ? error.message : String(error);
+  } finally {
+    state.loadingMore[key] = false;
+    render();
+  }
+}
+
+// A record named by the URL but not on the loaded page is read on its own
+// (records.get by its business id) instead of loading more pages to find it.
+// The same goes for the invoice match an opened invoice or transaction needs.
+async function ensureSelectedRecord() {
+  const { view, selectedId } = state.route;
+  if (!state.snapshot || !selectedId || !RECORD_VIEWS.includes(view)) return;
+  const key = VIEW_BASE[view];
+  const provider = state.provider;
+  const serial = ++routeSerial;
+  let changed = false;
+  if (!recordById(key, selectedId) && !state.extra[key].has(selectedId)) {
+    if (typeof provider?.getRecord !== "function") {
+      state.extra[key].set(selectedId, null);
+      render();
+      return;
+    }
+    state.extra[key].set(selectedId, undefined);
+    try {
+      state.extra[key].set(selectedId, (await provider.getRecord(key, selectedId)) || null);
+    } catch {
+      state.extra[key].set(selectedId, null);
+    }
+    changed = true;
+  }
+  const matchField = key === "invoices" ? "invoice-id" : key === "transactions" ? "transaction-id" : "";
+  if (matchField && matchesIncomplete() && typeof provider?.getRecord === "function") {
+    const lookup = `${matchField}:${selectedId}`;
+    const loaded = key === "invoices" ? loadedMatchForInvoice(selectedId) : loadedMatchForTransaction(selectedId);
+    if (!loaded && !state.extraMatches.has(lookup)) {
+      state.extraMatches.set(lookup, undefined);
+      try {
+        state.extraMatches.set(lookup, (await provider.getRecord("invoice-matches", selectedId, matchField)) || null);
+      } catch {
+        state.extraMatches.delete(lookup);
+      }
+      changed = true;
+    }
+  }
+  if (changed && serial === routeSerial) render();
 }
 
 function applyDemoRoute() {
@@ -165,7 +358,7 @@ function applyDemoRoute() {
     scenario === "accounts"
       ? "#/accounts"
       : scenario === "detail"
-        ? "#/invoices/inv-render-20260625"
+        ? "#/invoices?peek=inv-render-20260625"
         : scenario === "ledger"
           ? "#/ledger"
           : scenario === "invoices"
@@ -173,8 +366,131 @@ function applyDemoRoute() {
             : "#/overview";
   history.replaceState(null, "", `${location.pathname}${location.search}${route}`);
   state.route = parseRoute();
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 }
 
+// ── Selectors ──────────────────────────────────────────────────────────────
+export const transactions = () => state.snapshot?.transactions || [];
+export const accounts = () => state.snapshot?.accounts || [];
+export const invoices = () => state.snapshot?.invoices || [];
+export const invoiceMatches = () => state.snapshot?.invoice_matches || [];
+
+// Loaded page first, then a record fetched on its own for the URL.
+export function recordById(key, id) {
+  if (!id) return null;
+  return (state.snapshot?.[key] || []).find((item) => item[ID_FIELD[key]] === id) || state.extra[key]?.get(id) || null;
+}
+
+const loadedMatchForInvoice = (invoiceId) => invoiceMatches().find((match) => match.invoice_id === invoiceId);
+const loadedMatchForTransaction = (transactionId) =>
+  invoiceMatches().find((match) => match.transaction_id === transactionId);
+
+// `undefined` = not known (match page incomplete and not looked up yet),
+// `null` = known to have no match.
+export function matchForInvoice(invoiceId) {
+  const loaded = loadedMatchForInvoice(invoiceId);
+  if (loaded) return loaded;
+  const extra = state.extraMatches.get(`invoice-id:${invoiceId}`);
+  if (extra !== undefined) return extra;
+  return matchesIncomplete() ? undefined : null;
+}
+
+export function matchForTransaction(transactionId) {
+  const loaded = loadedMatchForTransaction(transactionId);
+  if (loaded) return loaded;
+  const extra = state.extraMatches.get(`transaction-id:${transactionId}`);
+  if (extra !== undefined) return extra;
+  return matchesIncomplete() ? undefined : null;
+}
+
+// A relation here is a business id (`stripe-main`). Resolve it to a name;
+// when the target is not loaded, say so — never print the id.
+export function accountName(accountId) {
+  if (!accountId) return "";
+  return recordById("accounts", accountId)?.display_name || t("notLoaded");
+}
+
+export function invoiceNumber(invoiceId) {
+  if (!invoiceId) return "";
+  return recordById("invoices", invoiceId)?.invoice_number || t("notLoaded");
+}
+
+// An invoice needs review when its match is anything but `matched`, or when it
+// has no match at all. Unknown (match not loaded) is not counted.
+export function invoiceNeedsReview(invoice) {
+  const match = matchForInvoice(invoice.invoice_id);
+  if (match === undefined) return false;
+  return !match || match.status !== "matched";
+}
+
+export const reviewInvoices = () => invoices().filter(invoiceNeedsReview);
+
+export function invoiceStatusKey(invoice) {
+  const match = matchForInvoice(invoice.invoice_id);
+  if (match === undefined) return "unknown";
+  return match ? match.status : "missing";
+}
+
+function matches(values, query) {
+  return values.filter(Boolean).some((value) => String(value).toLowerCase().includes(query));
+}
+
+export function filteredTransactions(accountId = "") {
+  const query = state.route.query.trim().toLowerCase();
+  return transactions().filter((tx) => {
+    if (accountId && tx.account_id !== accountId) return false;
+    if (!query || accountId) return true;
+    const match = matchForTransaction(tx.transaction_id);
+    return matches(
+      [
+        tx.description,
+        tx.counterparty,
+        tx.provider,
+        accountName(tx.account_id),
+        enumLabel(tx.type, "type"),
+        enumLabel(tx.status),
+        match ? enumLabel(match.status) : "",
+        match ? invoiceNumber(match.invoice_id) : "",
+      ],
+      query,
+    );
+  });
+}
+
+export function filteredAccounts() {
+  const query = state.route.query.trim().toLowerCase();
+  if (!query) return accounts();
+  return accounts().filter((account) =>
+    matches([account.display_name, account.provider, account.entity, account.currency, enumLabel(account.status)], query),
+  );
+}
+
+export function filteredInvoices() {
+  const query = state.route.query.trim().toLowerCase();
+  return invoices().filter((invoice) => {
+    if (state.route.status === "review" && !invoiceNeedsReview(invoice)) return false;
+    if (state.route.status === "matched" && invoiceStatusKey(invoice) !== "matched") return false;
+    if (!query) return true;
+    return matches(
+      [
+        invoice.invoice_number,
+        invoice.vendor,
+        invoice.customer,
+        enumLabel(invoice.status),
+        enumLabel(invoice.direction),
+        invoice.source,
+        enumLabel(invoiceStatusKey(invoice)),
+      ],
+      query,
+    );
+  });
+}
+
+export function invoiceStates() {
+  return INVOICE_STATES;
+}
+
+// ── Shell ──────────────────────────────────────────────────────────────────
 function applyI18n() {
   document.documentElement.lang = activeLang() === "zh" ? "zh-CN" : "en";
   document.querySelectorAll("[data-i18n]").forEach((node) => {
@@ -186,27 +502,36 @@ function applyI18n() {
     option.textContent = languageLabels[option.value] || option.textContent;
   }
   els.search.placeholder = t("search");
+  els.search.setAttribute("aria-label", t("search"));
   els.refresh.textContent = t("refresh");
+  els.refresh.title = t("refresh");
+  els.viewRefresh.title = t("refresh");
+  els.viewRefresh.setAttribute("aria-label", t("refresh"));
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
+  byId("overviewTitle").textContent = t("overview");
+  byId("settingsTitle").textContent = t("settings");
+  els.detailExpand.textContent = t("openFullPage");
+  els.statusSelect.setAttribute("aria-label", t("match"));
 }
 
 function renderShell() {
   applyI18n();
   const snapshot = state.snapshot;
-  const warningCount = snapshot?.warnings?.length || 0;
-  const reviewCount = invoiceMatches().filter((match) => match.status !== "matched").length;
-  const configuredCount = pagination.total("accounts", state.settings?.config_summary?.accounts?.length || 0);
-  const txCount = pagination.total("transactions", snapshot?.transactions?.length || 0);
-  els.syncStatus.textContent = snapshot ? `${txCount} ${t("tx")}` : t("empty");
-  if (els.reviewCount) els.reviewCount.textContent = reviewCount + warningCount;
+  const review = reviewInvoices().length;
+  const reviewLabel = `${review}${isPartial("invoices") ? "+" : ""}`;
+  const configuredCount = totalLabel("accounts", accounts().length);
+  const txCount = totalLabel("transactions", transactions().length);
+  // Where the data comes from — the counts already sit in the attention block.
+  els.syncStatus.textContent = !snapshot ? t("loading") : state.settings?.demo ? t("demoData") : t("liveData");
+  if (els.reviewCount) els.reviewCount.textContent = reviewLabel;
   if (els.txCount) els.txCount.textContent = txCount;
   if (els.accountCount) els.accountCount.textContent = configuredCount;
   if (els.mobileViewTitle) els.mobileViewTitle.textContent = viewLabel(state.route.view);
   if (els.mobileViewMeta) {
-    els.mobileViewMeta.textContent = reviewCount
-      ? `${reviewCount} ${t("invoiceNeedsReview")}`
-      : warningCount
-        ? `${warningCount} ${t("warnings")}`
+    els.mobileViewMeta.textContent = !snapshot
+      ? t("loading")
+      : review
+        ? `${reviewLabel} ${t("invoiceNeedsReview")}`
         : `${txCount} ${t("tx")}`;
   }
   document.querySelectorAll("[data-route]").forEach((link) => {
@@ -214,488 +539,36 @@ function renderShell() {
   });
 }
 
-function viewLabel(view) {
-  if (view === "overview") return t("overview");
+export function viewLabel(view) {
+  if (view === "ledger") return t("ledger");
   if (view === "accounts") return t("accounts");
   if (view === "invoices") return t("invoices");
   if (view === "settings") return t("settings");
-  return t("ledger");
+  return t("overview");
 }
 
-function metricCards() {
-  const metrics = state.snapshot?.metrics || {};
-  return `
-    <div class="metrics">
-      <div class="metric"><span>${t("grossIn")}</span><strong>${money(metrics.gross_inflow)}</strong></div>
-      <div class="metric"><span>${t("grossOut")}</span><strong>${money(metrics.gross_outflow)}</strong></div>
-      <div class="metric"><span>${t("fees")}</span><strong>${money(metrics.fees)}</strong></div>
-      <div class="metric"><span>${t("net")}</span><strong>${money(metrics.net)}</strong></div>
-    </div>
-  `;
-}
-
-function filteredTransactions(accountId = "") {
-  const query = state.query.trim().toLowerCase();
-  return (state.snapshot?.transactions || []).filter((tx) => {
-    if (accountId && tx.account_id !== accountId) return false;
-    if (!query) return true;
-    const match = matchForTransaction(tx.transaction_id);
-    return [
-      tx.description,
-      tx.counterparty,
-      tx.provider,
-      tx.account_id,
-      tx.type,
-      tx.status,
-      match?.status,
-      invoiceForMatch(match)?.invoice_number,
-    ]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query));
-  });
-}
-
-function ledgerTable(transactions) {
-  if (!transactions.length) return `<div class="empty">${t("empty")}</div>`;
-  return `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>${t("date")}</th><th>${t("description")}</th><th>${t("provider")}</th><th>${t("account")}</th><th>${t("type")}</th><th>${t("status")}</th><th>${t("invoice")}</th><th>${t("currency")}</th><th>${t("gross")}</th><th>${t("fee")}</th><th>${t("net")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${transactions
-            .map(
-              (tx) => `
-            <tr>
-              <td>${date(tx.occurred_at)}</td>
-              <td><div class="strong">${escapeHtml(tx.description)}</div><div class="muted">${escapeHtml(tx.counterparty || tx.provider_transaction_id || "")}</div></td>
-              <td><span class="badge">${escapeHtml(tx.provider)}</span></td>
-              <td><a href="#/accounts/${encodeURIComponent(tx.account_id)}">${escapeHtml(accountName(tx.account_id))}</a></td>
-              <td>${escapeHtml(enumLabel(tx.type, "type"))}</td>
-              <td>${escapeHtml(enumLabel(tx.status))}</td>
-              <td>${invoiceBadgeForTransaction(tx.transaction_id)}</td>
-              <td>${escapeHtml(tx.currency || "")}</td>
-              <td class="num">${money(tx.gross, tx.currency)}</td>
-              <td class="num">${money(tx.fee, tx.currency)}</td>
-              <td class="num ${Number(tx.net) < 0 ? "negative" : "positive"}">${money(tx.net, tx.currency)}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-function accountName(accountId) {
-  return state.snapshot?.accounts?.find((account) => account.account_id === accountId)?.display_name || accountId;
-}
-
-function renderLedger() {
-  els.title.textContent = t("ledger");
-  els.subtitle.textContent = state.snapshot?.generated_at
-    ? `${t("generated")} ${new Date(state.snapshot.generated_at).toLocaleString()}`
-    : t("empty");
-  els.content.innerHTML = `${metricCards()}${warnings()}${ledgerTable(filteredTransactions())}`;
-}
-
-function renderOverview() {
-  els.title.textContent = t("overview");
-  els.subtitle.textContent = state.snapshot?.generated_at
-    ? `${t("generated")} ${new Date(state.snapshot.generated_at).toLocaleString()}`
-    : t("empty");
-  const accounts = state.snapshot?.accounts || [];
-  const recent = filteredTransactions().slice(0, 6);
-  els.content.innerHTML = `
-    ${metricCards()}
-    ${warnings()}
-    <section class="overview-grid">
-      <div class="overview-panel">
-        <h2>${t("accountHealth")}</h2>
-        ${accounts
-          .map(
-            (account) => `
-          <a class="health-row" href="#/accounts/${encodeURIComponent(account.account_id)}">
-            <span><strong>${escapeHtml(account.display_name)}</strong><small>${escapeHtml(account.provider)} · ${escapeHtml(account.currency)}</small></span>
-            <span class="num">${money(account.balance?.current, account.currency)}</span>
-            <span class="status ${account.status}">${escapeHtml(enumLabel(account.status))}</span>
-          </a>
-        `,
-          )
-          .join("")}
-      </div>
-      <div class="overview-panel">
-        <h2>${t("recentMoneyMovement")}</h2>
-        ${recent
-          .map(
-            (tx) => `
-          <div class="movement-row">
-            <span><strong>${escapeHtml(tx.description)}</strong><small>${escapeHtml(tx.counterparty || tx.provider)}</small></span>
-            <span class="num ${Number(tx.net) < 0 ? "negative" : "positive"}">${money(tx.net, tx.currency)}</span>
-          </div>
-        `,
-          )
-          .join("")}
-      </div>
-      <div class="overview-panel wide">
-        <h2>${t("invoiceMatching")}</h2>
-        <div class="invoice-summary">
-          ${invoiceSummaryCards()}
-        </div>
-      </div>
-    </section>
-  `;
-}
-
-function renderAccounts() {
-  els.title.textContent = t("accounts");
-  els.subtitle.textContent = `${pagination.total("accounts", state.snapshot?.accounts?.length || 0)} ${t("configured")}`;
-  const accounts = state.snapshot?.accounts || [];
-  els.content.innerHTML = accounts.length
-    ? `
-    <div class="account-grid">
-      ${accounts
-        .map(
-          (account) => `
-        <a class="account-card" href="#/accounts/${encodeURIComponent(account.account_id)}">
-          <div class="row between"><strong>${escapeHtml(account.display_name)}</strong><span class="badge">${escapeHtml(account.provider)}</span></div>
-          <div class="muted">${escapeHtml(account.entity || account.account_id)} · ${escapeHtml(account.currency)}</div>
-          <div class="balance">${money(account.balance?.current, account.currency)}</div>
-          <div class="row stats">
-            <span>${t("grossIn")} ${money(account.totals?.gross_inflow, account.currency)}</span>
-            <span>${t("grossOut")} ${money(account.totals?.gross_outflow, account.currency)}</span>
-            <span>${t("net")} ${money(account.totals?.net, account.currency)}</span>
-          </div>
-          <div class="muted account-sync">${t("lastSync")} · ${date(account.last_sync_at)}</div>
-          <div class="status ${account.status}">${escapeHtml(enumLabel(account.status))}</div>
-        </a>
-      `,
-        )
-        .join("")}
-    </div>
-  `
-    : `<div class="empty">${t("empty")}</div>`;
-}
-
-function renderInvoices() {
-  els.title.textContent = t("invoices");
-  const invoices = filteredInvoices();
-  const matches = invoiceMatches();
-  const needsReview = matches.filter((match) => match.status !== "matched").length;
-  els.subtitle.textContent = `${pagination.total("invoices", invoices.length)} ${t("invoices")} · ${needsReview} ${t("invoiceNeedsReview")}`;
-  els.content.innerHTML = `
-    <div class="metrics invoice-metrics">
-      ${invoiceSummaryCards()}
-    </div>
-    <div class="invoice-layout">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>${t("invoice")}</th><th>${t("vendorCustomer")}</th><th>${t("issueDate")}</th><th>${t("dueDate")}</th><th>${t("status")}</th><th>${t("match")}</th><th>${t("review")}</th><th>${t("amount")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${invoices
-              .map((invoice) => {
-                const match = matchForInvoice(invoice.invoice_id);
-                return `
-                <tr>
-                  <td><a href="#/invoices/${encodeURIComponent(invoice.invoice_id)}"><strong>${escapeHtml(invoice.invoice_number)}</strong></a><div class="muted">${escapeHtml(enumLabel(invoice.direction))}</div></td>
-                  <td>${escapeHtml(invoice.vendor || invoice.customer || "")}</td>
-                  <td>${date(invoice.issue_date)}</td>
-                  <td>${date(invoice.due_date)}</td>
-                  <td>${escapeHtml(enumLabel(invoice.status))}</td>
-                  <td>${invoiceMatchBadge(match)}</td>
-                  <td>${escapeHtml(enumLabel(match?.review_status || "needs_review"))}</td>
-                  <td class="num">${money(invoice.total, invoice.currency)}</td>
-                </tr>
-              `;
-              })
-              .join("")}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-}
-
-function renderInvoiceDetail() {
-  const invoice = invoices().find((item) => item.invoice_id === state.route.id);
-  if (!invoice) {
-    renderInvoices();
-    return;
-  }
-  const match = matchForInvoice(invoice.invoice_id);
-  const tx = match?.transaction_id ? transactionById(match.transaction_id) : null;
-  els.title.textContent = invoice.invoice_number;
-  els.subtitle.textContent = `${invoice.vendor || invoice.customer || ""} · ${enumLabel(invoice.status)}`;
-  els.content.innerHTML = `
-    <section class="detail">
-      <div class="detail-main">
-        ${invoiceDetailPanel(invoice, match, tx)}
-        ${match?.notes?.length ? `<div class="warnings">${match.notes.map((note) => `<div><strong>${escapeHtml(note)}</strong></div>`).join("")}</div>` : ""}
-        ${tx ? ledgerTable([tx]) : `<div class="empty">${t("noMatchingTransaction")}</div>`}
-      </div>
-      <aside class="detail-side">
-        <h2>${t("invoiceDetail")}</h2>
-        <dl>
-          <dt>${t("direction")}</dt><dd>${escapeHtml(enumLabel(invoice.direction))}</dd>
-          <dt>${t("currency")}</dt><dd>${escapeHtml(invoice.currency)}</dd>
-          <dt>${t("subtotal")}</dt><dd>${money(invoice.subtotal, invoice.currency)}</dd>
-          <dt>${t("tax")}</dt><dd>${money(invoice.tax, invoice.currency)}</dd>
-          <dt>${t("total")}</dt><dd>${money(invoice.total, invoice.currency)}</dd>
-          <dt>${t("source")}</dt><dd>${escapeHtml(invoice.source || "")}</dd>
-          <dt>${t("rule")}</dt><dd>${escapeHtml(match?.matching_rule || "")}</dd>
-          <dt>${t("review")}</dt><dd>${escapeHtml(enumLabel(match?.review_status || "needs_review"))}</dd>
-        </dl>
-      </aside>
-    </section>
-  `;
-}
-
-function renderAccountDetail() {
-  const account = state.snapshot?.accounts?.find((item) => item.account_id === state.route.id);
-  if (!account) {
-    renderAccounts();
-    return;
-  }
-  els.title.textContent = account.display_name;
-  els.subtitle.textContent = `${account.provider} · ${account.currency} · ${enumLabel(account.status)}`;
-  els.content.innerHTML = `
-    <section class="detail">
-      <div class="detail-main">
-        ${warnings(account.account_id)}
-        ${metricCardsFor(account)}
-        ${ledgerTable(filteredTransactions(account.account_id))}
-      </div>
-      <aside class="detail-side">
-        <h2>${t("accountDetail")}</h2>
-        <dl>
-          <dt>${t("provider")}</dt><dd>${escapeHtml(account.provider)}</dd>
-          <dt>${t("accountId")}</dt><dd>${escapeHtml(account.account_id)}</dd>
-          <dt>${t("providerId")}</dt><dd>${escapeHtml(account.provider_account_id || "")}</dd>
-          <dt>${t("lastSync")}</dt><dd>${escapeHtml(account.last_sync_at || "")}</dd>
-          <dt>${t("available")}</dt><dd>${money(account.balance?.available, account.currency)}</dd>
-          <dt>${t("pending")}</dt><dd>${money(account.balance?.pending, account.currency)}</dd>
-        </dl>
-      </aside>
-    </section>
-  `;
-}
-
-function metricCardsFor(account) {
-  return `
-    <div class="metrics">
-      <div class="metric"><span>${t("current")}</span><strong>${money(account.balance?.current, account.currency)}</strong></div>
-      <div class="metric"><span>${t("grossIn")}</span><strong>${money(account.totals?.gross_inflow, account.currency)}</strong></div>
-      <div class="metric"><span>${t("fees")}</span><strong>${money(account.totals?.fees, account.currency)}</strong></div>
-      <div class="metric"><span>${t("net")}</span><strong>${money(account.totals?.net, account.currency)}</strong></div>
-    </div>
-  `;
-}
-
-function renderSettings() {
-  els.title.textContent = t("settings");
-  els.subtitle.textContent = t("localFilesOnly");
-  const summary = state.settings?.config_summary || {};
-  els.content.innerHTML = `
-    <div class="settings">
-      <section>
-        <h2>${t("configuration")}</h2>
-        <dl>
-          <dt>${t("provider")}</dt><dd>${escapeHtml(state.settings?.data_provider || "local")}</dd>
-          <dt>${t("configPath")}</dt><dd>${escapeHtml(summary.config_path || "")}</dd>
-          <dt>${t("onboarding")}</dt><dd>${state.settings?.onboarding?.completed ? t("completed") : t("incomplete")}</dd>
-        </dl>
-      </section>
-      <section>
-        <h2>${t("accounts")}</h2>
-        ${
-          (summary.accounts || [])
-            .map(
-              (account) => `
-          <div class="settings-account">
-            <strong>${escapeHtml(account.display_name)}</strong>
-            <span>${escapeHtml(account.provider)} · ${escapeHtml(account.currency || "")}</span>
-            <span>${account.secrets_ready ? t("secretsReady") : t("missingSecrets")}</span>
-          </div>
-        `,
-            )
-            .join("") || `<div class="empty">${t("setupNeeded")}</div>`
-        }
-      </section>
-    </div>
-  `;
-}
-
-function invoices() {
-  return state.snapshot?.invoices || [];
-}
-
-function invoiceMatches() {
-  return state.snapshot?.invoice_matches || [];
-}
-
-function filteredInvoices() {
-  const query = state.query.trim().toLowerCase();
-  if (!query) return invoices();
-  return invoices().filter((invoice) => {
-    const match = matchForInvoice(invoice.invoice_id);
-    return [
-      invoice.invoice_number,
-      invoice.vendor,
-      invoice.customer,
-      invoice.status,
-      invoice.direction,
-      invoice.source,
-      match?.status,
-    ]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query));
-  });
-}
-
-function matchForTransaction(transactionId) {
-  return invoiceMatches().find((match) => match.transaction_id === transactionId);
-}
-
-function matchForInvoice(invoiceId) {
-  return invoiceMatches().find((match) => match.invoice_id === invoiceId);
-}
-
-function invoiceForMatch(match) {
-  if (!match) return null;
-  return invoices().find((invoice) => invoice.invoice_id === match.invoice_id);
-}
-
-function transactionById(transactionId) {
-  return (state.snapshot?.transactions || []).find((tx) => tx.transaction_id === transactionId);
-}
-
-function invoiceBadgeForTransaction(transactionId) {
-  const match = matchForTransaction(transactionId);
-  if (!match) return `<span class="invoice-badge missing">${escapeHtml(enumLabel("missing"))}</span>`;
-  const invoice = invoiceForMatch(match);
-  return `<a class="invoice-badge ${escapeHtml(match.status)}" href="#/invoices/${encodeURIComponent(match.invoice_id)}">${escapeHtml(invoice?.invoice_number || match.status)}</a>`;
-}
-
-function invoiceMatchBadge(match) {
-  if (!match) return `<span class="invoice-badge missing">${escapeHtml(enumLabel("missing"))}</span>`;
-  return `<span class="invoice-badge ${escapeHtml(match.status)}">${escapeHtml(enumLabel(match.status))}</span>`;
-}
-
-function invoiceSummaryCards() {
-  const matches = invoiceMatches();
-  const matched = matches.filter((match) => match.status === "matched").length;
-  const review = matches.filter((match) => match.status !== "matched").length;
-  const missing = invoices().filter((invoice) => !matchForInvoice(invoice.invoice_id)).length;
-  const total = invoices().reduce((sum, invoice) => sum + Number(invoice.total || 0), 0);
-  return `
-    <div class="metric"><span>${t("invoices")}</span><strong>${invoices().length}</strong></div>
-    <div class="metric"><span>${t("invoiceMatched")}</span><strong>${matched}</strong></div>
-    <div class="metric"><span>${t("invoiceNeedsReview")}</span><strong>${review + missing}</strong></div>
-    <div class="metric"><span>${t("total")}</span><strong>${money(total)}</strong></div>
-  `;
-}
-
-function invoiceDetailPanel(invoice, match, tx) {
-  return `
-    <div class="invoice-detail-panel">
-      <div>
-        <span class="muted">${t("invoiceAmount")}</span>
-        <strong>${money(invoice.total, invoice.currency)}</strong>
-      </div>
-      <div>
-        <span class="muted">${t("matchStatus")}</span>
-        ${invoiceMatchBadge(match)}
-      </div>
-      <div>
-        <span class="muted">${t("confidence")}</span>
-        <strong>${match ? `${Math.round(Number(match.confidence || 0) * 100)}%` : "0%"}</strong>
-      </div>
-      <div>
-        <span class="muted">${t("amountDelta")}</span>
-        <strong class="${Number(match?.amount_delta || 0) === 0 ? "positive" : "negative"}">${money(match?.amount_delta || 0, invoice.currency)}</strong>
-      </div>
-      <div>
-        <span class="muted">${t("dateDelta")}</span>
-        <strong>${match ? `${match.date_delta_days || 0} ${t("days")}` : t("notAvailable")}</strong>
-      </div>
-      <div>
-        <span class="muted">${t("tolerance")}</span>
-        <strong>${match ? `${money(match.amount_tolerance || 0, invoice.currency)} / ${match.date_tolerance_days || 0} ${t("days")}` : t("notAvailable")}</strong>
-      </div>
-      <div>
-        <span class="muted">${t("method")}</span>
-        <strong>${escapeHtml(enumLabel(match?.matching_method || "unmatched"))}</strong>
-      </div>
-      <div>
-        <span class="muted">${t("transaction")}</span>
-        <strong>${escapeHtml(tx?.description || t("notSelected"))}</strong>
-      </div>
-    </div>
-    ${
-      match?.audit_events?.length
-        ? `
-      <div class="audit-panel">
-        <h2>${t("matchAuditTrail")}</h2>
-        ${match.audit_events
-          .map(
-            (event) => `
-          <div class="audit-row">
-            <strong>${escapeHtml(enumLabel(event.event || ""))}</strong>
-            <span>${escapeHtml(event.actor || "")} · ${escapeHtml(event.at || "")}</span>
-            <p>${escapeHtml(event.note || "")}</p>
-          </div>
-        `,
-          )
-          .join("")}
-      </div>
-    `
-        : ""
-    }
-  `;
-}
-
-function warnings(accountId = "") {
-  const items = (state.snapshot?.warnings || []).filter(
-    (item) => !accountId || !item.account_id || item.account_id === accountId,
-  );
-  if (!items.length) return "";
-  return `<div class="warnings">${items
-    .map(
-      (item) => `
-    <div class="${escapeHtml(item.severity || "warning")}">
-      <strong>${escapeHtml(item.message)}</strong>
-      ${item.detail ? `<span>${escapeHtml(item.detail)}</span>` : ""}
-    </div>
-  `,
-    )
-    .join("")}</div>`;
-}
-
-function renderPagedList(renderList, key) {
-  renderList();
-  els.content.insertAdjacentHTML("beforeend", `${pagination.control(key)}`);
-}
-
-function render() {
+export function render() {
   renderShell();
-  if (state.route.view === "accounts" && state.route.id) renderAccountDetail();
-  else if (state.route.view === "accounts") renderPagedList(renderAccounts, "accounts");
-  else if (state.route.view === "invoices" && state.route.id) renderInvoiceDetail();
-  else if (state.route.view === "invoices") renderPagedList(renderInvoices, "invoices");
-  else if (state.route.view === "settings") renderSettings();
-  else if (state.route.view === "overview") renderOverview();
-  else renderPagedList(renderLedger, "transactions");
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
+  else renderOverview();
 }
 
-function escapeHtml(value) {
+export function escapeHtml(value) {
   return String(value ?? "").replace(
     /[&<>"']/g,
     (char) =>
@@ -709,25 +582,89 @@ function escapeHtml(value) {
   );
 }
 
-pagination.bind(els.content);
+// ── Events ─────────────────────────────────────────────────────────────────
+function openRow(url) {
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+}
 
+els.listPanel.addEventListener("click", (event) => {
+  const more = event.target.closest("[data-load-more]");
+  if (more) {
+    loadMore(more.dataset.loadMore);
+    return;
+  }
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (row) openRow(recordUrl(row.dataset.id));
+});
+// Rows inside a detail (an account's ledger) open their own record.
+els.detailBody.addEventListener("click", (event) => {
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-href]");
+  if (row) location.hash = row.dataset.href;
+});
+els.viewFilters.addEventListener("click", (event) => {
+  const segment = event.target.closest("[data-status]");
+  if (!segment) return;
+  replaceRoute(`#/invoices${routeQuery({ peek: state.route.peek }, { ...state.route, status: segment.dataset.status })}`);
+});
+els.statusSelect.addEventListener("change", (event) => {
+  replaceRoute(`#/invoices${routeQuery({ peek: state.route.peek }, { ...state.route, status: event.target.value })}`);
+});
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  if (event.target.closest?.("input, textarea, select")) {
+    event.target.blur();
+    return;
+  }
+  if (document.body.classList.contains("sidebar-open")) {
+    setMobileSidebarOpen(false);
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", () => setMobileSidebarOpen(true));
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
+  replaceRoute(
+    `#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`,
+  );
 });
-els.refresh.addEventListener("click", () => loadState());
-els.mobileRefresh?.addEventListener("click", () => loadState());
+// A failed refresh keeps the rows already on screen and says why.
+for (const button of [els.refresh, els.viewRefresh, els.mobileRefresh]) {
+  button?.addEventListener("click", () =>
+    loadState().catch((error) => {
+      if (!state.snapshot) return showLoadError(error);
+      state.notice = error instanceof Error ? error.message : String(error);
+      render();
+    }),
+  );
+}
 els.language.value = state.lang;
 els.language.addEventListener("change", () => {
   state.lang = normalizeLang(els.language.value);
   localStorage.setItem("busa-money-language", state.lang);
   render();
 });
+
+function showLoadError(error) {
+  state.snapshot = null;
+  render();
+  els.loadState.hidden = false;
+  els.loadState.classList.add("error");
+  els.loadState.textContent = error instanceof Error ? error.message : String(error);
+}
 
 async function boot() {
   const ready = await passConnectGate({ onReady: boot });
@@ -739,9 +676,11 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    showLoadError(error);
   }
 }
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
 boot();

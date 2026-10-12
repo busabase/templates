@@ -12,6 +12,10 @@ export const appConfig = {
     slug: "busa-family-fund",
   },
   airApp: { name: "Busa Family Fund", slug: "busa-family-fund-app", resourceKey: "busa-family-fund-app" },
+  // Where a record opens, per record view (see app.js for the reasoning):
+  // ledger = income + expenses entries, family = families, category = the
+  // expense categories rolled up from expenses.
+  ui: { detail_modes: { ledger: "drawer", family: "page", category: "drawer" } },
   bases: [
     {
       key: "beneficiaries",

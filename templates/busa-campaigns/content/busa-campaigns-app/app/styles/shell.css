@@ -199,7 +199,6 @@
   }
 
   body.sidebar-collapsed .brand-copy,
-  body.sidebar-collapsed .sidebar-search,
   body.sidebar-collapsed .human-work,
   body.sidebar-collapsed .sidebar-separator,
   body.sidebar-collapsed .filters,
@@ -310,8 +309,8 @@
     display: grid;
     place-items: center;
     border-radius: var(--radius-sm);
-    background: #202124;
-    color: var(--accent-contrast);
+    background: var(--ink);
+    color: var(--surface);
     font-size: var(--text-lg);
   }
 
@@ -393,10 +392,13 @@
   }
 
   /* Controls */
+  /* :where() keeps these at element specificity, so component classes
+   * (.search input, .sidebar-toggle) still win; base-ui's .button/.segment
+   * keep their own look. */
   select,
-  input,
+  :where(input:not([type="radio"])),
   textarea,
-  button {
+  :where(button:not(.button, .segment)) {
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
     background: var(--surface);
@@ -406,7 +408,7 @@
   }
 
   select,
-  input {
+  :where(input:not([type="radio"])) {
     min-height: 36px;
     padding: 0 10px;
   }
@@ -424,14 +426,14 @@
     box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.12);
   }
 
-  button {
+  :where(button:not(.button, .segment)) {
     min-height: 34px;
     padding: 0 14px;
     background: var(--panel);
     cursor: pointer;
   }
 
-  button:hover {
+  :where(button:not(.button, .segment)):hover {
     border-color: var(--line-strong);
     background: var(--surface-soft);
   }
@@ -443,13 +445,13 @@
     background: var(--panel-subtle);
   }
 
-  /* Main area */
+  /* Main area: one page at a time (overview, a record view, or settings). */
   .main {
     min-width: 0;
     min-height: 0;
     height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
   }
 
@@ -459,35 +461,5 @@
 
   .mobile-sidebar-toggle {
     display: none;
-  }
-
-  .topbar {
-    position: static;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    min-height: 58px;
-    padding: 10px 18px;
-    border-bottom: 1px solid var(--line);
-    background: var(--surface-blur);
-  }
-
-  .topbar h1 {
-    font-size: var(--text-xl);
-    line-height: 1.2;
-  }
-
-  .topbar-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .content {
-    min-height: 0;
-    overflow: auto;
-    padding: 16px 18px 24px;
   }
 }

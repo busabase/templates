@@ -132,8 +132,20 @@ export const appConfig = {
       ],
     },
   ],
+  // Where a record opens, per Base — chosen by what people do with it:
+  //   questions → page:   a question is a workplace of its own — prompt, both
+  //                       answers, the gentle steps, self check and the child's
+  //                       "I understand" / "another hint" — read for minutes.
+  //   mistakes  → drawer: a mistake card is a fact scanned among many: read the
+  //                       root cause and fix strategy, then back to the notebook.
+  //   papers    → page:   a paper owns its item list, analysis and review plan.
+  //   reviews   → split:  the parent/teacher queue is worked top to bottom, one
+  //                       decision after the next, so the queue stays beside it.
+  ui: {
+    detail_modes: { questions: "page", mistakes: "drawer", papers: "page", reviews: "split" },
+  },
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

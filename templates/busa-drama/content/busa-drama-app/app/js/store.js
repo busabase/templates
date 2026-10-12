@@ -16,9 +16,14 @@ export const URL_LANG = PAGE_QUERY.get("lang") || "";
 export const store = {
   state: null,
   view: "overview",
+  // The record shown in the detail pane (page, drawer or split), or null.
   selectedId: null,
+  // How the selected record is shown: "page" for a `/<view>/<id>` path,
+  // otherwise the view's declared mode ("drawer" | "split") for `?peek=`.
+  presentation: null,
+  // Keyboard cursor in a list whose rows open a full page (no peek to move).
+  cursorId: null,
   query: "",
-  episodeMode: "list",
   episodeTab: "summary",
   isApplyingRoute: false,
   routeNeedsReplace: false,

@@ -20,6 +20,7 @@ import {
   TriangleAlert,
   CircleHelp,
   Settings,
+  X,
 } from "../vendor/lucide.js";
 const root = document.querySelector("#app");
 let locale =
@@ -27,14 +28,20 @@ let locale =
       ? "zh-CN"
       : "en",
   state = null,
-  selected = null,
-  query = "",
-  status = "",
-  drawer = false,
+  navOpen = false,
   loading = false,
-  seq = 0;
+  loadMoreFailed = false,
+  seq = 0,
+  // The parsed hash: the view, the record it names, and the list context
+  // (search + status) that Back and shared links restore.
+  view = { key: "overview", recordId: null, presentation: null, q: "", status: "" };
 const t = (k) => messages[locale][k] || k;
 const name = (b) => b.nameI18n?.[locale] || b.name;
+// Seeded copy is bilingual "English / 中文"; show the reader's half.
+const half = (text) => {
+  const parts = String(text || "").split(" / ");
+  return parts.length === 2 ? parts[locale === "zh-CN" ? 1 : 0] : text || "";
+};
 const esc = (v) =>
   String(v ?? "").replace(
     /[&<>"']/g,
@@ -43,7 +50,6 @@ const esc = (v) =>
         c
       ],
   );
-const route = () => location.hash.slice(2).split("/")[0] || "overview";
 const icons = {
   refresh: RefreshCw,
   menu: Menu,
@@ -52,20 +58,71 @@ const icons = {
   alert: TriangleAlert,
   help: CircleHelp,
   settings: Settings,
+  close: X,
 };
 const icon = (k) =>
   createElement(icons[k], { "aria-hidden": "true" }).outerHTML;
+const baseOf = (key) => appConfig.bases.find((b) => b.key === key);
+const isView = (key) => key === "attention" || Boolean(baseOf(key));
+// How a row opens. Bases declare theirs in `ui.detail_modes`; the cross-register
+// attention queue is not a Base, so its mode is the app's own.
+const detailMode = (key = view.key) =>
+  key === "attention"
+    ? appConfig.ui.attention_detail_mode
+    : appConfig.ui.detail_modes[key] || "drawer";
+const MONEY = ["amount", "balance", "bankBalance", "revenue", "cost"];
+
+// ── Routing: #/<view>[/<record>][?q=&status=&peek=] ──────────────────────
+// A `/record` path is always the full page; `?peek=` is the drawer or split
+// selection, so both are refreshable and shareable.
+function parseHash() {
+  const [path, query = ""] = location.hash.replace(/^#\/?/, "").split("?");
+  const [rawKey, rawId] = path.split("/");
+  const params = new URLSearchParams(query);
+  let key = "overview",
+    id = null;
+  try {
+    key = decodeURIComponent(rawKey || "overview");
+    id = rawId ? decodeURIComponent(rawId) : null;
+  } catch {
+    key = "overview";
+  }
+  if (!isView(key)) return { key: "overview", recordId: null, presentation: null, q: "", status: "" };
+  const peek = detailMode(key) === "page" ? null : params.get("peek");
+  return {
+    key,
+    recordId: id || peek || null,
+    presentation: id ? "page" : detailMode(key) === "page" ? null : detailMode(key),
+    q: params.get("q") || "",
+    status: params.get("status") || "",
+  };
+}
+const listQuery = (extra = {}) => {
+  const params = new URLSearchParams();
+  if (view.q) params.set("q", view.q);
+  if (view.status) params.set("status", view.status);
+  for (const [k, v] of Object.entries(extra)) if (v) params.set(k, v);
+  const text = params.toString();
+  return text ? "?" + text : "";
+};
+const listUrl = () => "#/" + view.key + listQuery();
+const pageUrl = (id) => "#/" + view.key + "/" + encodeURIComponent(id) + listQuery();
+const recordUrl = (id) =>
+  detailMode() === "page" ? pageUrl(id) : "#/" + view.key + listQuery({ peek: id });
+
 function badge(s) {
   const cls = ["blocked", "exception", "restricted"].includes(s)
-    ? "bad"
+    ? "danger"
     : ["paid", "accepted", "filed", "issued", "matched", "reconciled"].includes(
           s,
         )
-      ? "good"
+      ? "positive"
       : ["pending", "review", "approved", "preparing", "unmatched"].includes(s)
-        ? "warn"
+        ? "warning"
         : "";
-  return '<span class="badge ' + cls + '">' + esc(t(s)) + "</span>";
+  return s
+    ? '<span class="badge ' + cls + '">' + esc(t(s)) + "</span>"
+    : esc(t("noValue"));
 }
 function display(field, value) {
   if (value == null || value === "") return t("noValue");
@@ -81,48 +138,166 @@ function display(field, value) {
     ? esc(value)
     : t("noValue");
 }
+const money = (r, k) =>
+  Number.isFinite(r.fields[k])
+    ? esc(r.fields.currency || "") + " " + r.fields[k].toLocaleString(locale)
+    : t("noValue");
 function rowsFor(key) {
   let rs = state.records.filter((r) =>
     key === "attention"
       ? attentionReason(r, state.reviewTime)
       : r.baseKey === key,
   );
-  if (query)
-    rs = rs.filter((r) =>
-      Object.entries(r.fields)
-        .filter(
-          ([k]) =>
-            appConfig.bases
-              .find((b) => b.key === r.baseKey)
-              .fields.find((f) => f.slug === k)?.type !== "relation",
-        )
-        .some(([, v]) =>
-          String(v ?? "")
-            .toLowerCase()
-            .includes(query.toLowerCase()),
-        ),
-    );
-  if (status) rs = rs.filter((r) => r.fields.status === status);
+  const q = view.q.trim().toLowerCase();
+  if (q)
+    rs = rs.filter((r) => {
+      const fields = baseOf(r.baseKey).fields;
+      return Object.entries(r.fields).some(([k, v]) => {
+        const field = fields.find((f) => f.slug === k);
+        if (field?.type === "relation") return false;
+        const shown = k === "status" || k === "direction" ? t(v) : "";
+        return (String(v ?? "") + " " + shown).toLowerCase().includes(q);
+      });
+    });
+  if (view.status) rs = rs.filter((r) => r.fields.status === view.status);
   return rs;
 }
-function detail() {
-  const r = state.records.find((r) => r.id === selected);
+// One line per row: the name, then status (the column a phone and the split
+// queue keep), then the register's own facts. Currency rides on the amount.
+function columnsFor(key) {
+  if (key === "attention") return ["title", "status", "register", "owner", "due"];
+  const rest = baseOf(key).columns.filter(
+    (c) => !["title", "status", "currency"].includes(c),
+  );
+  return ["title", "status", ...rest].slice(0, 5);
+}
+function heading(key, column) {
+  if (column === "register") return t("register");
+  const field = (key === "attention" ? appConfig.bases[0] : baseOf(key)).fields.find(
+    (f) => f.slug === column,
+  );
+  return field ? field.nameI18n?.[locale] || field.name : column;
+}
+function cell(r, column) {
+  if (column === "title")
+    return (
+      '<a class="row-link" href="' +
+      esc(recordUrl(r.id)) +
+      '" data-record="' +
+      esc(r.id) +
+      '">' +
+      esc(r.fields.title) +
+      "</a>"
+    );
+  if (column === "status") return badge(r.fields.status);
+  if (column === "register") return esc(name(baseOf(r.baseKey)));
+  if (MONEY.includes(column)) return money(r, column);
+  const field = baseOf(r.baseKey).fields.find((f) => f.slug === column) || {
+    slug: column,
+    type: "text",
+  };
+  return display(field, r.fields[column]);
+}
+function table(rs, key) {
+  const columns = columnsFor(key);
+  return (
+    '<table class="ws-table"><thead><tr>' +
+    columns
+      .map(
+        (c) =>
+          '<th class="' +
+          (MONEY.includes(c) ? "ws-col-num" : "") +
+          '">' +
+          esc(heading(key, c)) +
+          "</th>",
+      )
+      .join("") +
+    "</tr></thead><tbody>" +
+    rs
+      .map(
+        (r) =>
+          '<tr class="' +
+          (r.id === view.recordId ? "ws-selected" : "") +
+          '" data-record="' +
+          esc(r.id) +
+          '">' +
+          columns
+            .map(
+              (c) =>
+                '<td class="' +
+                (MONEY.includes(c) ? "ws-col-num" : "") +
+                '">' +
+                cell(r, c) +
+                "</td>",
+            )
+            .join("") +
+          "</tr>",
+      )
+      .join("") +
+    "</tbody></table>"
+  );
+}
+function detail(rs) {
+  const r = state.records.find((x) => x.id === view.recordId);
+  const page = view.presentation === "page";
+  const queueIndex = rs.findIndex((x) => x.id === view.recordId);
+  const nextRecord =
+    detailMode() === "split" && !page && queueIndex >= 0 ? rs[queueIndex + 1] : null;
+  const bar =
+    '<header class="ws-detail-bar"><button class="detail-back" id="detailBack" type="button">' +
+    "<span>← " +
+    t("back") +
+    '</span></button><div class="detail-bar-actions">' +
+    (nextRecord
+      ? '<a class="button" href="' +
+        esc(recordUrl(nextRecord.id)) +
+        '">' +
+        t("nextInQueue") +
+        " →</a>"
+      : "") +
+    (r && !page
+      ? '<a class="button detail-expand" href="' +
+        esc(pageUrl(r.id)) +
+        '"><span>' +
+        t("openFull") +
+        "</span></a>"
+      : "") +
+    (!page
+      ? '<button class="icon-button detail-close" id="detailClose" type="button" title="' +
+        t("close") +
+        '" aria-label="' +
+        t("close") +
+        '">' +
+        icon("close") +
+        "</button>"
+      : "") +
+    "</div></header>";
+  if (!view.recordId)
+    return (
+      bar.replace('id="detailBack"', 'id="detailBack" hidden') +
+      '<div class="ws-detail-empty">' +
+      t("select") +
+      "</div>"
+    );
   if (!r)
     return (
+      bar +
       '<div class="empty"><h2>' +
       t("none") +
       "</h2><p>" +
-      t("select") +
+      t("recordNotLoaded") +
       "</p></div>"
     );
-  const base = appConfig.bases.find((b) => b.key === r.baseKey),
+  const base = baseOf(r.baseKey),
     reason = attentionReason(r, state.reviewTime);
   return (
-    '<button class="back" id="back">← ' +
-    t("back") +
-    '</button><div class="subtle">' +
-    esc(name(base)) +
-    "</div><h2>" +
+    bar +
+    '<article class="detail-body">' +
+    // The cross-register queue is the one place the register is not implied.
+    (view.key === "attention"
+      ? '<div class="subtle">' + esc(name(base)) + "</div>"
+      : "") +
+    "<h2>" +
     esc(r.fields.title) +
     "</h2>" +
     badge(r.fields.status) +
@@ -136,7 +311,7 @@ function detail() {
       : "") +
     "<dl>" +
     base.fields
-      .filter((f) => f.slug !== "title")
+      .filter((f) => !["title", "status"].includes(f.slug))
       .map(
         (f) =>
           "<dt>" +
@@ -146,175 +321,261 @@ function detail() {
           "</dd>",
       )
       .join("") +
-    "</dl>"
+    "</dl></article>"
   );
 }
-function table(rs, key) {
-  const base = appConfig.bases.find((b) => b.key === key);
-  const columns = base
-    ? base.columns.filter((x) => x !== "currency").slice(0, 5)
-    : ["title", "owner", "due", "status"];
-  return (
-    "<table><thead><tr>" +
-    columns
-      .map(
-        (k) =>
-          "<th>" +
-          esc(
-            base?.fields.find((f) => f.slug === k)?.nameI18n?.[locale] ||
-              {
-                title: locale === "en" ? "Record" : "事项",
-                owner: locale === "en" ? "Owner" : "负责人",
-                due: locale === "en" ? "Due / checked" : "截止 / 核查",
-                status: locale === "en" ? "State" : "状态",
-              }[k] ||
-              k,
-          ) +
-          "</th>",
-      )
-      .join("") +
-    "</tr></thead><tbody>" +
-    rs
-      .map(
-        (r) =>
-          '<tr class="' +
-          (r.id === selected ? "selected" : "") +
-          '" data-record="' +
-          r.id +
-          '">' +
-          columns
-            .map(
-              (k, i) =>
-                "<td>" +
-                (i === 0
-                  ? '<button class="row-button" data-record="' +
-                    r.id +
-                    '">' +
-                    esc(r.fields.title) +
-                    '</button><div class="row-meta">' +
-                    esc(
-                      key === "attention"
-                        ? name(appConfig.bases.find((b) => b.key === r.baseKey))
-                        : r.fields.entity || "",
-                    ) +
-                    "</div>"
-                  : k === "status"
-                    ? badge(r.fields.status)
-                    : [
-                          "amount",
-                          "balance",
-                          "bankBalance",
-                          "revenue",
-                          "cost",
-                        ].includes(k)
-                      ? esc(r.fields.currency) +
-                        " " +
-                        display({ type: "number" }, r.fields[k])
-                      : display(
-                          base?.fields.find((f) => f.slug === k) || {
-                            slug: k,
-                            type: "text",
-                          },
-                          r.fields[k] ||
-                            (k === "due" ? r.fields.checkedAt : ""),
-                        )) +
-                "</td>",
-            )
-            .join("") +
-          "</tr>",
-      )
-      .join("") +
-    "</tbody></table>"
-  );
+function failureBanner() {
+  return state.failures?.length
+    ? '<div class="warning-banner">' +
+        t("partialFailure") +
+        ": " +
+        state.failures
+          .map((f) => esc(name(baseOf(f.key))) + " (" + esc(f.code) + ")")
+          .join(" · ") +
+        "</div>"
+    : "";
 }
+const menuButton = () =>
+  '<button class="icon-button menu" id="menu" type="button" aria-label="' +
+  t("openMenu") +
+  '" title="' +
+  t("openMenu") +
+  '">' +
+  icon("menu") +
+  "</button>";
+const refreshButton = () =>
+  '<button id="refresh" class="icon-button" type="button" title="' +
+  t("refresh") +
+  '" aria-label="' +
+  t("refresh") +
+  '">' +
+  icon("refresh") +
+  "</button>";
 function overview() {
+  const att = state.records.filter((r) => attentionReason(r, state.reviewTime));
+  const cashier = appConfig.appId.endsWith("cashier");
+  const sums =
+    Object.entries(
+      moneyByCurrency(
+        state.records.filter(
+          (r) =>
+            r.baseKey ===
+            (appConfig.appId.endsWith("finance") ? "expenses" : "payments"),
+        ),
+      ),
+    )
+      .map(([currency, amount]) => currency + " " + amount.toLocaleString(locale))
+      .join(" · ") || "—";
+  // Three numbers the nav cannot show: each takes a computation over records.
+  const metrics = [
+    [t("watch"), att.length],
+    [
+      t(cashier ? "stale" : "paidMetric"),
+      state.records.filter((r) =>
+        cashier
+          ? isStaleBalance(r, state.reviewTime)
+          : r.baseKey === "expenses" && r.fields.status === "paid",
+      ).length,
+    ],
+    [t(appConfig.appId.endsWith("finance") ? "expenseSubtotal" : "paymentSubtotal"), sums],
+  ];
   return (
-    '<div class="workspace"><div class="toolbar"><strong>' +
-    t("evidenceReview") +
-    '</strong></div><div class="list">' +
+    '<section class="ws-overview">' +
+    '<header class="page-hero"><div class="hero-title">' +
+    menuButton() +
+    "<div><h1>" +
+    esc(appConfig.appTitle[locale]) +
+    "</h1><p>" +
+    esc(half(appConfig.folder.description)) +
+    '</p></div></div><div class="page-actions">' +
+    refreshButton() +
+    "</div></header>" +
+    failureBanner() +
+    '<section class="ws-metrics" aria-label="' +
+    t("overview") +
+    '">' +
+    metrics
+      .map(
+        ([label, value]) =>
+          '<div class="metric"><span>' +
+          esc(label) +
+          "</span><strong>" +
+          esc(value) +
+          "</strong></div>",
+      )
+      .join("") +
+    "</section>" +
+    '<div class="overview-grid"><section class="card flush"><div class="card-heading"><h2>' +
+    t("registers") +
+    '</h2></div><div class="overview-list">' +
     appConfig.bases
       .map((b) => {
-        const rows = state.records.filter((r) => r.baseKey === b.key),
-          count = rows.filter((r) =>
-            attentionReason(r, state.reviewTime),
-          ).length;
+        const count = state.records.filter(
+          (r) => r.baseKey === b.key && attentionReason(r, state.reviewTime),
+        ).length;
         return (
-          '<div class="overview-item"><div><strong>' +
+          '<a class="overview-item" href="#/' +
+          b.key +
+          '"><div><strong>' +
           esc(name(b)) +
           "</strong><p>" +
-          count +
-          " " +
-          t("attention") +
-          " · " +
-          rows.length +
-          " " +
-          t("loaded") +
-          '</p></div><a data-route="' +
-          b.key +
-          '" href="#/' +
-          b.key +
-          '">' +
+          (count ? count + " " + t("needsAttention") : t("allClear")) +
+          "</p></div><span>" +
           t("go") +
-          " →</a></div>"
+          " →</span></a>"
         );
       })
       .join("") +
-    '<div class="toolbar"><strong>' +
+    '</div></section><section class="card flush"><div class="card-heading"><h2>' +
     t("attention") +
-    "</strong></div>" +
-    rowsFor("attention")
-      .slice(0, 5)
+    '</h2><a class="card-link" href="#/attention">' +
+    t("openQueue") +
+    ' →</a></div><div class="overview-list">' +
+    (att.length
+      ? att
+          .slice(0, 5)
+          .map((r) => {
+            const reason = attentionReason(r, state.reviewTime);
+            return (
+              '<a class="overview-item" href="#/attention?peek=' +
+              encodeURIComponent(r.id) +
+              '"><div><strong>' +
+              esc(r.fields.title) +
+              "</strong><p>" +
+              esc(r.fields.owner) +
+              " · " +
+              esc(reason === "reason" ? r.fields.reason : t(reason)) +
+              "</p></div>" +
+              badge(r.fields.status) +
+              "</a>"
+            );
+          })
+          .join("")
+      : '<div class="empty">' + t("allClear") + "</div>") +
+    '</div></section></div><p class="footnote">' +
+    t("scope") +
+    "</p></section>"
+  );
+}
+function recordView() {
+  const key = view.key,
+    base = baseOf(key),
+    rs = rowsFor(key),
+    nextCursor = base ? state.pageInfo[key]?.nextCursor : null,
+    loadedHere = base ? state.records.filter((r) => r.baseKey === key).length : 0;
+  const statuses = [
+    ...new Set(
+      state.records
+        .filter((r) =>
+          key === "attention"
+            ? attentionReason(r, state.reviewTime)
+            : r.baseKey === key,
+        )
+        .map((r) => r.fields.status)
+        .filter(Boolean),
+    ),
+  ];
+  return (
+    '<section class="ws-view">' +
+    '<header class="ws-toolbar"><div class="ws-title">' +
+    menuButton() +
+    '<h1 title="' +
+    esc(key === "attention" ? t("attentionHelp") : half(base.description)) +
+    '">' +
+    esc(key === "attention" ? t("attention") : name(base)) +
+    '</h1><span class="ws-count">' +
+    rs.length +
+    '</span></div><div class="ws-actions"><input id="search" type="search" autocomplete="off" placeholder="' +
+    t("search") +
+    '" aria-label="' +
+    t("search") +
+    '" title="' +
+    t("scope") +
+    '" value="' +
+    esc(view.q) +
+    '"><select id="status" aria-label="' +
+    t("all") +
+    '"><option value="">' +
+    t("all") +
+    "</option>" +
+    statuses
       .map(
-        (r) =>
-          '<div class="overview-item"><div><button class="row-button" data-open-attention="' +
-          r.id +
-          '">' +
-          esc(r.fields.title) +
-          "</button><p>" +
-          esc(r.fields.owner) +
-          " · " +
-          esc(
-            attentionReason(r, state.reviewTime) === "reason"
-              ? r.fields.reason
-              : t(attentionReason(r, state.reviewTime)),
-          ) +
-          "</p></div>" +
-          badge(r.fields.status) +
-          "</div>",
+        (s) =>
+          '<option value="' +
+          esc(s) +
+          '" ' +
+          (view.status === s ? "selected" : "") +
+          ">" +
+          esc(t(s)) +
+          "</option>",
       )
       .join("") +
-    '</div><div class="footer">' +
-    t("scope") +
-    "</div></div>"
+    "</select>" +
+    refreshButton() +
+    "</div></header>" +
+    failureBanner() +
+    '<div class="ws-workspace"><div class="ws-list" id="list">' +
+    (rs.length
+      ? table(rs, key)
+      : '<div class="empty">' +
+        t(state.failures?.some((f) => f.key === key) ? "error" : "empty") +
+        "</div>") +
+    (nextCursor
+      ? '<div class="list-foot"><span>' +
+        loadedHere +
+        " " +
+        t("loaded") +
+        (state.totalCount[key] != null
+          ? " / " + state.totalCount[key] + " " + t("records")
+          : "") +
+        (loadMoreFailed ? " · " + t("loadMoreError") : "") +
+        '</span><button class="button" id="next" type="button" ' +
+        (loading ? "disabled" : "") +
+        ">" +
+        t("next") +
+        "</button></div>"
+      : "") +
+    '</div><aside class="ws-detail" id="detail" aria-label="' +
+    t("detail") +
+    '">' +
+    detail(rs) +
+    "</aside></div></section>"
+  );
+}
+function navCount(k) {
+  if (!baseOf(k)) return "";
+  const total = state.totalCount[k];
+  const loadedHere = state.records.filter((r) => r.baseKey === k).length;
+  return (
+    "<small>" +
+    esc(total ?? loadedHere + (state.pageInfo[k]?.nextCursor ? "+" : "")) +
+    "</small>"
   );
 }
 function render() {
   if (!state) return;
+  const onView = view.key !== "overview";
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onView && Boolean(view.recordId));
+  body.toggle("ws-detail-page", onView && view.presentation === "page");
+  body.toggle("ws-detail-drawer", onView && view.presentation === "drawer");
+  body.toggle(
+    "ws-layout-split",
+    onView && detailMode() === "split" && view.presentation !== "page",
+  );
+  body.toggle("ws-searching", onView && Boolean(view.q || view.status));
   document.documentElement.lang = locale;
   document.title = appConfig.appTitle[locale];
-  const key = route(),
-    base = appConfig.bases.find((b) => b.key === key),
-    rs = rowsFor(key),
-    att = state.records.filter((r) => attentionReason(r, state.reviewTime)),
-    amounts = moneyByCurrency(
-      base
-        ? state.records.filter((r) => r.baseKey === key)
-        : state.records.filter(
-            (r) =>
-              r.baseKey ===
-              (appConfig.appId.endsWith("finance") ? "expenses" : "payments"),
-          ),
-    );
-  const sums =
-    Object.entries(amounts)
-      .map(
-        ([currency, amount]) => currency + " " + amount.toLocaleString(locale),
-      )
-      .join(" · ") || "—";
+  // Re-rendering replaces the table; keep the list where the reader left it.
+  const scroll = document.querySelector("#list")?.scrollTop || 0;
+  const searchFocus =
+    document.activeElement?.id === "search"
+      ? document.activeElement.selectionStart
+      : null;
   root.innerHTML =
     '<div class="shell ' +
-    (drawer ? "drawer" : "") +
-    '"><button class="scrim" aria-label="' +
+    (navOpen ? "nav-open" : "") +
+    '"><button class="scrim" type="button" aria-label="' +
     t("closeMenu") +
     '" id="scrim"></button><aside class="sidebar"><div><div class="brand">' +
     esc(appConfig.appTitle[locale]) +
@@ -328,10 +589,8 @@ function render() {
     ]
       .map(
         ([k, label, ic]) =>
-          '<a data-route="' +
-          k +
-          '" class="' +
-          (key === k ? "active" : "") +
+          '<a class="' +
+          (view.key === k ? "active" : "") +
           '" href="#/' +
           k +
           '">' +
@@ -339,167 +598,67 @@ function render() {
           "<span>" +
           esc(label) +
           "</span>" +
-          (appConfig.bases.some((b) => b.key === k)
-            ? "<small>" +
-              esc(
-                state.totalCount[k] ??
-                  state.records.filter((r) => r.baseKey === k).length + "+",
-              ) +
-              "</small>"
-            : "") +
+          navCount(k) +
           "</a>",
       )
       .join("") +
-    '</nav><div class="sidebar-bottom"><div class="subtle">' +
+    '</nav><div class="sidebar-bottom"><div><div class="subtle">' +
     t("asof") +
     "</div><strong>" +
     new Date(state.reviewTime).toISOString().slice(0, 10) +
-    '</strong></div></aside><main class="main"><header class="header"><button class="menu" id="menu" aria-label="' +
-    t("openMenu") +
-    '">' +
-    icon("menu") +
-    "</button><div><h1>" +
-    esc(
-      key === "overview"
-        ? t("overview")
-        : key === "attention"
-          ? t("attention")
-          : name(base || appConfig.bases[0]),
-    ) +
-    "</h1><p>" +
-    esc(appConfig.appTitle[locale]) +
-    " / " +
-    t("readOnly") +
-    '</p></div><div class="tools"><select id="locale" aria-label="' +
+    '</strong></div><div class="sidebar-tools"><select id="locale" aria-label="' +
     t("language") +
     '"><option value="en" ' +
     (locale === "en" ? "selected" : "") +
     '>EN</option><option value="zh-CN" ' +
     (locale === "zh-CN" ? "selected" : "") +
-    '>中文</option></select><button id="help" class="icon-button" title="' +
+    '>中文</option></select><button id="help" class="icon-button" type="button" title="' +
     t("help") +
     '" aria-label="' +
     t("help") +
     '">' +
     icon("help") +
-    '</button><button id="settings" class="icon-button" title="' +
+    '</button><button id="settings" class="icon-button" type="button" title="' +
     t("settings") +
     '" aria-label="' +
     t("settings") +
     '">' +
     icon("settings") +
-    '</button><button id="refresh" class="icon-button" title="' +
-    t("refresh") +
-    '" aria-label="' +
-    t("refresh") +
-    '">' +
-    icon("refresh") +
-    '</button></div></header><section class="metrics"><div class="metric"><label>' +
-    t("watch") +
-    "</label><strong>" +
-    att.length +
-    '</strong></div><div class="metric"><label>' +
-    t(appConfig.appId.endsWith("cashier") ? "stale" : "paidMetric") +
-    "</label><strong>" +
-    state.records.filter((r) =>
-      appConfig.appId.endsWith("cashier")
-        ? isStaleBalance(r, state.reviewTime)
-        : r.baseKey === "expenses" && r.fields.status === "paid",
-    ).length +
-    '</strong></div><div class="metric"><label>' +
-    t(
-      base
-        ? "subtotal"
-        : appConfig.appId.endsWith("finance")
-          ? "expenseSubtotal"
-          : "paymentSubtotal",
-    ) +
-    '</label><strong style="font-size:14px">' +
-    esc(sums) +
-    "</strong></div></section>" +
-    (state.failures?.length
-      ? '<div class="warning-banner">' +
-        t("partialFailure") +
-        ": " +
-        state.failures
-          .map(
-            (f) =>
-              esc(name(appConfig.bases.find((b) => b.key === f.key))) +
-              " (" +
-              esc(f.code) +
-              ")",
-          )
-          .join(" · ") +
-        "</div>"
-      : "") +
-    (key === "overview"
-      ? overview()
-      : '<section class="workspace ' +
-        (selected ? "detail-open" : "") +
-        '"><div class="toolbar"><input id="search" placeholder="' +
-        t("search") +
-        '" aria-label="' +
-        t("search") +
-        '" value="' +
-        esc(query) +
-        '"><select id="status" aria-label="' +
-        t("all") +
-        '"><option value="">' +
-        t("all") +
-        "</option>" +
-        [
-          ...new Set(
-            state.records
-              .filter((r) => key === "attention" || r.baseKey === key)
-              .map((r) => r.fields.status),
-          ),
-        ]
-          .map(
-            (s) =>
-              '<option value="' +
-              esc(s) +
-              '" ' +
-              (status === s ? "selected" : "") +
-              ">" +
-              esc(t(s)) +
-              "</option>",
-          )
-          .join("") +
-        '</select><span class="count">' +
-        rs.length +
-        " " +
-        t("loaded") +
-        (base && state.totalCount[key] != null
-          ? " / " + state.totalCount[key] + " " + t("records")
-          : "") +
-        '</span></div><div class="split"><div class="list">' +
-        (rs.length
-          ? table(rs, key)
-          : '<div class="empty">' +
-            t(state.failures?.some((f) => f.key === key) ? "error" : "empty") +
-            "</div>") +
-        '</div><aside class="detail">' +
-        detail() +
-        '</aside></div><footer class="footer"><span>' +
-        t("scope") +
-        "</span>" +
-        (base
-          ? '<button id="next" ' +
-            (!state.pageInfo[key]?.nextCursor || loading ? "disabled" : "") +
-            ">" +
-            t("next") +
-            "</button>"
-          : "") +
-        "</footer></section>") +
+    '</button></div></div></aside><main class="main">' +
+    (onView ? recordView() : overview()) +
     "</main></div>";
+  const list = document.querySelector("#list");
+  if (list) list.scrollTop = scroll;
+  if (searchFocus != null) {
+    const el = document.querySelector("#search");
+    el.focus();
+    el.setSelectionRange(searchFocus, searchFocus);
+  }
   bind();
+}
+// Search and the status filter rewrite the URL in place, so Back and a shared
+// link return to the same narrowed list without adding history entries.
+function setListContext(patch) {
+  const mode = detailMode();
+  view = {
+    ...view,
+    ...patch,
+    recordId: null,
+    presentation: mode === "page" ? null : mode,
+  };
+  history.replaceState(null, "", listUrl());
+  render();
+}
+function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
 }
 function bind() {
   document.querySelector("#locale").onchange = (e) => {
     locale = e.target.value;
     const url = new URL(location.href);
     url.searchParams.set("lang", locale);
-    history.replaceState(null, "", url);
+    history.replaceState(history.state, "", url);
     render();
   };
   document.querySelector("#refresh").onclick = load;
@@ -512,64 +671,39 @@ function bind() {
         trigger: event.currentTarget,
       });
   document.querySelector("#menu").onclick = () => {
-    drawer = true;
+    navOpen = true;
     render();
   };
   document.querySelector("#scrim").onclick = () => {
-    drawer = false;
+    navOpen = false;
     render();
   };
-  document.querySelectorAll("[data-route]").forEach(
-    (a) =>
-      (a.onclick = () => {
-        drawer = false;
-        selected = null;
-        query = "";
-        status = "";
-      }),
+  // The whole row opens the record; the title is a real link for keyboard,
+  // middle-click and copy-link.
+  for (const row of document.querySelectorAll("tr[data-record]")) {
+    row.onclick = (event) => {
+      if (event.target.closest("a")) return;
+      location.hash = recordUrl(row.dataset.record);
+    };
+  }
+  document.querySelector("#detailBack")?.addEventListener("click", closeDetail);
+  document.querySelector("#detailClose")?.addEventListener("click", closeDetail);
+  document.querySelector("#status")?.addEventListener("change", (e) =>
+    setListContext({ status: e.target.value }),
   );
-  document.querySelectorAll("[data-record]").forEach(
-    (e) =>
-      (e.onclick = () => {
-        selected = e.dataset.record;
-        render();
-      }),
+  document.querySelector("#search")?.addEventListener("input", (e) =>
+    setListContext({ q: e.target.value }),
   );
-  document.querySelectorAll("[data-open-attention]").forEach(
-    (e) =>
-      (e.onclick = () => {
-        selected = e.dataset.openAttention;
-        location.hash = "#/attention";
-        render();
-      }),
-  );
-  document.querySelector("#back")?.addEventListener("click", () => {
-    selected = null;
-    render();
-  });
-  document.querySelector("#status")?.addEventListener("change", (e) => {
-    status = e.target.value;
-    selected = null;
-    render();
-  });
-  document.querySelector("#search")?.addEventListener("input", (e) => {
-    const pos = e.target.selectionStart;
-    query = e.target.value;
-    selected = null;
-    render();
-    const el = document.querySelector("#search");
-    el.focus();
-    el.setSelectionRange(pos, pos);
-  });
   document.querySelector("#next")?.addEventListener("click", next);
 }
 async function next() {
   if (loading) return;
-  const key = route(),
+  const key = view.key,
     token = seq,
     cursor = state.pageInfo[key]?.nextCursor;
   if (!cursor) return;
   loading = true;
+  loadMoreFailed = false;
   render();
   try {
     const page = await getProvider().loadMore(key, cursor);
@@ -577,9 +711,8 @@ async function next() {
     state.records = appendPage(state.records, page.records);
     state.loadedAt = Date.now();
     state.pageInfo[key] = { nextCursor: page.nextCursor };
-    render();
   } catch {
-    alert(t("error"));
+    loadMoreFailed = true;
   } finally {
     loading = false;
     render();
@@ -588,6 +721,7 @@ async function next() {
 async function load() {
   const token = ++seq;
   loading = true;
+  loadMoreFailed = false;
   root.innerHTML =
     '<div class="gate"><h1>' +
     esc(appConfig.appTitle[locale]) +
@@ -598,7 +732,9 @@ async function load() {
     const result = await getProvider().getState();
     if (token !== seq) return;
     state = { ...result, loadedAt: Date.now() };
-    selected = null;
+    // Clear the flag before drawing: rendering while it is still set left
+    // "Load more" disabled after every cold load.
+    loading = false;
     render();
   } catch (error) {
     if (token !== seq) return;
@@ -618,12 +754,27 @@ async function load() {
     loading = false;
   }
 }
-window.addEventListener("hashchange", () => {
-  query = "";
-  status = "";
-  drawer = false;
+function syncRoute() {
+  const wasList = view.key !== "overview" && !view.recordId;
+  const previousKey = view.key;
+  view = parseHash();
+  // A record opened from its list can step Back to that list entry instead of
+  // pushing a new one the browser's Back would then have to undo.
+  if (view.recordId && wasList && previousKey === view.key)
+    history.replaceState({ fromList: true }, "");
+  navOpen = false;
+  loadMoreFailed = false;
   render();
+}
+window.addEventListener("hashchange", syncRoute);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || document.querySelector("dialog[open]")) return;
+  if (navOpen) {
+    navOpen = false;
+    render();
+  } else if (view.recordId && view.presentation !== "page") closeDetail();
 });
+view = parseHash();
 const runtime = await getRuntime();
 if (!isDemo() && runtime.runtime === "unknown") {
   root.innerHTML = '<div class="gate">' + t("unknown") + "</div>";

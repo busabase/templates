@@ -17,6 +17,20 @@ export const appConfig = {
     slug: "busa-legal-matter-strategy-app",
     resourceKey: "busa-legal-matter-strategy-app",
   },
+  // Where each view opens a record (the why is next to DETAIL_MODES in app.js).
+  // Every workflow view reads the Strategy Packs Base; checks and entities are
+  // their own Bases.
+  ui: {
+    detail_modes: {
+      items: "page",
+      review: "split",
+      approved: "page",
+      done: "page",
+      blocked: "page",
+      checks: "drawer",
+      entities: "drawer",
+    },
+  },
   bases: [
     {
       key: "items",
@@ -125,7 +139,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

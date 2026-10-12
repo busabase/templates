@@ -685,6 +685,7 @@ export const appConfig = {
       "bases.get",
       "records.list",
       "records.count",
+      "records.get",
     ],
     writeProcedures: [],
   },
@@ -696,6 +697,14 @@ export const appConfig = {
   },
   ui: {
     primary: "cases",
+    // Where a record opens, per Base (see app.js for the reasoning).
+    detail_modes: {
+      cases: "page",
+      deadlines: "drawer",
+      settlements: "drawer",
+      updates: "drawer",
+      tasks: "split",
+    },
   },
   limits: {
     pendingChangeRequests: 20,

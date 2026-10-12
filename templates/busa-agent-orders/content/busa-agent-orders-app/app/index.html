@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
     <link rel="stylesheet" href="./accent-theme.css">
   </head>
-  <body>
+  <body class="ws-has-mobile-bar">
     <div id="app" class="app-shell">
       <aside class="sidebar" id="appSidebar">
         <div class="brand">
@@ -33,7 +33,7 @@
             <a href="#/exceptions" data-route="exceptions">
               <span><strong id="count-open">0</strong> <span data-i18n="openExceptions">open exceptions</span></span>
             </a>
-            <a href="#/orders/flagged" data-route="orders">
+            <a href="#/orders?flagged=1" data-route="orders">
               <span><strong id="count-uncovered">0</strong> <span data-i18n="uncoveredOrders">paid below listed, no exception</span></span>
             </a>
             <a href="#/proposals" data-route="proposals">
@@ -70,16 +70,47 @@
           </div>
           <button id="mobileRefresh" class="mobile-refresh-button" type="button" title="Refresh" aria-label="Refresh">↻</button>
         </div>
-        <header class="topbar">
-          <div class="topbar-copy">
-            <h1 id="page-title">Overview</h1>
-            <p id="page-subtitle" class="muted"></p>
+        <div id="loadState" class="load-state" role="status">Loading</div>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 id="overviewTitle">Overview</h1>
+              <p id="overviewSummary"></p>
+            </div>
+            <div class="page-actions">
+              <button id="refresh" class="button" type="button">Refresh</button>
+            </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" aria-label="This week"></div>
+          <div id="overviewBody" class="overview-body"></div>
+        </section>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div id="viewActions" class="ws-actions"></div>
+          </header>
+          <div id="workspace" class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar">
+                <button id="detailBack" class="button" type="button">Back to list</button>
+                <a id="detailExpand" class="button" hidden>Open full page</a>
+              </div>
+              <div id="detailBody"></div>
+            </aside>
           </div>
-          <div class="topbar-actions">
-            <button id="refresh" class="button" type="button">Refresh</button>
-          </div>
-        </header>
-        <section id="content" class="content" aria-live="polite"></section>
+        </section>
+        <section id="settingsPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title"><h1 id="settingsTitle">Settings</h1></div>
+          </header>
+          <div id="settingsBody" class="settings-scroll"></div>
+        </section>
       </main>
     </div>
     <div id="sidebarScrim" class="sidebar-scrim" hidden></div>

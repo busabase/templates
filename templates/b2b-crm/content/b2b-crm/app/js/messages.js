@@ -1,23 +1,15 @@
 export const messages = {
   screens: {
     overview: {
-      eyebrow: "Sales command",
-      title: "Sales Overview",
       summary: "Your pipeline, relationship momentum, and follow-ups for today.",
     },
     directory: {
-      eyebrow: "Account workspace",
-      title: "Company & Contact Directory",
       summary: "Find an account, understand the people involved, and review the relationship history.",
     },
     activities: {
-      eyebrow: "Relationship history",
-      title: "Activities & Follow-Ups",
       summary: "Review recent interactions and the follow-ups that need attention.",
     },
     pipeline: {
-      eyebrow: "Revenue workflow",
-      title: "Sales Pipeline",
       summary: "Track opportunities by stage, value, expected close date, and next step.",
     },
   },
@@ -33,8 +25,13 @@ export const messages = {
   loadingMore: "Loading one more page...",
   loadMoreFailed: "The next page could not be loaded. Try again.",
   queryFailed: "The filtered data window could not be loaded. Try again.",
-  pendingEmpty: "No pending reviews",
-  pendingLabel: "pending reviews",
+  pendingEmpty: "No requests awaiting review",
+  pendingLabel: "requests awaiting review",
+  pendingOne: "request awaiting review",
+  notLoaded: "Not loaded",
+  noChannel: "No contact channel",
+  missingRecord: "This record is not in the loaded window",
+  missingRecordHint: "Go back to the list, load more, or search for it by name.",
   followUpLabel: "due in the loaded window",
   providerErrors: {
     BRIDGE_UNAVAILABLE: "The Busabase API bridge is unavailable. Start the local proxy or run this app inside Busabase.",

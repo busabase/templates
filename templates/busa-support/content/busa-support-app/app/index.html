@@ -29,7 +29,7 @@
         <section class="human-work" aria-labelledby="humanWorkTitle">
           <div class="human-work-eyebrow" data-i18n="attention">Need attention</div>
           <div id="humanWorkTitle" class="human-work-title" data-i18n="humanWorkTitle">What needs your attention</div>
-          <a class="human-work-primary" href="#/tickets" data-route="tickets">
+          <a class="human-work-primary" href="#/tickets?status=needs_review" data-route="tickets">
             <span>
               <strong id="count-approvals">0</strong>
               <span data-i18n="awaitingApproval">await your approval</span>
@@ -40,7 +40,7 @@
               <strong id="count-sla">0</strong>
               <span data-i18n="breachingSla">breaching SLA</span>
             </a>
-            <a href="#/tickets" data-route="tickets">
+            <a href="#/tickets?status=needs_review" data-route="tickets">
               <strong id="count-blocked">0</strong>
               <span data-i18n="gateBlocked">blocked by gate</span>
             </a>
@@ -49,11 +49,11 @@
         <div class="sidebar-separator"></div>
         <nav class="filters" aria-label="Workflow">
           <a href="#/tickets" data-filter="all" data-i18n="allTickets">All</a>
-          <a href="#/tickets/needs_review" data-filter="needs_review" data-i18n="needsReviewFilter">Needs Review</a>
-          <a href="#/tickets/changes_requested" data-filter="changes_requested" data-i18n="changesRequestedFilter">Changes Requested</a>
-          <a href="#/tickets/approved" data-filter="approved" data-i18n="approvedFilter">Approved</a>
-          <a href="#/tickets/done" data-filter="done" data-i18n="doneFilter">Done</a>
-          <a href="#/tickets/blocked" data-filter="blocked" data-i18n="blockedFilter">Blocked</a>
+          <a href="#/tickets?status=needs_review" data-filter="needs_review" data-i18n="needsReviewFilter">Needs Review</a>
+          <a href="#/tickets?status=changes_requested" data-filter="changes_requested" data-i18n="changesRequestedFilter">Changes Requested</a>
+          <a href="#/tickets?status=approved" data-filter="approved" data-i18n="approvedFilter">Approved</a>
+          <a href="#/tickets?status=done" data-filter="done" data-i18n="doneFilter">Done</a>
+          <a href="#/tickets?status=blocked" data-filter="blocked" data-i18n="blockedFilter">Blocked</a>
         </nav>
         <div class="sidebar-separator"></div>
         <nav class="filters" aria-label="Main">
@@ -81,17 +81,60 @@
           </div>
           <button id="mobileRefresh" class="mobile-refresh-button" type="button" title="Refresh" aria-label="Refresh">↻</button>
         </div>
-        <header class="topbar">
-          <div>
-            <h1 id="page-title">Overview</h1>
-            <p id="page-subtitle" class="muted"></p>
-          </div>
-          <div class="topbar-actions">
-            <button id="refresh" type="button" title="Refresh" aria-label="Refresh">Refresh</button>
-          </div>
-        </header>
         <div id="notice" class="notice" hidden></div>
-        <section id="content" class="content"></section>
+        <div id="loadState" class="load-state" role="status">Loading</div>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 id="overviewTitle">Overview</h1>
+              <p id="overviewSummary"></p>
+            </div>
+            <div class="page-actions">
+              <button id="refresh" class="button" type="button" title="Refresh">Refresh</button>
+            </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" aria-label="Support summary"></div>
+          <div id="overviewBody"></div>
+        </section>
+        <!-- Record views (Tickets, Knowledge): one toolbar row over a full-bleed
+             list, sharing one list/detail workspace whose detail mode (split
+             for Tickets, drawer for Knowledge) is declared in config.js
+             `ui.detail_modes` and read via DETAIL_MODES in app.js. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+          </header>
+          <div id="workspace" class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar">
+                <button id="detailBack" class="button" type="button">Back</button>
+                <a id="detailExpand" class="button" hidden>Open full page</a>
+              </div>
+              <div id="detailBody"></div>
+            </aside>
+          </div>
+        </section>
+        <!-- SLA & CSAT: a cross-ticket board, not a record view of either Base.
+             No metrics band here — breaching/first-response/CSAT numbers
+             already sit on Overview and the sidebar's attention block; this
+             page is the breakdown those numbers summarize. -->
+        <section id="slaPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title"><h1 id="slaTitle">SLA &amp; CSAT</h1></div>
+          </header>
+          <div id="slaBody" class="settings-scroll"></div>
+        </section>
+        <section id="settingsPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title"><h1 id="settingsTitle">Help &amp; Settings</h1></div>
+          </header>
+          <div id="settingsBody" class="settings-scroll"></div>
+        </section>
       </main>
     </div>
     <div id="sidebarScrim" class="sidebar-scrim" hidden></div>

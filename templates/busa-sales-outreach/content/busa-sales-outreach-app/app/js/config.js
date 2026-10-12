@@ -7,6 +7,15 @@ export const appConfig = {
   spaceId: "",
   schemaVersion: 1,
   onboardingVersion: 1,
+  // companies is a review queue worked top to bottom (sorted by evidence then
+  // ICP match), so the record sits beside the queue rather than replacing it
+  // or floating over it — all, to-send and sent are the same Base viewed
+  // through three filters, so the one mode applies to all three. profile and
+  // leads have no independent list of their own (profile is a single record;
+  // leads only ever appear inside a company), so they are left out of this
+  // map on purpose — there is no detail mode to declare for a Base nobody
+  // browses as a list.
+  ui: { detail_modes: { companies: "split" } },
   folder: {
     name: "Busa 销售拓客",
     description: "Product positioning, ideal-customer profile, target accounts, contacts, and reviewed outreach",

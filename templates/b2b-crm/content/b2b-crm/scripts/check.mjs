@@ -116,8 +116,25 @@ for (const id of ["activityReview", "dealReview", "stageReview"]) {
   if (!contents["app/js/app.js"].includes(`byId("${id}").addEventListener("click"`))
     throw new Error(`Review action ${id} requires a direct click handler.`);
 }
-if (!contents["app/index.html"].includes('id="detailScrim"') || !contents["app/index.html"].includes('id="detailClose"'))
-  throw new Error("Shared record detail drawer controls are missing.");
+if (!contents["app/index.html"].includes('id="detailClose"') || !contents["app/index.html"].includes('id="backButton"'))
+  throw new Error("Shared record detail controls (Close and Back to list) are missing.");
+for (const primitive of ['class="ws-overview', 'class="ws-view"', 'class="ws-toolbar"', 'class="ws-workspace"', 'class="ws-list"', 'class="ws-detail"', 'class="ws-detail-bar"', "ws-table"]) {
+  if (!contents["app/index.html"].includes(primitive))
+    throw new Error(`Record views must be built on the base-ui ${primitive} primitive.`);
+}
+const detailModes = appConfig.ui?.detail_modes || {};
+for (const base of appConfig.schema.bases) {
+  if (!["page", "drawer", "split"].includes(detailModes[base.key]))
+    throw new Error(`ui.detail_modes must declare page, drawer or split for ${base.key}.`);
+}
+for (const bodyState of ["ws-detail-open", "ws-detail-page", "ws-detail-drawer", "ws-layout-split", "ws-searching"]) {
+  if (!contents["app/js/app.js"].includes(`"${bodyState}"`))
+    throw new Error(`Record views must toggle the ${bodyState} body state.`);
+}
+if (!contents["app/js/app.js"].includes("peek"))
+  throw new Error("Drawer and split selections must be addressable with ?peek=.");
+if (/class="metrics"|id="metrics"/.test(contents["app/index.html"]))
+  throw new Error("Metrics belong on the Overview only, never above a record table.");
 if (!contents["app/index.html"].includes('data-screen="overview"') || !contents["app/index.html"].includes('id="overviewPage"'))
   throw new Error("Overview navigation and screen surface are missing.");
 if (!contents["app/js/overview.js"].includes('class="overview-stat-icon"'))
@@ -152,8 +169,6 @@ if (!appConfig.ui?.screens?.some((screen) => screen.id === "overview"))
   throw new Error("Overview screen is missing from the app configuration.");
 if (!appConfig.permissions?.read_procedures?.includes("records.count"))
   throw new Error("Overview exact counts require the records.count read procedure.");
-if (!contents["app/styles.css"].includes("body.detail-drawer-open .detail-panel"))
-  throw new Error("Shared record detail drawer open state is missing.");
 if (/mobile-detail-open/.test(contents["app/js/app.js"]) || /body\.mobile-detail-open/.test(contents["app/styles.css"]))
   throw new Error("Legacy split-pane mobile detail state found.");
 if (!contents["app/js/app.js"].includes("Request submitted") || !contents["app/js/app.js"].includes("Ready for human review"))
@@ -302,6 +317,8 @@ const overviewModel = buildOverviewModel({
 });
 if (overviewModel.openDeals !== 6 || overviewModel.stats[1].value !== "3")
   throw new Error("Overview model must preserve exact prospect and open-deal counts.");
+if (overviewModel.stats.length > 3)
+  throw new Error("The Overview metrics band holds at most three numbers.");
 if (overviewModel.stats[2].value !== "8")
   throw new Error("Overview weekly activity must use the local Monday-Sunday range.");
 if (overviewModel.activitySeries.filter((item) => item.count > 0).length < 5)

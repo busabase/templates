@@ -43,8 +43,8 @@ mode only when the user says "纯聊天", "chat only", "不要打开 UI", or sim
     <td width="50%"><img src="assets/screenshots/checks.webp" alt="Busa Finance model audit checks"></td>
   </tr>
   <tr>
-    <td><strong>Overview</strong><br>Model KPI cards and a five-year forecast table (revenue through free cash flow), with a needs-attention summary.</td>
-    <td><strong>Model audit checks</strong><br>Review queue for statement ties, hardcodes, formula direction, and debt/working-capital linkage — each check approvable, blockable, or sent back with a note.</td>
+    <td><strong>Overview</strong><br>A three-number band (revenue CAGR, final-year gross margin, balance check), the five-year forecast table (revenue through free cash flow), and the checks still waiting on a decision.</td>
+    <td><strong>Model audit checks</strong><br>A full-width queue beside the selected check (split view) for statement ties, hardcodes, formula direction, and debt/working-capital linkage — each check approvable, blockable, or sent back with a note.</td>
   </tr>
   <tr>
     <td width="50%"><img src="assets/screenshots/workbook.webp" alt="Busa Finance workbook tab contract"></td>
@@ -136,8 +136,9 @@ requested.
 
 Required app views (hash routes):
 
-- `#/overview`: model KPI dashboard, forecast table, and top model checks.
-- `#/checks` and `#/checks/<id>`: review queue for formula ties, model
+- `#/overview`: model summary band (revenue CAGR, gross margin, balance check), forecast table, and the checks waiting on a decision.
+- `#/checks`, `#/checks?peek=<id>` (queue beside the check) and
+  `#/checks/<id>` (full page): review queue for formula ties, model
   quality issues, and delivery notes. Users can approve, request changes,
   block, or dismiss each check — written directly onto the check record
   through `busabase-sdk`.
@@ -171,7 +172,7 @@ Use `references/three-statement-modeling.md` for the review checklist, forecast-
 1. `node scripts/build_three_statement_model.mjs ... --apply` builds the
    starter workbook and writes the `model` row (and optionally the standard
    check queue) to Busabase.
-2. Open the app. **Overview** shows the model KPI dashboard and forecast
+2. Open the app. **Overview** shows the model summary and forecast
    table; **Checks** is the review queue.
 3. For each check, record `Approve` / `Request changes` / `Block` /
    `Dismiss` with an optional reviewer note — written straight onto the

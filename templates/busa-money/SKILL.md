@@ -124,18 +124,18 @@ requested.
 
 Required app views:
 
-- `#/ledger`: total cashflow table. Rows are normalized transactions; columns include date, description, provider, account, type, currency, gross, fee, net, and status.
-- `#/overview`: dashboard summary with account health, totals, and recent money movement.
-- `#/accounts`: Accounts view. Each configured or imported account appears with provider, currency, balance, inflow, outflow, net, and last sync.
-- `#/accounts/<account_id>`: Account Detail. Show balances, recent transactions, counterparties, statuses, provider identifiers, and sync health.
-- `#/invoices`: invoice reconciliation desk. Show invoices, match status, amount deltas, missing matches, and transactions that need human review.
-- `#/invoices/<invoice_id>`: Invoice Detail. Show invoice metadata, selected transaction, confidence, amount/date deltas, and notes.
+- `#/overview` (default): the only page with a summary — gross in / gross out / net, account health, recent money movement, and invoice exceptions.
+- `#/ledger`: total cashflow table, one 40px row per normalized transaction (description, date, counterparty, account, status, invoice match, net). A row opens in a drawer at `#/ledger?peek=<transaction_id>` with gross, fee, provider ids and the invoice match; `#/ledger/<transaction_id>` is the same record as a full page.
+- `#/accounts`: Accounts table with provider, entity, status, current balance, inflow, outflow, net, and last sync.
+- `#/accounts/<account_id>`: Account Detail full page. Show balances, totals, sync health, provider identifiers, and that account's transactions.
+- `#/invoices`: invoice reconciliation desk, a split queue (`?status=review|matched`, `?peek=<invoice_id>`) with the selected invoice beside the list: match status, amount/date deltas, the matched transaction, notes, and audit trail.
+- `#/invoices/<invoice_id>`: the same Invoice Detail as a full page.
 - `#/settings`: sanitized setup summary. Show configured account names, provider types, onboarding state, and Busabase connection identifiers. Never expose secret values.
 
 Demo mode:
 
 - `?demo=1` opens a deterministic mock ledger for documentation and screenshots.
-- `?demo=overview`, `?demo=ledger`, `?demo=accounts`, and `?demo=detail` select named mock scenes.
+- `?demo=overview`, `?demo=ledger`, `?demo=accounts`, and `?demo=detail` select named mock scenes (`detail` opens the invoice exception beside the queue).
 - `?demo=invoices` opens the invoice matching mock scene.
 - `lang=en` or `lang=zh` forces UI chrome language for screenshots.
 - Demo mode never reads or writes Busabase.

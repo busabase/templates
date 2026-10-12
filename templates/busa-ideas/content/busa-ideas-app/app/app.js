@@ -1,28 +1,41 @@
 import { messages } from "./i18n/messages.js";
 import { appConfig } from "./js/config.js?v=0.2.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.2.0";
-import { DOC_KINDS, NORMALIZE_ROW_BY_KEY } from "./js/ideas-model.js?v=0.2.0";
-import { renderDocumentView, renderIdeaDetail, renderIdeas, renderSettings } from "./js/ideas-views.js";
+import { buildSnapshot, DOC_KINDS, NORMALIZE_ROW_BY_KEY } from "./js/ideas-model.js?v=0.2.0";
+import { bindDetailEvents, renderOverview, renderRecordView, renderSettings } from "./js/ideas-views.js";
 import { getProvider } from "./js/providers/index.js?v=0.2.0";
+
+// Where a record opens, per view. Chosen by what people do with the record:
+//   ideas         → page:  an idea is a workplace — its questions to answer, its
+//                          gate, and three long documents — you stay a while.
+//   brd/mrd/prd   → split: each is a reading queue over the Documents Base (one
+//                          document per idea), read one after the next, so the
+//                          list stays beside the document.
+// A `/record` path opens the full page; `?peek=` drives the split. Open full
+// page on a document lands on its idea's page, on that document's tab — one
+// detail implementation, not two. On a phone every mode is a page.
+// Declared once, in config.js `ui.detail_modes` (per Base).
+const BASE_MODES = appConfig.ui.detail_modes;
+export const DETAIL_MODES = {
+  ideas: BASE_MODES.ideas,
+  ...Object.fromEntries(DOC_KINDS.map((kind) => [kind, BASE_MODES.documents])),
+};
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+export const ATTENTION_STATES = ["all", "needs_answer", "ready_for_agent", "settled", "parked"];
 
 export const state = {
   snapshot: null,
   settings: null,
-  // Client-side pager for the Bases that have their own browsed list
-  // (ideas, questions). records.list only exposes a forward keyset cursor, so
-  // pageCursors[key] caches every cursor learned so far (index i = the
-  // cursor needed to fetch page i+1); jumping to a page beyond what's cached
-  // walks forward through the intermediate pages once to learn their
-  // cursors (see goToPage), and every page visited is then a single direct
-  // fetch on every later visit, including going back. A Base with no entry
-  // here isn't paginated (the active provider doesn't page it, or it fit on
-  // one page) -- that's what hides the pager; see pagerControl().
+  // Prev/Next pager for the Base that has its own browsed list (ideas).
+  // records.list only exposes a forward keyset cursor, so pageCursors[key][i]
+  // is the cursor that fetches page i+1. Only neighbouring pages are reachable
+  // — one click, one request; there is no "jump to page N" because reaching it
+  // would mean reading every page in between.
   pageCursors: {},
   currentPage: {},
   pageLoading: {},
   route: parseRoute(),
-  query: "",
-  ideaFilter: "all",
+  // The idea last opened: the subject the sidebar's BRD / MRD / PRD links peek.
   selectedIdeaId: "",
   edits: {},
   notice: "",
@@ -34,23 +47,35 @@ export const state = {
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-ideas.sidebarCollapsed";
 
+const byId = (id) => document.getElementById(id);
 export const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  ideaCount: document.querySelector("#count-ideas"),
-  needsAnswerCount: document.querySelector("#count-needs-answer"),
-  readyCount: document.querySelector("#count-ready"),
-  language: document.querySelector("#language"),
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  viewFilters: byId("viewFilters"),
+  attentionSelect: byId("attentionSelect"),
+  viewBanners: byId("viewBanners"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  ideaCount: byId("count-ideas"),
+  needsAnswerCount: byId("count-needs-answer"),
+  readyCount: byId("count-ready"),
+  language: byId("language"),
 };
 
 function isMobileLayout() {
@@ -108,12 +133,6 @@ export function t(key) {
   return messages[activeLang()]?.[key] || messages.en[key] || key;
 }
 
-export function enumLabel(value, group = "status") {
-  if (!value) return "";
-  const key = String(value);
-  return messages[activeLang()]?.enum?.[group]?.[key] || messages.en.enum?.[group]?.[key] || key.replaceAll("_", " ");
-}
-
 export function date(value) {
   if (!value) return "";
   return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
@@ -123,28 +142,111 @@ export function date(value) {
   }).format(new Date(value));
 }
 
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>[/<tab>]][?q=…&attention=…&peek=…]`. Search, the attention
+// filter and the peeked document live in the URL so refresh, shared links and
+// Back restore the same list context.
 function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: decodeURIComponent(parts[1] || ""), tab: parts[2] || "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  const attention = params.get("attention") || "all";
+  return {
+    view,
+    id,
+    tab: parts[2] || "",
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+    attention: view === "ideas" && ATTENTION_STATES.includes(attention) ? attention : "all",
+  };
 }
 
-function setRoute() {
+export const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  if (route.view === "ideas" && route.attention && route.attention !== "all") params.set("attention", route.attention);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page for an idea, optionally on one tab. Carries the list's search
+// and filter so Back to list lands on the same list.
+export const ideaUrl = (id, tab = "") => {
+  const route = state.route.view === "ideas" ? state.route : { view: "ideas", query: "", attention: "all" };
+  return `#/ideas/${encodeURIComponent(id)}${tab ? `/${tab}` : ""}${routeQuery({}, route)}`;
+};
+// What a row opens: the idea page for ideas, `?peek=` for a document view.
+export const recordUrl = (id, view = state.route.view) => {
+  if (DETAIL_MODES[view] === "page") return ideaUrl(id);
+  const route = view === state.route.view ? state.route : { view, query: "", attention: "all" };
+  return `#/${view}${routeQuery({ peek: id }, route)}`;
+};
+
+let previousRouteWasList = false;
+
+export function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
+  // A document has no page of its own: `#/brd/<idea>` is its idea's BRD tab.
+  if (DOC_KINDS.includes(state.route.view) && state.route.id) {
+    history.replaceState(history.state, "", ideaUrl(state.route.id, state.route.view));
+    state.route = parseRoute();
+  }
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new one. (Tabs inside an idea
+  // replace the entry — see ideas-views.js — so the mark survives them.)
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
   // Opening an idea makes it the subject of the sidebar's BRD/MRD/PRD entries.
   if (state.route.view === "ideas" && state.route.id) state.selectedIdeaId = state.route.id;
+  if (DOC_KINDS.includes(state.route.view) && state.route.peek) state.selectedIdeaId = state.route.peek;
   state.notice = "";
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
   render();
 }
 
+// Replace the current entry without a hashchange: search keystrokes and filter
+// clicks should not each become a Back step.
+export function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
+  render();
+}
+
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── Data ───────────────────────────────────────────────────────────────────
 export async function loadState() {
   const provider = await getProvider();
   const data = await provider.getState();
   closeConnectGate();
   state.snapshot = data.snapshot;
   state.settings = data;
-  // Seed each paginated Base's cursor cache with page 1 (no cursor) and the
-  // page-2 cursor getState() already learned while fetching page 1, so
-  // clicking straight to page 2 costs one fetch instead of two.
+  // Seed each paginated Base's cursor list with page 1 (no cursor) and the
+  // page-2 cursor getState() learned while fetching page 1.
   state.pageCursors = {};
   state.currentPage = {};
   for (const [key, nextCursor] of Object.entries(data.pagination || {})) {
@@ -156,17 +258,13 @@ export async function loadState() {
   render();
 }
 
-// The configured page size for a paginated Base, straight from config.js --
-// the one place readLimit is declared -- so the pager's page-count math can
-// never drift from what the provider actually requests per page.
+// The configured page size for a paginated Base, straight from config.js.
 function pageSize(key) {
   return appConfig.bases.find((entry) => entry.key === key)?.readLimit || 50;
 }
 
-// Maps a paginated Base to the metrics field carrying its REAL total (from
-// records.count, not "however many rows happen to be loaded" -- see
-// busabase-provider.js#countRecords). Total pages is derived from that, not
-// from state.snapshot[key].length, which is capped at one page's worth.
+// Maps a paginated Base to the counts field carrying its REAL total (from
+// records.count), so "Page 2 of 5" has an honest total behind it.
 const TOTAL_COUNT_KEY = { ideas: "total" };
 
 export function pageCount(key) {
@@ -175,40 +273,49 @@ export function pageCount(key) {
   return Math.max(1, Math.ceil(total / pageSize(key)));
 }
 
-// Replaces the displayed page for `key` -- never appends, so state.snapshot[key]
-// always holds exactly one page's rows and every deal/contact-derived figure
-// on screen (search, the row table, metricCards()) is scoped to that one
-// page once a Base crosses a page boundary. Called only from a page-number
-// or prev/next click, so a fetch is always the direct result of a user
-// action, matching the same rule readPage's own comment states.
+// True while a Base holds only part of its rows — more pages exist, or the user
+// is on a later page. Anything counted from loaded rows must say so.
+export function isPartial(key) {
+  const cursors = state.pageCursors[key];
+  if (!cursors) return false;
+  const current = state.currentPage[key] || 1;
+  return current > 1 || Boolean(cursors[current]);
+}
+
+// Replaces the displayed page for `key` with a NEIGHBOURING page: exactly one
+// request per click, using a cursor already learned. Never appends, never
+// walks forward through pages it does not show.
 export async function goToPage(key, targetPage) {
   if (state.pageLoading[key]) return;
   const cursors = state.pageCursors[key];
-  if (!cursors) return; // Base isn't paginated -- provider doesn't page it, or the active provider (e.g. the static demo provider) never seeded a cursor cache.
-  const page = Math.min(Math.max(1, targetPage), pageCount(key));
-  if (page === state.currentPage[key]) return;
+  if (!cursors) return;
+  const current = state.currentPage[key] || 1;
+  if (Math.abs(targetPage - current) !== 1 || targetPage < 1) return;
+  if (targetPage > current && !cursors[current]) return; // no next page
   state.pageLoading[key] = true;
   render();
   try {
     const provider = await getProvider();
     if (typeof provider.fetchPage !== "function") return;
-    const normalize = NORMALIZE_ROW_BY_KEY[key];
-    // Walk forward until this page's cursor is known. Each step here fetches
-    // an intermediate page only to learn its nextCursor -- its rows are
-    // thrown away -- because records.list's keyset cursor has no "skip N
-    // pages" equivalent; a page visited this way is cached afterward, so
-    // this cost is paid at most once per page, ever, including on revisits.
-    while (cursors.length < page) {
-      const { nextCursor } = await provider.fetchPage(key, cursors[cursors.length - 1]);
-      cursors.push(nextCursor);
+    const { rows, nextCursor } = await provider.fetchPage(key, cursors[targetPage - 1]);
+    if (key === "ideas") {
+      // An idea row is only renderable once enriched with its questions,
+      // documents, gate and attention — the same buildSnapshot() page 1 went
+      // through. Normalizing alone left page-2 ideas without them, and the
+      // first badge or detail that touched one crashed.
+      state.snapshot.ideas = buildSnapshot({
+        ideas: rows,
+        documents: state.snapshot.documents,
+        questions: state.snapshot.questions,
+      }).ideas;
+    } else {
+      const normalize = NORMALIZE_ROW_BY_KEY[key];
+      state.snapshot[key] = normalize ? rows.map(normalize) : rows;
     }
-    const { rows, nextCursor } = await provider.fetchPage(key, cursors[page - 1]);
-    // Same per-row normalization buildSnapshot() ran on page 1 -- without
-    // it, a later page keeps raw field shapes (e.g. tags as a JSON string
-    // instead of an array) and crashes the first render that touches it.
-    state.snapshot[key] = normalize ? rows.map(normalize) : rows;
-    if (cursors.length === page) cursors.push(nextCursor);
-    state.currentPage[key] = page;
+    cursors[targetPage] = nextCursor;
+    state.currentPage[key] = targetPage;
+  } catch (error) {
+    state.notice = error instanceof Error ? error.message : String(error);
   } finally {
     state.pageLoading[key] = false;
     render();
@@ -223,13 +330,14 @@ function applyDemoRoute() {
       ? "#/ideas/idea-vague/questions"
       : scenario === "why-now"
         ? "#/ideas/idea-why-now/questions"
-      : scenario === "ready"
-        ? "#/ideas/idea-email/prd"
-        : scenario === "parked"
-          ? "#/ideas/idea-parked"
-          : "#/overview";
+        : scenario === "ready"
+          ? "#/ideas/idea-email/prd"
+          : scenario === "parked"
+            ? "#/ideas/idea-parked"
+            : "#/overview";
   history.replaceState(null, "", `${location.pathname}${location.search}${route}`);
   state.route = parseRoute();
+  if (state.route.view === "ideas" && state.route.id) state.selectedIdeaId = state.route.id;
 }
 
 function applyI18n() {
@@ -244,7 +352,11 @@ function applyI18n() {
   }
   els.search.placeholder = t("search");
   els.refresh.textContent = t("refresh");
+  els.refresh.title = t("refresh");
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
+  byId("overviewTitle").textContent = t("overview");
+  byId("settingsTitle").textContent = t("settingsTitle");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
 export function ideas() {
@@ -262,10 +374,10 @@ function renderShell() {
   const readyForAgent = counts.readyForAgent ?? 0;
   // Prefer the real total (records.count, unaffected by which page is loaded)
   // over the in-memory length, which is only correct while everything fits on
-  // one page. Falls back for providers that never populate it (demo, or a
-  // permission-denied records.count call).
+  // one page.
   const total = counts.total ?? ideas().length;
-  els.syncStatus.textContent = total ? `${total} ${t("ideasUnit")}` : t("empty");
+  // Where the data comes from — the counts already sit in the attention block.
+  els.syncStatus.textContent = !state.snapshot ? t("loading") : state.settings?.demo ? t("demoData") : t("liveData");
   if (els.needsAnswerCount) els.needsAnswerCount.textContent = needsAnswer;
   if (els.readyCount) els.readyCount.textContent = readyForAgent;
   if (els.ideaCount) els.ideaCount.textContent = total;
@@ -274,13 +386,19 @@ function renderShell() {
     els.mobileViewMeta.textContent = needsAnswer ? `${needsAnswer} ${t("needAnswer")}` : `${total} ${t("ideasUnit")}`;
   }
   document.querySelectorAll("[data-route]").forEach((link) => {
-    link.classList.toggle("active", link.dataset.route === state.route.view);
+    const route = link.dataset.route;
+    link.classList.toggle("active", route === state.route.view);
+    // BRD / MRD / PRD open on the idea last looked at, when it has that document.
+    if (DOC_KINDS.includes(route)) {
+      const subject = ideaById(state.selectedIdeaId);
+      link.setAttribute("href", subject?.documents?.[route] ? `#/${route}?peek=${encodeURIComponent(subject.record_id)}` : `#/${route}`);
+    }
   });
 }
 
-function viewLabel(view) {
+export function viewLabel(view) {
   if (view === "ideas") return t("ideasTitle");
-  if (DOC_KINDS.includes(view)) return view.toUpperCase();
+  if (DOC_KINDS.includes(view)) return t(`nav${view[0].toUpperCase()}${view.slice(1)}`);
   if (view === "settings") return t("settings");
   return t("overview");
 }
@@ -294,6 +412,12 @@ export function stageBadge(stage) {
 export function attentionBadge(idea) {
   const key = idea.attention;
   return `<span class="attention-badge attention-${escapeHtml(key)}">${escapeHtml(t(`attention_${key}`))}</span>`;
+}
+
+export function enumLabel(value, group) {
+  if (!value) return "";
+  const key = String(value);
+  return messages[activeLang()]?.enum?.[group]?.[key] || messages.en.enum?.[group]?.[key] || key;
 }
 
 export function clarityBar(idea) {
@@ -333,140 +457,41 @@ export function warnings() {
     .join("")}</div>`;
 }
 
-export function metricCards() {
-  const counts = state.snapshot?.counts || {};
-  return `
-    <div class="metrics">
-      <div class="metric"><span>${t("metricTotal")}</span><strong>${counts.total ?? ideas().length}</strong></div>
-      <div class="metric"><span>${t("metricNeedsAnswer")}</span><strong>${counts.needsAnswer ?? 0}</strong></div>
-      <div class="metric"><span>${t("metricReady")}</span><strong>${counts.readyForAgent ?? 0}</strong></div>
-      <div class="metric"><span>${t("metricParked")}</span><strong>${counts.parked ?? 0}</strong></div>
-    </div>
-  `;
+function matchesQuery(item, query) {
+  return [item.title, item.one_liner, item.who, item.problem, item.source, ...(item.tags || [])]
+    .filter(Boolean)
+    .some((value) => String(value).toLowerCase().includes(query));
 }
 
 // Workflow filters are attention states, not data states -- "needs_answer"
 // is something the operator can act on, "打磨中" is not.
-export function filteredIdeas() {
-  const query = state.query.trim().toLowerCase();
+export function filteredIdeas({ attention = state.route.attention } = {}) {
+  const query = state.route.query.trim().toLowerCase();
   return ideas().filter((item) => {
-    if (state.ideaFilter !== "all" && item.attention !== state.ideaFilter) return false;
-    if (!query) return true;
-    return [item.title, item.one_liner, item.who, item.problem, item.source, ...(item.tags || [])]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query));
+    if (attention && attention !== "all" && item.attention !== attention) return false;
+    return !query || matchesQuery(item, query);
   });
-}
-
-// The first screen answers "what do I need to do?" -- per the UI contract it
-// leads with the ideas waiting on the operator, not with a data dashboard.
-function renderOverview() {
-  els.title.textContent = t("overview");
-  els.subtitle.textContent = t("overviewSubtitle");
-  const all = ideas();
-  const needsAnswer = all.filter((item) => item.attention === "needs_answer");
-  const ready = all.filter((item) => item.attention === "ready_for_agent");
-  const parked = all.filter((item) => item.attention === "parked");
-
-  const ideaLink = (idea, meta) => `
-    <a class="due-row" href="#/ideas/${encodeURIComponent(idea.record_id)}">
-      <span>
-        <strong>${escapeHtml(idea.title)}</strong>
-        <small>${escapeHtml(idea.one_liner || t("noOneLiner"))}</small>
-      </span>
-      <span class="due-meta">${stageBadge(idea.stage)}<small>${escapeHtml(meta)}</small></span>
-    </a>
-  `;
-
-  els.content.innerHTML = `
-    ${metricCards()}
-    ${warnings()}
-    <section class="overview-grid">
-      <div class="overview-panel">
-        <h2>${t("panelNeedsAnswer")}</h2>
-        ${
-          needsAnswer
-            .map((idea) =>
-              ideaLink(
-                idea,
-                idea.open_questions
-                  ? t("openQuestionsCount").replace("{count}", String(idea.open_questions))
-                  : t("missingFields"),
-              ),
-            )
-            .join("") || `<div class="empty-inline">${t("nothingToAnswer")}</div>`
-        }
-      </div>
-      <div class="overview-panel">
-        <h2>${t("panelReady")}</h2>
-        ${
-          ready
-            .map((idea) =>
-              ideaLink(idea, t("readyFor").replace("{stage}", t(`stage_${idea.advance.target || idea.stage}`))),
-            )
-            .join("") || `<div class="empty-inline">${t("nothingReady")}</div>`
-        }
-      </div>
-      <div class="overview-panel">
-        <h2>${t("panelParked")}</h2>
-        ${
-          parked.map((idea) => ideaLink(idea, t("attention_parked"))).join("") ||
-          `<div class="empty-inline">${t("nothingParked")}</div>`
-        }
-      </div>
-    </section>
-  `;
 }
 
 export function render() {
   renderShell();
-  if (state.route.view === "ideas" && state.route.id) renderIdeaDetail();
-  else if (state.route.view === "ideas") renderIdeas();
-  else if (DOC_KINDS.includes(state.route.view)) renderDocumentView(state.route.view);
-  else if (state.route.view === "settings") renderSettings();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
   else renderOverview();
-}
-
-// A numbered pager: Prev / page numbers (every page up to 7 total, else
-// windowed to first, last, and current ±1 with "…" gaps) / Next. Rendered
-// only for a Base state.pageCursors actually tracks (see goToPage) and only
-// once it has more than one page -- a fully-loaded (or non-paginating, e.g.
-// demo) list shows nothing here.
-export function pagerControl(key) {
-  if (!state.pageCursors[key]) return "";
-  const total = pageCount(key);
-  if (total <= 1) return "";
-  const current = state.currentPage[key] || 1;
-  const loading = Boolean(state.pageLoading[key]);
-  const pageButton = (page) => `
-    <button type="button" class="pager-page ${page === current ? "active" : ""}" data-goto-page="${key}:${page}" ${loading || page === current ? "disabled" : ""}>${page}</button>
-  `;
-  // Below the ellipsis threshold, show every page -- windowing to just the
-  // current page's neighbors would otherwise hide a page number that's both
-  // reachable and in range (e.g. landing on page 4 of 4 must still offer a
-  // button back to page 2, not just Prev/Next).
-  const pageWindow =
-    total <= 7
-      ? Array.from({ length: total }, (_, index) => index + 1)
-      : [...new Set([1, total, current - 1, current, current + 1].filter((page) => page >= 1 && page <= total))].sort(
-          (a, b) => a - b,
-        );
-  const sorted = pageWindow;
-  const items = [];
-  let previous = 0;
-  for (const page of sorted) {
-    if (previous && page - previous > 1) items.push(`<span class="pager-ellipsis">…</span>`);
-    items.push(pageButton(page));
-    previous = page;
-  }
-  return `
-    <div class="pager">
-      <button type="button" class="pager-nav" data-goto-page="${key}:${current - 1}" ${loading || current <= 1 ? "disabled" : ""}>${t("prevPage")}</button>
-      ${items.join("")}
-      <button type="button" class="pager-nav" data-goto-page="${key}:${current + 1}" ${loading || current >= total ? "disabled" : ""}>${t("nextPage")}</button>
-      <span class="pager-summary">${t("pageOf").replace("{current}", current).replace("{total}", total)}</span>
-    </div>
-  `;
 }
 
 export function escapeHtml(value) {
@@ -483,11 +508,43 @@ export function escapeHtml(value) {
   );
 }
 
-els.content.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-goto-page]");
-  if (!button) return;
-  const [key, page] = button.dataset.gotoPage.split(":");
-  goToPage(key, Number(page));
+// ── Events ─────────────────────────────────────────────────────────────────
+els.listPanel.addEventListener("click", (event) => {
+  const pager = event.target.closest("[data-goto-page]");
+  if (pager) {
+    const [key, page] = pager.dataset.gotoPage.split(":");
+    goToPage(key, Number(page));
+    return;
+  }
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching documents while the split shows one replaces the entry, so
+  // Close still steps back to the list it was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+const setAttention = (attention) => replaceRoute(`#/ideas${routeQuery({}, { ...state.route, attention })}`);
+els.viewFilters.addEventListener("click", (event) => {
+  const segment = event.target.closest("[data-attention]");
+  if (segment) setAttention(segment.dataset.attention);
+});
+els.attentionSelect.addEventListener("change", (event) => setAttention(event.target.value));
+bindDetailEvents();
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  // Escape inside an answer only leaves the field; a second Escape closes.
+  if (event.target.closest?.("textarea, input")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
 });
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
@@ -495,8 +552,7 @@ els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", () => setMobileSidebarOpen(true));
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
+  replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`);
 });
 els.refresh.addEventListener("click", () => loadState());
 els.mobileRefresh?.addEventListener("click", () => loadState());
@@ -517,9 +573,14 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+if (state.route.view === "ideas" && state.route.id) state.selectedIdeaId = state.route.id;
 syncResponsiveShell();
 boot();

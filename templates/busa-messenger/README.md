@@ -50,7 +50,7 @@ Use the URL printed by the launcher, then add one of these demo paths:
 ```text
 /?demo=overview&lang=en#/overview
 /?demo=inbox&lang=en#/inbox
-/?demo=chat&lang=en#/inbox/wa-lena-pricing
+/?demo=chat&lang=en#/inbox?peek=wa-lena-pricing
 /?demo=outbox&lang=en#/outbox
 /?demo=accounts&lang=en#/accounts
 ```

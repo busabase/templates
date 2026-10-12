@@ -110,13 +110,20 @@ evaluates the baseline, trains, evaluates the adapter, and writes `report.json`.
 
 ## UI
 
-- `#/overview`: readiness, approved split counts, active runs, candidate adapters,
-  pipeline stages, latest baseline/adapter delta, and recent runs.
-- `#/examples[/<id>]`: desktop list/detail review queue and separate phone list
-  and detail panes with stable example ids and review actions.
-- `#/runs`: base model, method, claim/status, heartbeat, artifacts, and failures.
-- `#/evaluations`: locked baseline/adapter comparisons and promotion verdicts.
-- `#/registry`: active, candidate, and retired adapters with complete lineage.
+- `#/overview`: the only page with a hero and summary band — approved examples,
+  approved train/valid/test split, completed runs — plus pipeline stages, the
+  latest baseline/adapter delta, and recent runs.
+- Record views are one toolbar row (title, search) over a full-bleed table. A
+  row opens its record by `?peek=<id>` beside or over the list; `/<id>` opens
+  the same record as a full page. Escape closes a peek; phones always use the
+  full page.
+  - `#/examples`: the review queue, split beside the selected example (prompt,
+    ideal response, provenance, approve / request changes / block).
+  - `#/runs`: drawer with base model, method, claim/heartbeat, config,
+    artifacts, and sanitized failures.
+  - `#/evaluations`: one row per run comparing locked baseline and adapter;
+    drawer with metrics and the promote / hold / reject verdict.
+  - `#/registry`: drawer with each adapter's complete lineage.
 - `#/settings`: responsive Help & Settings modal with guide, resources, and
   sanitized training configuration.
 

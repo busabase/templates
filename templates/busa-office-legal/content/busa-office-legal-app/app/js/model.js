@@ -97,3 +97,55 @@ export function mergePage(existing, incoming) {
   for (const r of incoming) map.set(r.id, r);
   return [...map.values()];
 }
+// Overview metrics. Each is an exact server-side `records.count` scoped by
+// `valueFilters` (always exact, a single SQL count), never a tally of the
+// loaded page. The demo provider evaluates the same filters over its seed rows.
+export const metricQueries = [
+  {
+    key: "activeCases",
+    baseKey: "cases",
+    valueFilters: [{ fieldSlug: "status", operator: "ne", value: "closed" }],
+  },
+  {
+    key: "deadlinesToVerify",
+    baseKey: "deadlines",
+    valueFilters: [
+      {
+        any: [
+          { fieldSlug: "status", operator: "eq", value: "unverified" },
+          { fieldSlug: "status", operator: "eq", value: "needs_review" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "entriesToVerify",
+    baseKey: "settlements",
+    valueFilters: [{ fieldSlug: "status", operator: "ne", value: "verified" }],
+  },
+];
+const compare = (actual, { operator, value }) => {
+  switch (operator) {
+    case "eq":
+      return actual === value;
+    case "ne":
+      return actual !== value;
+    case "gt":
+      return actual != null && actual > value;
+    case "gte":
+      return actual != null && actual >= value;
+    case "lt":
+      return actual != null && actual < value;
+    case "lte":
+      return actual != null && actual <= value;
+    default:
+      return false;
+  }
+};
+export function matchesValueFilters(fields, valueFilters) {
+  return valueFilters.every((node) =>
+    node.any
+      ? node.any.some((c) => compare(fields[c.fieldSlug], c))
+      : compare(fields[node.fieldSlug], node),
+  );
+}

@@ -64,14 +64,14 @@ exact missing dependency. Do not invent a second data backend.
     <td width="50%"><img src="assets/screenshots/kanban.webp" alt="Deal Sourcing Funnel kanban board"></td>
   </tr>
   <tr>
-    <td><strong>Overview</strong><br>Funnel summary header with per-stage counts, conversion rates, and rejection rate.</td>
+    <td><strong>Overview</strong><br>Conversion and rejection rates, per-stage counts and reach, and the highest-scoring leads still in play.</td>
     <td><strong>Kanban board</strong><br>Leads across New → Data-Verified → Scored → Term-Sheet-Ready → Rejected, with a score chip per card.</td>
   </tr>
   <tr>
     <td colspan="2"><img src="assets/screenshots/lead-detail.webp" alt="Deal Sourcing Funnel lead detail"></td>
   </tr>
   <tr>
-    <td colspan="2"><strong>Lead detail</strong><br>Score breakdown by factor, suggested next action, notes, stage-move actions, and reject-with-reason.</td>
+    <td colspan="2"><strong>Lead detail</strong><br>Opens beside the board or table, or as a full page: score breakdown by factor, suggested next action, notes, stage-move actions, and reject-with-reason.</td>
   </tr>
 </table>
 
@@ -141,15 +141,16 @@ the trusted process to merge, per the AirApp boundary in
 
 ## Demo Mode
 
-- `?demo=1` or `?demo=board` opens a deterministic, fully offline mock
-  pipeline (21 leads across all 5 stages, ported verbatim from the retired
-  `lib/mock-leads.ts`) for documentation and screenshots.
-- `?demo=lead` opens the first lead's detail pane; `?demo=settings` opens
+- `?demo=1` opens a deterministic, fully offline mock pipeline (21 leads
+  across all 5 stages, ported verbatim from the retired `lib/mock-leads.ts`)
+  on the Overview, for documentation and screenshots; `?demo=board` and
+  `?demo=leads` open those views.
+- `?demo=lead` opens the first lead's full page; `?demo=settings` opens
   Help & Settings.
 - `lang=en` or `lang=zh` forces UI chrome language for screenshots.
 - Demo mode never reads or writes Busabase and never claims a real
-  connection; demo actions (move/reject/note) are read-only and raise an
-  error if attempted.
+  connection; demo actions (move/reject/note) are read-only and show a
+  notice if attempted.
 
 UI language: English and Chinese chrome with `Auto` default.
 
@@ -161,11 +162,16 @@ requested.
 
 ## Views
 
-- `#/board`: funnel summary header + kanban across all 5 stages.
-- `#/board/<stage>`: single-stage filtered list (used by the human-attention
-  shortcuts for New / Scored / Rejected).
-- `#/leads/<id>`: score breakdown, suggested next action, notes, stage-move
-  buttons, reject-with-reason.
+- `#/overview` (default): funnel summary — conversion and rejection rates,
+  per-stage counts and reach, and the highest-scoring leads still in play.
+- `#/board`: kanban across all 5 stages; column counts are exact
+  (`records.count`), cards cover the loaded page.
+- `#/leads[?stage=<stage>]`: the leads table, filtered by stage (used by the
+  human-attention shortcuts for New / Scored / Rejected). The old
+  `#/board/<stage>` link redirects here.
+- A lead opens in a drawer beside the board or table (`?peek=<lead-id>`,
+  Escape closes it); `#/leads/<lead-id>` is its full page: score breakdown,
+  suggested next action, notes, stage-move buttons, reject-with-reason.
 - `#/settings`: sanitized fund profile and scoring-criteria summary.
 
 ## Completion Criteria

@@ -1844,7 +1844,8 @@ export const appConfig = {
       "nodes.get",
       "bases.get",
       "records.list",
-      "records.count"
+      "records.count",
+      "records.get"
     ],
     "setupProcedures": [],
     "change_request_procedures": []
@@ -1859,7 +1860,13 @@ export const appConfig = {
       "en": "Renewals and evidence checks",
       "zh-CN": "续期与证据核验"
     },
-    "primary_base": "certificates"
+    "primary_base": "certificates",
+    "detail_modes": {
+      "certificates": "drawer",
+      "contracts": "drawer",
+      "sources": "drawer",
+      "checks": "split"
+    }
   },
   "boundary": {
     "en": "Never replace conflicting dates with a guess. Preserve both sources and ask the owner to verify the original. Do not represent an unsigned contract or unverified certificate as approved. Draft record changes through ChangeRequests; no legal or regulatory conclusions, government submissions, or external sending.",

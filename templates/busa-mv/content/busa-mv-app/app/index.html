@@ -30,11 +30,6 @@
           <div id="projectSwitchMeta" class="switch-meta"></div>
         </section>
 
-        <div class="sidebar-actions">
-          <input id="searchInput" placeholder="搜索" />
-          <button id="newItemButton" title="在当前视图中新建一项" aria-label="新建">+</button>
-        </div>
-
         <section class="attention-panel" aria-label="Next step">
           <div class="eyebrow" data-i18n="next_step">下一步</div>
           <button id="nextStepButton" class="next-step" title="跳到当前最该做的一步">
@@ -45,10 +40,10 @@
         <div class="separator"></div>
 
         <nav class="nav" id="nav">
-          <button class="active" data-view="concept" title="MV 总概括：一句话讲清这支 MV" data-i18n="nav_concept">概括</button>
-          <button data-view="song" title="上传一首 MP3" data-i18n="nav_song">Song</button>
-          <button data-view="cast" title="出镜人物与参考卡" data-i18n="nav_cast">角色</button>
-          <button data-view="storyboard" title="分镜：画面描述 + 上图/上视频" data-i18n="nav_storyboard">分镜</button>
+          <button class="active" data-view="overview" title="MV 总览：进度与概括" data-i18n="nav_overview">总览</button>
+          <button data-view="song" title="上传一首 MP3"><span data-i18n="nav_song">Song</span></button>
+          <button data-view="cast" title="出镜人物与参考卡"><span data-i18n="nav_cast">角色</span><b class="nav-count" id="navCountCast"></b></button>
+          <button data-view="storyboard" title="分镜：画面描述 + 上图/上视频"><span data-i18n="nav_storyboard">分镜</span><b class="nav-count" id="navCountStoryboard"></b></button>
         </nav>
 
         <div class="settings-dock">
@@ -60,30 +55,60 @@
       </aside>
 
       <main class="main">
-        <button id="mobileSidebarToggle" class="mobile-sidebar-toggle" type="button" aria-controls="appSidebar" aria-label="打开侧栏" title="打开侧栏"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
-        <div class="content-title">
-          <div class="project-title" id="projectTitle" data-i18n="loading">加载中</div>
-          <div class="project-meta" id="projectMeta">本地音乐视频项目</div>
+        <div class="mobile-topbar">
+          <button id="mobileSidebarToggle" class="mobile-sidebar-toggle" type="button" aria-controls="appSidebar" aria-label="打开侧栏" title="打开侧栏"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
+          <div class="mobile-topbar-copy">
+            <div id="mobileViewTitle" class="mobile-view-title">Busa MV</div>
+            <div id="mobileViewMeta" class="mobile-view-meta"></div>
+          </div>
         </div>
 
-        <div id="lockBanner" class="lock-banner hidden">本地项目文件正在被 agent 使用，暂时只读。</div>
+        <div id="lockBanner" class="lock-banner" hidden>本地项目文件正在被 agent 使用，暂时只读。</div>
+        <div id="loadState" class="load-state" role="status" data-i18n="loading">加载中</div>
 
-        <section class="workspace">
-          <div class="list-panel">
-            <div class="panel-head">
-              <div>
-                <h2 id="viewTitle">总览</h2>
-                <p id="viewSubtitle">MV 整体进度与下一步</p>
-              </div>
-              <span id="itemCount" class="count-pill">0</span>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 id="overviewTitle"></h1>
+              <p id="overviewSummary"></p>
             </div>
-            <div id="list" class="item-list"></div>
-          </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" aria-label="Production summary"></div>
+          <div id="overviewBody" class="overview-body"></div>
+        </section>
 
-          <aside class="detail-panel">
-            <button id="backToList" class="back-to-list" type="button">← 列表</button>
-            <div id="detail" class="detail"></div>
-          </aside>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <span id="viewMeta" class="toolbar-meta" hidden></span>
+              <input id="searchInput" class="toolbar-search" type="search" autocomplete="off" placeholder="搜索" />
+              <button id="newItemButton" class="button primary" type="button"></button>
+            </div>
+          </header>
+          <div id="workspace" class="ws-workspace">
+            <div id="list" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar">
+                <button id="detailBack" class="button" type="button" data-i18n="back_to_list">返回列表</button>
+                <a id="detailExpand" class="button" data-i18n="open_full_page" hidden>打开完整页面</a>
+              </div>
+              <div id="detail" class="detail"></div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- Song is one record, not a list: a toolbar over its own form. -->
+        <section id="songPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title"><h1 id="songTitle" data-i18n="nav_song">Song</h1></div>
+          </header>
+          <div class="ws-workspace page-scroll"><div id="songBody" class="page-body"></div></div>
         </section>
       </main>
     </div>
