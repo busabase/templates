@@ -146,9 +146,12 @@ Two things about the Vault API that are easy to get wrong:
 
 - **Transport pagination is owned by the provider, never declared per Base.**
   The server caps `records.list({limit})` at 100; `research` routinely produces
-  more contact addresses than that. Both the browser provider and
-  `scripts/lib.mjs` follow `nextCursor` to exhaustion and guard against a
-  repeating cursor. A per-Base `readLimit` is rejected by `scripts/check.mjs`.
+  more contact addresses than that. The browser desk reads one page per Base
+  per user action (Load more for the next), takes totals from `records.count`,
+  and reads an opened company's own addresses with a `company-key` filter when
+  their page is not loaded. `scripts/lib.mjs`, which runs offline, follows
+  `nextCursor` to exhaustion and guards against a repeating cursor. A per-Base
+  `readLimit` is rejected by `scripts/check.mjs`.
 - `bases.createBulkChangeRequest` accepts no `autoMerge`; it always produces a
   pending ChangeRequest that must be reviewed and merged explicitly.
 - Only `text`, `longtext`, `number`, and `date` types are used here. Richer

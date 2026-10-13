@@ -28,14 +28,14 @@ Default interaction mode: App UI. Unless the user explicitly asks for chat-only 
 
 <table>
   <tr>
-    <td width="33%"><img src="assets/screenshots/overview.webp" alt="Busa Invoice Sheet spreadsheet extraction desk"></td>
-    <td width="33%"><img src="assets/screenshots/detail.webp" alt="Busa Invoice Sheet invoice detail review"></td>
-    <td width="33%"><img src="assets/screenshots/extract-data.webp" alt="Busa Invoice Sheet Extract Data upload modal"></td>
+    <td width="33%"><img src="assets/screenshots/overview.webp" alt="Busa Invoice Sheet overview"></td>
+    <td width="33%"><img src="assets/screenshots/detail.webp" alt="Busa Invoice Sheet review queue with an invoice open"></td>
+    <td width="33%"><img src="assets/screenshots/extract-data.webp" alt="Busa Invoice Sheet Extract Data dialog"></td>
   </tr>
   <tr>
-    <td><strong>Spreadsheet extraction desk</strong><br>Sheet-like invoice table with extracted rows, status filters, confidence flags, and human-attention counts.</td>
-    <td><strong>Invoice detail review</strong><br>Editable invoice fields, line items, confidence notes, and approve/request-changes/block controls.</td>
-    <td><strong>Extract Data upload</strong><br>Lido-style upload modal with local file, Google Drive, OneDrive, and email source options.</td>
+    <td><strong>Overview</strong><br>The value awaiting a decision, approved rows not yet exported, and the invoices extraction flagged, with what is waiting on you.</td>
+    <td><strong>Review queue</strong><br>Each status is a queue; the open invoice sits beside it with editable fields, low-confidence fields marked with what was read, line items, extraction notes, and approve/request-changes/block.</td>
+    <td><strong>Extract Data</strong><br>How to hand the agent files from an upload, Google Drive, OneDrive, or email. Extraction runs in the agent; the app never uploads anything.</td>
   </tr>
 </table>
 
@@ -104,7 +104,7 @@ Default behavior is AirApp-first — give the user the clickable AirApp URL. Sta
 
 ## Demo Mode
 
-`?demo=1#/invoices/all` opens the deterministic offline dataset (3 invoices: 2 `needs_review`, 1 `blocked`) for screenshots and review. Demo mode never reads or writes Busabase; demo decisions are read-only.
+`?demo=1` opens the deterministic offline dataset (3 invoices: 2 `needs_review`, 1 `blocked`) for screenshots and review. Routes: `#/overview` (default), `#/invoices/<all|needs_review|changes_requested|approved|done|blocked>` (a review queue; `?peek=<invoice-id>` opens an invoice beside it, `/<invoice-id>` as a full page). Demo mode never reads or writes Busabase; demo decisions are read-only.
 
 ## Safety Defaults
 

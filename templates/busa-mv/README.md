@@ -14,7 +14,7 @@ Busa MV is a Busabase-backed App-in-Skill workbench for turning an existing MP3 
 
 <table>
   <tr>
-    <td width="50%"><img src="assets/screenshots/overview.webp" alt="Busa MV concept view"></td>
+    <td width="50%"><img src="assets/screenshots/overview.webp" alt="Busa MV overview"></td>
     <td width="50%"><img src="assets/screenshots/storyboard.webp" alt="Busa MV storyboard"></td>
   </tr>
   <tr>
@@ -48,7 +48,7 @@ Add a demo path to see a mock MV project (《霓虹潮汐》 / "Neon Tide") with
 Busabase connection:
 
 ```text
-/?demo=overview&lang=en#/concept
+/?demo=overview&lang=en#/overview
 /?demo=song&lang=en#/song
 /?demo=cast&lang=en#/cast
 /?demo=storyboard&lang=en#/storyboard

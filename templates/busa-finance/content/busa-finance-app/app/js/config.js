@@ -6,6 +6,10 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // checks → split: the check queue is worked top to bottom, one decision after
+  // the next. `model` and `settings` have no record list (the current model is
+  // the Overview + Workbook pages; settings is one sanitized row).
+  ui: { detail_modes: { checks: "split" } },
   folder: {
     name: "Busa Finance",
     description:
@@ -80,7 +84,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

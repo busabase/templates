@@ -9,6 +9,7 @@ import {
   normalizeAction,
   normalizeDraft,
   normalizeSignal,
+  normalizeSource,
   parseBatchMeta,
   statusForAction,
 } from "../newsroom-model.js?v=0.1.0";
@@ -98,7 +99,35 @@ async function countRecords(key, filters) {
   }
 }
 
+// Exact, server-side status totals for the sidebar and the Overview band.
+// `status` is a text field, so this is records.count with an equals filter
+// (records.groupBy is not in the pinned SDK, and it rejects text fields
+// anyway). A null anywhere means "unknown": the UI then falls back to the
+// loaded rows and marks the number as partial instead of inventing a total.
+const statusFilter = (status) => [{ fieldSlug: "status", fieldType: "text", operator: "equals", value: status }];
+const sumOrNull = (values) => (values.some((value) => value == null) ? null : values.reduce((a, b) => a + b, 0));
+
+async function statusTotals() {
+  const kinds = ["signals", "actions", "drafts"];
+  const statuses = ["needs_review", "approved", "blocked", "changes_requested"];
+  const pairs = kinds.flatMap((key) => statuses.map((status) => [key, status]));
+  const [counts, sourcesNeedConfig] = await Promise.all([
+    Promise.all(pairs.map(([key, status]) => countRecords(key, statusFilter(status)))),
+    countRecords("sources", statusFilter("needs_config")),
+  ]);
+  const at = (key, status) => counts[pairs.findIndex(([k, s]) => k === key && s === status)];
+  return {
+    needs_review: sumOrNull(kinds.map((key) => at(key, "needs_review"))),
+    approved: sumOrNull(kinds.map((key) => at(key, "approved"))),
+    blocked: sumOrNull(kinds.flatMap((key) => [at(key, "blocked"), at(key, "changes_requested")])),
+    actions_approved: at("actions", "approved"),
+    drafts_needs_review: at("drafts", "needs_review"),
+    sources_needs_config: sourcesNeedConfig,
+  };
+}
+
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -158,12 +187,15 @@ async function requireRecord(key, idFieldSlug, id, label) {
 // review-queue pattern used across this batch of conversions (busa-radar,
 // busa-picks): the decision is a direct field write, not a separate
 // decisions.json-equivalent bucket.
+const NORMALIZE = { signals: normalizeSignal, actions: normalizeAction, drafts: normalizeDraft, sources: normalizeSource };
+const ID_FIELD = { signals: "signal-id", actions: "action-id", drafts: "draft-id", sources: "source-id" };
+
 export const busabaseProvider = {
   kind: "busabase",
 
   async getState() {
     await ensureResources();
-    const [signalsPage, actionsPage, draftsPage, sourcesPage, meta, signalCount, actionCount, draftCount] =
+    const [signalsPage, actionsPage, draftsPage, sourcesPage, meta, signalCount, actionCount, draftCount, sourceCount, counts] =
       await Promise.all([
         readPage("signals"),
         readPage("actions"),
@@ -173,6 +205,8 @@ export const busabaseProvider = {
         countRecords("signals"),
         countRecords("actions"),
         countRecords("drafts"),
+        countRecords("sources"),
+        statusTotals(),
       ]);
     const batch = buildSnapshot({
       signals: signalsPage.rows,
@@ -188,11 +222,13 @@ export const busabaseProvider = {
       onboarding: { completed: Boolean(meta.batch_id), config_version: "1" },
       lock: null,
       batch,
-      totals: { signals: signalCount, actions: actionCount, drafts: draftCount },
+      totals: { signals: signalCount, actions: actionCount, drafts: draftCount, sources: sourceCount },
+      counts,
       pagination: {
         signals: signalsPage.nextCursor,
         actions: actionsPage.nextCursor,
         drafts: draftsPage.nextCursor,
+        sources: sourcesPage.nextCursor,
       },
     };
   },
@@ -200,8 +236,21 @@ export const busabaseProvider = {
   async fetchPage(key, cursor) {
     await ensureResources();
     const page = await readPage(key, cursor);
-    const normalize = { signals: normalizeSignal, actions: normalizeAction, drafts: normalizeDraft }[key];
-    return { ...page, rows: normalize ? page.rows.map(normalize) : page.rows };
+    return { ...page, rows: page.rows.map(NORMALIZE[key]) };
+  },
+
+  // A record named by the URL (a shared `?peek=` or `/<id>` link) that is not
+  // on the loaded page: read just that record by its business id instead of
+  // paging forward until it turns up.
+  async getRecord(key, id) {
+    await ensureResources();
+    const existing = await findRecord(key, ID_FIELD[key], id);
+    if (!existing) return null;
+    return NORMALIZE[key]({
+      ...normalizeFields(existing.headCommit?.payload || existing.headCommit?.fields || existing.fields),
+      __recordId: existing.id,
+      __headCommitId: existing.headCommitId || existing.headCommit?.id,
+    });
   },
 
   // Human verdict on a signal/action/draft (approve/request_changes/block,

@@ -6,6 +6,12 @@ export const appConfig = {
   readOnly: true,
   spaceId: "",
   schemaVersion: 1,
+  // Where a row opens, per view (see app.js for the reasoning):
+  //   entities     page   — an entity owns its holdings and accounts.
+  //   assets       drawer — an asset class is scanned, peeked, and left.
+  //   institutions drawer — the same: one custodian's accounts and holdings.
+  //   performance  page   — a row is an entity, so it opens that entity's page.
+  ui: { detail_modes: { entities: "page", assets: "drawer", institutions: "drawer", performance: "page" } },
   folder: {
     name: "Busa Family Office",
     description: "Multi-entity family-office consolidation dashboard",

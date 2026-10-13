@@ -206,7 +206,6 @@ body.sidebar-collapsed .brand {
 }
 
 body.sidebar-collapsed .brand-copy,
-body.sidebar-collapsed .sidebar-search,
 body.sidebar-collapsed .human-work,
 body.sidebar-collapsed .sidebar-separator,
 body.sidebar-collapsed .filters,
@@ -401,8 +400,8 @@ body.sidebar-collapsed .sidebar-footer {
   min-width: 0;
   min-height: 0;
   height: 100vh;
-  display: grid;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
@@ -414,32 +413,40 @@ body.sidebar-collapsed .sidebar-footer {
   display: none;
 }
 
-.topbar {
-  position: static;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 58px;
-  padding: 10px 18px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-blur);
+.load-state {
+  padding: 24px;
+  color: var(--muted);
 }
 
-.topbar h1 {
-  font-size: var(--text-xl);
-  line-height: 1.2;
+.load-state.error {
+  color: var(--danger);
 }
 
-.topbar p {
-  margin: 2px 0 0;
+.load-state[hidden] {
+  display: none;
 }
 
-.topbar-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Toolbar search */
+.toolbar-search {
+  flex: 0 1 240px;
+  min-width: 160px;
+}
+
+/* Settings */
+.settings-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 24px 32px;
 }
 
 button,
@@ -495,82 +502,7 @@ button.danger {
   color: var(--bad);
 }
 
-.content {
-  min-height: 0;
-  overflow: auto;
-  padding: 16px 18px 24px;
-}
-
-/* Attention + metrics */
-
-.attention-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.attention-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--panel);
-}
-
-.attention-card strong {
-  min-width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-sm);
-  background: var(--accent-weak);
-  color: var(--accent);
-  font-size: var(--text-lg);
-}
-
-.attention-card.hot strong {
-  background: #202124;
-  color: var(--accent-contrast);
-}
-
-.attention-card span {
-  color: var(--muted);
-  font-size: var(--text-sm);
-}
-
-.attention-card:hover {
-  border-color: var(--line-strong);
-  background: var(--surface-soft);
-}
-
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.metric {
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--panel);
-}
-
-.metric span {
-  display: block;
-  color: var(--muted);
-  font-size: var(--text-sm);
-}
-
-.metric strong {
-  display: block;
-  margin-top: 6px;
-  font-size: var(--text-xl);
-}
+/* Overview body (the metrics band itself is `.ws-metrics`, from base-ui.css) */
 
 .channel-badges {
   display: flex;
@@ -692,39 +624,9 @@ button.danger {
   overflow-wrap: anywhere;
 }
 
-/* Tables */
-
-.table-wrap {
-  overflow: auto;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--panel);
-}
-
-table {
-  width: 100%;
-  min-width: 860px;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  padding: 11px 12px;
-  border-bottom: 1px solid var(--line);
-  text-align: left;
-  vertical-align: top;
-}
-
-tr:last-child td {
-  border-bottom: 0;
-}
-
-th {
-  color: var(--muted);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  background: var(--surface-hover);
-}
+/* Record tables use `.ws-table` from base-ui.css, not a bare `table`/`th,td`
+ * rule — an element selector here would fight it (see base-ui.css's "Record
+ * views" header comment). Only the cell-content helpers stay. */
 
 .cell-text {
   max-width: 420px;
@@ -746,6 +648,27 @@ th {
   text-decoration: underline;
 }
 
+/* Record tables: the first column names the record and is the widest. */
+.intake-table th:nth-child(1) { width: 10%; }
+.intake-table th:nth-child(2) { width: 14%; }
+.intake-table th:nth-child(3) { width: 7%; }
+.intake-table th:nth-child(4) { width: 9%; }
+.intake-table th:nth-child(5) { width: auto; }
+.intake-table th:nth-child(6) { width: 11%; }
+.intake-table th:nth-child(7) { width: 12%; }
+.intake-table th:nth-child(8) { width: 8%; }
+
+.tickets-table th:nth-child(1) { width: auto; }
+.tickets-table th:nth-child(2) { width: 12%; }
+.tickets-table th:nth-child(3) { width: 13%; }
+.tickets-table th:nth-child(4) { width: 13%; }
+.tickets-table th:nth-child(5) { width: 9%; }
+.tickets-table th:nth-child(6) { width: 6%; }
+.tickets-table th:nth-child(7) { width: 18%; }
+
+.proposals-table th:nth-child(1) { width: auto; }
+.proposals-table th:nth-child(2) { width: 30%; }
+
 /* Badges */
 
 .badge {
@@ -758,6 +681,14 @@ th {
   font-size: var(--text-sm);
   font-weight: 650;
   white-space: nowrap;
+}
+
+/* base-ui.css's `.badge` (layered) draws a status dot via `--dot`; this app's
+ * badges carry their color in per-type classes (`.badge.channel-wechat` etc.)
+ * instead, so the dot is unused chrome that only cost width in a fixed-layout
+ * `.ws-table` cell — suppress it rather than widen every column around it. */
+.badge::before {
+  content: none;
 }
 
 .badge.channel-wechat {
@@ -883,7 +814,11 @@ th {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 12px;
+}
+
+/* Inside the toolbar (viewFilters) the chips sit inline, not stacked above. */
+.ws-actions .chip-row {
+  margin-bottom: 0;
 }
 
 .chip {
@@ -911,12 +846,6 @@ th {
   border-color: #202124;
   background: #202124;
   color: var(--accent-contrast);
-}
-
-.proposal-list {
-  display: grid;
-  gap: 12px;
-  max-width: 880px;
 }
 
 .proposal-card {
@@ -1060,34 +989,20 @@ th {
 
 /* Board */
 
-.board-group {
-  margin-bottom: 18px;
-}
-
-.board-group h2 {
-  margin-bottom: 8px;
-}
-
 /* Detail */
-
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 12px;
-  color: var(--muted);
-  font-size: var(--text-base);
-}
-
-.back-link:hover {
-  color: var(--text);
-}
 
 .detail {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: 14px;
   align-items: start;
+}
+
+/* One markup for page, drawer and split: the aside only has room to sit next
+ * to the main column when the detail owns the full page (board/tickets). */
+body.ws-detail-drawer .detail,
+body.ws-layout-split .detail {
+  grid-template-columns: 1fr;
 }
 
 .detail-main {
@@ -1280,6 +1195,28 @@ dd {
   border-radius: var(--radius-sm);
   background: var(--panel);
   color: var(--muted);
+}
+
+/* Inside a panel that already has its own border/background — no nested card. */
+.empty-inline {
+  padding: 8px 0;
+  color: var(--muted);
+}
+
+.lock-banner,
+.notice-banner {
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border: 1px solid color-mix(in srgb, var(--warning) 34%, var(--line));
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--warning) 18%, var(--surface));
+  color: var(--warn);
+}
+
+.notice-banner {
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
+  background: var(--surface-soft);
+  color: var(--accent);
 }
 
 /* Scrim */
@@ -1486,32 +1423,18 @@ dd {
   }
 }
 
+/* Prev/Next only — records.list exposes a forward cursor, not an offset, so
+ * there is no honest "jump to page N" here (see runtime-and-sdk.md's "A full
+ * scan in disguise"). */
 .pager {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 16px;
+  gap: 12px;
+  padding: 14px 0 4px;
 }
-.pager button {
-  min-height: 34px;
-}
-.pager-page {
-  min-width: 34px;
-  padding-inline: 8px;
-}
-.pager-page.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: white;
-}
-.pager-ellipsis,
-.pager-summary,
-.pager-error {
+.pager-summary {
   color: var(--muted);
   font-size: var(--text-sm);
-}
-.pager-error {
-  color: var(--danger, #b42318);
+  font-variant-numeric: tabular-nums;
 }

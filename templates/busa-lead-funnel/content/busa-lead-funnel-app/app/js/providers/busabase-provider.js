@@ -76,13 +76,16 @@ function base(key) {
   return declared;
 }
 
-async function readPage(key, cursor) {
+// `filters` are pushed down as a best-effort superset; the app narrows the
+// rows again on the client, so an unhonoured filter can only over-fetch.
+async function readPage(key, cursor, filters) {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
   const declared = base(key);
   const result = await runtimeClient.records.list({
     baseId: declared.baseId,
     limit: declared.readLimit,
     ...(cursor ? { cursor } : {}),
+    ...(filters?.length ? { filters } : {}),
   });
   const records = Array.isArray(result) ? result : result.records || [];
   const rows = records.map((record) => ({
@@ -114,6 +117,22 @@ async function countRecords(key, filters) {
   }
 }
 
+const stageFilter = (stage) => (stage ? [{ fieldSlug: "stage", operator: "equals", value: stage }] : undefined);
+
+// Exact per-stage counts: one records.count per stage (a fixed five, cheap
+// text-equals COUNTs) instead of tallying whichever page happens to be loaded.
+// `stage` is a text field, so records.groupBy (select/checkbox only) cannot
+// bucket it. A denied or failed count is `null` — the UI then labels its
+// numbers as covering the loaded page only.
+async function countStages() {
+  const [total, ...perStage] = await Promise.all([
+    countRecords("leads"),
+    ...STAGES.map((stage) => countRecords("leads", stageFilter(stage))),
+  ]);
+  const by_stage = Object.fromEntries(STAGES.map((stage, index) => [stage, perStage[index]]));
+  return { total, by_stage: perStage.every((value) => value != null) ? by_stage : null };
+}
+
 function normalizePageRows(key, rows) {
   if (key !== "leads") return rows;
   return buildSnapshot({ leads: rows.map(normalizeLeadRow), criteria: currentCriteria }).leads;
@@ -137,7 +156,7 @@ async function findRecord(key, idFieldSlug, idValue) {
 // provider never calls it.
 async function updateLeadRecord(existing, lead, message) {
   if (!allowedWrites.has("records.changeRequest")) throw new Error("PROCEDURE_DENIED: records.changeRequest");
-  return runtimeClient.records.changeRequest({
+  const result = await runtimeClient.records.changeRequest({
     recordId: existing.id,
     operation: "update",
     fields: toBusabaseFields(baseLeadFields(lead)),
@@ -146,6 +165,9 @@ async function updateLeadRecord(existing, lead, message) {
     baseCommitId: existing.headCommitId,
     autoMerge: isStandaloneLocalRuntime(),
   });
+  // A ChangeRequest that has not merged yet leaves the board unchanged until a
+  // reviewer merges it — the UI says so instead of looking like nothing happened.
+  return { lead, pending: !(result?.mergedAt || result?.status === "merged") };
 }
 
 function findSettingsRow(rows = [], kind = "") {
@@ -167,7 +189,13 @@ export const busabaseProvider = {
     for (const key of Object.keys(initialPageCursors)) delete initialPageCursors[key];
     for (const key of Object.keys(initialTotalCounts)) delete initialTotalCounts[key];
     await ensureResources();
-    const [leadRows, settingsRows] = await Promise.all([readFirstPage("leads"), readFirstPage("settings")]);
+    // The settings row only tunes scoring; a denied or failed settings read
+    // falls back to the default criteria instead of failing the whole board.
+    const [leadRows, settingsRows, counts] = await Promise.all([
+      readFirstPage("leads"),
+      readFirstPage("settings").catch(() => []),
+      countStages(),
+    ]);
     const configRow = findSettingsRow(settingsRows, "config");
     const config_summary = buildConfigSummary(parsePayload(configRow?.payload));
     currentCriteria = config_summary.scoring_criteria;
@@ -182,7 +210,24 @@ export const busabaseProvider = {
       config_summary,
       leads: snapshot.leads,
       summary: snapshot.summary,
+      counts,
     });
+  },
+
+  // One lead by its business id (records.get), for a drawer/page URL naming a
+  // lead that is not on the loaded page.
+  async getRecord(key, id) {
+    if (key !== "leads" || !id) return null;
+    await ensureResources();
+    if (!allowedReads.has("records.get")) return null;
+    const existing = await findRecord("leads", "lead-id", id);
+    if (!existing) return null;
+    const row = {
+      ...normalizeFields(existing.headCommit?.payload || existing.headCommit?.fields || existing.fields),
+      __recordId: existing.id,
+      __headCommitId: existing.headCommitId || existing.headCommit?.id,
+    };
+    return normalizePageRows("leads", [row])[0] || null;
   },
 
   // Direct kanban write: move a lead's stage (or reject it with a required
@@ -200,8 +245,7 @@ export const busabaseProvider = {
       normalizeFields(existing.headCommit?.payload || existing.headCommit?.fields || existing.fields),
     );
     const next = applyStageMove(current, stage, reason);
-    await updateLeadRecord(existing, next, `Move ${id} to ${stage}`);
-    return next;
+    return updateLeadRecord(existing, next, `Move ${id} to ${stage}`);
   },
 
   // Direct kanban write: append a note. Ported from LocalFileProvider.addNote().
@@ -215,13 +259,13 @@ export const busabaseProvider = {
       normalizeFields(existing.headCommit?.payload || existing.headCommit?.fields || existing.fields),
     );
     const next = applyNote(current, String(text).trim(), author);
-    await updateLeadRecord(existing, next, `Add note to ${id}`);
-    return next;
+    return updateLeadRecord(existing, next, `Add note to ${id}`);
   },
 
-  async fetchPage(key, cursor) {
+  // One page per user action (Prev/Next or picking a stage filter).
+  async fetchPage(key, cursor, { stage = "" } = {}) {
     await ensureResources();
-    const page = await readPage(key, cursor);
+    const page = await readPage(key, cursor, key === "leads" ? stageFilter(stage) : undefined);
     return { ...page, rows: normalizePageRows(key, page.rows) };
   },
 

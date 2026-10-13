@@ -12,6 +12,15 @@ export const appConfig = {
     slug: "busa-social",
   },
   airApp: { name: "Busa Social", slug: "busa-social-app", resourceKey: "busa-social-app" },
+  // Where each record view opens its record (see DETAIL_MODES in app.js):
+  //   accounts    -> drawer: a profile you scan many of, read, and return from.
+  //   timeline    -> page:   a post's full metrics breakdown — you stay a while.
+  //   compose     -> split:  the draft queue is worked top to bottom.
+  //   shorts      -> split:  the script queue is worked top to bottom.
+  //   engagement  -> split:  the inbox is worked top to bottom.
+  // calendar and crisis have no selectable record (a schedule table and a
+  // single incident board), so they are not listed here.
+  ui: { detail_modes: { accounts: "drawer", timeline: "page", compose: "split", shorts: "split", engagement: "split" } },
   bases: [
     {
       key: "accounts",

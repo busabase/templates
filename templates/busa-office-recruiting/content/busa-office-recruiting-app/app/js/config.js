@@ -552,6 +552,20 @@ export const appConfig = {
   },
   ui: {
     primary: "applicants",
+    // How each view opens a record (busabase-app-creator "Choose The Detail
+    // Mode"). `attention` is the app's cross-ledger queue, not a Base.
+    detail_modes: {
+      // A requisition is a workplace of its own: requirements plus its candidates.
+      positions: "page",
+      // The pipeline is scanned candidate by candidate: check stage, return to the list.
+      applicants: "drawer",
+      // Feedback chasing is a queue worked top to bottom.
+      interviews: "split",
+      // Offer approval is a review inbox, one offer after the next.
+      offers: "split",
+      // Needs attention is the triage queue itself.
+      attention: "split",
+    },
   },
   limits: {
     pendingChangeRequests: 20,

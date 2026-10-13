@@ -118,12 +118,30 @@ async function countRecords(key, filters) {
   }
 }
 
-async function countActiveRecords(key) {
+async function countActiveRecords(key, filters = []) {
   const [total, deleted] = await Promise.all([
-    countRecords(key),
-    countRecords(key, [{ fieldSlug: "deleted", fieldType: "text", operator: "equals", value: "true" }]),
+    countRecords(key, filters.length ? filters : undefined),
+    countRecords(key, [...filters, { fieldSlug: "deleted", fieldType: "text", operator: "equals", value: "true" }]),
   ]);
   return total === null || deleted === null ? null : total - deleted;
+}
+
+const isEmpty = (fieldSlug) => ({ fieldSlug, fieldType: "text", operator: "is_empty" });
+
+// Overview's three numbers. While a Base fits in one page the loaded rows are
+// the whole Base, so `completeness()` is already exact and nothing is sent.
+// Once more pages exist, a page-derived number would be a partial count posing
+// as a total, so ask records.count instead (null → the cell shows "—").
+async function overviewMetrics({ castPartial, shotsPartial }) {
+  const metrics = {};
+  const [refsMissing, shotsNoImage, shotsNoVideo] = await Promise.all([
+    castPartial ? countActiveRecords("cast", [isEmpty("reference-card-asset-id")]) : undefined,
+    shotsPartial ? countActiveRecords("shots", [isEmpty("image-asset-id")]) : undefined,
+    shotsPartial ? countActiveRecords("shots", [isEmpty("video-asset-id")]) : undefined,
+  ]);
+  if (castPartial) metrics.refsMissing = refsMissing;
+  if (shotsPartial) Object.assign(metrics, { shotsNoImage, shotsNoVideo });
+  return metrics;
 }
 
 async function findRecord(key, idFieldSlug, idValue) {
@@ -377,6 +395,10 @@ export const busabaseProvider = {
     const urlMap = await resolveAssetUrls(runtimeClient, assetIds);
     const urlOf = (assetId) => (assetId ? urlMap.get(assetId) || "" : "");
     const project = buildProject({ projectRow, settingsRow, castRows, shotRows, urlOf });
+    const metrics = await overviewMetrics({
+      castPartial: Boolean(castPage.nextCursor),
+      shotsPartial: Boolean(shotPage.nextCursor),
+    });
     return {
       app: "busa-mv",
       demo: false,
@@ -396,6 +418,7 @@ export const busabaseProvider = {
       pagination: { cast: castPage.nextCursor, shots: shotPage.nextCursor },
       totalCount: { cast: castCount, shots: shotCount },
       completeness: completeness(project),
+      metrics,
       attention: attention(project),
       next_step: nextStep(project),
     };

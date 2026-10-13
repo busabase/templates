@@ -6,6 +6,8 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Where a record opens, per view (see app.js for why each one).
+  ui: { detail_modes: { today: "split", all: "drawer" } },
   folder: {
     name: "Busa Followups",
     description: "会后跟进：谁、跟进什么事、什么时候该完成",
@@ -31,7 +33,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

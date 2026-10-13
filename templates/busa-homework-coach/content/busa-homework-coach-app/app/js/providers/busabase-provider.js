@@ -95,6 +95,7 @@ const countStatus = (key, status) =>
   countRecords(key, [{ fieldSlug: "status", fieldType: "text", operator: "equals", value: status }]);
 
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -116,6 +117,22 @@ async function updateRecord(key, existing, fields, message) {
     autoMerge: isStandaloneLocalRuntime(),
   });
 }
+
+async function tolerantRead(key) {
+  try {
+    return await readPage(key);
+  } catch (error) {
+    if (String(error?.message || error).startsWith("SETUP_")) throw error;
+    return { rows: [], nextCursor: null, error: String(error?.message || error) };
+  }
+}
+
+const RECORD_TARGETS = {
+  questions: { idField: "question-id", normalize: computeQuestionFromRow },
+  mistakes: { idField: "mistake-id", normalize: computeMistakeFromRow },
+  papers: { idField: "paper-id", normalize: computePaperFromRow },
+  reviews: { idField: "review-id", normalize: computeReviewFromRow },
+};
 
 function findSettingsRow(rows = [], kind = "") {
   return rows.find((row) => row.kind === kind) || null;
@@ -147,11 +164,10 @@ export const busabaseProvider = {
       mistakeDone,
       ...reviewStatusCounts
     ] = await Promise.all([
-      readPage("questions"),
-      readPage("mistakes"),
-      readPage("papers"),
-      readPage("reviews"),
-      readPage("settings"),
+      ...keys.map((key) => tolerantRead(key)),
+      // Settings is a side read: a denied or failed read leaves the config
+      // summary empty instead of taking every view down with it.
+      tolerantRead("settings"),
       Promise.all(keys.map((key) => countRecords(key))),
       countStatus("questions", "done"),
       countStatus("mistakes", "done"),
@@ -159,6 +175,13 @@ export const busabaseProvider = {
         countStatus("reviews", status),
       ),
     ]);
+    const mainPages = [questionPage, mistakePage, paperPage, reviewPage];
+    // One Base failing is that view's problem; all of them failing is the
+    // connection's, and is reported as such.
+    if (mainPages.every((page) => page.error)) throw new Error(mainPages[0].error);
+    const readErrors = Object.fromEntries(
+      keys.map((key, index) => [key, mainPages[index].error]).filter(([, error]) => error),
+    );
     const configRow = findSettingsRow(settingsPage.rows, "config");
     const configPayload = parseSettingsPayload(configRow);
     const config_summary = buildConfigSummary(configPayload);
@@ -193,6 +216,7 @@ export const busabaseProvider = {
         papers: paperPage.nextCursor,
         reviews: reviewPage.nextCursor,
       },
+      readErrors,
       totalCount: Object.fromEntries(keys.map((key, index) => [key, totals[index]])),
       workflowCount: reviewStatusCounts.every((value) => value !== null)
         ? Object.fromEntries(
@@ -208,6 +232,19 @@ export const busabaseProvider = {
   async fetchPage(key, cursor) {
     await ensureResources();
     return readPage(key, cursor);
+  },
+
+  // A record named by the URL but not on the loaded page: one records.get by
+  // its business id, never a walk through more pages to find it.
+  async getRecord(key, id) {
+    const target = RECORD_TARGETS[key];
+    if (!target || !id) return null;
+    await ensureResources();
+    const existing = await findRecord(key, target.idField, id);
+    if (!existing) return null;
+    return target.normalize(
+      normalizeFields(existing.headCommit?.payload || existing.headCommit?.fields || existing.fields),
+    );
   },
 
   // Human verdict (approve / request_changes / block / revise), written

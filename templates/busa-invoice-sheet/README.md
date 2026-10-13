@@ -13,20 +13,20 @@ Busa Invoice Sheet turns invoices, receipts, credit notes, and statements into a
 
 <table>
   <tr>
-    <td width="33%"><img src="assets/screenshots/overview.webp" alt="Busa Invoice Sheet spreadsheet extraction desk"></td>
-    <td width="33%"><img src="assets/screenshots/detail.webp" alt="Busa Invoice Sheet invoice detail review"></td>
-    <td width="33%"><img src="assets/screenshots/extract-data.webp" alt="Busa Invoice Sheet Extract Data upload modal"></td>
+    <td width="33%"><img src="assets/screenshots/overview.webp" alt="Busa Invoice Sheet overview"></td>
+    <td width="33%"><img src="assets/screenshots/detail.webp" alt="Busa Invoice Sheet review queue with an invoice open"></td>
+    <td width="33%"><img src="assets/screenshots/extract-data.webp" alt="Busa Invoice Sheet Extract Data dialog"></td>
   </tr>
   <tr>
-    <td><strong>Spreadsheet extraction desk</strong><br>Sheet-like invoice table with extracted rows, status filters, confidence flags, and human-attention counts.</td>
-    <td><strong>Invoice detail review</strong><br>Editable invoice fields, line items, confidence notes, and approve/request-changes/block controls.</td>
-    <td><strong>Extract Data upload</strong><br>Lido-style upload modal with local file, Google Drive, OneDrive, and email source options.</td>
+    <td><strong>Overview</strong><br>The value awaiting a decision, approved rows not yet exported, and the invoices extraction flagged, with what is waiting on you.</td>
+    <td><strong>Review queue</strong><br>Each status is a queue; the open invoice sits beside it with editable fields, low-confidence fields marked with what was read, line items, extraction notes, and approve/request-changes/block.</td>
+    <td><strong>Extract Data</strong><br>How to hand the agent files from an upload, Google Drive, OneDrive, or email. Extraction runs in the agent; the app never uploads anything.</td>
   </tr>
   <tr>
-    <td width="33%"><img src="assets/screenshots/overview-mobile.webp" alt="Busa Invoice Sheet mobile shell"></td>
+    <td width="33%"><img src="assets/screenshots/overview-mobile.webp" alt="Busa Invoice Sheet invoice list on a phone"></td>
   </tr>
   <tr>
-    <td><strong>Mobile shell</strong><br>390px responsive layout for the invoice review table on a phone.</td>
+    <td><strong>Phone</strong><br>The invoice list at 390px; opening a row shows the invoice as its own page.</td>
   </tr>
 </table>
 
@@ -38,7 +38,7 @@ Run the app and open a safe mock-data scene:
 pnpm --dir skills/busa-invoice-sheet/content/busa-invoice-sheet-app dev
 ```
 
-Then open the printed URL with `/?demo=1#/invoices/all`. Demo mode never reads or writes Busabase; demo decisions are read-only.
+Then open the printed URL with `/?demo=1`. Demo mode never reads or writes Busabase; demo decisions are read-only.
 
 ## Real Workflow
 

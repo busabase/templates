@@ -1,7 +1,13 @@
 import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js?v=0.1.0";
-import { DECISION_ACTIONS, buildSnapshot, statusForAction } from "../pr-review-model.js?v=0.1.0";
+import {
+  buildSnapshot,
+  DECISION_ACTIONS,
+  normalizeItem,
+  statusForAction,
+  withReviewRefs,
+} from "../pr-review-model.js?v=0.1.0";
 
 const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
@@ -142,7 +148,21 @@ async function countWorkflowCounts(repo) {
   };
 }
 
+// Undecided PRs (needs_review + to_approve) whose checks are failing — exact,
+// two records.count calls; `null` when counting is not allowed.
+async function countFailingAwaiting(repo) {
+  const scope = repo && repo !== "all" ? [equals("repo", repo)] : [];
+  const failing = equals("checks", "failing");
+  const values = await Promise.all(
+    ["needs_review", "to_approve"].map((status) =>
+      countRecords("reviews", [...scope, equals("status", status), failing]),
+    ),
+  );
+  return values.some((value) => value === null) ? null : values[0] + values[1];
+}
+
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -205,7 +225,7 @@ export const busabaseProvider = {
     const profileRow = settings.get("busa-pr-review-profile") || {};
     const lockRow = settings.get("busa-pr-review-lock") || {};
     const profile = parsePayload(profileRow.payload);
-    const workflowCount = await countWorkflowCounts();
+    const [workflowCount, failingAwaiting] = await Promise.all([countWorkflowCounts(), countFailingAwaiting()]);
     const configuredRepos = (profile.repos || [])
       .map((repo) => (typeof repo === "string" ? repo : repo.repo || repo.name))
       .filter(Boolean);
@@ -238,7 +258,26 @@ export const busabaseProvider = {
       pagination: { reviews: reviewPage.nextCursor },
       totalCount: { reviews: workflowCount?.all ?? null },
       workflowCount,
+      failingAwaiting,
     };
+  },
+
+  // One review named by the URL that is not on the loaded page.
+  async getReview(itemId) {
+    await ensureResources();
+    const record = await findRecord("reviews", "item-id", itemId);
+    if (!record) return null;
+    const row = {
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    };
+    return withReviewRefs([normalizeItem(row)]).map((item) => ({ ...item, review_ref: "" }))[0];
+  },
+
+  async countFailingAwaiting(repo) {
+    await ensureResources();
+    return countFailingAwaiting(repo);
   },
 
   async fetchPage(key, cursor) {

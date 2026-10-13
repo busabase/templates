@@ -95,6 +95,11 @@ async function countRecords(key, filters) {
   }
 }
 
+// `unread` / `awaiting-reply` are text fields holding "true"/"false" (see
+// scripts/sync_messages.mjs), so a checkbox `is_true` filter never matches.
+const countFlag = (fieldSlug) =>
+  countRecords("conversations", [{ fieldSlug, fieldType: "text", operator: "equals", value: "true" }]);
+
 const countReplyStatus = (status) =>
   countRecords("replies", [{ fieldSlug: "status", fieldType: "text", operator: "equals", value: status }]);
 
@@ -168,8 +173,8 @@ export const busabaseProvider = {
       readPage("replies"),
       readSettingsRow(),
       Promise.all(keys.map((key) => countRecords(key))),
-      countRecords("conversations", [{ fieldSlug: "unread", fieldType: "checkbox", operator: "is_true" }]),
-      countRecords("conversations", [{ fieldSlug: "awaiting-reply", fieldType: "checkbox", operator: "is_true" }]),
+      countFlag("unread"),
+      countFlag("awaiting-reply"),
       countReplyStatus("needs_review"),
       countReplyStatus("approved"),
       countReplyStatus("blocked"),

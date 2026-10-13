@@ -1,6 +1,15 @@
 {
   "binding": "runtime",
   "schema_version": 1,
+  "ui": {
+    "detail_modes": {
+      "attention": "split",
+      "accounts": "drawer",
+      "checks": "drawer",
+      "payments": "drawer",
+      "ledger": "drawer"
+    }
+  },
   "workspace": {
     "folder": {
       "slug": "busa-office-cashier",

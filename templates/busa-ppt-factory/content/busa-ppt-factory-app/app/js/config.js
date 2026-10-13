@@ -6,6 +6,19 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Where a record opens, per view (keys are app.js route names; `slides` is
+  // the slide-cards Base, `review` the queue derived from decks + slide cards,
+  // `style` the style-systems Base). Justified next to DETAIL_MODES in app.js.
+  ui: {
+    detail_modes: {
+      projects: "page",
+      decks: "page",
+      slides: "drawer",
+      review: "split",
+      style: "drawer",
+      exports: "drawer",
+    },
+  },
   folder: {
     name: "Busa PPT Factory",
     description:
@@ -183,7 +196,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

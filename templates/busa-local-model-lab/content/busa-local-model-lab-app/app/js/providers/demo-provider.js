@@ -171,7 +171,7 @@ function state() {
     demo_scenario: new URLSearchParams(window.location.search).get("demo") || "overview",
     data_provider: "demo",
     onboarding: { completed: true, config_version: "demo" },
-    resources: { folder_id: "demo", base_ids: {} },
+    resources: { folder_name: "Busa Local Model Lab (demo)", base_ids: {} },
     snapshot: buildSnapshot({ examples, runs, evaluations, models, settings }),
   };
 }
@@ -180,6 +180,10 @@ export const demoProvider = {
   kind: "demo",
   async getState() {
     return state();
+  },
+  // Demo holds every record in memory, so a record not in the snapshot does not exist.
+  async findRecord() {
+    return null;
   },
   async reviewExample(example, verdict, note = "") {
     examples = examples.map((item) =>

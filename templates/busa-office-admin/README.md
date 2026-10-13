@@ -28,11 +28,11 @@ npm run typecheck
 npm run dev
 ```
 
-Open `http://127.0.0.1:3000/?demo=1`. Use `lang=zh-CN` for Chinese. Gallery scenes are `#overview`, `#certificates`, `#attention`. Demo fixtures also support `state=empty`, `partial`, `stale`, `error` and `permission` for state review.
+Open `http://127.0.0.1:3000/?demo=1`. Use `lang=zh-CN` for Chinese. Gallery scenes are `#/overview`, `#/certificates?peek=<record>` (drawer) and `#/attention?peek=<record>` (review queue split); a `#/<base>/<record>` path opens the full record page. Demo fixtures also support `state=empty`, `partial`, `stale`, `error` and `permission` for state review.
 
 `references/workflow.json` is the canonical declaration. Run `node scripts/sync-content.mjs` when changing schemas, samples or prompts. Demo and installed samples are generated together. `npm run build:sdk` refreshes the vendored exact-pinned SDK after dependency changes; deployment only runs `node server.js`.
 
-The app reads one 50-row page per Base; Load more reads one page. Search and review subtotals cover loaded records. Runtime resolves an owned installation by metadata, including a renamed folder nested under a test folder, and refuses duplicate or missing ownership. The application allowlist is a code invariant; workspace permissions remain the platform security boundary.
+The app reads one 50-row page per Base; Load more reads one page. The three Overview figures are exact `records.count` calls; search, filters and the review queue cover loaded records. Runtime resolves an owned installation by metadata, including a renamed folder nested under a test folder, and refuses duplicate or missing ownership. The application allowlist is a code invariant; workspace permissions remain the platform security boundary.
 
 No real original files are included. The sample archive records demonstrate provenance only. Screenshots must be recaptured from the running app before generating the catalog cover.
 
@@ -64,10 +64,10 @@ npm run typecheck
 npm run dev
 ```
 
-打开 `http://127.0.0.1:3000/?demo=1`，使用 `lang=zh-CN` 切换为中文。图库场景为 `#overview`（总览）、`#certificates`（证照台账）、`#attention`（需要复核）。演示数据还支持 `state=empty`、`partial`、`stale`、`error` 与 `permission`，用于核对空状态、部分读取、过期、错误和权限状态。
+打开 `http://127.0.0.1:3000/?demo=1`，使用 `lang=zh-CN` 切换为中文。图库场景为 `#/overview`（总览）、`#/certificates?peek=<记录>`（证照台账抽屉）、`#/attention?peek=<记录>`（需要复核队列分栏）；`#/<台账>/<记录>` 打开完整记录页。演示数据还支持 `state=empty`、`partial`、`stale`、`error` 与 `permission`，用于核对空状态、部分读取、过期、错误和权限状态。
 
 `references/workflow.json` 是唯一规范源。修改结构、示例或提示词后运行 `node scripts/sync-content.mjs`，演示和安装示例同步生成。依赖变化后运行 `npm run build:sdk` 更新精确锁定版本的本地 SDK；部署时仅运行 `node server.js`。
 
-APP 每张台账初次读取最多 50 行；“加载更多”续读一页。搜索与复核小计仅覆盖已加载记录。运行时通过归属元数据解析所属安装实例，支持测试文件夹下嵌套且改名的文件夹；归属重复或缺失时停止。APP 的过程允许列表是代码约束，工作区权限仍是平台安全边界。
+APP 每张台账初次读取最多 50 行；“加载更多”续读一页。总览的三个指标为精确的 `records.count` 计数；搜索、筛选与复核队列仅覆盖已加载记录。运行时通过归属元数据解析所属安装实例，支持测试文件夹下嵌套且改名的文件夹；归属重复或缺失时停止。APP 的过程允许列表是代码约束，工作区权限仍是平台安全边界。
 
 模板不含真实原件，归档示例只演示来源追溯。生成目录封面前，必须从运行中的 APP 重新截取截图。

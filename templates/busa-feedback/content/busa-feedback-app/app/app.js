@@ -1,25 +1,46 @@
 import { messages } from "./i18n/messages.js";
 import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
+import { PROPOSAL_STATUSES, REQUEST_STATUSES, TRIAGES } from "./js/feedback-model.js?v=0.1.0";
 import {
-  renderInbox,
-  renderInboxDetail,
-  renderRequestDetail,
-  renderRequests,
-  renderRoadmap,
+  bindDetailEvents,
+  renderOverview,
+  renderRecordView,
   renderSettings,
 } from "./js/feedback-views.js";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
 
+// Each record view lists one Base. The detail mode is declared per Base in
+// config.js `ui.detail_modes` (feedback → drawer, requests → page, proposals →
+// split; the reasons sit next to the declaration). A `/<record>` path always
+// opens the full page; `?peek=<record>` drives the drawer and the split. On a
+// phone every mode is a page (base-ui.css handles that).
+export const VIEW_BASE = { inbox: "feedback", requests: "requests", roadmap: "proposals" };
+const RECORD_VIEWS = Object.keys(VIEW_BASE);
+export const detailMode = (view) => appConfig.ui.detail_modes[VIEW_BASE[view]] || "drawer";
+// The one filter each record view offers, kept in the URL as `?status=`.
+export const VIEW_FILTERS = {
+  inbox: { field: "triage", values: TRIAGES, group: "triage" },
+  requests: { field: "status", values: REQUEST_STATUSES, group: "status" },
+  roadmap: { field: "status", values: PROPOSAL_STATUSES, group: "status" },
+};
+const ID_FIELD = { feedback: "feedback_id", requests: "request_id", proposals: "proposal_id" };
+
 export const state = {
+  // Prev/Next pager per paginated Base. records.list exposes a forward keyset
+  // cursor only, so pageCursors[key][i] is the cursor that fetches page i+1.
+  // Only neighbouring pages are reachable: one click, one request — never a
+  // loop through the pages in between.
   pageCursors: {},
   currentPage: {},
   pageLoading: {},
   totals: {},
+  // Records named by the URL that are not on the loaded page (records.get).
+  extra: { feedback: new Map(), requests: new Map(), proposals: new Map() },
   snapshot: null,
   settings: null,
+  provider: null,
   route: parseRoute(),
-  query: "",
   lang: normalizeLang(
     new URLSearchParams(location.search).get("lang") || localStorage.getItem("busa-feedback-language") || "auto",
   ),
@@ -29,26 +50,38 @@ export const state = {
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-feedback.sidebarCollapsed";
 
+const byId = (id) => document.getElementById(id);
 export const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  decisionCount: document.querySelector("#count-decisions"),
-  newCount: document.querySelector("#count-new"),
-  needsInfoCount: document.querySelector("#count-needsinfo"),
-  language: document.querySelector("#language"),
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  viewFilters: byId("viewFilters"),
+  statusSelect: byId("statusSelect"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  viewRefresh: byId("viewRefresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  decisionCount: byId("count-decisions"),
+  newCount: byId("count-new"),
+  needsInfoCount: byId("count-needsinfo"),
+  language: byId("language"),
 };
 
-function isMobileLayout() {
+export function isMobileLayout() {
   return window.matchMedia("(max-width: 720px)").matches;
 }
 
@@ -109,44 +142,131 @@ export function enumLabel(value, group = "status") {
   return messages[activeLang()]?.enum?.[group]?.[key] || messages.en.enum?.[group]?.[key] || key.replaceAll("_", " ");
 }
 
+const locale = () => (activeLang() === "zh" ? "zh-Hans" : "en-US");
+
 export function date(value) {
   if (!value) return "";
-  return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  }).format(new Date(value));
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return new Intl.DateTimeFormat(locale(), { month: "short", day: "2-digit", year: "numeric" }).format(parsed);
 }
 
-function relativeTime(value) {
+// Month + day only, for a narrow table column; the full date goes in the title.
+export function shortDate(value) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return new Intl.DateTimeFormat(locale(), { month: "short", day: "numeric" }).format(parsed);
+}
+
+export function relativeTime(value) {
   if (!value) return t("notAvailable");
   const ref = state.snapshot?.generated_at ? new Date(state.snapshot.generated_at) : new Date();
   const diffMs = ref.getTime() - new Date(value).getTime();
   const minutes = Math.max(0, Math.round(diffMs / 60000));
-  const rtf = new Intl.RelativeTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", { numeric: "always" });
+  const rtf = new Intl.RelativeTimeFormat(locale(), { numeric: "always" });
   if (minutes < 60) return rtf.format(-minutes, "minute");
   const hours = Math.round(minutes / 60);
   if (hours < 48) return rtf.format(-hours, "hour");
   return rtf.format(-Math.round(hours / 24), "day");
 }
 
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&status=…&peek=…]`. Search, the view's filter and
+// the peeked record live in the URL so refresh, shared links and Back restore
+// the same list context.
 function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] ? decodeURIComponent(parts[1]) : "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const isRecordView = RECORD_VIEWS.includes(view);
+  const mode = isRecordView ? detailMode(view) : null;
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  const filter = VIEW_FILTERS[view];
+  const status = params.get("status") || "all";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: isRecordView ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+    status: filter?.values.includes(status) ? status : "all",
+  };
 }
 
+const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  if (route.status && route.status !== "all") params.set("status", route.status);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+const contextFor = (view) => (view === state.route.view ? state.route : { view, query: "", status: "all" });
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) =>
+  `#/${view}/${encodeURIComponent(id)}${routeQuery({}, contextFor(view))}`;
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) =>
+  detailMode(view) === "page" ? detailUrl(id, view) : `#/${view}${routeQuery({ peek: id }, contextFor(view))}`;
+
+let previousRouteWasList = false;
+let routeSerial = 0;
+
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
+  render();
+  ensureSelectedRecord();
+}
+
+// Replace the current entry without a hashchange: search keystrokes and filter
+// clicks should not each become a Back step.
+export function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
   render();
 }
 
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── Data ───────────────────────────────────────────────────────────────────
 export async function loadState() {
   const provider = await getProvider();
+  state.provider = provider;
   const data = await provider.getState();
   state.pageCursors = {};
   state.currentPage = {};
   state.pageLoading = {};
   state.totals = data.totals || {};
+  state.extra = { feedback: new Map(), requests: new Map(), proposals: new Map() };
+  // Seed each paginated Base's cursor list with page 1 (no cursor) and the
+  // page-2 cursor getState() learned while fetching page 1.
   for (const [key, nextCursor] of Object.entries(data.pagination || {})) {
     state.pageCursors[key] = [undefined, nextCursor];
     state.currentPage[key] = 1;
@@ -157,6 +277,82 @@ export async function loadState() {
   window.dispatchEvent(new CustomEvent("busa-feedback:state", { detail: data }));
   applyDemoRoute();
   render();
+  ensureSelectedRecord();
+}
+
+function pageSize(key) {
+  return appConfig.bases.find((entry) => entry.key === key)?.readLimit || 50;
+}
+
+export function pageCount(key) {
+  const total = state.totals?.[key];
+  return total == null ? null : Math.max(1, Math.ceil(total / pageSize(key)));
+}
+
+// True while a Base holds only part of its rows — more pages exist, or the
+// user is on a later page. Anything computed from loaded rows must say so.
+export function isPartial(key) {
+  const cursors = state.pageCursors[key];
+  if (!cursors) return false;
+  const current = state.currentPage[key] || 1;
+  return current > 1 || Boolean(cursors[current]);
+}
+
+// The Base's real total (records.count) when known, else what is loaded,
+// marked "+" while more pages exist.
+export function recordCountLabel(key, loadedCount) {
+  const total = state.totals?.[key];
+  if (total != null) return String(total);
+  return `${loadedCount}${isPartial(key) ? "+" : ""}`;
+}
+
+// Replaces the displayed page for `key` with a NEIGHBOURING page: exactly one
+// request per click, using a cursor already learned. Never appends.
+async function goToPage(key, targetPage) {
+  if (state.pageLoading[key]) return;
+  const cursors = state.pageCursors[key];
+  if (!cursors) return;
+  const current = state.currentPage[key] || 1;
+  if (Math.abs(targetPage - current) !== 1 || targetPage < 1) return;
+  if (targetPage > current && !cursors[current]) return;
+  state.pageLoading[key] = true;
+  render();
+  try {
+    const provider = await getProvider();
+    if (typeof provider.fetchPage !== "function") return;
+    const { rows, nextCursor } = await provider.fetchPage(key, cursors[targetPage - 1]);
+    state.snapshot[key] = rows;
+    cursors[targetPage] = nextCursor;
+    state.currentPage[key] = targetPage;
+  } catch (error) {
+    toast(error instanceof Error ? error.message : String(error));
+  } finally {
+    state.pageLoading[key] = false;
+    render();
+  }
+}
+
+// A record named by the URL but not on the loaded page is read on its own
+// (records.get by its business id) instead of loading more pages to find it.
+async function ensureSelectedRecord() {
+  const { view, selectedId } = state.route;
+  const key = VIEW_BASE[view];
+  if (!state.snapshot || !selectedId || !key) return;
+  if (recordById(key, selectedId) || state.extra[key].has(selectedId)) return;
+  const provider = state.provider;
+  if (typeof provider?.getRecord !== "function") {
+    state.extra[key].set(selectedId, null);
+    render();
+    return;
+  }
+  const serial = ++routeSerial;
+  state.extra[key].set(selectedId, undefined);
+  try {
+    state.extra[key].set(selectedId, (await provider.getRecord(key, selectedId)) || null);
+  } catch {
+    state.extra[key].set(selectedId, null);
+  }
+  if (serial === routeSerial) render();
 }
 
 function applyDemoRoute() {
@@ -188,7 +384,15 @@ function applyI18n() {
   }
   els.search.placeholder = t("search");
   els.refresh.textContent = t("refresh");
-  if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
+  els.refresh.title = t("refresh");
+  for (const button of [els.viewRefresh, els.mobileRefresh]) {
+    if (!button) continue;
+    button.title = t("refresh");
+    button.setAttribute("aria-label", t("refresh"));
+  }
+  byId("overviewTitle").textContent = t("overview");
+  byId("settingsTitle").textContent = t("settings");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
 export function feedbackItems() {
@@ -203,36 +407,44 @@ export function proposals() {
   return state.snapshot?.proposals || [];
 }
 
-function decisionsWaiting() {
-  return proposals().filter((item) => item.status === "needs_review").length;
+// Loaded page first, then a record fetched on its own for the URL.
+export function recordById(key, id) {
+  if (!id) return null;
+  const rows = state.snapshot?.[key] || [];
+  return rows.find((item) => item[ID_FIELD[key]] === id) || state.extra[key]?.get(id) || null;
 }
 
 function renderShell() {
   applyI18n();
   const snapshot = state.snapshot;
-  const waiting = decisionsWaiting();
+  const waiting = proposals().filter((item) => item.status === "needs_review").length;
   const fresh = feedbackItems().filter((item) => item.triage === "new").length;
   const needsInfo = requests().filter((item) => item.status === "needs_info").length;
-  const total = feedbackItems().length;
-  els.syncStatus.textContent =
-    snapshot && total ? `${total} ${t("items")} · ${requests().length} ${t("requests").toLowerCase()}` : t("empty");
+  // Where the data comes from; the counts sit in the attention block and nav.
+  els.syncStatus.textContent = !snapshot ? t("loading") : state.settings?.demo ? t("demoData") : t("liveData");
   if (els.decisionCount) els.decisionCount.textContent = waiting;
   if (els.newCount) els.newCount.textContent = fresh;
   if (els.needsInfoCount) els.needsInfoCount.textContent = needsInfo;
+  for (const [view, key] of Object.entries(VIEW_BASE)) {
+    const node = byId(`navCount-${view}`);
+    if (node) node.textContent = snapshot ? recordCountLabel(key, (snapshot[key] || []).length) : "";
+  }
   if (els.mobileViewTitle) els.mobileViewTitle.textContent = viewLabel(state.route.view);
   if (els.mobileViewMeta) {
-    els.mobileViewMeta.textContent = waiting
-      ? `${waiting} ${t("decisionsWaiting")}`
-      : fresh
-        ? `${fresh} ${t("newUncategorized")}`
-        : `${total} ${t("items")}`;
+    els.mobileViewMeta.textContent = !snapshot
+      ? t("loading")
+      : waiting
+        ? `${waiting} ${t("decisionsWaiting")}`
+        : fresh
+          ? `${fresh} ${t("newUncategorized")}`
+          : `${feedbackItems().length} ${t("items")}`;
   }
   document.querySelectorAll("[data-route]").forEach((link) => {
     link.classList.toggle("active", link.dataset.route === state.route.view);
   });
 }
 
-function viewLabel(view) {
+export function viewLabel(view) {
   if (view === "inbox") return t("inbox");
   if (view === "requests") return t("requests");
   if (view === "roadmap") return t("roadmap");
@@ -241,6 +453,7 @@ function viewLabel(view) {
 }
 
 export function channelBadge(channel) {
+  if (!channel) return "";
   return `<span class="channel-badge channel-${escapeHtml(channel)}">${escapeHtml(enumLabel(channel, "channel"))}</span>`;
 }
 
@@ -261,18 +474,38 @@ export function trendArrow(trend) {
   return `<span class="trend trend-${escapeHtml(trend)}" title="${escapeHtml(enumLabel(trend, "trend"))}">${glyph} ${escapeHtml(enumLabel(trend, "trend"))}</span>`;
 }
 
+// A product is a business slug; show its display name. The products Base is
+// read in full (≤50 rows), so a miss means the slug is unregistered — the
+// slug itself is the only name there is.
 export function productName(productId) {
+  if (!productId) return "";
   return state.snapshot?.products?.find((product) => product.product_id === productId)?.display_name || productId;
 }
 
-function requestById(requestId) {
-  return requests().find((item) => item.request_id === requestId);
+// A source is referenced by id; resolve it to the source's name, and say
+// "not loaded" rather than print the id when it is not in the loaded rows.
+export function sourceName(sourceId) {
+  if (!sourceId) return "";
+  return state.snapshot?.sources?.find((source) => source.source_id === sourceId)?.name || t("notLoaded");
 }
 
+export function planLabel(plan) {
+  return plan ? enumLabel(plan, "plan") : "";
+}
+
+// A request link by business id: the title when the request is loaded, "not
+// loaded" when it is referenced but not on this page, and "not clustered
+// yet" only when there is no request at all.
 export function requestLink(requestId) {
-  const request = requestById(requestId);
-  if (!request) return `<span class="muted">${escapeHtml(t("noRequest"))}</span>`;
-  return `<a class="request-link" href="#/requests/${encodeURIComponent(request.request_id)}">${escapeHtml(request.title)}</a>`;
+  if (!requestId) return `<span class="muted">${escapeHtml(t("noRequest"))}</span>`;
+  const request = recordById("requests", requestId);
+  if (!request) return `<span class="muted">${escapeHtml(t("notLoaded"))}</span>`;
+  return `<a class="request-link" href="${detailUrl(request.request_id, "requests")}">${escapeHtml(request.title)}</a>`;
+}
+
+export function requestTitle(requestId) {
+  if (!requestId) return t("noRequest");
+  return recordById("requests", requestId)?.title || t("notLoaded");
 }
 
 export function preview(text, length = 110) {
@@ -280,194 +513,62 @@ export function preview(text, length = 110) {
   return value.length > length ? `${value.slice(0, length - 1)}…` : value;
 }
 
-// ---------- Overview ----------
-
-function renderOverview() {
-  els.title.textContent = t("overview");
-  els.subtitle.textContent = state.snapshot?.generated_at
-    ? `${t("generated")} ${new Date(state.snapshot.generated_at).toLocaleString()}`
-    : t("empty");
-  const metrics = state.snapshot?.metrics || {};
-  const waiting = decisionsWaiting();
-  const fresh = feedbackItems().filter((item) => item.triage === "new").length;
-  const needsInfo = requests().filter((item) => item.status === "needs_info").length;
-  els.content.innerHTML = `
-    <div class="metrics attention-cards">
-      <a class="metric attention-card" href="#/roadmap"><span>${t("decisionsWaiting")}</span><strong>${waiting}</strong></a>
-      <a class="metric attention-card" href="#/inbox"><span>${t("newUncategorized")}</span><strong>${fresh}</strong></a>
-      <a class="metric attention-card" href="#/requests"><span>${t("needsInfo")}</span><strong>${needsInfo}</strong></a>
-      <a class="metric attention-card" href="#/inbox"><span>${t("feedback")}</span><strong>${recordCountLabel("feedback", metrics.feedback_count ?? feedbackItems().length)}</strong></a>
-    </div>
-    <section class="overview-grid">
-      <div class="overview-panel">
-        <h2>${t("inflowThisWeek")}</h2>
-        ${inflowPanel()}
-      </div>
-      <div class="overview-panel">
-        <h2>${t("sentimentSplit")}</h2>
-        ${sentimentPanel()}
-      </div>
-      <div class="overview-panel">
-        <h2>${t("topClusters")}</h2>
-        ${topClustersPanel()}
-      </div>
-      <div class="overview-panel">
-        <h2>${t("freshnessBySource")}</h2>
-        ${freshnessPanel()}
-      </div>
-    </section>
-  `;
+function matches(values, query) {
+  return values.filter(Boolean).some((value) => String(value).toLowerCase().includes(query));
 }
 
-function inflowPanel() {
-  const inflow = state.snapshot?.metrics?.week_inflow || {};
-  const entries = Object.entries(inflow).sort((a, b) => b[1] - a[1]);
-  if (!entries.length) return `<div class="empty">${t("empty")}</div>`;
-  const max = Math.max(...entries.map(([, count]) => count), 1);
-  return entries
-    .map(
-      ([channel, count]) => `
-    <div class="inflow-row">
-      ${channelBadge(channel)}
-      <span class="inflow-bar"><span style="width:${Math.round((count / max) * 100)}%"></span></span>
-      <strong class="num">${count}</strong>
-    </div>
-  `,
-    )
-    .join("");
-}
-
-function sentimentPanel() {
-  const sentiment = state.snapshot?.metrics?.sentiment || {};
-  const rows = [
-    ["positive", "#1f7a4d", sentiment.positive || 0],
-    ["neutral", "#64748b", sentiment.neutral || 0],
-    ["negative", "#b42318", sentiment.negative || 0],
-  ];
-  const max = Math.max(...rows.map(([, , count]) => count), 1);
-  const barWidth = 210;
-  const svgRows = rows
-    .map(([key, color, count], index) => {
-      const y = index * 26 + 6;
-      const width = Math.max(3, Math.round((count / max) * barWidth));
-      return `
-      <text x="0" y="${y + 11}" class="svg-label">${escapeHtml(enumLabel(key, "sentiment"))}</text>
-      <rect x="72" y="${y}" width="${barWidth}" height="14" rx="4" fill="#eef1f5"></rect>
-      <rect x="72" y="${y}" width="${width}" height="14" rx="4" fill="${color}" fill-opacity="0.82"></rect>
-      <text x="${72 + barWidth + 10}" y="${y + 11}" class="svg-count">${count}</text>
-    `;
-    })
-    .join("");
-  return `<svg class="sentiment-svg" viewBox="0 0 320 86" role="img" aria-label="${escapeHtml(t("sentimentSplit"))}">${svgRows}</svg>`;
-}
-
-function topClustersPanel() {
-  const trendRank = { up: 2, flat: 1, down: 0 };
-  const top = [...requests()]
-    .sort((a, b) => trendRank[b.trend] - trendRank[a.trend] || b.weighted_score - a.weighted_score)
-    .slice(0, 5);
-  if (!top.length) return `<div class="empty">${t("empty")}</div>`;
-  return top
-    .map(
-      (request) => `
-    <a class="cluster-row" href="#/requests/${encodeURIComponent(request.request_id)}">
-      <span class="cluster-copy">
-        <strong>${escapeHtml(request.title)}</strong>
-        <small>${escapeHtml(productName(request.product))} · ${request.frequency} × ${t("weight").toLowerCase()} = ${request.weighted_score}</small>
-      </span>
-      ${trendArrow(request.trend)}
-      ${statusBadge(request.status)}
-    </a>
-  `,
-    )
-    .join("");
-}
-
-function freshnessPanel() {
-  const sources = state.snapshot?.sources || [];
-  if (!sources.length) return `<div class="empty">${t("setupNeeded")}</div>`;
-  return sources
-    .map(
-      (source) => `
-    <div class="freshness-row">
-      ${channelBadge(source.channel)}
-      <span class="cluster-copy">
-        <strong>${escapeHtml(source.name)}</strong>
-        <small>${escapeHtml(source.collection || "")}</small>
-      </span>
-      <span class="muted">${escapeHtml(relativeTime(source.last_ingest_at))}</span>
-      <strong class="num">${source.item_count ?? 0}</strong>
-    </div>
-  `,
-    )
-    .join("");
-}
-
-// ---------- Inbox ----------
-
-export function filteredFeedback() {
-  const query = state.query.trim().toLowerCase();
-  return feedbackItems().filter((item) => {
+// Rows of the current record view, narrowed by the URL's search and filter.
+export function filteredRows(view = state.route.view) {
+  const query = state.route.query.trim().toLowerCase();
+  const filter = VIEW_FILTERS[view];
+  const status = state.route.status;
+  const rows = state.snapshot?.[VIEW_BASE[view]] || [];
+  return rows.filter((item) => {
+    if (filter && status !== "all" && item[filter.field] !== status) return false;
     if (!query) return true;
-    const request = requestById(item.request_id);
-    return [
-      item.text,
-      item.user?.handle,
-      item.channel,
-      item.product,
-      item.sentiment,
-      item.triage,
-      request?.title,
-      item.source_id,
-    ]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query));
+    if (view === "inbox") {
+      return matches(
+        [
+          item.text,
+          item.user?.handle,
+          enumLabel(item.channel, "channel"),
+          productName(item.product),
+          enumLabel(item.sentiment, "sentiment"),
+          enumLabel(item.triage, "triage"),
+          requestTitle(item.request_id),
+          sourceName(item.source_id),
+        ],
+        query,
+      );
+    }
+    if (view === "requests") {
+      return matches(
+        [item.title, productName(item.product), enumLabel(item.status), item.problem_statement],
+        query,
+      );
+    }
+    return matches([item.title, item.reason, item.evidence, enumLabel(item.type, "type"), enumLabel(item.status)], query);
   });
 }
 
-export function feedbackTable(items) {
-  if (!items.length) return `<div class="empty">${t("empty")}</div>`;
-  const sorted = [...items].sort((a, b) => new Date(b.received_at) - new Date(a.received_at));
-  return `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>${t("received")}</th><th>${t("user")}</th><th>${t("feedback")}</th><th>${t("channel")}</th><th>${t("sentiment")}</th><th>${t("clusterLink")}</th><th>${t("triage")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${sorted
-            .map(
-              (item) => `
-            <tr>
-              <td class="nowrap">${date(item.received_at)}</td>
-              <td><div class="strong">${escapeHtml(item.user?.handle || "")}</div><div class="muted">${escapeHtml(productName(item.product))} · ${escapeHtml(enumLabel(item.user?.plan || "", "status") || item.user?.plan || "")}</div></td>
-              <td class="feedback-cell"><a href="#/inbox/${encodeURIComponent(item.feedback_id)}">${escapeHtml(preview(item.text))}</a></td>
-              <td>${channelBadge(item.channel)}</td>
-              <td>${sentimentBadge(item.sentiment)}</td>
-              <td>${requestLink(item.request_id)}</td>
-              <td>${triageBadge(item.triage)}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-// ---------- Router ----------
-
 export function render() {
   renderShell();
-  if (state.route.view === "inbox" && state.route.id) renderInboxDetail();
-  else if (state.route.view === "inbox") renderInbox();
-  else if (state.route.view === "requests" && state.route.id) renderRequestDetail();
-  else if (state.route.view === "requests") renderRequests();
-  else if (state.route.view === "roadmap") renderRoadmap();
-  else if (state.route.view === "settings") renderSettings();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && detailMode(view) === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query || state.route.status !== "all"));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
   else renderOverview();
 }
 
@@ -485,17 +586,71 @@ export function escapeHtml(value) {
   );
 }
 
+let toastTimer = null;
+export function toast(message) {
+  let node = document.querySelector("#toast");
+  if (!node) {
+    node = document.createElement("div");
+    node.id = "toast";
+    node.setAttribute("role", "status");
+    document.body.appendChild(node);
+  }
+  node.textContent = message;
+  node.classList.add("visible");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => node.classList.remove("visible"), 2600);
+}
+
+// ── Events ─────────────────────────────────────────────────────────────────
+els.listPanel.addEventListener("click", (event) => {
+  const pager = event.target.closest("[data-goto-page]");
+  if (pager) {
+    const [key, page] = pager.dataset.gotoPage.split(":");
+    goToPage(key, Number(page));
+    return;
+  }
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+const setStatus = (status) =>
+  replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, status })}`);
+els.viewFilters.addEventListener("click", (event) => {
+  const segment = event.target.closest("[data-status]");
+  if (segment) setStatus(segment.dataset.status);
+});
+els.statusSelect.addEventListener("change", (event) => setStatus(event.target.value));
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  // Escape inside a field only leaves the field; a second Escape closes.
+  if (event.target.closest?.("textarea, input, select")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
+bindDetailEvents();
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", () => setMobileSidebarOpen(true));
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
+  replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`);
 });
-els.refresh.addEventListener("click", () => loadState());
-els.mobileRefresh?.addEventListener("click", () => loadState());
+for (const button of [els.refresh, els.viewRefresh, els.mobileRefresh]) {
+  button?.addEventListener("click", () => loadState().catch((error) => toast(error.message)));
+}
 els.language.value = state.lang;
 els.language.addEventListener("change", () => {
   state.lang = normalizeLang(els.language.value);
@@ -517,118 +672,13 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
-
-const PAGE_BINDINGS = {
-  inbox: { key: "feedback", path: "snapshot.feedback" },
-  requests: { key: "requests", path: "snapshot.requests" },
-  roadmap: { key: "roadmap", path: "snapshot.roadmap" },
-};
-
-function pageSize(key) {
-  return appConfig.bases.find((entry) => entry.key === key)?.readLimit || 50;
-}
-
-function pageCount(key) {
-  const total = state.totals?.[key];
-  return total == null ? null : Math.max(1, Math.ceil(total / pageSize(key)));
-}
-
-function replacePageRows(path, rows) {
-  const parts = path.split(".");
-  let target = state;
-  for (const part of parts.slice(0, -1)) {
-    target = target?.[part];
-    if (!target) return;
-  }
-  target[parts.at(-1)] = rows;
-}
-
-async function goToPage(key, targetPage) {
-  if (state.pageLoading[key] || !state.pageCursors[key]) return;
-  const binding = Object.values(PAGE_BINDINGS).find((entry) => entry.key === key);
-  if (!binding) return;
-  const totalPages = pageCount(key);
-  const page = totalPages == null ? Math.max(1, targetPage) : Math.min(Math.max(1, targetPage), totalPages);
-  if (page === state.currentPage[key]) return;
-  state.pageLoading[key] = true;
-  if (typeof render === "function") render();
-  else route();
-  try {
-    const provider = await getProvider();
-    let result;
-    for (let next = state.pageCursors[key].length; next <= page; next += 1) {
-      const cursor = state.pageCursors[key][next - 1];
-      if (next > 1 && !cursor) return;
-      result = await provider.fetchPage(key, cursor);
-      state.pageCursors[key][next] = result.nextCursor;
-    }
-    if (!result || state.pageCursors[key].length > page + 1) {
-      result = await provider.fetchPage(key, state.pageCursors[key][page - 1]);
-      state.pageCursors[key][page] = result.nextCursor;
-    }
-    replacePageRows(binding.path, result.rows);
-    state.currentPage[key] = page;
-  } finally {
-    state.pageLoading[key] = false;
-    if (typeof render === "function") render();
-    else route();
-  }
-}
-
-function pagerMessage(key, fallback) {
-  return typeof t === "function" ? t(key) : fallback;
-}
-
-export function recordCountLabel(key, loadedCount, filtered = false) {
-  if (filtered) return loadedCount;
-  const total = state.totals?.[key];
-  if (total != null) return total;
-  const current = state.currentPage?.[key] || 1;
-  return `${loadedCount}${state.pageCursors?.[key]?.[current] ? "+" : ""}`;
-}
-
-export function pagerControl(key) {
-  if (!state.pageCursors[key]) return "";
-  const total = pageCount(key);
-  const current = state.currentPage[key] || 1;
-  const loading = Boolean(state.pageLoading[key]);
-  const hasNext = total == null ? Boolean(state.pageCursors[key][current]) : current < total;
-  if ((total === 1 || total == null) && current === 1 && !hasNext) return "";
-  const pages =
-    total == null
-      ? []
-      : total <= 7
-        ? Array.from({ length: total }, (_, index) => index + 1)
-        : [...new Set([1, total, current - 1, current, current + 1].filter((page) => page >= 1 && page <= total))].sort(
-            (a, b) => a - b,
-          );
-  const items = [];
-  let previous = 0;
-  for (const page of pages) {
-    if (previous && page - previous > 1) items.push('<span class="pager-ellipsis">…</span>');
-    items.push(
-      `<button type="button" class="pager-page ${page === current ? "active" : ""}" data-goto-page="${key}:${page}" ${loading || page === current ? "disabled" : ""}>${page}</button>`,
-    );
-    previous = page;
-  }
-  return `<nav class="pager" aria-label="${pagerMessage("pagination", "Pagination")}">
-    <button type="button" class="pager-nav" data-goto-page="${key}:${current - 1}" ${loading || current <= 1 ? "disabled" : ""}>${pagerMessage("prevPage", "Prev")}</button>
-    ${items.join("")}
-    <button type="button" class="pager-nav" data-goto-page="${key}:${current + 1}" ${loading || !hasNext ? "disabled" : ""}>${pagerMessage("nextPage", "Next")}</button>
-    ${total == null ? "" : `<span class="pager-summary">${pagerMessage("pageOf", "Page {current} of {total}").replace("{current}", current).replace("{total}", total)}</span>`}
-  </nav>`;
-}
-
-document.querySelector("#content")?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-goto-page]");
-  if (!button) return;
-  const [key, page] = button.dataset.gotoPage.split(":");
-  goToPage(key, Number(page));
-});
-
 boot();

@@ -10,39 +10,38 @@
     <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
     <link rel="stylesheet" href="./accent-theme.css">
   </head>
-  <body>
+  <body class="ws-has-mobile-bar">
     <div class="app-shell">
       <aside class="sidebar" id="appSidebar">
         <div class="brand">
           <div class="brand-icon" aria-hidden="true">PX</div>
           <div class="brand-copy">
             <div class="brand-title" data-i18n="appName">Busa PPT Factory</div>
-            <div class="brand-subtitle" data-i18n="appSubtitle">PPT production desk</div>
+            <div class="brand-subtitle" id="syncStatus" data-i18n="appSubtitle">PPT production desk</div>
           </div>
           <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-controls="appSidebar" aria-expanded="true" title="Toggle sidebar">
             <span class="sidebar-toggle-icon" aria-hidden="true"></span>
           </button>
         </div>
-        <section class="human-work">
-          <div class="attention-label" data-i18n="attentionPrimary">Need a slide decision</div>
-          <div class="attention-count" id="attentionCount">0</div>
-          <div class="attention-subgrid">
+        <a class="human-work" href="#/review">
+          <span class="attention-label" data-i18n="attentionPrimary">Need a slide decision</span>
+          <span class="attention-count" id="attentionCount">0</span>
+          <span class="attention-subgrid">
             <span><b id="approvedCount">0</b><small data-i18n="approved">Approved</small></span>
             <span><b id="readyCount">0</b><small data-i18n="readyForAgent">Ready for agent next</small></span>
-          </div>
-        </section>
+          </span>
+        </a>
         <nav class="filters" aria-label="Workflow">
-          <a href="#/overview" data-route="overview" data-i18n="overview">Overview</a>
-          <a href="#/projects" data-route="projects" data-i18n="projects">Projects</a>
-          <a href="#/decks" data-route="decks" data-i18n="decks">Decks</a>
-          <a href="#/slides" data-route="slides" data-i18n="slideCards">Slide cards</a>
-          <a href="#/review" data-route="review" data-i18n="review">Review</a>
-          <a href="#/style" data-route="style" data-i18n="styleSystem">Style system</a>
-          <a href="#/exports" data-route="exports" data-i18n="exports">Exports</a>
-          <a href="#/settings" data-route="settings" data-i18n="settings">Settings</a>
+          <a href="#/overview" data-route="overview"><span data-i18n="overview">Overview</span></a>
+          <a href="#/projects" data-route="projects"><span data-i18n="projects">Projects</span><b class="nav-count" data-count="projects"></b></a>
+          <a href="#/decks" data-route="decks"><span data-i18n="decks">Decks</span><b class="nav-count" data-count="decks"></b></a>
+          <a href="#/slides" data-route="slides"><span data-i18n="slideCards">Slide cards</span><b class="nav-count" data-count="slides"></b></a>
+          <a href="#/review" data-route="review"><span data-i18n="review">Review</span><b class="nav-count" data-count="review"></b></a>
+          <a href="#/style" data-route="style"><span data-i18n="styleSystem">Style system</span><b class="nav-count" data-count="style"></b></a>
+          <a href="#/exports" data-route="exports"><span data-i18n="exports">Exports</span><b class="nav-count" data-count="exports"></b></a>
+          <a href="#/settings" data-route="settings"><span data-i18n="settings">Settings</span></a>
         </nav>
         <div class="sidebar-footer">
-          <button id="settingsBtn" class="text-button" type="button" data-i18n="settings">Settings</button>
           <select id="languageSelect" aria-label="Language">
             <option value="auto">Auto</option>
             <option value="en">English</option>
@@ -53,32 +52,59 @@
       <main class="main">
         <div class="mobile-topbar">
           <button id="mobileSidebarToggle" class="mobile-sidebar-toggle" type="button" aria-label="Open sidebar"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
-          <div>
+          <div class="mobile-topbar-copy">
             <div id="mobileViewTitle" class="mobile-view-title">Busa PPT Factory</div>
             <div id="mobileViewMeta" class="mobile-view-meta"></div>
           </div>
-          <button id="mobileSettingsBtn" class="icon-text" type="button" data-i18n="settings">Settings</button>
         </div>
-        <header class="topbar-work">
-          <div>
-            <h1 id="pageTitle">Busa PPT Factory</h1>
-            <p id="pageSubtitle"></p>
+        <div id="loadState" class="load-state" role="status">Loading…</div>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 id="overviewTitle">Overview</h1>
+              <p id="overviewSummary"></p>
+            </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" aria-label="Production summary"></div>
+          <div id="overviewBody"></div>
+        </section>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <label class="toolbar-search">
+                <span class="sr-only" data-i18n="searchLabel">Search</span>
+                <input id="searchInput" type="search" autocomplete="off" placeholder="Search" />
+              </label>
+            </div>
+          </header>
+          <div id="workspace" class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar">
+                <button id="detailBack" class="button" type="button">Back to list</button>
+                <a id="detailExpand" class="button" hidden>Open full page</a>
+              </div>
+              <div id="detailBody"></div>
+            </aside>
           </div>
-          <input id="searchInput" type="search" placeholder="Search projects, decks, slides" />
-        </header>
-        <section class="content">
-          <div class="list-panel" id="listPanel"></div>
-          <aside class="detail-panel" id="detailPanel"></aside>
+        </section>
+        <section id="settingsPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title"><h1 id="settingsTitle">Settings</h1></div>
+          </header>
+          <div class="settings-scroll">
+            <div id="settingsContent" class="settings-content"></div>
+          </div>
         </section>
       </main>
     </div>
     <div id="sidebarScrim" class="sidebar-scrim" hidden></div>
-    <dialog id="settingsDialog">
-      <form method="dialog" class="dialog-card">
-        <button class="dialog-close" value="close" aria-label="Close">×</button>
-        <div id="settingsContent"></div>
-      </form>
-    </dialog>
     <script type="module" src="app.js"></script>
     <script type="module" src="./accent-theme.js"></script>
   </body>

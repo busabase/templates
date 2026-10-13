@@ -41,11 +41,11 @@ const config = {
   bases, schema: { bases },
   permissions: { readProcedures: ['nodes.list', 'nodes.get', 'bases.get', 'records.list', 'records.count'], setupProcedures: [], change_request_procedures: [] },
   onboarding: { version: 0, fields: [], rationale: 'No integration or setup required; installed Bases are the workflow. / 无需集成或额外设置；业务流程使用安装后的台账。' },
-  ui: { summary: spec.summary, primary_base: bases[0].key }, boundary: spec.boundary, demoRecords,
+  ui: { summary: spec.summary, primary_base: bases[0].key, detail_modes: spec.detailModes }, boundary: spec.boundary, demoRecords,
 };
 const targets = new Map();
 targets.set(`content/${spec.name}-app/app/js/config.js`, `export const appConfig = ${JSON.stringify(config, null, 2)};\n`);
-targets.set(`content/${spec.name}-app/airapp-blueprint.json`, json({ app: { slug: spec.name }, route: 'package-first', binding: 'runtime', workspace: { bases: bases.map((base) => ({ key: base.key, slug: base.slug, read_limit: base.readLimit })) }, dataBudgets: 'One 50-row page per Base; one continuation page on explicit action. No unrequested background scans. / 每张台账首次读取最多 50 行；用户明确操作时续读一页，不自动后台遍历。', actions: [], onboarding: config.onboarding }));
+targets.set(`content/${spec.name}-app/airapp-blueprint.json`, json({ app: { slug: spec.name }, route: 'package-first', binding: 'runtime', workspace: { bases: bases.map((base) => ({ key: base.key, slug: base.slug, read_limit: base.readLimit })) }, dataBudgets: 'One 50-row page per Base; one continuation page on explicit action. No unrequested background scans. / 每张台账首次读取最多 50 行；用户明确操作时续读一页，不自动后台遍历。', actions: [], onboarding: config.onboarding, ui: { detail_modes: spec.detailModes } }));
 targets.set('content/_folder.json', json({ name: bilingual(spec.title), description: bilingual(spec.description), agentPrompts: prompts(spec.prompts) }));
 targets.set(`content/${spec.name}-app/_node.json`, json({ type: 'airapp', name: bilingual(spec.title), description: bilingual(spec.description), position: bases.length, agentPrompts: prompts(spec.prompts) }));
 for (const [index, base] of bases.entries()) {

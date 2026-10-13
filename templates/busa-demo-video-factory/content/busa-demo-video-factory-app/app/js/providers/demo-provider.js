@@ -1,9 +1,19 @@
 // Deterministic demo data for `?demo=1` — never reads live Busabase state.
 // Ported verbatim (same ids, same titles, same bilingual copy) from the
-// retired app/server/demo.ts's DEMO_VIDEOS/DEMO_SHOTS, run through
+// retired app/server/demo.ts's DEMO_VIDEOS/DEMO_SHOTS (videos 3-6 and their
+// shots were added later so every pipeline stage has a row), run through
 // video-model.js's normalize functions so the shape matches exactly what
 // busabase-provider.js produces from real records.
-import { buildState, normalizeShotRow, normalizeVideoRow } from "../video-model.js?v=0.1.0";
+import {
+  buildState,
+  countBy,
+  normalizeShotRow,
+  normalizeVideoRow,
+  SHOT_STATUSES,
+  shotsForVideo,
+  VIDEO_STATUSES,
+  withShotRollup,
+} from "../video-model.js?v=0.1.0";
 
 const RAW_DEMO_VIDEOS = [
   {
@@ -31,6 +41,63 @@ const RAW_DEMO_VIDEOS = [
     status: "approved",
     verified_claims: "| 原草稿说法 | 核实结果 |\n| --- | --- |\n| 跨 Agent 共享 | 合理，中心化数据库 |",
     hyperframe_path: "videos/busabase-cloud/single-source-of-truth",
+    final_video_url: "",
+    owner: "you",
+  },
+  // Added so every pipeline stage has a row in the demo.
+  {
+    __recordId: "demo-video-3",
+    title: "视频3：一条 Change Request 走完审批",
+    series: "workflow",
+    purpose: "演示 Agent 写入、人审核、合并的完整一圈。",
+    hook: "你敢让 AI 直接改你的客户表吗？",
+    pain_point: "Agent 写错一行数据，没人知道是谁改的、什么时候改的。",
+    concept: "每次写入都是一条可审核、可回滚的 Change Request。",
+    status: "recording",
+    verified_claims: "| 原草稿说法 | 核实结果 |\n| --- | --- |\n| 可回滚 | 支持 revert 到任意 commit |",
+    hyperframe_path: "videos/busabase-cloud/change-request-loop",
+    final_video_url: "",
+    owner: "ai",
+  },
+  {
+    __recordId: "demo-video-4",
+    title: "视频4：AirApp 三分钟上线一个内部工具",
+    series: "airapp",
+    purpose: "展示从模板安装到 AirApp 可用的速度。",
+    hook: "做一个内部工具，要不要先招个前端？",
+    pain_point: "内部工具永远排不上开发排期。",
+    concept: "装一个模板，AirApp 带着表和界面一起出现。",
+    status: "post_production",
+    verified_claims: "",
+    hyperframe_path: "videos/busabase-cloud/airapp-three-minutes",
+    final_video_url: "",
+    owner: "ai",
+  },
+  {
+    __recordId: "demo-video-5",
+    title: "视频5：给 Agent 一个共享网盘",
+    series: "aicoder",
+    purpose: "说明 Drive 让多个 Agent 读写同一份文件。",
+    hook: "你的 Agent 之间是怎么传文件的？",
+    pain_point: "复制粘贴、上传下载，文件版本越传越乱。",
+    concept: "Busabase Drive：Agent 和人看到的是同一份文件。",
+    status: "done",
+    verified_claims: "| 原草稿说法 | 核实结果 |\n| --- | --- |\n| 版本历史 | 每次写入都有 commit |",
+    hyperframe_path: "videos/busabase-cloud/shared-drive",
+    final_video_url: "https://example.com/videos/shared-drive",
+    owner: "you",
+  },
+  {
+    __recordId: "demo-video-6",
+    title: "视频6：Skills 让 Agent 知道怎么用你的数据",
+    series: "workflow",
+    purpose: "解释 Skill 节点是给 Agent 读的操作手册。",
+    hook: "Agent 第一次打开你的工作区，它怎么知道该干嘛？",
+    pain_point: "每次都要重新解释一遍表结构和规矩。",
+    concept: "把规矩写进 Skill，Agent 进来先读手册。",
+    status: "idea",
+    verified_claims: "",
+    hyperframe_path: "",
     final_video_url: "",
     owner: "you",
   },
@@ -97,7 +164,87 @@ const RAW_DEMO_SHOTS = [
     note: "真实存在的 Connect 步骤",
     recording_status: "recorded",
   },
+  {
+    __recordId: "demo-shot-3-1",
+    title: "视频3 · 镜头1",
+    video: "demo-video-3",
+    shot_number: 1,
+    timecode: "0:00-0:08",
+    scene: "客户表里一行数据被悄悄改掉",
+    code_reference: "—",
+    script_line: "你敢让 AI 直接改你的客户表吗？",
+    note: "钩子",
+    recording_status: "recorded",
+  },
+  {
+    __recordId: "demo-shot-3-2",
+    title: "视频3 · 镜头2",
+    video: "demo-video-3",
+    shot_number: 2,
+    timecode: "0:08-0:30",
+    scene: "Agent 提交 Change Request，审核页显示字段 diff",
+    code_reference: "apps/busabase/src/domains/change-requests",
+    script_line: "Agent 的每次写入，都会先变成一条 Change Request。",
+    note: "录屏要能看清 diff",
+    recording_status: "pending",
+  },
+  {
+    __recordId: "demo-shot-3-3",
+    title: "视频3 · 镜头3",
+    video: "demo-video-3",
+    shot_number: 3,
+    timecode: "0:30-0:45",
+    scene: "点击合并，记录历史出现新 commit",
+    code_reference: "—",
+    script_line: "你点一下合并，它才真正写进去；写错了，一键回滚。",
+    note: "",
+    recording_status: "needs_reshoot",
+  },
+  {
+    __recordId: "demo-shot-4-1",
+    title: "视频4 · 镜头1",
+    video: "demo-video-4",
+    shot_number: 1,
+    timecode: "0:00-0:10",
+    scene: "模板库里点安装",
+    code_reference: "—",
+    script_line: "做一个内部工具，要不要先招个前端？",
+    note: "",
+    recording_status: "recorded",
+  },
+  {
+    __recordId: "demo-shot-4-2",
+    title: "视频4 · 镜头2",
+    video: "demo-video-4",
+    shot_number: 2,
+    timecode: "0:10-0:40",
+    scene: "AirApp 打开，表格和界面已经就绪",
+    code_reference: "—",
+    script_line: "装一个模板，表和界面一起出现。",
+    note: "",
+    recording_status: "recorded",
+  },
+  {
+    __recordId: "demo-shot-5-1",
+    title: "视频5 · 镜头1",
+    video: "demo-video-5",
+    shot_number: 1,
+    timecode: "0:00-0:12",
+    scene: "两个 Agent 窗口并排，读写同一份文件",
+    code_reference: "—",
+    script_line: "你的 Agent 之间是怎么传文件的？",
+    note: "",
+    recording_status: "recorded",
+  },
 ];
+
+const isStatus = (key, row, status) =>
+  !status || status === "all" || (key === "videos" ? row.status : row.recording_status) === status;
+
+function demoRows() {
+  const shots = RAW_DEMO_SHOTS.map(normalizeShotRow);
+  return { videos: withShotRollup(RAW_DEMO_VIDEOS.map(normalizeVideoRow), shots), "video-shots": shots };
+}
 
 export const demoProvider = {
   kind: "demo",
@@ -109,7 +256,26 @@ export const demoProvider = {
       ...buildState(videos, shots, { demo: true }),
       data_provider: "demo",
       onboarding: { completed: true, config_version: "demo" },
+      pagination: { videos: null, "video-shots": null },
+      totals: { videos: videos.length, "video-shots": shots.length },
+      statusCounts: {
+        videos: countBy(videos, "status", VIDEO_STATUSES),
+        "video-shots": countBy(shots, "recording_status", SHOT_STATUSES),
+      },
+      warnings: [],
     };
+  },
+
+  async fetchPage(key, _cursor, { status } = {}) {
+    return { rows: demoRows()[key].filter((row) => isStatus(key, row, status)), nextCursor: null };
+  },
+
+  async getRecord(key, recordId) {
+    return demoRows()[key].find((row) => row.id === recordId) || null;
+  },
+
+  async fetchShotsForVideo(videoId) {
+    return { rows: shotsForVideo(demoRows()["video-shots"], videoId), nextCursor: null };
   },
 
   async provisionResources() {

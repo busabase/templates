@@ -23,11 +23,15 @@ import {
   methodBadge,
   num,
   openReview,
+  paginationControl,
   pct,
   platformBadge,
   platformChips,
   posts,
+  recordById,
   recordTotal,
+  recordUrl,
+  renderDetailChrome,
   reviewActions,
   reviewBadge,
   shorts,
@@ -35,59 +39,91 @@ import {
   state,
   syncLog,
   t,
-  timelineTable,
   workflowChips,
 } from "../app.js";
-export function renderCalendar() {
-  els.title.textContent = t("contentCalendar");
+
+const cell = (html, title = "", className = "") =>
+  `<td${className ? ` class="${className}"` : ""}${title ? ` title="${escapeHtml(title)}"` : ""}>${html}</td>`;
+const rowOpen = (id) => `<tr data-id="${escapeHtml(id)}"${id === state.route.selectedId ? ' class="ws-selected"' : ""}>`;
+const tableHead = (columns) =>
+  `<thead><tr>${columns.map(([label, className = ""]) => `<th${className ? ` class="${className}"` : ""}>${escapeHtml(label)}</th>`).join("")}</tr></thead>`;
+
+// ── Calendar (plain table, no record to open) ──────────────────────────────
+export function renderCalendarView() {
+  els.viewTitle.textContent = t("contentCalendar");
+  els.viewTitle.title = "";
   const list = [...calendar()].sort((a, b) => String(a.date).localeCompare(String(b.date)));
-  els.subtitle.textContent = `${list.length} ${t("upcoming")}`;
-  els.content.innerHTML = list.length
+  els.viewCount.textContent = `${recordTotal("calendar", list.length)}`;
+  els.viewFilters.hidden = true;
+  els.viewFilters.innerHTML = "";
+  els.listPanel.innerHTML = list.length
     ? `
-    <div class="table-wrap">
-      <table class="calendar-table">
-        <thead>
-          <tr><th>${t("date")}</th><th>${t("channel")}</th><th>${t("pillar")}</th><th>${t("post")}</th><th>${t("status")}</th></tr>
-        </thead>
-        <tbody>
-          ${list
-            .map(
-              (entry) => `
-            <tr>
-              <td><strong>${date(entry.date)}</strong>${entry.scheduled_for ? `<div class="muted">${dateTime(entry.scheduled_for)}</div>` : ""}</td>
-              <td>${platformBadge(entry.channel)}</td>
-              <td><span class="badge pillar">${escapeHtml(entry.pillar)}</span></td>
-              <td class="post-cell">${
+    <table class="ws-table calendar-table">
+      ${tableHead([[t("date")], [t("channel")], [t("pillar")], [t("post")], [t("status")]])}
+      <tbody>
+        ${list
+          .map(
+            (entry) => `
+          <tr>
+            ${cell(`<strong>${date(entry.date)}</strong>${entry.scheduled_for ? `<div class="muted">${dateTime(entry.scheduled_for)}</div>` : ""}`)}
+            ${cell(platformBadge(entry.channel))}
+            ${cell(`<span class="badge pillar">${escapeHtml(entry.pillar)}</span>`)}
+            ${cell(
+              `${
                 entry.draft_id
-                  ? `<a class="post-link" href="#/compose">${escapeHtml(entry.title)}</a>`
+                  ? `<a class="post-link" href="${recordUrl(entry.draft_id, "compose")}">${escapeHtml(entry.title)}</a>`
                   : `<span class="strong">${escapeHtml(entry.title)}</span>`
-              }${entry.notes ? `<div class="muted">${escapeHtml(entry.notes)}</div>` : ""}</td>
-              <td><span class="status cal-${escapeHtml(entry.status)}">${escapeHtml(enumLabel(entry.status, "calstatus"))}</span></td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
+              }${entry.notes ? `<div class="muted">${escapeHtml(entry.notes)}</div>` : ""}`,
+              entry.title,
+              "post-cell",
+            )}
+            ${cell(`<span class="status cal-${escapeHtml(entry.status)}">${escapeHtml(enumLabel(entry.status, "calstatus"))}</span>`)}
+          </tr>
+        `,
+          )
+          .join("")}
+      </tbody>
+    </table>
+    ${paginationControl("calendar")}
   `
     : `<div class="empty">${t("noItems")}</div>`;
 }
 
-export function renderCompose() {
-  els.title.textContent = t("composerQueue");
+// ── Compose (drafts queue; split detail) ────────────────────────────────────
+export function renderComposeView() {
   const all = drafts();
   const list = byWorkflow(all);
-  els.subtitle.textContent = `${openReview(all).length} ${t("needsReviewCount")}`;
-  els.content.innerHTML = `
-    ${workflowChips(all)}
+  els.viewTitle.textContent = t("composerQueue");
+  els.viewTitle.title = t("composerQueue");
+  els.viewCount.textContent = `${openReview(all).length} ${t("needsReviewCount")}`;
+  els.viewFilters.hidden = false;
+  els.viewFilters.innerHTML = workflowChips(all);
+  els.listPanel.innerHTML = `
     ${
       list.length
-        ? `<div class="desk-list">${list.map(draftCard).join("")}</div>`
+        ? `<table class="ws-table queue-table">
+      ${tableHead([[t("post")], [t("pillar")], [t("channel"), "ws-col-narrow"], [t("qualityGate"), "ws-col-narrow"], [t("status"), "ws-col-narrow"]])}
+      <tbody>
+        ${list
+          .map(
+            (draft) => `${rowOpen(draft.draft_id)}
+          ${cell(`<span class="strong">${escapeHtml(draft.hook)}</span>`, draft.hook)}
+          ${cell(`<span class="badge pillar">${escapeHtml(draft.pillar)}</span>`)}
+          ${cell(channelBadges(draft.channels), "", "ws-split-keep")}
+          ${cell(gateBadge(draft.gate))}
+          ${cell(reviewBadge(draft.status))}
+        </tr>`,
+          )
+          .join("")}
+      </tbody>
+    </table>
+    ${paginationControl("drafts")}`
         : `<div class="empty">${t("noItems")}</div>`
     }
   `;
   bindWorkflowChips();
+  const draft = renderDetailChrome(t("selectRecord"));
+  if (draft) els.detailBody.innerHTML = draftCard(draft);
   bindOps();
 }
 
@@ -121,16 +157,41 @@ function draftCard(draft) {
   `;
 }
 
-export function renderShorts() {
-  els.title.textContent = t("shortScripts");
+// ── Shorts (short-video scripts queue; split detail) ────────────────────────
+export function renderShortsView() {
   const all = shorts();
   const list = byWorkflow(all);
-  els.subtitle.textContent = `${recordTotal("shorts", all.length)} ${t("shorts")}`;
-  els.content.innerHTML = `
-    ${workflowChips(all)}
-    ${list.length ? `<div class="desk-list">${list.map(shortCard).join("")}</div>` : `<div class="empty">${t("noItems")}</div>`}
+  els.viewTitle.textContent = t("shortScripts");
+  els.viewTitle.title = t("shortScripts");
+  els.viewCount.textContent = `${recordTotal("shorts", all.length)} ${t("shorts")}`;
+  els.viewFilters.hidden = false;
+  els.viewFilters.innerHTML = workflowChips(all);
+  els.listPanel.innerHTML = `
+    ${
+      list.length
+        ? `<table class="ws-table queue-table">
+      ${tableHead([[t("post")], [t("pillar")], [t("channel"), "ws-col-narrow"], [t("duration"), "ws-col-narrow ws-col-num"], [t("status"), "ws-col-narrow"]])}
+      <tbody>
+        ${list
+          .map(
+            (short) => `${rowOpen(short.short_id)}
+          ${cell(`<span class="strong">${escapeHtml(short.title)}</span>`, short.title)}
+          ${cell(`<span class="badge pillar">${escapeHtml(short.pillar)}</span>`)}
+          ${cell(channelBadges(short.channels), "", "ws-split-keep")}
+          ${cell(`${escapeHtml(String(short.duration_s))}s`, "", "ws-col-num")}
+          ${cell(reviewBadge(short.status))}
+        </tr>`,
+          )
+          .join("")}
+      </tbody>
+    </table>
+    ${paginationControl("shorts")}`
+        : `<div class="empty">${t("noItems")}</div>`
+    }
   `;
   bindWorkflowChips();
+  const short = renderDetailChrome(t("selectRecord"));
+  if (short) els.detailBody.innerHTML = shortCard(short);
   bindOps();
 }
 
@@ -167,16 +228,41 @@ function shortCard(short) {
   `;
 }
 
-export function renderEngagement() {
-  els.title.textContent = t("engagementInbox");
+// ── Engagement (inbox queue; split detail) ──────────────────────────────────
+export function renderEngagementView() {
   const all = engagement();
   const list = byWorkflow(all);
-  els.subtitle.textContent = `${openReview(all).length} ${t("needsReviewCount")}`;
-  els.content.innerHTML = `
-    ${workflowChips(all)}
-    ${list.length ? `<div class="desk-list">${list.map(engagementCard).join("")}</div>` : `<div class="empty">${t("noItems")}</div>`}
+  els.viewTitle.textContent = t("engagementInbox");
+  els.viewTitle.title = t("engagementInbox");
+  els.viewCount.textContent = `${openReview(all).length} ${t("needsReviewCount")}`;
+  els.viewFilters.hidden = false;
+  els.viewFilters.innerHTML = workflowChips(all);
+  els.listPanel.innerHTML = `
+    ${
+      list.length
+        ? `<table class="ws-table queue-table">
+      ${tableHead([[t("from")], [t("incoming")], [t("platform"), "ws-col-narrow"], [t("sentiment"), "ws-col-narrow"], [t("status"), "ws-col-narrow"]])}
+      <tbody>
+        ${list
+          .map(
+            (item) => `${rowOpen(item.item_id)}
+          ${cell(`<span class="strong">${escapeHtml(item.author_handle)}</span>`, item.author_handle)}
+          ${cell(escapeHtml(item.incoming_text), item.incoming_text)}
+          ${cell(platformBadge(item.platform), "", "ws-split-keep")}
+          ${cell(`<span class="badge sentiment-${escapeHtml(item.sentiment)}">${escapeHtml(enumLabel(item.sentiment, "sentiment"))}</span>${item.priority === "high" ? ` <span class="badge prio-high">${escapeHtml(enumLabel(item.priority, "priority"))}</span>` : ""}`)}
+          ${cell(reviewBadge(item.status))}
+        </tr>`,
+          )
+          .join("")}
+      </tbody>
+    </table>
+    ${paginationControl("engagement")}`
+        : `<div class="empty">${t("noItems")}</div>`
+    }
   `;
   bindWorkflowChips();
+  const item = renderDetailChrome(t("selectRecord"));
+  if (item) els.detailBody.innerHTML = engagementCard(item);
   bindOps();
 }
 
@@ -208,16 +294,15 @@ function engagementCard(item) {
   `;
 }
 
+// ── Crisis (single incident board — not a record list) ─────────────────────
 export function renderCrisis() {
-  els.title.textContent = t("crisisPlaybook");
   const plan = crisis();
   if (!plan) {
-    els.content.innerHTML = `<div class="empty">${t("noItems")}</div>`;
+    els.crisisBody.innerHTML = `<div class="empty">${t("noItems")}</div>`;
     return;
   }
   const disabled = state.busy ? "disabled" : "";
-  els.subtitle.textContent = `${t("incidentStatus")}: ${enumLabel(plan.status, "incident")}`;
-  els.content.innerHTML = `
+  els.crisisBody.innerHTML = `
     <section class="crisis">
       <div class="crisis-status crisis-${escapeHtml(plan.status)}">
         <div>
@@ -249,31 +334,73 @@ export function renderCrisis() {
       </div>
     </section>
   `;
-  bindOps();
+  bindOps(els.crisisBody);
 }
 
-export function renderTimeline() {
-  els.title.textContent = t("timeline");
+// ── Timeline (posts feed; full-page detail) ─────────────────────────────────
+export function renderTimelineView() {
   const list = filteredPosts();
-  els.subtitle.textContent = `${recordTotal("posts", list.length)} ${t("posts")}`;
-  els.content.innerHTML = `
-    ${platformChips()}
-    ${warnings()}
-    ${timelineTable(list)}
-  `;
+  els.viewTitle.textContent = t("timeline");
+  els.viewTitle.title = t("timeline");
+  els.viewCount.textContent = `${recordTotal("posts", list.length)} ${t("posts")}`;
+  els.viewFilters.hidden = false;
+  els.viewFilters.innerHTML = platformChips();
+  els.listPanel.innerHTML = `${warnings()}${timelineTable(list)}${paginationControl("posts")}`;
   bindPlatformChips();
+  const post = renderDetailChrome(t("selectRecord"));
+  if (post) els.detailBody.innerHTML = postDetailContent(post);
 }
 
-export function renderPostDetail() {
-  const post = posts().find((item) => item.post_id === state.route.id);
-  if (!post) {
-    renderTimeline();
-    return;
-  }
+export function timelineTable(list) {
+  if (!list.length) return `<div class="empty">${t("empty")}</div>`;
+  return `
+    <table class="ws-table">
+      ${tableHead([
+        [t("date")],
+        [t("platform"), "ws-col-narrow"],
+        [t("account"), "ws-col-wide ws-split-keep"],
+        [t("post")],
+        [t("likes"), "ws-col-num"],
+        [t("replies"), "ws-col-num"],
+        [t("reposts"), "ws-col-num"],
+        [t("views"), "ws-col-num"],
+      ])}
+      <tbody>
+        ${list
+          .map(
+            (post) => `${rowOpen(post.post_id)}
+          ${cell(dateTime(post.posted_at))}
+          ${cell(platformBadge(post.platform))}
+          ${cell(escapeHtml(accountName(post.account_id)), "", "ws-split-keep")}
+          ${cell(
+            `<span class="strong">${escapeHtml(truncateText(post.text, 110))}</span><div class="muted">${escapeHtml(enumLabel(post.type, "type"))}${post.media && post.media !== "none" ? " · " : ""}${mediaIndicator(post)}</div>`,
+            post.text,
+            "post-cell",
+          )}
+          ${cell(num(post.metrics?.likes), "", "ws-col-num")}
+          ${cell(num(post.metrics?.replies), "", "ws-col-num")}
+          ${cell(num(post.metrics?.reposts), "", "ws-col-num")}
+          ${cell(num(post.metrics?.views), "", "ws-col-num")}
+        </tr>`,
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function truncateText(value, length) {
+  const text = String(value ?? "");
+  return text.length > length ? `${text.slice(0, length - 1)}…` : text;
+}
+
+function postDetailContent(post) {
   const metrics = post.metrics || {};
-  els.title.textContent = t("postDetail");
-  els.subtitle.textContent = `${enumLabel(post.platform, "platform")} · ${accountName(post.account_id)} · ${dateTime(post.posted_at)}`;
-  els.content.innerHTML = `
+  return `
+    <header class="detail-head">
+      <h2>${t("postDetail")}</h2>
+      <p class="muted">${escapeHtml(enumLabel(post.platform, "platform"))} · ${escapeHtml(accountName(post.account_id))} · ${dateTime(post.posted_at)}</p>
+    </header>
     <section class="detail">
       <div class="detail-main">
         <div class="post-panel">
@@ -301,11 +428,10 @@ export function renderPostDetail() {
         <h2>${t("postDetail")}</h2>
         <dl>
           <dt>${t("platform")}</dt><dd>${escapeHtml(enumLabel(post.platform, "platform"))}</dd>
-          <dt>${t("account")}</dt><dd><a href="#/accounts/${encodeURIComponent(post.account_id)}">${escapeHtml(accountName(post.account_id))}</a></dd>
+          <dt>${t("account")}</dt><dd><a href="${recordUrl(post.account_id, "accounts")}">${escapeHtml(accountName(post.account_id))}</a></dd>
           <dt>${t("postedAt")}</dt><dd>${dateTime(post.posted_at)}</dd>
           <dt>${t("type")}</dt><dd>${escapeHtml(enumLabel(post.type, "type"))}</dd>
           <dt>${t("media")}</dt><dd>${escapeHtml(enumLabel(post.media, "media"))}</dd>
-          <dt>ID</dt><dd>${escapeHtml(post.post_id)}</dd>
           ${post.permalink ? `<dt>${t("permalink")}</dt><dd><a href="${escapeHtml(post.permalink)}" target="_blank" rel="noreferrer noopener">${escapeHtml(post.permalink)}</a></dd>` : ""}
         </dl>
       </aside>
@@ -313,54 +439,64 @@ export function renderPostDetail() {
   `;
 }
 
-export function renderAccounts() {
-  els.title.textContent = t("accounts");
-  els.subtitle.textContent = `${recordTotal("accounts", accounts().length)} ${t("configured")}`;
+// ── Accounts (profiles; drawer detail) ──────────────────────────────────────
+export function renderAccountsView() {
   const list = accounts();
-  els.content.innerHTML = list.length
+  els.viewTitle.textContent = t("accounts");
+  els.viewTitle.title = t("accounts");
+  els.viewCount.textContent = `${recordTotal("accounts", list.length)} ${t("configured")}`;
+  els.viewFilters.hidden = true;
+  els.viewFilters.innerHTML = "";
+  els.listPanel.innerHTML = list.length
     ? `
     ${warnings()}
-    <div class="account-grid">
-      ${list
-        .map(
-          (account) => `
-        <a class="account-card" href="#/accounts/${encodeURIComponent(account.account_id)}">
-          <div class="row between"><strong>${escapeHtml(account.handle)}</strong>${platformBadge(account.platform)}</div>
-          <div class="muted">${escapeHtml(account.display_name)}</div>
-          <div class="balance">${num(account.metrics?.followers)} <small class="muted">${t("followers")}</small></div>
-          <div class="row stats">
-            <span>${delta(account.metrics?.followers_delta_7d)} ${t("delta7d")}</span>
-            <span>${t("engagementRate")} ${pct(account.metrics?.engagement_rate_7d)}</span>
-          </div>
-          <div class="row stats">
-            <span>${methodBadge(account.collection)}</span>
-            <span>${t("lastSync")} ${dateTime(account.last_sync_at)}</span>
-          </div>
-          <div class="status ${escapeHtml(account.status)}">${escapeHtml(enumLabel(account.status))}</div>
-        </a>
-      `,
-        )
-        .join("")}
-    </div>
+    <table class="ws-table">
+      ${tableHead([
+        [t("handle")],
+        [t("platform"), "ws-col-narrow"],
+        [t("followers"), "ws-col-num ws-split-keep"],
+        [t("delta7d"), "ws-col-num"],
+        [t("engagementRate"), "ws-col-num"],
+        [t("collection")],
+        [t("lastSync")],
+        [t("status"), "ws-col-narrow"],
+      ])}
+      <tbody>
+        ${list
+          .map(
+            (account) => `${rowOpen(account.account_id)}
+          ${cell(`<span class="strong">${escapeHtml(account.handle)}</span><div class="muted">${escapeHtml(account.display_name)}</div>`, account.handle)}
+          ${cell(platformBadge(account.platform))}
+          ${cell(num(account.metrics?.followers), "", "ws-col-num ws-split-keep")}
+          ${cell(delta(account.metrics?.followers_delta_7d), "", "ws-col-num")}
+          ${cell(pct(account.metrics?.engagement_rate_7d), "", "ws-col-num")}
+          ${cell(methodBadge(account.collection))}
+          ${cell(dateTime(account.last_sync_at))}
+          ${cell(`<span class="status ${escapeHtml(account.status)}">${escapeHtml(enumLabel(account.status))}</span>`)}
+        </tr>`,
+          )
+          .join("")}
+      </tbody>
+    </table>
+    ${paginationControl("accounts")}
   `
     : `<div class="empty">${t("empty")}</div>`;
+  const account = renderDetailChrome(t("selectRecord"));
+  if (account) els.detailBody.innerHTML = accountDetailContent(account);
 }
 
-export function renderAccountDetail() {
-  const account = accounts().find((item) => item.account_id === state.route.id);
-  if (!account) {
-    renderAccounts();
-    return;
-  }
+function accountDetailContent(account) {
   const metrics = account.metrics || {};
   const accountPosts = filteredPosts(account.account_id).slice(0, 8);
   const history = syncLog().filter((entry) => entry.account_id === account.account_id);
   const seriesData = account.follower_series || [];
   const first = seriesData[0]?.followers;
   const last = seriesData[seriesData.length - 1]?.followers;
-  els.title.textContent = account.handle || account.display_name;
-  els.subtitle.textContent = `${enumLabel(account.platform, "platform")} · ${enumLabel(account.collection, "method")} · ${enumLabel(account.status)}`;
-  els.content.innerHTML = `
+  return `
+    <header class="detail-head">
+      <h2>${escapeHtml(account.handle || account.display_name)}</h2>
+      <p class="muted">${escapeHtml(enumLabel(account.platform, "platform"))} · ${escapeHtml(enumLabel(account.collection, "method"))} · ${escapeHtml(enumLabel(account.status))}</p>
+    </header>
     <section class="detail">
       <div class="detail-main">
         ${warnings(account.account_id)}
@@ -442,10 +578,9 @@ export function renderAccountDetail() {
 }
 
 export function renderSettings() {
-  els.title.textContent = t("settings");
-  els.subtitle.textContent = t("localFilesOnly");
+  els.settingsTitle.title = t("localFilesOnly");
   const summary = state.settings?.config_summary || {};
-  els.content.innerHTML = `
+  els.settingsBody.innerHTML = `
     <div class="settings">
       <section>
         <h2>${t("configuration")}</h2>

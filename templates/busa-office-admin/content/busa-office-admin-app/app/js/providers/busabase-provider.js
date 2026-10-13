@@ -38,6 +38,29 @@ export function createLiveProvider(client = null, inspect = inspectProvisionedRe
       if (failures.length === resolved.length) throw new Error('SESSION_REQUIRED: No workflow records could be read. Check your Busabase session and permissions.');
       return { records, pageInfo, totalCount, failures, refreshedAt: new Date().toISOString(), asOf: new Date().toISOString().slice(0, 10) };
     },
+    // Exact server-side count for an Overview figure. `valueFilters` are the
+    // exact comparison form, so this stays one SQL COUNT. Null (never 0) when
+    // the read is denied or fails, so the band shows "—" instead of a guess.
+    async count(key, valueFilters = []) {
+      try {
+        const base = (await resources()).find((item) => item.key === key);
+        if (!base) return null;
+        const result = await client.records.count({ baseId: base.baseId, ...(valueFilters.length ? { valueFilters } : {}) });
+        return typeof result?.total === 'number' ? result.total : null;
+      } catch {
+        return null;
+      }
+    },
+    // A record named by the URL (?peek= or /<id>) that is not in the loaded
+    // page: one records.get, accepted only if it belongs to this Base.
+    async getRecord(key, recordId) {
+      const base = (await resources()).find((item) => item.key === key);
+      if (!base) return null;
+      const row = await client.records.get({ recordId });
+      const rowBase = row?.baseId || row?.base?.id;
+      if (!row || (rowBase && rowBase !== base.baseId)) return null;
+      return normalizeRecord(row, base.key);
+    },
     async loadMore(key, cursor) {
       const base = (await resources()).find((item) => item.key === key);
       if (!base) throw new Error('PROCEDURE_DENIED: Unconfigured resource.');

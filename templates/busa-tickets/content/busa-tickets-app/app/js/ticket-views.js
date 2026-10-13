@@ -1,12 +1,14 @@
 import {
   BOARD_STATUSES,
   CATEGORIES,
+  DETAIL_MODES,
   DISPATCH_STATUSES,
   URGENCIES,
   categoryBadge,
   channelBadge,
   crewName,
   date,
+  detailUrl,
   els,
   enumLabel,
   escapeHtml,
@@ -15,55 +17,304 @@ import {
   filteredTickets,
   formatAge,
   intakeItems,
+  isPartial,
   loadState,
+  noticeBanner,
+  pageCount,
   proposals,
-  recordTotal,
+  recordById,
+  recordUrl,
   render,
   slaBadge,
   state,
   statusBadge,
   t,
-  ticketById,
   tickets,
   urgencyBadge,
   warnings,
 } from "../app.js";
 import { getProvider } from "./providers/index.js?v=0.1.0";
-export function renderIntake() {
-  const items = filteredIntake();
-  els.title.textContent = t("intake");
-  els.subtitle.textContent = `${recordTotal("intake", items.length)} ${t("intakeItems")}`;
-  els.content.innerHTML = items.length
-    ? `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>${t("channel")}</th><th>${t("received")}</th><th>${t("reporter")}</th><th>${t("unit")} / ${t("location")}</th><th>${t("text")}</th><th>${t("urgencyGuess")}</th><th>${t("triageState")}</th><th>${t("ticket")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items
-            .map(
-              (item) => `
-            <tr>
-              <td>${channelBadge(item.channel)}</td>
-              <td>${date(item.received_at)}</td>
-              <td>${escapeHtml(item.reporter)}</td>
-              <td>${escapeHtml([item.unit, item.location].filter(Boolean).join(" · "))}</td>
-              <td class="cell-text"><a href="#/intake/${encodeURIComponent(item.id)}"><span class="strong">${escapeHtml(item.text)}</span></a></td>
-              <td>${urgencyBadge(item.urgency_guess)}</td>
-              <td>${statusBadge(item.triage_state, "triage")}</td>
-              <td>${item.ticket_id ? `<a class="ticket-link" href="#/board/${encodeURIComponent(item.ticket_id)}">${escapeHtml(item.ticket_id)}</a>` : ""}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
+
+// ── Overview ───────────────────────────────────────────────────────────────
+// Three numbers the sidebar's attention block does not already show (that
+// block covers proposals-to-approve / unclassified intake / SLA at risk).
+function metricsBand() {
+  const metrics = state.snapshot?.metrics || {};
+  return [
+    [t("openTickets"), String(metrics.open_tickets ?? 0)],
+    [t("avgResolution"), `${metrics.avg_resolution_hours ?? 0}${t("hours")}`],
+    [t("weekIntake"), String(metrics.intake_count ?? 0)],
+  ]
+    .map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`)
+    .join("");
+}
+
+function categoryDistributionSvg() {
+  const counts = new Map();
+  for (const ticket of tickets()) {
+    counts.set(ticket.category, (counts.get(ticket.category) || 0) + 1);
+  }
+  const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  if (!entries.length) return `<div class="empty-inline">${t("empty")}</div>`;
+  const max = entries[0][1];
+  const rowHeight = 26;
+  const labelWidth = 96;
+  const barSpan = 190;
+  const rows = entries
+    .map(([category, count], index) => {
+      const y = index * rowHeight;
+      const width = Math.max(4, Math.round((count / max) * barSpan));
+      return `
+      <text x="${labelWidth - 8}" y="${y + 16}" text-anchor="end" class="svg-label">${escapeHtml(enumLabel(category, "category"))}</text>
+      <rect x="${labelWidth}" y="${y + 6}" width="${barSpan}" height="12" rx="3" class="svg-track"></rect>
+      <rect x="${labelWidth}" y="${y + 6}" width="${width}" height="12" rx="3" class="svg-bar"></rect>
+      <text x="${labelWidth + barSpan + 8}" y="${y + 16}" class="svg-count">${count}</text>
+    `;
+    })
+    .join("");
+  return `
+    <svg viewBox="0 0 320 ${entries.length * rowHeight}" role="img" aria-label="${t("categoryDistribution")}" class="category-svg" preserveAspectRatio="xMinYMin meet">
+      ${rows}
+    </svg>
+  `;
+}
+
+function crewLoadPanel() {
+  const openByCrew = new Map();
+  for (const ticket of tickets()) {
+    if (ticket.status === "resolved" || !ticket.crew_id) continue;
+    openByCrew.set(ticket.crew_id, (openByCrew.get(ticket.crew_id) || 0) + 1);
+  }
+  const crewList = state.snapshot?.crews || [];
+  const max = Math.max(1, ...openByCrew.values());
+  return (
+    crewList
+      .map((crew) => {
+        const count = openByCrew.get(crew.crew_id) || 0;
+        return `
+      <div class="crew-row">
+        <span class="crew-name"><strong>${escapeHtml(crew.name)}</strong><small>${escapeHtml((crew.skills || []).map((skill) => enumLabel(skill, "category")).join(" · "))}</small></span>
+        <span class="crew-bar"><i style="width:${Math.round((count / max) * 100)}%"></i></span>
+        <span class="crew-count">${count}</span>
+      </div>
+    `;
+      })
+      .join("") || `<div class="empty-inline">${t("setupNeeded")}</div>`
+  );
+}
+
+function syncLogRows() {
+  return (
+    (state.snapshot?.sync_log || [])
+      .slice(-6)
+      .reverse()
+      .map(
+        (entry) => `
+    <div class="log-row">
+      <span class="badge">${escapeHtml(entry.source)}</span>
+      <span class="log-detail">${escapeHtml(entry.detail || entry.action || "")}</span>
+      <span class="muted">${date(entry.at)}</span>
     </div>
-  `
-    : `<div class="empty">${t("empty")}</div>`;
+  `,
+      )
+      .join("") || `<div class="empty-inline">${t("empty")}</div>`
+  );
+}
+
+export function renderOverview() {
+  document.getElementById("overviewSummary").textContent = state.snapshot?.generated_at
+    ? `${state.snapshot?.property?.name || ""} · ${t("generated")} ${new Date(state.snapshot.generated_at).toLocaleString()}`
+    : t("empty");
+  document.getElementById("overviewMetrics").innerHTML = metricsBand();
+  document.getElementById("overviewBody").innerHTML = `
+    ${warnings()}
+    <section class="overview-grid">
+      <div class="overview-panel">
+        <h2>${t("categoryDistribution")}</h2>
+        ${categoryDistributionSvg()}
+      </div>
+      <div class="overview-panel">
+        <h2>${t("crewLoad")}</h2>
+        ${crewLoadPanel()}
+      </div>
+      <div class="overview-panel wide">
+        <h2>${t("syncLog")}</h2>
+        ${syncLogRows()}
+      </div>
+    </section>
+  `;
+}
+
+// ── Record views ─────────────────────────────────────────────────────────
+const VIEW_HINT = { intake: "intakeItems", dispatch: "dispatchQueue", board: "tickets" };
+
+const tableHead = (columns) =>
+  `<thead><tr>${columns.map(([label, className = ""]) => `<th${className ? ` class="${className}"` : ""}>${escapeHtml(label)}</th>`).join("")}</tr></thead>`;
+
+const cell = (html, title = "", className = "") =>
+  `<td${className ? ` class="${className}"` : ""}${title ? ` title="${escapeHtml(title)}"` : ""}>${html}</td>`;
+
+const rowOpen = (id) =>
+  `<tr data-id="${escapeHtml(id)}"${id === state.route.selectedId ? ' class="ws-selected"' : ""}>`;
+
+const emptyState = (title, detail = "") =>
+  `<div class="empty-state"><strong>${escapeHtml(title)}</strong>${detail ? `<p>${escapeHtml(detail)}</p>` : ""}</div>`;
+
+function intakeTable(items) {
+  return `
+    <table class="ws-table intake-table">
+      ${tableHead([
+        [t("channel"), "ws-col-narrow"],
+        [t("received"), "ws-col-narrow"],
+        [t("reporter")],
+        [`${t("unit")} / ${t("location")}`],
+        [t("text")],
+        [t("urgency"), "ws-col-narrow"],
+        [t("triageState"), "ws-col-narrow"],
+        [t("ticket"), "ws-col-narrow"],
+      ])}
+      <tbody>
+        ${items
+          .map((item) => {
+            const unitLocation = [item.unit, item.location].filter(Boolean).join(" · ");
+            return `${rowOpen(item.id)}
+              ${cell(channelBadge(item.channel))}
+              ${cell(date(item.received_at), item.received_at)}
+              ${cell(escapeHtml(item.reporter), item.reporter)}
+              ${cell(escapeHtml(unitLocation), unitLocation)}
+              ${cell(`<span class="strong">${escapeHtml(item.text)}</span>`, item.text, "cell-text")}
+              ${cell(urgencyBadge(item.urgency_guess))}
+              ${cell(statusBadge(item.triage_state, "triage"))}
+              ${cell(item.ticket_id ? `<a class="ticket-link" href="${recordUrl(item.ticket_id, "board")}">${escapeHtml(item.ticket_id)}</a>` : "")}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function ticketsTable(items) {
+  return `
+    <table class="ws-table tickets-table">
+      ${tableHead([
+        [t("ticket")],
+        [t("status"), "ws-col-narrow"],
+        [t("category")],
+        [`${t("unit")} / ${t("location")}`],
+        [t("crew")],
+        [t("age"), "ws-col-narrow"],
+        [t("sla"), "ws-col-narrow"],
+      ])}
+      <tbody>
+        ${items
+          .map((ticket) => {
+            const unitLocation = [ticket.unit, ticket.location].filter(Boolean).join(" · ");
+            return `${rowOpen(ticket.id)}
+              ${cell(`<span class="ticket-link">${escapeHtml(ticket.id)}</span> <span class="strong">${escapeHtml(ticket.title)}</span>`, ticket.title, "cell-text")}
+              ${cell(statusBadge(ticket.status, "ticket_status"))}
+              ${cell(categoryBadge(ticket.category), enumLabel(ticket.category, "category"))}
+              ${cell(escapeHtml(unitLocation), unitLocation)}
+              ${cell(escapeHtml(crewName(ticket.crew_id)) || "—", crewName(ticket.crew_id))}
+              ${cell(formatAge(ticket.created_at), "", "ws-col-num")}
+              ${cell(slaBadge(ticket))}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function proposalsTable(items) {
+  return `
+    <table class="ws-table proposals-table">
+      ${tableHead([[t("dispatchQueue")], [t("status"), "ws-col-narrow ws-split-keep"]])}
+      <tbody>
+        ${items
+          .map(
+            (item) => `${rowOpen(item.id)}
+              ${cell(`<span class="strong">${escapeHtml(item.title)}</span>`, item.title, "cell-text")}
+              ${cell(statusBadge(item.status, "proposal_status"))}
+            </tr>`,
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function statusFilters(view) {
+  const statuses = view === "dispatch" ? DISPATCH_STATUSES : BOARD_STATUSES;
+  const all = view === "dispatch" ? proposals() : tickets();
+  const group = view === "dispatch" ? "proposal_status" : "ticket_status";
+  const chip = (key, count) => `
+    <button type="button" class="chip ${state.route.status === key ? "active" : ""}" data-status="${key}">
+      ${key === "all" ? t("all") : escapeHtml(enumLabel(key, group))} <span>${count}</span>
+    </button>
+  `;
+  return `
+    ${chip("all", all.length)}
+    ${statuses.map((status) => chip(status, all.filter((item) => item.status === status).length)).join("")}
+  `;
+}
+
+// Prev/Next only — see app.js's goToPage()/pageCount() comment for why.
+function pagerControl(key) {
+  const cursors = state.pageCursors[key];
+  if (!cursors) return "";
+  const total = pageCount(key);
+  const current = state.currentPage[key] || 1;
+  const hasNext = Boolean(cursors[current]);
+  if (current === 1 && !hasNext) return "";
+  const loading = Boolean(state.pageLoading[key]);
+  return `
+    <div class="pager">
+      <button type="button" class="button" data-goto-page="${key}:${current - 1}" ${loading || current <= 1 ? "disabled" : ""}>${t("prevPage")}</button>
+      <span class="pager-summary">${total ? t("pageOf").replace("{current}", current).replace("{total}", total) : ""}</span>
+      <button type="button" class="button" data-goto-page="${key}:${current + 1}" ${loading || !hasNext ? "disabled" : ""}>${t("nextPage")}</button>
+    </div>
+  `;
+}
+
+export function renderRecordView() {
+  const { view } = state.route;
+  els.viewTitle.textContent = t(view);
+  els.viewTitle.title = t(VIEW_HINT[view]);
+  const items = view === "intake" ? filteredIntake() : view === "dispatch" ? filteredProposals() : filteredTickets();
+  const baseKey = view === "intake" ? "intake" : view === "dispatch" ? "proposals" : "tickets";
+  els.viewCount.textContent = `${items.length}${isPartial(baseKey) ? "+" : ""}`;
+  els.viewFilters.hidden = view === "intake";
+  els.viewFilters.innerHTML = view === "intake" ? "" : statusFilters(view);
+
+  const table = view === "intake" ? intakeTable(items) : view === "dispatch" ? proposalsTable(items) : ticketsTable(items);
+  const empty = emptyState(state.route.query ? t("noMatches") || t("empty") : t("empty"));
+  els.listPanel.innerHTML = `${items.length ? table : empty}${pagerControl(baseKey)}`;
+  renderDetail();
+}
+
+function renderDetail() {
+  const { view, selectedId, presentation } = state.route;
+  const phone = window.matchMedia("(max-width: 720px)").matches;
+  els.detailBack.textContent = presentation === "page" || phone ? t("backToList") : t("close");
+  els.detailExpand.hidden = !selectedId || presentation === "page";
+  if (selectedId) els.detailExpand.href = detailUrl(selectedId, view);
+  els.detailPanel.querySelector(".ws-detail-bar").hidden = !selectedId;
+
+  if (!selectedId) {
+    els.detailBody.innerHTML = DETAIL_MODES[view] === "split" ? emptyState(t("selectProposal")) : "";
+    return;
+  }
+  const item = recordById(view, selectedId);
+  if (!item) {
+    const pending = state.extra[view]?.has(selectedId) && state.extra[view].get(selectedId) === undefined;
+    els.detailBody.innerHTML = pending
+      ? `<div class="empty-inline">${t("loading")}</div>`
+      : emptyState(t("recordMissing"), t("recordMissingDetail"));
+    return;
+  }
+  els.detailBody.innerHTML =
+    view === "intake" ? intakeDetail(item) : view === "dispatch" ? proposalDetail(item) : ticketDetail(item);
 }
 
 function classificationEditor(item) {
@@ -71,7 +322,7 @@ function classificationEditor(item) {
   const disabled = done ? "disabled" : "";
   return `
     <div class="editor-panel">
-      <h2>${t("classification")}</h2>
+      <h3>${t("classification")}</h3>
       <div class="editor-grid">
         <label>${t("category")}
           <select data-field="category" data-for="${escapeHtml(item.id)}" ${disabled}>
@@ -106,24 +357,20 @@ function classificationEditor(item) {
           : ""
       }
       ${state.demo ? `<div class="demo-note">${t("demoDecisionNote")}</div>` : ""}
+      ${noticeBanner()}
     </div>
   `;
 }
 
-export function renderIntakeDetail() {
-  const item = intakeItems().find((entry) => entry.id === state.route.id);
-  if (!item) {
-    renderIntake();
-    return;
-  }
-  els.title.textContent = `${enumLabel(item.channel, "channel")} · ${item.reporter}`;
-  els.subtitle.textContent = `${date(item.received_at)} · ${enumLabel(item.triage_state, "triage")}`;
-  els.content.innerHTML = `
-    <a class="back-link" href="#/intake">← ${t("intake")}</a>
+function intakeDetail(item) {
+  return `
+    <header class="detail-head">
+      <h2>${escapeHtml(item.reporter)}</h2>
+      <p class="muted">${channelBadge(item.channel)} ${urgencyBadge(item.urgency_guess)} ${statusBadge(item.triage_state, "triage")}</p>
+    </header>
     <section class="detail">
       <div class="detail-main">
         <div class="text-panel">
-          <div class="text-head">${channelBadge(item.channel)} ${urgencyBadge(item.urgency_guess)} ${statusBadge(item.triage_state, "triage")}</div>
           <p class="full-text">${escapeHtml(item.text)}</p>
           ${item.attachments_note ? `<p class="muted">${t("attachments")}: ${escapeHtml(item.attachments_note)}</p>` : ""}
         </div>
@@ -134,39 +381,23 @@ export function renderIntakeDetail() {
         <dl>
           <dt>${t("channel")}</dt><dd>${escapeHtml(enumLabel(item.channel, "channel"))} ${item.external_id ? `· ${escapeHtml(item.external_id)}` : ""}</dd>
           <dt>${t("received")}</dt><dd>${date(item.received_at)}</dd>
-          <dt>${t("reporter")}</dt><dd>${escapeHtml(item.reporter)}</dd>
           <dt>${t("reporterContact")}</dt><dd>${escapeHtml(item.contact_masked || "")}</dd>
           <dt>${t("unit")}</dt><dd>${escapeHtml(item.unit || "")}</dd>
           <dt>${t("location")}</dt><dd>${escapeHtml(item.location || "")}</dd>
           <dt>${t("category")}</dt><dd>${escapeHtml(enumLabel(item.category_guess, "category"))}</dd>
-          <dt>${t("linkedTicket")}</dt><dd>${item.ticket_id ? `<a class="ticket-link" href="#/board/${encodeURIComponent(item.ticket_id)}">${escapeHtml(item.ticket_id)}</a>` : "—"}</dd>
+          <dt>${t("linkedTicket")}</dt><dd>${item.ticket_id ? `<a class="ticket-link" href="${recordUrl(item.ticket_id, "board")}">${escapeHtml(item.ticket_id)}</a>` : "—"}</dd>
         </dl>
       </aside>
     </section>
   `;
 }
 
-function dispatchFilters() {
-  const all = proposals();
-  const chip = (key, count) => `
-    <button type="button" class="chip ${state.dispatchFilter === key ? "active" : ""}" data-dispatch-filter="${key}" title="${key === "all" ? t("dispatchQueue") : escapeHtml(enumLabel(key, "proposal_status"))}">
-      ${key === "all" ? t("dispatchQueue") : escapeHtml(enumLabel(key, "proposal_status"))} <span>${count}</span>
-    </button>
-  `;
-  return `
-    <div class="chip-row">
-      ${chip("all", all.length)}
-      ${DISPATCH_STATUSES.map((status) => chip(status, all.filter((proposal) => proposal.status === status).length)).join("")}
-    </div>
-  `;
-}
-
-function proposalCard(proposal) {
-  const ticket = ticketById(proposal.ticket_id);
-  const terminal = ["done"].includes(proposal.status);
+function proposalDetail(proposal) {
+  const ticket = recordById("board", proposal.ticket_id);
+  const terminal = proposal.status === "done";
   const disabled = terminal ? "disabled" : "";
   return `
-    <article class="proposal-card status-edge-${escapeHtml(proposal.status)}">
+    <article class="proposal-card status-edge-${escapeHtml(proposal.status)}" data-proposal="${escapeHtml(proposal.id)}">
       <header class="proposal-head">
         <span class="ref">Dispatch #${proposal.ref}</span>
         ${statusBadge(proposal.status, "proposal_status")}
@@ -175,7 +406,7 @@ function proposalCard(proposal) {
       </header>
       <h3>${escapeHtml(proposal.title)}</h3>
       <p class="muted">
-        <a class="ticket-link" href="#/board/${encodeURIComponent(proposal.ticket_id)}">${escapeHtml(proposal.ticket_id)}</a>
+        <a class="ticket-link" href="${recordUrl(proposal.ticket_id, "board")}">${escapeHtml(proposal.ticket_id)}</a>
         ${escapeHtml(proposal.summary)}
       </p>
       <dl class="proposal-meta">
@@ -217,86 +448,24 @@ function proposalCard(proposal) {
       `
           : ""
       }
+      ${state.demo ? `<div class="demo-note">${t("demoDecisionNote")}</div>` : ""}
+      ${noticeBanner()}
     </article>
   `;
 }
 
-export function renderDispatch() {
-  const items = filteredProposals();
-  els.title.textContent = t("dispatch");
-  els.subtitle.textContent = `${proposals().filter((proposal) => proposal.status === "needs_review").length} ${t("dispatchToApprove")}`;
-  els.content.innerHTML = `
-    ${dispatchFilters()}
-    ${state.demo ? `<div class="demo-note">${t("demoDecisionNote")}</div>` : ""}
-    <div class="proposal-list">
-      ${items.map((proposal) => proposalCard(proposal)).join("") || `<div class="empty">${t("empty")}</div>`}
-    </div>
-  `;
-}
-
-function boardTable(items) {
-  return `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>${t("ticket")}</th><th>${t("category")}</th><th>${t("unit")} / ${t("location")}</th><th>${t("crew")}</th><th>${t("age")}</th><th>${t("sla")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items
-            .map(
-              (ticket) => `
-            <tr>
-              <td class="cell-text"><a href="#/board/${encodeURIComponent(ticket.id)}"><span class="ticket-link">${escapeHtml(ticket.id)}</span> <span class="strong">${escapeHtml(ticket.title)}</span></a></td>
-              <td>${categoryBadge(ticket.category)} ${urgencyBadge(ticket.urgency)}</td>
-              <td>${escapeHtml([ticket.unit, ticket.location].filter(Boolean).join(" · "))}</td>
-              <td>${escapeHtml(crewName(ticket.crew_id)) || "—"}</td>
-              <td>${formatAge(ticket.created_at)}</td>
-              <td>${slaBadge(ticket)}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-export function renderBoard() {
-  const items = filteredTickets();
-  els.title.textContent = t("board");
-  els.subtitle.textContent = `${recordTotal("tickets", items.length)} ${t("tickets")}`;
-  els.content.innerHTML =
-    BOARD_STATUSES.map((status) => {
-      const group = items.filter((ticket) => ticket.status === status);
-      if (!group.length) return "";
-      return `
-      <section class="board-group">
-        <h2>${escapeHtml(enumLabel(status, "ticket_status"))} <span class="muted">${group.length}</span></h2>
-        ${boardTable(group)}
-      </section>
-    `;
-    }).join("") || `<div class="empty">${t("empty")}</div>`;
-}
-
-export function renderBoardDetail() {
-  const ticket = tickets().find((entry) => entry.id === state.route.id);
-  if (!ticket) {
-    renderBoard();
-    return;
-  }
+function ticketDetail(ticket) {
   const relatedIntake = intakeItems().filter((item) => (ticket.intake_ids || []).includes(item.id));
-  els.title.textContent = `${ticket.id} · ${ticket.title}`;
-  els.subtitle.textContent = `${enumLabel(ticket.status, "ticket_status")} · ${enumLabel(ticket.category, "category")} · ${enumLabel(ticket.urgency, "urgency")}`;
-  els.content.innerHTML = `
-    <a class="back-link" href="#/board">← ${t("board")}</a>
-    ${warnings()}
+  return `
+    <header class="detail-head">
+      <h2>${escapeHtml(ticket.id)} · ${escapeHtml(ticket.title)}</h2>
+      <p class="muted">${statusBadge(ticket.status, "ticket_status")} ${categoryBadge(ticket.category)} ${urgencyBadge(ticket.urgency)}</p>
+    </header>
+    ${warnings((warning) => warning.ticket_id === ticket.id)}
     <section class="detail">
       <div class="detail-main">
         <div class="timeline-panel">
-          <h2>${t("timeline")}</h2>
+          <h3>${t("timeline")}</h3>
           <ol class="timeline">
             ${(ticket.history || [])
               .map(
@@ -321,14 +490,12 @@ export function renderBoardDetail() {
             <button type="button" class="primary" data-decision="revise" data-id="${escapeHtml(ticket.id)}" title="${t("saveNote")}">${t("saveNote")}</button>
           </div>
           ${state.demo ? `<div class="demo-note">${t("demoDecisionNote")}</div>` : ""}
+          ${noticeBanner()}
         </div>
       </div>
       <aside class="detail-side">
         <h2>${t("ticketDetail")}</h2>
         <dl>
-          <dt>${t("status")}</dt><dd>${statusBadge(ticket.status, "ticket_status")}</dd>
-          <dt>${t("category")}</dt><dd>${escapeHtml(enumLabel(ticket.category, "category"))}</dd>
-          <dt>${t("urgency")}</dt><dd>${escapeHtml(enumLabel(ticket.urgency, "urgency"))}</dd>
           <dt>${t("unit")}</dt><dd>${escapeHtml(ticket.unit || "")}</dd>
           <dt>${t("location")}</dt><dd>${escapeHtml(ticket.location || "")}</dd>
           <dt>${t("crew")}</dt><dd>${escapeHtml(crewName(ticket.crew_id)) || "—"}</dd>
@@ -338,20 +505,19 @@ export function renderBoardDetail() {
           <dt>${t("slaTarget")}</dt><dd>${slaBadge(ticket)}</dd>
           <dt>${t("reporter")}</dt><dd>${escapeHtml(ticket.reporter || "")}</dd>
           <dt>${t("reporterContact")}</dt><dd>${escapeHtml(ticket.contact_masked || "")}</dd>
-          <dt>${t("intake")}</dt><dd>${relatedIntake.map((item) => `<a href="#/intake/${encodeURIComponent(item.id)}">${escapeHtml(item.id)}</a>`).join(", ") || "—"}</dd>
+          <dt>${t("intake")}</dt><dd>${relatedIntake.map((item) => `<a href="${recordUrl(item.id, "intake")}">${escapeHtml(item.id)}</a>`).join(", ") || "—"}</dd>
         </dl>
       </aside>
     </section>
   `;
 }
 
+// ── Help & Settings ────────────────────────────────────────────────────────
 export function renderSettings() {
-  els.title.textContent = t("settings");
-  els.subtitle.textContent = t("busabaseBacked");
   const summary = state.settings?.config_summary || {};
-  els.content.innerHTML = `
+  document.getElementById("settingsBody").innerHTML = `
     <div class="settings">
-      <section>
+      <section class="card">
         <h2>${t("configuration")}</h2>
         <dl>
           <dt>${t("dataProvider")}</dt><dd>${escapeHtml(state.settings?.data_provider || "busabase")}</dd>
@@ -362,7 +528,7 @@ export function renderSettings() {
           <dt>${t("categories")}</dt><dd>${(summary.categories || []).map((category) => categoryBadge(category)).join(" ")}</dd>
         </dl>
       </section>
-      <section>
+      <section class="card">
         <h2>${t("crews")}</h2>
         ${
           (summary.crews || [])
@@ -375,10 +541,10 @@ export function renderSettings() {
           </div>
         `,
             )
-            .join("") || `<div class="empty">${t("setupNeeded")}</div>`
+            .join("") || `<div class="empty-inline">${t("setupNeeded")}</div>`
         }
       </section>
-      <section>
+      <section class="card">
         <h2>${t("slaRules")}</h2>
         ${
           (summary.sla_rules || [])
@@ -391,7 +557,7 @@ export function renderSettings() {
           </div>
         `,
             )
-            .join("") || `<div class="empty">${t("setupNeeded")}</div>`
+            .join("") || `<div class="empty-inline">${t("setupNeeded")}</div>`
         }
         <p class="muted">${t("defaultSla")}: ${summary.sla_default_hours || 72}${t("hours")}</p>
       </section>
@@ -400,8 +566,7 @@ export function renderSettings() {
 }
 
 // Dispatches a decision to whichever entity id belongs to (a dispatch
-// proposal, an intake item, or a ticket resolution note), mirroring the
-// retired local-file DataProvider.submitDecision()'s id lookup. Demo mode is
+// proposal, an intake item, or a ticket resolution note). Demo mode is
 // short-circuited into in-memory state (never touches Busabase), matching
 // the ?demo=1 contract used across Busa App-in-Skills.
 export async function submitDecision(id, action) {
@@ -434,14 +599,18 @@ export async function submitDecision(id, action) {
     } else if (ticket) {
       await provider.reviseTicket({ ticket_id: id, note });
     } else {
-      els.subtitle.textContent = `Unknown item id: ${id}`;
+      state.notice = `Unknown item id: ${id}`;
+      render();
       return;
     }
   } catch (error) {
-    els.subtitle.textContent = error.message || "Decision failed";
+    state.notice = error instanceof Error ? error.message : String(error);
+    render();
     return;
   }
   await loadState();
+  state.notice = t("saved") || "";
+  render();
 }
 
 function cssAttr(value) {

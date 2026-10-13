@@ -10,27 +10,27 @@
     <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
     <link rel="stylesheet" href="./accent-theme.css">
   </head>
-  <body>
+  <body class="ws-has-mobile-bar">
     <div class="app-shell">
       <aside class="sidebar" id="appSidebar">
         <div class="brand">
           <div class="brand-icon" aria-hidden="true">KF</div>
           <div class="brand-copy">
             <div class="brand-title">Busa Finance</div>
-            <div class="brand-subtitle" data-i18n="subtitle">Model review desk</div>
+            <div class="brand-subtitle" id="syncStatus">Model review desk</div>
           </div>
           <button id="sidebarToggle" class="icon-button" type="button" aria-label="Toggle sidebar">
             <span class="panel-icon" aria-hidden="true"></span>
           </button>
         </div>
-        <section class="attention">
+        <a class="attention" href="#/checks?status=needs_review">
           <div class="eyebrow" data-i18n="human_attention">Needs attention</div>
           <div class="attention-main" id="attentionMain">0</div>
           <div class="attention-meta" id="attentionMeta">0 approved · 0 blocked</div>
-        </section>
+        </a>
         <nav class="nav" aria-label="Views">
           <a href="#/overview" data-view="overview" data-i18n="overview">Overview</a>
-          <a href="#/checks" data-view="checks" data-i18n="checks">Checks</a>
+          <a href="#/checks" data-view="checks"><span data-i18n="checks">Checks</span><b id="navChecksCount" class="nav-count"></b></a>
           <a href="#/workbook" data-view="workbook" data-i18n="workbook">Workbook</a>
           <a href="#/settings" data-view="settings" data-i18n="settings">Settings</a>
         </nav>
@@ -48,20 +48,66 @@
           <button id="mobileSidebarToggle" class="icon-button" type="button" aria-label="Open sidebar">
             <span class="panel-icon" aria-hidden="true"></span>
           </button>
-          <div>
+          <div class="mobile-topbar-copy">
             <div id="mobileTitle">Busa Finance</div>
             <div id="mobileMeta" class="muted">0 checks</div>
           </div>
-          <button id="mobileRefresh" class="small-button" type="button">↻</button>
+          <button id="mobileRefresh" class="small-button" type="button" aria-label="Refresh">↻</button>
         </div>
-        <header class="topbar">
-          <div>
-            <h1 id="pageTitle">Busa Finance</h1>
-            <p id="pageSubtitle">Financial model control desk</p>
+        <div id="loadState" class="load-state" role="status">Loading</div>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 id="overviewTitle">Busa Finance</h1>
+              <p id="overviewSummary"></p>
+            </div>
+            <div class="page-actions">
+              <a class="button primary" href="#/checks" data-i18n="review_checks">Review checks</a>
+            </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" aria-label="Model summary"></div>
+          <div id="overviewBody" class="overview-body"></div>
+        </section>
+        <!-- Checks: one toolbar row over a full-bleed queue, split with the record. -->
+        <section id="checksPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="checksTitle">Checks</h1>
+              <span id="checksCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <select id="statusSelect" class="toolbar-select" aria-label="Status"></select>
+              <input id="search" class="toolbar-search" type="search" autocomplete="off" placeholder="Search checks" aria-label="Search checks">
+            </div>
+          </header>
+          <div id="notice" class="notice-banner" role="alert" hidden></div>
+          <div class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar" id="detailBar">
+                <button id="detailBack" class="button" type="button">Back to list</button>
+                <a id="detailExpand" class="button" hidden>Open full page</a>
+              </div>
+              <div id="detailBody"></div>
+            </aside>
           </div>
-          <div class="status-pill" id="syncStatus">Loading</div>
-        </header>
-        <section class="content" id="content"></section>
+        </section>
+        <section id="workbookPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title"><h1 id="workbookTitle">Workbook</h1></div>
+            <div class="ws-actions"><span id="workbookPath" class="toolbar-meta"></span></div>
+          </header>
+          <div class="ws-workspace">
+            <div id="workbookList" class="ws-list"></div>
+          </div>
+        </section>
+        <section id="settingsPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title"><h1 id="settingsTitle">Settings</h1></div>
+          </header>
+          <div id="settingsBody" class="settings-scroll"></div>
+        </section>
       </main>
     </div>
     <div id="sidebarScrim" class="sidebar-scrim" hidden></div>

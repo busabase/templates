@@ -41,7 +41,18 @@ async function api(method, pathname) {
   const res = await fetch(pathname, { method, headers: { accept: "application/json" } });
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
-    throw new Error(`busabase ${method} ${pathname} -> ${res.status} ${detail}`.trim());
+    let code = "";
+    try {
+      code = String(JSON.parse(detail)?.code || "");
+    } catch {
+      code = "";
+    }
+    // The message reaches the screen: the path without its query (which holds
+    // raw Base ids) plus the status and error code.
+    const error = new Error(`${method} ${pathname.split("?")[0]} → ${res.status}${code ? ` ${code}` : ""}`);
+    error.status = res.status;
+    error.detail = detail;
+    throw error;
   }
   const text = await res.text();
   return text ? JSON.parse(text) : null;
@@ -92,26 +103,32 @@ export async function listDriveFiles(nodeId) {
   return Array.isArray(detail?.files) ? detail.files : [];
 }
 
-// Transport page size is fixed at the API's own maximum and owned here, not
-// by a caller-supplied `limit`. The previous version used that `limit` as a
-// ceiling on total records collected, so any Base past the ceiling was read
-// incomplete with no error. Follows `nextCursor` until the server reports
-// none left, with a guard against a repeating cursor.
-const RECORD_PAGE_SIZE = 100;
+// One page per user action. The first load reads page 1 of each Base; every
+// further page is a visible "Load more" click that passes the cursor this
+// call returned. Totals come from countRecords(), never from paging on.
+export async function listRecordsPage(baseId, { limit = 50, cursor = "" } = {}) {
+  const query = new URLSearchParams({ baseId, limit: String(Math.min(100, Math.max(1, limit))) });
+  if (cursor) query.set("cursor", cursor);
+  const page = await api("GET", `/api/v1/records?${query.toString()}`);
+  const pageRecords = Array.isArray(page) ? page : Array.isArray(page?.records) ? page.records : [];
+  return {
+    records: pageRecords.filter((record) => !record.baseId || record.baseId === baseId),
+    nextCursor: String(page?.nextCursor || ""),
+  };
+}
 
-export async function listRecords(baseId) {
-  const records = [];
-  const seenCursors = new Set();
-  let cursor = "";
-  while (true) {
-    const query = new URLSearchParams({ baseId, limit: String(RECORD_PAGE_SIZE) });
-    if (cursor) query.set("cursor", cursor);
-    const page = await api("GET", `/api/v1/records?${query.toString()}`);
-    const pageRecords = Array.isArray(page) ? page : Array.isArray(page?.records) ? page.records : [];
-    records.push(...pageRecords.filter((record) => record.baseId === baseId));
-    cursor = String(page?.nextCursor || "");
-    if (!cursor || pageRecords.length === 0) return records;
-    if (seenCursors.has(cursor)) throw new Error(`PAGINATION_LOOP: ${baseId}`);
-    seenCursors.add(cursor);
+// An exact server-side COUNT for one Base. `null` when the call is denied or
+// unavailable, so the UI shows "—" instead of a number it made up.
+export async function countRecords(baseId) {
+  try {
+    const result = await api("GET", `/api/v1/records/count?${new URLSearchParams({ baseId }).toString()}`);
+    return Number.isFinite(Number(result?.total)) ? Number(result.total) : null;
+  } catch {
+    return null;
   }
+}
+
+// One record named by the URL that is not on a loaded page.
+export async function getRecord(recordId) {
+  return api("GET", `/api/v1/records/get?${new URLSearchParams({ recordId }).toString()}`);
 }

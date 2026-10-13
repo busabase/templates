@@ -1,27 +1,40 @@
 import { messages } from "./i18n/messages.js";
 import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
-import {
-  renderActionDetail,
-  renderActions,
-  renderExpiries,
-  renderExpiryDetail,
-  renderServiceDetail,
-  renderServices,
-  renderSettings,
-  renderSpend,
-} from "./js/operations-views.js";
+import { renderOverview, renderRecordView, renderSettings, submitDecision } from "./js/operations-views.js";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
 
+// Where a record opens, per view. Chosen by what people do with the record:
+//   services → drawer: a service is a fact scanned among many — glance at its
+//                      checks and certificate, then back to the fleet list.
+//   expiries → drawer: a ledger row — read the renewal guidance, jump to its
+//                      action card, return to the list sorted by days left.
+//   spend    → drawer: a provider row — read the note behind the number.
+//   actions  → split:  the review queue is worked top to bottom, one card
+//                      after the next, so the queue stays beside the card.
+// A `/record` path always opens the full page; `?peek=` drives drawer/split.
+// On a phone every mode is a page (base-ui.css handles that).
+// Declared once, in config.js `ui.detail_modes`.
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+const SPEND_TABS = ["providers", "products"];
+
 export const state = {
+  // Prev/Next pager for services/expiries/actions. records.list only exposes a
+  // forward keyset cursor, so pageCursors[key][i] is the cursor that fetches
+  // page i+1. Only neighbouring pages are reachable — one click, one request;
+  // there is no "jump to page N" because reaching it would mean reading every
+  // page in between.
   pageCursors: {},
   currentPage: {},
   pageLoading: {},
   totals: {},
+  // Records opened by URL that are not on the loaded page (records.get).
+  extra: emptyExtra(),
   snapshot: null,
   settings: null,
+  provider: null,
   route: parseRoute(),
-  query: "",
   lang: normalizeLang(
     new URLSearchParams(location.search).get("lang") || localStorage.getItem("busa-devops-language") || "auto",
   ),
@@ -31,24 +44,39 @@ export const state = {
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-devops.sidebarCollapsed";
 
+const byId = (id) => document.getElementById(id);
 export const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  reviewCount: document.querySelector("#count-review"),
-  expiringCount: document.querySelector("#count-expiring"),
-  downCount: document.querySelector("#count-down"),
-  language: document.querySelector("#language"),
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  viewFilters: byId("viewFilters"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  viewRefresh: byId("viewRefresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  reviewCount: byId("count-review"),
+  expiringCount: byId("count-expiring"),
+  downCount: byId("count-down"),
+  language: byId("language"),
 };
+
+function emptyExtra() {
+  return { services: new Map(), expiries: new Map(), spend: new Map(), actions: new Map() };
+}
 
 function isMobileLayout() {
   return window.matchMedia("(max-width: 720px)").matches;
@@ -121,21 +149,25 @@ export function money(value, currency = state.snapshot?.currency || "USD") {
 
 export function date(value) {
   if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
   return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
     month: "short",
     day: "2-digit",
     year: "numeric",
-  }).format(new Date(value));
+  }).format(parsed);
 }
 
 export function dateTime(value) {
   if (!value) return t("never");
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return t("never");
   return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
     month: "short",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(value));
+  }).format(parsed);
 }
 
 export function pct(value) {
@@ -143,24 +175,108 @@ export function pct(value) {
   return `${number > 0 ? "+" : ""}${number.toFixed(1)}%`;
 }
 
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&by=…&peek=…]`. Search, the spend tab and the
+// peeked record live in the URL so refresh, shared links and Back restore the
+// same list context.
 function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] ? decodeURIComponent(parts[1]) : "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const by = SPEND_TABS.includes(params.get("by")) ? params.get("by") : "providers";
+  // Product rows have nothing beyond their columns, so only providers open.
+  const mode = view === "spend" && by === "products" ? null : DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  return {
+    view,
+    id: mode ? id : "",
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+    by,
+  };
 }
 
+export const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  if (route.view === "spend" && route.by !== "providers") params.set("by", route.by);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+const blankRoute = (view) => ({ view, query: "", by: "providers" });
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) => {
+  const route = view === state.route.view ? state.route : blankRoute(view);
+  return `#/${view}/${encodeURIComponent(id)}${routeQuery({}, route)}`;
+};
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) => {
+  if (DETAIL_MODES[view] === "page") return detailUrl(id, view);
+  const route = view === state.route.view ? state.route : blankRoute(view);
+  return `#/${view}${routeQuery({ peek: id }, route)}`;
+};
+
+let previousRouteWasList = false;
+let routeSerial = 0;
+
 function setRoute() {
-  state.notice = "";
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  state.notice = "";
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
+  render();
+  ensureSelectedRecord();
+}
+
+// Replace the current entry without a hashchange: search keystrokes and tab
+// clicks should not each become a Back step.
+export function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
   render();
 }
 
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── Data ───────────────────────────────────────────────────────────────────
 export async function loadState() {
   const provider = await getProvider();
+  state.provider = provider;
   const data = await provider.getState();
   state.pageCursors = {};
   state.currentPage = {};
   state.pageLoading = {};
   state.totals = data.totals || {};
+  state.extra = emptyExtra();
+  // Seed each paginated Base's cursor list with page 1 (no cursor) and the
+  // page-2 cursor getState() learned while fetching page 1.
   for (const [key, nextCursor] of Object.entries(data.pagination || {})) {
     state.pageCursors[key] = [undefined, nextCursor];
     state.currentPage[key] = 1;
@@ -171,21 +287,83 @@ export async function loadState() {
   applyDemoRoute();
   window.dispatchEvent(new CustomEvent("busa-devops:state", { detail: data }));
   render();
+  ensureSelectedRecord();
+}
+
+function pageSize(key) {
+  return appConfig.bases.find((entry) => entry.key === key)?.readLimit || 50;
+}
+
+// Total pages from the real records.count total, or null when unknown.
+export function pageCount(key) {
+  const total = state.totals?.[key];
+  return total == null ? null : Math.max(1, Math.ceil(total / pageSize(key)));
+}
+
+// True while a Base holds only part of its rows — more pages exist, or the
+// user is on a later page. Anything counted from loaded rows must say so.
+export function isPartial(key) {
+  const cursors = state.pageCursors[key];
+  if (!cursors) return false;
+  const current = state.currentPage[key] || 1;
+  return current > 1 || Boolean(cursors[current]);
+}
+
+const PAGE_PATH = { services: ["services"], expiries: ["expiries"], actions: ["actions"] };
+
+// Replaces the displayed page for `key` with a NEIGHBOURING page: exactly one
+// request per click, using a cursor already learned. Never appends, never
+// walks forward through pages to reach a far one.
+export async function goToPage(key, targetPage) {
+  if (state.pageLoading[key] || !PAGE_PATH[key]) return;
+  const cursors = state.pageCursors[key];
+  if (!cursors) return;
+  const current = state.currentPage[key] || 1;
+  if (Math.abs(targetPage - current) !== 1 || targetPage < 1) return;
+  if (targetPage > current && !cursors[current]) return; // no next page
+  state.pageLoading[key] = true;
+  render();
+  try {
+    const provider = await getProvider();
+    if (typeof provider.fetchPage !== "function") return;
+    const { rows, nextCursor } = await provider.fetchPage(key, cursors[targetPage - 1]);
+    state.snapshot[key] = rows;
+    cursors[targetPage] = nextCursor;
+    state.currentPage[key] = targetPage;
+  } catch (error) {
+    state.notice = error instanceof Error ? error.message : String(error);
+  } finally {
+    state.pageLoading[key] = false;
+    render();
+  }
+}
+
+// A record named by the URL but not on the loaded page is read on its own
+// (records.get by its business id) instead of loading more pages to find it.
+async function ensureSelectedRecord() {
+  const { view, selectedId } = state.route;
+  if (!state.snapshot || !selectedId || !RECORD_VIEWS.includes(view)) return;
+  if (recordById(view, selectedId) || state.extra[view].has(selectedId)) return;
+  const provider = state.provider;
+  if (typeof provider?.getRecord !== "function") {
+    state.extra[view].set(selectedId, null);
+    render();
+    return;
+  }
+  const serial = ++routeSerial;
+  state.extra[view].set(selectedId, undefined);
+  try {
+    state.extra[view].set(selectedId, (await provider.getRecord(view, selectedId)) || null);
+  } catch {
+    state.extra[view].set(selectedId, null);
+  }
+  if (serial === routeSerial) render();
 }
 
 function applyDemoRoute() {
   if (!state.settings?.demo || location.hash) return;
   const scenario = state.settings.demo_scenario || "overview";
-  const route =
-    scenario === "services"
-      ? "#/services"
-      : scenario === "expiries"
-        ? "#/expiries"
-        : scenario === "spend"
-          ? "#/spend"
-          : scenario === "actions"
-            ? "#/actions"
-            : "#/overview";
+  const route = RECORD_VIEWS.includes(scenario) ? `#/${scenario}` : "#/overview";
   history.replaceState(null, "", `${location.pathname}${location.search}${route}`);
   state.route = parseRoute();
 }
@@ -202,7 +380,13 @@ function applyI18n() {
   }
   els.search.placeholder = t("search");
   els.refresh.textContent = t("refresh");
+  els.refresh.title = t("refresh");
+  els.viewRefresh.title = t("refresh");
+  els.viewRefresh.setAttribute("aria-label", t("refresh"));
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
+  byId("overviewTitle").textContent = t("overview");
+  byId("settingsTitle").textContent = t("settings");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
 export function services() {
@@ -217,7 +401,7 @@ export function actions() {
   return state.snapshot?.actions || [];
 }
 
-function events() {
+export function events() {
   return state.snapshot?.events || [];
 }
 
@@ -229,28 +413,47 @@ export function metrics() {
   return state.snapshot?.metrics || {};
 }
 
+const ID_FIELD = { services: "service_id", expiries: "expiry_id", spend: "provider_id", actions: "action_id" };
+
+function rowsFor(view) {
+  return view === "spend" ? spend().providers : state.snapshot?.[view] || [];
+}
+
+// Loaded page first, then a record fetched on its own for the URL.
+export function recordById(view, id) {
+  if (!id) return null;
+  return rowsFor(view).find((item) => item[ID_FIELD[view]] === id) || state.extra[view]?.get(id) || null;
+}
+
 export function actionById(actionId) {
-  return actions().find((item) => item.action_id === actionId);
+  return recordById("actions", actionId);
+}
+
+// Attention numbers: the exact records.count total where the provider has one,
+// else what the loaded page shows.
+export function attentionCounts() {
+  const counts = state.settings?.counts || {};
+  return {
+    review: counts.needs_review ?? actions().filter((item) => item.status === "needs_review").length,
+    expiring: expiries().filter((item) => Number(item.days_left) <= 14).length,
+    down: counts.services_down ?? services().filter((item) => item.status === "down").length,
+  };
 }
 
 function renderShell() {
   applyI18n();
-  const reviewCount = actions().filter((item) => item.status === "needs_review").length;
-  const expiringCount = expiries().filter((item) => Number(item.days_left) <= 14).length;
-  const downCount = services().filter((item) => item.status === "down").length;
-  els.syncStatus.textContent =
-    state.snapshot?.generated_at && Date.parse(state.snapshot.generated_at) > 0
-      ? `${recordCountLabel("services", services().length)} ${t("services").toLowerCase()}`
-      : t("empty");
-  if (els.reviewCount) els.reviewCount.textContent = reviewCount;
-  if (els.expiringCount) els.expiringCount.textContent = expiringCount;
-  if (els.downCount) els.downCount.textContent = downCount;
+  const { review, expiring, down } = attentionCounts();
+  // Where the data comes from — the counts already sit in the attention block.
+  els.syncStatus.textContent = !state.snapshot ? t("loading") : state.settings?.demo ? t("demoData") : t("liveData");
+  if (els.reviewCount) els.reviewCount.textContent = review;
+  if (els.expiringCount) els.expiringCount.textContent = expiring;
+  if (els.downCount) els.downCount.textContent = down;
   if (els.mobileViewTitle) els.mobileViewTitle.textContent = viewLabel(state.route.view);
   if (els.mobileViewMeta) {
-    els.mobileViewMeta.textContent = reviewCount
-      ? `${reviewCount} ${t("needDecision")}`
-      : downCount
-        ? `${downCount} ${t("servicesDown")}`
+    els.mobileViewMeta.textContent = review
+      ? `${review} ${t("needDecision")}`
+      : down
+        ? `${down} ${t("servicesDown")}`
         : `${recordCountLabel("services", services().length)} ${t("services").toLowerCase()}`;
   }
   document.querySelectorAll("[data-route]").forEach((link) => {
@@ -258,13 +461,22 @@ function renderShell() {
   });
 }
 
-function viewLabel(view) {
+export function viewLabel(view) {
   if (view === "services") return t("services");
   if (view === "expiries") return t("expiries");
   if (view === "spend") return t("spend");
-  if (view === "actions") return t("actions");
+  if (view === "actions") return t("actionsQueue");
   if (view === "settings") return t("settings");
   return t("overview");
+}
+
+// A count of loaded rows says so when more pages exist; a records.count total
+// is shown as-is.
+export function recordCountLabel(key, loadedCount, filtered = false) {
+  if (filtered) return `${loadedCount}${isPartial(key) ? "+" : ""}`;
+  const total = state.totals?.[key];
+  if (total != null) return total;
+  return `${loadedCount}${isPartial(key) ? "+" : ""}`;
 }
 
 export function statusDot(status) {
@@ -310,13 +522,17 @@ export function warnings(serviceId = "") {
 
 export function sparkline(history) {
   const points = (history || []).map((entry) => Number(entry.latency_ms || 0));
-  if (!points.length) return `<div class="empty">${t("notAvailable")}</div>`;
+  if (!points.length) return `<div class="empty-inline">${t("notAvailable")}</div>`;
   const width = 260;
   const height = 64;
   const pad = 6;
+  // Scale to the observed range so a steady service reads as a flat line in
+  // the middle rather than a line pinned to the top edge.
   const max = Math.max(...points, 1);
+  const min = Math.min(...points);
+  const range = max - min || max;
   const step = points.length > 1 ? (width - pad * 2) / (points.length - 1) : 0;
-  const y = (value) => height - pad - (value / max) * (height - pad * 2);
+  const y = (value) => height - pad - ((value - (max === min ? 0 : min)) / range) * (height - pad * 2);
   const coords = points.map((value, index) => [pad + index * step, y(value)]);
   const line = coords.map(([x, yy], index) => `${index === 0 ? "M" : "L"}${x.toFixed(1)},${yy.toFixed(1)}`).join(" ");
   const dots = coords
@@ -335,119 +551,64 @@ export function sparkline(history) {
   `;
 }
 
-function fleetCards() {
-  const m = metrics();
-  const spendDelta =
-    Number(m.spend_last_month) > 0
-      ? ((Number(m.spend_mtd) - Number(m.spend_last_month)) / Number(m.spend_last_month)) * 100
-      : 0;
-  return `
-    <div class="metrics">
-      <div class="metric"><span>${t("services")}</span><strong>${m.services_up || 0} / ${m.services_total || 0}</strong><small>${m.services_degraded || 0} ${enumLabel("degraded")} · ${m.services_down || 0} ${enumLabel("down")}</small></div>
-      <div class="metric"><span>${t("certs")}</span><strong>${m.certs_ok || 0} ${t("ok")}</strong><small>${m.certs_expiring || 0} ${t("expiring")}</small></div>
-      <div class="metric"><span>${t("domains")}</span><strong>${m.domains_ok || 0} ${t("ok")}</strong><small>${m.domains_expiring || 0} ${t("expiring")}</small></div>
-      <div class="metric"><span>${t("mtdVsLastMonth")}</span><strong>${money(m.spend_mtd)}</strong><small>${money(m.spend_last_month)} · ${pct(spendDelta)}</small></div>
-    </div>
-  `;
-}
-
-function renderOverview() {
-  els.title.textContent = t("overview");
-  els.subtitle.textContent =
-    state.snapshot?.generated_at && Date.parse(state.snapshot.generated_at) > 0
-      ? `${t("generated")} ${new Date(state.snapshot.generated_at).toLocaleString()}`
-      : t("empty");
-  const needsDecision = actions().filter((item) => item.status === "needs_review");
-  const expiring = expiries().filter((item) => Number(item.days_left) <= 14);
-  const down = services().filter((item) => item.status !== "up");
-  const checks = state.snapshot?.checks || {};
-  els.content.innerHTML = `
-    ${notice()}
-    ${warnings()}
-    ${fleetCards()}
-    <section class="overview-grid">
-      <div class="overview-panel">
-        <h2>${t("humanWorkTitle")}</h2>
-        ${needsDecision
-          .map(
-            (item) => `
-          <a class="attention-row" href="#/actions/${encodeURIComponent(item.action_id)}">
-            <span><strong>${t("actionRef")} #${item.ref} · ${escapeHtml(item.title)}</strong><small>${escapeHtml(item.reason)}</small></span>
-            ${typeBadge(item.type)}
-          </a>
-        `,
-          )
-          .join("")}
-        ${expiring
-          .map(
-            (item) => `
-          <a class="attention-row" href="#/expiries/${encodeURIComponent(item.expiry_id)}">
-            <span><strong>${escapeHtml(item.item)}</strong><small>${escapeHtml(item.product)} · ${date(item.expires_on)}</small></span>
-            ${daysLeftBadge(item.days_left)}
-          </a>
-        `,
-          )
-          .join("")}
-        ${down
-          .map(
-            (item) => `
-          <a class="attention-row" href="#/services/${encodeURIComponent(item.service_id)}">
-            <span><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.url)}</small></span>
-            ${statusBadge(item.status)}
-          </a>
-        `,
-          )
-          .join("")}
-        ${!needsDecision.length && !expiring.length && !down.length ? `<div class="empty">${t("empty")}</div>` : ""}
-      </div>
-      <div class="overview-panel">
-        <h2>${t("recentEvents")}</h2>
-        ${
-          events()
-            .slice(0, 8)
-            .map(
-              (event) => `
-          <div class="event-row">
-            <span class="event-meta">${statusDot(event.severity)}<small>${dateTime(event.at)}</small>${typeBadge(event.kind)}</span>
-            <span class="event-message">${escapeHtml(event.message)}</span>
-          </div>
-        `,
-            )
-            .join("") || `<div class="empty">${t("empty")}</div>`
-        }
-      </div>
-      <div class="overview-panel wide">
-        <h2>${t("checkFreshness")}</h2>
-        <div class="freshness">
-          <div class="freshness-item"><span>${t("serviceCheck")}</span><strong>${dateTime(checks.services_checked_at)}</strong></div>
-          <div class="freshness-item"><span>${t("domainCheck")}</span><strong>${dateTime(checks.domains_checked_at)}</strong></div>
-          <div class="freshness-item"><span>${t("spendIngest")}</span><strong>${dateTime(checks.spend_ingested_at)}</strong></div>
-        </div>
-      </div>
-    </section>
-  `;
-}
+const matches = (values, query) =>
+  values.filter(Boolean).some((value) => String(value).toLowerCase().includes(query));
 
 export function filteredServices() {
-  const query = state.query.trim().toLowerCase();
+  const query = state.route.query.trim().toLowerCase();
   if (!query) return services();
-  return services().filter((service) =>
-    [service.name, service.product, service.url, service.status]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query)),
+  return services().filter((item) => matches([item.name, item.product, item.url, item.status], query));
+}
+
+export function filteredExpiries() {
+  const query = state.route.query.trim().toLowerCase();
+  const rows = [...expiries()].sort((a, b) => Number(a.days_left) - Number(b.days_left));
+  if (!query) return rows;
+  return rows.filter((item) =>
+    matches([item.item, item.product, enumLabel(item.type, "type"), item.registrar, item.detail], query),
   );
+}
+
+export function filteredActions() {
+  const query = state.route.query.trim().toLowerCase();
+  const order = { needs_review: 0, changes_requested: 1, approved: 2, blocked: 3, done: 4 };
+  const rows = [...actions()].sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9) || a.ref - b.ref);
+  if (!query) return rows;
+  return rows.filter((item) =>
+    matches([item.title, item.reason, enumLabel(item.type, "type"), enumLabel(item.status), item.note], query),
+  );
+}
+
+export function filteredSpend() {
+  const query = state.route.query.trim().toLowerCase();
+  const data = spend();
+  if (!query) return data;
+  return {
+    ...data,
+    providers: data.providers.filter((row) => matches([row.name, row.note], query)),
+    products: data.products.filter((row) => matches([row.product], query)),
+  };
 }
 
 export function render() {
   renderShell();
-  if (state.route.view === "services" && state.route.id) renderServiceDetail();
-  else if (state.route.view === "services") renderServices();
-  else if (state.route.view === "expiries" && state.route.id) renderExpiryDetail();
-  else if (state.route.view === "expiries") renderExpiries();
-  else if (state.route.view === "spend") renderSpend();
-  else if (state.route.view === "actions" && state.route.id) renderActionDetail();
-  else if (state.route.view === "actions") renderActions();
-  else if (state.route.view === "settings") renderSettings();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const splitView = onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page";
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", splitView);
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
   else renderOverview();
 }
 
@@ -465,16 +626,59 @@ export function escapeHtml(value) {
   );
 }
 
+// ── Events ─────────────────────────────────────────────────────────────────
+els.listPanel.addEventListener("click", (event) => {
+  const pager = event.target.closest("[data-goto-page]");
+  if (pager) {
+    const [key, page] = pager.dataset.gotoPage.split(":");
+    goToPage(key, Number(page));
+    return;
+  }
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+els.viewFilters.addEventListener("click", (event) => {
+  const segment = event.target.closest("[data-by]");
+  if (!segment) return;
+  replaceRoute(`#/spend${routeQuery({}, { ...state.route, by: segment.dataset.by })}`);
+});
+els.detailBody.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-verdict]");
+  if (!button) return;
+  submitDecision(button.dataset.action, button.dataset.verdict);
+});
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  // Escape inside the review note only leaves the field; a second Escape closes.
+  if (event.target.closest?.("textarea, input")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", () => setMobileSidebarOpen(true));
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
+  replaceRoute(
+    `#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`,
+  );
 });
 els.refresh.addEventListener("click", () => loadState());
+els.viewRefresh.addEventListener("click", () => loadState());
 els.mobileRefresh?.addEventListener("click", () => loadState());
 els.language.value = state.lang;
 els.language.addEventListener("change", () => {
@@ -493,118 +697,13 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
-
-const PAGE_BINDINGS = {
-  services: { key: "services", path: "snapshot.services" },
-  expiries: { key: "expiries", path: "snapshot.expiries" },
-  actions: { key: "actions", path: "snapshot.actions" },
-};
-
-function pageSize(key) {
-  return appConfig.bases.find((entry) => entry.key === key)?.readLimit || 50;
-}
-
-function pageCount(key) {
-  const total = state.totals?.[key];
-  return total == null ? null : Math.max(1, Math.ceil(total / pageSize(key)));
-}
-
-function replacePageRows(path, rows) {
-  const parts = path.split(".");
-  let target = state;
-  for (const part of parts.slice(0, -1)) {
-    target = target?.[part];
-    if (!target) return;
-  }
-  target[parts.at(-1)] = rows;
-}
-
-async function goToPage(key, targetPage) {
-  if (state.pageLoading[key] || !state.pageCursors[key]) return;
-  const binding = Object.values(PAGE_BINDINGS).find((entry) => entry.key === key);
-  if (!binding) return;
-  const totalPages = pageCount(key);
-  const page = totalPages == null ? Math.max(1, targetPage) : Math.min(Math.max(1, targetPage), totalPages);
-  if (page === state.currentPage[key]) return;
-  state.pageLoading[key] = true;
-  if (typeof render === "function") render();
-  else route();
-  try {
-    const provider = await getProvider();
-    let result;
-    for (let next = state.pageCursors[key].length; next <= page; next += 1) {
-      const cursor = state.pageCursors[key][next - 1];
-      if (next > 1 && !cursor) return;
-      result = await provider.fetchPage(key, cursor);
-      state.pageCursors[key][next] = result.nextCursor;
-    }
-    if (!result || state.pageCursors[key].length > page + 1) {
-      result = await provider.fetchPage(key, state.pageCursors[key][page - 1]);
-      state.pageCursors[key][page] = result.nextCursor;
-    }
-    replacePageRows(binding.path, result.rows);
-    state.currentPage[key] = page;
-  } finally {
-    state.pageLoading[key] = false;
-    if (typeof render === "function") render();
-    else route();
-  }
-}
-
-function pagerMessage(key, fallback) {
-  return typeof t === "function" ? t(key) : fallback;
-}
-
-export function recordCountLabel(key, loadedCount, filtered = false) {
-  if (filtered) return loadedCount;
-  const total = state.totals?.[key];
-  if (total != null) return total;
-  const current = state.currentPage?.[key] || 1;
-  return `${loadedCount}${state.pageCursors?.[key]?.[current] ? "+" : ""}`;
-}
-
-export function pagerControl(key) {
-  if (!state.pageCursors[key]) return "";
-  const total = pageCount(key);
-  const current = state.currentPage[key] || 1;
-  const loading = Boolean(state.pageLoading[key]);
-  const hasNext = total == null ? Boolean(state.pageCursors[key][current]) : current < total;
-  if ((total === 1 || total == null) && current === 1 && !hasNext) return "";
-  const pages =
-    total == null
-      ? []
-      : total <= 7
-        ? Array.from({ length: total }, (_, index) => index + 1)
-        : [...new Set([1, total, current - 1, current, current + 1].filter((page) => page >= 1 && page <= total))].sort(
-            (a, b) => a - b,
-          );
-  const items = [];
-  let previous = 0;
-  for (const page of pages) {
-    if (previous && page - previous > 1) items.push('<span class="pager-ellipsis">…</span>');
-    items.push(
-      `<button type="button" class="pager-page ${page === current ? "active" : ""}" data-goto-page="${key}:${page}" ${loading || page === current ? "disabled" : ""}>${page}</button>`,
-    );
-    previous = page;
-  }
-  return `<nav class="pager" aria-label="${pagerMessage("pagination", "Pagination")}">
-    <button type="button" class="pager-nav" data-goto-page="${key}:${current - 1}" ${loading || current <= 1 ? "disabled" : ""}>${pagerMessage("prevPage", "Prev")}</button>
-    ${items.join("")}
-    <button type="button" class="pager-nav" data-goto-page="${key}:${current + 1}" ${loading || !hasNext ? "disabled" : ""}>${pagerMessage("nextPage", "Next")}</button>
-    ${total == null ? "" : `<span class="pager-summary">${pagerMessage("pageOf", "Page {current} of {total}").replace("{current}", current).replace("{total}", total)}</span>`}
-  </nav>`;
-}
-
-document.querySelector("#content")?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-goto-page]");
-  if (!button) return;
-  const [key, page] = button.dataset.gotoPage.split(":");
-  goToPage(key, Number(page));
-});
-
 boot();

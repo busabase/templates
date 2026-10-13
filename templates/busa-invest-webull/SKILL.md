@@ -60,16 +60,16 @@ the exact missing dependency. Do not invent a second data backend.
     <td width="50%"><img src="assets/screenshots/positions.webp" alt="Busa Invest positions"></td>
   </tr>
   <tr>
-    <td><strong>Overview</strong><br>Portfolio command desk with market value, unrealized P/L, day change, cash, an allocation-by-asset-type donut, and top day movers.</td>
-    <td><strong>Positions</strong><br>Sortable holdings table across symbol, asset type, quantity, average cost, last price, market value, unrealized P/L, and portfolio weight.</td>
+    <td><strong>Overview</strong><br>Portfolio command desk with market value, day change, and cash (unrealized P/L sits in the sidebar), an allocation-by-asset-type donut, top day movers, and insights.</td>
+    <td><strong>Positions</strong><br>Sortable holdings table across symbol, asset type, account, quantity, last price, market value, unrealized P/L and %, and portfolio weight.</td>
   </tr>
   <tr>
     <td width="50%"><img src="assets/screenshots/accounts.webp" alt="Busa Invest accounts"></td>
     <td width="50%"><img src="assets/screenshots/detail.webp" alt="Busa Invest position detail"></td>
   </tr>
   <tr>
-    <td><strong>Accounts</strong><br>Per-account view (cash and margin) with net liquidation, total cash, buying power, and the positions held in each account.</td>
-    <td><strong>Position detail</strong><br>Single-symbol view with cost basis, market value, unrealized P/L and percentage, day change, weight, and holding account.</td>
+    <td><strong>Accounts</strong><br>Per-account page (cash and margin) with net liquidation, market value, unrealized P/L, cash, buying power, and the holdings in that account.</td>
+    <td><strong>Position detail</strong><br>Drawer beside the holdings list with market value, unrealized P/L and percentage, day change, weight, average cost, cost basis, and holding account.</td>
   </tr>
 </table>
 
@@ -188,15 +188,17 @@ original form.
 
 ## Views
 
-- `#/overview`: total market value, total unrealized P/L (color + %), day
-  change, cash, and allocation-by-asset-type donut plus top day movers and
-  insights.
-- `#/positions`: sortable table (symbol, name, qty, avg cost, last, market
-  value, unrealized P/L %, weight).
-- `#/accounts`: cash and margin accounts with net liquidation, cash, buying
-  power.
-- `#/accounts/<account_id>`: account summary and its filtered positions.
-- `#/positions/<symbol>`: per-symbol detail pane.
+- `#/overview`: total market value, day change, and cash, the
+  allocation-by-asset-type donut, top day movers, and insights. Total
+  unrealized P/L (color + %) is in the sidebar on every page.
+- `#/positions`: sortable table (symbol + asset type, name, account, qty,
+  last, market value, unrealized P/L, P/L %, weight). `?q=` holds the search.
+- `#/positions?peek=<position>`: position detail drawer over the list
+  (Escape or Close returns to the list); `#/positions/<position>` opens the
+  same detail as a full page. `<position>` is the position id, or the symbol.
+- `#/accounts`: cash and margin accounts with net liquidation, market value,
+  cash, buying power, and position count.
+- `#/accounts/<account_id>`: account page with its balances and holdings.
 - `#/settings`: sanitized setup summary — data provider, Webull region and
   base URL, credential-readiness booleans, and onboarding state. Never
   exposes secret values.

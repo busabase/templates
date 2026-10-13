@@ -1,7 +1,15 @@
 import { MESSAGES, resolveLang } from "./i18n/messages.js";
+import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
-import { newCharacter, newShot, renderDetail, renderList } from "./js/workspace-views.js";
+import {
+  newCharacter,
+  newShot,
+  renderDetail,
+  renderList,
+  renderOverview,
+  renderSong,
+} from "./js/workspace-views.js";
 
 // ---------------------------------------------------------------------------
 // State + helpers
@@ -10,10 +18,20 @@ import { newCharacter, newShot, renderDetail, renderList } from "./js/workspace-
 const PAGE_QUERY = new URLSearchParams(window.location.search);
 const URL_LANG = PAGE_QUERY.get("lang") || "";
 
+// Where a record opens, per view — declared once in config.js
+// `ui.detail_modes` (cast → drawer, storyboard → split; the reasons are there).
+// A `/<record>` path always opens the full page; `?peek=` drives drawer/split.
+// On a phone every mode is a page (base-ui.css handles that).
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+
 export const state = {
   data: null,
-  view: "concept",
+  view: "overview",
   selectedId: null,
+  // "page" | "drawer" | "split" | null — how the selected record is shown.
+  presentation: null,
+  peek: "",
   search: "",
   lang: URL_LANG || localStorage.getItem("kmv_lang") || "auto",
   toast: null,
@@ -22,7 +40,7 @@ export const state = {
   hasLoadedMore: false,
 };
 
-const VIEWS = ["concept", "song", "cast", "storyboard"];
+const VIEWS = ["overview", "song", "cast", "storyboard"];
 export const DURATIONS = [4, 5, 6, 8, 10, 12];
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-mv.sidebarCollapsed";
 
@@ -63,17 +81,12 @@ function setMobileSidebarOpen(open) {
   const scrim = document.getElementById("sidebarScrim");
   if (scrim) scrim.hidden = !open;
 }
-export function setMobileDetailOpen(open) {
-  document.body.classList.toggle("mobile-detail-open", Boolean(open));
-}
 function syncResponsiveShell() {
   if (isMobileLayout()) {
     document.body.classList.remove("sidebar-collapsed");
     setMobileSidebarOpen(false);
-    setMobileDetailOpen(Boolean(state.selectedId) && !["concept", "song"].includes(state.view));
   } else {
     setMobileSidebarOpen(false);
-    setMobileDetailOpen(false);
     setSidebarCollapsed(localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === "1", { persist: false });
   }
 }
@@ -111,20 +124,83 @@ export function pickFile(accept) {
 }
 
 // ---------------------------------------------------------------------------
-// Routing (hash: #/view or #/view/id)
+// Routing: `#/<view>[/<record>][?q=…&peek=…]`. Search and the peeked record
+// live in the URL so refresh, shared links and Back restore the same list.
+// `#/concept` (the old first page) still lands on Overview.
 // ---------------------------------------------------------------------------
 function parseHash() {
-  const raw = (location.hash || "#/concept").replace(/^#\/?/, "");
-  const [view, id] = raw.split("/");
-  state.view = VIEWS.includes(view) ? view : "concept";
-  state.selectedId = id ? decodeURIComponent(id) : null;
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const [view, rawId] = path.split("/");
+  const params = new URLSearchParams(query);
+  let id = "";
+  try {
+    id = rawId ? decodeURIComponent(rawId) : "";
+  } catch {
+    id = "";
+  }
+  state.view = VIEWS.includes(view) ? view : "overview";
+  const mode = DETAIL_MODES[state.view];
+  state.peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  state.selectedId = mode ? id || state.peek || null : null;
+  state.presentation = !mode ? null : id ? "page" : mode === "page" ? null : mode;
+  state.search = mode ? params.get("q") || "" : "";
 }
-export function go(view, id, replace = false) {
-  const hash = id ? `#/${view}/${encodeURIComponent(id)}` : `#/${view}`;
-  if (replace) history.replaceState(null, "", hash);
-  else location.hash = hash;
+function routeQuery(extra = {}) {
+  const params = new URLSearchParams();
+  if (state.search) params.set("q", state.search);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+}
+export function listUrl(view = state.view) {
+  return view === state.view ? `#/${view}${routeQuery()}` : `#/${view}`;
+}
+// The full page: the record in the path, whatever the view's mode.
+export function detailUrl(id, view = state.view) {
+  return `#/${view}/${encodeURIComponent(id)}${view === state.view ? routeQuery() : ""}`;
+}
+// What a row opens: the page for a `page` view, else `?peek=`.
+export function recordUrl(id, view = state.view) {
+  if (DETAIL_MODES[view] === "page") return detailUrl(id, view);
+  return view === state.view ? `#/${view}${routeQuery({ peek: id })}` : `#/${view}?peek=${encodeURIComponent(id)}`;
+}
+
+let previousRouteWasList = false;
+function setRoute() {
+  const previousView = state.view;
   parseHash();
+  // A record opened from its own list marks the entry, so Back/Close/Escape
+  // step back to that list instead of pushing a new one.
+  if (state.selectedId && previousRouteWasList && previousView === state.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.view) && !state.selectedId;
+  setMobileSidebarOpen(false);
   render();
+}
+// Replace the current entry without a hashchange: keystrokes and switching
+// rows inside an open drawer/split should not each become a Back step.
+export function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const wasList = previousRouteWasList;
+  parseHash();
+  previousRouteWasList = wasList;
+  render();
+}
+export function go(view) {
+  location.hash = `#/${view}`;
+}
+export function openRecord(id, view = state.view) {
+  const url = recordUrl(id, view);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (view === state.view && state.peek) replaceRoute(url);
+  else location.hash = url;
+}
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
 }
 
 // ---------------------------------------------------------------------------
@@ -143,12 +219,12 @@ export async function loadState() {
 function applyDemoRoute() {
   if (!state.data?.demo || location.hash) return;
   const demoRoutes = {
-    overview: "#/concept",
+    overview: "#/overview",
     song: "#/song",
-    cast: "#/cast/char-demo-dreamer",
-    storyboard: "#/storyboard/shot-demo-01",
+    cast: "#/cast?peek=char-demo-dreamer",
+    storyboard: "#/storyboard?peek=shot-demo-01",
   };
-  history.replaceState(null, "", demoRoutes[state.data.demo_scenario] || "#/concept");
+  history.replaceState(null, "", demoRoutes[state.data.demo_scenario] || "#/overview");
   parseHash();
 }
 
@@ -190,10 +266,7 @@ export async function loadMore(key) {
   }
 }
 
-window.addEventListener("hashchange", () => {
-  parseHash();
-  render();
-});
+window.addEventListener("hashchange", setRoute);
 
 // ---------------------------------------------------------------------------
 // Chrome wiring
@@ -203,7 +276,6 @@ function wireChrome() {
     const btn = e.target.closest("button[data-view]");
     if (btn) {
       setMobileSidebarOpen(false);
-      setMobileDetailOpen(false);
       go(btn.dataset.view);
     }
   });
@@ -212,11 +284,33 @@ function wireChrome() {
   document.getElementById("sidebarToggle").addEventListener("click", toggleSidebar);
   document.getElementById("mobileSidebarToggle").addEventListener("click", () => setMobileSidebarOpen(true));
   document.getElementById("sidebarScrim").addEventListener("click", () => setMobileSidebarOpen(false));
-  document.getElementById("backToList").addEventListener("click", () => setMobileDetailOpen(false));
-  window.addEventListener("resize", syncResponsiveShell);
+  document.getElementById("detailBack").addEventListener("click", closeDetail);
+  window.addEventListener("resize", () => {
+    syncResponsiveShell();
+    render();
+  });
   document.getElementById("searchInput").addEventListener("input", (e) => {
     state.search = e.target.value;
-    renderList();
+    replaceRoute(`#/${state.view}${routeQuery({ peek: state.peek })}`);
+  });
+  document.getElementById("list").addEventListener("click", (e) => {
+    const more = e.target.closest("[data-load-more]");
+    if (more) return loadMore(more.dataset.loadMore);
+    const row = e.target.closest("tr[data-select]");
+    if (row) openRecord(row.dataset.select);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (!document.getElementById("settingsModal").classList.contains("hidden")) {
+      document.getElementById("settingsModal").classList.add("hidden");
+      return;
+    }
+    // Escape inside a field only leaves the field; a second Escape closes.
+    if (e.target.closest?.("textarea, input, select")) {
+      e.target.blur();
+      return;
+    }
+    if (state.selectedId && state.presentation && state.presentation !== "page") closeDetail();
   });
   const modal = document.getElementById("settingsModal");
   document.getElementById("settingsButton").addEventListener("click", () => openSettings());
@@ -259,7 +353,7 @@ function applyChrome() {
 }
 
 const VIEW_TITLE_KEYS = {
-  concept: ["nav_concept", "sub_concept"],
+  overview: ["nav_overview", "sub_concept"],
   song: ["nav_song", "sub_song"],
   cast: ["nav_cast", "sub_cast"],
   storyboard: ["nav_storyboard", "sub_storyboard"],
@@ -267,31 +361,67 @@ const VIEW_TITLE_KEYS = {
 
 export function render() {
   if (!state.data) return;
+  const { view, selectedId, presentation } = state;
+  const onRecordView = RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.search));
+  body.add("ws-has-mobile-bar");
   syncSidebar();
-  const [titleKey, subKey] = VIEW_TITLE_KEYS[state.view];
+  const [titleKey, subKey] = VIEW_TITLE_KEYS[view];
+  document.getElementById("loadState").hidden = true;
+  document.getElementById("overviewPage").hidden = view !== "overview";
+  document.getElementById("viewPage").hidden = !onRecordView;
+  document.getElementById("songPage").hidden = view !== "song";
+  document.getElementById("mobileViewTitle").textContent = t(titleKey);
+  document.getElementById("lockBanner").hidden = !state.data.lock?.locked;
+  // The view's description moves to the title tooltip: record views carry
+  // no description line.
+  for (const id of ["viewTitle", "songTitle"]) document.getElementById(id).title = t(subKey);
   document.getElementById("viewTitle").textContent = t(titleKey);
-  document.getElementById("viewSubtitle").textContent = t(subKey);
-  document.getElementById("lockBanner").classList.toggle("hidden", !state.data.lock?.locked);
-  document.getElementById("newItemButton").style.visibility =
-    state.view === "cast" || state.view === "storyboard" ? "visible" : "hidden";
+  const search = document.getElementById("searchInput");
+  if (search.value !== state.search) search.value = state.search;
+  document.getElementById("newItemButton").textContent = view === "storyboard" ? t("new_shot") : t("new_character");
+  const expand = document.getElementById("detailExpand");
+  expand.hidden = !(onRecordView && selectedId && presentation !== "page");
+  if (!expand.hidden) expand.href = detailUrl(selectedId);
+  // On a phone every mode is a page, so the button always goes back.
+  document.getElementById("detailBack").textContent =
+    presentation && presentation !== "page" && !isMobileLayout() ? t("close") : t("back_to_list");
   renderToast();
-  renderList();
-  renderDetail();
+  if (view === "overview") renderOverview();
+  else if (view === "song") renderSong();
+  else {
+    renderList();
+    renderDetail();
+  }
 }
 
 function syncSidebar() {
   const data = state.data;
   document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("active", b.dataset.view === state.view));
-  const song = project().song || {};
-  document.getElementById("projectTitle").textContent = song.title || t("project_unnamed");
-  document.getElementById("projectMeta").textContent =
-    [song.artist, song.duration_seconds ? secs(song.duration_seconds) : ""].filter(Boolean).join(" · ") ||
-    t("project_meta_fallback");
+  document.getElementById("navCountCast").textContent = navCount("cast");
+  document.getElementById("navCountStoryboard").textContent = navCount("shots");
+  document.getElementById("mobileViewMeta").textContent = RECORD_VIEWS.includes(state.view)
+    ? navCount(state.view === "cast" ? "cast" : "shots")
+    : "";
   const sel = document.getElementById("projectSelect");
   sel.innerHTML = (data.projects || [])
     .map((p) => `<option value="${esc(p.id)}" selected>${esc(p.title || p.id)}</option>`)
     .join("");
   document.getElementById("nextStepLabel").textContent = t(`step_${data.next_step || "review"}`);
+}
+
+// Per-Base totals sit next to the nav item: the exact count when the provider
+// has one, else the loaded rows marked "+" while more pages remain.
+export function navCount(key) {
+  const exact = state.data?.totalCount?.[key];
+  if (typeof exact === "number") return String(exact);
+  const loaded = (key === "cast" ? project().characters : project().shots) || [];
+  return `${loaded.length}${state.data?.pagination?.[key] ? "+" : ""}`;
 }
 
 function renderToast() {
@@ -312,15 +442,15 @@ function renderToast() {
 function routeNextStep() {
   const map = {
     upload_song: "song",
-    set_concept: "concept",
+    set_concept: "overview",
     add_cast: "cast",
     generate_cast_refs: "cast",
     add_shots: "storyboard",
     fill_shot_images: "storyboard",
     fill_shot_videos: "storyboard",
-    review: "concept",
+    review: "overview",
   };
-  go(map[state.data?.next_step] || "concept");
+  go(map[state.data?.next_step] || "overview");
 }
 function onNewItem() {
   if (state.view === "cast") return newCharacter();
@@ -331,13 +461,7 @@ function onNewItem() {
 // LIST panel
 // ---------------------------------------------------------------------------
 export function statusClass(status) {
-  return (
-    { approved: "status-approved", needs_review: "status-needs", blocked: "status-blocked" }[status] || "status-draft"
-  );
-}
-export function matchSearch(item) {
-  if (!state.search) return true;
-  return JSON.stringify(item).toLowerCase().includes(state.search.toLowerCase());
+  return { approved: "positive", needs_review: "warning", blocked: "danger" }[status] || "";
 }
 
 // ---------------------------------------------------------------------------
@@ -356,7 +480,7 @@ function openSettings() {
       <div class="form-actions"><button class="mini-button" id="imgSave">保存</button></div>
     </div>`;
   document.getElementById("imgSave").addEventListener("click", async () => {
-    if (state.data?.demo) return toast(t("toast_concept_saved"), "danger");
+    if (state.data?.demo) return toast(t("demo_read_only"), "danger");
     const body = {
       base_url: document.getElementById("imgBase").value,
       model: document.getElementById("imgModel").value,
@@ -383,6 +507,7 @@ async function boot() {
   if (!ready) return;
   try {
     parseHash();
+    previousRouteWasList = RECORD_VIEWS.includes(state.view) && !state.selectedId;
     syncResponsiveShell();
     wireChrome();
     await loadState();
@@ -393,6 +518,10 @@ async function boot() {
       return;
     }
     console.error(error);
+    const node = document.getElementById("loadState");
+    node.hidden = false;
+    node.classList.add("error");
+    node.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 

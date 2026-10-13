@@ -19,6 +19,11 @@ const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 const BROWSED_KEYS = ["candidates", "trend-items", "proposals"];
+const RECORD_LOOKUP = {
+  candidates: { slug: "candidate-id", normalize: (row) => normalizeCandidate(row) },
+  "trend-items": { slug: "trend-id", normalize: (row) => normalizeTrendItem(row) },
+  proposals: { slug: "proposal-id", normalize: (row) => normalizeProposal(row) },
+};
 
 // A deployed AirApp sits inside the Busabase review boundary; only a standalone
 // run may merge its own writes. That is far too consequential to infer from the
@@ -103,6 +108,7 @@ async function countRecords(key, filters) {
 }
 
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -247,6 +253,21 @@ export const busabaseProvider = {
       return { ok: false, status: 400, error: error instanceof Error ? error.message : String(error) };
     }
     return { ok: true, decision: { id, kind, action, comment, decided_at: now } };
+  },
+
+  // A record named by the URL that is not on the loaded page: read it on its
+  // own (records.get by business id) instead of paging forward to find it.
+  async getRecord(key, id) {
+    const spec = RECORD_LOOKUP[key];
+    if (!spec || !id) return null;
+    await ensureResources();
+    const record = await findRecord(key, spec.slug, id);
+    if (!record) return null;
+    return spec.normalize({
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    });
   },
 
   async fetchPage(key, cursor) {

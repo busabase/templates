@@ -142,15 +142,34 @@ export const busabaseProvider = {
     await ensureResources();
     initialCursors.clear();
     const recordCountsPromise = Promise.all(BROWSED_KEYS.map((key) => countRecords(key)));
+    // Products are the page; every other Base is a side read. One that is
+    // denied or fails leaves its own view empty with a warning instead of
+    // failing the whole app.
+    const sideFailures = [];
+    const side = (key, read, fallback) =>
+      read().catch((error) => {
+        sideFailures.push({ key, message: error instanceof Error ? error.message : String(error) });
+        return fallback;
+      });
     const [products, channels, inventory, reviewItems, certificates, settings] = await Promise.all([
       readPageRows("products"),
-      readPageRows("channels"),
-      readPageRows("inventory"),
-      readPageRows("review"),
-      readPageRows("certificates"),
-      readSettingsRow(),
+      side("channels", () => readPageRows("channels"), []),
+      side("inventory", () => readPageRows("inventory"), []),
+      side("review", () => readPageRows("review"), []),
+      side("certificates", () => readPageRows("certificates"), []),
+      side("settings", () => readSettingsRow(), {}),
     ]);
     const snapshot = buildSnapshot({ products, channels, inventory, reviewItems, certificates, settings });
+    snapshot.warnings = [
+      ...(snapshot.warnings || []),
+      ...sideFailures.map((failure) => ({
+        id: `read-${failure.key}`,
+        severity: "warning",
+        base: failure.key,
+        message: `Could not read ${failure.key}`,
+        detail: failure.message,
+      })),
+    ];
     const recordCounts = await recordCountsPromise;
     return {
       app: "busa-product-hub",
@@ -191,6 +210,40 @@ export const busabaseProvider = {
     };
     await updateRecord(existing, reviewToFields(next), `Decision on review item ${itemId}: ${action}`);
     return next;
+  },
+
+  // One record named by the URL that is not on the loaded page: read it on
+  // its own (records.get by business id) instead of paging until it shows up.
+  // Certificates have no business id; theirs is the record id itself.
+  async getRecord(key, id) {
+    if (!id) return null;
+    if (!allowedReads.has("records.get")) return null;
+    await ensureResources();
+    const idField = { products: "product-id", channels: "channel-id", inventory: "inventory-id", review: "item-id" }[key];
+    let record = null;
+    if (idField) record = await findRecord(key, idField, id);
+    else if (key === "certificates") {
+      try {
+        record = await runtimeClient.records.get({ recordId: id });
+      } catch (error) {
+        if (error?.code === "NOT_FOUND" || error?.status === 404) return null;
+        throw error;
+      }
+    }
+    if (!record) return null;
+    const row = {
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    };
+    const normalize = {
+      products: normalizeProductRow,
+      channels: normalizeChannelRow,
+      inventory: normalizeInventoryRow,
+      review: normalizeReviewRow,
+      certificates: normalizeCertificateRow,
+    }[key];
+    return normalize ? normalize(row) : row;
   },
 
   async fetchPage(key, cursor) {

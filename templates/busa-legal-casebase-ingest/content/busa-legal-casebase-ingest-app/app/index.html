@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
     <link rel="stylesheet" href="./accent-theme.css">
   </head>
-  <body>
+  <body class="ws-has-mobile-bar">
     <div class="app-shell">
       <aside class="sidebar" id="appSidebar">
         <div class="brand">
@@ -25,31 +25,32 @@
         </div>
         <section class="human-work">
           <div class="human-label" data-i18n="humanAttention">Human attention</div>
-          <div class="human-primary">
+          <a class="human-primary" href="#/review" data-route-link="review">
             <span data-i18n="humanTask">Need anonymization QA</span>
             <strong id="count-needs">0</strong>
-          </div>
+          </a>
           <div class="human-secondary">
             <span><b id="count-ready">0</b> <span data-i18n="readyLabel">Ready to ingest</span></span>
-            <span><b id="count-blocked">0</b> <span data-i18n="blockedLabel">Blocked records</span></span>
+            <a href="#/blocked"><b id="count-blocked">0</b> <span data-i18n="blockedLabel">Blocked records</span></a>
           </div>
         </section>
         <div class="sidebar-separator"></div>
+        <nav class="filters" aria-label="Main">
+          <a href="#/overview" data-route="overview"><span data-i18n="overview">Overview</span></a>
+        </nav>
         <div class="nav-label" data-i18n="workflow">Workflow</div>
         <nav class="filters" aria-label="Workflow">
-          <a href="#/items" data-route="items" data-i18n="allItems" data-i18n-title="allItems" title="All items">All items</a>
-          <a href="#/review" data-route="review" data-i18n="needsReview" data-i18n-title="needsReview" title="Needs review">Needs Review</a>
-          <a href="#/approved" data-route="approved" data-i18n="approved" data-i18n-title="approved" title="Approved">Approved</a>
-          <a href="#/done" data-route="done" data-i18n="done" data-i18n-title="done" title="Done">Done</a>
-          <a href="#/blocked" data-route="blocked" data-i18n="blocked" data-i18n-title="blocked" title="Blocked">Blocked</a>
+          <a href="#/review" data-route="review"><span data-i18n="needsReview">Needs review</span></a>
+          <a href="#/items" data-route="items"><span data-i18n="allItems">All case records</span><b class="nav-count" data-nav-count="items"></b></a>
+          <a href="#/approved" data-route="approved"><span data-i18n="approved">Approved</span><b class="nav-count" data-nav-count="approved"></b></a>
+          <a href="#/done" data-route="done"><span data-i18n="done">Done</span><b class="nav-count" data-nav-count="done"></b></a>
+          <a href="#/blocked" data-route="blocked"><span data-i18n="blocked">Blocked</span></a>
         </nav>
-        <div class="search"><input id="search" type="search" placeholder="Search" /></div>
-        <div class="nav-label" data-i18n="views">Views</div>
-        <nav class="filters secondary-nav" aria-label="Views">
-          <a href="#/overview" data-route="overview" data-i18n="overview" data-i18n-title="overview" title="Overview">Overview</a>
-          <a href="#/checks" data-route="checks" data-i18n="checks" data-i18n-title="checks" title="Checks">Checks</a>
-          <a href="#/entities" data-route="entities" data-i18n="entities" data-i18n-title="entities" title="Library">Library</a>
-          <a href="#/settings" data-route="settings" data-i18n="settings" data-i18n-title="settings" title="Settings">Settings</a>
+        <div class="nav-label" data-i18n="library">Library</div>
+        <nav class="filters" aria-label="Library">
+          <a href="#/checks" data-route="checks"><span data-i18n="checks">Checks</span><b class="nav-count" data-nav-count="checks"></b></a>
+          <a href="#/entities" data-route="entities"><span data-i18n="entities">Library</span><b class="nav-count" data-nav-count="entities"></b></a>
+          <a href="#/settings" data-route="settings"><span data-i18n="settings">Help &amp; Settings</span></a>
         </nav>
         <div class="sidebar-footer">
           <select id="language" aria-label="Language">
@@ -57,7 +58,7 @@
             <option value="en">English</option>
             <option value="zh">中文</option>
           </select>
-          <button id="refresh" type="button" data-i18n="refresh">Refresh</button>
+          <button id="refresh" class="button" type="button" data-i18n="refresh">Refresh</button>
         </div>
       </aside>
       <main class="main">
@@ -67,18 +68,54 @@
           </button>
           <div class="mobile-title">
             <strong id="mobileViewTitle">Overview</strong>
-            <span id="mobileViewMeta">0 items</span>
+            <span id="mobileViewMeta"></span>
           </div>
           <button id="mobileRefresh" class="icon-button" type="button" title="Refresh">↻</button>
         </div>
-        <header class="topbar">
-          <div>
-            <h1 id="page-title">Legal Casebase Ingest</h1>
-            <p id="page-subtitle">Turns archived judgments and arbitral awards into reviewed internal case records: anonymization checks, issue tags, court/cause metadata, reasoning snippets, and reviewer approval before ingest.</p>
+        <div id="loadState" class="load-state" role="status">Loading…</div>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <div id="overviewContext" class="page-hero-context"></div>
+              <h1 id="overviewTitle">Legal Casebase Ingest</h1>
+              <p id="overviewSummary"></p>
+            </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" aria-label="Casebase summary"></div>
+          <div id="overviewBody"></div>
+        </section>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <label class="toolbar-search">
+                <span class="sr-only" data-i18n="search">Search</span>
+                <input id="search" type="search" autocomplete="off" placeholder="Search" />
+              </label>
+            </div>
+          </header>
+          <div id="workspace" class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar">
+                <button id="detailBack" class="button" type="button">Back to list</button>
+                <a id="detailExpand" class="button" hidden>Open full page</a>
+              </div>
+              <div id="detailBody"></div>
+            </aside>
           </div>
-          <span id="sync-status" class="sync-status"></span>
-        </header>
-        <section id="content" class="content"></section>
+        </section>
+        <section id="settingsPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title"><h1 id="settingsTitle">Help &amp; Settings</h1></div>
+          </header>
+          <div id="settingsBody" class="settings-scroll"></div>
+        </section>
       </main>
     </div>
     <div id="sidebarScrim" class="sidebar-scrim" hidden></div>

@@ -7,8 +7,8 @@ Legal Firm Radar is a Busabase App-in-Skill firm-analytics desk over anonymized 
 - Overview: firm radar command desk with practice mix, outcome trends, talent signals, and review queue.
 - Workbench (`#/items`): management-insight methodology, evidence, suggested action, and visibility limits.
 - Review queue: approval-gated management insights with stable refs (`Insight #1`), evidence, review notes, and decision controls (approve / request changes / revise / block).
-- Checks: analytics QA checks for anonymization, sample size, attribution, and unsupported claims.
-- Library (`#/entities`): lawyer and practice-area profile cards from anonymized metadata.
+- Checks: analytics QA checks for anonymization, sample size, attribution, and unsupported claims; a check opens in a side drawer linked to its insight.
+- Library (`#/entities`): lawyer and practice-area profiles from anonymized metadata; a profile opens in a side drawer.
 - Settings: sanitized firm profile, analytics policy, practice taxonomy, export preferences, and data-provider status.
 
 ## App UI Screenshots

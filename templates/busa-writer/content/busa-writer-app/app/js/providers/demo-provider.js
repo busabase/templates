@@ -213,6 +213,15 @@ export const demoProvider = {
     };
   },
 
+  // Demo mode never paginates past the first page, so this only exists for
+  // interface parity with the real provider — a deep link into the demo
+  // always resolves from the full, already-generated set.
+  async getRecord(key, id) {
+    if (key !== "drafts") return null;
+    const zh = activeLangIsZh();
+    return demoRowsForLang(zh).find((row) => row.draft_id === id) || null;
+  },
+
   async applyDecision() {
     throw new Error("Demo mode is read-only.");
   },

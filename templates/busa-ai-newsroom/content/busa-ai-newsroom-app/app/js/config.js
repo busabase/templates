@@ -6,6 +6,12 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Where a record opens, per Base (see app.js for the reasoning):
+  //   signals → split   the daily review queue, worked top to bottom
+  //   actions → drawer  scanned, one decided, back to the list
+  //   drafts  → page    long copy edited in place: a workplace of its own
+  //   sources → drawer  a short fact list, read and returned
+  ui: { detail_modes: { signals: "split", actions: "drawer", drafts: "page", sources: "drawer" } },
   folder: {
     name: "Busa AI Newsroom",
     description:
@@ -115,7 +121,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

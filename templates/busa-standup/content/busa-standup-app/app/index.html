@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
     <link rel="stylesheet" href="./accent-theme.css">
   </head>
-  <body>
+  <body class="ws-has-mobile-bar">
     <div id="app" class="app-shell">
       <aside class="sidebar" id="appSidebar">
         <div class="brand">
@@ -23,24 +23,21 @@
           </div>
           <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-controls="appSidebar" aria-expanded="true" title="Toggle sidebar" aria-label="Toggle sidebar"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
         </div>
-        <div class="search sidebar-search">
-          <input id="search" type="search" placeholder="Search" aria-label="Search">
-        </div>
         <section class="human-work" aria-labelledby="humanWorkTitle">
           <div class="human-work-eyebrow" data-i18n="attention">Need attention</div>
           <div id="humanWorkTitle" class="human-work-title" data-i18n="humanWorkTitle">What needs your attention</div>
-          <a class="human-work-primary" href="#/reminders" data-route="reminders">
+          <a class="human-work-primary" href="#/reminders?status=needs_review" data-route="reminders">
             <span>
               <strong id="count-review">0</strong>
               <span data-i18n="remindersToReview">reminders to review</span>
             </span>
           </a>
           <div class="human-work-secondary">
-            <a href="#/today" data-route="today">
+            <a href="#/overview" data-route="overview">
               <strong id="count-missing">0</strong>
               <span data-i18n="missingToday">missing check-ins</span>
             </a>
-            <a href="#/blockers" data-route="blockers">
+            <a href="#/blockers?status=open" data-route="blockers">
               <strong id="count-blockers">0</strong>
               <span data-i18n="openBlockers">open blockers</span>
             </a>
@@ -48,7 +45,7 @@
         </section>
         <div class="sidebar-separator"></div>
         <nav class="filters" aria-label="Main">
-          <a href="#/today" data-route="today" data-i18n="today">Today</a>
+          <a href="#/overview" data-route="overview" data-i18n="overview">Overview</a>
           <a href="#/members" data-route="members" data-i18n="members">Members</a>
           <a href="#/blockers" data-route="blockers" data-i18n="blockers">Blockers</a>
           <a href="#/reminders" data-route="reminders" data-i18n="reminders">Reminders</a>
@@ -73,16 +70,54 @@
           </div>
           <button id="mobileRefresh" class="mobile-refresh-button" type="button" title="Refresh" aria-label="Refresh">↻</button>
         </div>
-        <header class="topbar">
-          <div>
-            <h1 id="page-title">Today</h1>
-            <p id="page-subtitle" class="muted"></p>
+        <div id="loadState" class="load-state" role="status">Loading</div>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 id="overviewTitle" data-i18n="overview">Overview</h1>
+              <p id="overviewSummary" class="muted"></p>
+            </div>
+            <div class="page-actions">
+              <button id="refresh" type="button" title="Refresh" aria-label="Refresh" data-i18n="refresh">Refresh</button>
+            </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" aria-label="Standup summary"></div>
+          <div id="overviewBody"></div>
+        </section>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <div id="viewFilters" class="chip-row" hidden></div>
+              <select id="statusSelect" class="status-select" aria-label="Status" hidden></select>
+              <label class="search toolbar-search">
+                <span class="sr-only" data-i18n="search">Search</span>
+                <input id="search" type="search" autocomplete="off" placeholder="Search">
+              </label>
+            </div>
+          </header>
+          <div id="workspace" class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar">
+                <button id="detailBack" type="button" data-i18n="backToList">Back to list</button>
+                <a id="detailExpand" href="#" hidden data-i18n="openFullPage">Open full page</a>
+              </div>
+              <div id="detailBody"></div>
+            </aside>
           </div>
-          <div class="topbar-actions">
-            <button id="refresh" type="button" title="Refresh" aria-label="Refresh">Refresh</button>
-          </div>
-        </header>
-        <section id="content" class="content"></section>
+        </section>
+        <section id="settingsPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title"><h1 id="settingsTitle" data-i18n="settings">Help &amp; Settings</h1></div>
+          </header>
+          <div id="settingsContent" class="settings-scroll"></div>
+        </section>
       </main>
     </div>
     <div id="sidebarScrim" class="sidebar-scrim" hidden></div>

@@ -302,6 +302,8 @@ const applyFields = (target, fields) => {
   for (const [slug, value] of Object.entries(fields)) target.fields[slug.replaceAll("-", "_")] = value;
 };
 
+const companies = () => records.filter((item) => item.baseKey === "companies");
+
 export const demoProvider = {
   name: "demo",
   async getReadinessState() {
@@ -316,10 +318,26 @@ export const demoProvider = {
         readOnly: true,
         pendingReview: false,
         asOf: "2026-08-11 09:20 CST",
+        today: "2026-08-11",
       },
       records,
       pageInfo: {},
+      // The same shape records.count gives the live provider.
+      totals: {
+        all: companies().length,
+        queued: companies().filter((item) => item.fields.status === "queued").length,
+        sent: companies().filter((item) => item.fields.status === "sent").length,
+      },
     };
+  },
+  async loadMore() {
+    return { records: [], nextCursor: null };
+  },
+  async getCompany(recordId) {
+    return companies().find((item) => item.id === recordId) || null;
+  },
+  async leadsForCompany(companyKey) {
+    return records.filter((item) => item.baseKey === "leads" && item.fields.company_key === companyKey);
   },
   async saveProfile({ fields }) {
     applyFields(

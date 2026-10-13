@@ -121,12 +121,15 @@ Required app views (hash routes):
 - `#/overview`: the SLA countdown board — three buckets (green/amber/red)
   each showing a count and a short list of the leads in that bucket, with a
   link to the lead's follow-up. This is the headline screen.
-- `#/leads`: list view, filterable/groupable by `batch`, showing stage,
-  country, language, and the SLA bucket badge for every open lead.
-- `#/followups`: the review queue — draft text, the target lead, and
-  approve / request changes / block actions. Every decision writes a
-  ChangeRequest; it never mutates the canonical record directly from the
-  browser.
+- `#/leads`: list view, filterable by `batch`, showing company, country,
+  stage, and the SLA bucket badge for every lead. A row opens the lead in a
+  drawer (`#/leads?peek=<recordId>`) with its language, channel, handle and
+  follow-ups; `#/leads/<recordId>` is the same record as a full page.
+- `#/followups`: the review queue, split beside the selected draft
+  (`#/followups?peek=<recordId>`, filterable by `status`) — draft text, the
+  target lead, and approve / request changes / block actions. Every decision
+  writes a ChangeRequest; it never mutates the canonical record directly from
+  the browser.
 - `#/settings`: sanitized settings summary — SLA thresholds and the env var
   names configured for WhatsApp/email sending (never the secret values
   themselves).

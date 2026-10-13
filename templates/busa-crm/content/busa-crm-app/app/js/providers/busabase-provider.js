@@ -1,7 +1,7 @@
 import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js?v=0.1.0";
-import { buildSnapshot, decisionsFromSnapshot, statusForAction } from "../crm-model.js?v=0.1.0";
+import { buildSnapshot, decisionsFromSnapshot, NORMALIZE_ROW_BY_KEY, statusForAction } from "../crm-model.js?v=0.1.0";
 
 const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
@@ -61,7 +61,7 @@ function base(key) {
 // multi-page scan behind a single loading state instead of fetching a page
 // per user action; the cap only bounds how bad that gets, it doesn't fix the
 // shape. Base-level lists (contacts, deals) surface the returned nextCursor
-// through a numbered pager in the UI (see app.js#goToPage); the others
+// through a Prev/Next pager in the UI (see app.js#goToPage); the others
 // (companies, interactions, followups, settings) are read once on boot --
 // companies and interactions are supporting/lookup data rather than their
 // own browsed list, and followups is a review queue that drains via
@@ -77,13 +77,20 @@ async function readPage(key, cursor) {
     ...(cursor ? { cursor } : {}),
   });
   const records = Array.isArray(result) ? result : result.records || [];
-  const rows = records.map((record) => ({
+  const rows = records.map(recordToRow);
+  return { rows, nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
+}
+
+function recordToRow(record) {
+  return {
     ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
     __recordId: record.id,
     __headCommitId: record.headCommitId || record.headCommit?.id,
-  }));
-  return { rows, nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
+  };
 }
+
+// The business-id field each browsable Base is addressed by in the URL.
+const ID_FIELD_SLUG = { contacts: "contact-id", deals: "deal-id", followups: "followup-id" };
 
 async function countRecords(key, filters) {
   if (!allowedReads.has("records.count")) return null;
@@ -191,6 +198,23 @@ export const busabaseProvider = {
 
   async getState() {
     await ensureResources();
+    // Supporting reads (company names, the activity timeline, settings) must
+    // not take the whole screen down when one is denied or fails: the lists
+    // still render, and the gap is reported as a warning instead.
+    const sideWarnings = [];
+    const sideRead = async (key, read, fallback) => {
+      try {
+        return await read();
+      } catch (error) {
+        sideWarnings.push({
+          id: `side-read-${key}`,
+          severity: "warning",
+          message: `Could not read ${key}`,
+          detail: error instanceof Error ? error.message : String(error),
+        });
+        return fallback;
+      }
+    };
     const [
       companiesPage,
       contactsPage,
@@ -203,12 +227,12 @@ export const busabaseProvider = {
       dealCount,
       openDealCount,
     ] = await Promise.all([
-      readPage("companies"),
+      sideRead("companies", () => readPage("companies"), { rows: [] }),
       readPage("contacts"),
       readPage("deals"),
-      readPage("interactions"),
+      sideRead("interactions", () => readPage("interactions"), { rows: [] }),
       readPage("followups"),
-      readSettingsRows(),
+      sideRead("settings", () => readSettingsRows(), new Map()),
       countRecords("companies"),
       countRecords("contacts"),
       countRecords("deals"),
@@ -221,6 +245,7 @@ export const busabaseProvider = {
       interactions: interactionsPage.rows,
       followups: followupsPage.rows,
     });
+    snapshot.warnings.push(...sideWarnings);
     // buildSnapshot only ever sees the first loaded page, so its own
     // companyCount/contactCount (page.length) undercounts once there is more
     // than one page. Overwrite with the real total from records.count; a null
@@ -263,13 +288,23 @@ export const busabaseProvider = {
 
   // Fetches exactly one page for a paginated Base and returns it for the
   // caller to display -- this function never loops or fetches more than one
-  // page itself, so a mistaken call site can't silently reintroduce the
-  // eager multi-page shape this replaced. The caller (app.js#goToPage) is
-  // responsible for walking forward through cursors to reach an unvisited
-  // page; this always does exactly the one fetch it's asked for.
+  // page itself, and its caller (app.js#goToPage) only ever asks for the
+  // neighbouring page whose cursor it already holds.
   async fetchPage(key, cursor) {
     await ensureResources();
     return readPage(key, cursor);
+  },
+
+  // One record named by the URL (a shared link, a refresh on page 2) that is
+  // not on the loaded page: a single records.get, never a scan for it.
+  async getRecord(key, businessId) {
+    if (!allowedReads.has("records.get") || !ID_FIELD_SLUG[key]) return null;
+    await ensureResources();
+    const record = await findRecord(key, ID_FIELD_SLUG[key], businessId);
+    if (!record) return null;
+    const normalize = NORMALIZE_ROW_BY_KEY[key];
+    const row = recordToRow(record);
+    return normalize ? normalize(row) : row;
   },
 
   async readLock() {

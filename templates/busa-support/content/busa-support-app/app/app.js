@@ -7,57 +7,78 @@ import {
   decideAction,
   renderKbDetail,
   renderKnowledge,
+  renderOverview,
   renderSettings,
   renderSla,
+  renderTicketDetail,
+  renderTickets,
   saveReplyAction,
   saveSlaAction,
-  toLocalDatetime,
 } from "./js/service-views.js";
 import { recomputeMetrics } from "./js/support-model.js?v=0.1.0";
 
-const FEATURED_DEMO_TICKET = "tk-ochoa-refund";
-const OPEN_STATUSES = ["needs_review", "changes_requested", "approved"];
+export const FEATURED_DEMO_TICKET = "tk-ochoa-refund";
 const WORKFLOW_FILTERS = ["all", "needs_review", "changes_requested", "approved", "done", "blocked"];
+
+// Where a record opens, per view. See config.js `ui.detail_modes` for the
+// business reason behind each choice. A `/record` path always opens the full
+// page; `?peek=` drives drawer/split. On a phone every mode is a page
+// (base-ui.css handles that).
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+const KNOWN_VIEWS = new Set([...RECORD_VIEWS, "sla", "settings"]);
+const KEY_BY_VIEW = { tickets: "tickets", knowledge: "knowledge-base" };
+const ID_FIELD = { tickets: "ticket_id", knowledge: "article_id" };
 
 export const state = {
   snapshot: null,
   settings: null,
   route: parseRoute(),
-  query: "",
   drafts: {},
   notes: {},
   slas: {},
-  edits: {},
   lang: normalizeLang(
     new URLSearchParams(location.search).get("lang") || localStorage.getItem("busa-support-language") || "auto",
   ),
   demo: new URLSearchParams(location.search).get("demo") || "",
-  demoRef: 100,
 };
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-support.sidebarCollapsed";
 
+const byId = (id) => document.getElementById(id);
 export const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  notice: document.querySelector("#notice"),
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  slaPage: byId("slaPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  overviewMetrics: byId("overviewMetrics"),
+  overviewBody: byId("overviewBody"),
+  slaBody: byId("slaBody"),
+  settingsBody: byId("settingsBody"),
   search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  approvalsCount: document.querySelector("#count-approvals"),
-  slaCount: document.querySelector("#count-sla"),
-  blockedCount: document.querySelector("#count-blocked"),
-  language: document.querySelector("#language"),
+  refresh: byId("refresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  approvalsCount: byId("count-approvals"),
+  slaCount: byId("count-sla"),
+  blockedCount: byId("count-blocked"),
+  language: byId("language"),
+  notice: byId("notice"),
 };
 
-const PAGINATED_KEYS = ["tickets", "knowledge-base"];
 const pagination = createPagination({
   getProvider,
   pageSizes: Object.fromEntries(appConfig.bases.map((base) => [base.key, base.readLimit])),
@@ -74,6 +95,10 @@ const pagination = createPagination({
 
 export function recordTotal(key, fallback = 0) {
   return pagination.total(key, fallback);
+}
+
+export function pagerControl(view) {
+  return pagination.control(KEY_BY_VIEW[view]);
 }
 
 function isMobileLayout() {
@@ -94,10 +119,6 @@ function setSidebarCollapsed(collapsed, { persist = true } = {}) {
 function setMobileSidebarOpen(open) {
   document.body.classList.toggle("sidebar-open", Boolean(open));
   if (els.sidebarScrim) els.sidebarScrim.hidden = !open;
-}
-
-function setMobileDetailOpen(open) {
-  document.body.classList.toggle("mobile-detail-open", Boolean(open));
 }
 
 function toggleSidebar() {
@@ -156,7 +177,7 @@ export function referenceNow() {
   return Date.now();
 }
 
-function waitingLabel(since) {
+export function waitingLabel(since) {
   if (!since) return "";
   const ms = Math.max(0, referenceNow() - new Date(since).getTime());
   const minutes = Math.floor(ms / 60000);
@@ -182,20 +203,94 @@ export function slaCountdown(dueBy) {
   return { text: overdue ? `${magnitude} ${t("slaBreached")}` : `${magnitude} ${t("slaDue")}`, overdue };
 }
 
-function flagEmoji(country) {
+export function flagEmoji(country) {
   const code = String(country || "").toUpperCase();
   if (!/^[A-Z]{2}$/.test(code)) return "🌐";
   return String.fromCodePoint(...[...code].map((char) => 127397 + char.charCodeAt(0)));
 }
 
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&status=…&peek=…]`. Search, the ticket status
+// filter and the peeked record live in the URL so refresh, shared links and
+// Back restore the same list context.
 export function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts.slice(1).join("/") || "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!KNOWN_VIEWS.has(view)) view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  const status = params.get("status") || "all";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+    status: view === "tickets" && WORKFLOW_FILTERS.includes(status) ? status : "all",
+  };
 }
 
+const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  if (route.view === "tickets" && route.status !== "all") params.set("status", route.status);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) => {
+  const route = view === state.route.view ? state.route : { view, query: "", status: "all" };
+  return `#/${view}/${encodeURIComponent(id)}${routeQuery({}, route)}`;
+};
+// What a row opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) => {
+  if (DETAIL_MODES[view] === "page") return detailUrl(id, view);
+  const route = view === state.route.view ? state.route : { view, query: "", status: "all" };
+  return `#/${view}${routeQuery({ peek: id }, route)}`;
+};
+
+let previousRouteWasList = false;
+
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
   render();
+}
+
+// Replace the current entry without a hashchange: search keystrokes and filter
+// clicks should not each become a Back step.
+export function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
+  render();
+}
+
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
 }
 
 export async function loadState() {
@@ -239,7 +334,12 @@ function applyI18n() {
   }
   els.search.placeholder = t("search");
   els.refresh.textContent = t("refresh");
+  els.refresh.title = t("refresh");
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
+  byId("overviewTitle").textContent = t("overview");
+  byId("slaTitle").textContent = t("sla");
+  byId("settingsTitle").textContent = t("settings");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
 /* ----- accessors ----- */
@@ -260,21 +360,35 @@ export function kbById(id) {
   return knowledge().find((item) => item.article_id === id);
 }
 
+// Loaded page first; a record not on the loaded page is simply "not loaded"
+// (no records.get-by-id fetch for a record outside the page — see report).
+export function recordById(view, id) {
+  if (!id) return null;
+  const rows = view === "tickets" ? tickets() : knowledge();
+  return rows.find((item) => item[ID_FIELD[view]] === id) || null;
+}
+
 export function breachingTickets() {
   return tickets().filter((item) => item.sla?.breached);
 }
 
-function gateBlockedTickets() {
+export function gateBlockedTickets() {
   return tickets().filter((item) => item.quality_gate?.verdict === "block" && item.status !== "blocked");
 }
 
-function isLocked() {
+export function isLocked() {
   return Boolean(state.settings?.lock);
 }
 
-function customerLabel(customer) {
+export function customerLabel(customer) {
   if (!customer) return "";
   return [customer.name, customer.company].filter(Boolean).join(" · ");
+}
+
+export function matchesQuery(values, query = state.route.query) {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  return values.filter(Boolean).some((value) => String(value).toLowerCase().includes(needle));
 }
 
 /* ----- shell ----- */
@@ -304,11 +418,11 @@ function renderShell() {
   document.querySelectorAll("[data-route]").forEach((link) => {
     link.classList.toggle("active", link.dataset.route === state.route.view);
   });
-  const filterActive = state.route.view === "tickets" ? state.route.id || "all" : "";
+  const filterActive = state.route.view === "tickets" ? state.route.status : "";
   document.querySelectorAll("[data-filter]").forEach((link) => {
     link.classList.toggle("active", link.dataset.filter === filterActive);
   });
-  if (els.notice && !els.notice.dataset.flash) {
+  if (!els.notice.dataset.flash) {
     if (isLocked()) {
       els.notice.textContent = t("lockNotice");
       els.notice.hidden = false;
@@ -321,13 +435,9 @@ function renderShell() {
       els.notice.hidden = true;
     }
   }
-  setMobileDetailOpen(
-    Boolean(state.route.id) && state.route.view === "tickets" && !WORKFLOW_FILTERS.includes(state.route.id),
-  );
 }
 
 export function flashNotice(text) {
-  if (!els.notice) return;
   els.notice.dataset.flash = "1";
   els.notice.textContent = text;
   els.notice.className = "notice flash";
@@ -338,7 +448,7 @@ export function flashNotice(text) {
   }, 3500);
 }
 
-function viewLabel(view) {
+export function viewLabel(view) {
   if (view === "tickets") return t("tickets");
   if (view === "knowledge") return t("knowledge");
   if (view === "sla") return t("sla");
@@ -348,11 +458,11 @@ function viewLabel(view) {
 
 /* ----- chips ----- */
 
-function channelBadge(channel) {
+export function channelBadge(channel) {
   return `<span class="channel-badge ${escapeHtml(channel)}"><span class="dot"></span>${escapeHtml(enumLabel(channel, "channel"))}</span>`;
 }
 
-function categoryChip(category) {
+export function categoryChip(category) {
   return `<span class="category-chip ${escapeHtml(category)}">${escapeHtml(enumLabel(category, "category"))}</span>`;
 }
 
@@ -360,33 +470,27 @@ export function priorityChip(priority) {
   return `<span class="priority-chip ${escapeHtml(priority)}">${escapeHtml(enumLabel(priority, "priority"))}</span>`;
 }
 
-function statusChip(status) {
+export function statusChip(status) {
   return `<span class="status-chip ${escapeHtml(status)}">${escapeHtml(enumLabel(status))}</span>`;
 }
 
-function actionChip(action) {
+export function actionChip(action) {
   const risky = action === "refund" || action === "escalate";
   return `<span class="action-chip ${risky ? "risky" : ""}">${escapeHtml(enumLabel(action, "action"))}${risky ? " ⚑" : ""}</span>`;
 }
 
-function gateBadge(gate) {
+export function gateBadge(gate) {
   if (!gate) return "";
   const verdict = gate.verdict || "ship";
   return `<span class="gate-badge ${escapeHtml(verdict)}" title="${escapeHtml(gate.summary || "")}">⛩ ${escapeHtml(enumLabel(verdict, "verdict"))} · ${gate.score}</span>`;
 }
 
-function countryCell(country) {
+export function countryCell(country) {
   return `<span class="country">${flagEmoji(country)} ${escapeHtml(String(country || "").toUpperCase())}</span>`;
 }
 
-export function matchesQuery(values) {
-  const query = state.query.trim().toLowerCase();
-  if (!query) return true;
-  return values.filter(Boolean).some((value) => String(value).toLowerCase().includes(query));
-}
-
-function warningsHtml() {
-  const items = state.snapshot?.warnings || [];
+export function warningsHtml(filter = () => true) {
+  const items = (state.snapshot?.warnings || []).filter(filter);
   if (!items.length) return "";
   return `<div class="warnings">${items
     .map(
@@ -400,9 +504,12 @@ function warningsHtml() {
     .join("")}</div>`;
 }
 
-/* ----- overview ----- */
+export function csatStars(score) {
+  const full = Math.round(Number(score) || 0);
+  return `<span class="csat-stars" title="${full}/5">${"★".repeat(full)}${"☆".repeat(5 - full)}</span>`;
+}
 
-function barsSvg(entries, { colorFor } = {}) {
+export function barsSvg(entries, { colorFor } = {}) {
   const rows = entries.filter(([, count]) => count >= 0);
   const max = Math.max(1, ...rows.map(([, count]) => count));
   const rowH = 30;
@@ -455,300 +562,62 @@ export function csatTrendSvg(trend) {
   </svg>`;
 }
 
-function renderOverview() {
-  els.title.textContent = t("overview");
-  els.subtitle.textContent = state.snapshot?.generated_at
-    ? `${t("generated")} ${new Date(state.snapshot.generated_at).toLocaleString()}`
-    : t("empty");
-  const metrics = state.snapshot?.metrics || {};
-  const needsReview = tickets().filter((item) => item.status === "needs_review").length;
-  const breaching = breachingTickets().length;
-  const blocked = gateBlockedTickets().length;
-  const week = metrics.tickets_this_week || { total: 0, by_channel: {} };
-  const zh = activeLang() === "zh";
-  const frMedian =
-    metrics.first_response_median_minutes >= 60
-      ? `${Math.round(metrics.first_response_median_minutes / 6) / 10}${zh ? " 小时" : "h"}`
-      : `${metrics.first_response_median_minutes || 0}${zh ? " 分钟" : "m"}`;
-  const channelBits = Object.entries(week.by_channel || {})
-    .map(([channel, count]) => `${channelBadge(channel)} <strong class="channel-count">${count}</strong>`)
-    .join(" ");
-  els.content.innerHTML = `
-    <div class="metrics">
-      <a class="metric ${needsReview ? "warn" : ""}" href="#/tickets/needs_review"><span>${t("awaitingApproval")}</span><strong>${needsReview}</strong></a>
-      <a class="metric" href="#/tickets"><span>${t("open")}</span><strong>${metrics.open_count || 0}</strong></a>
-      <a class="metric ${breaching ? "bad" : ""}" href="#/sla"><span>${t("breachingSla")}</span><strong>${breaching}</strong></a>
-      <a class="metric ${blocked ? "bad" : ""}" href="#/tickets/needs_review"><span>${t("gateBlocked")}</span><strong>${blocked}</strong></a>
-    </div>
-    <div class="metrics kpis">
-      <div class="metric"><span>${t("ticketsThisWeek")}</span><strong>${week.total || 0}</strong><small class="channel-mix">${channelBits}</small></div>
-      <div class="metric"><span>${t("firstResponse")}</span><strong>${frMedian}</strong></div>
-      <a class="metric" href="#/sla"><span>${t("csatAverage")}</span><strong>${metrics.csat_average || 0} <small class="inline-muted">/ 5</small></strong><small>${metrics.csat_responses || 0} ${t("csatResponses")}</small></a>
-      <a class="metric" href="#/sla"><span>${t("resolved")}</span><strong>${metrics.resolved_count || 0}</strong></a>
-    </div>
-    ${warningsHtml()}
-    <section class="overview-grid">
-      <div class="overview-panel">
-        <h2>${t("volumeByChannel")}</h2>
-        ${barsSvg(
-          Object.entries(week.by_channel || {}).map(([ch, n]) => [enumLabel(ch, "channel"), n]),
-          { colorFor: () => "#4b6bfb" },
-        )}
-      </div>
-      <div class="overview-panel">
-        <h2>${t("byCategory")}</h2>
-        ${barsSvg(
-          Object.entries(metrics.by_category || {}).map(([cat, n]) => [enumLabel(cat, "category"), n]),
-          { colorFor: () => "#7c5cfc" },
-        )}
-      </div>
-      <div class="overview-panel">
-        <h2>${t("csatTrend")}</h2>
-        ${csatTrendSvg(metrics.csat_trend)}
-      </div>
-    </section>
-  `;
-}
-
-/* ----- tickets ----- */
-
-function filteredTickets() {
-  const filter = WORKFLOW_FILTERS.includes(state.route.id) ? state.route.id : "all";
-  return tickets()
-    .filter((item) => (filter === "all" ? true : item.status === filter))
-    .filter((item) =>
-      matchesQuery([
-        item.customer?.name,
-        item.customer?.company,
-        item.subject,
-        item.category,
-        item.channel,
-        item.priority,
-        item.status,
-        `#${item.ref}`,
-        ...(item.messages || []).slice(-3).map((m) => m.text),
-      ]),
-    );
-}
-
-function renderTickets() {
-  const filter = WORKFLOW_FILTERS.includes(state.route.id) ? state.route.id : "all";
-  els.title.textContent = filter === "all" ? t("tickets") : `${t("tickets")} · ${enumLabel(filter)}`;
-  const list = filteredTickets();
-  const needsReview = tickets().filter((item) => item.status === "needs_review").length;
-  els.subtitle.textContent = `${pagination.total("tickets", list.length)} ${t("ticketCount")} · ${needsReview} ${t("needsReviewFilter")}`;
-  els.content.innerHTML = list.length
-    ? `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>${t("ref")}</th><th>${t("customer")}</th><th>${t("subject")}</th><th>${t("channel")}</th><th>${t("category")}</th><th>${t("priority")}</th><th>${t("proposedAction")}</th><th>${t("gate")}</th><th>${t("status")}</th><th>SLA</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${list
-            .map((item) => {
-              const sla = item.sla?.breached
-                ? slaCountdown(item.sla.due_by)
-                : { text: waitingLabel(item.last_message_at), overdue: false };
-              return `
-            <tr class="row-link" data-href="#/tickets/${encodeURIComponent(item.ticket_id)}">
-              <td class="num">#${item.ref}</td>
-              <td>
-                <a href="#/tickets/${encodeURIComponent(item.ticket_id)}"><strong>${escapeHtml(item.customer?.name || "")}</strong></a>
-                ${item.unread ? '<span class="unread-dot" aria-hidden="true"></span>' : ""}
-                <div class="muted">${countryCell(item.customer?.country)}</div>
-              </td>
-              <td class="subject-cell">${escapeHtml(item.subject || "")}</td>
-              <td>${channelBadge(item.channel)}</td>
-              <td>${categoryChip(item.category)}</td>
-              <td>${priorityChip(item.priority)}</td>
-              <td>${actionChip(item.proposed_action)}</td>
-              <td>${gateBadge(item.quality_gate)}</td>
-              <td>${statusChip(item.status)}</td>
-              <td><span class="${item.sla?.breached ? "overdue" : "muted"}">${escapeHtml(sla.text)}</span></td>
-            </tr>
-          `;
-            })
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  `
-    : `<div class="empty">${t("noTickets")}</div>`;
-}
-
-function gateHtml(gate) {
-  if (!gate) return "";
-  const verdict = gate.verdict || "ship";
-  return `
-    <div class="gate-panel ${escapeHtml(verdict)}">
-      <div class="gate-head">
-        <strong>⛩ support-qa</strong>
-        <span class="gate-badge ${escapeHtml(verdict)}">${escapeHtml(enumLabel(verdict, "verdict"))} · ${gate.score}</span>
-      </div>
-      <div class="gate-summary">${escapeHtml(gate.summary || "")}</div>
-      <ul class="gate-checks">
-        ${(gate.checks || [])
-          .map(
-            (check) =>
-              `<li class="${check.ok ? "ok" : "fail"}"><span aria-hidden="true">${check.ok ? "✓" : "✗"}</span> ${escapeHtml(check.message)}</li>`,
-          )
-          .join("")}
-      </ul>
-    </div>
-  `;
-}
-
-function renderTicketDetail() {
-  const ticket = ticketById(state.route.id);
-  if (!ticket) {
-    renderTickets();
-    return;
-  }
-  els.title.textContent = ticket.subject || ticket.ticket_id;
-  els.subtitle.textContent = [
-    ticket.customer?.name,
-    enumLabel(ticket.channel, "channel"),
-    enumLabel(ticket.category, "category"),
-    enumLabel(ticket.status),
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  const locked = isLocked();
-  const editable = ticket.status !== "done" && ticket.status !== "blocked";
-  const draft = state.drafts[ticket.ticket_id];
-  const replyValue = draft !== undefined ? draft : ticket.suggested_reply || "";
-  const kbRefs = (ticket.kb_refs || []).map((id) => kbById(id)).filter(Boolean);
-  const danglingRefs = (ticket.kb_refs || []).filter((id) => !kbById(id));
-  const slaValue =
-    state.slas[ticket.ticket_id] !== undefined ? state.slas[ticket.ticket_id] : toLocalDatetime(ticket.sla?.due_by);
-  els.content.innerHTML = `
-    <button class="back-to-list" type="button" data-action="back">← ${t("backToTickets")}</button>
-    <section class="detail">
-      <div class="detail-main conv-detail">
-        <div class="transcript">
-          ${(ticket.messages || [])
-            .map(
-              (message) => `
-            <div class="bubble-row ${message.direction === "outgoing" ? "out" : "in"}">
-              <div class="bubble">
-                <div class="bubble-meta"><strong>${escapeHtml(message.sender)}</strong><span>${dateTime(message.sent_at)}</span></div>
-                <div class="bubble-text">${escapeHtml(message.text)}</div>
-                ${message.attachment ? `<div class="bubble-attachment">${escapeHtml(message.attachment)}</div>` : ""}
-              </div>
-            </div>
-          `,
-            )
-            .join("")}
-        </div>
-        ${ticket.reason ? `<div class="approval-reason"><span class="muted">${t("reason")}:</span> ${escapeHtml(ticket.reason)}</div>` : ""}
-        ${gateHtml(ticket.quality_gate)}
-        <div class="composer">
-          ${editable ? `<div class="composer-hint">${t("agentSuggestedReply")}</div>` : ""}
-          ${
-            editable
-              ? `<textarea id="composer-text" rows="5" placeholder="${escapeHtml(t("agentSuggestedReply"))}" ${locked ? "disabled" : ""}>${escapeHtml(replyValue)}</textarea>`
-              : `<div class="approval-sent-text">${escapeHtml(ticket.suggested_reply || "—")}</div>`
-          }
-          ${
-            kbRefs.length || danglingRefs.length
-              ? `<div class="kb-ref-row"><span class="muted">${t("kbRefs")}:</span> ${kbRefs
-                  .map(
-                    (a) =>
-                      `<a class="badge" href="#/knowledge/${encodeURIComponent(a.article_id)}">${escapeHtml(a.title)}</a>`,
-                  )
-                  .join(
-                    " ",
-                  )} ${danglingRefs.map((id) => `<span class="badge bad">${escapeHtml(id)} ✗</span>`).join(" ")}</div>`
-              : `<div class="kb-ref-row muted">${t("noKbRefs")}</div>`
-          }
-          ${
-            editable
-              ? `
-            <input id="composer-note" type="text" placeholder="${escapeHtml(t("notePlaceholder"))}" value="${escapeHtml(state.notes[ticket.ticket_id] || "")}" ${locked ? "disabled" : ""}>
-            <div class="composer-actions">
-              <input type="text" id="decision-comment" placeholder="${escapeHtml(t("commentPlaceholder"))}" ${locked ? "disabled" : ""}>
-              <div class="approval-buttons">
-                <button type="button" data-action="save-reply" data-ticket="${escapeHtml(ticket.ticket_id)}" ${locked ? "disabled" : ""}>${t("queueReply")}</button>
-                <button type="button" class="primary" data-action="decide" data-ticket="${escapeHtml(ticket.ticket_id)}" data-decision="approve" ${locked ? "disabled" : ""}>${t("approve")}</button>
-                <button type="button" data-action="decide" data-ticket="${escapeHtml(ticket.ticket_id)}" data-decision="request_changes" ${locked ? "disabled" : ""}>${t("requestChanges")}</button>
-                <button type="button" class="danger" data-action="decide" data-ticket="${escapeHtml(ticket.ticket_id)}" data-decision="block" ${locked ? "disabled" : ""}>${t("block")}</button>
-              </div>
-            </div>
-          `
-              : ""
-          }
-          ${ticket.status === "approved" ? `<div class="approval-waiting">${t("waitingForSend")}</div>` : ""}
-          ${ticket.decision?.comment ? `<div class="approval-reason"><span class="muted">${t("comment")}:</span> ${escapeHtml(ticket.decision.comment)} <small class="muted">(${t("decidedAt")} ${dateTime(ticket.decision.decided_at)})</small></div>` : ""}
-          ${ticket.execution && ticket.execution.status === "executed" ? `<div class="approval-execution">${t("sentVia")} ${escapeHtml(enumLabel(ticket.execution.connector, "connector"))} · ${escapeHtml(ticket.execution.target || "")} ${ticket.execution.executed_at ? `· ${dateTime(ticket.execution.executed_at)}` : ""}</div>` : ""}
-        </div>
-      </div>
-      <aside class="detail-side">
-        <h2>${t("customer")}</h2>
-        <dl>
-          <dt>${t("company")}</dt><dd>${escapeHtml(ticket.customer?.company || "—")}</dd>
-          <dt>${t("source")}</dt><dd>${escapeHtml(ticket.customer?.email || ticket.customer?.handle || "—")}</dd>
-          <dt>${t("plan")}</dt><dd>${escapeHtml(ticket.customer?.plan || "—")}</dd>
-          <dt>${t("channel")}</dt><dd>${channelBadge(ticket.channel)}</dd>
-          <dt>${t("category")}</dt><dd>${categoryChip(ticket.category)}</dd>
-          <dt>${t("priority")}</dt><dd>${priorityChip(ticket.priority)}</dd>
-          <dt>${t("proposedAction")}</dt><dd>${actionChip(ticket.proposed_action)}</dd>
-          <dt>${t("owner")}</dt><dd>${escapeHtml(ticket.owner || "")}</dd>
-        </dl>
-        <h2>SLA</h2>
-        <dl>
-          <dt>${t("dueBy")}</dt><dd class="${ticket.sla?.breached ? "overdue" : ""}">${ticket.sla?.due_by ? `${dateTime(ticket.sla.due_by)}${ticket.sla?.breached ? ` · ${t("slaBreached")}` : ""}` : "—"}</dd>
-        </dl>
-        ${
-          editable
-            ? `
-          <div class="sla-field">
-            <input id="sla-due" type="datetime-local" value="${escapeHtml(slaValue)}" ${locked ? "disabled" : ""}>
-            <button type="button" data-action="save-sla" data-ticket="${escapeHtml(ticket.ticket_id)}" ${locked ? "disabled" : ""}>${t("saveSla")}</button>
-          </div>
-        `
-            : ""
-        }
-        ${ticket.csat ? `<h2>${t("csat")}</h2><div class="csat-side">${csatStars(ticket.csat.score)} ${ticket.csat.comment ? `<p class="side-text">"${escapeHtml(ticket.csat.comment)}"</p>` : ""}</div>` : ""}
-      </aside>
-    </section>
-  `;
-  const composer = els.content.querySelector("#composer-text");
-  composer?.addEventListener("input", () => {
-    state.drafts[ticket.ticket_id] = composer.value;
-  });
-  const note = els.content.querySelector("#composer-note");
-  note?.addEventListener("input", () => {
-    state.notes[ticket.ticket_id] = note.value;
-  });
-  const sla = els.content.querySelector("#sla-due");
-  sla?.addEventListener("input", () => {
-    state.slas[ticket.ticket_id] = sla.value;
-  });
-}
-
-export function csatStars(score) {
-  const full = Math.round(Number(score) || 0);
-  return `<span class="csat-stars" title="${full}/5">${"★".repeat(full)}${"☆".repeat(5 - full)}</span>`;
-}
-
-function renderPagedList(renderList, key) {
-  renderList();
-  els.content.insertAdjacentHTML("beforeend", `${pagination.control(key)}`);
-}
+/* ----- main render ----- */
 
 export function render() {
   renderShell();
-  if (state.route.view === "tickets" && state.route.id && !WORKFLOW_FILTERS.includes(state.route.id))
-    renderTicketDetail();
-  else if (state.route.view === "tickets") renderPagedList(renderTickets, "tickets");
-  else if (state.route.view === "knowledge" && state.route.id) renderKbDetail();
-  else if (state.route.view === "knowledge") renderPagedList(renderKnowledge, "knowledge-base");
-  else if (state.route.view === "sla") renderSla();
-  else if (state.route.view === "settings") renderSettings();
+  const { view, selectedId, presentation } = state.route;
+  const onRecordView = RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = Boolean(state.snapshot);
+  els.overviewPage.hidden = !state.snapshot || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.slaPage.hidden = !state.snapshot || view !== "sla";
+  els.settingsPage.hidden = !state.snapshot || view !== "settings";
+  if (!state.snapshot) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "sla") renderSla();
+  else if (view === "settings") renderSettings();
   else renderOverview();
+}
+
+function renderRecordView() {
+  const { view } = state.route;
+  els.viewTitle.textContent = viewLabel(view);
+  els.viewTitle.title = t(view === "tickets" ? "ticketsHint" : "knowledgeHint");
+  if (view === "tickets") renderTickets();
+  else renderKnowledge();
+  renderDetail();
+}
+
+function renderDetail() {
+  const { view, selectedId, presentation } = state.route;
+  const phone = window.matchMedia("(max-width: 720px)").matches;
+  els.detailBack.textContent = presentation === "page" || phone ? t("backToList") : t("close");
+  els.detailExpand.hidden = !selectedId || presentation === "page";
+  if (selectedId) els.detailExpand.href = detailUrl(selectedId, view);
+  els.detailPanel.querySelector(".ws-detail-bar").hidden = !selectedId;
+
+  if (!selectedId) {
+    els.detailBody.innerHTML = DETAIL_MODES[view] === "split" ? emptyState(t("selectTicket")) : "";
+    return;
+  }
+  const record = recordById(view, selectedId);
+  if (!record) {
+    els.detailBody.innerHTML = emptyState(t("notLoaded"));
+    return;
+  }
+  if (view === "tickets") renderTicketDetail(selectedId);
+  else renderKbDetail(selectedId);
+}
+
+export function emptyState(title, detail = "") {
+  return `<div class="empty-state"><strong>${escapeHtml(title)}</strong>${detail ? `<p>${escapeHtml(detail)}</p>` : ""}</div>`;
 }
 
 export function escapeHtml(value) {
@@ -765,16 +634,55 @@ export function escapeHtml(value) {
   );
 }
 
-pagination.bind(els.content);
+/* ----- events ----- */
 
+pagination.bind(els.listPanel);
+
+els.listPanel.addEventListener("click", (event) => {
+  if (event.target.closest("a, button, [data-goto-page]")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+els.detailBack.addEventListener("click", closeDetail);
+els.detailBody.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-action]");
+  if (!button) return;
+  if (button.dataset.action === "save-reply") {
+    saveReplyAction(button.dataset.ticket);
+    return;
+  }
+  if (button.dataset.action === "save-sla") {
+    saveSlaAction(button.dataset.ticket);
+    return;
+  }
+  if (button.dataset.action === "decide") {
+    decideAction(button.dataset.ticket, button.dataset.decision);
+  }
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  if (event.target.closest?.("textarea, input")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", () => setMobileSidebarOpen(true));
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
+  replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`);
 });
 els.refresh.addEventListener("click", () => loadState());
 els.mobileRefresh?.addEventListener("click", () => loadState());
@@ -788,30 +696,6 @@ els.language.addEventListener("change", () => {
   }
   render();
 });
-els.content.addEventListener("click", (event) => {
-  const row = event.target.closest(".row-link");
-  if (row && !event.target.closest("a") && !event.target.closest("button")) {
-    location.hash = row.dataset.href.replace(/^#/, "");
-    return;
-  }
-  const button = event.target.closest("[data-action]");
-  if (!button) return;
-  if (button.dataset.action === "back") {
-    location.hash = `#/${button.dataset.target || "tickets"}`;
-    return;
-  }
-  if (button.dataset.action === "save-reply") {
-    saveReplyAction(button.dataset.ticket);
-    return;
-  }
-  if (button.dataset.action === "save-sla") {
-    saveSlaAction(button.dataset.ticket);
-    return;
-  }
-  if (button.dataset.action === "decide") {
-    decideAction(button.dataset.ticket, button.dataset.decision);
-  }
-});
 
 async function boot() {
   const ready = await passConnectGate({ onReady: boot });
@@ -823,9 +707,13 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
 boot();

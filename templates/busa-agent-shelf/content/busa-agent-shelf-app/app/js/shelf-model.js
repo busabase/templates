@@ -207,11 +207,25 @@ export const shareOfShelf = ({ questions = [], observations = [], settings = nul
       shown: now?.shown ?? 0,
       total: now?.total ?? 0,
       share: now ? now.share : null,
+      previous_shown: before?.shown ?? 0,
+      previous_total: before?.total ?? 0,
       previous_share: before ? before.share : null,
       delta: now && before ? now.share - before.share : null,
     };
   });
-  return { latest, previous, agents };
+  // Across every agent checked on the date: shown answers / checked answers.
+  // The change compares like with like — only agents checked on both dates.
+  const sum = (items, field) => items.reduce((total, item) => total + item[field], 0);
+  const checkedNow = agents.filter((item) => item.share != null);
+  const checkedBoth = checkedNow.filter((item) => item.previous_share != null);
+  const ratio = (items, shown, total) => (sum(items, total) ? sum(items, shown) / sum(items, total) : null);
+  const overall = {
+    share: ratio(checkedNow, "shown", "total"),
+    delta: checkedBoth.length
+      ? ratio(checkedBoth, "shown", "total") - ratio(checkedBoth, "previous_shown", "previous_total")
+      : null,
+  };
+  return { latest, previous, agents, overall };
 };
 
 /**

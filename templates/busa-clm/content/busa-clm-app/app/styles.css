@@ -45,16 +45,6 @@ p {
   margin: 0;
 }
 
-h1 {
-  font-size: var(--text-2xl);
-  line-height: 1.2;
-}
-
-h2 {
-  font-size: var(--text-md);
-  line-height: 1.3;
-}
-
 .muted {
   display: block;
   color: var(--muted);
@@ -197,7 +187,6 @@ body.sidebar-collapsed .brand {
 }
 
 body.sidebar-collapsed .brand-copy,
-body.sidebar-collapsed .sidebar-search,
 body.sidebar-collapsed .human-work,
 body.sidebar-collapsed .sidebar-separator,
 body.sidebar-collapsed .filters,
@@ -307,8 +296,8 @@ body.sidebar-collapsed .sidebar-footer {
   display: grid;
   place-items: center;
   border-radius: var(--radius-sm);
-  background: #202124;
-  color: var(--accent-contrast);
+  background: var(--ink);
+  color: var(--surface);
   font-size: var(--text-lg);
 }
 
@@ -386,9 +375,12 @@ body.sidebar-collapsed .sidebar-footer {
   background: color-mix(in srgb, var(--surface) 72%, transparent);
 }
 
+/* Controls. Element rules here are unlayered, so they would beat base-ui's
+ * layered `.button`; leave `.button` to base-ui and style only plain ones. */
 select,
 input,
-button {
+textarea,
+button:where(:not(.button)) {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -403,82 +395,43 @@ input {
   padding: 0 10px;
 }
 
-button {
+textarea {
+  width: 100%;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+button:where(:not(.button)) {
   min-height: 34px;
   padding: 0 14px;
   cursor: pointer;
 }
 
-button:hover {
+button:where(:not(.button)):hover {
   border-color: var(--line-strong);
   background: var(--surface-soft);
 }
 
-button.ghost {
-  background: transparent;
+.button.danger {
+  color: var(--bad);
 }
 
-textarea {
-  width: 100%;
-  padding: 8px 10px;
-  font: inherit;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-.detail {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 16px;
-  align-items: start;
-}
-
-.detail-side {
-  min-width: 0;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--panel);
-}
-
-.contract-form {
-  display: grid;
-  gap: 12px;
-}
-
-.contract-form label {
-  display: grid;
-  gap: 6px;
-  font-size: var(--text-sm);
-  color: var(--muted);
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.back-link {
-  display: inline-block;
-  margin-bottom: 12px;
-  color: var(--muted);
-  font-size: var(--text-base);
-}
-
-.back-link:hover {
-  color: var(--ink);
-}
-
-.due-soon {
-  color: var(--warn);
-  font-weight: 700;
-}
-
+/* Main area */
 .main {
   min-width: 0;
   min-height: 0;
   height: 100vh;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
@@ -487,66 +440,134 @@ textarea {
   display: none;
 }
 
-.topbar {
-  position: static;
-  z-index: 1;
-  min-height: 72px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 28px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-blur);
-}
-
-.topbar-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.content {
-  min-height: 0;
-  overflow: auto;
-  display: grid;
-  gap: 16px;
-  align-content: start;
-  padding: 22px 28px 52px;
-}
-
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.metric,
-.card,
-.panel {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--panel);
-}
-
-.metric {
-  min-width: 0;
-  padding: 14px;
-}
-
-.metric span {
+.load-state {
+  padding: 24px;
   color: var(--muted);
 }
 
-.metric strong {
-  display: block;
-  margin-top: 4px;
-  font-size: var(--text-2xl);
+.load-state.error {
+  color: var(--bad);
 }
 
-.panel {
-  min-width: 0;
-  padding: 16px;
+.notice-banner {
+  margin: 12px 20px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, var(--surface));
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+  color: var(--bad);
+  font-size: var(--text-base);
+}
+
+.ws-detail .notice-banner {
+  margin: 0 0 14px;
+}
+
+/* Toolbar */
+.ws-actions {
+  flex: 1 1 auto;
+  justify-content: flex-end;
+}
+
+.ws-actions .button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.toolbar-search {
+  flex: 0 1 260px;
+  min-width: 160px;
+}
+
+.toolbar-search input {
+  min-height: 34px;
+}
+
+/* Record tables: the first column names the record and is the widest; the
+ * free-text column takes what is left. */
+.clm-table .strong {
+  font-weight: 650;
+}
+
+.clm-table .muted-cell {
+  color: var(--muted);
+}
+
+.clm-table .record-link {
+  color: var(--accent-text, var(--accent));
+}
+
+.clm-table .badge {
+  padding: 2px 8px;
+  font-size: var(--text-xs);
+}
+
+.contracts-table th:nth-child(1) { width: 19%; }
+.contracts-table th:nth-child(2) { width: 12%; }
+.contracts-table th:nth-child(3) { width: 6%; }
+.contracts-table th:nth-child(4) { width: 11%; }
+.contracts-table th:nth-child(5) { width: 11%; }
+.contracts-table th:nth-child(6) { width: 10%; }
+.contracts-table th:nth-child(7) { width: 13%; }
+.contracts-table th:nth-child(8) { width: auto; }
+
+.obligations-table th:nth-child(1) { width: 26%; }
+.obligations-table th.action-col { width: 120px; }
+.obligations-table td.action-col {
+  text-align: right;
+}
+
+.row-action {
+  min-height: 26px;
+  padding: 0 10px;
+  font-size: var(--text-sm);
+}
+
+/* The renewal and approval queues need room for a state badge beside the
+ * name. */
+body.ws-layout-split .ws-workspace {
+  grid-template-columns: minmax(340px, 440px) minmax(0, 1fr);
+}
+
+body.ws-layout-split .approvals-table th:first-child {
+  width: 60%;
+}
+
+body.ws-layout-split .renewals-table th:first-child {
+  width: 44%;
+}
+
+.renewals-table th:nth-child(2) {
+  width: 32%;
+}
+
+.due-soon {
+  color: var(--warn);
+  font-weight: 700;
+}
+
+.muted-inline {
+  color: var(--muted);
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 0 18px;
+}
+
+.pager-summary {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Overview */
+.ws-overview h2 {
+  font-size: var(--text-md);
+  line-height: 1.3;
 }
 
 .overview-grid {
@@ -555,10 +576,8 @@ textarea {
   gap: 12px;
 }
 
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 12px;
+.overview-panel {
+  padding: 16px 18px;
 }
 
 .wide {
@@ -569,7 +588,7 @@ textarea {
 .stack-list {
   display: grid;
   gap: 0;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .pipeline-row {
@@ -577,34 +596,32 @@ textarea {
   grid-template-columns: 152px 44px minmax(0, 1fr);
   gap: 12px;
   align-items: center;
-  padding: 11px 0;
+  min-height: 40px;
   border-bottom: 1px solid var(--line);
 }
 
 .pipeline-row > span:last-child {
   min-width: 0;
   overflow: hidden;
+  color: var(--ink-soft);
   text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.pipeline-row:last-child {
+.pipeline-row:last-child,
+.item-row:last-child {
   border-bottom: 0;
 }
 
 .item-row {
-  min-height: 58px;
+  min-height: 52px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
-  padding: 12px 0;
+  padding: 8px 0;
   border-bottom: 1px solid var(--line);
-}
-
-.item-row:last-child {
-  border-bottom: 0;
 }
 
 .item-row > span:first-child {
@@ -615,42 +632,157 @@ textarea {
 .item-row small {
   display: block;
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .item-row small {
-  margin-top: 4px;
+  margin-top: 2px;
   color: var(--muted);
   font-size: var(--text-sm);
 }
 
-.table-wrap {
-  overflow-x: auto;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--panel);
+.item-row:hover strong {
+  color: var(--accent-text, var(--accent));
 }
 
-table {
-  width: 100%;
-  min-width: 860px;
-  border-collapse: collapse;
+/* Detail — one markup for page, drawer and split. */
+.detail-head {
+  margin-bottom: 16px;
 }
 
-th,
-td {
-  padding: 11px 12px;
-  border-bottom: 1px solid var(--line);
-  text-align: left;
-  vertical-align: top;
+.detail-head h2 {
+  font-size: var(--text-xl);
+  line-height: 1.25;
 }
 
-th {
-  background: var(--surface-hover);
+.detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: var(--text-base);
+}
+
+.detail-meta a {
+  color: var(--accent-text, var(--accent));
+}
+
+.detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  align-items: start;
+}
+
+.detail-main {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.detail-card {
+  padding: 16px 18px;
+}
+
+.detail-card h3,
+.detail-side h3 {
+  margin: 0 0 8px;
+  font-size: var(--text-md);
+}
+
+.card.flush.detail-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.card.flush .card-title {
+  margin: 0;
+  padding: 14px 18px 10px;
+}
+
+.empty-inline {
+  padding: 14px 0;
+  color: var(--muted);
+}
+
+.empty-inline.padded {
+  padding: 4px 18px 16px;
+}
+
+.detail-side {
+  min-width: 0;
+  padding: 16px 18px;
+}
+
+.detail-fields {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 10px 14px;
+  margin: 0 0 18px;
+}
+
+.detail-fields dt {
+  color: var(--muted);
+}
+
+.detail-fields dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.approval-summary {
+  margin-bottom: 12px;
+  font-size: var(--text-md);
+  line-height: 1.6;
+}
+
+.last-decision {
+  margin-bottom: 14px;
+  color: var(--ink-soft);
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 6px;
   color: var(--muted);
   font-size: var(--text-sm);
 }
 
+.contract-form {
+  display: grid;
+  gap: 12px;
+}
+
+.contract-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.form-page {
+  max-width: 560px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Badges keep this app's own status tints. */
 .badge {
   display: inline-block;
   padding: 3px 8px;
@@ -688,15 +820,20 @@ th {
   color: var(--bad);
 }
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 14px;
+/* Settings */
+.settings-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 20px 32px;
 }
 
 .settings {
   max-width: 760px;
+}
+
+.settings h2 {
+  font-size: var(--text-md);
 }
 
 .settings dl {
@@ -714,37 +851,28 @@ th {
   margin: 0;
 }
 
-.empty-inline {
-  padding: 14px 0;
+.muted {
   color: var(--muted);
 }
 
-.sidebar-scrim,
-.sidebar-scrim[hidden] {
+.sidebar-scrim {
   display: none;
 }
 
 @media (max-width: 980px) {
-  .metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .overview-grid {
-    grid-template-columns: 1fr;
-  }
-
+  .overview-grid,
   .detail {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 720px) {
-  html,
-  body {
-    height: 100%;
-    overflow: hidden;
-  }
+/* A drawer or split detail is narrow: stack the contract page's two columns. */
+body.ws-detail-drawer .detail,
+body.ws-layout-split .detail {
+  grid-template-columns: 1fr;
+}
 
+@media (max-width: 720px) {
   .app-shell {
     grid-template-columns: 1fr;
     height: 100dvh;
@@ -752,9 +880,7 @@ th {
   }
 
   .main {
-    grid-template-rows: auto auto minmax(0, 1fr);
     height: 100dvh;
-    min-height: 0;
   }
 
   .mobile-topbar {
@@ -818,37 +944,42 @@ th {
     box-shadow: 20px 0 40px rgba(15, 23, 42, 0.16);
   }
 
-  .sidebar-scrim {
+  .sidebar-scrim:not([hidden]) {
     position: fixed;
     inset: 0;
     z-index: 25;
     display: block;
-    background: rgba(15, 23, 42, 0.28);
+    background: var(--scrim);
   }
 
-  .topbar {
-    min-height: 58px;
-    padding: 10px 14px;
-  }
-
-  .topbar h1 {
-    font-size: var(--text-xl);
-  }
-
-  .topbar-actions {
+  /* The mobile top bar already names the view and has Refresh. */
+  #detailExpand,
+  .toolbar-refresh {
     display: none;
   }
 
-  .content {
-    min-height: 0;
-    overflow: auto;
-    padding: 14px 12px 24px;
+  .ws-toolbar,
+  .ws-actions {
+    flex-wrap: nowrap;
   }
 
-  .metrics,
-  .overview-grid,
-  .card-grid {
-    grid-template-columns: 1fr;
+  .ws-actions {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .toolbar-search {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .page-hero {
+    flex-wrap: wrap;
+    align-items: start;
+  }
+
+  .page-hero h1 {
+    font-size: var(--text-2xl);
   }
 
   .pipeline-row {
@@ -856,64 +987,11 @@ th {
     gap: 8px;
   }
 
-  .pipeline-row > span:last-child {
-    text-align: left;
-    white-space: normal;
+  .detail-fields {
+    grid-template-columns: 110px minmax(0, 1fr);
   }
 
-  .item-row {
-    align-items: start;
-  }
-}
-.pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  min-height: 2.5rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-
-.pager button {
-  min-width: 2.25rem;
-  height: 2.25rem;
-  border: 1px solid var(--border, currentColor);
-  border-radius: 0.375rem;
-  background: var(--surface, transparent);
-  color: var(--foreground, inherit);
-  cursor: pointer;
-}
-
-.pager button:hover:not(:disabled) {
-  border-color: var(--primary, currentColor);
-  color: var(--primary, inherit);
-}
-
-.pager button:disabled {
-  cursor: default;
-  opacity: 0.5;
-}
-
-.pager-page.active {
-  border-color: var(--primary, currentColor);
-  background: var(--primary, currentColor);
-  color: var(--primary-foreground, white);
-  opacity: 1;
-}
-
-.pager-nav {
-  padding-inline: 0.75rem;
-}
-
-.pager-ellipsis,
-.pager-summary {
-  color: var(--muted-foreground, inherit);
-}
-
-@media (max-width: 480px) {
-  .pager-summary {
-    width: 100%;
-    text-align: center;
+  .settings-scroll {
+    padding: 0 14px 24px;
   }
 }

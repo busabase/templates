@@ -6,6 +6,9 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 2,
+  // Where a record opens, per Base (see app.js DETAIL_MODES for the reasoning).
+  // questions has no list of its own: a question is answered on its idea's page.
+  ui: { detail_modes: { ideas: "page", documents: "split", questions: "page", settings: "page" } },
   folder: {
     name: "Busa Ideas",
     description: "灵感库、咨询师追问，以及每条灵感的 BRD / MRD / PRD",
@@ -92,7 +95,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "changeRequests.list"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count", "changeRequests.list"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata", "bases.fieldChangeRequest"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

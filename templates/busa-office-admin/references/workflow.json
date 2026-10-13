@@ -6,6 +6,7 @@
   "accent":"#176b5b",
   "asOf":"2026-09-29",
   "summary":{"en":"Renewals and evidence checks","zh-CN":"续期与证据核验"},
+  "detailModes":{"certificates":"drawer","contracts":"drawer","sources":"drawer","checks":"split"},
   "boundary":{"en":"Never replace conflicting dates with a guess. Preserve both sources and ask the owner to verify the original. Do not represent an unsigned contract or unverified certificate as approved. Draft record changes through ChangeRequests; no legal or regulatory conclusions, government submissions, or external sending.","zh-CN":"日期证据冲突时保留双方原始说法，要求负责人核对原件，不猜测有效期。未签合同和未核实证照不得标为已批准。记录修改通过变更申请；不代作法律或监管结论，不向政府或外部发送资料。"},
   "prompts":[{"en":"Review certificates and contracts expiring in the next 60 days, then draft an owner-by-owner renewal plan.","zh-CN":"检查未来 60 天到期的证照和合同，按负责人拟定续期计划。"},{"en":"Compare source documents for conflicting certificate dates and prepare verification tasks with both versions preserved.","zh-CN":"比较证照日期冲突的原件来源，保留两个版本并拟定核验待办。"}],
   "bases":[

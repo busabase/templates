@@ -4,19 +4,33 @@ import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/con
 import { createPagination } from "./js/pagination.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
 import {
-  renderAccountDetail,
-  renderAccounts,
-  renderCalendar,
-  renderCompose,
+  renderAccountsView,
+  renderCalendarView,
+  renderComposeView,
   renderCrisis,
-  renderEngagement,
-  renderPostDetail,
+  renderEngagementView,
   renderSettings,
-  renderShorts,
-  renderTimeline,
+  renderShortsView,
+  renderTimelineView,
   warnings,
 } from "./js/publishing-views.js";
 import { buildSnapshot } from "./js/social-model.js?v=0.1.0";
+
+// Where each record view opens its record (see config.js `ui.detail_modes`
+// for the business reasoning). Calendar and crisis are not record views: a
+// schedule table and a single incident board, neither has a "record" to open.
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+const PLAIN_VIEWS = ["calendar"];
+const ALL_VIEWS = ["overview", ...RECORD_VIEWS, ...PLAIN_VIEWS, "crisis", "settings"];
+const ID_FIELD = {
+  accounts: "account_id",
+  timeline: "post_id",
+  compose: "draft_id",
+  shorts: "short_id",
+  engagement: "item_id",
+};
+const SNAPSHOT_KEY = { accounts: "accounts", timeline: "posts", compose: "drafts", shorts: "shorts", engagement: "engagement" };
 
 export const state = {
   snapshot: null,
@@ -37,25 +51,42 @@ const REVIEW_STATES = ["needs_review", "changes_requested", "approved", "done", 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-social.sidebarCollapsed";
 const STALE_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
 
+const byId = (id) => document.getElementById(id);
 export const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  staleCount: document.querySelector("#count-stale"),
-  reviewCount: document.querySelector("#count-review"),
-  engagementCount: document.querySelector("#count-engagement"),
-  postCount: document.querySelector("#count-posts"),
-  accountCount: document.querySelector("#count-accounts"),
-  language: document.querySelector("#language"),
+  title: byId("page-title"),
+  subtitle: byId("page-subtitle"),
+  overviewPage: byId("overviewPage"),
+  overviewBody: byId("overviewBody"),
+  viewPage: byId("viewPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  viewFilters: byId("viewFilters"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  crisisPage: byId("crisisPage"),
+  crisisTitle: byId("crisisTitle"),
+  crisisBody: byId("crisisBody"),
+  settingsPage: byId("settingsPage"),
+  settingsTitle: byId("settingsTitle"),
+  settingsBody: byId("settingsBody"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  staleCount: byId("count-stale"),
+  reviewCount: byId("count-review"),
+  engagementCount: byId("count-engagement"),
+  postCount: byId("count-posts"),
+  accountCount: byId("count-accounts"),
+  language: byId("language"),
 };
 
 const PAGINATED_KEYS = ["accounts", "posts", "calendar", "drafts", "shorts", "engagement"];
@@ -74,6 +105,10 @@ const pagination = createPagination({
 
 export function recordTotal(key, fallback = 0) {
   return pagination.total(key, fallback);
+}
+
+export function paginationControl(key) {
+  return pagination.control(key);
 }
 
 function isMobileLayout() {
@@ -174,14 +209,60 @@ export function dateTime(value) {
   }).format(new Date(value));
 }
 
-export function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] || "" };
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<id>][?peek=<id>]`. A `/<id>` path always opens the full page;
+// `?peek=` drives a drawer (accounts) or a split queue (compose/shorts/
+// engagement) without leaving the list. On a phone every mode becomes a page
+// (base-ui.css handles that).
+function parseRoute() {
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!ALL_VIEWS.includes(view)) view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+  };
 }
 
+export const listUrl = (view = state.route.view) => `#/${view}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) => `#/${view}/${encodeURIComponent(id)}`;
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) =>
+  DETAIL_MODES[view] === "page" ? detailUrl(id, view) : `#/${view}?peek=${encodeURIComponent(id)}`;
+
+let previousRouteWasList = false;
+
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new history entry.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  setMobileSidebarOpen(false);
   render();
+}
+
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
 }
 
 export async function loadState() {
@@ -193,6 +274,7 @@ export async function loadState() {
   state.settings = data;
   window.dispatchEvent(new CustomEvent("busa-social:state", { detail: data }));
   applyDemoRoute();
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
   render();
 }
 
@@ -201,7 +283,7 @@ function applyDemoRoute() {
   const scenario = state.settings.demo_scenario || "overview";
   const scenarioRoutes = {
     accounts: "#/accounts",
-    detail: "#/accounts/x-atlas",
+    detail: "#/accounts?peek=x-atlas",
     timeline: "#/timeline",
     calendar: "#/calendar",
     compose: "#/compose",
@@ -227,6 +309,10 @@ function applyI18n() {
   els.search.placeholder = t("search");
   els.refresh.textContent = t("refresh");
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
+  els.crisisTitle.textContent = t("crisisPlaybook");
+  els.settingsTitle.textContent = t("settings");
+  els.settingsTitle.title = t("localFilesOnly");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
 export function accounts() {
@@ -263,6 +349,15 @@ export function crisis() {
 
 function shareOfVoice() {
   return state.snapshot?.share_of_voice || null;
+}
+
+// The record named by the current route, searched on the currently loaded
+// page only — no provider here exposes a by-id lookup for an off-page record.
+export function recordById(view, id) {
+  if (!id) return null;
+  const field = ID_FIELD[view];
+  const rows = state.snapshot?.[SNAPSHOT_KEY[view]] || [];
+  return rows.find((item) => item[field] === id) || null;
 }
 
 // Items still waiting on a human decision (drives the attention counters).
@@ -335,7 +430,7 @@ function renderShell() {
   });
 }
 
-function viewLabel(view) {
+export function viewLabel(view) {
   if (view === "timeline") return t("timeline");
   if (view === "accounts") return t("accounts");
   if (view === "settings") return t("settings");
@@ -376,16 +471,17 @@ export function sparkline(seriesData, { width = 220, height = 46 } = {}) {
   return `<svg class="spark" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${points}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
-function metricCards() {
+// ≤3 numbers the nav does not already show (the nav's attention block already
+// covers posts tracked / accounts configured / review counts).
+function metricsBand() {
   const metrics = state.snapshot?.metrics || {};
-  return `
-    <div class="metrics">
-      <div class="metric"><span>${t("totalFollowers")}</span><strong>${num(metrics.total_followers)}</strong><small>${delta(metrics.followers_delta_7d)} ${t("delta7d")} · ${delta(metrics.followers_delta_28d)} ${t("delta28d")}</small></div>
-      <div class="metric"><span>${t("impressions7d")}</span><strong>${num(metrics.impressions_7d)}</strong></div>
-      <div class="metric"><span>${t("engagementRate7d")}</span><strong>${pct(metrics.engagement_rate_7d)}</strong></div>
-      <div class="metric"><span>${t("postsTrackedTitle")}</span><strong>${pagination.total("posts", metrics.post_count)}</strong></div>
-    </div>
-  `;
+  return [
+    [t("totalFollowers"), `${num(metrics.total_followers)} ${delta(metrics.followers_delta_7d)}`],
+    [t("impressions7d"), num(metrics.impressions_7d)],
+    [t("engagementRate7d"), pct(metrics.engagement_rate_7d)],
+  ]
+    .map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${value}</strong></div>`)
+    .join("");
 }
 
 export function filteredPosts(accountId = "") {
@@ -408,57 +504,22 @@ export function mediaIndicator(post) {
   return `<span class="media-indicator" title="${escapeHtml(enumLabel(post.media, "media"))}">${glyph} ${escapeHtml(enumLabel(post.media, "media"))}${post.media_count > 1 ? ` ×${post.media_count}` : ""}</span>`;
 }
 
-export function timelineTable(list) {
-  if (!list.length) return `<div class="empty">${t("empty")}</div>`;
-  return `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>${t("date")}</th><th>${t("platform")}</th><th>${t("account")}</th><th>${t("post")}</th><th>${t("likes")}</th><th>${t("replies")}</th><th>${t("reposts")}</th><th>${t("views")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${list
-            .map(
-              (post) => `
-            <tr>
-              <td>${dateTime(post.posted_at)}</td>
-              <td>${platformBadge(post.platform)}</td>
-              <td><a href="#/accounts/${encodeURIComponent(post.account_id)}">${escapeHtml(accountName(post.account_id))}</a></td>
-              <td class="post-cell"><a class="post-link" href="#/timeline/${encodeURIComponent(post.post_id)}"><span class="strong">${escapeHtml(truncate(post.text, 110))}</span></a><div class="muted">${escapeHtml(enumLabel(post.type, "type"))}${post.media && post.media !== "none" ? " · " : ""}${mediaIndicator(post)}</div></td>
-              <td class="num">${num(post.metrics?.likes)}</td>
-              <td class="num">${num(post.metrics?.replies)}</td>
-              <td class="num">${num(post.metrics?.reposts)}</td>
-              <td class="num">${num(post.metrics?.views)}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
 export function platformChips() {
   const platforms = [...new Set(posts().map((post) => post.platform))];
   return `
-    <div class="chips" role="group" aria-label="${t("platform")}">
-      <button type="button" class="chip ${state.platformFilter === "" ? "active" : ""}" data-platform="">${t("allPlatforms")}</button>
-      ${platforms
-        .map(
-          (platform) => `
-        <button type="button" class="chip ${state.platformFilter === platform ? "active" : ""}" data-platform="${escapeHtml(platform)}">${escapeHtml(enumLabel(platform, "platform"))}</button>
-      `,
-        )
-        .join("")}
-    </div>
+    <button type="button" class="chip ${state.platformFilter === "" ? "active" : ""}" data-platform="">${t("allPlatforms")}</button>
+    ${platforms
+      .map(
+        (platform) => `
+      <button type="button" class="chip ${state.platformFilter === platform ? "active" : ""}" data-platform="${escapeHtml(platform)}">${escapeHtml(enumLabel(platform, "platform"))}</button>
+    `,
+      )
+      .join("")}
   `;
 }
 
 export function bindPlatformChips() {
-  els.content.querySelectorAll(".chip[data-platform]").forEach((chip) => {
+  els.viewFilters.querySelectorAll(".chip[data-platform]").forEach((chip) => {
     chip.addEventListener("click", () => {
       state.platformFilter = chip.dataset.platform || "";
       render();
@@ -478,14 +539,14 @@ function renderOverview() {
     .filter((post) => new Date(post.posted_at).getTime() >= weekAgo)
     .sort((a, b) => (b.metrics?.views || 0) - (a.metrics?.views || 0))
     .slice(0, 5);
-  els.content.innerHTML = `
-    ${metricCards()}
+  els.overviewBody.innerHTML = `
+    <div class="ws-metrics">${metricsBand()}</div>
     ${warnings()}
     <div class="kpi-grid">
       ${list
         .map(
           (account) => `
-        <a class="account-card" href="#/accounts/${encodeURIComponent(account.account_id)}">
+        <a class="account-card" href="${recordUrl(account.account_id, "accounts")}">
           <div class="row between"><strong>${escapeHtml(account.handle)}</strong>${platformBadge(account.platform)}</div>
           <div class="muted">${escapeHtml(account.display_name)}</div>
           <div class="balance">${num(account.metrics?.followers)} <small class="muted">${t("followers")}</small></div>
@@ -509,7 +570,7 @@ function renderOverview() {
         ${list
           .map(
             (account) => `
-          <a class="trend-row" href="#/accounts/${encodeURIComponent(account.account_id)}">
+          <a class="trend-row" href="${recordUrl(account.account_id, "accounts")}">
             <span><strong>${escapeHtml(account.handle)}</strong><small>${escapeHtml(enumLabel(account.platform, "platform"))}</small></span>
             <span class="trend-spark">${sparkline(account.follower_series)}</span>
             <span class="num">${num(account.metrics?.followers)} ${delta(account.metrics?.followers_delta_7d)}</span>
@@ -524,7 +585,7 @@ function renderOverview() {
           topPosts
             .map(
               (post) => `
-          <a class="movement-row" href="#/timeline/${encodeURIComponent(post.post_id)}">
+          <a class="movement-row" href="${detailUrl(post.post_id, "timeline")}">
             <span><strong>${escapeHtml(truncate(post.text, 76))}</strong><small>${escapeHtml(enumLabel(post.platform, "platform"))} · ${escapeHtml(accountName(post.account_id))}</small></span>
             <span class="num">${num(post.metrics?.views)} <small class="muted">${t("views")}</small></span>
           </a>
@@ -601,16 +662,14 @@ export function workflowChips(list) {
     n: list.filter((item) => item.status === status).length,
   })).filter((entry) => entry.n > 0);
   return `
-    <div class="chips" role="group" aria-label="${t("workflow")}">
-      <button type="button" class="chip ${state.workflowFilter === "" ? "active" : ""}" data-workflow="">${t("allItems")} ${list.length}</button>
-      ${counts
-        .map(
-          (entry) => `
-        <button type="button" class="chip ${state.workflowFilter === entry.status ? "active" : ""}" data-workflow="${escapeHtml(entry.status)}">${escapeHtml(enumLabel(entry.status, "review"))} ${entry.n}</button>
-      `,
-        )
-        .join("")}
-    </div>
+    <button type="button" class="chip ${state.workflowFilter === "" ? "active" : ""}" data-workflow="">${t("allItems")} ${list.length}</button>
+    ${counts
+      .map(
+        (entry) => `
+      <button type="button" class="chip ${state.workflowFilter === entry.status ? "active" : ""}" data-workflow="${escapeHtml(entry.status)}">${escapeHtml(enumLabel(entry.status, "review"))} ${entry.n}</button>
+    `,
+      )
+      .join("")}
   `;
 }
 
@@ -620,7 +679,7 @@ export function byWorkflow(list) {
 }
 
 export function bindWorkflowChips() {
-  els.content.querySelectorAll(".chip[data-workflow]").forEach((chip) => {
+  els.viewFilters.querySelectorAll(".chip[data-workflow]").forEach((chip) => {
     chip.addEventListener("click", () => {
       state.workflowFilter = chip.dataset.workflow || "";
       render();
@@ -650,8 +709,8 @@ export function reviewActions(kind, id, item) {
 }
 
 // Wire every data-op button in the current scene to applyOperation().
-export function bindOps() {
-  els.content.querySelectorAll("[data-op]").forEach((button) => {
+export function bindOps(root = els.detailBody) {
+  root.querySelectorAll("[data-op]").forEach((button) => {
     button.addEventListener("click", () => {
       const op = { operation: button.dataset.op };
       if (button.dataset.idkey) op[button.dataset.idkey] = button.dataset.id;
@@ -689,23 +748,50 @@ function shareOfVoicePanel() {
   `;
 }
 
-function renderPagedList(renderList, key) {
-  renderList();
-  els.content.insertAdjacentHTML("beforeend", `${pagination.control(key)}`);
+// ── Detail panel chrome shared by every drawer/split/page record view ──────
+export function renderDetailChrome(emptyMessage) {
+  const { view, selectedId, presentation } = state.route;
+  const phone = window.matchMedia("(max-width: 720px)").matches;
+  els.detailBack.textContent = presentation === "page" || phone ? t("backToList") : t("close");
+  els.detailExpand.hidden = !selectedId || presentation === "page";
+  if (selectedId) els.detailExpand.href = detailUrl(selectedId, view);
+  els.detailPanel.querySelector(".ws-detail-bar").hidden = !selectedId;
+  if (!selectedId) {
+    els.detailBody.innerHTML = DETAIL_MODES[view] === "split" ? `<div class="ws-detail-empty">${emptyMessage}</div>` : "";
+    return null;
+  }
+  const item = recordById(view, selectedId);
+  if (!item) {
+    els.detailBody.innerHTML = `<div class="ws-detail-empty"><strong>${t("recordMissing")}</strong><p>${t("recordMissingDetail")}</p></div>`;
+  }
+  return item;
 }
 
 function render() {
   renderShell();
-  if (state.route.view === "accounts" && state.route.id) renderAccountDetail();
-  else if (state.route.view === "accounts") renderPagedList(renderAccounts, "accounts");
-  else if (state.route.view === "timeline" && state.route.id) renderPostDetail();
-  else if (state.route.view === "timeline") renderPagedList(renderTimeline, "posts");
-  else if (state.route.view === "settings") renderSettings();
-  else if (state.route.view === "calendar") renderPagedList(renderCalendar, "calendar");
-  else if (state.route.view === "compose") renderPagedList(renderCompose, "drafts");
-  else if (state.route.view === "shorts") renderPagedList(renderShorts, "shorts");
-  else if (state.route.view === "engagement") renderPagedList(renderEngagement, "engagement");
-  else if (state.route.view === "crisis") renderPagedList(renderCrisis, "engagement");
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const onPlainList = ready && PLAIN_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  body.toggle("ws-searching", (onRecordView || onPlainList) && Boolean(state.query));
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !ready || !(onRecordView || onPlainList);
+  els.crisisPage.hidden = !ready || view !== "crisis";
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (view === "accounts") renderAccountsView();
+  else if (view === "timeline") renderTimelineView();
+  else if (view === "calendar") renderCalendarView();
+  else if (view === "compose") renderComposeView();
+  else if (view === "shorts") renderShortsView();
+  else if (view === "engagement") renderEngagementView();
+  else if (view === "crisis") renderCrisis();
+  else if (view === "settings") renderSettings();
   else renderOverview();
 }
 
@@ -728,7 +814,30 @@ export function escapeHtml(value) {
   );
 }
 
-pagination.bind(els.content);
+pagination.bind(els.listPanel);
+
+els.listPanel.addEventListener("click", (event) => {
+  if (event.target.closest("a, button, [data-goto-page]")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const { view } = state.route;
+  if (!RECORD_VIEWS.includes(view)) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  if (event.target.closest?.("textarea, input")) return;
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
@@ -758,9 +867,10 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    els.overviewBody.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
   }
 }
 
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
 boot();

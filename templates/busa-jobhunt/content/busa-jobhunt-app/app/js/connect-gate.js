@@ -8,8 +8,8 @@
 // successful connect stays in app.js — it is this app's own product step, not
 // part of the gate.
 import { createAirAppConnectGate } from "../vendor/busabase-airapp-gate.js";
-import { getProvider } from "./providers/index.js?v=0.3.0";
-import { initRuntime, shouldUseLocalGateway } from "./runtime.js?v=0.3.0";
+import { getProvider } from "./providers/index.js?v=0.4.0";
+import { initRuntime, shouldUseLocalGateway } from "./runtime.js?v=0.4.0";
 
 const isDemo = () => new URLSearchParams(window.location.search).has("demo");
 

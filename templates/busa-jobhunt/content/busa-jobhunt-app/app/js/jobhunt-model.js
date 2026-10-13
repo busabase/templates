@@ -141,7 +141,34 @@ export function pickBestLead(company, leads) {
   return [...leads].sort((left, right) => CONFIDENCE_RANK[right.confidence] - CONFIDENCE_RANK[left.confidence])[0];
 }
 
-export function createJobhuntDesk(records) {
+const sortLeads = (leads) =>
+  [...leads].sort((left, right) => CONFIDENCE_RANK[right.confidence] - CONFIDENCE_RANK[left.confidence]);
+
+// One company with its contact addresses attached. Used for every loaded row
+// and for a company read on its own because a URL named it.
+export function assembleCompany(company, leads, { ref = "", leadsUnknown = false } = {}) {
+  const companyLeads = sortLeads(leads);
+  return {
+    ...company,
+    // Stable per-batch reference so "改第 3 条" resolves the same row in chat.
+    ref,
+    leads: companyLeads,
+    bestLead: pickBestLead(company, companyLeads),
+    // No address on a loaded page is not the same as no address at all: when
+    // the contact list is only partly loaded, say "not loaded", not "missing".
+    leadsUnknown: leadsUnknown && companyLeads.length === 0,
+    draftReady: Boolean(company.emailSubject && company.emailBody),
+  };
+}
+
+/**
+ * @param {Array<object>} records loaded rows of all three Bases
+ * @param {{ totals?: { all: number, queued: number, sent: number } | null, partial?: { companies?: boolean, leads?: boolean } }} [options]
+ *   `totals` are exact server-side counts (records.count); `partial` marks a
+ *   Base whose rows are only partly loaded.
+ */
+export function createJobhuntDesk(records, options = {}) {
+  const { totals = null, partial = {} } = options;
   const profile = normalizeProfile(recordsFor(records, "profile")[0]);
   const leads = recordsFor(records, "leads").map(normalizeLead);
   const leadsByCompany = new Map();
@@ -162,37 +189,46 @@ export function createJobhuntDesk(records) {
         right.matchScore - left.matchScore ||
         left.name.localeCompare(right.name, "zh-CN"),
     )
-    .map((company, index) => {
-      const companyLeads = (leadsByCompany.get(company.key) || []).sort(
-        (left, right) => CONFIDENCE_RANK[right.confidence] - CONFIDENCE_RANK[left.confidence],
-      );
-      return {
-        ...company,
-        // Stable per-batch reference so "改第 3 条" resolves the same row in chat.
+    .map((company, index) =>
+      assembleCompany(company, leadsByCompany.get(company.key) || [], {
         ref: `#${index + 1}`,
-        leads: companyLeads,
-        bestLead: pickBestLead(company, companyLeads),
-        draftReady: Boolean(company.emailSubject && company.emailBody),
-      };
-    });
+        leadsUnknown: Boolean(partial.leads),
+      }),
+    );
 
   const toSend = companies.filter((company) => company.status === "draft");
   const sent = companies.filter((company) => company.status !== "draft");
-  const blocked = toSend.filter((company) => !company.bestLead || !company.draftReady);
+  const blocked = toSend.filter(
+    (company) => (!company.bestLead && !company.leadsUnknown) || !company.draftReady,
+  );
+  const loaded = {
+    all: companies.length,
+    "to-send": toSend.length,
+    sent: sent.length,
+    queued: companies.filter((company) => company.status === "queued").length,
+  };
+  // Exact totals when the server gave them; otherwise what is loaded, which
+  // `partial.companies` marks as a lower bound.
+  const counts = totals
+    ? {
+        all: totals.all,
+        "to-send": Math.max(0, totals.all - totals.queued - totals.sent),
+        sent: totals.queued + totals.sent,
+        queued: totals.queued,
+      }
+    : loaded;
 
   return {
     profile,
     companies,
     leads,
     buckets: { all: companies, "to-send": toSend, sent },
-    counts: {
-      all: companies.length,
-      "to-send": toSend.length,
-      sent: sent.length,
-      queued: companies.filter((company) => company.status === "queued").length,
-    },
+    counts,
+    loaded,
+    exact: Boolean(totals) || !partial.companies,
+    partial: { companies: Boolean(partial.companies), leads: Boolean(partial.leads) },
     attention: {
-      toSend: toSend.length,
+      toSend: counts["to-send"],
       blocked: blocked.length,
       profileReady: profile.ready,
       profileMissing: profile.missing,

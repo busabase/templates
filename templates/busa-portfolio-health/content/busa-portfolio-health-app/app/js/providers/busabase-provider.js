@@ -161,7 +161,17 @@ export const busabaseProvider = {
     await ensureResources();
     initialCursors.clear();
     const recordCountsPromise = Promise.all(BROWSED_KEYS.map((key) => countRecords(key)));
-    const [contractRows, settingsRows] = await Promise.all([readPageRows("contracts"), readPageRows("settings")]);
+    // The Settings row only tunes thresholds and labels. A denied or failed
+    // read of it must not blank the whole dashboard: fall back to the default
+    // risk policy and say so in Help & Settings.
+    let settingsError = "";
+    const [contractRows, settingsRows] = await Promise.all([
+      readPageRows("contracts"),
+      readPageRows("settings").catch((error) => {
+        settingsError = error instanceof Error ? error.message : String(error);
+        return [];
+      }),
+    ]);
     const configRow = findSettingsRow(settingsRows, "config");
     const config_summary = buildConfigSummary(parsePayload(configRow?.payload));
     const contracts = contractRows.map(normalizeContractRow);
@@ -174,6 +184,7 @@ export const busabaseProvider = {
       pagination: Object.fromEntries(BROWSED_KEYS.map((key) => [key, initialCursors.get(key) || null])),
       totals: Object.fromEntries(BROWSED_KEYS.map((key, index) => [key, recordCounts[index]])),
       onboarding: { completed: Boolean(configRow), config_version: "1" },
+      settings_error: settingsError,
       lock: null,
       config_summary,
       snapshot,
@@ -192,6 +203,21 @@ export const busabaseProvider = {
     const next = applyContractDecision(current, patch, now);
     await updateContractRecord(existing, next, `Update review decision for ${contractId}`);
     return next;
+  },
+
+  // A contract named by the URL (`?peek=` / `/<id>`) that is not on a loaded
+  // page is read on its own — never by loading more pages to find it.
+  async getContract(contractId) {
+    if (!contractId) return null;
+    await ensureResources();
+    if (!allowedReads.has("records.get")) return null;
+    const existing = await findRecord("contracts", "contract-id", contractId);
+    if (!existing) return null;
+    return normalizeContractRow({
+      ...normalizeFields(existing.headCommit?.payload || existing.headCommit?.fields || existing.fields),
+      __recordId: existing.id,
+      __headCommitId: existing.headCommitId || existing.headCommit?.id,
+    });
   },
 
   async fetchPage(key, cursor) {

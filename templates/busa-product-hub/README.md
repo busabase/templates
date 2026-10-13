@@ -9,10 +9,10 @@ all behind an approval-gated review queue.
 
 ## What It Shows
 
-- Overview: product KPIs, a **"Certificates expiring soon" panel** (the
-  headline addition), image-rich product cards, inventory value, margin,
-  recent activity, and review queue preview.
-- Products: catalog cards and product detail pages with gallery, pricing,
+- Overview: inventory value, average margin and agent-ready products, a
+  **"Certificates expiring soon" panel** (the headline addition),
+  image-rich product cards, recent activity, and review queue preview.
+- Products: a catalog table and full product pages with gallery, pricing,
   inventory, content readiness, compliance notes, channel matrix, linked
   certificates, and linked review items.
 - Inventory: warehouse availability, inbound stock, days cover, and
@@ -23,6 +23,8 @@ all behind an approval-gated review queue.
   soonest-expiry-first, each linking back to its product. Status
   (valid/expiring soon/expired) is always computed from the expiry date —
   never stored.
+- Inventory, channels and certificates open a record in a side drawer;
+  the review queue is a split view worked top to bottom.
 - Review: approval queue for publishing, price changes, quality holds,
   lifecycle decisions, and unsourced spec claims (a fact the agent extracted
   from a document without a page/section citation).

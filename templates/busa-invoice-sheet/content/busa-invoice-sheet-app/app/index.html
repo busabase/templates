@@ -8,10 +8,99 @@
     <link rel="stylesheet" href="./base-ui.css">
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
-    <link rel="stylesheet" href="./accent-theme.css" />
+    <link rel="stylesheet" href="./accent-theme.css">
   </head>
-  <body>
-    <div id="app"></div>
+  <body class="ws-has-mobile-bar">
+    <!-- Decorative only — static spreadsheet-app chrome, not real menu/share
+         functionality. See styles.css ".sheet-menubar" comment for why. -->
+    <div class="sheet-menubar" aria-hidden="true">
+      <ul class="sheet-menu">
+        <li>File</li><li>Edit</li><li>View</li><li>Insert</li><li>Tools</li><li>Automations</li><li>Help</li>
+      </ul>
+      <span class="sheet-share">Share</span>
+    </div>
+    <div id="app" class="app-shell">
+      <aside class="sidebar" id="appSidebar">
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true">IS</div>
+          <div class="brand-copy">
+            <div class="brand-title">Busa Invoice Sheet</div>
+            <div id="syncStatus" class="brand-subtitle">Loading</div>
+          </div>
+          <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-controls="appSidebar" aria-label="Toggle sidebar" title="Toggle sidebar">
+            <span class="sidebar-toggle-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <section class="human-work" aria-labelledby="humanWorkLabel">
+          <div id="humanWorkLabel" class="human-label" data-i18n="humanTask">Needs you</div>
+          <a id="humanWorkPrimary" class="human-work-link" href="#/invoices/needs_review"></a>
+          <div id="humanWorkSecondary" class="human-counts"></div>
+        </section>
+        <nav class="filters" aria-label="Main">
+          <a class="filter" href="#/overview" data-route="overview"><span data-i18n="overview">Overview</span></a>
+          <div class="nav-section" data-i18n="invoices">Invoices</div>
+          <div id="statusNav" class="status-nav"></div>
+        </nav>
+        <a class="settings-link" href="#/settings" data-route="settings" data-i18n="settings">Help & Settings</a>
+      </aside>
+      <main class="main">
+        <div class="mobile-topbar">
+          <button id="mobileSidebarToggle" class="mobile-sidebar-toggle" type="button" aria-controls="appSidebar" aria-label="Open sidebar" title="Open sidebar"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
+          <div class="mobile-title">
+            <strong id="mobileViewTitle">Busa Invoice Sheet</strong>
+            <span id="mobileViewMeta"></span>
+          </div>
+          <a class="mobile-settings" href="#/settings" title="Help & Settings" aria-label="Help & Settings">?</a>
+        </div>
+        <div id="loadState" class="load-state" role="status">Loading</div>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 id="overviewTitle">Overview</h1>
+              <p id="overviewSummary"></p>
+            </div>
+            <div class="page-actions">
+              <button class="button" type="button" data-refresh data-i18n="refresh">Refresh</button>
+              <button class="button primary" type="button" data-open-extract data-i18n="extractData">Extract Data</button>
+            </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" aria-label="Invoice summary"></div>
+          <div id="overviewBody"></div>
+        </section>
+        <!-- Record view: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <span class="sheet-fx" aria-hidden="true">ƒ</span>
+              <label class="toolbar-search">
+                <span class="sr-only" data-i18n="search">Search</span>
+                <input id="search" type="search" autocomplete="off" placeholder="Search">
+              </label>
+              <button class="button primary" type="button" data-open-extract data-i18n="extractData">Extract Data</button>
+            </div>
+          </header>
+          <div class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar">
+                <button id="detailBack" class="button" type="button">Close</button>
+                <a id="detailExpand" class="button" hidden>Open full page</a>
+              </div>
+              <div id="detailBody"></div>
+            </aside>
+          </div>
+          <!-- Decorative only — static sheet-tab strip, see styles.css. -->
+          <div class="sheet-tabstrip" aria-hidden="true"><span class="sheet-tab">Sheet1</span></div>
+        </section>
+      </main>
+    </div>
+    <div id="extractDialog"></div>
+    <div id="settingsModal"></div>
     <div id="sidebarScrim" class="sidebar-scrim" hidden></div>
     <script src="./i18n/messages.js"></script>
     <script type="module" src="./app.js"></script>

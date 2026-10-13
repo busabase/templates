@@ -658,6 +658,9 @@ export function deriveActivityLog(decks = [], slideCards = [], { limit = 20 } = 
         actor: "reviewer",
         detail: `${decisionLabel(deck.decision_action)} deck "${deck.title}"${deck.decision_note ? `: ${deck.decision_note}` : "."}`,
         target_id: deck.deck_id,
+        target_type: "deck",
+        action: deck.decision_action,
+        note: deck.decision_note || "",
       });
     }
   }
@@ -669,6 +672,9 @@ export function deriveActivityLog(decks = [], slideCards = [], { limit = 20 } = 
         actor: "reviewer",
         detail: `${decisionLabel(slide.decision_action)} slide "${slide.title}"${slide.decision_note ? `: ${slide.decision_note}` : "."}`,
         target_id: slide.slide_id,
+        target_type: "slide",
+        action: slide.decision_action,
+        note: slide.decision_note || "",
       });
     }
   }

@@ -6,6 +6,14 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Where a record opens, per view — chosen by what people do with it:
+  //   signals → split:  today's triage queue, worked top to bottom one signal after the next.
+  //   actions → drawer: a short operating to-do; scan, open one, decide, return to the list.
+  //   drafts  → page:   long channel copy you edit and re-read; it needs the room.
+  //   sources → drawer: a reference fact (coverage, freshness) glanced at and closed.
+  ui: {
+    detail_modes: { signals: "split", actions: "drawer", drafts: "page", sources: "drawer" },
+  },
   folder: {
     name: "Busa Ecommerce Intel",
     description:
@@ -119,7 +127,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

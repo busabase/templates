@@ -1,50 +1,40 @@
 import {
-  cssEscape,
-  date,
-  decisionStatus,
-  deltaHtml,
-  displayPath,
-  els,
-  enumLabel,
-  escapeHtml,
-  loadState,
-  n,
-  render,
-  state,
-  statusBadge,
-  t,
+	cssEscape,
+	date,
+	decisionStatus,
+	deltaHtml,
+	displayPath,
+	els,
+	enumLabel,
+	escapeHtml,
+	loadState,
+	n,
+	recordMissingMarkup,
+	recordTotal,
+	render,
+	state,
+	statusBadge,
+	t,
 } from "../app.js";
 import { getProvider } from "./providers/index.js?v=0.1.0";
-// ── GEO: AI-visibility tracker ────────────────────────────────────────────────
+// ── GEO: AI-visibility tracker (dashboard — no detail mode; see config.js) ──
 
 export function renderGeo() {
-  els.title.textContent = t("aiVisibility");
-  const visibility = state.snapshot?.ai_visibility;
-  if (!visibility || !(visibility.prompts || []).length) {
-    els.subtitle.textContent = t("aiVisibilitySub");
-    els.content.innerHTML = `<div class="empty">${t("noGeoData")}</div>`;
-    return;
-  }
-  els.subtitle.textContent = `${escapeHtml(visibility.brand)} · ${visibility.prompts.length} ${t("trackedPrompts").toLowerCase()}`;
-  const engines = visibility.engines || [];
-  const trendPoints = aggregateVisibilityTrend(visibility.prompts);
-  els.content.innerHTML = `
-    <div class="metrics">
-      <div class="metric">
-        <span>${t("aiVisibilityScore")}</span>
-        <strong>${n(visibility.score)}<small class="metric-unit">/100</small></strong>
-        <div class="metric-delta">${deltaHtml(visibility.score, visibility.prev_score)} <small>${t("prevPeriod")}</small></div>
+	els.geoTitle.textContent = t("aiVisibility");
+	const visibility = state.snapshot?.ai_visibility;
+	if (!visibility || !(visibility.prompts || []).length) {
+		els.geoBody.innerHTML = `<div class="empty"><strong>${t("noGeoData")}</strong></div>`;
+		return;
+	}
+	const engines = visibility.engines || [];
+	const trendPoints = aggregateVisibilityTrend(visibility.prompts);
+	els.geoBody.innerHTML = `
+    <div class="overview-panel wide">
+      <div class="row between">
+        <h2>${escapeHtml(visibility.brand)} · ${t("aiVisibilityScore")}</h2>
+        <span class="num"><strong>${n(visibility.score)}</strong>/100 ${deltaHtml(visibility.score, visibility.prev_score)}</span>
       </div>
-      <div class="metric">
-        <span>${t("engines")}</span>
-        <strong>${engines.length}</strong>
-        <div class="metric-delta"><small>${engines.map((engine) => escapeHtml(enumLabel(engine, "engine"))).join(" · ")}</small></div>
-      </div>
-      <div class="metric">
-        <span>${t("trackedPrompts")}</span>
-        <strong>${visibility.prompts.length}</strong>
-        <div class="metric-delta"><small>${t("engineMatrix")}</small></div>
-      </div>
+      <p class="muted">${visibility.prompts.length} ${t("trackedPrompts").toLowerCase()} · ${engines.map((engine) => escapeHtml(enumLabel(engine, "engine"))).join(" · ")}</p>
     </div>
     <div class="overview-panel wide">
       <h2>${t("engineMatrix")}</h2>
@@ -58,7 +48,7 @@ export function renderGeo() {
 }
 
 function visibilityMatrix(prompts, engines) {
-  return `
+	return `
     <div class="table-wrap">
       <table class="geo-matrix">
         <thead>
@@ -69,23 +59,25 @@ function visibilityMatrix(prompts, engines) {
         </thead>
         <tbody>
           ${prompts
-            .map(
-              (prompt) => `
+						.map(
+							(prompt) => `
             <tr>
               <td>
                 <div class="strong">${escapeHtml(prompt.prompt)}</div>
                 <div class="muted">${escapeHtml(prompt.intent)}</div>
               </td>
               ${engines
-                .map((engine) => {
-                  const mention = (prompt.mentions || []).find((item) => item.engine === engine);
-                  return `<td class="geo-cell">${matrixCell(mention)}</td>`;
-                })
-                .join("")}
+								.map((engine) => {
+									const mention = (prompt.mentions || []).find(
+										(item) => item.engine === engine,
+									);
+									return `<td class="geo-cell">${matrixCell(mention)}</td>`;
+								})
+								.join("")}
             </tr>
           `,
-            )
-            .join("")}
+						)
+						.join("")}
         </tbody>
       </table>
     </div>
@@ -93,55 +85,62 @@ function visibilityMatrix(prompts, engines) {
 }
 
 function matrixCell(mention) {
-  if (!mention || !mention.mentioned) {
-    return `<span class="geo-dot geo-dot-absent" title="${t("notMentioned")}">—</span>`;
-  }
-  const sentiment = mention.sentiment || "neutral";
-  const posText = mention.position ? `#${mention.position}` : "✓";
-  const tip = [
-    `${t("mentioned")} ${posText}`,
-    `${t("sentiment")}: ${enumLabel(sentiment, "sentiment")}`,
-    mention.cited_url ? `${t("citedUrl")}: ${mention.cited_url}` : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  return `<span class="geo-dot geo-dot-${escapeHtml(sentiment)}" title="${escapeHtml(tip)}">${escapeHtml(posText)}</span>`;
+	if (!mention || !mention.mentioned) {
+		return `<span class="geo-dot geo-dot-absent" title="${t("notMentioned")}">—</span>`;
+	}
+	const sentiment = mention.sentiment || "neutral";
+	const posText = mention.position ? `#${mention.position}` : "✓";
+	const tip = [
+		`${t("mentioned")} ${posText}`,
+		`${t("sentiment")}: ${enumLabel(sentiment, "sentiment")}`,
+		mention.cited_url ? `${t("citedUrl")}: ${mention.cited_url}` : "",
+	]
+		.filter(Boolean)
+		.join(" · ");
+	return `<span class="geo-dot geo-dot-${escapeHtml(sentiment)}" title="${escapeHtml(tip)}">${escapeHtml(posText)}</span>`;
 }
 
 function aggregateVisibilityTrend(prompts) {
-  const byDate = new Map();
-  for (const prompt of prompts) {
-    for (const point of prompt.trend || []) {
-      const entry = byDate.get(point.date) || { date: point.date, sum: 0, count: 0 };
-      entry.sum += Number(point.visibility || 0);
-      entry.count += 1;
-      byDate.set(point.date, entry);
-    }
-  }
-  return [...byDate.values()]
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .map((entry) => ({ date: entry.date, value: entry.count ? entry.sum / entry.count : 0 }));
+	const byDate = new Map();
+	for (const prompt of prompts) {
+		for (const point of prompt.trend || []) {
+			const entry = byDate.get(point.date) || {
+				date: point.date,
+				sum: 0,
+				count: 0,
+			};
+			entry.sum += Number(point.visibility || 0);
+			entry.count += 1;
+			byDate.set(point.date, entry);
+		}
+	}
+	return [...byDate.values()]
+		.sort((a, b) => a.date.localeCompare(b.date))
+		.map((entry) => ({
+			date: entry.date,
+			value: entry.count ? entry.sum / entry.count : 0,
+		}));
 }
 
 function visibilityTrendChart(points) {
-  if (!points.length) return `<div class="empty">${t("noTrend")}</div>`;
-  const step = 40;
-  const width = Math.max(points.length * step, step);
-  const height = 120;
-  const bars = points
-    .map((point, index) => {
-      const x = index * step;
-      const barH = Math.max(Math.round(point.value * (height - 24)), 2);
-      return `
+	if (!points.length) return `<div class="empty">${t("noTrend")}</div>`;
+	const step = 40;
+	const width = Math.max(points.length * step, step);
+	const height = 120;
+	const bars = points
+		.map((point, index) => {
+			const x = index * step;
+			const barH = Math.max(Math.round(point.value * (height - 24)), 2);
+			return `
       <g>
         <title>${point.date}: ${Math.round(point.value * 100)}%</title>
         <rect x="${x + 6}" y="${height - barH}" width="${step - 14}" height="${barH}" rx="3" class="bar-clicks"></rect>
         <text x="${x + step / 2 - 3}" y="${height - barH - 4}" class="geo-bar-label">${Math.round(point.value * 100)}%</text>
       </g>
     `;
-    })
-    .join("");
-  return `
+		})
+		.join("");
+	return `
     <div class="trend">
       <div class="trend-legend">
         <span><i class="dot dot-clicks"></i>${t("aiVisibility")}</span>
@@ -154,64 +153,94 @@ function visibilityTrendChart(points) {
   `;
 }
 
-// ── GEO: content-optimization review queue ────────────────────────────────────
+// ── GEO: content-optimization review queue (split mode) ────────────────────
 
-function geoOpportunities() {
-  const list = state.snapshot?.geo_opportunities || [];
-  return list.map((opportunity) => {
-    // A shipped GEO change stays done; a geo-qa BLOCK is a hard gate otherwise.
-    const executed = opportunity.execution?.status === "executed";
-    if (opportunity.gate?.verdict === "BLOCK" && !executed) {
-      return { ...opportunity, status: "blocked" };
-    }
-    if (!state.demo) return opportunity;
-    const local = state.geoDecisions[opportunity.id];
-    if (!local) return opportunity;
-    let status = opportunity.status;
-    if (local.action === "approve") status = "approved";
-    if (local.action === "request_changes") status = "changes_requested";
-    if (local.action === "block") status = "blocked";
-    if (executed) status = "done";
-    return { ...opportunity, status, decision: local, draft: local.draft ?? opportunity.draft };
-  });
+export function geoOpportunities() {
+	const list = state.snapshot?.geo_opportunities || [];
+	return list.map((opportunity) => {
+		// A shipped GEO change stays done; a geo-qa BLOCK is a hard gate otherwise.
+		const executed = opportunity.execution?.status === "executed";
+		if (opportunity.gate?.verdict === "BLOCK" && !executed) {
+			return { ...opportunity, status: "blocked" };
+		}
+		if (!state.demo) return opportunity;
+		const local = state.geoDecisions[opportunity.id];
+		if (!local) return opportunity;
+		let status = opportunity.status;
+		if (local.action === "approve") status = "approved";
+		if (local.action === "request_changes") status = "changes_requested";
+		if (local.action === "block") status = "blocked";
+		if (executed) status = "done";
+		return {
+			...opportunity,
+			status,
+			decision: local,
+			draft: local.draft ?? opportunity.draft,
+		};
+	});
 }
 
-const GEO_OPP_FILTERS = ["all", "needs_review", "changes_requested", "approved", "done", "blocked"];
+function filteredGeoOpportunities() {
+	const query = state.query.trim().toLowerCase();
+	return geoOpportunities().filter((item) => {
+		if (state.geoFilter !== "all" && item.status !== state.geoFilter)
+			return false;
+		if (!query) return true;
+		return [
+			item.title,
+			item.target_page,
+			item.target_prompt,
+			item.type,
+			item.reason,
+		]
+			.filter(Boolean)
+			.some((value) => String(value).toLowerCase().includes(query));
+	});
+}
 
-export function renderOptimize() {
-  els.title.textContent = t("geoOptimizer");
-  const all = geoOpportunities();
-  const query = state.query.trim().toLowerCase();
-  const items = all.filter((item) => {
-    if (state.geoFilter !== "all" && item.status !== state.geoFilter) return false;
-    if (!query) return true;
-    return [item.title, item.target_page, item.target_prompt, item.type, item.reason]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query));
-  });
-  els.subtitle.textContent = t("geoOptimizerSub");
-  const locked = Boolean(state.settings?.lock);
-  const chips = GEO_OPP_FILTERS.map((filter) => {
-    const count = filter === "all" ? all.length : all.filter((item) => item.status === filter).length;
-    const label = filter === "all" ? t("viewAll") : enumLabel(filter);
-    return `<button type="button" class="chip ${state.geoFilter === filter ? "active" : ""}" data-geo-filter="${filter}" title="${escapeHtml(label)}">${escapeHtml(label)} <b>${count}</b></button>`;
-  }).join("");
-  els.content.innerHTML = `
-    ${locked ? `<div class="warnings"><div class="warning"><strong>${t("lockBanner")}</strong><span>${escapeHtml(state.settings.lock?.message || "")}</span></div></div>` : ""}
-    ${state.demo ? `<div class="demo-note">${t("demoDecisionNote")}</div>` : ""}
-    <div class="chip-row">${chips}</div>
-    <div class="opp-list">
-      ${items.map((item) => geoOpportunityCard(item, locked)).join("") || `<div class="empty">${t("noGeoOpportunities")}</div>`}
-    </div>
+function geoTable(items) {
+	if (!items.length)
+		return `<div class="empty">${t("noGeoOpportunities")}</div>`;
+	return `
+    <table class="ws-table">
+      <thead>
+        <tr>
+          <th>${t("geoOpportunity")}</th>
+          <th class="ws-col-narrow ws-split-keep">${t("status")}</th>
+          <th class="ws-col-wide">${t("targetPrompt")}</th>
+          <th class="ws-col-narrow">${t("qualityGate")}</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${items
+					.map(
+						(item) => `
+          <tr data-id="${escapeHtml(item.id)}"${item.id === state.route.selectedId ? ' class="ws-selected"' : ""}>
+            <td><span class="strong">#${escapeHtml(String(item.ref))} · ${escapeHtml(item.title)}</span></td>
+            <td class="ws-split-keep">${statusBadge(item.status)}</td>
+            <td class="ws-col-wide">${escapeHtml(item.target_prompt || "—")}</td>
+            <td>${gateBadge(item.gate)}</td>
+          </tr>
+        `,
+					)
+					.join("")}
+      </tbody>
+    </table>
   `;
 }
 
-function geoOpportunityCard(item, locked) {
-  const blocked = item.gate?.verdict === "BLOCK";
-  const disabled = locked ? "disabled" : "";
-  return `
+export function renderGeoList() {
+	const items = filteredGeoOpportunities();
+	els.viewCount.textContent = `${recordTotal("geo-opportunities", items.length)}`;
+	els.listPanel.innerHTML = geoTable(items);
+}
+
+function geoDetailMarkup(item, locked) {
+	const blocked = item.gate?.verdict === "BLOCK";
+	const disabled = locked ? "disabled" : "";
+	return `
     <article class="opp-card geo-card" data-geo-id="${escapeHtml(item.id)}">
-      <header class="opp-head">
+      <header class="detail-head opp-head">
         <span class="opp-ref">${t("geoOpportunity")} #${item.ref}</span>
         <span class="badge">${escapeHtml(enumLabel(item.type, "type"))}</span>
         ${statusBadge(item.status)}
@@ -226,34 +255,34 @@ function geoOpportunityCard(item, locked) {
       <p class="opp-impact"><span class="muted">${t("expectedImpact")}:</span> ${escapeHtml(item.expected_impact)}</p>
       ${gatePanel(item.gate)}
       ${
-        (item.grounding || []).length
-          ? `<div class="geo-grounding"><span class="muted">${t("grounding")}:</span><ul>${item.grounding.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul></div>`
-          : ""
-      }
+				(item.grounding || []).length
+					? `<div class="geo-grounding"><span class="muted">${t("grounding")}:</span><ul>${item.grounding.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul></div>`
+					: ""
+			}
       ${item.agent_notes ? `<p class="agent-notes">${escapeHtml(item.agent_notes)}</p>` : ""}
       <label class="opp-label" for="geo-draft-${escapeHtml(item.id)}">${t("draft")}</label>
       <textarea id="geo-draft-${escapeHtml(item.id)}" class="opp-draft" rows="6" ${disabled}>${escapeHtml(item.draft || "")}</textarea>
       ${
-        item.decision
-          ? `
+				item.decision
+					? `
         <div class="opp-decision">
           <strong>${t("decision")}: ${escapeHtml(enumLabel(decisionStatus(item.decision.action)))}</strong>
           ${item.decision.note ? `<span>${escapeHtml(item.decision.note)}</span>` : ""}
           <small>${t("decided")} ${escapeHtml(item.decision.decided_at ? new Date(item.decision.decided_at).toLocaleString() : "")}</small>
         </div>
       `
-          : ""
-      }
+					: ""
+			}
       ${
-        item.execution
-          ? `
+				item.execution
+					? `
         <div class="opp-execution">
           <strong>${t("execution")}: ${escapeHtml(enumLabel(item.execution.operation, "operation"))} · ${escapeHtml(enumLabel(item.execution.status))}</strong>
           ${item.execution.detail ? `<span>${escapeHtml(item.execution.detail)}</span>` : ""}
         </div>
       `
-          : ""
-      }
+					: ""
+			}
       ${blocked ? `<div class="warnings"><div class="error"><strong>${t("gateBlockedNote")}</strong></div></div>` : ""}
       <label class="opp-label" for="geo-note-${escapeHtml(item.id)}">${t("reviewNote")}</label>
       <textarea id="geo-note-${escapeHtml(item.id)}" class="opp-note" rows="2" placeholder="${escapeHtml(t("reviewNotePlaceholder"))}" ${disabled}></textarea>
@@ -267,15 +296,31 @@ function geoOpportunityCard(item, locked) {
   `;
 }
 
+export function renderGeoDetail() {
+	const item = geoOpportunities().find(
+		(entry) => entry.id === state.route.selectedId,
+	);
+	if (!item) {
+		els.detailBody.innerHTML = recordMissingMarkup();
+		return;
+	}
+	const locked = Boolean(state.settings?.lock);
+	els.detailBody.innerHTML = `
+    ${state.settings?.lock ? `<div class="warnings"><div class="warning"><strong>${t("lockBanner")}</strong><span>${escapeHtml(state.settings.lock?.message || "")}</span></div></div>` : ""}
+    ${state.demo ? `<div class="demo-note">${t("demoDecisionNote")}</div>` : ""}
+    ${geoDetailMarkup(item, locked)}
+  `;
+}
+
 function gateBadge(gate) {
-  if (!gate) return "";
-  const verdict = gate.verdict || "SHIP";
-  return `<span class="gate-badge gate-${escapeHtml(verdict)}" title="${t("qualityGate")} · ${t("geoScore")} ${n(gate.score)}">⛩ ${escapeHtml(verdict)} · ${n(gate.score)}</span>`;
+	if (!gate) return "";
+	const verdict = gate.verdict || "SHIP";
+	return `<span class="gate-badge gate-${escapeHtml(verdict)}" title="${t("qualityGate")} · ${t("geoScore")} ${n(gate.score)}">⛩ ${escapeHtml(verdict)} · ${n(gate.score)}</span>`;
 }
 
 function gatePanel(gate) {
-  if (!gate) return "";
-  return `
+	if (!gate) return "";
+	return `
     <div class="gate-panel gate-panel-${escapeHtml(gate.verdict)}">
       <div class="gate-panel-head">
         <strong>⛩ ${t("qualityGate")}: ${escapeHtml(gate.verdict)}</strong>
@@ -284,58 +329,66 @@ function gatePanel(gate) {
       ${gate.summary ? `<p class="gate-summary">${escapeHtml(gate.summary)}</p>` : ""}
       <ul class="gate-checks">
         ${(gate.checks || [])
-          .map(
-            (check) => `
+					.map(
+						(check) => `
           <li class="gate-check gate-check-${escapeHtml(check.result)}">
             <span class="gate-check-mark">${check.result === "pass" ? "✓" : check.result === "warn" ? "!" : "✕"}</span>
             <span><strong>${escapeHtml(check.label)}</strong>${check.note ? ` — ${escapeHtml(check.note)}` : ""}</span>
           </li>
         `,
-          )
-          .join("")}
+					)
+					.join("")}
       </ul>
     </div>
   `;
 }
 
 export async function submitGeoDecision(id, action) {
-  const note = document.querySelector(`#geo-note-${cssEscape(id)}`)?.value || "";
-  const draft = document.querySelector(`#geo-draft-${cssEscape(id)}`)?.value;
-  if (state.demo) {
-    state.geoDecisions[id] = { action, note, draft: draft ?? null, decided_at: new Date().toISOString() };
-    render();
-    return;
-  }
-  try {
-    const provider = await getProvider();
-    await provider.decideGeoOpportunity({ geo_opportunity_id: id, action, note, draft });
-  } catch (error) {
-    els.subtitle.textContent = error?.message || `Decision failed: ${action}`;
-    return;
-  }
-  await loadState();
+	const note =
+		document.querySelector(`#geo-note-${cssEscape(id)}`)?.value || "";
+	const draft = document.querySelector(`#geo-draft-${cssEscape(id)}`)?.value;
+	if (state.demo) {
+		state.geoDecisions[id] = {
+			action,
+			note,
+			draft: draft ?? null,
+			decided_at: new Date().toISOString(),
+		};
+		render();
+		return;
+	}
+	try {
+		const provider = await getProvider();
+		await provider.decideGeoOpportunity({
+			geo_opportunity_id: id,
+			action,
+			note,
+			draft,
+		});
+	} catch (error) {
+		els.geoTitle.title = error?.message || "Decision failed";
+		return;
+	}
+	await loadState();
 }
 
-// ── GEO: entity / knowledge-panel readiness ───────────────────────────────────
+// ── GEO: entity / knowledge-panel readiness (checklist — no detail mode) ───
 
 export function renderEntity() {
-  els.title.textContent = t("entityReadiness");
-  const readiness = state.snapshot?.entity_signals;
-  if (!readiness || !(readiness.signals || []).length) {
-    els.subtitle.textContent = t("entityReadinessSub");
-    els.content.innerHTML = `<div class="empty">${t("noEntityData")}</div>`;
-    return;
-  }
-  const signals = entitySignals();
-  els.subtitle.textContent = `${escapeHtml(readiness.brand)} · ${t("entityReadinessSub")}`;
-  const locked = Boolean(state.settings?.lock);
-  const score = entityScore(signals, readiness.score);
-  els.content.innerHTML = `
-    <div class="metrics">
-      <div class="metric">
-        <span>${t("entityScore")}</span>
-        <strong>${n(score)}<small class="metric-unit">/100</small></strong>
-        <div class="metric-delta"><small>${signals.filter((s) => s.status === "present").length}/${signals.length} ${t("present")}</small></div>
+	els.entityTitle.textContent = t("entityReadiness");
+	const readiness = state.snapshot?.entity_signals;
+	if (!readiness || !(readiness.signals || []).length) {
+		els.entityBody.innerHTML = `<div class="empty"><strong>${t("noEntityData")}</strong></div>`;
+		return;
+	}
+	const signals = entitySignals();
+	const locked = Boolean(state.settings?.lock);
+	const score = entityScore(signals, readiness.score);
+	els.entityBody.innerHTML = `
+    <div class="overview-panel wide">
+      <div class="row between">
+        <h2>${escapeHtml(readiness.brand)} · ${t("entityScore")}</h2>
+        <span class="num"><strong>${n(score)}</strong>/100 <small class="muted">${signals.filter((s) => s.status === "present").length}/${signals.length} ${t("present")}</small></span>
       </div>
     </div>
     ${state.demo ? `<div class="demo-note">${t("demoDecisionNote")}</div>` : ""}
@@ -346,25 +399,30 @@ export function renderEntity() {
 }
 
 function entitySignals() {
-  const signals = state.snapshot?.entity_signals?.signals || [];
-  if (!state.demo) return signals;
-  return signals.map((signal) => {
-    const local = state.entityOverrides[signal.id];
-    return local ? { ...signal, status: local.status, detail: local.note || signal.detail } : signal;
-  });
+	const signals = state.snapshot?.entity_signals?.signals || [];
+	if (!state.demo) return signals;
+	return signals.map((signal) => {
+		const local = state.entityOverrides[signal.id];
+		return local
+			? { ...signal, status: local.status, detail: local.note || signal.detail }
+			: signal;
+	});
 }
 
 const ENTITY_WEIGHT = { present: 1, partial: 0.5, missing: 0 };
 
 function entityScore(signals, fallback) {
-  if (!signals.length) return fallback;
-  const total = signals.reduce((sum, signal) => sum + (ENTITY_WEIGHT[signal.status] ?? 0), 0);
-  return Math.round((total / signals.length) * 100);
+	if (!signals.length) return fallback;
+	const total = signals.reduce(
+		(sum, signal) => sum + (ENTITY_WEIGHT[signal.status] ?? 0),
+		0,
+	);
+	return Math.round((total / signals.length) * 100);
 }
 
 function entityCard(signal, locked) {
-  const disabled = locked ? "disabled" : "";
-  return `
+	const disabled = locked ? "disabled" : "";
+	return `
     <article class="entity-card entity-${escapeHtml(signal.status)}" data-entity-id="${escapeHtml(signal.id)}">
       <div class="entity-head">
         <span class="entity-status entity-status-${escapeHtml(signal.status)}">${escapeHtml(enumLabel(signal.status, "entity"))}</span>
@@ -383,17 +441,21 @@ function entityCard(signal, locked) {
 }
 
 export async function submitEntitySignal(id, status) {
-  if (state.demo) {
-    state.entityOverrides[id] = { status, note: "", updated_at: new Date().toISOString() };
-    render();
-    return;
-  }
-  try {
-    const provider = await getProvider();
-    await provider.updateEntitySignal({ signal_id: id, status });
-  } catch (error) {
-    els.subtitle.textContent = error?.message || "Update failed";
-    return;
-  }
-  await loadState();
+	if (state.demo) {
+		state.entityOverrides[id] = {
+			status,
+			note: "",
+			updated_at: new Date().toISOString(),
+		};
+		render();
+		return;
+	}
+	try {
+		const provider = await getProvider();
+		await provider.updateEntitySignal({ signal_id: id, status });
+	} catch (error) {
+		els.entityTitle.title = error?.message || "Update failed";
+		return;
+	}
+	await loadState();
 }

@@ -1,6 +1,14 @@
 {
   "binding": "runtime",
   "schema_version": 1,
+  "ui": {
+    "detail_modes": {
+      "expenses": "drawer",
+      "invoices": "drawer",
+      "reports": "page",
+      "filings": "drawer"
+    }
+  },
   "workspace": {
     "folder": {
       "slug": "busa-office-finance",

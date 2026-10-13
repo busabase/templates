@@ -72,16 +72,16 @@ Default behavior is AirApp-first — give the user the clickable AirApp URL. Sta
 
 Required app views (hash routes):
 
-- `#/student`: student study desk with a photo/intake box (local-only filename picker plus a copy-to-chat prompt), current question, gentle step-by-step explanation, hint ladder, and "I understand" / "I still need help" controls.
-- `#/student/<question_id>`: question detail with the original prompt text, the student's answer, concept explanation, steps, self-check, and next hint.
-- `#/mistakes`: mistake notebook with due-review chips, topic filters, root-cause analysis, similar practice prompt, and review history.
-- `#/papers`: practice paper list, including mistake-focused settings, estimated minutes, and paper analysis (wrong-question count, strengths, review plan).
-- `#/review`: parent/teacher review queue with stable refs, workflow states (`needs_review` / `changes_requested` / `approved` / `done` / `blocked`), an editable review note, suggested actions, and approve/request-changes/block decisions — written directly onto the review record through `busabase-sdk`.
+- `#/student` (default, Overview): the student study desk — mastery / analyzed / active-question numbers, a photo/intake box (local-only filename picker plus a copy-to-chat prompt), the current question, and what is waiting for a parent/teacher decision.
+- `#/questions`: every explained question as a table. `#/questions/<question_id>` (also reachable as the older `#/student/<question_id>`) is the question's full page: original prompt, the student's answer, concept explanation, gentle steps, self-check, next hint, and "I understand" / "I still need help" controls.
+- `#/mistakes`: mistake notebook table (attempts, next review date, status); `?peek=<mistake_id>` opens a mistake in a side drawer with root cause, misconception, fix strategy, similar practice prompt and parent note.
+- `#/papers`: practice paper table; `#/papers/<paper_id>` is the paper's full page with items and analysis (wrong-question count, strengths, review plan).
+- `#/review`: parent/teacher review queue with workflow states (`needs_review` / `changes_requested` / `approved` / `done` / `blocked`, filter via `?status=`), worked as a split view — `?peek=<review_id>` shows the item beside the queue with an editable review note, suggested actions, and approve/request-changes/block decisions written directly onto the review record through `busabase-sdk`.
 - `#/settings`: sanitized config summary, data provider, learning policy, answer-reveal rule, and language. Never exposes a secret value.
 
 ## Demo Mode
 
-- `?demo=student`, `?demo=mistakes`, `?demo=papers`, and `?demo=review` open the deterministic offline dataset for screenshots and review (the scenario only selects which route to demo — the underlying data is always the same `demoSnapshot()`). Demo mode never reads or writes Busabase; demo decisions stay in the browser and are discarded on refresh.
+- `?demo=student`, `?demo=questions`, `?demo=mistakes`, `?demo=papers`, and `?demo=review` open the deterministic offline dataset for screenshots and review (the scenario only selects which route to demo — the underlying data is always the same `demoSnapshot()`). Demo mode never reads or writes Busabase; demo decisions stay in the browser and are discarded on refresh.
 - `lang=en`, `lang=zh`, or `lang=zh-HK` forces UI chrome language. Demo content is meaningfully localized when Chinese is selected.
 - Deep links such as `/?demo=student&lang=zh-HK#/student` must work.
 

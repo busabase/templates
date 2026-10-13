@@ -1,60 +1,83 @@
 import { messages } from "./i18n/messages.js";
 import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
-import { createPagination } from "./js/pagination.js?v=0.1.0";
-import { buildSnapshot } from "./js/portfolio-model.js?v=0.1.0";
+import { createLoadMore } from "./js/pagination.js?v=0.1.0";
+import { buildSnapshot, computeInsights, DEFAULT_RISK_POLICY } from "./js/portfolio-model.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
+import { renderOverview, renderRecordView, renderSettings } from "./js/views.js?v=0.1.0";
 
-const state = {
+// Where a record opens, per view. Chosen by what people do with it:
+//   contracts     → drawer: a contract is a fact you scan many of — check its
+//                   lag, maybe flag it or leave a note — and return to the book.
+//   watchlist     → split:  the watchlist is a queue worked top to bottom, one
+//                   declining contract after the next, so it stays beside it.
+//   concentration → drawer: a bucket is peeked (which contracts make up this
+//                   20%?) and dismissed; the comparison lives in the table.
+// A `/<id>` path always opens the full page; `?peek=<id>` drives drawer/split.
+// On a phone every mode is a page (base-ui.css handles that).
+// Declared once, in config.js `ui.detail_modes`.
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+const CONTRACT_FILTERS = ["all", "at_risk", "flagged"];
+const BUCKETS = ["category", "city"];
+
+export const state = {
   snapshot: null,
   settings: null,
+  // Contracts read so far (page 1 plus every Load More), the source for every
+  // derived number in the app.
+  contracts: [],
+  // Contracts opened by URL that are not on a loaded page (records.get).
+  extra: new Map(),
   route: parseRoute(),
-  query: "",
   sort: { key: "lag_pp", dir: "desc" },
+  notice: "",
+  busy: false,
   lang: normalizeLang(
     new URLSearchParams(location.search).get("lang") ||
       localStorage.getItem("busa-portfolio-health-language") ||
       "auto",
   ),
   demo: new URLSearchParams(location.search).get("demo") || "",
-  busy: false,
 };
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-portfolio-health.sidebarCollapsed";
 
-const CATEGORY_COLORS = ["#334155", "#19715c", "#9a6700", "#7c3aed", "#0369a1", "#b45309", "#be123c", "#4d7c0f"];
-
-const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  watchlistCount: document.querySelector("#watchlist-count"),
-  atRiskCount: document.querySelector("#count-atrisk"),
-  contractCount: document.querySelector("#count-contracts"),
-  language: document.querySelector("#language"),
+const byId = (id) => document.getElementById(id);
+export const els = {
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  viewFilters: byId("viewFilters"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  watchlistCount: byId("watchlist-count"),
+  atRiskCount: byId("count-atrisk"),
+  contractCount: byId("count-contracts"),
+  language: byId("language"),
 };
 
-const PAGINATED_KEYS = ["contracts"];
-const pagination = createPagination({
+export const loadMore = createLoadMore({
   getProvider,
-  pageSizes: Object.fromEntries(appConfig.bases.map((base) => [base.key, base.readLimit])),
-  applyPage: (key, rows) => {
-    state.snapshot = buildSnapshot({ contracts: rows, configSummary: state.settings?.config_summary });
-  },
+  key: "contracts",
+  idOf: (row) => row.id,
+  onRows: (rows) => setContracts(rows),
   render: () => render(),
-  label: (key) => t(key),
-  onError: (error) => {
-    state.pageError = error instanceof Error ? error.message : String(error);
-  },
 });
 
 function isMobileLayout() {
@@ -95,7 +118,7 @@ function syncResponsiveShell() {
   }
 }
 
-function activeLang() {
+export function activeLang() {
   if (state.lang !== "auto") return state.lang;
   return navigator.languages?.some((lang) => lang.toLowerCase().startsWith("zh")) ? "zh" : "en";
 }
@@ -108,48 +131,223 @@ function normalizeLang(lang) {
     : lang || "auto";
 }
 
-function t(key) {
+export function t(key) {
   return messages[activeLang()]?.[key] || messages.en[key] || key;
 }
 
-function money(value, currency = state.snapshot?.base_currency || "USD") {
-  return new Intl.NumberFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(Number(value || 0));
+export function statusLabel(status) {
+  if (!status) return "";
+  const key = String(status);
+  return messages[activeLang()]?.statusLabels?.[key] || messages.en.statusLabels?.[key] || key.replaceAll("_", " ");
 }
 
-function pct(value, digits = 1) {
+export function money(value, currency = state.snapshot?.base_currency || "USD") {
+  try {
+    return new Intl.NumberFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(Number(value || 0));
+  } catch {
+    return Number(value || 0).toLocaleString();
+  }
+}
+
+export function pct(value, digits = 1) {
   const n = Number(value || 0);
   return `${n > 0 ? "+" : ""}${n.toFixed(digits)}%`;
 }
 
-function severityLabel(severity) {
+export function severityLabel(severity) {
   if (severity === "high") return t("severityHigh");
   if (severity === "watch") return t("severityWatch");
   return t("severityOk");
 }
 
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<id>][?q=…&filter=…&by=…&peek=…]`. Search, the contracts filter,
+// the concentration grouping and the peeked record live in the URL so refresh,
+// shared links and Back restore the same list context.
 function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] ? decodeURIComponent(parts[1]) : "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  const filter = params.get("filter") || "all";
+  const by = params.get("by") || "category";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : peek ? mode : null,
+    query: params.get("q") || "",
+    filter: CONTRACT_FILTERS.includes(filter) ? filter : "all",
+    by: BUCKETS.includes(by) ? by : "category",
+  };
 }
+
+const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  if (route.view === "contracts" && route.filter !== "all") params.set("filter", route.filter);
+  if (route.view === "concentration" && route.by !== "category") params.set("by", route.by);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+const contextFor = (view) =>
+  view === state.route.view ? state.route : { view, query: "", filter: "all", by: state.route.by || "category" };
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) =>
+  `#/${view}/${encodeURIComponent(id)}${routeQuery({}, contextFor(view))}`;
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) => {
+  if (DETAIL_MODES[view] === "page") return detailUrl(id, view);
+  return `#/${view}${routeQuery({ peek: id }, contextFor(view))}`;
+};
+export const filterUrl = (patch) =>
+  `#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, ...patch })}`;
+
+let previousRouteWasList = false;
+let routeSerial = 0;
 
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  state.notice = "";
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
+  render();
+  ensureSelectedContract();
+}
+
+// Replace the current entry without a hashchange: search keystrokes and filter
+// clicks should not each become a Back step.
+export function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
   render();
 }
 
-async function loadState() {
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── Data ───────────────────────────────────────────────────────────────────
+function riskPolicy() {
+  return state.settings?.config_summary?.risk_policy || DEFAULT_RISK_POLICY;
+}
+
+function setContracts(rows) {
+  state.contracts = rows;
+  state.snapshot = buildSnapshot({
+    contracts: rows,
+    configSummary: state.settings?.config_summary,
+    generatedAt: state.snapshot?.generated_at,
+    source: state.snapshot?.source,
+  });
+}
+
+export async function loadState() {
   const provider = await getProvider();
   const data = await provider.getState();
-  pagination.reset(data.pagination, data.totals);
   closeConnectGate();
-  state.snapshot = data.snapshot;
   state.settings = data;
+  state.snapshot = data.snapshot;
+  state.contracts = data.snapshot?.contracts || [];
+  state.extra = new Map();
+  loadMore.reset({ cursor: data.pagination?.contracts, total: data.totals?.contracts });
   window.dispatchEvent(new CustomEvent("busa-portfolio-health:state", { detail: data }));
+  applyDemoRoute();
   render();
+  ensureSelectedContract();
+}
+
+// A contract named by the URL but not on a loaded page is read on its own
+// (records.get by contract id) instead of loading more pages to find it.
+async function ensureSelectedContract() {
+  const { view, selectedId } = state.route;
+  if (!state.snapshot || !selectedId || view === "concentration" || !RECORD_VIEWS.includes(view)) return;
+  if (loadedContract(selectedId) || state.extra.has(selectedId)) return;
+  const provider = await getProvider();
+  if (typeof provider?.getContract !== "function") {
+    state.extra.set(selectedId, null);
+    render();
+    return;
+  }
+  const serial = ++routeSerial;
+  state.extra.set(selectedId, undefined);
+  render();
+  try {
+    state.extra.set(selectedId, (await provider.getContract(selectedId)) || null);
+  } catch {
+    state.extra.set(selectedId, null);
+  }
+  if (serial === routeSerial) render();
+}
+
+function applyDemoRoute() {
+  if (!state.settings?.demo || location.hash) return;
+  const scenario = state.settings.demo_scenario || "overview";
+  const route = RECORD_VIEWS.includes(scenario) || scenario === "settings" ? `#/${scenario}` : "#/overview";
+  history.replaceState(null, "", `${location.pathname}${location.search}${route}`);
+  state.route = parseRoute();
+}
+
+const loadedContract = (id) => state.contracts.find((item) => item.id === id) || null;
+
+// Loaded page first, then a contract fetched on its own for the URL.
+// `undefined` = still being read, `null` = unavailable.
+export function contractById(id) {
+  if (!id) return null;
+  return loadedContract(id) || state.extra.get(id);
+}
+
+// Per-contract derived figures (lag, severity, revenue decline). Computed for
+// the one contract so a contract read on its own gets the same numbers.
+export function contractInsight(contract) {
+  const insight = computeInsights([contract], riskPolicy());
+  return { progress: insight.progress[0] || {}, watch: insight.watchlist[0] || null };
+}
+
+export function insights() {
+  return state.snapshot?.insights || {};
+}
+
+export function isAtRisk(contract, progress) {
+  return contract.status === "delinquent" || (progress && progress.severity !== "ok");
+}
+
+// Copy for numbers derived from loaded contracts while more exist.
+export function loadedNote() {
+  if (!loadMore.partial()) return "";
+  const n = state.contracts.length;
+  return loadMore.total != null
+    ? t("loadedOf").replace("{n}", n).replace("{total}", loadMore.total)
+    : t("loadedSome").replace("{n}", n);
 }
 
 function applyI18n() {
@@ -164,46 +362,14 @@ function applyI18n() {
   }
   els.search.placeholder = t("search");
   els.refresh.textContent = t("refresh");
+  els.refresh.title = t("refresh");
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
+  byId("overviewTitle").textContent = t("overview");
+  byId("settingsTitle").textContent = t("settings");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
-function hasSnapshot() {
-  return Boolean(state.snapshot);
-}
-
-function watchlistRows() {
-  return state.snapshot?.insights?.watchlist || [];
-}
-
-function contractById(id) {
-  return (state.snapshot?.contracts || []).find((item) => item.id === id);
-}
-
-function renderShell() {
-  applyI18n();
-  const insights = state.snapshot?.insights;
-  const contractCount = pagination.total("contracts", state.snapshot?.contracts?.length || 0);
-  const connected = hasSnapshot();
-  els.syncStatus.textContent = connected
-    ? state.snapshot?.generated_at
-      ? `${t("generated")} ${new Date(state.snapshot.generated_at).toLocaleString()}`
-      : t("synced")
-    : t("needsConnection");
-  if (els.watchlistCount) els.watchlistCount.textContent = watchlistRows().length;
-  if (els.atRiskCount) els.atRiskCount.textContent = insights?.totals?.at_risk_count ?? 0;
-  if (els.contractCount) els.contractCount.textContent = contractCount;
-  if (els.mobileViewTitle) els.mobileViewTitle.textContent = viewLabel(state.route.view);
-  if (els.mobileViewMeta) {
-    els.mobileViewMeta.textContent = connected
-      ? `${money(insights?.totals?.total_aum)} ${t("totalAum").toLowerCase()}`
-      : t("needsConnection");
-  }
-  document.querySelectorAll("[data-route]").forEach((link) => {
-    link.classList.toggle("active", link.dataset.route === state.route.view);
-  });
-}
-
-function viewLabel(view) {
+export function viewLabel(view) {
   if (view === "contracts") return t("contractsTitle");
   if (view === "concentration") return t("concentrationTitle");
   if (view === "watchlist") return t("watchlistTitle");
@@ -211,440 +377,50 @@ function viewLabel(view) {
   return t("overview");
 }
 
-function totalsMetricCards() {
-  const totals = state.snapshot?.insights?.totals || {};
-  return `
-    <div class="metrics">
-      <div class="metric"><span>${t("totalAum")}</span><strong>${money(totals.total_aum)}</strong></div>
-      <div class="metric"><span>${t("totalCollected")}</span><strong>${money(totals.total_collected)}</strong></div>
-      <div class="metric"><span>${t("weightedAvgProgress")}</span><strong>${Number(totals.weighted_avg_progress_pct || 0).toFixed(1)}%</strong></div>
-      <div class="metric"><span>${t("atRiskCount")}</span><strong class="${totals.at_risk_count ? "negative" : ""}">${totals.at_risk_count ?? 0}</strong></div>
-    </div>
-  `;
-}
-
-function laggingPanel() {
-  const rows = [...(state.snapshot?.insights?.progress || [])]
-    .filter((row) => row.severity !== "ok")
-    .sort((a, b) => b.lag_pp - a.lag_pp)
-    .slice(0, 8);
-  if (!rows.length)
-    return `<div class="overview-panel"><h2>${t("laggingContracts")}</h2><div class="empty">${t("watchlistEmpty")}</div></div>`;
-  return `
-    <div class="overview-panel wide">
-      <h2>${t("laggingContracts")}</h2>
-      <div class="insight-list">
-        ${rows
-          .map(
-            (row) => `
-          <div class="insight-row">
-            <span class="badge sev-${row.severity}">${escapeHtml(severityLabel(row.severity))}</span>
-            <a class="insight-text" href="#/contracts/${encodeURIComponent(row.id)}">${escapeHtml(row.business_name)}<small> · ${escapeHtml(row.category)} · ${t("expectedProgress")} ${row.expected_pct.toFixed(0)}% / ${t("actualProgress")} ${row.actual_pct.toFixed(0)}% (${t("lag")} ${row.lag_pp.toFixed(0)}pp)</small></a>
-          </div>`,
-          )
-          .join("")}
-      </div>
-    </div>
-  `;
-}
-
-function allocationPanel() {
-  const allocation = state.snapshot?.insights?.concentration_by_category || [];
-  if (!allocation.length) return "";
-  // Thin transparent gaps between slices read as a cleaner, more refined
-  // donut than solid abutting wedges. gapPct is expressed in the same
-  // percentage-of-circle units as the weights themselves.
-  const gapPct = 0.6;
-  let acc = 0;
-  const gradientStops = allocation
-    .map((item, index) => {
-      const start = acc;
-      const width = Math.max(0, Number(item.weight_pct || 0) - gapPct);
-      acc += Number(item.weight_pct || 0);
-      const color = CATEGORY_COLORS[index % CATEGORY_COLORS.length];
-      return `${color} ${start.toFixed(2)}% ${(start + width).toFixed(2)}%, transparent ${(start + width).toFixed(2)}% ${acc.toFixed(2)}%`;
-    })
-    .join(", ");
-  const legend = allocation
-    .map(
-      (item, index) => `
-      <div class="alloc-legend-row">
-        <span class="alloc-swatch" style="background:${CATEGORY_COLORS[index % CATEGORY_COLORS.length]}"></span>
-        <span class="alloc-name">${escapeHtml(item.key)}</span>
-        <span class="alloc-weight">${Number(item.weight_pct || 0).toFixed(1)}%</span>
-        <span class="alloc-value num">${money(item.funding_amount)}</span>
-      </div>
-    `,
-    )
-    .join("");
-  const top = allocation[0];
-  const centerLabel = top
-    ? `<span class="alloc-donut-figure">${Number(top.weight_pct || 0).toFixed(0)}%</span><span class="alloc-donut-caption">${escapeHtml(truncate(top.key, 12))}</span>`
-    : "";
-  return `
-    <div class="overview-panel">
-      <h2>${t("concentrationByCategory")}</h2>
-      <div class="alloc-body">
-        <div class="alloc-donut" style="background:conic-gradient(${gradientStops})" aria-hidden="true"><span class="alloc-donut-hole">${centerLabel}</span></div>
-        <div class="alloc-legend">${legend}</div>
-      </div>
-    </div>
-  `;
-}
-
-function truncate(value, max) {
-  const s = String(value ?? "");
-  return s.length > max ? `${s.slice(0, max - 1)}…` : s;
-}
-
-function renderOverview() {
-  els.title.textContent = t("overview");
-  els.subtitle.textContent = state.snapshot?.generated_at
-    ? `${t("generated")} ${new Date(state.snapshot.generated_at).toLocaleString()}`
-    : t("empty");
-  els.content.innerHTML = `
-    ${totalsMetricCards()}
-    <section class="overview-grid">
-      ${allocationPanel()}
-      ${laggingPanel()}
-    </section>
-  `;
-}
-
-function sortedContracts(list) {
-  const { key, dir } = state.sort;
-  const factor = dir === "asc" ? 1 : -1;
-  return [...list].sort((a, b) => {
-    const av = a[key];
-    const bv = b[key];
-    if (typeof av === "number" && typeof bv === "number") return (av - bv) * factor;
-    return String(av ?? "").localeCompare(String(bv ?? "")) * factor;
+function renderShell() {
+  applyI18n();
+  const ready = Boolean(state.snapshot);
+  const totals = insights().totals || {};
+  const watchCount = insights().watchlist?.length || 0;
+  const partial = loadMore.partial() ? "+" : "";
+  // The real total when records.count answered; else the loaded rows, marked.
+  const contractCount = loadMore.total ?? `${state.contracts.length}${partial}`;
+  els.syncStatus.textContent = !ready ? t("loading") : state.settings?.demo ? t("demoData") : t("liveData");
+  els.watchlistCount.textContent = ready ? `${watchCount}${partial}` : "–";
+  els.atRiskCount.textContent = ready ? `${totals.at_risk_count ?? 0}${partial}` : "–";
+  els.contractCount.textContent = ready ? contractCount : "–";
+  els.mobileViewTitle.textContent = viewLabel(state.route.view);
+  els.mobileViewMeta.textContent = !ready
+    ? t("loading")
+    : t("aumMeta").replace("{value}", money(totals.total_aum));
+  document.querySelectorAll("[data-route]").forEach((link) => {
+    link.classList.toggle("active", link.dataset.route === state.route.view);
   });
 }
 
-function contractRows() {
-  const progressById = new Map((state.snapshot?.insights?.progress || []).map((row) => [row.id, row]));
-  const query = state.query.trim().toLowerCase();
-  return (state.snapshot?.contracts || [])
-    .map((c) => ({ ...c, ...progressById.get(c.id) }))
-    .filter((c) => {
-      if (!query) return true;
-      return [c.business_name, c.category, c.city, c.id]
-        .filter(Boolean)
-        .some((v) => String(v).toLowerCase().includes(query));
-    });
-}
-
-function sortHeader(key, label, cls = "") {
-  const active = state.sort.key === key;
-  const arrow = active ? (state.sort.dir === "asc" ? " ▲" : " ▼") : "";
-  return `<th class="sortable ${cls} ${active ? "active" : ""}" data-sort="${key}">${escapeHtml(label)}${arrow}</th>`;
-}
-
-function contractsTable(rows) {
-  if (!rows.length) return `<div class="empty">${t("empty")}</div>`;
-  const sorted = sortedContracts(rows);
-  return `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            ${sortHeader("business_name", t("business"))}
-            ${sortHeader("category", t("category"))}
-            ${sortHeader("city", t("city"))}
-            ${sortHeader("funding_amount", t("fundingAmount"), "num")}
-            ${sortHeader("actual_pct", t("actualProgress"), "num")}
-            ${sortHeader("lag_pp", t("lag"), "num")}
-            ${sortHeader("status", t("status"))}
-          </tr>
-        </thead>
-        <tbody>
-          ${sorted
-            .map(
-              (c) => `
-            <tr>
-              <td><a href="#/contracts/${encodeURIComponent(c.id)}"><span class="strong">${escapeHtml(c.business_name)}</span></a>${c.flagged ? `<div class="muted"><span class="badge sev-high">${escapeHtml(t("flagged"))}</span></div>` : ""}</td>
-              <td>${escapeHtml(c.category)}</td>
-              <td>${escapeHtml(c.city)}</td>
-              <td class="num">${money(c.funding_amount, c.currency)}</td>
-              <td class="num">${(c.actual_pct ?? 0).toFixed(1)}%</td>
-              <td class="num ${(c.lag_pp ?? 0) > 0 ? "negative" : ""}">${(c.lag_pp ?? 0).toFixed(1)}pp</td>
-              <td><span class="badge">${escapeHtml(c.status)}</span></td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-function renderContracts() {
-  els.title.textContent = t("contractsTitle");
-  const rows = contractRows();
-  els.subtitle.textContent = `${pagination.total("contracts", rows.length)} ${t("contracts")}`;
-  els.content.innerHTML = `${totalsMetricCards()}${contractsTable(rows)}`;
-}
-
-function concentrationTable(rows, labelKey) {
-  if (!rows.length) return `<div class="empty">${t("empty")}</div>`;
-  return `
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>${escapeHtml(t(labelKey))}</th><th class="num">${t("fundingAmount")}</th><th class="num">${t("weight")}</th><th class="num">${t("contracts")}</th></tr></thead>
-        <tbody>
-          ${rows
-            .map(
-              (row) => `
-            <tr>
-              <td>${escapeHtml(row.key)}</td>
-              <td class="num">${money(row.funding_amount)}</td>
-              <td class="num">${row.weight_pct.toFixed(1)}%</td>
-              <td class="num">${row.contract_count}</td>
-            </tr>`,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-function renderConcentration() {
-  els.title.textContent = t("concentrationTitle");
-  els.subtitle.textContent = t("localFilesOnly");
-  const insights = state.snapshot?.insights || {};
-  els.content.innerHTML = `
-    <section class="overview-grid">
-      <div class="overview-panel wide"><h2>${t("concentrationByCategory")}</h2>${concentrationTable(insights.concentration_by_category || [], "category")}</div>
-      <div class="overview-panel wide"><h2>${t("concentrationByCity")}</h2>${concentrationTable(insights.concentration_by_city || [], "city")}</div>
-    </section>
-  `;
-}
-
-function sparkline(values) {
-  if (!values.length) return "";
-  const max = Math.max(...values);
-  const min = Math.min(...values);
-  const span = max - min || 1;
-  const points = values.map((v, i) => {
-    const x = (i / (values.length - 1 || 1)) * 100;
-    const y = 28 - ((v - min) / span) * 24 - 2;
-    return [x, y];
-  });
-  // Catmull-Rom -> cubic Bezier smoothing so the trend reads as a gentle
-  // curve rather than a jagged polyline.
-  const linePath = smoothPath(points);
-  const areaPath = `${linePath} L ${points[points.length - 1][0].toFixed(2)},30 L ${points[0][0].toFixed(2)},30 Z`;
-  const gradientId = `spark-fill-${Math.random().toString(36).slice(2, 9)}`;
-  return `<svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none">
-    <defs>
-      <linearGradient id="${gradientId}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="currentColor" stop-opacity="0.22" />
-        <stop offset="100%" stop-color="currentColor" stop-opacity="0" />
-      </linearGradient>
-    </defs>
-    <path d="${areaPath}" fill="url(#${gradientId})" stroke="none"></path>
-    <path d="${linePath}" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
-  </svg>`;
-}
-
-function smoothPath(points) {
-  if (points.length < 3) {
-    return `M ${points.map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`).join(" L ")}`;
-  }
-  let d = `M ${points[0][0].toFixed(2)},${points[0][1].toFixed(2)}`;
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[i === 0 ? 0 : i - 1];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = points[i + 2] || p2;
-    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
-    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
-    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
-    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
-    d += ` C ${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${p2[0].toFixed(2)},${p2[1].toFixed(2)}`;
-  }
-  return d;
-}
-
-function renderWatchlist() {
-  els.title.textContent = t("watchlistTitle");
-  const rows = watchlistRows();
-  els.subtitle.textContent = `${rows.length} ${t("contracts")}`;
-  if (!rows.length) {
-    els.content.innerHTML = `<div class="empty">${t("watchlistEmpty")}</div>`;
-    return;
-  }
-  const disabled = state.busy ? "disabled" : "";
-  els.content.innerHTML = `
-    <div class="watchlist-grid">
-      ${rows
-        .map((row) => {
-          const contract = contractById(row.id) || {};
-          return `
-        <div class="watchlist-card">
-          <div class="row between">
-            <a href="#/contracts/${encodeURIComponent(row.id)}"><strong>${escapeHtml(row.business_name)}</strong></a>
-            <span class="badge sev-high">${pct(row.decline_pct)}</span>
-          </div>
-          <div class="muted">${escapeHtml(row.category)} · ${escapeHtml(row.city)}</div>
-          <div class="spark-wrap negative">${sparkline(row.monthly_revenue)}</div>
-          <div class="muted">${t("recentRevenue")}: ${money(row.recent_revenue)}</div>
-          <div class="row watchlist-actions">
-            <button type="button" data-action="toggle-flag" data-id="${escapeHtml(row.id)}" class="${contract.flagged ? "primary" : ""}" ${disabled}>${contract.flagged ? escapeHtml(t("clearFlag")) : escapeHtml(t("flagForReview"))}</button>
-          </div>
-        </div>
-      `;
-        })
-        .join("")}
-    </div>
-  `;
-}
-
-function renderContractDetail() {
-  const contract = contractById(state.route.id);
-  if (!contract) {
-    renderContracts();
-    return;
-  }
-  const progress = (state.snapshot?.insights?.progress || []).find((row) => row.id === contract.id) || {};
-  els.title.textContent = contract.business_name;
-  els.subtitle.textContent = `${contract.category} · ${contract.city}`;
-  const disabled = state.busy ? "disabled" : "";
-  els.content.innerHTML = `
-    <section class="detail">
-      <div class="detail-main">
-        <a class="back-link" href="#/contracts">← ${t("back")}</a>
-        <div class="metrics">
-          <div class="metric"><span>${t("fundingAmount")}</span><strong>${money(contract.funding_amount, contract.currency)}</strong></div>
-          <div class="metric"><span>${t("capAmount")}</span><strong>${money(contract.cap_amount, contract.currency)}</strong></div>
-          <div class="metric"><span>${t("cumulativeRepayment")}</span><strong>${money(contract.cumulative_repayment, contract.currency)}</strong></div>
-          <div class="metric"><span>${t("lag")}</span><strong class="${(progress.lag_pp ?? 0) > 0 ? "negative" : ""}">${(progress.lag_pp ?? 0).toFixed(1)}pp</strong></div>
-        </div>
-        <div class="overview-panel">
-          <h2>${t("revenueTrend")}</h2>
-          <div class="spark-wrap">${sparkline(contract.monthly_revenue)}</div>
-        </div>
-        <div class="overview-panel review-panel">
-          <h2>${t("reviewNote")}</h2>
-          <textarea id="reviewNote" rows="3" placeholder="${escapeHtml(t("reviewNote"))}" ${disabled}>${escapeHtml(contract.note || "")}</textarea>
-          <div class="row watchlist-actions">
-            <button type="button" data-action="toggle-flag" data-id="${escapeHtml(contract.id)}" class="${contract.flagged ? "primary" : ""}" ${disabled}>${contract.flagged ? escapeHtml(t("clearFlag")) : escapeHtml(t("flagForReview"))}</button>
-            <button type="button" data-action="save-note" data-id="${escapeHtml(contract.id)}" ${disabled}>${escapeHtml(t("saveNote"))}</button>
-          </div>
-        </div>
-      </div>
-      <aside class="detail-side">
-        <h2>${t("contractDetail")}</h2>
-        <dl>
-          <dt>${t("originationDate")}</dt><dd>${escapeHtml(contract.origination_date)}</dd>
-          <dt>${t("monthsSince")}</dt><dd>${contract.months_since_origination}</dd>
-          <dt>${t("term")}</dt><dd>${contract.expected_term_months}</dd>
-          <dt>${t("capMultiple")}</dt><dd>${contract.cap_multiple.toFixed(2)}×</dd>
-          <dt>${t("status")}</dt><dd>${escapeHtml(contract.status)}</dd>
-          <dt>${t("expectedProgress")}</dt><dd>${(progress.expected_pct ?? 0).toFixed(1)}%</dd>
-          <dt>${t("actualProgress")}</dt><dd>${(progress.actual_pct ?? 0).toFixed(1)}%</dd>
-        </dl>
-      </aside>
-    </section>
-  `;
-}
-
-function renderSettings() {
-  els.title.textContent = t("settings");
-  els.subtitle.textContent = t("localFilesOnly");
-  const summary = state.settings?.config_summary || {};
-  const policy = summary.risk_policy || {};
-  els.content.innerHTML = `
-    <div class="settings">
-      <section>
-        <h2>${t("configuration")}</h2>
-        <dl>
-          <dt>${t("dataProvider")}</dt><dd>${escapeHtml(state.settings?.data_provider || "busabase")}</dd>
-          <dt>${t("configPath")}</dt><dd>${escapeHtml(summary.config_path || "")}</dd>
-          <dt>${t("fundName")}</dt><dd>${escapeHtml(summary.fund_name || "")}</dd>
-          <dt>${t("baseCurrency")}</dt><dd>${escapeHtml(summary.base_currency || "USD")}</dd>
-          <dt>${t("onboarding")}</dt><dd>${state.settings?.onboarding?.completed ? t("completed") : t("incomplete")}</dd>
-        </dl>
-      </section>
-      <section>
-        <h2>${t("riskPolicy")}</h2>
-        <dl>
-          <dt>${t("lagWatch")}</dt><dd>${policy.lag_watch_pp ?? "—"}</dd>
-          <dt>${t("lagHigh")}</dt><dd>${policy.lag_high_pp ?? "—"}</dd>
-          <dt>${t("revenueDeclineThreshold")}</dt><dd>${policy.revenue_decline_pct ?? "—"}</dd>
-        </dl>
-      </section>
-    </div>
-  `;
-}
-
-function renderPagedList(renderList, key) {
-  renderList();
-  els.content.insertAdjacentHTML("beforeend", `${pagination.control(key)}`);
-}
-
-function render() {
+export function render() {
   renderShell();
-  if (state.route.view === "contracts" && state.route.id) renderContractDetail();
-  else if (state.route.view === "contracts") renderPagedList(renderContracts, "contracts");
-  else if (state.route.view === "concentration") renderConcentration();
-  else if (state.route.view === "watchlist") renderWatchlist();
-  else if (state.route.view === "settings") renderSettings();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.add("ws-has-mobile-bar");
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
   else renderOverview();
 }
 
-// Direct decision write: flag-for-review / clear-flag / note, applied
-// straight through the active provider (Busabase or demo), the same way
-// kelly-llm-gateway's rollout promote/rollback/hold writes work — there is
-// no separate approval step, since the flag/note is written directly onto
-// the contract's own record. Demo mode never writes anywhere; it only
-// reflects the decision in the in-memory snapshot already rendered.
-async function submitToggleFlag(id) {
-  if (state.demo) {
-    const contract = contractById(id);
-    if (contract) contract.flagged = !contract.flagged;
-    render();
-    return;
-  }
-  const contract = contractById(id);
-  const nextFlagged = !contract?.flagged;
-  state.busy = true;
-  render();
-  try {
-    const provider = await getProvider();
-    await provider.decideContract(id, { flagged: nextFlagged });
-    await loadState();
-  } catch (error) {
-    els.content.insertAdjacentHTML("afterbegin", `<div class="empty">${escapeHtml(error.message)}</div>`);
-  } finally {
-    state.busy = false;
-  }
-}
-
-async function submitSaveNote(id, note) {
-  if (state.demo) {
-    const contract = contractById(id);
-    if (contract) contract.note = note;
-    render();
-    return;
-  }
-  state.busy = true;
-  render();
-  try {
-    const provider = await getProvider();
-    await provider.decideContract(id, { note });
-    await loadState();
-  } catch (error) {
-    els.content.insertAdjacentHTML("afterbegin", `<div class="empty">${escapeHtml(error.message)}</div>`);
-  } finally {
-    state.busy = false;
-  }
-}
-
-function escapeHtml(value) {
+export function escapeHtml(value) {
   return String(value ?? "").replace(
     /[&<>"']/g,
     (char) =>
@@ -658,38 +434,96 @@ function escapeHtml(value) {
   );
 }
 
-pagination.bind(els.content);
+// ── Writes ─────────────────────────────────────────────────────────────────
+// Direct decision write: flag-for-review / clear-flag / note, applied straight
+// through the active provider onto the contract's own record (a pending
+// ChangeRequest from the deployed AirApp, merged immediately only from a
+// standalone local run) — there is no separate approval step. Demo mode never
+// writes anywhere; it only reflects the decision in memory.
+async function submitDecision(id, patch) {
+  const contract = contractById(id);
+  if (!contract) return;
+  if (state.demo) {
+    Object.assign(contract, patch);
+    render();
+    return;
+  }
+  state.busy = true;
+  state.notice = "";
+  render();
+  try {
+    const provider = await getProvider();
+    await provider.decideContract(id, patch);
+    await loadState();
+  } catch (error) {
+    state.notice = error instanceof Error ? error.message : String(error);
+  } finally {
+    state.busy = false;
+    render();
+  }
+}
 
+// ── Events ─────────────────────────────────────────────────────────────────
+els.listPanel.addEventListener("click", (event) => {
+  if (event.target.closest("[data-load-more]")) {
+    loadMore.loadMore(state.contracts);
+    return;
+  }
+  const header = event.target.closest("[data-sort]");
+  if (header) {
+    const key = header.dataset.sort;
+    if (state.sort.key === key) state.sort.dir = state.sort.dir === "asc" ? "desc" : "asc";
+    else state.sort = { key, dir: ["business_name", "category", "city", "status"].includes(key) ? "asc" : "desc" };
+    render();
+    return;
+  }
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+els.viewFilters.addEventListener("click", (event) => {
+  const segment = event.target.closest("[data-filter], [data-by]");
+  if (!segment) return;
+  if (segment.dataset.filter) replaceRoute(filterUrl({ filter: segment.dataset.filter }));
+  // A different grouping has different buckets: drop the peeked one.
+  else replaceRoute(`#/concentration${routeQuery({}, { ...state.route, by: segment.dataset.by })}`);
+});
+els.detailBody.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+  const id = button.dataset.id;
+  if (button.dataset.action === "toggle-flag") {
+    submitDecision(id, { flagged: !contractById(id)?.flagged });
+  } else if (button.dataset.action === "save-note") {
+    submitDecision(id, { note: els.detailBody.querySelector("#reviewNote")?.value || "" });
+  }
+});
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  // Escape inside the note only leaves the field; a second Escape closes.
+  if (event.target.closest?.("textarea, input")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", () => setMobileSidebarOpen(true));
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
-});
-els.content.addEventListener("click", (event) => {
-  const header = event.target.closest("[data-sort]");
-  if (header) {
-    const key = header.dataset.sort;
-    if (state.sort.key === key) {
-      state.sort.dir = state.sort.dir === "asc" ? "desc" : "asc";
-    } else {
-      state.sort = { key, dir: key === "business_name" || key === "category" || key === "city" ? "asc" : "desc" };
-    }
-    render();
-    return;
-  }
-  const actionButton = event.target.closest("[data-action]");
-  if (!actionButton) return;
-  const id = actionButton.dataset.id;
-  if (actionButton.dataset.action === "toggle-flag") {
-    submitToggleFlag(id);
-  } else if (actionButton.dataset.action === "save-note") {
-    const note = document.querySelector("#reviewNote")?.value || "";
-    submitSaveNote(id, note);
-  }
+  replaceRoute(filterUrl({ query: els.search.value }));
 });
 els.refresh.addEventListener("click", () => loadState());
 els.mobileRefresh?.addEventListener("click", () => loadState());
@@ -699,8 +533,6 @@ els.language.addEventListener("change", () => {
   localStorage.setItem("busa-portfolio-health-language", state.lang);
   render();
 });
-
-syncResponsiveShell();
 
 async function boot() {
   const ready = await passConnectGate({ onReady: boot });
@@ -712,8 +544,13 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+syncResponsiveShell();
 boot();

@@ -42,9 +42,13 @@
     font: inherit;
   }
 
+  /* :not(.button) so the shared base-ui `.button` keeps its border. */
   button {
-    border: 0;
     cursor: pointer;
+  }
+
+  button:not(.button) {
+    border: 0;
   }
 
   button:focus-visible,

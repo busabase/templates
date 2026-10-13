@@ -110,6 +110,10 @@ function categoryRiskFactor(category = "other", criteria = {}) {
     factor: "category_risk",
     weight: 25,
     contribution,
+    // The UI localizes this factor from category + tier rather than printing
+    // the English rationale with a raw category id in it.
+    category,
+    tier,
     rationale: `${categoryLabel(category)} is a ${tier}-risk category for revenue-based financing.`,
   };
 }

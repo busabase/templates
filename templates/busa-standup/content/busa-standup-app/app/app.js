@@ -4,24 +4,35 @@ import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/con
 import { createPagination } from "./js/pagination.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
 import { computeMetrics } from "./js/standup-model.js?v=0.1.0";
-import {
-  renderBlockers,
-  renderHistory,
-  renderHistoryDetail,
-  renderMemberDetail,
-  renderMembers,
-  renderReminders,
-  renderSettings,
-  submitDecision,
-} from "./js/team-views.js";
+import { renderOverview, renderRecordView, renderSettings, submitDecision } from "./js/team-views.js";
+
+// Where a record opens, per view — declared once in config.js `ui.detail_modes`:
+//   members   → page:   a member's profile is a workplace of its own (open
+//                       blockers + a recent-updates timeline) — people stay a
+//                       while.
+//   blockers  → drawer: a fact people scan many of, read, and return to the
+//                       list.
+//   reminders → split:  the approval queue is worked top to bottom, one
+//                       draft after the next, so the queue stays beside it.
+//   history   → page:   a standup day is its own workspace — digest plus
+//                       every member's update.
+// A `/record` path always opens the full page; `?peek=` drives drawer/split.
+// On a phone every mode is a page (base-ui.css handles that).
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+export const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+export const REMINDER_STATUSES = ["needs_review", "changes_requested", "approved", "done", "blocked"];
+// Status filter options per view (first entry is the default / "no filter
+// applied" value, so it never appears in the URL). Views with no entry here
+// (members, history) have no status filter.
+export const STATUS_FILTERS = {
+  blockers: ["open", "resolved", "all"],
+  reminders: ["all", ...REMINDER_STATUSES],
+};
 
 export const state = {
   snapshot: null,
   settings: null,
   route: parseRoute(),
-  query: "",
-  blockerFilter: "open",
-  reminderFilter: "all",
   lang: normalizeLang(
     new URLSearchParams(location.search).get("lang") || localStorage.getItem("busa-standup-language") || "auto",
   ),
@@ -30,28 +41,37 @@ export const state = {
 };
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-standup.sidebarCollapsed";
-export const REMINDER_STATUSES = ["needs_review", "changes_requested", "approved", "done", "blocked"];
 
+const byId = (id) => document.getElementById(id);
 export const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  reviewCount: document.querySelector("#count-review"),
-  missingCount: document.querySelector("#count-missing"),
-  blockerCount: document.querySelector("#count-blockers"),
-  language: document.querySelector("#language"),
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  viewFilters: byId("viewFilters"),
+  statusSelect: byId("statusSelect"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  reviewCount: byId("count-review"),
+  missingCount: byId("count-missing"),
+  blockerCount: byId("count-blockers"),
+  language: byId("language"),
 };
 
-const PAGINATED_KEYS = ["members", "blockers", "reminders"];
 const pagination = createPagination({
   getProvider,
   pageSizes: Object.fromEntries(appConfig.bases.map((base) => [base.key, base.readLimit])),
@@ -68,6 +88,10 @@ const pagination = createPagination({
 
 export function recordTotal(key, fallback = 0) {
   return pagination.total(key, fallback);
+}
+
+export function pagerControl(key) {
+  return pagination.control(key);
 }
 
 function isMobileLayout() {
@@ -194,14 +218,91 @@ export function blockerAgeDays(blocker) {
   return ageDays(blocker.raised_date);
 }
 
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&status=…&peek=…]`. Search, the status filter and
+// the peeked record live in the URL so refresh, shared links and Back
+// restore the same list context.
 export function parseRoute() {
-  const parts = (location.hash || "#/today").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "today", id: parts[1] ? decodeURIComponent(parts[1]) : "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  const statusOptions = STATUS_FILTERS[view];
+  const rawStatus = params.get("status");
+  const status = statusOptions ? (statusOptions.includes(rawStatus) ? rawStatus : statusOptions[0]) : "";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+    status,
+  };
 }
 
+function routeQuery(extra = {}, route = state.route) {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  const statusOptions = STATUS_FILTERS[route.view];
+  if (statusOptions && route.status && route.status !== statusOptions[0]) params.set("status", route.status);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+}
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) => {
+  const route = view === state.route.view ? state.route : { view, query: "", status: STATUS_FILTERS[view]?.[0] || "" };
+  return `#/${view}/${encodeURIComponent(id)}${routeQuery({}, route)}`;
+};
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) => {
+  if (DETAIL_MODES[view] === "page") return detailUrl(id, view);
+  const route = view === state.route.view ? state.route : { view, query: "", status: STATUS_FILTERS[view]?.[0] || "" };
+  return `#/${view}${routeQuery({ peek: id }, route)}`;
+};
+
+let previousRouteWasList = false;
+
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back
+  // to that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
   render();
+}
+
+// Replace the current entry without a hashchange: search keystrokes and
+// filter clicks should not each become a Back step.
+export function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
+  render();
+}
+
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
 }
 
 export async function loadState() {
@@ -218,19 +319,19 @@ export async function loadState() {
 
 function applyDemoRoute() {
   if (!state.settings?.demo || location.hash) return;
-  const scenario = state.settings.demo_scenario || "today";
+  const scenario = state.settings.demo_scenario || "overview";
   const route =
     scenario === "members"
       ? "#/members"
       : scenario === "blockers"
-        ? "#/blockers"
+        ? "#/blockers?status=open"
         : scenario === "history"
           ? "#/history"
           : scenario === "detail"
             ? "#/members/alex"
             : scenario === "reminders"
               ? "#/reminders"
-              : "#/today";
+              : "#/overview";
   history.replaceState(null, "", `${location.pathname}${location.search}${route}`);
   state.route = parseRoute();
 }
@@ -246,7 +347,7 @@ function applyI18n() {
     option.textContent = languageLabels[option.value] || option.textContent;
   }
   els.search.placeholder = t("search");
-  els.refresh.textContent = t("refresh");
+  els.refresh.title = t("refresh");
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
 }
 
@@ -268,7 +369,7 @@ export function days() {
   return [...(state.snapshot?.days || [])].sort((a, b) => (a.date < b.date ? -1 : 1));
 }
 
-function latestDay() {
+export function latestDay() {
   const list = days();
   return list[list.length - 1] || null;
 }
@@ -295,22 +396,78 @@ export function reminders() {
   });
 }
 
-export function matchesQuery(values) {
-  const query = state.query.trim().toLowerCase();
-  if (!query) return true;
+function viewRows(view) {
+  if (view === "members") return members();
+  if (view === "blockers") return blockersList();
+  if (view === "reminders") return reminders();
+  if (view === "history") return days();
+  return [];
+}
+
+const ID_FIELD = { members: "member_id", blockers: "blocker_id", reminders: "id", history: "date" };
+
+export function recordById(view, id) {
+  if (!id) return null;
+  return viewRows(view).find((item) => item[ID_FIELD[view]] === id) || null;
+}
+
+function matches(values, query) {
   return values.filter(Boolean).some((value) => String(value).toLowerCase().includes(query));
 }
 
-function missingMembers(day) {
-  if (!day) return [];
-  const submitted = new Set((day.updates || []).map((update) => update.member_id));
-  const onLeave = new Set(day.on_leave || []);
-  return members().filter(
-    (member) => member.active !== false && !submitted.has(member.member_id) && !onLeave.has(member.member_id),
-  );
+export function filteredMembers() {
+  const query = state.route.query.trim().toLowerCase();
+  if (!query) return members();
+  return members().filter((member) => matches([member.name, member.role, member.timezone, member.channel], query));
+}
+
+export function filteredBlockers() {
+  const query = state.route.query.trim().toLowerCase();
+  return blockersList()
+    .filter((blocker) => state.route.status === "all" || blocker.status === state.route.status)
+    .filter(
+      (blocker) =>
+        !query ||
+        matches(
+          [blocker.text, memberName(blocker.member_id), blocker.severity, blocker.status, blocker.suggested_action],
+          query,
+        ),
+    );
+}
+
+export function filteredReminders() {
+  const query = state.route.query.trim().toLowerCase();
+  return reminders()
+    .filter((reminder) => state.route.status === "all" || reminder.status === state.route.status)
+    .filter(
+      (reminder) =>
+        !query ||
+        matches(
+          [reminder.title, reminder.reason, reminder.draft, memberName(reminder.member_id), reminder.status, reminder.channel],
+          query,
+        ),
+    );
+}
+
+export function filteredHistory() {
+  const query = state.route.query.trim().toLowerCase();
+  if (!query) return days().slice().reverse();
+  return days()
+    .slice()
+    .reverse()
+    .filter((day) => matches([dayLabel(day.date), day.digest], query));
 }
 
 /* Shell */
+
+function viewLabel(view) {
+  if (view === "members") return t("members");
+  if (view === "blockers") return t("blockers");
+  if (view === "reminders") return t("reminders");
+  if (view === "history") return t("history");
+  if (view === "settings") return t("settings");
+  return t("overview");
+}
 
 function renderShell() {
   applyI18n();
@@ -318,7 +475,7 @@ function renderShell() {
   const reviewCount = reminders().filter((reminder) => reminder.status === "needs_review").length;
   const missing = metrics.missing_today ?? 0;
   const openBlockers = metrics.open_blockers ?? 0;
-  els.syncStatus.textContent = state.snapshot?.team?.name || t("empty");
+  els.syncStatus.textContent = state.snapshot ? state.snapshot?.team?.name || t("empty") : t("loading");
   if (els.reviewCount) els.reviewCount.textContent = reviewCount;
   if (els.missingCount) els.missingCount.textContent = missing;
   if (els.blockerCount) els.blockerCount.textContent = openBlockers;
@@ -331,15 +488,6 @@ function renderShell() {
   document.querySelectorAll("[data-route]").forEach((link) => {
     link.classList.toggle("active", link.dataset.route === state.route.view);
   });
-}
-
-function viewLabel(view) {
-  if (view === "members") return t("members");
-  if (view === "blockers") return t("blockers");
-  if (view === "reminders") return t("reminders");
-  if (view === "history") return t("history");
-  if (view === "settings") return t("settings");
-  return t("today");
 }
 
 /* Shared components */
@@ -394,7 +542,7 @@ export function updateBlockerRows(update) {
       ${update.blockers
         .map(
           (blocker) => `
-        <a class="card-blocker ${escapeHtml(blocker.status)}" href="#/blockers">
+        <a class="card-blocker ${escapeHtml(blocker.status)}" href="${recordUrl(blocker.blocker_id, "blockers")}">
           ${severityBadge(blocker.severity)}
           ${blocker.status === "resolved" ? statusBadge("resolved", "blocker_status") : ""}
           <span>${escapeHtml(blocker.text)}</span>
@@ -412,7 +560,7 @@ function memberCard(member, update) {
       <header class="member-card-head">
         ${avatar(member)}
         <span class="member-card-name">
-          <a href="#/members/${encodeURIComponent(member.member_id)}"><strong>${escapeHtml(member.name)}</strong></a>
+          <a href="${detailUrl(member.member_id, "members")}"><strong>${escapeHtml(member.name)}</strong></a>
           <small>${escapeHtml(member.role || "")}</small>
         </span>
         ${moodDot(update.mood)}
@@ -457,14 +605,14 @@ function missingCard(member, { withReminderLink = false, beforeDate = "" } = {})
       <header class="member-card-head">
         ${avatar(member)}
         <span class="member-card-name">
-          <a href="#/members/${encodeURIComponent(member.member_id)}"><strong>${escapeHtml(member.name)}</strong></a>
+          <a href="${detailUrl(member.member_id, "members")}"><strong>${escapeHtml(member.name)}</strong></a>
           <small>${escapeHtml(member.role || "")}</small>
         </span>
       </header>
       <div class="missing-body">
         <span class="missing-label">${t("notSubmitted")}</span>
         <span class="muted">${t("lastCheckin")}: ${lastSubmittedBefore(member.member_id, beforeDate) ? escapeHtml(dayLabel(lastSubmittedBefore(member.member_id, beforeDate))) : "—"}</span>
-        ${reminder ? `<a class="reminder-link" href="#/reminders">Reminder #${reminder.ref} · ${escapeHtml(enumLabel(reminder.status, "reminder_status"))}</a>` : ""}
+        ${reminder ? `<a class="reminder-link" href="${recordUrl(reminder.id, "reminders")}">Reminder #${reminder.ref} · ${escapeHtml(enumLabel(reminder.status, "reminder_status"))}</a>` : ""}
       </div>
     </article>
   `;
@@ -476,7 +624,7 @@ function leaveCard(member) {
       <header class="member-card-head">
         ${avatar(member)}
         <span class="member-card-name">
-          <a href="#/members/${encodeURIComponent(member.member_id)}"><strong>${escapeHtml(member.name)}</strong></a>
+          <a href="${detailUrl(member.member_id, "members")}"><strong>${escapeHtml(member.name)}</strong></a>
           <small>${escapeHtml(member.role || "")}</small>
         </span>
       </header>
@@ -492,14 +640,6 @@ export function dayBoard(day, { withReminderLink = false } = {}) {
   const onLeave = new Set(day.on_leave || []);
   const cards = members()
     .filter((member) => member.active !== false)
-    .filter((member) =>
-      matchesQuery([
-        member.name,
-        member.role,
-        ...(updatesById.get(member.member_id)?.yesterday || []),
-        ...(updatesById.get(member.member_id)?.today || []),
-      ]),
-    )
     .map((member) => {
       const update = updatesById.get(member.member_id);
       if (update) return memberCard(member, update);
@@ -519,8 +659,8 @@ export function digestPanel(day) {
   `;
 }
 
-function warnings() {
-  const items = state.snapshot?.warnings || [];
+export function warnings(filter = () => true) {
+  const items = (state.snapshot?.warnings || []).filter(filter);
   if (!items.length) return "";
   return `<div class="warnings">${items
     .map(
@@ -534,60 +674,25 @@ function warnings() {
     .join("")}</div>`;
 }
 
-/* Views */
-
-function renderToday() {
-  const day = latestDay();
-  const metrics = state.snapshot?.metrics || {};
-  els.title.textContent = `${t("today")}${day ? ` · ${dayLabel(day.date)}` : ""}`;
-  els.subtitle.textContent = day
-    ? `${metrics.submitted_today}/${metrics.expected_today} ${t("submitted")}${metrics.on_leave_today ? ` · ${metrics.on_leave_today} ${t("onLeave").toLowerCase()}` : ""}`
-    : t("empty");
-  if (!day) {
-    els.content.innerHTML = `${warnings()}<div class="empty">${t("empty")}</div>`;
-    return;
-  }
-  const reviewCount = reminders().filter((reminder) => reminder.status === "needs_review").length;
-  els.content.innerHTML = `
-    ${warnings()}
-    <div class="attention-row">
-      <a class="attention-card ${metrics.missing_today ? "hot" : ""}" href="#/reminders">
-        <strong>${metrics.missing_today ?? 0}</strong>
-        <span>${t("missingCheckins")}</span>
-      </a>
-      <a class="attention-card ${metrics.high_open_blockers ? "hot" : ""}" href="#/blockers">
-        <strong>${metrics.open_blockers ?? 0}</strong>
-        <span>${t("openBlockersLabel")}</span>
-      </a>
-      <a class="attention-card ${reviewCount ? "hot" : ""}" href="#/reminders">
-        <strong>${reviewCount}</strong>
-        <span>${t("awaitingApproval")}</span>
-      </a>
-    </div>
-    ${digestPanel(day)}
-    <div class="participation-row">
-      <span class="participation-stat"><strong>${day.participation?.submitted ?? 0}/${day.participation?.expected ?? 0}</strong> ${t("submitted")}</span>
-      ${participationBar(day.participation?.submitted ?? 0, day.participation?.expected ?? 0)}
-    </div>
-    ${dayBoard(day, { withReminderLink: true })}
-  `;
-}
-
-function renderPagedList(renderList, key) {
-  renderList();
-  els.content.insertAdjacentHTML("beforeend", `${pagination.control(key)}`);
-}
-
 export function render() {
   renderShell();
-  if (state.route.view === "members" && state.route.id) renderMemberDetail();
-  else if (state.route.view === "members") renderPagedList(renderMembers, "members");
-  else if (state.route.view === "blockers") renderPagedList(renderBlockers, "blockers");
-  else if (state.route.view === "reminders") renderPagedList(renderReminders, "reminders");
-  else if (state.route.view === "history" && state.route.id) renderHistoryDetail();
-  else if (state.route.view === "history") renderHistory();
-  else if (state.route.view === "settings") renderSettings();
-  else renderToday();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page");
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && presentation === "split");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
+  else renderOverview();
 }
 
 export function escapeHtml(value) {
@@ -604,37 +709,64 @@ export function escapeHtml(value) {
   );
 }
 
-pagination.bind(els.content);
-
+// ── Events ─────────────────────────────────────────────────────────────────
+els.listPanel.addEventListener("click", (event) => {
+  const pager = event.target.closest("[data-goto-page]");
+  if (pager) {
+    const [key, page] = pager.dataset.gotoPage.split(":");
+    pagination.goToPage(key, Number(page));
+    return;
+  }
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+els.viewFilters.addEventListener("click", (event) => {
+  const chip = event.target.closest("[data-status]");
+  if (!chip) return;
+  replaceRoute(
+    `#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, status: chip.dataset.status })}`,
+  );
+});
+els.statusSelect?.addEventListener("change", (event) => {
+  replaceRoute(
+    `#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, status: event.target.value })}`,
+  );
+});
+els.detailBody.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-decision]");
+  if (button && !button.disabled) submitDecision(button.dataset.id, button.dataset.decision);
+});
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  if (event.target.closest?.("textarea, input")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", () => setMobileSidebarOpen(true));
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
+  replaceRoute(
+    `#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`,
+  );
 });
 els.refresh.addEventListener("click", () => loadState());
 els.mobileRefresh?.addEventListener("click", () => loadState());
-els.content.addEventListener("click", (event) => {
-  const blockerFilter = event.target.closest("[data-blocker-filter]");
-  if (blockerFilter) {
-    state.blockerFilter = blockerFilter.dataset.blockerFilter;
-    render();
-    return;
-  }
-  const reminderFilter = event.target.closest("[data-reminder-filter]");
-  if (reminderFilter) {
-    state.reminderFilter = reminderFilter.dataset.reminderFilter;
-    render();
-    return;
-  }
-  const button = event.target.closest("[data-decision]");
-  if (button && !button.disabled) {
-    submitDecision(button.dataset.id, button.dataset.decision);
-  }
-});
 els.language.value = state.lang;
 els.language.addEventListener("change", () => {
   state.lang = normalizeLang(els.language.value);
@@ -656,9 +788,13 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
 boot();

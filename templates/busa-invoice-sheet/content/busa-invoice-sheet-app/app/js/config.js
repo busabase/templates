@@ -12,6 +12,10 @@ export const appConfig = {
       "Busa Invoice Sheet: invoice/receipt/credit-note/statement extraction batches under human review, with field confidence, line items, and export-ready approved rows",
     slug: "busa-invoice-sheet",
   },
+  // Where an invoice opens. The invoice view is a review queue worked top to
+  // bottom (approve / request changes / block, then the next row), so the
+  // queue stays beside the record: split. "Open full page" is one click away.
+  ui: { detail_modes: { invoices: "split" } },
   airApp: { name: "Busa Invoice Sheet", slug: "busa-invoice-sheet-app", resourceKey: "busa-invoice-sheet-app" },
   bases: [
     {
@@ -76,7 +80,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

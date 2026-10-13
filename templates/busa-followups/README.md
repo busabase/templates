@@ -6,9 +6,12 @@ and see today's list; mark each one done.
 
 ## What It Shows
 
+- Overview: how many are overdue, coming up and done, what is next, and which
+  meetings still have open items.
 - Today: everything pending and due today or overdue — the screen you check
-  every morning.
-- All: every followup, pending and done.
+  every morning. It is a queue: the list stays on the left, the selected
+  follow-up on the right, and marking one done opens the next.
+- All: every followup, pending and done; a row opens in a drawer over the list.
 - Marking an item done removes it from "Today" immediately.
 
 ## App UI Screenshots
@@ -41,6 +44,7 @@ pnpm dev
 Add `?demo=1` to see deterministic mock data without a Busabase connection:
 
 ```text
+/?demo=1&lang=zh#/overview
 /?demo=1&lang=zh#/today
 /?demo=1&lang=zh#/all
 ```

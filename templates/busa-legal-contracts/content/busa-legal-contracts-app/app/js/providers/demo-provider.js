@@ -473,7 +473,16 @@ function demoIssues(zh) {
 
 function activeLangIsZh() {
   const params = new URLSearchParams(window.location.search);
-  const lang = String(params.get("lang") || "").toLowerCase();
+  // Same precedence as the app: ?lang=, then the sidebar's saved choice, then
+  // the browser. Without the saved choice, picking 中文 in the sidebar left
+  // the demo records in English.
+  let saved = "";
+  try {
+    saved = localStorage.getItem("busa-legal-contracts-language") || "";
+  } catch {
+    saved = "";
+  }
+  const lang = String(params.get("lang") || (saved !== "auto" ? saved : "")).toLowerCase();
   if (lang) return lang.startsWith("zh");
   return Boolean(navigator.languages?.some((item) => String(item).toLowerCase().startsWith("zh")));
 }

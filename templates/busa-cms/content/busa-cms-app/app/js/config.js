@@ -246,6 +246,13 @@ export const appConfig = {
   },
   ui: {
     primary_base: "posts",
+    // Where each Base opens a record — chosen by what an editor does with it:
+    //   posts, pages        → page:   a post or page is long-form content you
+    //                         read rendered, check SEO on and edit; you stay.
+    //   categories, tags    → drawer: a term is a small fact (name, slug, who
+    //                         uses it) you glance at and go back to the list.
+    // A `/<record>` path always opens the full page; `?peek=` drives the drawer.
+    detail_modes: { posts: "page", pages: "page", categories: "drawer", tags: "drawer" },
     summary:
       "See what the website actually serves, read a post or page the way the SDK renders it, and propose the next edit for review.",
     screens: [
@@ -326,6 +333,8 @@ export const appConfig = {
       "bases.get",
       "nodes.get",
       "records.listPaged",
+      "records.get",
+      "records.count",
       "records.search",
       "changeRequests.listPaged",
     ],

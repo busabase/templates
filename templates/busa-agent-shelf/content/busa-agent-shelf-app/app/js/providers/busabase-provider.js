@@ -43,6 +43,15 @@ function base(key) {
   return declared;
 }
 
+const toRow = (key, record) =>
+  NORMALIZERS[key]({
+    ...(record.headCommit?.payload || record.headCommit?.fields || record.fields || {}),
+    __recordId: record.id,
+    __headCommitId: record.headCommitId || record.headCommit?.id,
+  });
+
+const errorText = (error) => (error instanceof Error ? error.message : String(error));
+
 // One bounded page per call (the Base's readLimit, ≤ 50). Callers never loop
 // on nextCursor; the UI fetches the next page only on an explicit Load more.
 async function readPage(key, cursor) {
@@ -54,13 +63,7 @@ async function readPage(key, cursor) {
     ...(cursor ? { cursor } : {}),
   });
   const records = Array.isArray(result) ? result : result.records || [];
-  const rows = records.map((record) =>
-    NORMALIZERS[key]({
-      ...(record.headCommit?.payload || record.headCommit?.fields || record.fields || {}),
-      __recordId: record.id,
-      __headCommitId: record.headCommitId || record.headCommit?.id,
-    }),
-  );
+  const rows = records.map((record) => toRow(key, record));
   return { rows, nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
 }
 
@@ -78,22 +81,44 @@ async function countRecords(key) {
 export const busabaseProvider = {
   kind: "busabase",
 
+  // One bounded page per Base. A read that fails for one Base (denied, gone)
+  // is reported for that Base only — it must not blank the whole app.
   async getState() {
     await ensureResources();
+    const settle = (promise) => promise.then((value) => ({ value }), (error) => ({ error: errorText(error) }));
     const [pages, totals, settingsPage] = await Promise.all([
-      Promise.all(BROWSED_KEYS.map((key) => readPage(key))),
+      Promise.all(BROWSED_KEYS.map((key) => settle(readPage(key)))),
       Promise.all(BROWSED_KEYS.map((key) => countRecords(key))),
-      readPage("settings"),
+      settle(readPage("settings")),
     ]);
+    const errors = Object.fromEntries(
+      [...BROWSED_KEYS.map((key, index) => [key, pages[index].error]), ["settings", settingsPage.error]].filter(
+        ([, error]) => error,
+      ),
+    );
+    // Nothing readable at all is an app-level failure, not five empty lists.
+    if (Object.keys(errors).length === BROWSED_KEYS.length + 1) throw new Error(errors[BROWSED_KEYS[0]]);
     return {
       demo: false,
       data_provider: "busabase",
-      rows: Object.fromEntries(BROWSED_KEYS.map((key, index) => [key, pages[index].rows])),
-      cursors: Object.fromEntries(BROWSED_KEYS.map((key, index) => [key, pages[index].nextCursor])),
+      rows: Object.fromEntries(BROWSED_KEYS.map((key, index) => [key, pages[index].value?.rows || []])),
+      cursors: Object.fromEntries(BROWSED_KEYS.map((key, index) => [key, pages[index].value?.nextCursor || null])),
       totals: Object.fromEntries(BROWSED_KEYS.map((key, index) => [key, totals[index]])),
-      settings: settingsPage.rows[0] || null,
+      errors,
+      settings: settingsPage.value?.rows[0] || null,
       loaded_at: new Date().toISOString(),
     };
+  },
+
+  // A record named by the URL but not on the loaded page: one records.get by
+  // id, checked to belong to this Base — never a scan through pages for it.
+  async getRecord(key, recordId) {
+    if (!allowedReads.has("records.get")) return null;
+    await ensureResources();
+    const declared = base(key);
+    const record = await runtimeClient.records.get({ recordId });
+    if (!record || (record.baseId && record.baseId !== declared.baseId)) return null;
+    return toRow(key, record);
   },
 
   async fetchPage(key, cursor) {

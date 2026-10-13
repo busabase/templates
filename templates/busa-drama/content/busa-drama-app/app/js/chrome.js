@@ -12,6 +12,15 @@ export function viewMeta() {
   };
 }
 
+// A per-Base count: the server total when records.count answered, otherwise
+// the loaded rows marked "+" while more pages exist.
+export function baseCount(key) {
+  const total = store.state?.totalCount?.[key];
+  if (Number.isFinite(total)) return String(total);
+  const loaded = project()[key]?.length || 0;
+  return `${loaded}${store.state?.pagination?.[key] ? "+" : ""}`;
+}
+
 export function renderProjectSwitcher() {
   const select = $("projectSelect");
   const projects = store.state.projects?.length
@@ -39,24 +48,23 @@ export function renderProjectSwitcher() {
 }
 
 export function updateChrome() {
-  const p = project();
-  document.body.classList.toggle("episodes-list-mode", store.view === "episodes" && store.episodeMode === "list");
-  document.body.classList.toggle("episode-focus-mode", store.view === "episodes" && store.episodeMode === "detail");
+  applyI18n();
   renderProjectSwitcher();
-  $("projectTitle").textContent = p.series?.title || t("project_unnamed");
-  $("projectMeta").textContent =
-    `${p.series?.genre || t("project_meta_genre_placeholder")} · ${p.series?.format || t("project_meta_format_placeholder")}`;
   $("projectPath").textContent = store.state.config_summary?.config_path || "";
   $("attentionNeeds").textContent = store.state.attention?.needs_review || 0;
   $("attentionShots").textContent = store.state.completeness?.shots_missing_prompt || 0;
   $("attentionViews").textContent = store.state.completeness?.characters_missing_views || 0;
-  $("lockBanner").classList.toggle("hidden", !store.state.lock?.locked);
-  document.querySelectorAll("[data-view]").forEach((button) => {
+  $("lockBanner").hidden = !store.state.lock?.locked;
+  document.querySelectorAll(".nav [data-view]").forEach((button) => {
     button.classList.toggle("active", button.dataset.view === store.view);
   });
-  const meta = viewMeta();
-  const [title, subtitle] = meta[store.view] || ["", ""];
+  document.querySelectorAll("[data-nav-count]").forEach((node) => {
+    node.textContent = baseCount(node.dataset.navCount);
+  });
+  const [title, subtitle] = viewMeta()[store.view] || ["", ""];
+  // The view's description lives in the title tooltip, not on a second line.
   $("viewTitle").textContent = title;
-  $("viewSubtitle").textContent = subtitle;
-  applyI18n();
+  $("viewTitle").title = subtitle;
+  if (document.activeElement !== $("searchInput")) $("searchInput").value = store.query;
+  $("mobileViewTitle").textContent = title;
 }

@@ -22,18 +22,14 @@ export function lines(value) {
   return Array.isArray(value) ? value.join("\n") : String(value || "");
 }
 
+const STATUSES = ["draft", "needs_review", "changes_requested", "approved", "done", "blocked"];
+
+export function statusLabel(status) {
+  return STATUSES.includes(status) ? t(`status_${status}`) : status || t("status_draft");
+}
+
 export function statusBadge(status) {
-  const label =
-    {
-      draft: t("status_draft"),
-      needs_review: t("status_needs_review"),
-      changes_requested: t("status_changes_requested"),
-      approved: t("status_approved"),
-      done: t("status_done"),
-      blocked: t("status_blocked"),
-    }[status] ||
-    status ||
-    t("status_draft");
+  const label = statusLabel(status);
   return `<span class="badge status-${escapeHtml(status || "draft")}">${escapeHtml(label)}</span>`;
 }
 
@@ -44,12 +40,22 @@ export function formatBytes(bytes) {
   return `${n} B`;
 }
 
+// Resolve a stored id to the record's name. When the record is not in the
+// loaded page say so instead of printing the id.
 export function characterName(id) {
-  return (project().characters || []).find((character) => character.id === id)?.name || id || "";
+  if (!id) return "—";
+  return (project().characters || []).find((character) => character.id === id)?.name || t("not_loaded");
 }
 
 export function episodeTitle(id) {
-  return (project().episodes || []).find((episode) => episode.id === id)?.title || id || "";
+  if (!id) return "—";
+  return (project().episodes || []).find((episode) => episode.id === id)?.title || t("not_loaded");
+}
+
+// A select over loaded records keeps an unloaded current value as its own
+// option, so saving the form never silently re-points the relation.
+function recordOptions(ids, value) {
+  return value && !ids.includes(value) ? [...ids, value] : ids;
 }
 
 export function input(name, label, value = "", type = "text") {
@@ -66,26 +72,30 @@ export function select(name, label, value, options) {
   </select></div>`;
 }
 
+// Options show the status label, never the raw stored value.
 export function statusSelect(value) {
-  return select("status", "Status", value || "draft", [
-    "draft",
-    "needs_review",
-    "changes_requested",
-    "approved",
-    "done",
-    "blocked",
-  ]);
+  const current = value || "draft";
+  const options = STATUSES.includes(current) ? STATUSES : [...STATUSES, current];
+  return `<div class="field"><label for="status">Status</label><select id="status" name="status">
+    ${options.map((option) => `<option value="${escapeHtml(option)}" ${option === current ? "selected" : ""}>${escapeHtml(statusLabel(option))}</option>`).join("")}
+  </select></div>`;
 }
 
 export function characterSelect(name, label, value) {
-  const options = (project().characters || []).map((character) => character.id);
+  const options = recordOptions(
+    (project().characters || []).map((character) => character.id),
+    value,
+  );
   return `<div class="field"><label for="${name}">${label}</label><select id="${name}" name="${name}">
     ${options.map((id) => `<option value="${escapeHtml(id)}" ${id === value ? "selected" : ""}>${escapeHtml(characterName(id))}</option>`).join("")}
   </select></div>`;
 }
 
 export function episodeSelect(name, label, value) {
-  const options = (project().episodes || []).map((episode) => episode.id);
+  const options = recordOptions(
+    (project().episodes || []).map((episode) => episode.id),
+    value,
+  );
   return `<div class="field"><label for="${name}">${label}</label><select id="${name}" name="${name}">
     ${options.map((id) => `<option value="${escapeHtml(id)}" ${id === value ? "selected" : ""}>${escapeHtml(episodeTitle(id))}</option>`).join("")}
   </select></div>`;

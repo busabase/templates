@@ -4,22 +4,22 @@ Busa Standup is a Busabase App-in-Skill standup board for team leads: see at a g
 
 ## What It Shows
 
-- Today: the agent-written team digest, participation stat (e.g. `6/8 submitted`), a human-attention panel (missing check-ins, open blockers, reminders awaiting approval), and per-member cards with Yesterday / Today / Blockers, mood, submitted time, and source badge. Missing members get a distinct "not submitted" card; on-leave members are marked.
-- Members: roster with check-in streak, 30-day participation, open blockers, and last submission; detail shows a day-by-day update timeline.
-- Blockers: every blocker across the team with severity, owner, age, open/resolved filter, the linked day, and an agent-suggested next action.
-- Reminders: the review queue (`needs_review / changes_requested / approved / done / blocked`) with stable refs like `Reminder #1`, editable message drafts, and approve / request changes / revise (save note) / block actions that write straight onto the Busabase record.
-- History: recent days with inline-SVG participation bars and digest one-liners; selecting a date shows that day's full board.
+- Overview: the agent-written team digest, participation stat (e.g. `6/8 submitted`), a metrics band (submitted today, on leave today, 30-day avg participation), and per-member cards with Yesterday / Today / Blockers, mood, submitted time, and source badge. Missing members get a distinct "not submitted" card; on-leave members are marked. The sidebar's own human-attention panel covers missing check-ins, open blockers, and reminders awaiting approval.
+- Members: roster with check-in streak, 30-day participation, open blockers, and last submission; opens a full-page detail with a day-by-day update timeline.
+- Blockers: every blocker across the team with severity, owner, age, open/resolved filter, the linked day, and an agent-suggested next action, opening in a drawer over the table.
+- Reminders: the review queue (`needs_review / changes_requested / approved / done / blocked`) with stable refs like `Reminder #1`, editable message drafts, and approve / request changes / revise (save note) / block actions that write straight onto the Busabase record, shown beside the queue (split layout).
+- History: recent days with submitted/expected counts and digest one-liners; selecting a date opens a full-page detail with that day's full board.
 - Help & Settings: sanitized team profile, members with contact-env readiness, standup questions, and workdays.
 
 ## App UI Screenshots
 
 <table>
   <tr>
-    <td width="50%"><img src="assets/screenshots/overview.webp" alt="Busa Standup today board"></td>
+    <td width="50%"><img src="assets/screenshots/overview.webp" alt="Busa Standup overview"></td>
     <td width="50%"><img src="assets/screenshots/blockers.webp" alt="Busa Standup blockers"></td>
   </tr>
   <tr>
-    <td><strong>Today board</strong><br>Daily standup at a glance: team digest, participation count, and per-member yesterday/today/blockers cards with source badges.</td>
+    <td><strong>Overview</strong><br>Daily standup at a glance: team digest, participation count, and per-member yesterday/today/blockers cards with source badges.</td>
     <td><strong>Blockers</strong><br>All blockers across the team with severity, age, and agent-suggested next actions.</td>
   </tr>
   <tr>
@@ -43,14 +43,14 @@ pnpm --dir skills/busa-standup/content/busa-standup-app dev
 Use the URL printed by the launcher, then add one of these demo paths:
 
 ```text
-/?demo=today&lang=en#/today
+/?demo=today&lang=en#/overview
 /?demo=members&lang=en#/members
 /?demo=blockers&lang=en#/blockers
 /?demo=history&lang=en#/history
 /?demo=detail&lang=en#/members/alex
 ```
 
-Use `lang=zh` for Chinese screenshots — the demo content itself (中文姓名、日报、阻塞、摘要、提醒草稿) is localized, e.g. `/?demo=today&lang=zh#/today`. Demo mode never reads or writes Busabase.
+Use `lang=zh` for Chinese screenshots — the demo content itself (中文姓名、日报、阻塞、摘要、提醒草稿) is localized, e.g. `/?demo=today&lang=zh#/overview`. Demo mode never reads or writes Busabase.
 
 ## Update Payload Format
 

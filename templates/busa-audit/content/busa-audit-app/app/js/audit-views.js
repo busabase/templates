@@ -1,68 +1,381 @@
 import {
+  ANOMALY_FILTERS,
   anomalies,
   anomalyBadges,
   anomalyById,
+  DETAIL_MODES,
   date,
+  detailUrl,
   els,
   enumLabel,
   escapeHtml,
+  filteredAnomalies,
+  filteredInvoices,
   filteredOrders,
   invoiceById,
-  invoices,
+  isPartial,
   loadState,
   money,
   n,
+  noticeBanner,
   orderById,
-  pagerControl,
+  pageCount,
   paymentById,
-  recordCountLabel,
+  pct,
+  recordById,
+  recordUrl,
   render,
   ruleBadge,
   severityBadge,
   state,
   statusBadge,
   t,
+  warningsPanel,
 } from "../app.js";
 import { getProvider } from "./providers/index.js?v=0.1.0";
 
-export function renderOrders() {
-  els.title.textContent = t("orders");
-  const items = [...filteredOrders()].sort((a, b) => String(b.order_date).localeCompare(String(a.order_date)));
-  els.subtitle.textContent = `${recordCountLabel("orders", items.length, Boolean(state.query))} ${t("orders").toLowerCase()}`;
-  els.content.innerHTML = `${
-    items.length
-      ? `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>${t("orderNo")}</th><th>${t("customer")}</th><th>${t("date")}</th><th class="num">${t("amount")}</th><th>${t("currency")}</th><th>${t("invoiceStatus")}</th><th>${t("paymentStatus")}</th><th>${t("linkedAnomaly")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items
-            .map(
-              (order) => `
-            <tr>
-              <td><a href="#/orders/${encodeURIComponent(order.order_id)}"><div class="strong">${escapeHtml(order.order_no)}</div></a></td>
-              <td>${escapeHtml(order.customer)}</td>
-              <td>${date(order.order_date)}</td>
-              <td class="num">${money(order.amount, order.currency)}</td>
-              <td>${escapeHtml(order.currency)}</td>
-              <td>${statusBadge(order.invoice_status)}</td>
-              <td>${statusBadge(order.payment_status)}</td>
-              <td>${anomalyBadges(order.anomaly_ids)}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
+const cell = (html, title = "", className = "") =>
+  `<td${className ? ` class="${className}"` : ""}${title ? ` title="${escapeHtml(title)}"` : ""}>${html}</td>`;
+const emptyState = (title, detail = "") =>
+  `<div class="empty-state"><strong>${escapeHtml(title)}</strong>${detail ? `<p>${escapeHtml(detail)}</p>` : ""}</div>`;
+const muted = (text = "—") => `<span class="muted">${escapeHtml(text)}</span>`;
+
+/* ---------- Overview ---------- */
+
+const AGING_COLORS = ["#dbe3ee", "#f3dfa8", "#f4c48c", "#eb9d80", "#d97b6c"];
+
+function bucketLabel(bucket) {
+  if (bucket === "current") return enumLabel("current");
+  return `${bucket} ${t("days")}`;
+}
+
+function agingBar() {
+  const buckets = state.snapshot?.metrics?.aging || [];
+  const total = buckets.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  if (!total) return `<div class="empty-inline">${t("empty")}</div>`;
+  let x = 0;
+  const segments = buckets
+    .map((bucket, index) => {
+      const width = (Number(bucket.amount || 0) / total) * 100;
+      const rect =
+        width > 0
+          ? `<rect x="${x.toFixed(2)}" y="0" width="${Math.max(width, 0.4).toFixed(2)}" height="8" fill="${AGING_COLORS[index % AGING_COLORS.length]}"><title>${escapeHtml(bucketLabel(bucket.bucket))}: ${money(bucket.amount)}</title></rect>`
+          : "";
+      x += width;
+      return rect;
+    })
+    .join("");
+  const legend = buckets
+    .map(
+      (bucket, index) => `
+    <span><i class="dot" style="background:${AGING_COLORS[index % AGING_COLORS.length]}"></i>${escapeHtml(bucketLabel(bucket.bucket))} <strong>${money(bucket.amount)}</strong></span>
+  `,
+    )
+    .join("");
+  return `
+    <div class="aging">
+      <svg class="aging-svg" viewBox="0 0 100 8" preserveAspectRatio="none" role="img" aria-label="${escapeHtml(t("agingTitle"))}">${segments}</svg>
+      <div class="aging-legend">${legend}</div>
     </div>
-  `
-      : `<div class="empty">${t("empty")}</div>`
+  `;
+}
+
+// Three numbers nowhere else on screen: the decision count is in the sidebar's
+// attention block and the per-Base totals sit next to the nav items. These are
+// computed from the loaded pages (they need FX conversion and per-row status,
+// which no server aggregate in the pinned SDK answers) and say so whenever a
+// Base holds more rows than are loaded.
+function metricsBand() {
+  const metrics = state.snapshot?.metrics || {};
+  const scopeOf = (keys) => (keys.some((key) => isPartial(key)) ? ` · ${t("loadedScope")}` : "");
+  return [
+    [t("atStakeOpen") + scopeOf(["anomalies"]), money(metrics.at_stake_total), "negative"],
+    [t("overdueReceivablesTitle") + scopeOf(["invoices", "payments"]), money(metrics.overdue_receivable_total), "negative"],
+    [
+      t("matchedPct") + scopeOf(["payments", "invoices"]),
+      `${pct(metrics.matched_pct)} <small>${n(metrics.matched_payment_count)} / ${n(metrics.payment_count)}</small>`,
+      "",
+    ],
+  ]
+    .map(
+      ([label, value, tone]) =>
+        `<div><span title="${escapeHtml(label)}">${escapeHtml(label)}</span><strong class="${tone}">${value}</strong></div>`,
+    )
+    .join("");
+}
+
+export function renderOverview() {
+  const snapshot = state.snapshot || {};
+  const generated = snapshot.generated_at ? new Date(snapshot.generated_at).toLocaleString() : "";
+  const company = state.settings?.config_summary?.company?.name || snapshot.company?.name || "";
+  document.getElementById("overviewSummary").textContent = [
+    company,
+    `${n(snapshot.metrics?.payment_count)} ${t("payments").toLowerCase()} ${t("imported")}`,
+    generated ? `${t("generated")} ${generated}` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  document.getElementById("overviewMetrics").innerHTML = metricsBand();
+
+  const queue = anomalies()
+    .filter((item) => item.status !== "done")
+    .slice(0, 5);
+  const importLog = snapshot.import_log || [];
+  document.getElementById("overviewBody").innerHTML = `
+    ${noticeBanner()}
+    ${warningsPanel()}
+    <section class="overview-grid">
+      <div class="card overview-panel overview-wide">
+        <h2>${t("agingTitle")}</h2>
+        ${agingBar()}
+      </div>
+      <div class="card overview-panel">
+        <div class="row between">
+          <h2>${t("reviewQueue")}</h2>
+          <a class="muted" href="#/anomalies">${t("viewAll")} →</a>
+        </div>
+        ${
+          queue
+            .map(
+              (item) => `
+          <a class="health-row" href="${recordUrl(item.id, "anomalies")}">
+            <span><strong>${t("anomaly")} #${item.ref} · ${escapeHtml(item.title)}</strong><small>${escapeHtml(enumLabel(item.rule, "rule"))}${item.customer ? ` · ${escapeHtml(item.customer)}` : ""}</small></span>
+            <span class="num">${money(item.amount_at_stake, item.currency)}</span>
+            ${statusBadge(item.status)}
+          </a>
+        `,
+            )
+            .join("") || `<div class="empty-inline">${t("noAnomalies")}</div>`
+        }
+      </div>
+      <div class="card overview-panel">
+        <h2>${t("importLog")}</h2>
+        ${
+          importLog
+            .slice(0, 5)
+            .map(
+              (entry) => `
+          <div class="import-row">
+            <span>
+              <strong>${escapeHtml(entry.imported_at ? new Date(entry.imported_at).toLocaleString() : "—")}</strong>
+              <small>${escapeHtml(
+                Object.values(entry.files || {})
+                  .filter(Boolean)
+                  .join(" · "),
+              )}</small>
+              ${(entry.warnings || []).map((warning) => `<small class="import-warning">${escapeHtml(warning)}</small>`).join("")}
+            </span>
+            <span class="num" title="${escapeHtml(`${t("orders")} / ${t("invoices")} / ${t("payments")}`)}">+${n(entry.added?.orders || 0)} / +${n(entry.added?.invoices || 0)} / +${n(entry.added?.payments || 0)}</span>
+          </div>
+        `,
+            )
+            .join("") || `<div class="empty-inline">${t("noImports")}</div>`
+        }
+      </div>
+    </section>
+  `;
+}
+
+/* ---------- Record views ---------- */
+
+const VIEW_HINT = { orders: "ordersHint", invoices: "invoicesHint", anomalies: "anomaliesHint" };
+
+const tableHead = (columns) =>
+  `<thead><tr>${columns.map(([label, className = ""]) => `<th${className ? ` class="${className}"` : ""}>${escapeHtml(label)}</th>`).join("")}</tr></thead>`;
+
+const rowOpen = (id) =>
+  `<tr data-id="${escapeHtml(id)}"${id === state.route.selectedId ? ' class="ws-selected"' : ""}>`;
+
+function ordersTable(items) {
+  return `
+    <table class="ws-table audit-table orders-table">
+      ${tableHead([
+        [t("orderNo")],
+        [t("customer")],
+        [t("date")],
+        [t("amount"), "ws-col-num"],
+        [t("currency")],
+        [t("invoiceStatus")],
+        [t("paymentStatus")],
+        [t("linkedAnomaly")],
+      ])}
+      <tbody>
+        ${items
+          .map(
+            (order) => `${rowOpen(order.order_id)}
+              ${cell(`<span class="strong">${escapeHtml(order.order_no)}</span>`, order.order_no)}
+              ${cell(escapeHtml(order.customer), order.customer)}
+              ${cell(date(order.order_date))}
+              ${cell(money(order.amount, order.currency), "", "ws-col-num")}
+              ${cell(escapeHtml(order.currency))}
+              ${cell(statusBadge(order.invoice_status))}
+              ${cell(statusBadge(order.payment_status))}
+              ${cell(anomalyBadges(order.anomaly_ids))}
+            </tr>`,
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function invoicesTable(items) {
+  return `
+    <table class="ws-table audit-table invoices-table">
+      ${tableHead([
+        [t("invoiceNo")],
+        [t("orderRef")],
+        [t("customer")],
+        [t("issueDate")],
+        [t("dueDate")],
+        [t("amount"), "ws-col-num"],
+        [t("paid"), "ws-col-num"],
+        [t("daysOverdue"), "ws-col-num"],
+        [t("status")],
+      ])}
+      <tbody>
+        ${items
+          .map(
+            (invoice) => `${rowOpen(invoice.invoice_id)}
+              ${cell(`<span class="strong">${escapeHtml(invoice.invoice_no)}</span>`, invoice.invoice_no)}
+              ${cell(invoice.order_id ? `<a href="${detailUrl(invoice.order_id, "orders")}">${escapeHtml(invoice.order_no)}</a>` : muted())}
+              ${cell(escapeHtml(invoice.customer), invoice.customer)}
+              ${cell(date(invoice.issue_date))}
+              ${cell(invoice.due_date ? date(invoice.due_date) : muted())}
+              ${cell(money(invoice.amount, invoice.currency), "", "ws-col-num")}
+              ${cell(money(invoice.paid_amount, invoice.currency), "", "ws-col-num")}
+              ${cell(invoice.days_overdue ? `<span class="negative">${n(invoice.days_overdue)}</span>` : "0", "", "ws-col-num")}
+              ${cell(statusBadge(invoice.status))}
+            </tr>`,
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+// The split queue only has room for what decides the next pick: the anomaly,
+// what is at stake, and where it stands.
+function anomaliesTable(items) {
+  return `
+    <table class="ws-table audit-table anomalies-table">
+      ${tableHead([[t("anomaly")], [t("atStakeShort"), "ws-col-num ws-split-keep"], [t("status"), "ws-split-keep"]])}
+      <tbody>
+        ${items
+          .map((item) => {
+            const label = `#${item.ref} · ${item.title}`;
+            return `${rowOpen(item.id)}
+              ${cell(`<span class="queue-ref">#${escapeHtml(item.ref)}</span> <span class="strong">${escapeHtml(item.title)}</span>`, label)}
+              ${cell(money(item.amount_at_stake, item.currency), "", "ws-col-num ws-split-keep")}
+              ${cell(statusBadge(item.status), "", "ws-split-keep")}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+// Prev / Next only. Each click is one request for a neighbouring page with a
+// cursor already in hand; the page total comes from records.count when known.
+function pagerControl(key) {
+  const cursors = state.pageCursors[key];
+  if (!cursors) return "";
+  const current = state.currentPage[key] || 1;
+  const hasNext = Boolean(cursors[current]);
+  if (current === 1 && !hasNext) return "";
+  const total = pageCount(key);
+  const loading = Boolean(state.pageLoading[key]);
+  return `
+    <nav class="pager" aria-label="${escapeHtml(t("pagination"))}">
+      <button type="button" class="button" data-goto-page="${key}:${current - 1}" ${loading || current <= 1 ? "disabled" : ""}>${t("prevPage")}</button>
+      ${total == null ? "" : `<span class="pager-summary">${t("pageOf").replace("{current}", current).replace("{total}", Math.max(total, current))}</span>`}
+      <button type="button" class="button" data-goto-page="${key}:${current + 1}" ${loading || !hasNext ? "disabled" : ""}>${t("nextPage")}</button>
+    </nav>
+  `;
+}
+
+function statusCount(status) {
+  const all = anomalies();
+  return status === "all" ? all.length : all.filter((item) => item.status === status).length;
+}
+
+function renderAnomalyFilters() {
+  const label = (status) => (status === "all" ? t("all") : enumLabel(status));
+  els.viewFilters.innerHTML = ANOMALY_FILTERS.map(
+    (status) =>
+      `<button type="button" class="segment ${state.route.status === status ? "active" : ""}" data-status="${status}">${escapeHtml(label(status))} <b>${statusCount(status)}</b></button>`,
+  ).join("");
+  els.statusSelect.innerHTML = ANOMALY_FILTERS.map(
+    (status) =>
+      `<option value="${status}"${state.route.status === status ? " selected" : ""}>${escapeHtml(label(status))} (${statusCount(status)})</option>`,
+  ).join("");
+}
+
+export function renderRecordView() {
+  const { view } = state.route;
+  els.viewTitle.textContent = t(view);
+  els.viewTitle.title = t(VIEW_HINT[view]);
+  const items = view === "orders" ? filteredOrders() : view === "invoices" ? filteredInvoices() : filteredAnomalies();
+  els.viewCount.textContent = `${n(items.length)}${isPartial(view) ? "+" : ""}`;
+  const anomaliesView = view === "anomalies";
+  els.viewFilters.hidden = !anomaliesView;
+  els.statusSelect.hidden = !anomaliesView;
+  if (anomaliesView) renderAnomalyFilters();
+
+  if (view === "orders") items.sort((a, b) => String(b.order_date).localeCompare(String(a.order_date)));
+  if (view === "invoices") items.sort((a, b) => String(b.issue_date).localeCompare(String(a.issue_date)));
+  const table = view === "orders" ? ordersTable(items) : view === "invoices" ? invoicesTable(items) : anomaliesTable(items);
+  const empty = anomaliesView
+    ? emptyState(t("noAnomalies"))
+    : emptyState(state.route.query ? t("noMatches") : t("empty"));
+  els.listPanel.innerHTML = `${items.length ? table : empty}${pagerControl(view)}`;
+  renderDetail();
+}
+
+function renderDetail() {
+  const { view, selectedId, presentation } = state.route;
+  const phone = window.matchMedia("(max-width: 720px)").matches;
+  els.detailBack.textContent = presentation === "page" || phone ? t("backToList") : t("close");
+  els.detailExpand.hidden = !selectedId || presentation === "page";
+  if (selectedId) els.detailExpand.href = detailUrl(selectedId, view);
+  els.detailPanel.querySelector(".ws-detail-bar").hidden = !selectedId;
+
+  if (!selectedId) {
+    els.detailBody.innerHTML = DETAIL_MODES[view] === "split" ? `<div class="ws-detail-empty">${escapeHtml(t("selectAnomaly"))}</div>` : "";
+    return;
   }
-    ${pagerControl("orders")}`;
+  const item = recordById(view, selectedId);
+  if (!item) {
+    const pending = state.extra[view]?.has(selectedId) && state.extra[view].get(selectedId) === undefined;
+    els.detailBody.innerHTML = pending
+      ? `<div class="empty-inline">${t("loading")}</div>`
+      : emptyState(t("recordMissing"), t("recordMissingDetail"));
+    return;
+  }
+  els.detailBody.innerHTML =
+    view === "orders" ? orderDetail(item) : view === "invoices" ? invoiceDetail(item) : anomalyDetail(item);
+}
+
+function relatedAnomalies(ids) {
+  const list = (ids || []).map((id) => anomalyById(id)).filter(Boolean);
+  if (!list.length) return "";
+  return `
+    <div class="card overview-panel">
+      <h3>${t("anomalies")}</h3>
+      ${list
+        .map(
+          (anomaly) => `
+        <a class="health-row" href="${recordUrl(anomaly.id, "anomalies")}">
+          <span><strong>${t("anomaly")} #${anomaly.ref} · ${escapeHtml(anomaly.title)}</strong><small>${escapeHtml(enumLabel(anomaly.rule, "rule"))}</small></span>
+          <span class="num">${money(anomaly.amount_at_stake, anomaly.currency)}</span>
+          ${statusBadge(anomaly.status)}
+        </a>
+      `,
+        )
+        .join("")}
+    </div>
+  `;
 }
 
 function chainRow(tone, title, detail, amountHtml, badgeHtml) {
@@ -82,14 +395,7 @@ function invoiceTone(status) {
   return "warn";
 }
 
-export function renderOrderDetail() {
-  const order = orderById(state.route.id);
-  if (!order) {
-    renderOrders();
-    return;
-  }
-  els.title.textContent = order.order_no;
-  els.subtitle.textContent = `${order.customer} · ${date(order.order_date)}`;
+function orderDetail(order) {
   const linkedInvoices = (order.invoice_ids || []).map((id) => invoiceById(id)).filter(Boolean);
   const chainRows = [
     chainRow(
@@ -107,7 +413,7 @@ export function renderOrderDetail() {
     chainRows.push(
       chainRow(
         invoiceTone(invoice.status),
-        `<a href="#/invoices/${encodeURIComponent(invoice.invoice_id)}">${escapeHtml(t("invoiceNo"))} ${escapeHtml(invoice.invoice_no)}</a>`,
+        `<a href="${recordUrl(invoice.invoice_id, "invoices")}">${escapeHtml(t("invoiceNo"))} ${escapeHtml(invoice.invoice_no)}</a>`,
         `${date(invoice.issue_date)} → ${date(invoice.due_date)}${invoice.days_overdue ? ` · ${invoice.days_overdue} ${t("days")} ${enumLabel("overdue")}` : ""}`,
         money(invoice.amount, invoice.currency),
         statusBadge(invoice.status),
@@ -138,241 +444,84 @@ export function renderOrderDetail() {
       );
     }
   }
-  els.content.innerHTML = `
+  return `
+    <header class="detail-head">
+      <h2>${escapeHtml(order.order_no)}</h2>
+      <p class="muted">${escapeHtml([order.customer, date(order.order_date), money(order.amount, order.currency)].filter(Boolean).join(" · "))}</p>
+    </header>
     <section class="detail">
       <div class="detail-main">
-        <div class="overview-panel wide">
-          <h2>${t("documentChain")}</h2>
+        <div class="card overview-panel">
+          <h3>${t("documentChain")}</h3>
           <div class="chain">${chainRows.join("")}</div>
         </div>
-        ${
-          (order.anomaly_ids || []).length
-            ? `
-          <div class="overview-panel wide">
-            <h2>${t("anomalies")}</h2>
-            ${(order.anomaly_ids || [])
-              .map((id) => anomalyById(id))
-              .filter(Boolean)
-              .map(
-                (anomaly) => `
-              <a class="health-row" href="#/anomalies/${encodeURIComponent(anomaly.id)}">
-                <span><strong>${t("anomaly")} #${anomaly.ref} · ${escapeHtml(anomaly.title)}</strong><small>${escapeHtml(enumLabel(anomaly.rule, "rule"))}</small></span>
-                <span class="num">${money(anomaly.amount_at_stake, anomaly.currency)}</span>
-                ${statusBadge(anomaly.status)}
-              </a>
-            `,
-              )
-              .join("")}
-          </div>
-        `
-            : ""
-        }
+        ${relatedAnomalies(order.anomaly_ids)}
       </div>
-      <aside class="detail-side">
-        <h2>${t("orderDetail")}</h2>
+      <aside class="card detail-side">
         <dl>
           <dt>${t("customer")}</dt><dd>${escapeHtml(order.customer)}</dd>
           <dt>${t("date")}</dt><dd>${date(order.order_date)}</dd>
           <dt>${t("amount")}</dt><dd>${money(order.amount, order.currency)}</dd>
           <dt>${t("invoiceStatus")}</dt><dd>${statusBadge(order.invoice_status)}</dd>
           <dt>${t("paymentStatus")}</dt><dd>${statusBadge(order.payment_status)}</dd>
-          <dt>${t("files")}</dt><dd>${escapeHtml(order.source_file || "")}</dd>
+          <dt>${t("files")}</dt><dd>${escapeHtml(order.source_file || "") || "—"}</dd>
         </dl>
       </aside>
     </section>
   `;
 }
 
-/* ---------- Invoices ---------- */
-
-function filteredInvoices() {
-  const query = state.query.trim().toLowerCase();
-  if (!query) return invoices();
-  return invoices().filter((invoice) =>
-    [invoice.invoice_no, invoice.order_no, invoice.customer, invoice.status, invoice.currency]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query)),
-  );
-}
-
-export function renderInvoices() {
-  els.title.textContent = t("invoices");
-  const items = [...filteredInvoices()].sort((a, b) => String(b.issue_date).localeCompare(String(a.issue_date)));
-  const overdue = items.filter((item) => item.status === "overdue").length;
-  els.subtitle.textContent = `${recordCountLabel("invoices", items.length, Boolean(state.query))} ${t("invoices").toLowerCase()} · ${overdue} ${enumLabel("overdue")}`;
-  els.content.innerHTML = `${
-    items.length
-      ? `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>${t("invoiceNo")}</th><th>${t("orderRef")}</th><th>${t("customer")}</th><th>${t("issueDate")}</th><th>${t("dueDate")}</th><th class="num">${t("amount")}</th><th class="num">${t("paid")}</th><th class="num">${t("daysOverdue")}</th><th>${t("status")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items
-            .map(
-              (invoice) => `
-            <tr>
-              <td><a href="#/invoices/${encodeURIComponent(invoice.invoice_id)}"><div class="strong">${escapeHtml(invoice.invoice_no)}</div></a></td>
-              <td>${invoice.order_id ? `<a href="#/orders/${encodeURIComponent(invoice.order_id)}">${escapeHtml(invoice.order_no)}</a>` : `<span class="muted">—</span>`}</td>
-              <td>${escapeHtml(invoice.customer)}</td>
-              <td>${date(invoice.issue_date)}</td>
-              <td>${invoice.due_date ? date(invoice.due_date) : `<span class="muted">—</span>`}</td>
-              <td class="num">${money(invoice.amount, invoice.currency)}</td>
-              <td class="num">${money(invoice.paid_amount, invoice.currency)}</td>
-              <td class="num">${invoice.days_overdue ? `<span class="negative">${invoice.days_overdue}</span>` : "0"}</td>
-              <td>${statusBadge(invoice.status)}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  `
-      : `<div class="empty">${t("empty")}</div>`
-  }
-    ${pagerControl("invoices")}`;
-}
-
-export function renderInvoiceDetail() {
-  const invoice = invoiceById(state.route.id);
-  if (!invoice) {
-    renderInvoices();
-    return;
-  }
-  els.title.textContent = invoice.invoice_no;
-  els.subtitle.textContent = `${invoice.customer} · ${enumLabel(invoice.status)}`;
+function invoiceDetail(invoice) {
   const linkedPayments = (invoice.payment_ids || []).map((id) => paymentById(id)).filter(Boolean);
-  const order = orderById(invoice.order_id || "");
+  const order = invoice.order_id ? orderById(invoice.order_id) : null;
   const orderDelta = order ? Number(invoice.amount || 0) - Number(order.amount || 0) : 0;
-  els.content.innerHTML = `
-    <section class="detail">
-      <div class="detail-main">
-        <div class="metrics">
-          <div class="metric"><span>${t("amount")}</span><strong>${money(invoice.amount, invoice.currency)}</strong></div>
-          <div class="metric"><span>${t("paid")}</span><strong>${money(invoice.paid_amount, invoice.currency)}</strong></div>
-          <div class="metric"><span>${t("outstanding")}</span><strong class="${Number(invoice.outstanding) > 0 ? "negative" : "positive"}">${money(invoice.outstanding, invoice.currency)}</strong></div>
-          <div class="metric"><span>${t("daysOverdue")}</span><strong class="${invoice.days_overdue ? "negative" : ""}">${n(invoice.days_overdue)} ${t("days")}</strong></div>
-        </div>
-        <div class="overview-panel wide">
-          <h2>${t("matchedPayments")}</h2>
-          ${
-            linkedPayments.length
-              ? `
-            <div class="table-wrap flush">
-              <table class="mini">
-                <thead>
-                  <tr><th>${t("reference")}</th><th>${t("payer")}</th><th>${t("method")}</th><th>${t("paidDate")}</th><th class="num">${t("amount")}</th></tr>
-                </thead>
-                <tbody>
-                  ${linkedPayments
-                    .map(
-                      (payment) => `
-                    <tr>
-                      <td class="strong">${escapeHtml(payment.payment_ref)}</td>
-                      <td>${escapeHtml(payment.payer)}</td>
-                      <td>${escapeHtml(enumLabel(payment.method, "method"))}</td>
-                      <td>${date(payment.paid_date)}</td>
-                      <td class="num">${money(payment.amount, payment.currency)}</td>
-                    </tr>
-                  `,
-                    )
-                    .join("")}
-                </tbody>
-              </table>
-            </div>
-          `
-              : `<div class="empty">${t("none")}</div>`
-          }
-        </div>
+  const orderRef = invoice.order_id
+    ? `<a href="${detailUrl(invoice.order_id, "orders")}">${escapeHtml(invoice.order_no || t("notLoaded"))}</a>`
+    : escapeHtml(t("none"));
+  return `
+    <header class="detail-head">
+      <h2>${escapeHtml(invoice.invoice_no)}</h2>
+      <p class="muted">${escapeHtml(invoice.customer)} · ${escapeHtml(enumLabel(invoice.status))}</p>
+    </header>
+    <div class="detail-stack">
+      <dl class="detail-fields">
+        <dt>${t("amount")}</dt><dd class="num-left">${money(invoice.amount, invoice.currency)}</dd>
+        <dt>${t("paid")}</dt><dd class="num-left">${money(invoice.paid_amount, invoice.currency)}</dd>
+        <dt>${t("outstanding")}</dt><dd class="num-left ${Number(invoice.outstanding) > 0 ? "negative" : "positive"}">${money(invoice.outstanding, invoice.currency)}</dd>
+        <dt>${t("daysOverdue")}</dt><dd class="${invoice.days_overdue ? "negative" : ""}">${n(invoice.days_overdue)} ${t("days")}</dd>
+        <dt>${t("orderRef")}</dt><dd>${orderRef}</dd>
+        ${order ? `<dt>${t("orderDelta")}</dt><dd class="num-left ${orderDelta ? "negative" : ""}">${money(orderDelta, invoice.currency)}</dd>` : ""}
+        <dt>${t("issueDate")}</dt><dd>${date(invoice.issue_date)}</dd>
+        <dt>${t("dueDate")}</dt><dd>${invoice.due_date ? date(invoice.due_date) : escapeHtml(t("none"))}</dd>
+        <dt>${t("status")}</dt><dd>${statusBadge(invoice.status)}</dd>
+      </dl>
+      <section>
+        <h3>${t("matchedPayments")}</h3>
         ${
-          (invoice.anomaly_ids || []).length
-            ? `
-          <div class="overview-panel wide">
-            <h2>${t("anomalies")}</h2>
-            ${(invoice.anomaly_ids || [])
-              .map((id) => anomalyById(id))
-              .filter(Boolean)
-              .map(
-                (anomaly) => `
-              <a class="health-row" href="#/anomalies/${encodeURIComponent(anomaly.id)}">
-                <span><strong>${t("anomaly")} #${anomaly.ref} · ${escapeHtml(anomaly.title)}</strong><small>${escapeHtml(enumLabel(anomaly.rule, "rule"))}</small></span>
-                <span class="num">${money(anomaly.amount_at_stake, anomaly.currency)}</span>
-                ${statusBadge(anomaly.status)}
-              </a>
-            `,
-              )
-              .join("")}
+          linkedPayments.length
+            ? linkedPayments
+                .map(
+                  (payment) => `
+          <div class="health-row">
+            <span><strong>${escapeHtml(payment.payment_ref)}</strong><small>${escapeHtml([payment.payer, enumLabel(payment.method, "method"), date(payment.paid_date)].filter(Boolean).join(" · "))}</small></span>
+            <span class="num">${money(payment.amount, payment.currency)}</span>
+            ${statusBadge(payment.match_status)}
           </div>
-        `
-            : ""
+        `,
+                )
+                .join("")
+            : `<div class="empty-inline">${t("none")}</div>`
         }
-      </div>
-      <aside class="detail-side">
-        <h2>${t("invoiceDetail")}</h2>
-        <dl>
-          <dt>${t("orderRef")}</dt><dd>${invoice.order_id ? `<a href="#/orders/${encodeURIComponent(invoice.order_id)}">${escapeHtml(invoice.order_no)}</a>` : t("none")}</dd>
-          <dt>${t("customer")}</dt><dd>${escapeHtml(invoice.customer)}</dd>
-          <dt>${t("issueDate")}</dt><dd>${date(invoice.issue_date)}</dd>
-          <dt>${t("dueDate")}</dt><dd>${invoice.due_date ? date(invoice.due_date) : t("none")}</dd>
-          ${order ? `<dt>${t("orderNo")} Δ</dt><dd class="${orderDelta ? "negative" : ""}">${money(orderDelta, invoice.currency)}</dd>` : ""}
-          <dt>${t("status")}</dt><dd>${statusBadge(invoice.status)}</dd>
-        </dl>
-        ${invoice.notes ? `<h2 style="margin-top:14px">${t("notes")}</h2><p class="agent-notes">${escapeHtml(invoice.notes)}</p>` : ""}
-      </aside>
-    </section>
-  `;
-}
-
-/* ---------- Anomalies ---------- */
-
-const ANOMALY_FILTERS = ["all", "needs_review", "changes_requested", "approved", "done", "blocked"];
-
-function filteredAnomalies() {
-  const query = state.query.trim().toLowerCase();
-  return anomalies().filter((item) => {
-    if (state.route.id && item.id !== state.route.id) return false;
-    if (!state.route.id && state.anomalyFilter !== "all" && item.status !== state.anomalyFilter) return false;
-    if (!query) return true;
-    return [item.title, item.customer, item.rule, item.reason, String(item.ref)]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query));
-  });
-}
-
-export function renderAnomalies() {
-  els.title.textContent = t("anomalies");
-  const all = anomalies();
-  const items = filteredAnomalies();
-  els.subtitle.textContent = `${all.filter((item) => item.status === "needs_review").length} ${t("needsReview")}`;
-  const locked = Boolean(state.settings?.lock);
-  const chips = state.route.id
-    ? `<a class="chip" href="#/anomalies" title="${escapeHtml(t("showAll"))}">← ${escapeHtml(t("showAll"))} <b>${all.length}</b></a>`
-    : ANOMALY_FILTERS.map((filter) => {
-        const count =
-          filter === "all"
-            ? recordCountLabel("anomalies", all.length, Boolean(state.query))
-            : all.filter((item) => item.status === filter).length;
-        const label = filter === "all" ? t("viewAll") : enumLabel(filter);
-        return `<button type="button" class="chip ${state.anomalyFilter === filter ? "active" : ""}" data-anomaly-filter="${filter}" title="${escapeHtml(label)}">${escapeHtml(label)} <b>${count}</b></button>`;
-      }).join("");
-  els.content.innerHTML = `
-    ${locked ? `<div class="warnings"><div class="warning"><strong>${t("lockBanner")}</strong><span>${escapeHtml(state.settings.lock?.message || "")}</span></div></div>` : ""}
-    ${state.demo ? `<div class="demo-note">${t("demoDecisionNote")}</div>` : ""}
-    <div class="chip-row">${chips}</div>
-    <div class="opp-list">
-      ${items.map((item) => anomalyCard(item, locked)).join("") || `<div class="empty">${t("noAnomalies")}</div>`}
+      </section>
+      ${relatedAnomalies(invoice.anomaly_ids)}
+      ${invoice.notes ? `<section><h3>${t("notes")}</h3><p class="agent-notes">${escapeHtml(invoice.notes)}</p></section>` : ""}
     </div>
-    ${pagerControl("anomalies")}
   `;
 }
 
 function evidencePanel(evidence) {
-  if (!evidence) return "";
-  const rows = (evidence.rows || [])
+  if (!evidence || !(evidence.rows || []).length) return "";
+  const rows = evidence.rows
     .map(
       (row) => `
     <div class="evidence-row">
@@ -393,25 +542,33 @@ function evidencePanel(evidence) {
   `;
 }
 
-function anomalyCard(item, locked) {
+function decisionStatus(action) {
+  if (action === "approve") return "approved";
+  if (action === "request_changes") return "changes_requested";
+  if (action === "block") return "blocked";
+  if (action === "dismiss") return "done";
+  return "needs_review";
+}
+
+function anomalyDetail(item) {
+  const locked = Boolean(state.settings?.lock);
   const disabled = locked ? "disabled" : "";
+  const id = escapeHtml(item.id);
   return `
-    <article class="opp-card" data-anomaly-id="${escapeHtml(item.id)}">
+    <article class="anomaly-detail" data-anomaly-id="${id}">
       <header class="opp-head">
-        <span class="opp-ref">${t("anomaly")} #${item.ref}</span>
+        <span class="opp-ref">${t("anomaly")} #${escapeHtml(item.ref)}</span>
         ${ruleBadge(item.rule)}
         ${severityBadge(item.severity)}
         ${statusBadge(item.status)}
-        <span class="muted opp-customer">${escapeHtml(item.customer || "")}</span>
+        ${item.customer ? `<span class="muted opp-customer">${escapeHtml(item.customer)}</span>` : ""}
       </header>
-      <h3>${escapeHtml(item.title)}</h3>
+      <h2 class="anomaly-title">${escapeHtml(item.title)}</h2>
       <div class="opp-stake">${money(item.amount_at_stake, item.currency)} <span class="muted">${t("atStake")}</span></div>
       <p class="opp-reason"><span class="muted">${t("reason")}:</span> ${escapeHtml(item.reason)}</p>
       ${evidencePanel(item.evidence)}
       ${item.agent_notes ? `<p class="agent-notes">${escapeHtml(item.agent_notes)}</p>` : ""}
-      <div class="opp-label">${t("proposedAction")}: <span class="badge">${escapeHtml(enumLabel(item.proposed_action, "operation"))}</span></div>
-      <label class="opp-label" for="draft-${escapeHtml(item.id)}">${t("draft")}</label>
-      <textarea id="draft-${escapeHtml(item.id)}" class="opp-draft" rows="7" ${disabled}>${escapeHtml(item.draft || "")}</textarea>
+      ${item.proposed_action ? `<div class="opp-label">${t("proposedAction")}: <span class="badge">${escapeHtml(enumLabel(item.proposed_action, "operation"))}</span></div>` : ""}
       ${
         item.decision
           ? `
@@ -433,25 +590,22 @@ function anomalyCard(item, locked) {
       `
           : ""
       }
-      <label class="opp-label" for="note-${escapeHtml(item.id)}">${t("reviewNote")}</label>
-      <textarea id="note-${escapeHtml(item.id)}" class="opp-note" rows="2" placeholder="${escapeHtml(t("reviewNotePlaceholder"))}" ${disabled}></textarea>
+      ${locked ? `<div class="warnings"><div class="warning"><strong>${t("lockBanner")}</strong><span>${escapeHtml(state.settings.lock?.message || "")}</span></div></div>` : ""}
+      <label class="opp-label" for="draft-${id}">${t("draft")}</label>
+      <textarea id="draft-${id}" class="opp-draft" rows="8" ${disabled}>${escapeHtml(item.draft || "")}</textarea>
+      <label class="opp-label" for="note-${id}">${t("reviewNote")}</label>
+      <textarea id="note-${id}" class="opp-note" rows="2" placeholder="${escapeHtml(t("reviewNotePlaceholder"))}" ${disabled}></textarea>
+      ${noticeBanner()}
+      ${state.demo ? `<div class="demo-note">${t("demoDecisionNote")}</div>` : ""}
       <div class="opp-actions">
-        <button type="button" class="primary" data-decision="approve" data-id="${escapeHtml(item.id)}" title="${t("approve")}" ${disabled}>${t("approve")}</button>
-        <button type="button" data-decision="request_changes" data-id="${escapeHtml(item.id)}" title="${t("requestChanges")}" ${disabled}>${t("requestChanges")}</button>
-        <button type="button" data-decision="revise" data-id="${escapeHtml(item.id)}" title="${t("saveDraft")}" ${disabled}>${t("saveDraft")}</button>
-        <button type="button" class="danger" data-decision="block" data-id="${escapeHtml(item.id)}" title="${t("block")}" ${disabled}>${t("block")}</button>
-        <button type="button" data-decision="dismiss" data-id="${escapeHtml(item.id)}" title="${t("dismiss")}" ${disabled}>${t("dismiss")}</button>
+        <button type="button" class="primary" data-decision="approve" data-id="${id}" title="${t("approve")}" ${disabled}>${t("approve")}</button>
+        <button type="button" data-decision="request_changes" data-id="${id}" title="${t("requestChanges")}" ${disabled}>${t("requestChanges")}</button>
+        <button type="button" data-decision="revise" data-id="${id}" title="${t("saveDraft")}" ${disabled}>${t("saveDraft")}</button>
+        <button type="button" class="danger" data-decision="block" data-id="${id}" title="${t("block")}" ${disabled}>${t("block")}</button>
+        <button type="button" data-decision="dismiss" data-id="${id}" title="${t("dismiss")}" ${disabled}>${t("dismiss")}</button>
       </div>
     </article>
   `;
-}
-
-function decisionStatus(action) {
-  if (action === "approve") return "approved";
-  if (action === "request_changes") return "changes_requested";
-  if (action === "block") return "blocked";
-  if (action === "dismiss") return "done";
-  return "needs_review";
 }
 
 export async function submitDecision(id, action) {
@@ -466,7 +620,8 @@ export async function submitDecision(id, action) {
     const provider = await getProvider();
     await provider.decideAnomaly({ anomaly_id: id, action, note, draft });
   } catch (error) {
-    els.subtitle.textContent = error.message || "Decision failed";
+    state.notice = error instanceof Error ? error.message : t("decisionFailed");
+    render();
     return;
   }
   await loadState();
@@ -481,8 +636,7 @@ function cssEscape(value) {
 /* ---------- Settings ---------- */
 
 export function renderSettings() {
-  els.title.textContent = t("settings");
-  els.subtitle.textContent = t("busabaseBacked");
+  document.getElementById("settingsTitle").title = t("busabaseBacked");
   const summary = state.settings?.config_summary || {};
   const rules = summary.rules || {};
   const importCfg = summary.import || {};
@@ -497,9 +651,9 @@ export function renderSettings() {
       )}</span>
     </div>
   `;
-  els.content.innerHTML = `
+  document.getElementById("settingsBody").innerHTML = `
     <div class="settings">
-      <section>
+      <section class="card">
         <h2>${t("configuration")}</h2>
         <dl>
           <dt>${t("dataProvider")}</dt><dd>${escapeHtml(state.settings?.data_provider || "busabase")}</dd>
@@ -509,7 +663,7 @@ export function renderSettings() {
           <dt>${t("baseCurrency")}</dt><dd>${escapeHtml(summary.base_currency || "USD")}</dd>
         </dl>
       </section>
-      <section>
+      <section class="card">
         <h2>${t("rules")}</h2>
         <dl>
           <dt>${t("daysToInvoice")}</dt><dd>${escapeHtml(String(rules.days_to_invoice ?? 14))} ${t("days")}</dd>
@@ -518,7 +672,7 @@ export function renderSettings() {
           <dt>${t("duplicateWindow")}</dt><dd>${escapeHtml(String(rules.duplicate_window_days ?? 7))} ${t("days")}</dd>
         </dl>
       </section>
-      <section>
+      <section class="card">
         <h2>${t("importSources")}</h2>
         ${tableRow(t("orders"), importCfg.orders)}
         ${tableRow(t("invoices"), importCfg.invoices)}

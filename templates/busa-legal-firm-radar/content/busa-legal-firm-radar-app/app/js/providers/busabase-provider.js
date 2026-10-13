@@ -21,6 +21,7 @@ const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 const NORMALIZE_ROW_BY_KEY = { items: normalizeItemRow, entities: normalizeEntityRow, checks: normalizeCheckRow };
+const ID_FIELD_BY_KEY = { items: "item-id", entities: "entity-id", checks: "check-id" };
 
 // A deployed AirApp is served through the ambient Busabase session (a Busabase
 // iframe/preview host, or same-origin proxy under /api/airapp-preview/); a
@@ -103,6 +104,7 @@ const countStatus = (status) =>
   countRecords("items", [{ fieldSlug: "status", fieldType: "text", operator: "equals", value: status }]);
 
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -227,6 +229,18 @@ export const busabaseProvider = {
     const page = await readPage(key, cursor);
     const normalize = NORMALIZE_ROW_BY_KEY[key];
     return { rows: normalize ? page.rows.map(normalize) : page.rows, nextCursor: page.nextCursor };
+  },
+
+  // One record named by the URL (a shared `?peek=` / `/record` link) that is
+  // not on the loaded page. Returns null when it does not exist or the read is
+  // not allowed — the detail then says so instead of failing the view.
+  async fetchRecord(key, id) {
+    const normalize = NORMALIZE_ROW_BY_KEY[key];
+    if (!normalize || !allowedReads.has("records.get")) return null;
+    await ensureResources();
+    const record = await findRecord(key, ID_FIELD_BY_KEY[key], id);
+    if (!record) return null;
+    return normalize(normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields));
   },
 
   // Human verdict on a management insight, written directly onto the item

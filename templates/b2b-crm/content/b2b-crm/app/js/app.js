@@ -3,17 +3,60 @@ import { messages } from "./messages.js";
 import { getProvider } from "./providers/index.js";
 import { buildOverviewModel, localDateKey, renderOverviewMarkup } from "./overview.js";
 import { playOverviewEntrance } from "./overview-motion.js";
-import { formatMoney, pipelineMetrics, renderPipelineBoard } from "./pipeline.js";
+import { formatMoney } from "./pipeline.js";
 import { renderIcons } from "../vendor/lucide-icons.js?v=recording-ui-2";
 
+// Where a record opens, per Base — chosen by what people do with it:
+//   companies  → page:   an account is a workplace — its people, its activity
+//                        history — read before a call, so it gets the room.
+//   contacts   → drawer: a contact is a fact scanned among many; read it, log
+//                        an activity, return to the list.
+//   activities → split:  the follow-up queue is worked top to bottom, one
+//                        interaction after the next, list kept beside it.
+//   deals      → page:   a deal owns its stage change, next step and activity
+//                        trail; people stay on it for minutes.
+// `#/<view>/<id>` always opens the full page; `?peek=<id>` drives drawer/split.
+// On a phone every mode is a page (base-ui.css). Declared in config.js.
+const DETAIL_MODES = appConfig.ui.detail_modes || {};
+const SCREEN_BASE = { pipeline: "deals", activities: "activities" };
+const DIRECTORY_TABS = ["companies", "contacts"];
+
+// `#/overview`, `#/directory/<tab>[/<id>]`, `#/pipeline[/<id>]`,
+// `#/activities[/<id>]`, each with optional `?q=…&f=…&peek=…` so refresh,
+// shared links and Back restore the same list context.
 const routeFromHash = (hash = window.location.hash) => {
-  const route = hash.replace(/^#\/?/, "");
-  if (route === "pipeline") return { screen: "pipeline", tab: "companies" };
-  if (route === "activities") return { screen: "activities", tab: "companies" };
-  if (route === "directory/contacts") return { screen: "directory", tab: "contacts" };
-  if (route === "directory/companies") return { screen: "directory", tab: "companies" };
-  return { screen: "overview", tab: "companies" };
+  const raw = hash.replace(/^#\/?/, "");
+  const [path, queryString = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(queryString);
+  let screen = parts[0] || "overview";
+  let tab = "companies";
+  let idPart = parts[1];
+  if (screen === "directory") {
+    tab = DIRECTORY_TABS.includes(parts[1]) ? parts[1] : "companies";
+    idPart = DIRECTORY_TABS.includes(parts[1]) ? parts[2] : undefined;
+  } else if (!SCREEN_BASE[screen]) {
+    return { screen: "overview", tab, recordId: "", peek: "", query: "", filter: "" };
+  }
+  let recordId = "";
+  try {
+    recordId = idPart ? decodeURIComponent(idPart) : "";
+  } catch {
+    recordId = "";
+  }
+  const baseKey = SCREEN_BASE[screen] || tab;
+  const mode = DETAIL_MODES[baseKey] || "drawer";
+  return {
+    screen,
+    tab,
+    recordId,
+    peek: !recordId && mode !== "page" ? params.get("peek") || "" : "",
+    query: params.get("q") || "",
+    filter: params.get("f") || "",
+  };
 };
+
+const routeKey = (route) => JSON.stringify(route);
 
 const initialRoute = routeFromHash();
 const state = {
@@ -21,15 +64,20 @@ const state = {
   payload: null,
   screen: initialRoute.screen,
   directoryTab: initialRoute.tab,
-  selectedRecordId: null,
+  selectedRecordId: "",
+  presentation: null,
   query: "",
   filter: "",
+  // The current search/filter result for one Base. The unfiltered window in
+  // `payload.records` stays intact for the Overview, the attention block,
+  // relation names and the forms, whatever the list is narrowed to.
+  filtered: null,
   querySequence: 0,
+  appliedRoute: "",
   activityDraft: null,
   activitySource: null,
   dealDraft: null,
   stageDraft: null,
-  detailTrigger: null,
 };
 
 const byId = (id) => document.getElementById(id);
@@ -41,23 +89,36 @@ const escapeHtml = (value) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-const activeBaseKey = () =>
-  state.screen === "activities" ? "activities" : state.screen === "pipeline" ? "deals" : state.directoryTab;
+const activeBaseKey = () => SCREEN_BASE[state.screen] || state.directoryTab;
+const detailMode = (key = activeBaseKey()) => DETAIL_MODES[key] || "drawer";
 const baseConfig = (key = activeBaseKey()) =>
   appConfig.schema.bases.find((base) => base.key === key);
 const recordsForBase = (key = activeBaseKey()) =>
   (state.payload?.records || []).filter((record) => record.baseKey === key);
 const pageInfo = (key = activeBaseKey()) => state.payload?.pageInfo?.[key] || {};
 const loadedCount = (count, hasMore) => `${count}${hasMore ? "+" : ""}`;
+const narrowed = () => Boolean(state.query.trim() || state.filter);
+const filteredMatches = () =>
+  state.filtered &&
+  state.filtered.baseKey === activeBaseKey() &&
+  state.filtered.query === state.query.trim() &&
+  state.filtered.filter === state.filter;
+// What the active list shows: the narrowed result while a search or filter
+// is on, the loaded window otherwise.
+const listRecords = () => (narrowed() ? (filteredMatches() ? state.filtered.records : []) : recordsForBase());
+const knownRecords = () => [...(state.payload?.records || []), ...(state.filtered?.records || [])];
+const findRecord = (id, key) => knownRecords().find((record) => record.id === id && (!key || record.baseKey === key));
 const primarySlug = (key = activeBaseKey()) => baseConfig(key)?.fields?.[0]?.slug || "name";
 const recordTitle = (record) => displayValue(record?.fields?.[primarySlug(record?.baseKey)]);
+const choiceFor = (baseKey, fieldSlug, value) =>
+  baseConfig(baseKey)?.fields?.find((item) => item.slug === fieldSlug)?.options?.choices?.find((choice) => choice.id === value);
 const choiceLabel = (baseKey, fieldSlug, value) => {
-  const field = baseConfig(baseKey)?.fields?.find((item) => item.slug === fieldSlug);
-  return field?.options?.choices?.find((choice) => choice.id === value)?.name || value;
+  if (value == null || value === "") return "-";
+  return choiceFor(baseKey, fieldSlug, value)?.name || String(value);
 };
 
 const relationTokens = (value) => {
-  if (value == null) return [];
+  if (value == null || value === "") return [];
   if (Array.isArray(value)) return value.flatMap(relationTokens);
   if (typeof value === "object") {
     return [value.id, value.recordId, value.name, value.title, value.label].filter(Boolean).map(String);
@@ -65,18 +126,28 @@ const relationTokens = (value) => {
   return [String(value)];
 };
 
-const relatedRecordTitle = (token) => {
-  const related = (state.payload?.records || []).find((record) => record.id === token);
-  return related ? recordTitle(related) : token;
+// A relation comes back as the target record's id. Resolve it to that
+// record's name; when the target is not in the loaded window say so —
+// never print the id.
+const relationLabel = (value) => {
+  const tokens = relationTokens(value);
+  if (!tokens.length) return "-";
+  const names = [];
+  for (const token of tokens) {
+    const related = findRecord(token);
+    if (related) names.push(recordTitle(related));
+  }
+  if (names.length) return [...new Set(names)].join(", ");
+  const named = Array.isArray(value) ? value.find((item) => item?.name || item?.title) : value;
+  return named?.name || named?.title || messages.notLoaded;
 };
 
 function displayValue(value, baseKey, fieldSlug) {
   if (value == null || value === "") return "-";
   if (Array.isArray(value)) return value.map((item) => displayValue(item, baseKey, fieldSlug)).join(", ");
-  if (typeof value === "object") return value.name || value.title || value.label || value.id || "-";
+  if (typeof value === "object") return value.name || value.title || value.label || "-";
   if (typeof value === "boolean") return value ? "Yes" : "No";
-  const selected = baseKey && fieldSlug ? choiceLabel(baseKey, fieldSlug, value) : value;
-  return relatedRecordTitle(String(selected));
+  return baseKey && fieldSlug ? choiceLabel(baseKey, fieldSlug, value) : String(value);
 }
 
 const relationMatches = (value, record) => {
@@ -100,12 +171,12 @@ const formatTimestamp = (value) => {
     : new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(date);
 };
 
-const today = () => localDateKey();
+// The provider's clock when it has one (the Demo is pinned to a date), so the
+// attention block, the lists and the Overview agree on what "due" means.
+const today = () => localDateKey(state.payload?.provider?.now ? new Date(state.payload.provider.now) : new Date());
+const isDue = (value) => Boolean(value) && String(value).slice(0, 10) <= today();
 const dueActivities = () =>
-  recordsForBase("activities").filter((record) => {
-    const followUp = record.fields?.["next-follow-up-date"];
-    return followUp && String(followUp).slice(0, 10) <= today();
-  });
+  recordsForBase("activities").filter((record) => isDue(record.fields?.["next-follow-up-date"]));
 
 const setText = (id, value) => {
   const element = byId(id);
@@ -148,24 +219,6 @@ const setDesktopSidebar = (collapsed, { restoreFocus = false } = {}) => {
     setTimeout(() => (collapsed ? byId("sidebarExpand") : byId("sidebarClose")).focus({ preventScroll: true }), 200);
   }
 };
-const setDetailOpen = (open) => {
-  document.body.classList.toggle("detail-drawer-open", open);
-  byId("detailScrim").hidden = !open;
-};
-
-function closeDetail({ restoreFocus = true } = {}) {
-  const triggerRecordId = state.detailTrigger?.dataset.record;
-  state.selectedRecordId = null;
-  state.detailTrigger = null;
-  setDetailOpen(false);
-  renderList();
-  renderDetail();
-  if (restoreFocus && triggerRecordId) {
-    const trigger = [...byId("recordList").querySelectorAll("[data-record]")]
-      .find((element) => element.dataset.record === triggerRecordId);
-    trigger?.focus();
-  }
-}
 
 const humanError = (error) => {
   const raw = error instanceof Error ? error.message : String(error);
@@ -173,39 +226,60 @@ const humanError = (error) => {
   return code ? messages.providerErrors[code] : raw;
 };
 
+// ── URLs ───────────────────────────────────────────────────────────────────
+const screenPath = (screen = state.screen, tab = state.directoryTab) =>
+  screen === "directory" ? `#/directory/${tab}` : `#/${screen}`;
+const routeQuery = (extra = {}, { query = state.query, filter = state.filter } = {}) => {
+  const params = new URLSearchParams();
+  if (query) params.set("q", query);
+  if (filter) params.set("f", filter);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+const listUrl = () => `${screenPath()}${routeQuery()}`;
+// The full page: the record in the path, whatever the view's mode.
+const detailUrl = (id) => `${screenPath()}/${encodeURIComponent(id)}${routeQuery()}`;
+// What a row opens: the page for a `page` Base, else `?peek=`.
+const recordUrl = (id) => (detailMode() === "page" ? detailUrl(id) : `${screenPath()}${routeQuery({ peek: id })}`);
+
+// ── Render ─────────────────────────────────────────────────────────────────
+const SCREEN_NAMES = { overview: "Overview", directory: "Directory", pipeline: "Pipeline", activities: "Activities" };
+
+const navTotal = (key) => {
+  const total = state.payload?.baseTotals?.[key];
+  return total == null ? null : total;
+};
+const navCount = (keys) => {
+  const totals = keys.map(navTotal);
+  if (totals.every((total) => total != null)) return String(totals.reduce((sum, total) => sum + total, 0));
+  const loaded = keys.reduce((sum, key) => sum + recordsForBase(key).length, 0);
+  return loadedCount(loaded, keys.some((key) => pageInfo(key).nextCursor));
+};
+
 function renderNavigation() {
   document.querySelectorAll("[data-screen]").forEach((button) => {
     button.classList.toggle("active", button.dataset.screen === state.screen);
   });
-  const directoryCount = recordsForBase("companies").length + recordsForBase("contacts").length;
-  setText("directoryNavCount", loadedCount(directoryCount, pageInfo("companies").nextCursor || pageInfo("contacts").nextCursor));
-  setText("pipelineNavCount", loadedCount(recordsForBase("deals").length, pageInfo("deals").nextCursor));
-  setText("activitiesNavCount", loadedCount(recordsForBase("activities").length, pageInfo("activities").nextCursor));
+  setText("directoryNavCount", navCount(["companies", "contacts"]));
+  setText("pipelineNavCount", navCount(["deals"]));
+  setText("activitiesNavCount", navCount(["activities"]));
 }
 
-function renderMetrics() {
+// The sidebar's human-attention block: follow-ups due, plus the requests this
+// app has proposed that still wait for a reviewer.
+function renderAttention() {
+  setText("attentionValue", loadedCount(dueActivities().length, pageInfo("activities").nextCursor));
+  setText("attentionCopy", messages.followUpLabel);
   const pending = (state.payload?.changeRequests || []).filter((request) =>
     ["in_review", "changes_requested", "approved", "conflict"].includes(request.status),
   ).length;
-  const pipeline = pipelineMetrics(recordsForBase("deals"));
-  const metrics = state.screen === "pipeline"
-    ? [
-        ["Open deals", loadedCount(pipeline.openDeals, pageInfo("deals").nextCursor)],
-        ["Open value", pipeline.openValue],
-        ["Closing in 30 days", loadedCount(pipeline.closingSoon, pageInfo("deals").nextCursor)],
-        ["Pending reviews", loadedCount(pending, state.payload?.changeRequestPageInfo?.nextCursor)],
-      ]
-    : [
-        ["Companies", loadedCount(recordsForBase("companies").length, pageInfo("companies").nextCursor)],
-        ["Contacts", loadedCount(recordsForBase("contacts").length, pageInfo("contacts").nextCursor)],
-        ["Follow-ups due", loadedCount(dueActivities().length, pageInfo("activities").nextCursor)],
-        ["Pending reviews", loadedCount(pending, state.payload?.changeRequestPageInfo?.nextCursor)],
-      ];
-  byId("metrics").innerHTML = metrics
-    .map(([label, value]) => `<div class="metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`)
-    .join("");
-  setText("attentionValue", state.screen === "pipeline" ? pipeline.openDeals : loadedCount(dueActivities().length, pageInfo("activities").nextCursor));
-  setText("attentionCopy", state.screen === "pipeline" ? "open deals in the loaded window" : messages.followUpLabel);
+  setText(
+    "attentionPending",
+    pending
+      ? `${loadedCount(pending, state.payload?.changeRequestPageInfo?.nextCursor)} ${pending === 1 ? messages.pendingOne : messages.pendingLabel}`
+      : messages.pendingEmpty,
+  );
 }
 
 function renderOverview() {
@@ -220,16 +294,14 @@ function renderOverview() {
   const staleNotice = state.payload?.provider?.stale
     ? '<div class="overview-notice" role="status">This data window may be stale. Refresh the AirApp before acting on time-sensitive follow-ups.</div>'
     : "";
-  byId("overviewPage").innerHTML = staleNotice + renderOverviewMarkup(model, {
+  byId("overviewBody").innerHTML = staleNotice + renderOverviewMarkup(model, {
     escapeHtml,
     formatDate,
     formatMoney,
     recordTitle,
-    displayValue,
+    displayValue: relationLabel,
     choiceLabel,
   });
-  setText("attentionValue", loadedCount(model.dueActivities.length, model.dueActivitiesPartial));
-  setText("attentionCopy", messages.followUpLabel);
 }
 
 const filterDefinition = () => {
@@ -239,28 +311,16 @@ const filterDefinition = () => {
   return { label: "Activity type", fieldSlug: "activity-type" };
 };
 
-function renderControls() {
-  const screenCopy = messages.screens[state.screen];
-  const overview = state.screen === "overview";
-  setText("viewEyebrow", screenCopy.eyebrow);
-  setText("viewTitle", screenCopy.title);
-  setText("viewSummary", screenCopy.summary);
-  setText("mobileTitle", overview ? "Overview" : state.screen === "activities" ? "Activities" : state.screen === "pipeline" ? "Pipeline" : "Directory");
-  byId("overviewHeaderActions").hidden = !overview;
-  byId("workspaceSearch").hidden = overview;
-  byId("overviewPage").hidden = !overview;
-  byId("metrics").hidden = overview;
-  byId("controlBar").hidden = overview;
-  byId("workspaceContent").hidden = overview;
+function renderToolbar() {
+  const base = baseConfig();
+  setText("viewTitle", SCREEN_NAMES[state.screen]);
+  // The view's description lives in the title tooltip, not on the page.
+  byId("viewTitle").title = messages.screens[state.screen]?.summary || "";
   byId("directoryTabs").hidden = state.screen !== "directory";
   byId("addDealOpen").hidden = state.screen !== "pipeline";
-  document.body.classList.toggle("overview-screen", overview);
-  document.body.classList.toggle("pipeline-screen", state.screen === "pipeline");
-  if (overview) return;
   document.querySelectorAll("[data-directory-tab]").forEach((button) => {
     button.classList.toggle("active", button.dataset.directoryTab === state.directoryTab);
   });
-  const base = baseConfig();
   const definition = filterDefinition();
   const field = base?.fields.find((item) => item.slug === definition.fieldSlug);
   setText("filterLabel", definition.label);
@@ -271,67 +331,95 @@ function renderControls() {
     ),
   ].join("");
   byId("recordFilter").value = state.filter;
+  if (byId("searchInput").value !== state.query) byId("searchInput").value = state.query;
   byId("searchInput").placeholder = `Search ${base?.name.toLowerCase() || "records"}`;
   setText("searchLabel", `Search ${base?.name || "records"}`);
-  setText("windowNote", pageInfo().nextCursor ? "More records are available" : "Showing the complete loaded window");
+  const records = listRecords();
+  const more = narrowed() ? state.filtered?.nextCursor : pageInfo().nextCursor;
+  setText("viewCount", loadedCount(records.length, more));
 }
 
-function listRow(record) {
-  const fields = record.fields || {};
-  if (record.baseKey === "companies") {
-    return {
-      title: recordTitle(record),
-      meta: `${displayValue(fields["relationship-type"], "companies", "relationship-type")} / ${displayValue(fields.industry, "companies", "industry")} / ${displayValue(fields.headquarters)}`,
-      warning: false,
-    };
-  }
-  if (record.baseKey === "contacts") {
-    return {
-      title: recordTitle(record),
-      meta: `${displayValue(fields["job-title"])} / ${displayValue(fields.company)} / ${displayValue(fields.email)}`,
-      warning: !fields.email && !fields.phone,
-    };
-  }
-  const followUp = fields["next-follow-up-date"];
-  return {
-    title: recordTitle(record),
-    meta: `${displayValue(fields["activity-type"], "activities", "activity-type")} / ${formatDate(fields["activity-date"])}${followUp ? ` / Follow up ${formatDate(followUp)}` : ""}`,
-    warning: followUp && String(followUp).slice(0, 10) <= today(),
-  };
-}
+const badge = (label, color) =>
+  `<span class="badge"${color ? ` style="--dot:${escapeHtml(color)}"` : ""}>${escapeHtml(label)}</span>`;
+const choiceBadge = (baseKey, fieldSlug, value) =>
+  value ? badge(choiceLabel(baseKey, fieldSlug, value), choiceFor(baseKey, fieldSlug, value)?.color) : '<span class="cell-muted">-</span>';
+const textCell = (value) => escapeHtml(displayValue(value));
+const dateCell = (value) => (value ? escapeHtml(formatDate(value)) : '<span class="cell-muted">-</span>');
+
+// One line per row; each Base names its own columns. The first column names
+// the record; on a phone (and in the split queue) only the first two show,
+// plus any `ws-split-keep` column.
+const TABLES = {
+  companies: [
+    { label: "Company", cell: (record) => escapeHtml(recordTitle(record)) },
+    { label: "Relationship", className: "col-badge", cell: (record) => choiceBadge("companies", "relationship-type", record.fields?.["relationship-type"]) },
+    { label: "Industry", cell: (record) => escapeHtml(choiceLabel("companies", "industry", record.fields?.industry)) },
+    { label: "Size", className: "ws-col-narrow", cell: (record) => escapeHtml(choiceLabel("companies", "company-size", record.fields?.["company-size"])) },
+    { label: "Headquarters", cell: (record) => textCell(record.fields?.headquarters) },
+  ],
+  contacts: [
+    { label: "Name", cell: (record) => escapeHtml(recordTitle(record)) },
+    { label: "Company", cell: (record) => escapeHtml(relationLabel(record.fields?.company)) },
+    { label: "Job title", cell: (record) => textCell(record.fields?.["job-title"]) },
+    { label: "Buying role", cell: (record) => escapeHtml(choiceLabel("contacts", "buying-role", record.fields?.["buying-role"])) },
+    {
+      label: "Email",
+      className: "ws-col-wide",
+      cell: (record) => {
+        const fields = record.fields || {};
+        if (fields.email) return escapeHtml(fields.email);
+        if (fields.phone) return escapeHtml(fields.phone);
+        return `<span class="cell-due">${escapeHtml(messages.noChannel)}</span>`;
+      },
+    },
+    { label: "Status", className: "col-badge", cell: (record) => choiceBadge("contacts", "contact-status", record.fields?.["contact-status"]) },
+  ],
+  activities: [
+    { label: "Activity", cell: (record) => escapeHtml(recordTitle(record)) },
+    {
+      label: "Follow-up",
+      className: "ws-split-keep",
+      cell: (record) => {
+        const value = record.fields?.["next-follow-up-date"];
+        if (!value) return '<span class="cell-muted">-</span>';
+        return isDue(value) ? `<span class="cell-due">${escapeHtml(formatDate(value))}</span>` : escapeHtml(formatDate(value));
+      },
+    },
+    { label: "Type", className: "ws-col-narrow", cell: (record) => escapeHtml(choiceLabel("activities", "activity-type", record.fields?.["activity-type"])) },
+    { label: "Date", cell: (record) => dateCell(record.fields?.["activity-date"]) },
+    { label: "Company", cell: (record) => escapeHtml(relationLabel(record.fields?.company)) },
+    { label: "Contact", cell: (record) => escapeHtml(relationLabel(record.fields?.contact)) },
+  ],
+  deals: [
+    { label: "Deal", cell: (record) => escapeHtml(recordTitle(record)) },
+    { label: "Stage", className: "col-badge", cell: (record) => choiceBadge("deals", "stage", record.fields?.stage) },
+    { label: "Company", cell: (record) => escapeHtml(relationLabel(record.fields?.company)) },
+    { label: "Amount", className: "ws-col-num", cell: (record) => escapeHtml(formatMoney(record.fields?.amount, record.fields?.currency)) },
+    { label: "Expected close", cell: (record) => dateCell(record.fields?.["expected-close-date"]) },
+    { label: "Next step", className: "ws-col-wide", cell: (record) => textCell(record.fields?.["next-step"]) },
+  ],
+};
 
 function renderList() {
-  const records = recordsForBase();
-  const base = baseConfig();
-  setText("listEyebrow", state.screen === "activities" ? "Relationship history" : state.screen === "pipeline" ? "Revenue workflow" : "Directory");
-  setText("listTitle", state.screen === "pipeline" ? "Sales Pipeline" : base?.name || "Records");
-  setText("recordCount", loadedCount(records.length, pageInfo().nextCursor));
-  byId("loadMore").hidden = !pageInfo().nextCursor || Boolean(state.query || state.filter);
-  setText("loadMore", messages.loadMore);
-  byId("recordList").className = state.screen === "pipeline" ? "record-list pipeline-board" : "record-list";
-  if (state.screen === "pipeline") {
-    const stages = base?.fields.find((field) => field.slug === "stage")?.options?.choices || [];
-    byId("recordList").innerHTML = renderPipelineBoard({
-      records,
-      stages,
-      selectedId: state.selectedRecordId,
-      stageFilter: state.filter,
-      titleFor: recordTitle,
-      relationFor: (value) => displayValue(value),
-      dateFor: formatDate,
-    });
-    return;
-  }
+  const columns = TABLES[activeBaseKey()];
+  const records = listRecords();
+  const waiting = narrowed() && !filteredMatches();
+  byId("recordTable").dataset.base = activeBaseKey();
+  byId("loadMore").hidden = narrowed() || !pageInfo().nextCursor;
+  if (!byId("loadMore").disabled) setText("loadMore", messages.loadMore);
+  byId("recordHead").innerHTML = `<tr>${columns
+    .map((column) => `<th scope="col"${column.className ? ` class="${column.className}"` : ""}>${escapeHtml(column.label)}</th>`)
+    .join("")}</tr>`;
   if (!records.length) {
-    byId("recordList").innerHTML = `<div class="empty-list">${escapeHtml(state.query || state.filter ? messages.noMatches : messages.noRecords)}</div>`;
+    const message = waiting ? messages.refreshing : narrowed() ? messages.noMatches : messages.noRecords;
+    byId("recordList").innerHTML = `<tr class="empty-row"><td class="empty-list" colspan="${columns.length}">${escapeHtml(message)}</td></tr>`;
     return;
   }
   byId("recordList").innerHTML = records.map((record) => {
-    const row = listRow(record);
-    return `<button class="record-row ${record.id === state.selectedRecordId ? "selected" : ""}" type="button" data-record="${escapeHtml(record.id)}">
-      <strong>${escapeHtml(row.title)}</strong>
-      <span class="row-meta"><i class="status-dot ${row.warning ? "warning" : ""}" aria-hidden="true"></i><span>${escapeHtml(row.meta)}</span></span>
-    </button>`;
+    const selected = record.id === state.selectedRecordId;
+    return `<tr data-record="${escapeHtml(record.id)}" tabindex="0"${selected ? ' class="ws-selected" aria-selected="true"' : ""}>${columns
+      .map((column) => `<td${column.className ? ` class="${column.className}"` : ""}>${column.cell(record)}</td>`)
+      .join("")}</tr>`;
   }).join("");
 }
 
@@ -339,6 +427,7 @@ const fieldValueHtml = (baseKey, field, value, record) => {
   if (baseKey === "deals" && field.slug === "amount") {
     return escapeHtml(formatMoney(value, record?.fields?.currency));
   }
+  if (field.type === "relation") return escapeHtml(relationLabel(value));
   const label = displayValue(value, baseKey, field.slug);
   if (value && field.type === "url") return `<a href="${escapeHtml(value)}" target="_blank" rel="noreferrer">${escapeHtml(label)}</a>`;
   if (value && field.type === "email") return `<a href="mailto:${escapeHtml(value)}">${escapeHtml(label)}</a>`;
@@ -349,7 +438,8 @@ const fieldValueHtml = (baseKey, field, value, record) => {
 
 function renderAudit(record) {
   const user = record.createdByUser || record.headCommit?.authorUser;
-  const name = user?.name || user?.email || record.createdBy || "Unknown member";
+  // A bare member id is not a name; say who when we know, never print the id.
+  const name = user?.name || user?.email || "Unknown member";
   const avatar = user?.image
     ? `<span class="audit-avatar"><img src="${escapeHtml(user.image)}" alt=""></span>`
     : `<span class="audit-avatar">${escapeHtml(String(name).slice(0, 1).toUpperCase())}</span>`;
@@ -389,26 +479,34 @@ function renderRelated(record) {
   }
 }
 
+const emptyDetailMessage = () => {
+  const key = activeBaseKey();
+  if (key === "companies") return messages.selectCompany;
+  if (key === "contacts") return messages.selectContact;
+  if (key === "deals") return messages.selectDeal;
+  return messages.selectActivity;
+};
+
 function renderDetail() {
-  const record = recordsForBase().find((item) => item.id === state.selectedRecordId);
+  const selectedId = state.selectedRecordId;
+  const record = selectedId ? findRecord(selectedId, activeBaseKey()) : null;
+  byId("detailBar").hidden = !selectedId;
   byId("detailEmpty").hidden = Boolean(record);
   byId("detailContent").hidden = !record;
   if (!record) {
-    const message = activeBaseKey() === "companies"
-      ? messages.selectCompany
-      : activeBaseKey() === "contacts"
-        ? messages.selectContact
-        : activeBaseKey() === "deals"
-          ? messages.selectDeal
-          : messages.selectActivity;
-    byId("detailEmpty").innerHTML = `<strong>No record selected</strong><span>${escapeHtml(message)}</span>`;
+    // Split's resting state, or a link to a record outside the loaded window.
+    byId("detailEmpty").innerHTML = selectedId
+      ? `<strong>${escapeHtml(messages.missingRecord)}</strong><span>${escapeHtml(messages.missingRecordHint)}</span>`
+      : `<span>${escapeHtml(emptyDetailMessage())}</span>`;
     return;
   }
   const base = baseConfig();
-  setText("detailEyebrow", base?.name.slice(0, -1) || "Record");
+  byId("detailExpand").hidden = state.presentation === "page";
+  byId("detailExpand").href = detailUrl(record.id);
   setText("detailTitle", recordTitle(record));
   byId("logActivityOpen").hidden = !["contacts", "deals"].includes(record.baseKey);
   byId("stageChangeOpen").hidden = record.baseKey !== "deals";
+  byId("detailActions").hidden = byId("logActivityOpen").hidden && byId("stageChangeOpen").hidden;
   renderAudit(record);
   byId("detailFields").innerHTML = (base?.fields || []).slice(1).map((field) =>
     `<div class="field-row"><span>${escapeHtml(field.name)}</span><strong>${fieldValueHtml(record.baseKey, field, record.fields?.[field.slug], record)}</strong></div>`,
@@ -419,6 +517,7 @@ function renderDetail() {
 function renderSettings() {
   const provider = state.payload?.provider || {};
   const budgets = appConfig.schema.bases.map((base) => `${base.name}: ${base.readLimit}`).join("; ");
+  const modes = appConfig.schema.bases.map((base) => `${base.name}: ${detailMode(base.key)}`).join("; ");
   const rows = [
     ["Provider", provider.name || state.provider?.name || "Not connected"],
     ["Mode", provider.mode || "Not set"],
@@ -426,22 +525,41 @@ function renderSettings() {
     ["Space", "Busa Sales"],
     ["Configured Bases", appConfig.schema.bases.map((base) => base.slug).join(", ")],
     ["Page budgets", `${budgets}; pending reviews: 20`],
+    ["Record detail", modes],
     ["Overview counts", "Exact records.count filters; dated lists and values remain bounded"],
     ["Write policy", "ChangeRequest only; no direct canonical mutation"],
   ];
   byId("settingsGrid").innerHTML = rows.map(([label, value]) => `<div class="settings-row"><span>${escapeHtml(label)}</span><code>${escapeHtml(value)}</code></div>`).join("");
 }
 
+function applyBodyState() {
+  const ready = Boolean(state.payload);
+  const onView = ready && state.screen !== "overview";
+  const body = document.body.classList;
+  const mode = detailMode();
+  body.toggle("ws-detail-open", onView && Boolean(state.selectedRecordId));
+  body.toggle("ws-detail-page", onView && state.presentation === "page" && Boolean(state.selectedRecordId));
+  body.toggle("ws-detail-drawer", onView && state.presentation === "drawer");
+  body.toggle("ws-layout-split", onView && mode === "split" && state.presentation !== "page");
+  body.toggle("ws-searching", onView && narrowed());
+  body.add("ws-has-mobile-bar");
+  byId("overviewPage").hidden = !ready || state.screen !== "overview";
+  byId("viewPage").hidden = !onView;
+  setText("mobileTitle", SCREEN_NAMES[state.screen]);
+}
+
 function render() {
   document.documentElement.lang = appConfig.locale;
   document.documentElement.style.setProperty("--accent", appConfig.brand?.accent || "#0F766E");
   document.title = appConfig.appName;
+  applyBodyState();
+  if (!state.payload) return;
   renderNavigation();
-  renderControls();
+  renderAttention();
   if (state.screen === "overview") {
     renderOverview();
   } else {
-    renderMetrics();
+    renderToolbar();
     renderList();
     renderDetail();
   }
@@ -450,6 +568,7 @@ function render() {
   if (state.screen === "overview") playOverviewEntrance(byId("overviewPage"));
 }
 
+// ── Data ───────────────────────────────────────────────────────────────────
 async function load() {
   setText("loadingState", messages.loading);
   byId("errorState").hidden = true;
@@ -458,7 +577,8 @@ async function load() {
     state.payload = await state.provider.getState();
     setText("loadingState", "");
     byId("errorState").hidden = true;
-    render();
+    state.appliedRoute = "";
+    applyRoute();
   } catch (error) {
     setText("loadingState", "");
     byId("errorState").hidden = false;
@@ -466,26 +586,31 @@ async function load() {
   }
 }
 
+// One request per search/filter change. An empty search reads nothing: the
+// list falls back to the window already loaded.
 async function runQuery() {
   const sequence = ++state.querySequence;
   const baseKey = activeBaseKey();
+  const query = state.query.trim();
+  const filter = state.filter;
+  if (!query && !filter) {
+    state.filtered = null;
+    render();
+    return;
+  }
+  if (filteredMatches()) return;
   const definition = filterDefinition();
   setText("loadingState", messages.refreshing);
+  render();
   try {
     const page = await state.provider.queryBase(baseKey, {
-      query: state.query.trim(),
-      filter: state.filter ? { fieldSlug: definition.fieldSlug, value: state.filter } : null,
+      query,
+      filter: filter ? { fieldSlug: definition.fieldSlug, value: filter } : null,
     });
     if (sequence !== state.querySequence || baseKey !== activeBaseKey()) return;
-    state.payload.records = [
-      ...state.payload.records.filter((record) => record.baseKey !== baseKey),
-      ...page.records,
-    ];
-    state.payload.pageInfo[baseKey] = { nextCursor: page.nextCursor, limit: page.limit };
-    state.selectedRecordId = null;
-    state.detailTrigger = null;
-    setDetailOpen(false);
+    state.filtered = { baseKey, query, filter, records: page.records, nextCursor: page.nextCursor };
     setText("loadingState", "");
+    byId("errorState").hidden = true;
     render();
   } catch (error) {
     if (sequence !== state.querySequence) return;
@@ -512,6 +637,7 @@ async function loadMore() {
     const known = new Set(state.payload.records.map((record) => record.id));
     state.payload.records.push(...page.records.filter((record) => !known.has(record.id)));
     state.payload.pageInfo[baseKey] = { nextCursor: page.nextCursor, limit: page.limit };
+    byId("loadMore").disabled = false;
     render();
   } catch {
     setText("loadMore", messages.loadMoreFailed);
@@ -520,8 +646,76 @@ async function loadMore() {
   }
 }
 
-const selectedContact = () => recordsForBase("contacts").find((record) => record.id === state.selectedRecordId);
-const selectedDeal = () => recordsForBase("deals").find((record) => record.id === state.selectedRecordId);
+// ── Routing ────────────────────────────────────────────────────────────────
+const resetScroll = () => {
+  byId("overviewPage").scrollTop = 0;
+  byId("listPanel").scrollTop = 0;
+  byId("detailPanel").scrollTop = 0;
+};
+
+function applyRoute() {
+  const route = routeFromHash();
+  const key = routeKey(route);
+  if (key === state.appliedRoute) return;
+  state.appliedRoute = key;
+  const previousSelection = state.selectedRecordId;
+  const contextChanged = route.screen !== state.screen || route.tab !== state.directoryTab;
+  state.screen = route.screen;
+  state.directoryTab = route.tab;
+  state.query = route.query;
+  state.filter = route.filter;
+  state.selectedRecordId = route.recordId || route.peek;
+  state.presentation = route.recordId ? "page" : route.peek ? detailMode() : null;
+  setMobileSidebar(false);
+  if (contextChanged) {
+    state.querySequence += 1;
+    resetScroll();
+  }
+  render();
+  if (state.screen !== "overview" && narrowed() && !filteredMatches()) runQuery();
+  if (state.selectedRecordId && state.selectedRecordId !== previousSelection) {
+    byId("detailPanel").scrollTop = 0;
+    const target = state.presentation === "page" ? byId("backButton") : byId("detailClose");
+    setTimeout(() => target.focus({ preventScroll: true }), 60);
+  } else if (!state.selectedRecordId && previousSelection && !contextChanged) {
+    // Back on the list: return focus to the row the record was opened from.
+    [...byId("recordList").querySelectorAll("[data-record]")]
+      .find((row) => row.dataset.record === previousSelection)
+      ?.focus({ preventScroll: true });
+  }
+}
+
+const navigate = (url, { replace = false, fromList = false } = {}) => {
+  if (replace) history.replaceState(history.state, "", url);
+  else history.pushState(fromList ? { fromList: true } : null, "", url);
+  applyRoute();
+};
+
+function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else navigate(listUrl());
+}
+
+function openRecord(id) {
+  // Switching records while a drawer or split is open replaces the entry, so
+  // Close still steps back to the list it was opened from.
+  if (state.selectedRecordId && state.presentation !== "page") navigate(recordUrl(id), { replace: true });
+  else navigate(recordUrl(id), { fromList: true });
+}
+
+// Search and filter edits replace the entry (no Back step per keystroke) and
+// drop any peeked record, which may not be in the narrowed result.
+function updateListQuery() {
+  history.replaceState(history.state, "", listUrl());
+  state.appliedRoute = routeKey(routeFromHash());
+  state.selectedRecordId = "";
+  state.presentation = null;
+  render();
+  queueQuery();
+}
+
+const selectedContact = () => findRecord(state.selectedRecordId, "contacts");
+const selectedDeal = () => findRecord(state.selectedRecordId, "deals");
 const closeActivityModal = () => {
   byId("activityModal").hidden = true;
   state.activityDraft = null;
@@ -535,8 +729,8 @@ function openActivityModal() {
   const form = byId("activityForm");
   form.reset();
   form.elements["activity-date"].value = today();
-  const contactName = source.baseKey === "deals" ? displayValue(source.fields?.["primary-contact"]) : recordTitle(source);
-  setText("activityContext", `${contactName} / ${displayValue(source.fields?.company)}${source.baseKey === "deals" ? ` / ${recordTitle(source)}` : ""}`);
+  const contactName = source.baseKey === "deals" ? relationLabel(source.fields?.["primary-contact"]) : recordTitle(source);
+  setText("activityContext", `${contactName} / ${relationLabel(source.fields?.company)}${source.baseKey === "deals" ? ` / ${recordTitle(source)}` : ""}`);
   byId("activityFields").hidden = false;
   byId("requestPreview").hidden = true;
   resetFormResult("activityResult");
@@ -570,8 +764,8 @@ function reviewActivity() {
   state.activityDraft = draftFromForm();
   const source = state.activitySource;
   const rows = [
-    ["Contact", source?.baseKey === "deals" ? displayValue(source.fields?.["primary-contact"]) : recordTitle(source)],
-    ["Company", displayValue(source?.fields?.company)],
+    ["Contact", source?.baseKey === "deals" ? relationLabel(source.fields?.["primary-contact"]) : recordTitle(source)],
+    ["Company", relationLabel(source?.fields?.company)],
     ...(source?.baseKey === "deals" ? [["Deal", recordTitle(source)]] : []),
     ["Subject", state.activityDraft["activity-subject"]],
     ["Type", choiceLabel("activities", "activity-type", state.activityDraft["activity-type"])],
@@ -602,7 +796,7 @@ async function submitActivity() {
     byId("activityBack").hidden = true;
     byId("activitySubmit").hidden = true;
     byId("activityCancel").textContent = "Close";
-    renderMetrics();
+    renderAttention();
   } catch (error) {
     showRequestError("activityResult", error);
   } finally {
@@ -671,8 +865,8 @@ function reviewDeal() {
   state.dealDraft = dealDraftFromForm();
   const rows = [
     ["Deal", state.dealDraft["deal-name"]],
-    ["Company", displayValue(state.dealDraft.company)],
-    ["Primary contact", displayValue(state.dealDraft["primary-contact"])],
+    ["Company", relationLabel(state.dealDraft.company)],
+    ["Primary contact", relationLabel(state.dealDraft["primary-contact"])],
     ["Amount", `${choiceLabel("deals", "currency", state.dealDraft.currency)} ${new Intl.NumberFormat("en").format(state.dealDraft.amount)}`],
     ["Stage", choiceLabel("deals", "stage", state.dealDraft.stage)],
     ["Expected close", formatDate(state.dealDraft["expected-close-date"])],
@@ -701,7 +895,7 @@ async function submitDeal() {
     byId("dealBack").hidden = true;
     byId("dealSubmit").hidden = true;
     byId("dealCancel").textContent = "Close";
-    renderMetrics();
+    renderAttention();
   } catch (error) {
     showRequestError("dealResult", error);
   } finally {
@@ -816,7 +1010,7 @@ async function submitStage() {
     byId("stageBack").hidden = true;
     byId("stageSubmit").hidden = true;
     byId("stageCancel").textContent = "Close";
-    renderMetrics();
+    renderAttention();
   } catch (error) {
     showRequestError("stageResult", error);
   } finally {
@@ -825,104 +1019,63 @@ async function submitStage() {
   }
 }
 
-function switchContext({ screen = state.screen, tab = state.directoryTab, filter = "", updateHistory = true }) {
-  state.screen = screen;
-  state.directoryTab = tab;
-  state.selectedRecordId = null;
-  state.query = "";
-  state.filter = filter;
-  state.querySequence += 1;
-  state.detailTrigger = null;
-  byId("searchInput").value = "";
-  setMobileSidebar(false);
-  setDetailOpen(false);
-  const nextHash = screen === "overview"
-    ? "#/overview"
-    : screen === "activities"
-      ? "#/activities"
-      : screen === "pipeline"
-        ? "#/pipeline"
-        : `#/directory/${tab}`;
-  if (updateHistory && window.location.hash !== nextHash) {
-    window.history.pushState(null, "", nextHash);
-  }
-  render();
-  const resetScroll = () => {
-    document.querySelector(".main").scrollTop = 0;
-    byId("overviewPage").scrollTop = 0;
-    byId("listPanel").scrollTop = 0;
-  };
-  resetScroll();
-  window.setTimeout(resetScroll, 180);
-}
-
+// ── Events ─────────────────────────────────────────────────────────────────
 byId("mainNav").addEventListener("click", (event) => {
   const button = event.target.closest("[data-screen]");
-  if (button) switchContext({ screen: button.dataset.screen });
+  if (!button) return;
+  const screen = button.dataset.screen;
+  navigate(screen === "directory" ? "#/directory/companies" : `#/${screen}`);
 });
-byId("overviewPage").addEventListener("click", async (event) => {
+byId("overviewPage").addEventListener("click", (event) => {
   const stageButton = event.target.closest("[data-stage]");
   if (stageButton) {
-    switchContext({ screen: "pipeline", filter: stageButton.dataset.stage });
-    await runQuery();
+    navigate(`#/pipeline${routeQuery({}, { query: "", filter: stageButton.dataset.stage })}`);
     return;
   }
   const recordButton = event.target.closest("[data-overview-record]");
   if (recordButton) {
-    const screen = recordButton.dataset.overviewBase === "deals" ? "pipeline" : "activities";
-    const recordId = recordButton.dataset.overviewRecord;
-    switchContext({ screen });
-    state.selectedRecordId = recordId;
-    setDetailOpen(true);
-    renderList();
-    renderDetail();
-    setTimeout(() => byId("detailClose").focus({ preventScroll: true }), 220);
+    const id = encodeURIComponent(recordButton.dataset.overviewRecord);
+    navigate(recordButton.dataset.overviewBase === "deals" ? `#/pipeline/${id}` : `#/activities?peek=${id}`);
     return;
   }
   const targetButton = event.target.closest("[data-overview-target]");
   if (!targetButton) return;
   const target = targetButton.dataset.overviewTarget;
   if (target === "customers" || target === "prospects") {
-    switchContext({
-      screen: "directory",
-      tab: "companies",
-      filter: target === "customers" ? "customer" : "prospect",
-    });
-    await runQuery();
-    return;
+    navigate(`#/directory/companies?f=${target === "customers" ? "customer" : "prospect"}`);
+  } else if (target === "activities" || target === "followups") {
+    navigate("#/activities");
+  } else if (target === "missing-next-step") {
+    navigate("#/pipeline");
   }
-  if (target === "activities" || target === "followups") {
-    switchContext({ screen: "activities" });
-    return;
-  }
-  if (target === "missing-next-step") switchContext({ screen: "pipeline" });
 });
 byId("directoryTabs").addEventListener("click", (event) => {
   const button = event.target.closest("[data-directory-tab]");
-  if (button) switchContext({ screen: "directory", tab: button.dataset.directoryTab });
+  if (button && button.dataset.directoryTab !== state.directoryTab) navigate(`#/directory/${button.dataset.directoryTab}`);
 });
 byId("recordList").addEventListener("click", (event) => {
-  const button = event.target.closest("[data-record]");
-  if (!button) return;
-  state.selectedRecordId = button.dataset.record;
-  state.detailTrigger = button;
-  setDetailOpen(true);
-  renderList();
-  renderDetail();
-  setTimeout(() => byId("detailClose").focus({ preventScroll: true }), 220);
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-record]");
+  if (row) openRecord(row.dataset.record);
+});
+byId("recordList").addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const row = event.target.closest("tr[data-record]");
+  if (!row) return;
+  event.preventDefault();
+  openRecord(row.dataset.record);
 });
 byId("searchInput").addEventListener("input", (event) => {
   state.query = event.target.value;
-  queueQuery();
+  updateListQuery();
 });
 byId("recordFilter").addEventListener("change", (event) => {
   state.filter = event.target.value;
-  queueQuery();
+  updateListQuery();
 });
 byId("loadMore").addEventListener("click", loadMore);
 byId("backButton").addEventListener("click", closeDetail);
 byId("detailClose").addEventListener("click", closeDetail);
-byId("detailScrim").addEventListener("click", closeDetail);
 byId("sidebarOpen").addEventListener("click", () => setMobileSidebar(true));
 byId("sidebarClose").addEventListener("click", () => {
   if (window.matchMedia("(max-width: 720px)").matches) setMobileSidebar(false);
@@ -931,7 +1084,7 @@ byId("sidebarClose").addEventListener("click", () => {
 byId("sidebarExpand").addEventListener("click", () => setDesktopSidebar(false, { restoreFocus: true }));
 byId("sidebarScrim").addEventListener("click", () => setMobileSidebar(false));
 byId("overviewAddDeal").addEventListener("click", openDealModal);
-byId("overviewFollowUps").addEventListener("click", () => switchContext({ screen: "activities" }));
+byId("overviewFollowUps").addEventListener("click", () => navigate("#/activities"));
 
 const setSettings = (open) => {
   byId("settingsModal").hidden = !open;
@@ -1042,22 +1195,18 @@ window.addEventListener("keydown", (event) => {
   else if (!byId("dealModal").hidden) closeDealModal();
   else if (!byId("activityModal").hidden) closeActivityModal();
   else if (!byId("settingsModal").hidden) setSettings(false);
-  else if (document.body.classList.contains("detail-drawer-open")) closeDetail();
-  else setMobileSidebar(false);
+  else if (document.body.classList.contains("sidebar-open")) setMobileSidebar(false);
+  else if (event.target.closest?.("input, select, textarea")) event.target.blur();
+  // Escape closes a drawer or split selection; a full page stays put.
+  else if (state.selectedRecordId && state.presentation && state.presentation !== "page") closeDetail();
 });
 window.addEventListener("resize", () => {
   if (!window.matchMedia("(max-width: 720px)").matches) setMobileSidebar(false);
   else setDesktopSidebar(false);
   if (!byId("stageSelectMenu").hidden) positionStageMenu();
 });
-const syncRouteFromLocation = () => {
-  const route = routeFromHash();
-  if (route.screen !== state.screen || route.tab !== state.directoryTab) {
-    switchContext({ ...route, updateHistory: false });
-  }
-};
-window.addEventListener("popstate", syncRouteFromLocation);
-window.addEventListener("hashchange", syncRouteFromLocation);
+window.addEventListener("popstate", applyRoute);
+window.addEventListener("hashchange", applyRoute);
 
 renderIcons();
 load();

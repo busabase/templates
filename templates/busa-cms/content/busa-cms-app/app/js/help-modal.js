@@ -138,7 +138,7 @@ function renderResourcesTab() {
         <div class="health health--${base.tone}">
           <div class="health-head">
             <span class="health-name">${escapeHtml(base.name)}</span>
-            <span class="badge badge--${base.tone === "ok" ? "live" : "plain"}">${escapeHtml(
+            <span class="badge ${base.tone === "ok" ? "positive" : ""}">${escapeHtml(
               base.tone === "ok"
                 ? t("resources.fields_match", { count: base.fieldCount })
                 : t("resources.to_fix", { count: base.problems.length }),

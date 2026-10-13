@@ -9,6 +9,7 @@ import {
   normalizeAction,
   normalizeDraft,
   normalizeSignal,
+  normalizeSource,
   parseBatchMeta,
   statusForAction,
 } from "../ecommerce-model.js?v=0.1.0";
@@ -99,6 +100,7 @@ async function countRecords(key, filters) {
 }
 
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -136,6 +138,25 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
   });
 }
 
+// A side read (sources, batch metadata) that is denied or fails must not take
+// the whole cockpit down with it: the review queue is still usable without it.
+async function optional(promise, fallback, warnings, label) {
+  try {
+    return await promise;
+  } catch (error) {
+    warnings.push({ severity: "warning", message: label, detail: error instanceof Error ? error.message : String(error) });
+    return fallback;
+  }
+}
+
+const ID_FIELD_SLUG = { signals: "signal-id", actions: "action-id", drafts: "draft-id", sources: "source-id" };
+const NORMALIZE_BY_KEY = {
+  signals: normalizeSignal,
+  actions: normalizeAction,
+  drafts: normalizeDraft,
+  sources: normalizeSource,
+};
+
 async function readBatchMeta() {
   const { rows } = await readPage("settings");
   const row = rows.find((item) => item.kind === "batch");
@@ -163,17 +184,31 @@ export const busabaseProvider = {
 
   async getState() {
     await ensureResources();
-    const [signalsPage, actionsPage, draftsPage, sourcesPage, meta, signalCount, actionCount, draftCount] =
-      await Promise.all([
-        readPage("signals"),
-        readPage("actions"),
-        readPage("drafts"),
-        readPage("sources"),
-        readBatchMeta(),
-        countRecords("signals"),
-        countRecords("actions"),
-        countRecords("drafts"),
-      ]);
+    const warnings = [];
+    const [
+      signalsPage,
+      actionsPage,
+      draftsPage,
+      sourcesPage,
+      meta,
+      signalCount,
+      actionCount,
+      draftCount,
+      approvedDraftCount,
+      unconfiguredSourceCount,
+    ] = await Promise.all([
+      readPage("signals"),
+      readPage("actions"),
+      readPage("drafts"),
+      optional(readPage("sources"), { rows: [], nextCursor: null }, warnings, "Sources could not be read"),
+      optional(readBatchMeta(), parseBatchMeta(""), warnings, "Batch metadata could not be read"),
+      countRecords("signals"),
+      countRecords("actions"),
+      countRecords("drafts"),
+      // Exact overview figures: text `equals` filters stay a cheap SQL COUNT.
+      countRecords("drafts", [{ fieldSlug: "status", operator: "equals", value: "approved" }]),
+      countRecords("sources", [{ fieldSlug: "status", operator: "equals", value: "needs_config" }]),
+    ]);
     const batch = buildSnapshot({
       signals: signalsPage.rows,
       actions: actionsPage.rows,
@@ -188,19 +223,36 @@ export const busabaseProvider = {
       onboarding: { completed: Boolean(meta.batch_id), config_version: "1" },
       lock: null,
       batch,
+      warnings,
       totals: { signals: signalCount, actions: actionCount, drafts: draftCount },
+      counts: { approved_drafts: approvedDraftCount, unconfigured_sources: unconfiguredSourceCount },
       pagination: {
         signals: signalsPage.nextCursor,
         actions: actionsPage.nextCursor,
         drafts: draftsPage.nextCursor,
+        sources: sourcesPage.nextCursor,
       },
     };
+  },
+
+  // A record named by the URL that is not on the loaded page: read it on its
+  // own by business id instead of paging forward until it turns up.
+  async getRecord(key, id) {
+    await ensureResources();
+    const record = await findRecord(key, ID_FIELD_SLUG[key], id);
+    if (!record) return null;
+    const row = {
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    };
+    return NORMALIZE_BY_KEY[key](row);
   },
 
   async fetchPage(key, cursor) {
     await ensureResources();
     const page = await readPage(key, cursor);
-    const normalize = { signals: normalizeSignal, actions: normalizeAction, drafts: normalizeDraft }[key];
+    const normalize = NORMALIZE_BY_KEY[key];
     return { ...page, rows: normalize ? page.rows.map(normalize) : page.rows };
   },
 

@@ -4,10 +4,10 @@ Busa Ads is a Busabase App-in-Skill ad-campaign command desk (投放指挥台) f
 
 ## What It Shows
 
-- Overview: what needs your decision, KPI cards (spend MTD vs last month, blended ROAS, blended ACOS vs target, conversions), per-platform mini-cards, a 14-day spend-vs-revenue bar chart, worst offenders (spend without orders), data freshness, and sync activity.
+- Overview: spend MTD, blended ROAS and blended ACOS vs target, what needs your decision, per-platform mini-cards with last sync, a 14-day spend-vs-revenue bar chart, worst offenders (spend without orders), and sync activity.
 - Campaigns: per-campaign spend, budget pacing, ROAS, ACOS vs target, and trend; detail pages add the daily series, the search-terms/audiences/creatives table, linked anomalies, and adjustment history.
-- Alerts: the anomaly feed (ACOS breach, budget exhausted, zero-conversion spend, CPC spike, rejected) with one-line evidence and links to adjustment cards.
-- Adjustments: agent-proposed cards (negative keyword, bid down/up, pause target, budget shift, creative refresh) with current → proposed value, evidence, expected impact, notes, and approve / request changes / block buttons.
+- Alerts: the anomaly feed (ACOS breach, budget exhausted, zero-conversion spend, CPC spike, rejected) with one-line evidence; a row opens a drawer with the details and a link to its adjustment card.
+- Adjustments: a review queue with the selected card beside it — agent-proposed cards (negative keyword, bid down/up, pause target, budget shift, creative refresh) with current → proposed value, evidence, expected impact, notes, and approve / request changes / block buttons.
 
 ## App UI Screenshots
 

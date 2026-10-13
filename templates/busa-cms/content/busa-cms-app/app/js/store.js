@@ -34,6 +34,9 @@ export { ACCENT_THEMES, LANGUAGE_OPTIONS };
  */
 export const MODES = ["posts", "pages", "categories", "tags"];
 
+/** Overview is the default route and the first nav item; it is not a Base. */
+export const ROUTE_MODES = ["overview", ...MODES];
+
 /** Modes whose list is content; the other two list taxonomy terms. */
 export const CONTENT_MODES = ["posts", "pages"];
 
@@ -51,13 +54,25 @@ export const store = {
     items: [],
     terms: [],
     counts: {},
+    /** Exact server totals (records.count), or null where unavailable. */
+    totals: null,
     connection: null,
     schemaHealth: null,
     provider_status: {},
     setup: {},
   },
   selectedId: null,
-  mode: "posts",
+  /** How the selected record is shown: "page" | "drawer" | null (list only). */
+  presentation: null,
+  mode: "overview",
+  /** The raw rows loaded so far, per Base — first page plus any "Load more". */
+  raw: { posts: [], pages: [], categories: [], tags: [] },
+  /** Next-page cursor per Base; null when the Base is fully loaded. */
+  cursors: {},
+  /** True once "Load more" appended a page, so the timer does not reset it. */
+  loadedExtra: false,
+  /** Record ids already looked up with records.get, so a miss is asked once. */
+  fetchedIds: new Set(),
   languageMode:
     queryLanguage ||
     (typeof localStorage !== "undefined" ? localStorage.getItem(LANGUAGE_STORAGE_KEY) : null) ||
@@ -69,7 +84,6 @@ export const store = {
   uiLanguage: "en",
   isApplyingRoute: false,
   routeNeedsReplace: false,
-  mobileDetailOpen: false,
   localAuth: null,
   query: "",
   localeFilter: "all",

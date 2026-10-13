@@ -30,6 +30,7 @@ export const demoProvider = {
       rows: Object.fromEntries(BROWSED_KEYS.map((key) => [key, pages[key].rows])),
       cursors: Object.fromEntries(BROWSED_KEYS.map((key) => [key, pages[key].nextCursor])),
       totals: Object.fromEntries(BROWSED_KEYS.map((key) => [key, rows[key].length])),
+      errors: {},
       settings: NORMALIZERS.settings(rows.settings[0]),
       loaded_at: new Date().toISOString(),
     };
@@ -37,6 +38,11 @@ export const demoProvider = {
 
   async fetchPage(key, cursor) {
     return page(key, cursor);
+  },
+
+  async getRecord(key, recordId) {
+    const row = rows[key]?.find((item) => item.__recordId === recordId);
+    return row ? NORMALIZERS[key](row) : null;
   },
 
   async decideFix(fix, action, note) {

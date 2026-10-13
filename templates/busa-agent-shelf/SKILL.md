@@ -144,12 +144,15 @@ Default behavior is AirApp-first — give the user the clickable AirApp URL.
 Start `pnpm --dir content/busa-agent-shelf-app dev` only when local preview or
 debugging is explicitly requested.
 
-Views (hash routes): `#/overview` (share of shelf per agent with change since
-the previous check, what needs attention, fixes waiting), `#/questions`
-(question × agent grid of latest positions), `#/answers` (every check with
-excerpt and reason), `#/competitors`, `#/fixes` (the review queue: current →
-proposed, source, evidence, risk; approve / request changes / block), and
-`#/settings`.
+Views (hash routes): `#/overview` (overall share of shelf, its change and
+days since the last check; share per agent; high-priority questions no agent
+showed; fixes that need a person), `#/questions` (question × agent grid of
+latest positions), `#/answers` (every check; filter by agent/question),
+`#/competitors`, `#/fixes` (the review queue: current → proposed, source,
+evidence, risk; approve / request changes / block; `?status=approved|applied|blocked|all`),
+and `#/settings`. Questions, answers and competitors open a record in a
+drawer, the fix queue opens it beside the list (`?peek=<record id>`), and
+`#/<view>/<record id>` is the record's full page.
 
 `?demo=1` opens deterministic demo data (the same rows as the template's
 sample records) and never reads or writes Busabase; decisions in demo mode

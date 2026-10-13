@@ -10,7 +10,14 @@ export function isMobileLayout() {
 
 export function syncModeButtons() {
   document.querySelectorAll("[data-mode]").forEach((node) => {
-    node.classList.toggle("active", node.dataset.mode === store.mode);
+    const active = store.page === "view" && node.dataset.mode === store.mode;
+    node.classList.toggle("active", active);
+    if (node.closest("#filters")) node.toggleAttribute("aria-current", active);
+  });
+  document.querySelectorAll("[data-page]").forEach((node) => {
+    const active = store.page === node.dataset.page;
+    node.classList.toggle("active", active);
+    node.toggleAttribute("aria-current", active);
   });
 }
 
@@ -40,19 +47,30 @@ export function toggleSidebar() {
   setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
 }
 
-export function setMobileDetailOpen(open) {
-  store.mobileDetailOpen = Boolean(open);
-  document.body.classList.toggle("mobile-detail-open", store.mobileDetailOpen);
+// One detail mode for the review queue: split. It is a queue worked top to
+// bottom — read a message, decide, move to the next — so the list stays beside
+// the record. `#/<mode>/<id>` is the same record as a full page ("Open full
+// page"). On a phone every mode is a page (the CSS in base-ui does that).
+export const DETAIL_MODE = "split";
+
+export function syncLayoutClasses() {
+  const body = document.body;
+  const onView = store.page === "view";
+  const open = onView && Boolean(store.selectedId);
+  const asPage = open && store.presentation === "page";
+  body.classList.toggle("ws-has-mobile-bar", true);
+  body.classList.toggle("ws-detail-open", open);
+  body.classList.toggle("ws-detail-page", asPage);
+  body.classList.toggle("ws-layout-split", onView && !asPage && DETAIL_MODE === "split");
+  body.classList.toggle("ws-searching", onView && Boolean(($("searchInput")?.value || "").trim()));
 }
 
 export function syncResponsiveShell() {
   if (isMobileLayout()) {
     document.body.classList.remove("sidebar-collapsed");
     setMobileSidebarOpen(false);
-    setMobileDetailOpen(Boolean(store.selectedId) && store.mobileDetailOpen);
   } else {
     setMobileSidebarOpen(false);
-    setMobileDetailOpen(false);
     setSidebarCollapsed(localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === "1", { persist: false });
   }
   syncSidebarState();
@@ -117,7 +135,7 @@ export function captureScrollState() {
   const page = document.scrollingElement || document.documentElement;
   return {
     pageTop: page?.scrollTop || 0,
-    listTop: $("messageList")?.scrollTop || 0,
+    listTop: $("listPanel")?.scrollTop || 0,
     detailTop: $("detailPanel")?.scrollTop || 0,
   };
 }
@@ -125,7 +143,7 @@ export function captureScrollState() {
 export function restoreScrollState(scrollState) {
   const page = document.scrollingElement || document.documentElement;
   if (page) page.scrollTop = scrollState.pageTop;
-  const list = $("messageList");
+  const list = $("listPanel");
   if (list) list.scrollTop = scrollState.listTop;
   const detail = $("detailPanel");
   if (detail) detail.scrollTop = scrollState.detailTop;
@@ -160,6 +178,8 @@ export function applyLockState() {
       node.id === "closeHelp" ||
       node.id === "sidebarToggle" ||
       node.id === "mobileSidebarToggle" ||
+      node.id === "detailBack" ||
+      node.id === "overviewRefresh" ||
       Boolean(node.closest("#helpModal")) ||
       Boolean(node.closest("#providerGate"));
     node.disabled = !keepEnabled && (locked || unavailable);

@@ -149,21 +149,6 @@
     min-width: 0;
   }
 
-  .topbar {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    min-height: 80px;
-    padding: 18px 24px;
-    border-bottom: 1px solid var(--line);
-    background: rgba(247, 248, 245, 0.94);
-    backdrop-filter: blur(10px);
-  }
-
   h1,
   h2 {
     margin: 0;
@@ -178,24 +163,6 @@
     font-size: var(--text-lg);
   }
 
-  .topbar-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .content {
-    padding: 24px;
-  }
-
-  .metrics {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(150px, 1fr));
-    gap: 12px;
-    margin-bottom: 18px;
-  }
-
-  .metric,
   .account-card,
   .settings section,
   .detail-side,
@@ -205,50 +172,6 @@
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
     background: var(--panel);
-  }
-
-  .metric {
-    padding: 14px;
-  }
-
-  .metric span {
-    display: block;
-    color: var(--muted);
-    font-size: var(--text-sm);
-  }
-
-  .metric strong {
-    display: block;
-    margin-top: 8px;
-    font-size: var(--text-xl);
-  }
-
-  .table-wrap {
-    overflow: auto;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background: var(--panel);
-  }
-
-  table {
-    width: 100%;
-    min-width: 980px;
-    border-collapse: collapse;
-  }
-
-  th,
-  td {
-    padding: 11px 12px;
-    border-bottom: 1px solid var(--line);
-    text-align: left;
-    vertical-align: top;
-  }
-
-  th {
-    color: var(--muted);
-    font-size: var(--text-sm);
-    font-weight: 700;
-    background: var(--surface-hover);
   }
 
   .strong {
@@ -568,14 +491,6 @@
       height: auto;
     }
 
-    .topbar {
-      position: static;
-      align-items: stretch;
-      flex-direction: column;
-    }
-
-    .topbar-actions,
-    .metrics,
     .overview-grid,
     .invoice-summary,
     .invoice-detail-panel,
@@ -891,8 +806,8 @@
     display: grid;
     place-items: center;
     border-radius: var(--radius-sm);
-    background: #202124;
-    color: var(--accent-contrast);
+    background: var(--ink);
+    color: var(--surface);
     font-size: var(--text-lg);
   }
 
@@ -986,24 +901,6 @@
     display: none;
   }
 
-  .topbar {
-    position: static;
-    z-index: 1;
-    min-height: 58px;
-    padding: 10px 18px;
-    border-bottom: 1px solid var(--line);
-    background: var(--surface-blur);
-  }
-
-  .topbar h1 {
-    font-size: var(--text-xl);
-    line-height: 1.2;
-  }
-
-  .topbar-actions {
-    gap: 8px;
-  }
-
   button,
   select,
   input {
@@ -1023,56 +920,18 @@
     background: var(--surface-soft);
   }
 
-  .content {
-    min-height: 0;
-    overflow: auto;
-    padding: 16px 18px 24px;
-  }
-
-  .metrics {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
-    margin-bottom: 14px;
-  }
-
-  .metric,
   .account-card,
   .settings section,
   .detail-side,
   .empty,
   .warnings,
   .overview-panel,
-  .table-wrap,
   .invoice-detail-panel > div,
   .audit-panel {
     border-color: var(--line);
     border-radius: var(--radius-sm);
     background: var(--panel);
     box-shadow: none;
-  }
-
-  .metric {
-    padding: 12px;
-  }
-
-  .metric strong {
-    margin-top: 6px;
-    font-size: var(--text-xl);
-  }
-
-  .table-wrap {
-    border-radius: 0;
-    border-left: 0;
-    border-right: 0;
-  }
-
-  th {
-    background: var(--surface-hover);
-  }
-
-  td,
-  th {
-    border-bottom-color: var(--line);
   }
 
   .account-card:hover {
@@ -1115,7 +974,6 @@
       grid-template-columns: 220px minmax(0, 1fr);
     }
 
-    .metrics,
     .invoice-summary,
     .invoice-detail-panel {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1255,15 +1113,6 @@
       padding: 0;
     }
 
-    .topbar {
-      display: none;
-    }
-
-    .content {
-      padding: 12px;
-    }
-
-    .metrics,
     .invoice-summary,
     .invoice-detail-panel,
     .settings-account {
@@ -1275,24 +1124,6 @@
       gap: 12px;
     }
 
-    .metrics {
-      gap: 8px;
-    }
-
-    .metric {
-      padding: 10px 12px;
-    }
-
-    .table-wrap {
-      max-width: 100%;
-      border-left: 1px solid var(--line);
-      border-right: 1px solid var(--line);
-      border-radius: var(--radius-sm);
-    }
-
-    table {
-      min-width: 760px;
-    }
   }
 
   /* Busa Invest (Webull) — portfolio components */

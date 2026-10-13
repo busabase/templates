@@ -162,7 +162,9 @@ export const busabaseProvider = {
       await Promise.all([
         readPage("model"),
         readPage("checks"),
-        readPage("settings"),
+        // A side read: settings only feed the Settings page, so a denied or
+        // failed read must not take the model and the check queue down with it.
+        readPage("settings").catch(() => ({ rows: [], nextCursor: null })),
         countRecords("checks"),
         countChecks("needs_review"),
         countChecks("changes_requested"),
@@ -193,6 +195,18 @@ export const busabaseProvider = {
       pagination: { checks: checkPage.nextCursor },
       totalCount: { checks: totalChecks },
     };
+  },
+
+  // A check named by the URL but not on the loaded page: one records.get by
+  // its business id instead of paging until it turns up.
+  async getRecord(key, id) {
+    if (key !== "checks" || !allowedReads.has("records.get")) return null;
+    await ensureResources();
+    const record = await findRecord("checks", "check-id", id);
+    if (!record) return null;
+    return computeCheckFromRow(
+      normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+    );
   },
 
   async fetchPage(key, cursor) {

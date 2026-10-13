@@ -1,7 +1,7 @@
-import { appConfig } from "./config.js?v=0.3.0";
-import { closeConnectGate, connectGateStatus, passConnectGate, renderSetupRequired } from "./connect-gate.js?v=0.3.0";
-import { getProvider } from "./providers/index.js?v=0.3.0";
-import { initRuntime, shouldUseLocalGateway } from "./runtime.js?v=0.3.0";
+import { appConfig } from "./config.js?v=0.4.0";
+import { closeConnectGate, connectGateStatus, passConnectGate, renderSetupRequired } from "./connect-gate.js?v=0.4.0";
+import { getProvider } from "./providers/index.js?v=0.4.0";
+import { initRuntime, shouldUseLocalGateway } from "./runtime.js?v=0.4.0";
 import {
   buildApprovalFields,
   buildProfileFields,
@@ -12,21 +12,33 @@ import {
   missingProfileRequirements,
   nextStep,
   statusLabel,
-} from "./sales-outreach-model.js?v=0.3.0";
+} from "./sales-outreach-model.js?v=0.4.0";
 
 const root = document.querySelector("#app");
 
+// Every record-list view (to-send / all / sent) is the same `companies` Base
+// filtered to a different status, so the detail mode is declared once, per
+// Base, in config.js `ui.detail_modes` — not once per filtered view.
+const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = ["to-send", "all", "sent"];
+
 const viewMeta = {
-  profile: { label: "产品与 ICP", noun: "", eyebrow: "OFFER", list: false },
-  all: { label: "全部客户", noun: "家公司", eyebrow: "PROSPECTS", list: true },
-  "to-send": { label: "待审核", noun: "家待审", eyebrow: "REVIEW", list: true },
-  sent: { label: "已触达", noun: "家已触达", eyebrow: "OUTREACH", list: true },
+  overview: { label: "总览" },
+  profile: { label: "产品与 ICP", tooltip: "先说明你卖什么，Agent 据此推导目标客户画像" },
+  all: { label: "全部客户", noun: "家公司", tooltip: "全部已入库的目标客户" },
+  "to-send": { label: "待审核", noun: "家待审", tooltip: "等待你审核收件人、证据与文案的首触达" },
+  sent: { label: "已触达", noun: "家已触达", tooltip: "已完成首触达的目标客户" },
 };
 
 let currentState;
 let desk;
-let contentRoute = { view: "to-send", id: null };
-let lastContentHash = "#/to-send";
+// { view, id, presentation } — presentation is "page" | "split" | null.
+// A `/record` path is always "page"; `?peek=` drives the split queue's
+// selection. On a phone every mode renders as a page (base-ui.css handles
+// that), so `presentation` only decides desktop layout.
+let contentRoute = { view: "overview", id: null, presentation: null };
+let lastContentHash = "#/overview";
+let previousRouteWasList = false;
 let sidebarCollapsed = false;
 let helpTab = "commands";
 let authStatus = null;
@@ -44,27 +56,48 @@ const escapeHtml = (value) =>
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+// `#/<view>[/<record>][?peek=<record>]`. A path record id always opens the
+// full page; `?peek=` opens the view's declared drawer/split mode instead.
 const parseHash = () => {
-  const parts = window.location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
+  const raw = window.location.hash.replace(/^#\/?/, "");
+  const [pathPart, queryPart = ""] = raw.split("?");
+  const parts = pathPart.split("/").filter(Boolean);
   if (parts[0] === "settings") {
     return {
       view: "settings",
       tab: ["commands", "guide", "resources", "connection"].includes(parts[1]) ? parts[1] : "commands",
     };
   }
-  return {
-    view: viewMeta[parts[0]] ? parts[0] : "to-send",
-    id: parts[1] ? decodeURIComponent(parts[1]) : null,
-  };
+  const view = viewMeta[parts[0]] ? parts[0] : "overview";
+  if (!RECORD_VIEWS.includes(view)) return { view, id: null, presentation: null };
+  const params = new URLSearchParams(queryPart);
+  if (parts[1]) return { view, id: decodeURIComponent(parts[1]), presentation: "page" };
+  const peek = params.get("peek");
+  if (peek) return { view, id: decodeURIComponent(peek), presentation: DETAIL_MODES.companies };
+  return { view, id: null, presentation: null };
 };
 
-const routeHash = ({ view, id }) => `#/${view}${id ? `/${encodeURIComponent(id)}` : ""}`;
+const listHash = (view) => `#/${view}`;
+const peekHash = (view, id) => `#/${view}?peek=${encodeURIComponent(id)}`;
+const pageHash = (view, id) => `#/${view}/${encodeURIComponent(id)}`;
+
+// What a row opens: `?peek=` for the view's declared drawer/split mode.
+const recordUrl = (id, view = contentRoute.view) => peekHash(view, id);
+// Always the full page, whatever the view's declared mode — the escape hatch
+// every drawer/split detail carries ("Open full page").
+const detailUrl = (id, view = contentRoute.view) => pageHash(view, id);
 
 const navigate = (route, { replace = false } = {}) => {
-  const next = routeHash(route);
-  if (replace) window.history.replaceState(null, "", next);
+  const next =
+    route.id == null ? listHash(route.view) : route.presentation === "page" ? pageHash(route.view, route.id) : peekHash(route.view, route.id);
+  if (replace) window.history.replaceState(window.history.state, "", next);
   else window.location.hash = next;
   if (replace) applyRoute();
+};
+
+const closeDetail = () => {
+  if (window.history.state?.fromList) window.history.back();
+  else navigate({ view: contentRoute.view, id: null }, { replace: true });
 };
 
 const isMobileLayout = () => window.matchMedia("(max-width: 720px)").matches;
@@ -73,10 +106,6 @@ const setMobileSidebarOpen = (open) => {
   document.body.classList.toggle("sidebar-open", Boolean(open));
   const scrim = document.querySelector("#sidebarScrim");
   if (scrim) scrim.hidden = !open;
-};
-
-const setMobileDetailOpen = (open) => {
-  document.body.classList.toggle("mobile-detail-open", Boolean(open));
 };
 
 const showToast = (message) => {
@@ -120,32 +149,35 @@ const evidencePill = (company) => {
   return `<span class="evidence-pill evidence-${level}">${evidenceLabel(company.evidenceType)}${age ? ` · ${age}` : ""}</span>`;
 };
 
-const renderCompanyRow = (company, active) => {
-  const contact = company.bestLead ? `${escapeHtml(company.bestLead.email)}` : '<em class="row-warn">未找到邮箱</em>';
-  const trailing =
-    company.status === "sent"
-      ? `已触达 ${escapeHtml(company.sentAt || "--")}`
-      : company.status === "queued"
-        ? `已批准 ${escapeHtml(company.approvedAt || "--")} · 等待发出`
-        : contact;
-  return `<button class="work-row company-row ${active ? "active" : ""}" type="button" data-select-id="${escapeHtml(company.id)}">
-    <span class="row-marker" aria-hidden="true"></span>
-    <span class="row-rank">${escapeHtml(company.ref)}</span>
-    <span class="row-main">
-      <span class="row-kicker">${escapeHtml(company.industry)} · ${statusLabel(company.status)}</span>
-      <span class="row-evidence">${evidencePill(company)}</span>
-      <span class="row-title"><strong>${escapeHtml(company.name)}</strong>${company.leads.length > 1 ? `<span class="lead-count">${company.leads.length} 个邮箱</span>` : ""}</span>
-      <span class="row-subtitle">${trailing}</span>
-    </span>
-    <span class="row-score score-${scoreClass(company.matchScore)}"><strong>${company.matchScore}</strong><span>匹配度</span></span>
-  </button>`;
-};
+// `companies` is always a `split` queue (ui.detail_modes in config.js), never
+// `page`/`drawer`, so columns past what the narrow split queue keeps visible
+// would never actually render — base-ui.css always hides anything past the
+// first two columns in split mode except what is marked `.ws-split-keep`.
+// Three columns, one line, 40px tall: name (widest, names the record), status
+// (always visible), and match score — the sort key, kept visible via
+// `.ws-split-keep` so the queue's own ordering stays legible. Evidence,
+// industry, and the contact/progress line are one click away in the detail,
+// which already repeats them in full.
+const companyRow = (company, active) => `<tr data-select-id="${escapeHtml(company.id)}"${active ? ' class="ws-selected"' : ""}>
+    <td title="${escapeHtml(company.name)}"><strong>${escapeHtml(company.name)}</strong>${company.leads.length > 1 ? `<span class="lead-count">${company.leads.length} 个邮箱</span>` : ""}</td>
+    <td>${statusPill(company)}</td>
+    <td class="ws-col-num ws-split-keep">${company.matchScore}</td>
+  </tr>`;
+
+const companiesTable = (items, selectedId) => `<table class="ws-table">
+    <thead><tr>
+      <th>公司</th>
+      <th>状态</th>
+      <th class="ws-col-num ws-split-keep" title="ICP 匹配度">匹配</th>
+    </tr></thead>
+    <tbody>${items.map((item) => companyRow(item, item.id === selectedId)).join("")}</tbody>
+  </table>`;
 
 const renderRows = (items, selectedId) => {
   if (!items.length) {
     return `<div class="empty-state"><p>这里还没有目标客户。</p><p class="empty-hint">运行研究命令，Agent 会推导 ICP 并把公司、业务信号和公开联系方式写回这里。</p>${commandChip("/busa-sales-outreach research")}</div>`;
   }
-  return items.map((item) => renderCompanyRow(item, item.id === selectedId)).join("");
+  return companiesTable(items, selectedId);
 };
 
 const renderLeadOptions = (company, selectedEmail) => {
@@ -171,9 +203,8 @@ const renderCompanyDetail = (company) => {
     ? `<a class="text-link" href="${escapeHtml(company.sourceUrl)}" target="_blank" rel="noreferrer noopener">来源页面</a>`
     : "来源未记录";
   return `<div class="detail-scroll">
-    <button class="back-to-list" type="button" data-back-to-list>&larr; 返回${viewMeta[contentRoute.view].label}</button>
     <div class="detail-heading">
-      <div><p class="eyebrow">${escapeHtml(company.ref)} · ${escapeHtml(company.industry)}</p><h2>${escapeHtml(company.name)}</h2></div>
+      <div><p class="eyebrow">${escapeHtml(company.industry)}</p><h2>${escapeHtml(company.name)}</h2></div>
       ${statusPill(company)}
     </div>
     <div class="detail-facts">
@@ -230,10 +261,42 @@ const renderCompanyDetail = (company) => {
   </div>`;
 };
 
+const renderDetailBar = (selected) => {
+  const phone = isMobileLayout();
+  const backLabel = contentRoute.presentation === "page" || phone ? "← 返回列表" : "关闭";
+  return `<div class="ws-detail-bar">
+    <button class="button" type="button" data-back-to-list>${backLabel}</button>
+    ${selected && contentRoute.presentation !== "page" ? `<a class="button" data-open-full href="${detailUrl(selected.id)}">查看全页</a>` : ""}
+  </div>`;
+};
+
+const renderRecordView = () => {
+  const meta = viewMeta[contentRoute.view];
+  const items = itemsForView(contentRoute.view);
+  const selected = items.find((item) => item.id === contentRoute.id) || (contentRoute.id ? null : items[0] || null);
+  return `<section class="ws-view">
+    <header class="ws-toolbar">
+      <div class="ws-title"><h1 title="${escapeHtml(meta.tooltip || "")}">${meta.label}</h1></div>
+      <div class="ws-actions"><button type="button" class="button" data-refresh>刷新</button></div>
+    </header>
+    <div class="ws-workspace">
+      <div class="ws-list">${renderRows(items, selected?.id)}</div>
+      <aside class="ws-detail">
+        ${renderDetailBar(selected)}
+        ${selected ? renderCompanyDetail(selected) : '<div class="ws-detail-empty">从左侧选择一家目标客户查看详情</div>'}
+      </aside>
+    </div>
+  </section>`;
+};
+
 const renderProfile = () => {
   const profile = desk.profile;
-  return `<div class="profile-pane"><div class="detail-scroll">
-    <div class="detail-heading"><div><p class="eyebrow">OFFER & ICP</p><h2>产品与目标客户</h2></div>${profile.ready ? '<span class="status-pill status-sent">可开始研究</span>' : `<span class="status-pill status-draft">缺 ${profile.missing.length} 项</span>`}</div>
+  return `<section class="ws-view">
+    <header class="ws-toolbar">
+      <div class="ws-title"><h1 title="先说明你卖什么，Agent 会据此推导理想客户画像">产品与 ICP</h1></div>
+      <div class="ws-actions">${profile.ready ? '<span class="status-pill status-sent">可开始研究</span>' : `<span class="status-pill status-draft">缺 ${profile.missing.length} 项</span>`}</div>
+    </header>
+    <div class="profile-pane"><div class="detail-scroll">
     <p class="detail-note">只要先说明你卖什么。Agent 会从产品价值、案例和市场信号中推导理想客户画像，再持续扩展客户池。</p>
     <div class="detail-hint">${commandChip("/busa-sales-outreach profile", "读取官网、产品说明或服务介绍，整理产品定位并提出 ICP")}</div>
     ${profile.ready ? "" : `<div class="setup-notice">还缺：${escapeHtml(profile.missing.join("、"))}</div>`}
@@ -260,7 +323,7 @@ const renderProfile = () => {
       <button class="primary-button" type="button" data-save-profile>保存资料</button>
       <button class="ghost-button" type="button" data-view="to-send">去看待审核</button>
     </div>
-  </div></div>`;
+  </div></div></section>`;
 };
 
 const renderPipeline = () => {
@@ -269,15 +332,47 @@ const renderPipeline = () => {
     ["all", "找客户", `${desk.counts.all} 家已入库`, desk.counts.all > 0],
     ["sent", "做触达", `${desk.counts.sent} 家已触达`, desk.counts.sent > 0],
   ];
-  return `<section class="workflow-band"><div class="pipeline" aria-label="销售拓客流程">
+  return `<section class="card overview-panel"><h2>拓客流程</h2><div class="pipeline" aria-label="销售拓客流程">
     ${steps
       .map(
         ([view, label, meta, done], index) =>
-          `<button class="pipeline-step ${contentRoute.view === view ? "active" : ""} ${done ? "done" : ""}" type="button" data-view="${view}"><i aria-hidden="true">${index + 1}</i><span><strong>${label}</strong><small>${escapeHtml(meta)}</small></span>${index < 2 ? '<b aria-hidden="true">›</b>' : ""}</button>`,
+          `<button class="pipeline-step ${done ? "done" : ""}" type="button" data-view="${view}"><i aria-hidden="true">${index + 1}</i><span><strong>${label}</strong><small>${escapeHtml(meta)}</small></span>${index < 2 ? '<b aria-hidden="true">›</b>' : ""}</button>`,
       )
       .join("")}
   </div></section>`;
 };
+
+// Three numbers the nav and the "needs you" block do not already show: the
+// nav already carries all/to-send/sent counts, and the sidebar already shows
+// blocked + toSend. What is missing is the state *between* review and send,
+// and how good the matches actually are.
+const overviewMetrics = () => {
+  const all = desk.buckets.all;
+  const avgMatch = all.length ? Math.round(all.reduce((sum, item) => sum + item.matchScore, 0) / all.length) : null;
+  const highConfidenceLeads = desk.leads.filter((lead) => lead.confidence === "high").length;
+  return [
+    ["平均匹配度", avgMatch === null ? "--" : String(avgMatch)],
+    ["已批准待发送", String(desk.counts.queued)],
+    ["高置信度联系人", String(highConfidenceLeads)],
+  ];
+};
+
+const renderOverview = () => `<section class="ws-overview">
+    <header class="page-hero">
+      <div>
+        <p class="eyebrow">总览</p>
+        <h1>销售拓客总览</h1>
+        <p>从录入产品、持续找客户，到逐条审核首触达——这里是整体进度。</p>
+      </div>
+      <div class="page-actions"><button type="button" class="button" data-refresh>刷新</button></div>
+    </header>
+    <div class="ws-metrics" aria-label="拓客概览">
+      ${overviewMetrics()
+        .map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`)
+        .join("")}
+    </div>
+    ${renderPipeline()}
+  </section>`;
 
 // Every command this desk names is rendered through one component: the operator
 // should never have to retype something the screen just told them to run, and a
@@ -312,17 +407,27 @@ const renderSidebar = () => {
   const primary = attention.profileReady
     ? `<button class="human-work-primary" type="button" data-view="to-send"><span><strong>${attention.toSend}</strong><span>待你审核首触达</span></span></button>`
     : `<button class="human-work-primary warn" type="button" data-view="profile"><span><strong>${attention.profileMissing.length}</strong><span>请先录入产品</span></span></button>`;
+  const providerLabel =
+    currentState.provider.name === "demo"
+      ? "演示数据 · 不写入"
+      : currentState.provider.pendingReview
+        ? "实时数据 · 写入待审"
+        : "实时数据";
   return `<aside class="sidebar ${sidebarCollapsed ? "collapsed" : ""}" id="appSidebar">
-    <div class="brand"><div class="brand-icon" aria-hidden="true">KS</div><div class="brand-copy"><div class="brand-title">Busa 销售拓客</div><div class="brand-subtitle">目标客户工作台</div></div><button class="sidebar-toggle" type="button" data-sidebar-toggle aria-controls="appSidebar" aria-expanded="${!sidebarCollapsed}" aria-label="切换侧栏" title="切换侧栏"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button></div>
+    <div class="brand"><div class="brand-icon" aria-hidden="true">KS</div><div class="brand-copy"><div class="brand-title">Busa 销售拓客</div><div class="brand-subtitle">${escapeHtml(providerLabel)}</div></div><button class="sidebar-toggle" type="button" data-sidebar-toggle aria-controls="appSidebar" aria-expanded="${!sidebarCollapsed}" aria-label="切换侧栏" title="切换侧栏"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button></div>
     <section class="human-work" aria-labelledby="humanWorkTitle"><div class="human-work-eyebrow">需要你</div><div id="humanWorkTitle" class="human-work-title">今天的拓客</div>${primary}<div class="human-work-secondary"><button type="button" data-view="all" title="缺业务邮箱或草稿，需要 Agent 补线索"><strong>${attention.blocked}</strong><span>被阻塞</span></button><button type="button" data-view="sent" title="已完成首触达"><strong>${desk.counts.sent}</strong><span>已触达</span></button></div></section>
     ${renderNextStep()}
     <div class="sidebar-separator"></div>
-    <nav class="filters" aria-label="工作流导航">${Object.entries(viewMeta)
-      .map(
-        ([key, meta]) =>
-          `<button class="${contentRoute.view === key ? "active" : ""}" type="button" data-view="${key}" title="打开${meta.label}"><span>${meta.label}</span><span>${key === "profile" ? (desk.profile.ready ? "✓" : "!") : desk.counts[key]}</span></button>`,
-      )
-      .join("")}</nav>
+    <nav class="filters" aria-label="工作流导航">
+      <button class="${contentRoute.view === "overview" ? "active" : ""}" type="button" data-view="overview" title="打开总览"><span>总览</span></button>
+      ${Object.entries(viewMeta)
+        .filter(([key]) => key !== "overview")
+        .map(
+          ([key, meta]) =>
+            `<button class="${contentRoute.view === key ? "active" : ""}" type="button" data-view="${key}" title="打开${meta.label}"><span>${meta.label}</span><span>${key === "profile" ? (desk.profile.ready ? "✓" : "!") : desk.counts[key]}</span></button>`,
+        )
+        .join("")}
+    </nav>
     <div class="help-box"><div class="virtual-only"><span></span>发送由可信脚本执行</div><button class="help-button" type="button" data-open-help>帮助与设置</button></div>
   </aside>`;
 };
@@ -366,20 +471,32 @@ const renderHelp =
 
 const renderApp = () => {
   const meta = viewMeta[contentRoute.view];
-  const items = meta.list ? itemsForView(contentRoute.view) : [];
-  const selected = meta.list ? items.find((item) => item.id === contentRoute.id) || items[0] || null : null;
-  const statusChip =
-    currentState.provider.name === "demo"
-      ? '<span class="snapshot-badge">DEMO</span>'
-      : '<span class="status-dot"></span>';
-  const content = meta.list
-    ? `<section class="content"><div class="list-panel"><div class="list-head"><div><strong>${meta.label}</strong><span>${items.length} ${meta.noun}</span></div><span>按证据 · ICP 匹配度排序</span></div><div class="work-list">${renderRows(items, selected?.id)}</div></div><aside class="detail-panel">${selected ? renderCompanyDetail(selected) : '<div class="empty-detail">从左侧选择一家目标客户</div>'}</aside></section>`
-    : `<section class="content content-single">${renderProfile()}</section>`;
+  const onRecordView = RECORD_VIEWS.includes(contentRoute.view);
+  const items = onRecordView ? itemsForView(contentRoute.view) : [];
+  const selected = onRecordView
+    ? items.find((item) => item.id === contentRoute.id) || (contentRoute.id ? null : items[0] || null)
+    : null;
+  const body = document.body.classList;
+  // The phone media query hides list vs. detail by these classes alone, so
+  // they must track an EXPLICIT route selection (`peek=`/`/<id>`), not the
+  // desktop fallback to the first item — otherwise a phone visiting a record
+  // view would always land straight on a detail instead of its list.
+  const onFullPage = contentRoute.presentation === "page" && Boolean(contentRoute.id);
+  body.toggle("ws-detail-open", onRecordView && Boolean(contentRoute.id));
+  body.toggle("ws-detail-page", onRecordView && onFullPage);
+  // "Open full page" escalates out of the split grid entirely — the detail
+  // becomes the only thing on the page, not the second column of a layout
+  // whose first column (the queue) is now display:none. Keeping ws-layout-split
+  // on here is exactly the bug CRM's reference avoids: the detail panel would
+  // auto-place into the grid's first (narrow, list-width) track instead of
+  // spanning full width.
+  body.toggle("ws-layout-split", onRecordView && !onFullPage);
+  body.toggle("ws-has-mobile-bar", true);
+  const content =
+    contentRoute.view === "overview" ? renderOverview() : onRecordView ? renderRecordView() : renderProfile();
   root.innerHTML = `<div class="app-shell ${sidebarCollapsed ? "sidebar-is-collapsed" : ""}">${renderSidebar()}<main class="main">
-    <div class="mobile-topbar"><button class="mobile-sidebar-toggle" type="button" data-mobile-sidebar aria-controls="appSidebar" aria-label="打开侧栏"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button><div class="mobile-topbar-copy"><div class="mobile-view-title">${meta.label}</div><div class="mobile-view-meta">${meta.list ? `${items.length} ${meta.noun}` : desk.profile.ready ? "已就绪" : `缺 ${desk.profile.missing.length} 项`}</div></div><button class="mobile-help-button" type="button" data-open-help aria-label="帮助与设置">帮助</button></div>
+    <div class="mobile-topbar"><button class="mobile-sidebar-toggle" type="button" data-mobile-sidebar aria-controls="appSidebar" aria-label="打开侧栏"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button><div class="mobile-topbar-copy"><div class="mobile-view-title">${meta.label}</div><div class="mobile-view-meta">${onRecordView ? `${items.length} ${meta.noun}` : contentRoute.view === "profile" ? (desk.profile.ready ? "已就绪" : `缺 ${desk.profile.missing.length} 项`) : ""}</div></div><button class="mobile-help-button" type="button" data-open-help aria-label="帮助与设置">帮助</button></div>
     ${renderMobileNextStep()}
-    <header class="workspace-head"><div><p class="eyebrow">${meta.eyebrow}</p><h1>${meta.label}</h1></div><div class="workspace-status">${statusChip}<span>${escapeHtml(currentState.provider.asOf || "Busabase 当前数据")}</span>${currentState.provider.pendingReview ? '<span class="read-only">写入待审</span>' : ""}<button type="button" data-refresh>刷新</button></div></header>
-    ${renderPipeline()}
     ${content}
   </main></div><div id="sidebarScrim" class="sidebar-scrim" hidden></div>${parseHash().view === "settings" ? renderHelp() : ""}<div class="toast" role="status" aria-live="polite" hidden></div>`;
   bindEvents();
@@ -545,14 +662,21 @@ const bindEvents = () => {
   root.querySelectorAll("[data-view]").forEach((button) =>
     button.addEventListener("click", () => {
       setMobileSidebarOpen(false);
-      setMobileDetailOpen(false);
       navigate({ view: button.dataset.view, id: null });
     }),
   );
-  root.querySelectorAll("[data-select-id]").forEach((button) =>
-    button.addEventListener("click", () => {
-      if (isMobileLayout()) setMobileDetailOpen(true);
-      navigate({ view: contentRoute.view, id: button.dataset.selectId });
+  root.querySelectorAll("[data-select-id]").forEach((row) =>
+    row.addEventListener("click", () => {
+      const url = recordUrl(row.dataset.selectId);
+      // Switching records while the detail is already open replaces the
+      // entry, so Back/Close still steps to the list the detail was opened
+      // from instead of piling up one history entry per row click.
+      if (contentRoute.id) {
+        window.history.replaceState(window.history.state, "", url);
+        applyRoute();
+      } else {
+        window.location.hash = url;
+      }
     }),
   );
   root.querySelector("[data-sidebar-toggle]")?.addEventListener("click", () => {
@@ -564,13 +688,10 @@ const bindEvents = () => {
   });
   root.querySelector("[data-mobile-sidebar]")?.addEventListener("click", () => setMobileSidebarOpen(true));
   root.querySelector("#sidebarScrim")?.addEventListener("click", () => setMobileSidebarOpen(false));
-  root.querySelector("[data-back-to-list]")?.addEventListener("click", () => {
-    setMobileDetailOpen(false);
-    navigate({ view: contentRoute.view, id: null }, { replace: true });
-  });
+  root.querySelector("[data-back-to-list]")?.addEventListener("click", closeDetail);
   root.querySelectorAll("[data-open-help]").forEach((button) =>
     button.addEventListener("click", () => {
-      lastContentHash = routeHash(contentRoute);
+      lastContentHash = window.location.hash || listHash(contentRoute.view);
       window.location.hash = "#/settings/commands";
     }),
   );
@@ -585,19 +706,26 @@ const bindEvents = () => {
       window.location.hash = `#/settings/${button.dataset.helpTab}`;
     }),
   );
-  root.querySelector("[data-refresh]")?.addEventListener("click", async () => {
-    if (currentState.provider.name === "demo") showToast("演示数据为 2026-08-11 固定快照。");
-    else await load({ keepRoute: true });
-  });
-  root.querySelector("[data-copy-command]")?.addEventListener("click", async (event) => {
-    const command = event.currentTarget.dataset.copyCommand;
-    try {
-      await navigator.clipboard.writeText(command);
-      showToast(`已复制：${command}`);
-    } catch {
-      showToast(`回到对话框运行：${command}`);
-    }
-  });
+  root.querySelectorAll("[data-refresh]").forEach((button) =>
+    button.addEventListener("click", async () => {
+      if (currentState.provider.name === "demo") showToast("演示数据为 2026-08-11 固定快照。");
+      else await load({ keepRoute: true });
+    }),
+  );
+  // Every command chip on the page needs its own listener — a page can show
+  // several at once (overview's next step, a blocked detail hint, Help's
+  // command list), and `querySelector` would only ever wire up the first.
+  root.querySelectorAll("[data-copy-command]").forEach((button) =>
+    button.addEventListener("click", async (event) => {
+      const command = event.currentTarget.dataset.copyCommand;
+      try {
+        await navigator.clipboard.writeText(command);
+        showToast(`已复制：${command}`);
+      } catch {
+        showToast(`回到对话框运行：${command}`);
+      }
+    }),
+  );
   root.querySelector("[data-approve]")?.addEventListener("click", approveCompany);
   root.querySelector("[data-save-draft]")?.addEventListener("click", saveDraft);
   root.querySelector("[data-save-profile]")?.addEventListener("click", saveProfile);
@@ -618,9 +746,15 @@ const applyRoute = () => {
   const route = parseHash();
   if (route.view === "settings") helpTab = route.tab;
   else {
+    // Mark a detail entry that was just opened from its own list, so
+    // Back/Close/Escape step back to that exact list entry instead of
+    // pushing a brand-new history entry on top of it.
+    if (route.id && previousRouteWasList && contentRoute.view === route.view) {
+      window.history.replaceState({ fromList: true }, "");
+    }
+    previousRouteWasList = RECORD_VIEWS.includes(route.view) && !route.id;
     contentRoute = route;
-    lastContentHash = routeHash(route);
-    if (isMobileLayout()) setMobileDetailOpen(Boolean(route.id));
+    lastContentHash = window.location.hash || listHash(route.view);
   }
   if (currentState) renderApp();
 };
@@ -649,7 +783,7 @@ const load = async ({ keepRoute = false } = {}) => {
     }
     currentState = await provider.getState();
     desk = createSalesOutreachDesk(currentState.records);
-    if (!window.location.hash) window.history.replaceState(null, "", "#/to-send");
+    if (!window.location.hash) window.history.replaceState(null, "", "#/overview");
     applyRoute();
   } catch (error) {
     if (String(error?.message || error).startsWith("SETUP_")) console.info("Busabase workspace setup is not complete");
@@ -660,14 +794,21 @@ const load = async ({ keepRoute = false } = {}) => {
 
 window.addEventListener("hashchange", applyRoute);
 window.addEventListener("resize", () => {
-  if (!isMobileLayout()) {
-    setMobileSidebarOpen(false);
-    setMobileDetailOpen(false);
-  }
+  if (!isMobileLayout()) setMobileSidebarOpen(false);
 });
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && parseHash().view === "settings") window.location.hash = lastContentHash;
-  if (event.key === "Escape") setMobileSidebarOpen(false);
+  if (event.key !== "Escape") return;
+  if (parseHash().view === "settings") {
+    window.location.hash = lastContentHash;
+    return;
+  }
+  // Escape closes a drawer/split selection, but never the full page — the
+  // page IS the record, there is nothing left to collapse back to.
+  if (contentRoute.id && contentRoute.presentation && contentRoute.presentation !== "page") {
+    closeDetail();
+    return;
+  }
+  setMobileSidebarOpen(false);
 });
 // Keep the queue fresh without ever clobbering an email the operator is typing.
 window.setInterval(() => {

@@ -35,3 +35,23 @@ test("buildSnapshot splits today / upcoming / done", () => {
   assert.equal(snapshot.counts.upcoming, 1);
   assert.equal(snapshot.counts.done, 1);
 });
+
+test("overdue is pending with a past date; undated is due but not overdue", () => {
+  const snapshot = buildSnapshot(
+    {
+      followups: [
+        { record_id: "1", person: "A", action: "a", due: "2026-08-20", status: "pending" },
+        { record_id: "2", person: "B", action: "b", due: "", status: "pending" },
+        { record_id: "3", person: "C", action: "c", due: TODAY, status: "pending" },
+        { record_id: "4", person: "D", action: "d", due: "2026-08-01", status: "done" },
+      ],
+    },
+    TODAY,
+  );
+  assert.equal(snapshot.counts.today, 3);
+  assert.equal(snapshot.counts.overdue, 1);
+  assert.deepEqual(
+    snapshot.followups.map((row) => row.record_id),
+    ["2", "1", "3", "4"],
+  );
+});

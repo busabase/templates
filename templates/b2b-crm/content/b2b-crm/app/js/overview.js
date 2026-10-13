@@ -37,12 +37,17 @@ export function buildOverviewModel({
   const activitiesPartial = Boolean(pageInfo.activities?.nextCursor);
   const dealsPartial = Boolean(pageInfo.deals?.nextCursor);
 
+  // An exact records.count when the provider has one; otherwise the loaded
+  // window, marked "+" while more companies exist beyond it.
+  const companiesPartial = Boolean(pageInfo.companies?.nextCursor);
   const customerAccounts = counts.customerAccounts ?? companies.filter(
     (record) => record.fields?.["relationship-type"] === "customer",
   ).length;
   const prospects = counts.prospects ?? companies.filter(
     (record) => record.fields?.["relationship-type"] === "prospect",
   ).length;
+  const customerPartial = counts.customerAccounts == null && companiesPartial;
+  const prospectsPartial = counts.prospects == null && companiesPartial;
   const stageCounts = Object.fromEntries(stages.map((stage) => [
     stage.id,
     counts.dealStages?.[stage.id] ?? deals.filter((record) => record.fields?.stage === stage.id).length,
@@ -124,10 +129,11 @@ export function buildOverviewModel({
     }).format(now),
     weekLabel,
     stats: [
-      { label: "Customer accounts", icon: "building-2", value: String(customerAccounts), note: "Current relationships", target: "customers" },
-      { label: "Prospects", icon: "target", value: String(prospects), note: "Open account relationships", target: "prospects" },
+      // Three numbers, none shown elsewhere: follow-ups due already sits in
+      // the sidebar attention block, per-view totals next to each nav item.
+      { label: "Customer accounts", icon: "building-2", value: compactCount(customerAccounts, customerPartial), note: "Current relationships", target: "customers" },
+      { label: "Prospects", icon: "target", value: compactCount(prospects, prospectsPartial), note: "Open account relationships", target: "prospects" },
       { label: "Activities this week", icon: "activity", value: compactCount(activitiesThisWeek.length, weekCountPartial), note: weekLabel, target: "activities" },
-      { label: "Follow-ups due", icon: "alarm-clock", value: compactCount(dueActivities.length, activitiesPartial), note: activitiesPartial ? "Loaded activity window" : "Through today", target: "followups" },
     ],
     openDeals,
     wonDeals,

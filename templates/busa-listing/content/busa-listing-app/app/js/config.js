@@ -13,6 +13,8 @@ export const appConfig = {
     slug: "busa-listing",
   },
   airApp: { name: "Busa Listing", slug: "busa-listing-app", resourceKey: "busa-listing-app" },
+  // Where a record opens, per view (see app.js for the reasoning).
+  ui: { detail_modes: { products: "page", drafts: "page", checks: "drawer", claims: "drawer", review: "split" } },
   bases: [
     {
       key: "products",
@@ -159,7 +161,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

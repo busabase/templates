@@ -1,19 +1,27 @@
 import {
+  ATTENTION_STATES,
   attentionBadge,
   clarityBar,
+  DETAIL_MODES,
   date,
   els,
+  enumLabel,
   escapeHtml,
   filteredIdeas,
   ideaById,
+  ideaUrl,
+  ideas,
+  isPartial,
   loadState,
   lockBanner,
   noticeBanner,
-  pagerControl,
+  pageCount,
   render,
+  setRoute,
   stageBadge,
   state,
   t,
+  viewLabel,
   warnings,
 } from "../app.js";
 import { DOC_KINDS, STAGES } from "./ideas-model.js?v=0.2.0";
@@ -22,36 +30,242 @@ import { getProvider } from "./providers/index.js?v=0.2.0";
 
 const DOC_TABS = ["overview", "questions", ...DOC_KINDS];
 
-function ideaRow(idea) {
-  const active = state.route.id === idea.record_id ? "active" : "";
-  const oneLiner = idea.one_liner || `<span class="muted">${t("noOneLiner")}</span>`;
-  return `
-    <a class="row idea-row ${active}" href="#/ideas/${encodeURIComponent(idea.record_id)}">
-      <div class="row-main">
-        <div class="row-title">${escapeHtml(idea.title)}</div>
-        <div class="row-sub">${oneLiner}</div>
-      </div>
-      <div class="row-meta">
-        ${stageBadge(idea.stage)}
-        ${attentionBadge(idea)}
-      </div>
+const cell = (html, title = "", className = "") =>
+  `<td${className ? ` class="${className}"` : ""}${title ? ` title="${escapeHtml(title)}"` : ""}>${html}</td>`;
+const emptyState = (title, detail = "") =>
+  `<div class="empty-state"><strong>${escapeHtml(title)}</strong>${detail ? `<p>${escapeHtml(detail)}</p>` : ""}</div>`;
+const tableHead = (columns) =>
+  `<thead><tr>${columns.map(([label, className = ""]) => `<th${className ? ` class="${className}"` : ""}>${escapeHtml(label)}</th>`).join("")}</tr></thead>`;
+const rowOpen = (id) =>
+  `<tr data-id="${escapeHtml(id)}"${id === state.route.selectedId ? ' class="ws-selected"' : ""}>`;
+
+function docStatusBadge(doc) {
+  return `<span class="badge ${doc.status === "已完善" ? "ok" : "draft"}">${escapeHtml(enumLabel(doc.status, "docStatus"))}</span>`;
+}
+
+// ── Overview ───────────────────────────────────────────────────────────────
+// Three numbers the sidebar does not already show (it carries waiting-on-you,
+// ready-to-advance and the idea total). They are counted from the loaded page
+// and say so when more ideas exist than are loaded.
+function metricsBand() {
+  const loaded = ideas();
+  const openQuestions = loaded.reduce((sum, idea) => sum + (idea.open_questions || 0), 0);
+  const settledDocs = loaded.reduce(
+    (sum, idea) => sum + DOC_KINDS.filter((kind) => idea.documents[kind]?.status === "已完善").length,
+    0,
+  );
+  const atPrd = loaded.filter((idea) => idea.stage === "prd").length;
+  const plus = isPartial("ideas") ? "+" : "";
+  return [
+    [t("metricOpenQuestions"), openQuestions],
+    [t("metricSettledDocs"), settledDocs],
+    [t("metricAtPrd"), atPrd],
+  ]
+    .map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${value}${plus}</strong></div>`)
+    .join("");
+}
+
+// The first screen answers "what do I need to do?" -- it leads with the ideas
+// waiting on the operator, not with a data dashboard.
+export function renderOverview() {
+  document.getElementById("overviewSummary").textContent = t("overviewLead");
+  document.getElementById("overviewMetrics").innerHTML = metricsBand();
+  const all = ideas();
+  const needsAnswer = all.filter((item) => item.attention === "needs_answer");
+  const ready = all.filter((item) => item.attention === "ready_for_agent");
+  const parked = all.filter((item) => item.attention === "parked");
+
+  const ideaLink = (idea, meta) => `
+    <a class="due-row" href="${ideaUrl(idea.record_id)}">
+      <span>
+        <strong>${escapeHtml(idea.title)}</strong>
+        <small>${escapeHtml(idea.one_liner || t("noOneLiner"))}</small>
+      </span>
+      <span class="due-meta">${stageBadge(idea.stage)}<small>${escapeHtml(meta)}</small></span>
     </a>
+  `;
+
+  document.getElementById("overviewBody").innerHTML = `
+    ${lockBanner()}
+    ${warnings()}
+    <section class="overview-grid">
+      <div class="card overview-panel">
+        <h2>${t("panelNeedsAnswer")}</h2>
+        ${
+          needsAnswer
+            .map((idea) =>
+              ideaLink(
+                idea,
+                idea.open_questions
+                  ? t("openQuestionsCount").replace("{count}", String(idea.open_questions))
+                  : t("missingFields"),
+              ),
+            )
+            .join("") || `<div class="empty-inline">${t("nothingToAnswer")}</div>`
+        }
+      </div>
+      <div class="card overview-panel">
+        <h2>${t("panelReady")}</h2>
+        ${
+          ready
+            .map((idea) =>
+              ideaLink(idea, t("readyFor").replace("{stage}", t(`stage_${idea.advance.target || idea.stage}`))),
+            )
+            .join("") || `<div class="empty-inline">${t("nothingReady")}</div>`
+        }
+      </div>
+      <div class="card overview-panel">
+        <h2>${t("panelParked")}</h2>
+        ${
+          parked.map((idea) => ideaLink(idea, t("attention_parked"))).join("") ||
+          `<div class="empty-inline">${t("nothingParked")}</div>`
+        }
+      </div>
+    </section>
   `;
 }
 
-export function renderIdeas() {
-  const ideas = filteredIdeas();
-  els.title.textContent = t("ideasTitle");
-  els.subtitle.textContent = t("ideasSubtitle").replace("{count}", String(ideas.length));
-  els.content.innerHTML = `
-    ${lockBanner()}
-    ${noticeBanner()}
-    ${warnings()}
-    <div class="list-pane">
-      ${ideas.length ? ideas.map(ideaRow).join("") : `<div class="empty">${t("noIdeas")}</div>`}
-    </div>
-    ${pagerControl("ideas")}
+// ── Record views ───────────────────────────────────────────────────────────
+function ideasTable(items) {
+  return `
+    <table class="ws-table ideas-table">
+      ${tableHead([
+        [t("colIdea")],
+        [t("colAttention")],
+        [t("colStage")],
+        [t("field_one_liner")],
+        [t("clarity"), "ws-col-num"],
+        [t("colOpenQuestions"), "ws-col-num"],
+        [t("colUpdated")],
+      ])}
+      <tbody>
+        ${items
+          .map((idea) => {
+            const clarity = Math.max(0, Math.min(100, Number(idea.clarity) || 0));
+            return `${rowOpen(idea.record_id)}
+              ${cell(`<span class="strong">${escapeHtml(idea.title)}</span>`, idea.title)}
+              ${cell(attentionBadge(idea))}
+              ${cell(stageBadge(idea.stage))}
+              ${cell(idea.one_liner ? escapeHtml(idea.one_liner) : `<span class="muted">${t("noOneLiner")}</span>`, idea.one_liner)}
+              ${cell(`<span class="mini-clarity" aria-hidden="true"><span style="width:${clarity}%"></span></span>${clarity}`, "", "ws-col-num")}
+              ${cell(idea.open_questions ? String(idea.open_questions) : `<span class="muted">0</span>`, "", "ws-col-num")}
+              ${cell(date(idea.updated_at || idea.created_at))}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
   `;
+}
+
+// One row per idea that has this kind of document; the row key is the idea.
+function documentsTable(kind, items) {
+  return `
+    <table class="ws-table documents-table">
+      ${tableHead([[t("colIdea")], [t("colStatus")], [t("colVersion"), "ws-col-num"], [t("colGaps"), "ws-col-num"], [t("colUpdated")]])}
+      <tbody>
+        ${items
+          .map((idea) => {
+            const doc = idea.documents[kind];
+            return `${rowOpen(idea.record_id)}
+              ${cell(`<span class="strong">${escapeHtml(idea.title)}</span>`, idea.title)}
+              ${cell(docStatusBadge(doc))}
+              ${cell(`v${doc.version}`, "", "ws-col-num")}
+              ${cell(doc.gaps.length ? String(doc.gaps.length) : `<span class="muted">0</span>`, "", "ws-col-num")}
+              ${cell(date(doc.updated_at))}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+// Prev / Next only. Each click is one request for a neighbouring page with a
+// cursor already in hand; the total comes from records.count.
+function pagerControl(key) {
+  const cursors = state.pageCursors[key];
+  if (!cursors) return "";
+  const total = pageCount(key);
+  const current = state.currentPage[key] || 1;
+  const hasNext = Boolean(cursors[current]);
+  if (current === 1 && !hasNext) return "";
+  const loading = Boolean(state.pageLoading[key]);
+  return `
+    <div class="pager">
+      <button type="button" class="button" data-goto-page="${key}:${current - 1}" ${loading || current <= 1 ? "disabled" : ""}>${t("prevPage")}</button>
+      <span class="pager-summary">${t("pageOf").replace("{current}", current).replace("{total}", Math.max(total, current))}</span>
+      <button type="button" class="button" data-goto-page="${key}:${current + 1}" ${loading || !hasNext ? "disabled" : ""}>${t("nextPage")}</button>
+    </div>
+  `;
+}
+
+function attentionFilters() {
+  const loaded = filteredIdeas({ attention: "all" });
+  const count = (value) => (value === "all" ? loaded.length : loaded.filter((idea) => idea.attention === value).length);
+  const label = (value) => (value === "all" ? t("all") : t(`attention_${value}`));
+  els.viewFilters.innerHTML = ATTENTION_STATES.map(
+    (value) =>
+      `<button type="button" class="segment ${state.route.attention === value ? "active" : ""}" data-attention="${value}">${escapeHtml(label(value))} <b>${count(value)}</b></button>`,
+  ).join("");
+  els.attentionSelect.innerHTML = ATTENTION_STATES.map(
+    (value) =>
+      `<option value="${value}"${state.route.attention === value ? " selected" : ""}>${escapeHtml(label(value))} (${count(value)})</option>`,
+  ).join("");
+}
+
+export function renderRecordView() {
+  const { view } = state.route;
+  const isIdeas = view === "ideas";
+  els.viewTitle.textContent = viewLabel(view);
+  els.viewTitle.title = isIdeas ? t("ideasHint") : t(`docHint_${view}`);
+  const items = isIdeas ? filteredIdeas() : filteredIdeas({ attention: "all" }).filter((idea) => idea.documents[view]);
+  els.viewCount.textContent = `${items.length}${isPartial("ideas") ? "+" : ""}`;
+  // The attention filter narrows the list; on an idea's own page it has nothing to narrow.
+  const showFilters = isIdeas && !state.route.id;
+  els.viewFilters.hidden = !showFilters;
+  els.attentionSelect.hidden = !showFilters;
+  if (showFilters) attentionFilters();
+  const banners = `${lockBanner()}${noticeBanner()}${warnings()}`;
+  els.viewBanners.innerHTML = banners;
+  els.viewBanners.hidden = !banners;
+
+  const empty = state.route.query
+    ? emptyState(t("noMatches"))
+    : emptyState(isIdeas ? t("noIdeas") : t("noDocsOfKind").replace("{kind}", view.toUpperCase()));
+  const table = isIdeas ? ideasTable(items) : documentsTable(view, items);
+  els.listPanel.innerHTML = `${items.length ? table : empty}${isIdeas ? pagerControl("ideas") : ""}`;
+  renderDetail();
+}
+
+function renderDetail() {
+  const { view, selectedId, presentation } = state.route;
+  const phone = window.matchMedia("(max-width: 720px)").matches;
+  els.detailBack.textContent = presentation === "page" || phone ? t("backToList") : t("close");
+  els.detailExpand.hidden = !selectedId || presentation === "page";
+  if (selectedId && DOC_KINDS.includes(view)) els.detailExpand.href = ideaUrl(selectedId, view);
+  els.detailPanel.querySelector(".ws-detail-bar").hidden = !selectedId;
+
+  if (!selectedId) {
+    els.detailBody.innerHTML =
+      DETAIL_MODES[view] === "split"
+        ? `<div class="ws-detail-empty">${escapeHtml(t("selectDocument").replace("{kind}", view.toUpperCase()))}</div>`
+        : "";
+    return;
+  }
+  const idea = ideaById(selectedId);
+  if (!idea) {
+    els.detailBody.innerHTML = emptyState(t("ideaNotFound"));
+    return;
+  }
+  if (view === "ideas") renderIdeaPage(idea);
+  else {
+    els.detailBody.innerHTML = `
+      <header class="detail-head"><h2>${escapeHtml(idea.title)}</h2></header>
+      ${documentTab(idea, view)}
+    `;
+  }
+  void hydrateDocumentVisuals(els.detailBody);
 }
 
 function questionCard(question) {
@@ -111,7 +325,7 @@ function overviewTab(idea) {
       ? advance.missingFields.map((f) => t(`field_${f}`)).join("、")
       : t("openQuestionsCount").replace("{count}", String(advance.openQuestions.length));
     const answerLink = advance.missingFields.length
-      ? `<a href="#/ideas/${encodeURIComponent(idea.record_id)}/questions">${t("answerRequiredQuestions")}</a>`
+      ? `<a data-tab href="${ideaUrl(idea.record_id, "questions")}">${t("answerRequiredQuestions")}</a>`
       : "";
     gate = `<div class="gate blocked"><p>${t("gateBlocked").replace("{blockers}", escapeHtml(blockers))}</p>${answerLink}</div>`;
   }
@@ -139,7 +353,7 @@ function documentTab(idea, kind) {
   return `
     <div class="doc">
       <div class="doc-head">
-        <span class="badge ${doc.status === "已完善" ? "ok" : "draft"}">${escapeHtml(doc.status)}</span>
+        ${docStatusBadge(doc)}
         <span class="muted">v${doc.version} · ${date(doc.updated_at)}</span>
       </div>
       ${gaps}
@@ -148,22 +362,16 @@ function documentTab(idea, kind) {
   `;
 }
 
-export function renderIdeaDetail() {
-  const idea = ideaById(state.route.id);
-  if (!idea) {
-    els.title.textContent = t("ideasTitle");
-    els.content.innerHTML = `<div class="empty">${t("ideaNotFound")}</div>`;
-    return;
-  }
+// The idea's own page: its gate, the questions waiting on the operator, and
+// the three documents, one tab each. Tabs replace the history entry (see
+// bindDetailEvents) so Back to list is one step, however many tabs were read.
+function renderIdeaPage(idea) {
   const tab = DOC_TABS.includes(state.route.tab) ? state.route.tab : "overview";
-  els.title.textContent = idea.title;
-  els.subtitle.textContent = idea.one_liner || t("noOneLiner");
-
   const openCount = idea.questions.filter((q) => q.status === "open").length;
   const tabs = DOC_TABS.map((key) => {
     const label = key === "overview" ? t("tabOverview") : key === "questions" ? t("tabQuestions") : key.toUpperCase();
     const badge = key === "questions" && openCount ? `<span class="tab-badge">${openCount}</span>` : "";
-    return `<a class="tab ${key === tab ? "active" : ""}" href="#/ideas/${encodeURIComponent(idea.record_id)}/${key}">${label}${badge}</a>`;
+    return `<a class="tab ${key === tab ? "active" : ""}" data-tab href="${ideaUrl(idea.record_id, key === "overview" ? "" : key)}">${label}${badge}</a>`;
   }).join("");
 
   let body;
@@ -174,43 +382,61 @@ export function renderIdeaDetail() {
       : `<div class="empty">${t("noQuestions")}</div>`;
   } else body = documentTab(idea, tab);
 
-  els.content.innerHTML = `
-    ${lockBanner()}
-    ${noticeBanner()}
-    <a class="back-to-list" href="#/ideas">${t("backToList")}</a>
+  els.detailBody.innerHTML = `
     <header class="detail-head">
-      <div class="detail-badges">${stageBadge(idea.stage)}${attentionBadge(idea)}</div>
-      ${clarityBar(idea)}
+      <div class="detail-title">
+        <h2>${escapeHtml(idea.title)}</h2>
+        <p>${escapeHtml(idea.one_liner || t("noOneLiner"))}</p>
+      </div>
+      <div class="detail-meta">
+        <div class="detail-badges">${stageBadge(idea.stage)}${attentionBadge(idea)}</div>
+        ${clarityBar(idea)}
+      </div>
     </header>
     <nav class="tabs">${tabs}</nav>
     <div class="tab-body">${body}</div>
   `;
-  bindDetailEvents();
-  void hydrateDocumentVisuals(els.content);
 }
 
-function bindDetailEvents() {
-  els.content.querySelectorAll("[data-answer]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const id = button.dataset.answer;
-      const input = els.content.querySelector(`[data-answer-for="${CSS.escape(id)}"]`);
-      const answer = String(input?.value || "").trim();
-      if (!answer) {
-        const question = ideaById(state.route.id)?.questions.find((item) => item.record_id === id);
-        state.notice = t(question?.target_field ? "requiredAnswerEmpty" : "answerEmpty");
-        render();
-        return;
-      }
-      const question = ideaById(state.route.id)?.questions.find((item) => item.record_id === id);
-      await applyAndReload({ action: "answer", question_id: id, answer,
-        ...(question?.recovery ? { idea_id: question.idea_id, target_field: question.target_field } : {}) });
-    });
+// Delegated once on the detail panel: answer / skip / advance, and tabs.
+export function bindDetailEvents() {
+  els.detailBody.addEventListener("click", (event) => {
+    const tabLink = event.target.closest("a[data-tab]");
+    if (tabLink) {
+      event.preventDefault();
+      history.replaceState(history.state, "", tabLink.getAttribute("href"));
+      setRoute();
+      return;
+    }
+    const answerButton = event.target.closest("[data-answer]");
+    if (answerButton) {
+      void submitAnswer(answerButton.dataset.answer);
+      return;
+    }
+    const skipButton = event.target.closest("[data-skip]");
+    if (skipButton) {
+      void applyAndReload({ action: "skip", question_id: skipButton.dataset.skip });
+      return;
+    }
+    const advanceButton = event.target.closest("[data-advance]");
+    if (advanceButton) void applyAndReload({ action: "advance", idea_id: advanceButton.dataset.advance });
   });
-  els.content.querySelectorAll("[data-skip]").forEach((button) => {
-    button.addEventListener("click", () => applyAndReload({ action: "skip", question_id: button.dataset.skip }));
-  });
-  els.content.querySelectorAll("[data-advance]").forEach((button) => {
-    button.addEventListener("click", () => applyAndReload({ action: "advance", idea_id: button.dataset.advance }));
+}
+
+async function submitAnswer(id) {
+  const input = els.detailBody.querySelector(`[data-answer-for="${CSS.escape(id)}"]`);
+  const answer = String(input?.value || "").trim();
+  const question = ideaById(state.route.id)?.questions.find((item) => item.record_id === id);
+  if (!answer) {
+    state.notice = t(question?.target_field ? "requiredAnswerEmpty" : "answerEmpty");
+    render();
+    return;
+  }
+  await applyAndReload({
+    action: "answer",
+    question_id: id,
+    answer,
+    ...(question?.recovery ? { idea_id: question.idea_id, target_field: question.target_field } : {}),
   });
 }
 
@@ -228,53 +454,11 @@ async function applyAndReload(payload) {
   }
 }
 
-// Sidebar BRD / MRD / PRD: show that document for the currently selected idea.
-// With nothing selected yet, list the ideas that have one so the operator picks
-// a subject first -- a document view with no idea behind it would be a blank
-// screen with no way forward.
-export function renderDocumentView(kind) {
-  const idea = ideaById(state.selectedIdeaId);
-  els.title.textContent = kind.toUpperCase();
-  if (!idea) {
-    const withDoc = filteredIdeas().filter((item) => item.documents[kind]);
-    els.subtitle.textContent = t("pickIdeaFirst");
-    els.content.innerHTML = `
-      ${lockBanner()}
-      ${noticeBanner()}
-      <div class="list-pane">
-        ${
-          withDoc.length
-            ? withDoc.map(ideaRow).join("")
-            : `<div class="empty">${t("noDocsOfKind").replace("{kind}", kind.toUpperCase())}</div>`
-        }
-      </div>
-    `;
-    return;
-  }
-  els.subtitle.textContent = idea.title;
-  els.content.innerHTML = `
-    ${lockBanner()}
-    ${noticeBanner()}
-    <header class="detail-head">
-      <div class="detail-badges">${stageBadge(idea.stage)}${attentionBadge(idea)}</div>
-      ${clarityBar(idea)}
-    </header>
-    <nav class="tabs">
-      <a class="tab" href="#/ideas/${encodeURIComponent(idea.record_id)}">${t("tabOverview")}</a>
-      <a class="tab" href="#/ideas/${encodeURIComponent(idea.record_id)}/questions">${t("tabQuestions")}</a>
-    </nav>
-    <div class="tab-body">${documentTab(idea, kind)}</div>
-  `;
-  void hydrateDocumentVisuals(els.content);
-}
-
 export function renderSettings() {
   const summary = state.settings?.config_summary || {};
   const operator = summary.operator || {};
   const bases = state.settings?.resources || [];
-  els.title.textContent = t("settingsTitle");
-  els.subtitle.textContent = "";
-  els.content.innerHTML = `
+  document.getElementById("settingsBody").innerHTML = `
     ${lockBanner()}
     <section class="settings-block">
       <h3>${t("connection")}</h3>

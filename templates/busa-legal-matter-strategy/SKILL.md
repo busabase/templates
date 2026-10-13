@@ -98,11 +98,11 @@ Default behavior is AirApp-first — give the user the clickable AirApp URL. Sta
 
 Required app views (hash routes):
 
-- `#/overview`: strategy command desk with partner-review queue, evidence gaps, and deadline pressure.
-- `#/review`: approval queue for strategy packs with issue trees, evidence notes, and risk posture.
-- `#/items`: strategy workbench with editable plan, pleading outline, and negotiation options.
-- `#/checks`: strategy QA checks for unsupported conclusions, evidence gaps, and approval-required legal positions.
-- `#/entities`: matter library grouped by cause, stage, responsible lawyer, and outcome.
+- `#/overview`: strategy command desk — strategy-pack total, evidence gaps, near deadlines, the strategy map of the first pack awaiting review, and the partner-judgment queue.
+- `#/review`: partner-judgment queue as a split view — the queue stays on the left, the selected pack (`#/review?peek=<item-id>`) on the right with approve / request changes / block / save revision.
+- `#/items` (and `#/approved`, `#/done`, `#/blocked`): strategy-pack tables; a row opens the full pack page at `#/items/<item-id>` with the issue tree, evidence gaps, negotiation options, pleading outline, and the editable draft.
+- `#/checks`: strategy QA checks table; a row opens a drawer (`?peek=<check-id>`) linking to its strategy pack.
+- `#/entities`: matter library table (stage · forum · cause, responsible lawyer, gap/issue/option counts); a row opens a drawer.
 - `#/settings`: sanitized strategy template and provider configuration.
 
 Demo mode:

@@ -255,8 +255,28 @@ export const appConfig = {
       ],
     },
   ],
+  // Where a record opens, per view (busabase-app-creator "Choose The Detail
+  // Mode"). Project and Settings are single-row Bases edited on Overview and in
+  // Settings; Shots open inside their episode's Storyboard tab.
+  ui: {
+    detail_modes: {
+      // page: a character bible entry is long content (card, three-view,
+      // voice, reference image generation) that people stay in for minutes.
+      characters: "page",
+      // drawer: a relationship is a fact scanned many at a time; read or tweak
+      // one field and return to the list.
+      relationships: "drawer",
+      // page: an episode is a workplace of its own — script, beats and the
+      // storyboard shot list live under it.
+      episodes: "page",
+      // split: the review queue is worked top to bottom, one task after the next.
+      tasks: "split",
+    },
+  },
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    // records.get: upserts look the existing row up by its id field before
+    // writing, so the read has to be declared alongside the writes.
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

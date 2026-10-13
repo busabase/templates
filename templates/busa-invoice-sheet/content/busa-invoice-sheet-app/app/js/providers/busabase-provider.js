@@ -68,13 +68,16 @@ function base(key) {
   return declared;
 }
 
-async function readPage(key, cursor) {
+// `filters` are pushed down to records.list as a best-effort superset; the
+// caller still narrows the returned rows itself.
+async function readPage(key, cursor, filters) {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
   const declared = base(key);
   const result = await runtimeClient.records.list({
     baseId: declared.baseId,
     limit: declared.readLimit,
     ...(cursor ? { cursor } : {}),
+    ...(filters ? { filters } : {}),
   });
   const records = Array.isArray(result) ? result : result.records || [];
   const rows = records.map((record) => ({
@@ -95,10 +98,11 @@ async function countRecords(key, filters) {
   }
 }
 
-const countInvoices = (status) =>
-  countRecords("invoices", [{ fieldSlug: "status", fieldType: "text", operator: "equals", value: status }]);
+const statusFilter = (status) => [{ fieldSlug: "status", fieldType: "text", operator: "equals", value: status }];
+const countInvoices = (status) => countRecords("invoices", statusFilter(status));
 
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -133,7 +137,10 @@ export const busabaseProvider = {
     const [invoicePage, settingsPage, total, needsReview, changesRequested, approved, done, blocked] =
       await Promise.all([
         readPage("invoices"),
-        readPage("settings"),
+        // The settings row only tunes the low-confidence threshold and the
+        // Help screen; a denied or failing read must not take the invoice
+        // table down with it.
+        readPage("settings").catch(() => ({ rows: [], nextCursor: null })),
         countRecords("invoices"),
         countInvoices("needs_review"),
         countInvoices("changes_requested"),
@@ -168,9 +175,26 @@ export const busabaseProvider = {
     };
   },
 
-  async fetchPage(key, cursor) {
+  // One page per user action. `status` scopes the page to one workflow
+  // status (a nav view); the server filter is a superset, so narrow here.
+  async fetchPage(key, cursor, { status } = {}) {
     await ensureResources();
-    return readPage(key, cursor);
+    if (!status || key !== "invoices") return readPage(key, cursor);
+    const page = await readPage(key, cursor, statusFilter(status));
+    return { ...page, rows: page.rows.filter((row) => (row.status || "needs_review") === status) };
+  },
+
+  // A record named by the URL that is not on a loaded page: read it on its own
+  // (records.get by its business id) instead of paging until it turns up.
+  async getRecord(invoiceId) {
+    await ensureResources();
+    const record = await findRecord("invoices", "invoice-id", invoiceId);
+    if (!record) return null;
+    return computeInvoiceFromRow({
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    });
   },
 
   // Human verdict (approve / request_changes / block / revise), written

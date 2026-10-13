@@ -1076,4 +1076,11 @@ export const demoProvider = {
   async provisionResources() {
     throw new Error("Demo mode is read-only.");
   },
+
+  // Demo mode loads every row up front (no pagination), so a record named by
+  // the URL is always already in the snapshot; this never actually needs to
+  // fetch anything, but ensureSelectedRecord() in app.js calls it uniformly.
+  async getRecord() {
+    return null;
+  },
 };

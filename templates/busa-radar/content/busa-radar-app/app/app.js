@@ -4,48 +4,82 @@ import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/con
 import { createPagination } from "./js/pagination.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
 import { computeMetrics } from "./js/radar-model.js?v=0.1.0";
-import {
-  bindDecisionButtons,
-  renderResearch,
-  renderResearchDetail,
-  renderSettings,
-  renderTrends,
-} from "./js/research-views.js";
+import { renderOverview, renderRecordView, renderSettings, submitDecision, submitFollowup } from "./js/radar-views.js";
+
+// Where a record opens, per Base. Chosen by what people do with the record:
+//   signals       → split:  triage is a queue worked top to bottom — read the
+//                           change, decide, next — so the queue stays beside it.
+//   watchlist     → page:   a watch target is a workplace — its sources, their
+//                           methods and the signal history it produced.
+//   questions     → page:   a research question owns a brief to review or a long
+//                           cited report to read and rate; you stay for minutes.
+//   movers        → drawer: a trend mover is a fact you scan many of, glance at
+//                           its momentum and opportunity, and return.
+//   opportunities → drawer: an opportunity card is read and approved/ignored in
+//                           one step, then back to the list.
+// A `/record` path always opens the full page; `?peek=` drives drawer/split.
+// On a phone every mode is a page (base-ui.css handles that).
+// Declared once, in config.js `ui.detail_modes`.
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = ["signals", "watchlist", "research", "trends"];
+const TREND_TABS = ["movers", "opportunities"];
+
+// The Base a record view lists (trends lists one of two, by tab).
+export function baseKeyFor(view, tab = "movers") {
+  if (view === "research") return "questions";
+  if (view === "trends") return tab === "opportunities" ? "opportunities" : "movers";
+  return view;
+}
 
 export const state = {
   snapshot: null,
   settings: null,
+  provider: null,
   route: parseRoute(),
-  query: "",
+  // Records opened by URL that are not on the loaded page (records.get).
+  extra: { watchlist: new Map(), signals: new Map(), questions: new Map(), opportunities: new Map() },
+  // Unsaved review notes / follow-up drafts, so a re-render never eats typing.
+  drafts: {},
   lang: normalizeLang(
     new URLSearchParams(location.search).get("lang") || localStorage.getItem("busa-radar-language") || "auto",
   ),
   demo: new URLSearchParams(location.search).get("demo") || "",
   saving: false,
+  notice: "",
 };
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-radar.sidebarCollapsed";
 
+const byId = (id) => document.getElementById(id);
 export const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  triageCount: document.querySelector("#count-triage"),
-  briefsCount: document.querySelector("#count-briefs"),
-  reportsCount: document.querySelector("#count-reports"),
-  language: document.querySelector("#language"),
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  viewTabs: byId("viewTabs"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  viewRefresh: byId("viewRefresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  triageCount: byId("count-triage"),
+  briefsCount: byId("count-briefs"),
+  reportsCount: byId("count-reports"),
+  language: byId("language"),
 };
 
-const PAGINATED_KEYS = ["watchlist", "signals", "questions", "opportunities"];
 const pagination = createPagination({
   getProvider,
   pageSizes: Object.fromEntries(appConfig.bases.map((base) => [base.key, base.readLimit])),
@@ -58,12 +92,20 @@ const pagination = createPagination({
   render: () => render(),
   label: (key) => t(key),
   onError: (error) => {
-    state.pageError = error instanceof Error ? error.message : String(error);
+    state.notice = error instanceof Error ? error.message : String(error);
   },
 });
 
 export function recordTotal(key, fallback = 0) {
   return pagination.total(key, fallback);
+}
+
+export function isPartial(key) {
+  return pagination.isPartial(key);
+}
+
+export function pagerControl(key) {
+  return pagination.control(key);
 }
 
 function isMobileLayout() {
@@ -127,44 +169,164 @@ export function enumLabel(value, group = "status") {
   return messages[activeLang()]?.enum?.[group]?.[key] || messages.en.enum?.[group]?.[key] || key.replaceAll("_", " ");
 }
 
+function validDate(value) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
 export function date(value) {
-  if (!value) return "";
+  const parsed = validDate(value);
+  if (!parsed) return "";
   return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
     month: "short",
     day: "2-digit",
-  }).format(new Date(value));
+  }).format(parsed);
 }
 
 export function dateTime(value) {
-  if (!value) return "";
+  const parsed = validDate(value);
+  if (!parsed) return "";
   return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
     month: "short",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(value));
+  }).format(parsed);
 }
 
-export function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] ? decodeURIComponent(parts[1]) : "" };
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&tab=…&peek=…]`. Search, the Trends tab and the
+// peeked record live in the URL so refresh, shared links and Back restore the
+// same list context.
+function parseRoute() {
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const tab = TREND_TABS.includes(params.get("tab")) ? params.get("tab") : "movers";
+  const mode = RECORD_VIEWS.includes(view) ? DETAIL_MODES[baseKeyFor(view, tab)] || "drawer" : null;
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  return {
+    view,
+    id,
+    peek,
+    tab: view === "trends" ? tab : "",
+    mode,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+  };
 }
+
+export const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  if (route.view === "trends" && route.tab && route.tab !== "movers") params.set("tab", route.tab);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+const routeFor = (view, tab) =>
+  view === state.route.view && (!tab || tab === state.route.tab) ? state.route : { view, query: "", tab: tab || "" };
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the Base's mode.
+export const detailUrl = (id, view = state.route.view, tab = "") =>
+  `#/${view}/${encodeURIComponent(id)}${routeQuery({}, routeFor(view, tab))}`;
+// What a row (or a cross-link) opens: the page for a `page` Base, else `?peek=`.
+export const recordUrl = (id, view = state.route.view, tab = "") => {
+  const route = routeFor(view, tab);
+  if (DETAIL_MODES[baseKeyFor(view, route.tab || tab)] === "page") return detailUrl(id, view, tab);
+  return `#/${view}${routeQuery({ peek: id }, route)}`;
+};
+
+let previousRouteWasList = false;
+let routeSerial = 0;
 
 function setRoute() {
+  closing = false;
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  state.notice = "";
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
+  render();
+  ensureSelectedRecord();
+}
+
+// Replace the current entry without a hashchange: search keystrokes and tab
+// clicks should not each become a Back step.
+export function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
   render();
 }
 
+// history.back() lands asynchronously; a second Escape before the hashchange
+// arrives must not step back past the list as well.
+let closing = false;
+export function closeDetail() {
+  if (closing) return;
+  closing = true;
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── Data ───────────────────────────────────────────────────────────────────
 export async function loadState() {
   const provider = await getProvider();
+  state.provider = provider;
   const data = await provider.getState();
   pagination.reset(data.pagination, data.totals);
   closeConnectGate();
   state.snapshot = data.snapshot;
   state.settings = data;
+  state.extra = { watchlist: new Map(), signals: new Map(), questions: new Map(), opportunities: new Map() };
   applyDemoRoute();
   window.dispatchEvent(new CustomEvent("busa-radar:state", { detail: data }));
   render();
+  ensureSelectedRecord();
+}
+
+// A record named by the URL but not on the loaded page is read on its own
+// (records.get by its business id) instead of loading more pages to find it.
+async function ensureSelectedRecord() {
+  const { view, tab, selectedId } = state.route;
+  if (!state.snapshot || !selectedId || !RECORD_VIEWS.includes(view)) return;
+  const key = baseKeyFor(view, tab);
+  if (recordById(key, selectedId) || !state.extra[key] || state.extra[key].has(selectedId)) return;
+  const provider = state.provider;
+  if (typeof provider?.getRecord !== "function") {
+    state.extra[key].set(selectedId, null);
+    render();
+    return;
+  }
+  const serial = ++routeSerial;
+  state.extra[key].set(selectedId, undefined);
+  try {
+    state.extra[key].set(selectedId, (await provider.getRecord(key, selectedId)) || null);
+  } catch {
+    state.extra[key].set(selectedId, null);
+  }
+  if (serial === routeSerial) render();
 }
 
 function applyDemoRoute() {
@@ -174,7 +336,7 @@ function applyDemoRoute() {
     scenario === "signals"
       ? "#/signals"
       : scenario === "detail"
-        ? "#/signals/sig-formora-pricing"
+        ? "#/signals?peek=sig-formora-pricing"
         : scenario === "research"
           ? "#/research"
           : scenario === "trends"
@@ -194,15 +356,21 @@ function applyI18n() {
     option.textContent = languageLabels[option.value] || option.textContent;
   }
   els.search.placeholder = t("search");
-  els.refresh.textContent = t("refresh");
+  for (const button of [els.refresh, els.viewRefresh]) {
+    button.textContent = t("refresh");
+    button.title = t("refresh");
+  }
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
+  byId("overviewTitle").textContent = t("overview");
+  byId("settingsTitle").textContent = t("settings");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
 export function signals() {
   return state.snapshot?.signals || [];
 }
 
-function watchlist() {
+export function watchlist() {
   return state.snapshot?.watchlist || [];
 }
 
@@ -214,9 +382,25 @@ export function trends() {
   return state.snapshot?.trends || { movers: [], opportunities: [] };
 }
 
-function signalRef(signalId) {
-  const index = signals().findIndex((item) => item.signal_id === signalId);
-  return index >= 0 ? `Signal #${index + 1}` : "";
+const ID_FIELD = {
+  watchlist: "target_id",
+  signals: "signal_id",
+  questions: "question_id",
+  movers: "mover_id",
+  opportunities: "opportunity_id",
+};
+
+function rowsFor(key) {
+  if (key === "questions") return research().questions;
+  if (key === "movers") return trends().movers;
+  if (key === "opportunities") return trends().opportunities;
+  return state.snapshot?.[key] || [];
+}
+
+// Loaded page first, then a record fetched on its own for the URL.
+export function recordById(key, id) {
+  if (!id) return null;
+  return rowsFor(key).find((item) => item[ID_FIELD[key]] === id) || state.extra[key]?.get(id) || null;
 }
 
 export function briefById(briefId) {
@@ -227,32 +411,47 @@ export function reportById(reportId) {
   return research().reports.find((item) => item.report_id === reportId);
 }
 
-function targetName(targetId) {
-  return watchlist().find((item) => item.target_id === targetId)?.name || targetId;
+// A relation is a business id (`formora`, `opp-…`). Resolve it to a name; when
+// the target is not on the loaded page, say so — never print the id.
+export function targetName(targetId) {
+  if (!targetId) return "";
+  return recordById("watchlist", targetId)?.name || t("notLoaded");
 }
 
 export function isLocked() {
   return Boolean(state.settings?.lock);
 }
 
-function attentionCounts() {
-  const triage = signals().filter((item) => item.status === "needs_review").length;
-  const briefs = research().briefs.filter((item) => item.status === "needs_review").length;
-  const reports = research().questions.filter((item) => item.status === "report_ready").length;
+// Exact server counts when the provider has them (records.count with filters);
+// otherwise counted from the loaded page.
+export function attentionCounts() {
+  const exact = state.settings?.counts || {};
+  const pick = (name, loaded) => (exact[name] == null ? loaded : exact[name]);
+  const triage = pick("triage", signals().filter((item) => item.status === "needs_review").length);
+  const briefs = pick("briefs", research().briefs.filter((item) => item.status === "needs_review").length);
+  const reports = pick("reports", research().questions.filter((item) => item.status === "report_ready").length);
+  const opportunities = pick(
+    "opportunities",
+    trends().opportunities.filter((item) => item.status === "needs_review").length,
+  );
+  const highTriage = pick(
+    "highTriage",
+    signals().filter((item) => item.severity === "high" && item.status === "needs_review").length,
+  );
+  // Follow-ups live inside each question's JSON, so they can only be counted
+  // from the loaded questions.
   const followups = research().questions.reduce(
     (sum, question) => sum + (question.followups || []).filter((fu) => fu.status !== "closed").length,
     0,
   );
-  return { triage, briefs, reports, followups };
+  return { triage, briefs, reports, opportunities, highTriage, followups };
 }
 
 function renderShell() {
   applyI18n();
   const counts = attentionCounts();
-  els.syncStatus.textContent =
-    state.snapshot?.generated_at && Date.parse(state.snapshot.generated_at) > 0
-      ? `${pagination.total("signals", signals().length)} ${t("signals").toLowerCase()} · ${pagination.total("watchlist", watchlist().length)} ${t("watchTargets")}`
-      : t("empty");
+  // Where the data comes from — the counts already sit in the attention block.
+  els.syncStatus.textContent = !state.snapshot ? t("loading") : state.settings?.demo ? t("demoData") : t("liveData");
   if (els.triageCount) els.triageCount.textContent = counts.triage;
   if (els.briefsCount) els.briefsCount.textContent = counts.briefs;
   if (els.reportsCount) els.reportsCount.textContent = counts.reports;
@@ -260,14 +459,14 @@ function renderShell() {
   if (els.mobileViewMeta) {
     els.mobileViewMeta.textContent = counts.triage
       ? `${counts.triage} ${t("signalsToTriage")}`
-      : `${pagination.total("signals", signals().length)} ${t("signals").toLowerCase()}`;
+      : `${recordTotal("signals", signals().length)} ${t("signals").toLowerCase()}`;
   }
   document.querySelectorAll("[data-route]").forEach((link) => {
     link.classList.toggle("active", link.dataset.route === state.route.view);
   });
 }
 
-function viewLabel(view) {
+export function viewLabel(view) {
   if (view === "signals") return t("signals");
   if (view === "watchlist") return t("watchlist");
   if (view === "research") return t("research");
@@ -276,430 +475,26 @@ function viewLabel(view) {
   return t("overview");
 }
 
-function severityBadge(severity) {
-  return `<span class="badge severity ${escapeHtml(severity)}">${escapeHtml(enumLabel(severity, "severity"))}</span>`;
-}
-
-export function statusBadge(status) {
-  return `<span class="badge status-badge ${escapeHtml(status)}">${escapeHtml(enumLabel(status))}</span>`;
-}
-
-export function kindBadge(kind) {
-  return `<span class="badge kind ${escapeHtml(kind)}">${escapeHtml(enumLabel(kind, "source_kind"))}</span>`;
-}
-
-export function lockBanner() {
-  if (!isLocked()) return "";
-  const lock = state.settings.lock;
-  return `<div class="warnings"><div class="warning"><strong>${t("lockActive")}</strong><span>${escapeHtml(lock.owner || "")} · ${escapeHtml(lock.message || "")}</span></div></div>`;
-}
-
-export function demoBanner() {
-  return state.settings?.demo ? `<div class="demo-note">${t("demoNote")}</div>` : "";
-}
-
-export function sparkline(momentum = []) {
-  if (!momentum.length) return "";
-  const width = 96;
-  const height = 26;
-  const max = Math.max(...momentum);
-  const min = Math.min(...momentum);
-  const span = max - min || 1;
-  const step = width / Math.max(momentum.length - 1, 1);
-  const points = momentum
-    .map(
-      (value, index) =>
-        `${(index * step).toFixed(1)},${(height - 3 - ((value - min) / span) * (height - 6)).toFixed(1)}`,
-    )
-    .join(" ");
-  return `<svg class="sparkline" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" aria-hidden="true"><polyline points="${points}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-}
-
-export function deltaArrow(delta) {
-  const value = Number(delta || 0);
-  const cls = value > 0 ? "positive" : value < 0 ? "negative" : "";
-  const arrow = value > 0 ? "▲" : value < 0 ? "▼" : "→";
-  return `<span class="delta ${cls}">${arrow} ${Math.abs(value)}%</span>`;
-}
-
-/* ---------- Overview ---------- */
-
-function renderOverview() {
-  els.title.textContent = t("overview");
-  els.subtitle.textContent = state.snapshot?.generated_at
-    ? `${t("generated")} ${new Date(state.snapshot.generated_at).toLocaleString()}`
-    : t("empty");
-  const counts = attentionCounts();
-  const topSignals = signals()
-    .filter((item) => item.status === "needs_review" || item.severity === "high")
-    .slice(0, 5);
-  const movers = [...trends().movers].sort((a, b) => Math.abs(b.delta_pct) - Math.abs(a.delta_pct)).slice(0, 5);
-  const pipeline = ["brief_needs_review", "researching", "report_ready", "closed"];
-  const questions = research().questions;
-  els.content.innerHTML = `
-    ${demoBanner()}
-    ${lockBanner()}
-    <div class="metrics">
-      <a class="metric" href="#/signals"><span>${t("signalsToTriage")}</span><strong>${counts.triage}</strong></a>
-      <a class="metric" href="#/research"><span>${t("briefsAwaiting")}</span><strong>${counts.briefs}</strong></a>
-      <a class="metric" href="#/research"><span>${t("reportsReady")}</span><strong>${counts.reports}</strong></a>
-      <a class="metric" href="#/research"><span>${t("followupsRunning")}</span><strong>${counts.followups}</strong></a>
-    </div>
-    <section class="overview-grid">
-      <div class="overview-panel">
-        <h2>${t("topSignals")}</h2>
-        ${
-          topSignals
-            .map(
-              (item) => `
-          <a class="signal-row" href="#/signals/${encodeURIComponent(item.signal_id)}">
-            <span class="signal-row-main">
-              <strong>${escapeHtml(item.headline)}</strong>
-              <small>${escapeHtml(targetName(item.target_id))} · ${date(item.detected_at)}</small>
-            </span>
-            ${severityBadge(item.severity)}
-            ${statusBadge(item.status)}
-          </a>
-        `,
-            )
-            .join("") || `<div class="empty-inline">${t("empty")}</div>`
-        }
-      </div>
-      <div class="overview-panel">
-        <h2>${t("freshness")}</h2>
-        ${
-          watchlist()
-            .map(
-              (item) => `
-          <a class="freshness-row" href="#/watchlist/${encodeURIComponent(item.target_id)}">
-            <span class="signal-row-main">
-              <strong>${escapeHtml(item.name)}</strong>
-              <small>${escapeHtml(enumLabel(item.type, "target_type"))} · ${item.signals_7d} ${t("signalsWeek")}</small>
-            </span>
-            <span class="muted">${dateTime(item.last_check_at)}</span>
-            ${statusBadge(item.status)}
-          </a>
-        `,
-            )
-            .join("") || `<div class="empty-inline">${t("empty")}</div>`
-        }
-      </div>
-      <div class="overview-panel">
-        <h2>${t("topMovers")}</h2>
-        ${
-          movers
-            .map(
-              (item) => `
-          <a class="mover-row" href="#/trends">
-            <span class="signal-row-main">
-              <strong>${escapeHtml(item.keyword)}</strong>
-              <small>${escapeHtml(enumLabel(item.source, "source_kind"))}</small>
-            </span>
-            ${sparkline(item.momentum)}
-            ${deltaArrow(item.delta_pct)}
-          </a>
-        `,
-            )
-            .join("") || `<div class="empty-inline">${t("empty")}</div>`
-        }
-      </div>
-      <div class="overview-panel">
-        <h2>${t("researchPipeline")}</h2>
-        <div class="pipeline">
-          ${pipeline
-            .map(
-              (stage) => `
-            <div class="pipeline-stage">
-              <strong>${questions.filter((question) => question.status === stage || (stage === "closed" && question.status === "annotated")).length}</strong>
-              <span>${escapeHtml(enumLabel(stage))}</span>
-            </div>
-          `,
-            )
-            .join("")}
-        </div>
-        ${questions
-          .filter((question) => question.status !== "closed")
-          .slice(0, 3)
-          .map(
-            (question) => `
-          <a class="freshness-row" href="#/research/${encodeURIComponent(question.question_id)}">
-            <span class="signal-row-main">
-              <strong>${escapeHtml(question.question)}</strong>
-              <small>${escapeHtml(enumLabel(question.depth, "depth"))} · ${date(question.asked_at)}</small>
-            </span>
-            ${statusBadge(question.status)}
-          </a>
-        `,
-          )
-          .join("")}
-      </div>
-    </section>
-  `;
-}
-
-/* ---------- Signals ---------- */
-
-function filteredSignals() {
-  const query = state.query.trim().toLowerCase();
-  if (!query) return signals();
-  return signals().filter((item) =>
-    [item.headline, item.summary, item.source_kind, item.severity, item.status, targetName(item.target_id)]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query)),
-  );
-}
-
-function renderSignals() {
-  els.title.textContent = t("signals");
-  const items = filteredSignals();
-  const triage = items.filter((item) => item.status === "needs_review").length;
-  els.subtitle.textContent = `${pagination.total("signals", items.length)} ${t("signals").toLowerCase()} · ${triage} ${t("signalsToTriage")}`;
-  els.content.innerHTML = `
-    ${demoBanner()}
-    ${lockBanner()}
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th></th><th>${t("source")}</th><th>${t("target")}</th><th>${t("headline")}</th><th>${t("severity")}</th><th>${t("detected")}</th><th>${t("triage")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items
-            .map(
-              (item) => `
-            <tr>
-              <td class="muted ref-cell">${escapeHtml(signalRef(item.signal_id))}</td>
-              <td>${kindBadge(item.source_kind)}</td>
-              <td><a href="#/watchlist/${encodeURIComponent(item.target_id)}">${escapeHtml(targetName(item.target_id))}</a></td>
-              <td>
-                <a href="#/signals/${encodeURIComponent(item.signal_id)}"><span class="strong">${escapeHtml(item.headline)}</span></a>
-                <div class="muted clamp">${escapeHtml(item.summary)}</div>
-              </td>
-              <td>${severityBadge(item.severity)}</td>
-              <td class="muted">${dateTime(item.detected_at)}</td>
-              <td>${statusBadge(item.status)}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-    ${items.length ? "" : `<div class="empty">${t("empty")}</div>`}
-  `;
-}
-
-function diffPanel(diff) {
-  if (!diff?.lines?.length) return "";
-  return `
-    <div class="diff-panel">
-      <div class="diff-labels"><span>${escapeHtml(diff.before_label || "before")}</span><span>${escapeHtml(diff.after_label || "after")}</span></div>
-      <div class="diff-lines">
-        ${diff.lines.map((line) => `<div class="diff-line ${escapeHtml(line.type)}"><span class="diff-sign">${line.type === "added" ? "+" : line.type === "removed" ? "−" : " "}</span>${escapeHtml(line.text)}</div>`).join("")}
-      </div>
-    </div>
-  `;
-}
-
-function triageButtons(item) {
-  const disabled = isLocked() || state.saving ? "disabled" : "";
-  return `
-    <div class="action-row">
-      <button type="button" class="action primary" data-action="approve" data-kind="signal" data-id="${escapeHtml(item.signal_id)}" ${disabled} title="${t("act")} — approve and queue the handoff">${t("act")}</button>
-      <button type="button" class="action" data-action="watch" data-kind="signal" data-id="${escapeHtml(item.signal_id)}" ${disabled} title="${t("watch")} — leave in review with a note">${t("watch")}</button>
-      <button type="button" class="action" data-action="ignore" data-kind="signal" data-id="${escapeHtml(item.signal_id)}" ${disabled} title="${t("ignore")} — mark done, no action">${t("ignore")}</button>
-      <button type="button" class="action" data-action="block" data-kind="signal" data-id="${escapeHtml(item.signal_id)}" ${disabled} title="${t("needsInfo")} — blocked until the agent collects more">${t("needsInfo")}</button>
-    </div>
-  `;
-}
-
-function renderSignalDetail() {
-  const item = signals().find((signal) => signal.signal_id === state.route.id);
-  if (!item) {
-    renderSignals();
-    return;
-  }
-  els.title.textContent = item.headline;
-  els.subtitle.textContent = `${signalRef(item.signal_id)} · ${targetName(item.target_id)} · ${enumLabel(item.source_kind, "source_kind")}`;
-  els.content.innerHTML = `
-    ${demoBanner()}
-    ${lockBanner()}
-    <section class="detail">
-      <div class="detail-main">
-        <div class="detail-head">
-          ${kindBadge(item.source_kind)}
-          ${severityBadge(item.severity)}
-          ${statusBadge(item.status)}
-          <span class="muted">${t("detected")} ${dateTime(item.detected_at)}</span>
-        </div>
-        <div class="panel">
-          <h2>${t("changeSummary")}</h2>
-          <p>${escapeHtml(item.summary)}</p>
-          ${diffPanel(item.diff)}
-        </div>
-        <div class="panel why-panel">
-          <h2>${t("whyItMatters")}</h2>
-          <p>${escapeHtml(item.why_it_matters || "")}</p>
-          ${item.handoff ? `<div class="handoff-chip">${t("proposedNextStep")}: <strong>${escapeHtml(enumLabel(item.handoff.operation, "operation"))}</strong> · ${escapeHtml(item.handoff.summary || "")}</div>` : ""}
-        </div>
-        <div class="panel">
-          <h2>${t("triage")}</h2>
-          ${triageButtons(item)}
-          <label class="note-label" for="review-note">${t("reviewNote")}</label>
-          <textarea id="review-note" class="review-note" placeholder="${t("reviewNote")}">${escapeHtml(item.triage?.comment || "")}</textarea>
-          <div id="decision-feedback" class="muted decision-feedback"></div>
-        </div>
-      </div>
-      <aside class="detail-side">
-        <h2>${t("evidence")}</h2>
-        <ul class="evidence-list">
-          ${(item.evidence || []).map((entry) => `<li><a href="${escapeHtml(entry.url)}" target="_blank" rel="noreferrer noopener">${escapeHtml(entry.title)}</a></li>`).join("") || `<li class="muted">—</li>`}
-        </ul>
-        <h2>${t("target")}</h2>
-        <dl>
-          <dt>${t("target")}</dt><dd><a href="#/watchlist/${encodeURIComponent(item.target_id)}">${escapeHtml(targetName(item.target_id))}</a></dd>
-          <dt>${t("source")}</dt><dd>${escapeHtml(item.source_id)}</dd>
-          <dt>${t("status")}</dt><dd>${escapeHtml(enumLabel(item.status))}</dd>
-          ${item.triage?.decided_at ? `<dt>${t("triage")}</dt><dd>${escapeHtml(enumLabel(item.triage.action, "action"))} · ${dateTime(item.triage.decided_at)}</dd>` : ""}
-        </dl>
-      </aside>
-    </section>
-  `;
-  bindDecisionButtons();
-}
-
-/* ---------- Watchlist ---------- */
-
-function renderWatchlist() {
-  els.title.textContent = t("watchlist");
-  els.subtitle.textContent = `${pagination.total("watchlist", watchlist().length)} ${t("watchTargets")}`;
-  const query = state.query.trim().toLowerCase();
-  const items = watchlist().filter(
-    (item) =>
-      !query ||
-      [item.name, item.type, item.status, item.notes]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(query)),
-  );
-  els.content.innerHTML = `
-    ${demoBanner()}
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>${t("target")}</th><th>${t("type")}</th><th>${t("sourcesMonitored")}</th><th>${t("lastCheck")}</th><th>${t("signalsWeek")}</th><th>${t("status")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items
-            .map(
-              (item) => `
-            <tr>
-              <td><a href="#/watchlist/${encodeURIComponent(item.target_id)}"><span class="strong">${escapeHtml(item.name)}</span></a><div class="muted clamp">${escapeHtml(item.notes || "")}</div></td>
-              <td><span class="badge">${escapeHtml(enumLabel(item.type, "target_type"))}</span></td>
-              <td>${(item.sources || []).map((source) => kindBadge(source.kind)).join(" ")}</td>
-              <td class="muted">${dateTime(item.last_check_at)}</td>
-              <td class="num">${item.signals_7d ?? 0}</td>
-              <td>${statusBadge(item.status)}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-    ${items.length ? "" : `<div class="empty">${t("empty")}</div>`}
-  `;
-}
-
-function renderWatchTargetDetail() {
-  const item = watchlist().find((target) => target.target_id === state.route.id);
-  if (!item) {
-    renderWatchlist();
-    return;
-  }
-  const history = signals().filter((signal) => signal.target_id === item.target_id);
-  els.title.textContent = item.name;
-  els.subtitle.textContent = `${enumLabel(item.type, "target_type")} · ${history.length} ${t("signals").toLowerCase()}`;
-  els.content.innerHTML = `
-    ${demoBanner()}
-    <section class="detail">
-      <div class="detail-main">
-        <div class="panel">
-          <h2>${t("sourcesMonitored")}</h2>
-          <div class="table-wrap inner">
-            <table>
-              <thead><tr><th>${t("source")}</th><th>${t("type")}</th><th>${t("method")}</th><th>${t("lastCheck")}</th><th>${t("lastChange")}</th></tr></thead>
-              <tbody>
-                ${(item.sources || [])
-                  .map(
-                    (source) => `
-                  <tr>
-                    <td><a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer noopener">${escapeHtml(source.url)}</a></td>
-                    <td>${kindBadge(source.kind)}</td>
-                    <td>${escapeHtml(enumLabel(source.method, "method"))}</td>
-                    <td class="muted">${dateTime(source.last_check_at)}</td>
-                    <td class="muted">${dateTime(source.last_change_at)}</td>
-                  </tr>
-                `,
-                  )
-                  .join("")}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="panel">
-          <h2>${t("recentSignals")}</h2>
-          ${
-            history
-              .map(
-                (signal) => `
-            <a class="signal-row" href="#/signals/${encodeURIComponent(signal.signal_id)}">
-              <span class="signal-row-main">
-                <strong>${escapeHtml(signal.headline)}</strong>
-                <small>${escapeHtml(signalRef(signal.signal_id))} · ${dateTime(signal.detected_at)}</small>
-              </span>
-              ${severityBadge(signal.severity)}
-              ${statusBadge(signal.status)}
-            </a>
-          `,
-              )
-              .join("") || `<div class="empty-inline">${t("empty")}</div>`
-          }
-        </div>
-      </div>
-      <aside class="detail-side">
-        <h2>${t("notes")}</h2>
-        <p>${escapeHtml(item.notes || "—")}</p>
-        <dl>
-          <dt>${t("type")}</dt><dd>${escapeHtml(enumLabel(item.type, "target_type"))}</dd>
-          <dt>${t("status")}</dt><dd>${escapeHtml(enumLabel(item.status))}</dd>
-          <dt>${t("lastCheck")}</dt><dd>${dateTime(item.last_check_at)}</dd>
-          <dt>${t("signalsWeek")}</dt><dd>${item.signals_7d ?? 0}</dd>
-        </dl>
-      </aside>
-    </section>
-  `;
-}
-
-/* ---------- Render ---------- */
-
-function renderPagedList(renderList, key) {
-  renderList();
-  els.content.insertAdjacentHTML("beforeend", `${pagination.control(key)}`);
-}
-
 export function render() {
   renderShell();
-  if (state.route.view === "signals" && state.route.id) renderSignalDetail();
-  else if (state.route.view === "signals") renderPagedList(renderSignals, "signals");
-  else if (state.route.view === "watchlist" && state.route.id) renderWatchTargetDetail();
-  else if (state.route.view === "watchlist") renderPagedList(renderWatchlist, "watchlist");
-  else if (state.route.view === "research" && state.route.id) renderResearchDetail();
-  else if (state.route.view === "research") renderPagedList(renderResearch, "questions");
-  else if (state.route.view === "trends") renderPagedList(renderTrends, "opportunities");
-  else if (state.route.view === "settings") renderSettings();
+  const { view, selectedId, presentation, mode } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.add("ws-has-mobile-bar");
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && mode === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  for (const name of RECORD_VIEWS) body.toggle(`view-${name}`, onRecordView && view === name);
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
   else renderOverview();
 }
 
@@ -717,19 +512,75 @@ export function escapeHtml(value) {
   );
 }
 
-pagination.bind(els.content);
-
+// ── Events ─────────────────────────────────────────────────────────────────
+pagination.bind(els.listPanel);
+els.listPanel.addEventListener("click", (event) => {
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+els.listPanel.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter") return;
+  const row = event.target.closest("tr[data-id]");
+  if (row) location.hash = recordUrl(row.dataset.id);
+});
+els.viewTabs.addEventListener("click", (event) => {
+  const segment = event.target.closest("[data-tab]");
+  if (!segment) return;
+  replaceRoute(`#/trends${routeQuery({}, { ...state.route, tab: segment.dataset.tab })}`);
+});
+els.detailBody.addEventListener("input", (event) => {
+  const field = event.target.closest("textarea[data-draft]");
+  if (field) state.drafts[field.dataset.draft] = field.value;
+});
+els.detailBody.addEventListener("click", (event) => {
+  const followup = event.target.closest("#file-followup");
+  if (followup) {
+    submitFollowup(followup.dataset.question);
+    return;
+  }
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+  submitDecision({
+    kind: button.dataset.kind,
+    id: button.dataset.id,
+    action: button.dataset.action,
+    comment: els.detailBody.querySelector("#review-note")?.value || "",
+    confidence: button.dataset.confidence ? Number(button.dataset.confidence) : undefined,
+  });
+});
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  // Escape inside a note only leaves the field; a second Escape closes.
+  if (event.target.closest?.("textarea, input")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", () => setMobileSidebarOpen(true));
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
+  replaceRoute(
+    `#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`,
+  );
 });
-els.refresh.addEventListener("click", () => loadState());
-els.mobileRefresh?.addEventListener("click", () => loadState());
+for (const button of [els.refresh, els.viewRefresh, els.mobileRefresh]) {
+  button?.addEventListener("click", () => loadState());
+}
 els.language.value = state.lang;
 els.language.addEventListener("change", () => {
   state.lang = normalizeLang(els.language.value);
@@ -747,9 +598,13 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
 boot();

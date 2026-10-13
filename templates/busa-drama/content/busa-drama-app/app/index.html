@@ -38,11 +38,6 @@
           <div id="projectSwitchMeta" class="switch-meta"></div>
         </section>
 
-        <div class="sidebar-actions">
-          <input id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="搜索" />
-          <button id="newItemButton" data-i18n-title="new_item_title" title="在当前视图中新建一项" aria-label="新建">+</button>
-        </div>
-
         <section class="quick-stats" aria-label="Project status">
           <button data-view="tasks" data-i18n-title="nav_tasks_title" title="查看需要处理的任务">
             <span id="attentionNeeds">0</span>
@@ -61,11 +56,11 @@
         <div class="separator"></div>
 
         <nav class="nav" id="nav">
-          <button class="active" data-view="overview" data-i18n-title="nav_overview_title" title="查看短剧背景、世界规则和项目总览" data-i18n="nav_overview">总览</button>
-          <button data-view="characters" data-i18n-title="nav_characters_title" title="维护人物库、演员设定、三视图" data-i18n="nav_characters">人物</button>
-          <button data-view="relationships" data-i18n-title="nav_relationships_title" title="维护人物关系、权力变化和证据" data-i18n="nav_relationships">关系</button>
-          <button data-view="episodes" data-i18n-title="nav_episodes_title" title="浏览剧集表格并进入单集剧本详情" data-i18n="nav_episodes">剧集</button>
-          <button data-view="tasks" data-i18n-title="nav_tasks_title" title="查看 AI 或人工待办" data-i18n="nav_tasks">审批</button>
+          <button class="active" data-view="overview" data-i18n-title="nav_overview_title" title="查看短剧背景、世界规则和项目总览"><span data-i18n="nav_overview">总览</span></button>
+          <button data-view="characters" data-i18n-title="nav_characters_title" title="维护人物库、演员设定、三视图"><span data-i18n="nav_characters">人物</span><span class="nav-count" data-nav-count="characters"></span></button>
+          <button data-view="relationships" data-i18n-title="nav_relationships_title" title="维护人物关系、权力变化和证据"><span data-i18n="nav_relationships">关系</span><span class="nav-count" data-nav-count="relationships"></span></button>
+          <button data-view="episodes" data-i18n-title="nav_episodes_title" title="浏览剧集表格并进入单集剧本详情"><span data-i18n="nav_episodes">剧集</span><span class="nav-count" data-nav-count="episodes"></span></button>
+          <button data-view="tasks" data-i18n-title="nav_tasks_title" title="查看 AI 或人工待办"><span data-i18n="nav_tasks">审批</span><span class="nav-count" data-nav-count="tasks"></span></button>
         </nav>
 
         <div class="settings-dock">
@@ -77,30 +72,48 @@
       </aside>
 
       <main class="main">
-        <button id="mobileSidebarToggle" class="mobile-sidebar-toggle" type="button" aria-controls="appSidebar" data-i18n-aria-label="mobile_open_sidebar" aria-label="打开侧栏" data-i18n-title="mobile_open_sidebar" title="打开侧栏"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
-        <div class="content-title">
-          <div class="project-title" id="projectTitle" data-i18n="project_unnamed">加载中</div>
-          <div class="project-meta" id="projectMeta"></div>
+        <div class="mobile-topbar">
+          <button id="mobileSidebarToggle" class="mobile-sidebar-toggle" type="button" aria-controls="appSidebar" data-i18n-aria-label="mobile_open_sidebar" aria-label="打开侧栏" data-i18n-title="mobile_open_sidebar" title="打开侧栏"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
+          <div id="mobileViewTitle" class="mobile-view-title">Busa Drama</div>
         </div>
 
-        <div id="lockBanner" class="lock-banner hidden" data-i18n="lock_banner">本地项目文件正在被 agent 使用，暂时只读。</div>
+        <div id="lockBanner" class="lock-banner" data-i18n="lock_banner" hidden>本地项目文件正在被 agent 使用，暂时只读。</div>
 
-        <section class="workspace">
-          <div class="list-panel">
-            <div class="panel-head">
-              <div>
-                <h2 id="viewTitle">总览</h2>
-                <p id="viewSubtitle">项目健康度与创作入口</p>
-              </div>
-              <span id="itemCount" class="count-pill">0</span>
+        <!-- Overview is the only page with a hero and a metrics band. -->
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <div id="overviewContext" class="page-hero-context"></div>
+              <h1 id="overviewTitle"></h1>
+              <p id="overviewSummary"></p>
             </div>
-            <div id="list" class="item-list"></div>
-          </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics"></div>
+          <div id="overviewBody" class="overview-body"></div>
+        </section>
 
-          <aside class="detail-panel">
-            <button id="backToList" class="back-to-list" type="button" data-i18n="back_to_list">← 列表</button>
-            <div id="detail" class="detail"></div>
-          </aside>
+        <!-- Record views: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="itemCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <input id="searchInput" class="toolbar-search" type="search" autocomplete="off" data-i18n-placeholder="search_placeholder" placeholder="搜索" />
+              <button id="newItemButton" class="button primary" type="button" data-i18n-title="new_item_title" title="在当前视图中新建一项"><span data-i18n="new_item_button">新建</span></button>
+            </div>
+          </header>
+          <div id="workspace" class="ws-workspace">
+            <div id="list" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar">
+                <button id="backToList" class="button" type="button"></button>
+                <button id="openFullPage" class="button" type="button" data-i18n="open_full_page" hidden>打开完整页面</button>
+              </div>
+              <div id="detail" class="detail"></div>
+            </aside>
+          </div>
         </section>
       </main>
     </div>

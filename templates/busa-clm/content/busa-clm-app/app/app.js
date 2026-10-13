@@ -1,59 +1,91 @@
 import { messages } from "./i18n/messages.js";
 import {
-  RISK_LEVELS,
-  STAGES,
   atRiskObligationsCount,
   buildContract,
   computeMetrics,
-  isObligationDueSoon,
-  obligationsWithContract,
   renewalWatchCount,
 } from "./js/clm-model.js?v=0.1.0";
+import { readContractForm, renderOverview, renderRecordView, renderSettings } from "./js/clm-views.js?v=0.1.0";
 import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
 
+// Where a record opens, per view. Chosen by what people do with the record:
+//   contracts   → page:   a contract is a workplace — its edit form, its
+//                         obligations and approvals — people stay a while.
+//   obligations → drawer: an obligation is a fact scanned among many; you
+//                         read it, mark it done or reopen it, and go back.
+//   renewals    → split:  the notice list is worked top to bottom,
+//                         acknowledging one notice after the next.
+//   approvals   → split:  a review inbox — one decision after the next.
+// A `/<record>` path always opens the full page; `?peek=` drives drawer/split.
+// On a phone every mode is a page (base-ui.css handles that).
+// Declared once, in config.js `ui.detail_modes`.
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+// renewals is a view over the contracts Base; the others are their own Base.
+export const VIEW_BASE = { contracts: "contracts", obligations: "obligations", renewals: "contracts", approvals: "approvals" };
+
 const qs = new URLSearchParams(location.search);
-const state = {
+export const state = {
+  // Prev/Next pager per Base. records.list only exposes a forward keyset
+  // cursor, so pageCursors[key][i] is the cursor that fetches page i+1. Only
+  // neighbouring pages are reachable — one click, one request; there is no
+  // "jump to page N" because reaching it would mean reading every page in
+  // between.
   pageCursors: {},
   currentPage: {},
   pageLoading: {},
   totals: {},
+  attention: {},
   contracts: [],
   obligations: [],
   approvals: [],
+  // Records opened by URL that are not on the loaded page (records.get).
+  extra: { contracts: new Map(), obligations: new Map(), approvals: new Map() },
   metrics: { contracts: 0, renewals_90d: 0, obligations_at_risk: 0, approvals: 0 },
   settings: null,
+  ready: false,
   route: parseRoute(),
-  query: "",
   lang: normalizeLang(qs.get("lang") || localStorage.getItem("busa-clm-language") || "auto"),
   demo: qs.has("demo"),
   busy: false,
+  notice: "",
 };
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-clm.sidebarCollapsed";
 
-const els = {
-  title: document.querySelector("#title"),
-  subtitle: document.querySelector("#subtitle"),
-  content: document.querySelector("#content"),
-  sync: document.querySelector("#sync"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  approvalsCount: document.querySelector("#count-approvals"),
-  renewalsCount: document.querySelector("#count-renewals"),
-  riskCount: document.querySelector("#count-risk"),
-  language: document.querySelector("#language"),
-  newContractBtn: document.querySelector("#newContractBtn"),
+const byId = (id) => document.getElementById(id);
+export const els = {
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  sync: byId("sync"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  viewRefresh: byId("viewRefresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  approvalsCount: byId("count-approvals"),
+  renewalsCount: byId("count-renewals"),
+  riskCount: byId("count-risk"),
+  language: byId("language"),
+  newContractBtn: byId("newContractBtn"),
 };
 
-function isMobileLayout() {
+export function isMobileLayout() {
   return window.matchMedia("(max-width: 720px)").matches;
 }
 
@@ -99,16 +131,16 @@ function normalizeLang(lang) {
   return "auto";
 }
 
-function activeLang() {
+export function activeLang() {
   if (state.lang !== "auto") return state.lang;
   return navigator.languages?.some((lang) => lang.toLowerCase().startsWith("zh")) ? "zh" : "en";
 }
 
-function t(key) {
+export function t(key) {
   return messages[activeLang()]?.[key] || messages.en[key] || key;
 }
 
-function enumLabel(value) {
+export function enumLabel(value) {
   if (!value) return "";
   const key = String(value);
   return messages[activeLang()]?.enum?.[key] || messages.en.enum?.[key] || key.replaceAll("_", " ");
@@ -125,7 +157,6 @@ function applyI18n() {
     option.textContent = languageLabels[option.value] || option.textContent;
   }
   els.search.placeholder = t("search");
-  els.search.setAttribute("aria-label", t("search"));
   els.refresh.textContent = t("refresh");
   els.refresh.title = t("refresh");
   els.sidebarToggle.title = t("toggleSidebar");
@@ -138,34 +169,134 @@ function applyI18n() {
     els.mobileRefresh.title = t("refresh");
     els.mobileRefresh.setAttribute("aria-label", t("refresh"));
   }
-  if (els.newContractBtn) els.newContractBtn.textContent = t("newContract");
+  byId("overviewTitle").textContent = t("overview");
+  byId("settingsTitle").textContent = t("settings");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
-function e(value) {
+export function e(value) {
   return String(value ?? "").replace(
     /[&<>"']/g,
     (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch],
   );
 }
 
-function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] ? decodeURIComponent(parts[1]) : "" };
+export function date(value) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-CN" : "en-US", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  }).format(parsed);
 }
+
+export function datetime(value) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-CN" : "en-US", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(parsed);
+}
+
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&peek=…]`. Search and the peeked record live in the
+// URL so refresh, shared links and Back restore the same list context.
+function parseRoute() {
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+  };
+}
+
+const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) => {
+  const route = view === state.route.view ? state.route : { view, query: "" };
+  return `#/${view}/${encodeURIComponent(id)}${routeQuery({}, route)}`;
+};
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) => {
+  if (DETAIL_MODES[view] === "page") return detailUrl(id, view);
+  const route = view === state.route.view ? state.route : { view, query: "" };
+  return `#/${view}${routeQuery({ peek: id }, route)}`;
+};
+
+let previousRouteWasList = false;
+let routeSerial = 0;
 
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  state.notice = "";
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
   render();
-  if (isMobileLayout()) setMobileSidebarOpen(false);
+  ensureSelectedRecord();
 }
 
-async function loadState() {
+// Replace the current entry without a hashchange: search keystrokes should
+// not each become a Back step.
+function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
+  render();
+}
+
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── Data ───────────────────────────────────────────────────────────────────
+export async function loadState() {
   const provider = await getProvider();
   const data = await provider.getState();
   state.pageCursors = {};
   state.currentPage = {};
   state.pageLoading = {};
   state.totals = data.totals || {};
+  state.attention = data.attention || {};
   for (const [key, nextCursor] of Object.entries(data.pagination || {})) {
     state.pageCursors[key] = [undefined, nextCursor];
     state.currentPage[key] = 1;
@@ -174,274 +305,131 @@ async function loadState() {
   state.contracts = data.contracts || [];
   state.obligations = data.obligations || [];
   state.approvals = data.approvals || [];
+  state.extra = { contracts: new Map(), obligations: new Map(), approvals: new Map() };
   state.metrics = data.metrics || state.metrics;
   state.settings = data;
+  state.ready = true;
   window.dispatchEvent(new CustomEvent("busa-clm:state", { detail: data }));
+  // Do not wipe a half-typed new contract when a refresh lands.
   const isEditingNewContract =
     state.route.view === "contracts" && state.route.id === "new" && document.querySelector("#contractForm");
   if (!isEditingNewContract) render();
+  ensureSelectedRecord();
 }
 
 function recomputeDemoMetrics() {
   state.metrics = computeMetrics(state.contracts, state.obligations, state.approvals, state.settings?.generated_at);
 }
 
-function contracts() {
-  const q = state.query.trim().toLowerCase();
-  const rows = state.contracts || [];
-  if (!q) return rows;
-  return rows.filter((item) =>
-    Object.values(item).some((value) =>
-      String(value || "")
-        .toLowerCase()
-        .includes(q),
-    ),
-  );
+// Loaded page first, then a record fetched on its own for the URL.
+export function recordById(base, id) {
+  if (!id) return null;
+  return (state[base] || []).find((item) => item.id === id) || state.extra[base]?.get(id) || null;
 }
 
-function obligations() {
-  return obligationsWithContract(state.obligations, state.contracts);
+// A record named by the URL but not on the loaded page is read on its own
+// (records.get by its business id) instead of loading more pages to find it.
+async function ensureSelectedRecord() {
+  const { view, selectedId } = state.route;
+  if (!state.ready || !selectedId || selectedId === "new" || !RECORD_VIEWS.includes(view)) return;
+  const base = VIEW_BASE[view];
+  if (recordById(base, selectedId) || state.extra[base].has(selectedId)) return;
+  const provider = await getProvider();
+  if (typeof provider?.getRecord !== "function") {
+    state.extra[base].set(selectedId, null);
+    render();
+    return;
+  }
+  const serial = ++routeSerial;
+  state.extra[base].set(selectedId, undefined);
+  try {
+    state.extra[base].set(selectedId, (await provider.getRecord(base, selectedId)) || null);
+  } catch {
+    state.extra[base].set(selectedId, null);
+  }
+  if (serial === routeSerial) render();
 }
 
-function approvalsNeedingReview() {
-  return (state.metrics?.approvals ?? 0) || 0;
+// The configured page size for a paginated Base, straight from config.js.
+function pageSize(key) {
+  return appConfig.bases.find((entry) => entry.key === key)?.readLimit || 50;
 }
 
-function badge(value) {
-  return `<span class="badge ${e(value)}">${e(enumLabel(value))}</span>`;
+export function pageCount(key) {
+  const total = state.totals?.[key];
+  return total == null ? null : Math.max(1, Math.ceil(total / pageSize(key)));
 }
 
-function date(value) {
-  if (!value) return "";
-  return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-CN" : "en-US", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-  }).format(new Date(value));
+// True while a Base holds only part of its rows — more pages exist, or the user
+// is on a later page. Anything counted from loaded rows must say so.
+export function isPartial(key) {
+  const cursors = state.pageCursors[key];
+  if (!cursors) return false;
+  const current = state.currentPage[key] || 1;
+  return current > 1 || Boolean(cursors[current]);
 }
 
-function datetime(value) {
-  if (!value) return "";
-  return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-CN" : "en-US", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
+// Replaces the displayed page for `key` with a NEIGHBOURING page: exactly one
+// request per click, using a cursor already learned. Never appends.
+async function goToPage(key, targetPage) {
+  if (state.pageLoading[key]) return;
+  const cursors = state.pageCursors[key];
+  if (!cursors) return;
+  const current = state.currentPage[key] || 1;
+  if (Math.abs(targetPage - current) !== 1 || targetPage < 1) return;
+  if (targetPage > current && !cursors[current]) return; // no next page
+  state.pageLoading[key] = true;
+  render();
+  try {
+    const provider = await getProvider();
+    if (typeof provider.fetchPage !== "function") return;
+    // fetchPage applies the same per-row normalizer page 1 went through.
+    const { rows, nextCursor } = await provider.fetchPage(key, cursors[targetPage - 1]);
+    state[key] = rows;
+    cursors[targetPage] = nextCursor;
+    state.currentPage[key] = targetPage;
+  } catch (error) {
+    state.notice = error instanceof Error ? error.message : String(error);
+  } finally {
+    state.pageLoading[key] = false;
+    render();
+  }
 }
 
-function metrics() {
-  const m = state.metrics;
-  return `<div class="metrics">
-    <div class="metric"><span>${t("contracts")}</span><strong>${m.contracts}</strong></div>
-    <div class="metric"><span>${t("renewals")}</span><strong>${m.renewals_90d}</strong></div>
-    <div class="metric"><span>${t("atRisk")}</span><strong>${m.obligations_at_risk}</strong></div>
-    <div class="metric"><span>${t("approvals")}</span><strong>${m.approvals}</strong></div>
-  </div>`;
+// ── Sidebar attention numbers ──────────────────────────────────────────────
+// Exact server counts when the provider has them (records.count); otherwise
+// the loaded rows, marked with "+" when more pages exist.
+function attentionValue(key, loaded, base) {
+  const exact = state.attention?.[key];
+  if (exact != null && !state.demo) return String(exact);
+  return `${loaded}${isPartial(base) ? "+" : ""}`;
 }
 
-function compactItem({ href, title, meta, status }) {
-  return `<a class="item-row" href="${href}"><span><strong>${e(title)}</strong>${meta ? `<small>${e(meta)}</small>` : ""}</span>${status ? badge(status) : ""}</a>`;
+export function approvalsNeedingReview() {
+  return attentionValue("approvals", state.metrics?.approvals ?? 0, "approvals");
 }
 
-function renderOverview() {
-  const stageRows = STAGES.map((stage) => {
-    const items = state.contracts.filter((item) => item.stage === stage);
-    if (!items.length) return "";
-    return `<div class="pipeline-row"><span>${badge(stage)}</span><strong>${items.length}</strong><span>${items.map((item) => e(item.name)).join(", ")}</span></div>`;
-  }).join("");
-  const renewalRows = state.contracts
-    .filter((item) => item.notice_deadline)
-    .map((item) =>
-      compactItem({
-        href: `#/contracts/${item.id}`,
-        title: item.name,
-        meta: `${t("notice")}: ${date(item.notice_deadline)}`,
-        status: item.stage,
-      }),
-    )
-    .join("");
-  const riskRows = obligations()
-    .filter((item) => item.status === "at_risk" || item.status === "blocked")
-    .map((item) =>
-      compactItem({
-        href: `#/contracts/${item.contract_id}`,
-        title: item.title,
-        meta: `${item.contract?.name || ""} · ${date(item.due_date)}`,
-        status: item.status,
-      }),
-    )
-    .join("");
-  els.content.innerHTML = `${metrics()}<div class="overview-grid"><section class="panel wide"><h2>${t("lifecycle")}</h2><div class="pipeline">${stageRows}</div></section><section class="panel"><h2>${t("upcoming")}</h2><div class="stack-list">${renewalRows || `<div class="empty-inline">${t("empty")}</div>`}</div></section><section class="panel"><h2>${t("atRisk")}</h2><div class="stack-list">${riskRows || `<div class="empty-inline">${t("empty")}</div>`}</div></section></div>`;
-}
-
-function contractTable(rows) {
-  return `<div class="table-wrap"><table><thead><tr><th>${t("contract")}</th><th>${t("counterparty")}</th><th>${t("type")}</th><th>${t("stage")}</th><th>${t("owner")}</th><th>${t("value")}</th><th>${t("notice")}</th></tr></thead><tbody>${rows
-    .map(
-      (item) =>
-        `<tr><td><a href="#/contracts/${item.id}"><strong>${e(item.name)}</strong></a><div class="muted">${e(item.next_action)}</div></td><td>${e(item.counterparty)}</td><td>${e(item.type)}</td><td>${badge(item.stage)}</td><td>${e(item.owner)}</td><td>${e(item.value)}</td><td>${date(item.notice_deadline)}</td></tr>`,
-    )
-    .join("")}</tbody></table></div>`;
-}
-
-function renderContracts() {
-  if (state.route.id === "new") return renderNewContract();
-  if (state.route.id) return renderContractDetail(state.route.id);
-  els.content.innerHTML = `${contractTable(contracts())}
-    ${pagerControl("contracts")}`;
-}
-
-function contractFormHtml(item = {}) {
-  const disabled = state.busy ? "disabled" : "";
-  return `
-    <form id="contractForm" class="contract-form">
-      <label>${t("name")}<input name="name" required value="${e(item.name || "")}" ${disabled}></label>
-      <label>${t("counterparty")}<input name="counterparty" value="${e(item.counterparty || "")}" ${disabled}></label>
-      <label>${t("type")}<input name="type" value="${e(item.type || "")}" ${disabled}></label>
-      <label>${t("stage")}<select name="stage" ${disabled}>${STAGES.map((stage) => `<option value="${stage}" ${item.stage === stage ? "selected" : ""}>${e(enumLabel(stage))}</option>`).join("")}</select></label>
-      <label>${t("owner")}<input name="owner" value="${e(item.owner || "")}" ${disabled}></label>
-      <label>${t("businessOwner")}<input name="business_owner" value="${e(item.business_owner || "")}" ${disabled}></label>
-      <label>${t("value")}<input name="value" value="${e(item.value || "")}" ${disabled}></label>
-      <label>${t("start")}<input name="start_date" type="date" value="${e(item.start_date || "")}" ${disabled}></label>
-      <label>${t("end")}<input name="end_date" type="date" value="${e(item.end_date || "")}" ${disabled}></label>
-      <label>${t("renewal")}<input name="renewal_date" type="date" value="${e(item.renewal_date || "")}" ${disabled}></label>
-      <label>${t("notice")}<input name="notice_deadline" type="date" value="${e(item.notice_deadline || "")}" ${disabled}></label>
-      <label>${t("next")}<textarea name="next_action" rows="3" ${disabled}>${e(item.next_action || "")}</textarea></label>
-      <label>${t("riskLabel")}<select name="risk" ${disabled}>${RISK_LEVELS.map((risk) => `<option value="${risk}" ${item.risk === risk ? "selected" : ""}>${e(enumLabel(risk))}</option>`).join("")}</select></label>
-      <div class="form-actions">
-        <button type="submit" ${disabled}>${item.id ? t("update") : t("save")}</button>
-      </div>
-    </form>
-  `;
-}
-
-function readContractForm(form) {
-  const data = new FormData(form);
-  return {
-    name: String(data.get("name") || ""),
-    counterparty: String(data.get("counterparty") || ""),
-    type: String(data.get("type") || ""),
-    stage: String(data.get("stage") || "intake"),
-    owner: String(data.get("owner") || ""),
-    business_owner: String(data.get("business_owner") || ""),
-    value: String(data.get("value") || ""),
-    start_date: String(data.get("start_date") || ""),
-    end_date: String(data.get("end_date") || ""),
-    renewal_date: String(data.get("renewal_date") || ""),
-    notice_deadline: String(data.get("notice_deadline") || ""),
-    next_action: String(data.get("next_action") || ""),
-    risk: String(data.get("risk") || "low"),
-  };
-}
-
-function renderNewContract() {
-  els.title.textContent = t("newContract");
-  els.subtitle.textContent = "";
-  els.content.innerHTML = `<div class="panel">${contractFormHtml()}</div>`;
-  document.querySelector("#contractForm")?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const contract = await submitCreateContract(readContractForm(event.target));
-    if (contract) location.hash = `#/contracts/${contract.id}`;
+function renderShell() {
+  applyI18n();
+  const approvals = approvalsNeedingReview();
+  const renewals = attentionValue("renewals", renewalWatchCount(state.contracts), "contracts");
+  const risks = attentionValue("risks", atRiskObligationsCount(state.obligations), "obligations");
+  // Where the data comes from — the counts already sit in the attention block.
+  els.sync.textContent = !state.ready ? t("loading") : state.settings?.demo ? t("demoData") : t("liveData");
+  if (els.approvalsCount) els.approvalsCount.textContent = approvals;
+  if (els.renewalsCount) els.renewalsCount.textContent = renewals;
+  if (els.riskCount) els.riskCount.textContent = risks;
+  if (els.mobileViewTitle) els.mobileViewTitle.textContent = viewLabel(state.route.view);
+  if (els.mobileViewMeta) {
+    els.mobileViewMeta.textContent =
+      approvals !== "0" ? `${approvals} ${t("needApproval")}` : `${risks} ${t("riskCount")}`;
+  }
+  document.querySelectorAll("[data-route]").forEach((link) => {
+    link.classList.toggle("active", link.dataset.route === state.route.view);
   });
 }
 
-function renderContractDetail(id) {
-  const item = state.contracts.find((contract) => contract.id === id);
-  if (!item) return renderContracts();
-  const ownObligations = obligations().filter((row) => row.contract_id === id);
-  els.title.textContent = item.name;
-  els.subtitle.textContent = `${item.counterparty} · ${enumLabel(item.stage)}`;
-  if (els.mobileViewTitle) els.mobileViewTitle.textContent = item.name;
-  els.content.innerHTML = `
-    <section class="detail">
-      <div class="detail-main">
-        <a class="back-link" href="#/contracts">← ${t("contracts")}</a>
-        <section class="panel"><h2>${t("next")}</h2><p>${e(item.next_action)}</p></section>
-        ${contractTable([item])}
-        <section class="panel"><h2>${t("obligations")}</h2>${obligationTable(ownObligations)}</section>
-      </div>
-      <aside class="detail-side">
-        <h2>${t("editContract")}</h2>
-        ${contractFormHtml(item)}
-      </aside>
-    </section>
-  `;
-  document.querySelector("#contractForm")?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    submitUpdateContract(id, readContractForm(event.target));
-  });
-  bindObligationActions(els.content);
-}
-
-function obligationTable(rows, { actionable = true } = {}) {
-  return `<div class="table-wrap"><table><thead><tr><th>${t("obligation")}</th><th>${t("contract")}</th><th>${t("owner")}</th><th>${t("due")}</th><th>${t("status")}</th><th>${t("evidence")}</th>${actionable ? "<th></th>" : ""}</tr></thead><tbody>${rows
-    .map((item) => {
-      const dueSoon = isObligationDueSoon(item, state.settings?.generated_at);
-      const action =
-        item.status === "done"
-          ? `<button type="button" class="ghost" data-obligation-action="reopen" data-id="${e(item.id)}" ${state.busy ? "disabled" : ""}>${t("reopen")}</button>`
-          : `<button type="button" data-obligation-action="done" data-id="${e(item.id)}" ${state.busy ? "disabled" : ""}>${t("markDone")}</button>`;
-      return `<tr><td><strong>${e(item.title)}</strong></td><td>${e(item.contract?.name || "")}</td><td>${e(item.owner)}</td><td class="${dueSoon ? "due-soon" : ""}">${date(item.due_date)}</td><td>${badge(item.status)}</td><td>${e(item.evidence)}</td>${actionable ? `<td>${action}</td>` : ""}</tr>`;
-    })
-    .join("")}</tbody></table></div>`;
-}
-
-function bindObligationActions(container) {
-  container.querySelectorAll("[data-obligation-action]").forEach((button) => {
-    button.addEventListener("click", () => {
-      submitMarkObligationDone(button.dataset.id, button.dataset.obligationAction === "done");
-    });
-  });
-}
-
-function renderObligations() {
-  els.content.innerHTML = `${obligationTable(obligations())}
-    ${pagerControl("obligations")}`;
-  bindObligationActions(els.content);
-}
-
-function renewalTable(rows) {
-  return `<div class="table-wrap"><table><thead><tr><th>${t("contract")}</th><th>${t("counterparty")}</th><th>${t("stage")}</th><th>${t("renewal")}</th><th>${t("notice")}</th><th></th></tr></thead><tbody>${rows
-    .map((item) => {
-      const acknowledged = Boolean(item.notice_acknowledged_at);
-      const action = !item.notice_deadline
-        ? ""
-        : acknowledged
-          ? `<span class="badge active">${t("acknowledged")}</span>`
-          : `<button type="button" data-acknowledge-id="${e(item.id)}" ${state.busy ? "disabled" : ""}>${t("acknowledge")}</button>`;
-      return `<tr><td><a href="#/contracts/${item.id}"><strong>${e(item.name)}</strong></a></td><td>${e(item.counterparty)}</td><td>${badge(item.stage)}</td><td>${date(item.renewal_date)}</td><td>${date(item.notice_deadline)}</td><td>${action}</td></tr>`;
-    })
-    .join("")}</tbody></table></div>`;
-}
-
-function renderRenewals() {
-  const rows = state.contracts.filter((item) => item.renewal_date || item.notice_deadline);
-  els.content.innerHTML = `${renewalTable(rows)}
-    ${pagerControl("obligations")}`;
-  els.content.querySelectorAll("[data-acknowledge-id]").forEach((button) => {
-    button.addEventListener("click", () => submitAcknowledgeRenewal(button.dataset.acknowledgeId));
-  });
-}
-
-function renderApprovals() {
-  els.content.innerHTML = `${`<div class="card-grid">${state.approvals
-    .map(
-      (item) =>
-        `<article class="card panel"><h2>${e(item.title)}</h2><p class="muted">${e(item.summary)}</p><p>${badge(item.status)}</p><div class="actions"><button type="button" data-action="approve" data-id="${e(item.id)}" title="${t("approve")}" ${state.busy ? "disabled" : ""}>${t("approve")}</button><button type="button" data-action="changes" data-id="${e(item.id)}" title="${t("changes")}" ${state.busy ? "disabled" : ""}>${t("changes")}</button><button type="button" data-action="block" data-id="${e(item.id)}" title="${t("block")}" ${state.busy ? "disabled" : ""}>${t("block")}</button></div></article>`,
-    )
-    .join("")}</div>`}
-    ${pagerControl("approvals")}`;
-  els.content.querySelectorAll("button[data-action]").forEach((button) => {
-    button.addEventListener("click", () => submitApprovalDecision(button.dataset.id, button.dataset.action));
-  });
-}
-
-function renderSettings() {
-  els.content.innerHTML = `<section class="settings panel"><h2>${t("profile")}</h2><dl><dt>${t("appName")}</dt><dd>Busa CLM</dd><dt>${t("source")}</dt><dd>${e(state.settings?.profile?.company || "")}</dd><dt>${t("dataProvider")}</dt><dd>${e(state.settings?.data_provider || "")}</dd><dt>${t("status")}</dt><dd>${state.settings?.demo ? t("demoMode") : t("localOnly")}</dd></dl><p>${e(state.settings?.profile?.boundary || "")}</p><p class="muted">${t("generated")} ${datetime(state.settings?.generated_at)}</p></section>`;
-}
-
-function viewLabel(view) {
+export function viewLabel(view) {
   if (view === "contracts") return t("contracts");
   if (view === "obligations") return t("obligations");
   if (view === "renewals") return t("renewals");
@@ -450,55 +438,59 @@ function viewLabel(view) {
   return t("overview");
 }
 
-function renderShell() {
-  applyI18n();
-  const approvals = approvalsNeedingReview();
-  const renewals = renewalWatchCount(state.contracts);
-  const risks = atRiskObligationsCount(state.obligations);
-  els.sync.textContent = `${approvals} ${t("approvals")}`;
-  if (els.approvalsCount) els.approvalsCount.textContent = approvals;
-  if (els.renewalsCount) els.renewalsCount.textContent = renewals;
-  if (els.riskCount) els.riskCount.textContent = risks;
-  if (els.mobileViewTitle) els.mobileViewTitle.textContent = viewLabel(state.route.view);
-  if (els.mobileViewMeta) {
-    els.mobileViewMeta.textContent = approvals ? `${approvals} ${t("needApproval")}` : `${risks} ${t("riskCount")}`;
-  }
-  document.querySelectorAll("[data-route]").forEach((link) => {
-    link.classList.toggle("active", link.dataset.route === state.route.view);
-  });
-}
-
-function render() {
-  const view = state.route.view;
+export function render() {
   renderShell();
-  if (view !== "contracts" || !state.route.id || state.route.id === "new") {
-    els.title.textContent = viewLabel(view);
-    els.subtitle.textContent = `${state.settings?.profile?.company || ""} · ${t("generated")} ${datetime(state.settings?.generated_at)}`;
-  }
-  if (view === "contracts") renderContracts();
-  else if (view === "obligations") renderObligations();
-  else if (view === "renewals") renderRenewals();
-  else if (view === "approvals") renderApprovals();
+  const { view, selectedId, presentation } = state.route;
+  const ready = state.ready;
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
   else if (view === "settings") renderSettings();
   else renderOverview();
 }
 
 // ---- Direct writes: create/edit a contract, mark an obligation done,
 // acknowledge a renewal notice, and record an approval decision -- applied
-// straight through the active provider (Busabase or demo), the same way
-// kelly-revshare-simulator's scenario create/edit/decision writes work. This
-// is a direct-manipulation control panel, not a review/approval queue: there
-// is no separate decisions.json-equivalent bucket (the retired
-// app/server/store.ts's decisions.json is replaced by direct field writes on
-// each record). Demo mode never reaches Busabase; it mutates the in-memory
-// snapshot already rendered so ?demo=1 stays fully interactive for
-// screenshots/docs. ----
+// straight through the active provider (Busabase or demo). This is a
+// direct-manipulation control panel, not a review/approval queue: each
+// decision is a field write on the record itself. Demo mode never reaches
+// Busabase; it mutates the in-memory snapshot already rendered so ?demo=1
+// stays fully interactive for screenshots/docs. ----
 
 function showError(error) {
-  els.content.insertAdjacentHTML("afterbegin", `<div class="empty-inline">${e(error?.message || error)}</div>`);
+  state.notice = error instanceof Error ? error.message : String(error);
+  render();
 }
 
-async function submitCreateContract(input) {
+async function runWrite(write) {
+  state.busy = true;
+  state.notice = "";
+  render();
+  try {
+    const provider = await getProvider();
+    const result = await write(provider);
+    await loadState();
+    return result;
+  } catch (error) {
+    showError(error);
+    return null;
+  } finally {
+    state.busy = false;
+    render();
+  }
+}
+
+export async function submitCreateContract(input) {
   if (state.demo) {
     const contract = buildContract(input);
     state.contracts.push(contract);
@@ -506,45 +498,24 @@ async function submitCreateContract(input) {
     render();
     return contract;
   }
-  state.busy = true;
-  render();
-  try {
-    const provider = await getProvider();
-    const contract = await provider.createContract(input);
-    await loadState();
-    return contract;
-  } catch (error) {
-    showError(error);
-    return null;
-  } finally {
-    state.busy = false;
-  }
+  return runWrite((provider) => provider.createContract(input));
 }
 
-async function submitUpdateContract(id, input) {
+export async function submitUpdateContract(id, input) {
   if (state.demo) {
     const index = state.contracts.findIndex((item) => item.id === id);
     if (index !== -1) {
       const existing = state.contracts[index];
       state.contracts[index] = buildContract({ ...existing, ...input, id, created_at: existing.created_at });
+      recomputeDemoMetrics();
     }
     render();
     return;
   }
-  state.busy = true;
-  render();
-  try {
-    const provider = await getProvider();
-    await provider.updateContract(id, input);
-    await loadState();
-  } catch (error) {
-    showError(error);
-  } finally {
-    state.busy = false;
-  }
+  await runWrite((provider) => provider.updateContract(id, input));
 }
 
-async function submitMarkObligationDone(id, done) {
+export async function submitMarkObligationDone(id, done) {
   if (state.demo) {
     const index = state.obligations.findIndex((item) => item.id === id);
     if (index !== -1) {
@@ -558,20 +529,10 @@ async function submitMarkObligationDone(id, done) {
     render();
     return;
   }
-  state.busy = true;
-  render();
-  try {
-    const provider = await getProvider();
-    await provider.markObligationDone(id, done);
-    await loadState();
-  } catch (error) {
-    showError(error);
-  } finally {
-    state.busy = false;
-  }
+  await runWrite((provider) => provider.markObligationDone(id, done));
 }
 
-async function submitAcknowledgeRenewal(contractId) {
+export async function submitAcknowledgeRenewal(contractId) {
   if (state.demo) {
     const index = state.contracts.findIndex((item) => item.id === contractId);
     if (index !== -1) {
@@ -580,20 +541,10 @@ async function submitAcknowledgeRenewal(contractId) {
     render();
     return;
   }
-  state.busy = true;
-  render();
-  try {
-    const provider = await getProvider();
-    await provider.acknowledgeRenewal(contractId);
-    await loadState();
-  } catch (error) {
-    showError(error);
-  } finally {
-    state.busy = false;
-  }
+  await runWrite((provider) => provider.acknowledgeRenewal(contractId));
 }
 
-async function submitApprovalDecision(id, action, note = "") {
+export async function submitApprovalDecision(id, action, note = "") {
   if (state.demo) {
     const index = state.approvals.findIndex((item) => item.id === id);
     if (index !== -1) {
@@ -609,41 +560,93 @@ async function submitApprovalDecision(id, action, note = "") {
     render();
     return;
   }
-  state.busy = true;
-  render();
-  try {
-    const provider = await getProvider();
-    await provider.saveApprovalDecision(id, action, note);
-    await loadState();
-  } catch (error) {
-    showError(error);
-  } finally {
-    state.busy = false;
-  }
+  await runWrite((provider) => provider.saveApprovalDecision(id, action, note));
 }
 
+// ── Events ─────────────────────────────────────────────────────────────────
+els.listPanel.addEventListener("click", (event) => {
+  const pager = event.target.closest("[data-goto-page]");
+  if (pager) {
+    const [key, page] = pager.dataset.gotoPage.split(":");
+    goToPage(key, Number(page));
+    return;
+  }
+  if (event.target.closest("a, button, input, select, textarea")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+els.detailBack.addEventListener("click", closeDetail);
+// Row actions and detail actions, wherever they render (list or detail).
+els.viewPage.addEventListener("click", (event) => {
+  const obligation = event.target.closest("[data-obligation-action]");
+  if (obligation) {
+    submitMarkObligationDone(obligation.dataset.id, obligation.dataset.obligationAction === "done");
+    return;
+  }
+  const acknowledge = event.target.closest("[data-acknowledge-id]");
+  if (acknowledge) {
+    submitAcknowledgeRenewal(acknowledge.dataset.acknowledgeId);
+    return;
+  }
+  const decision = event.target.closest("[data-decision]");
+  if (decision) {
+    const note = decision.closest("[data-approval]")?.querySelector("[data-decision-note]")?.value || "";
+    submitApprovalDecision(decision.dataset.id, decision.dataset.decision, note);
+    return;
+  }
+  // An obligation row on the contract page opens that obligation.
+  if (event.target.closest("a, button, input, select, textarea")) return;
+  const embedded = event.target.closest("#detailBody .obligations-table tr[data-id]");
+  if (embedded) location.hash = recordUrl(embedded.dataset.id, "obligations");
+});
+els.detailBody.addEventListener("submit", async (event) => {
+  const form = event.target.closest("#contractForm");
+  if (!form) return;
+  event.preventDefault();
+  const input = readContractForm(form);
+  const id = form.dataset.contractId;
+  if (id) {
+    await submitUpdateContract(id, input);
+    return;
+  }
+  const contract = await submitCreateContract(input);
+  if (contract?.id) location.hash = detailUrl(contract.id, "contracts");
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  // Escape inside a field only leaves the field; a second Escape closes.
+  if (event.target.closest?.("textarea, input, select")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
+  replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`);
 });
-els.refresh.addEventListener("click", () => loadState());
-els.mobileRefresh?.addEventListener("click", () => loadState());
+els.refresh.addEventListener("click", () => loadState().catch(showError));
+els.viewRefresh?.addEventListener("click", () => loadState().catch(showError));
+els.mobileRefresh?.addEventListener("click", () => loadState().catch(showError));
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", toggleSidebar);
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
-els.newContractBtn?.addEventListener("click", () => {
-  location.hash = "#/contracts/new";
-});
 els.language.value = state.lang;
 els.language.addEventListener("change", () => {
   state.lang = normalizeLang(els.language.value);
   localStorage.setItem("busa-clm-language", state.lang);
   render();
 });
-
-syncResponsiveShell();
 
 async function boot() {
   const ready = await passConnectGate({ onReady: boot });
@@ -655,117 +658,14 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty-inline">${e(error.message)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
-const PAGE_BINDINGS = {
-  contracts: { key: "contracts", path: "contracts" },
-  obligations: { key: "obligations", path: "obligations" },
-  renewals: { key: "obligations", path: "obligations" },
-  approvals: { key: "approvals", path: "approvals" },
-};
-
-function pageSize(key) {
-  return appConfig.bases.find((entry) => entry.key === key)?.readLimit || 50;
-}
-
-function pageCount(key) {
-  const total = state.totals?.[key];
-  return total == null ? null : Math.max(1, Math.ceil(total / pageSize(key)));
-}
-
-function replacePageRows(path, rows) {
-  const parts = path.split(".");
-  let target = state;
-  for (const part of parts.slice(0, -1)) {
-    target = target?.[part];
-    if (!target) return;
-  }
-  target[parts.at(-1)] = rows;
-}
-
-async function goToPage(key, targetPage) {
-  if (state.pageLoading[key] || !state.pageCursors[key]) return;
-  const binding = Object.values(PAGE_BINDINGS).find((entry) => entry.key === key);
-  if (!binding) return;
-  const totalPages = pageCount(key);
-  const page = totalPages == null ? Math.max(1, targetPage) : Math.min(Math.max(1, targetPage), totalPages);
-  if (page === state.currentPage[key]) return;
-  state.pageLoading[key] = true;
-  if (typeof render === "function") render();
-  else route();
-  try {
-    const provider = await getProvider();
-    let result;
-    for (let next = state.pageCursors[key].length; next <= page; next += 1) {
-      const cursor = state.pageCursors[key][next - 1];
-      if (next > 1 && !cursor) return;
-      result = await provider.fetchPage(key, cursor);
-      state.pageCursors[key][next] = result.nextCursor;
-    }
-    if (!result || state.pageCursors[key].length > page + 1) {
-      result = await provider.fetchPage(key, state.pageCursors[key][page - 1]);
-      state.pageCursors[key][page] = result.nextCursor;
-    }
-    replacePageRows(binding.path, result.rows);
-    state.currentPage[key] = page;
-  } finally {
-    state.pageLoading[key] = false;
-    if (typeof render === "function") render();
-    else route();
-  }
-}
-
-function pagerMessage(key, fallback) {
-  return typeof t === "function" ? t(key) : fallback;
-}
-
-export function recordCountLabel(key, loadedCount, filtered = false) {
-  if (filtered) return loadedCount;
-  const total = state.totals?.[key];
-  if (total != null) return total;
-  const current = state.currentPage?.[key] || 1;
-  return `${loadedCount}${state.pageCursors?.[key]?.[current] ? "+" : ""}`;
-}
-
-export function pagerControl(key) {
-  if (!state.pageCursors[key]) return "";
-  const total = pageCount(key);
-  const current = state.currentPage[key] || 1;
-  const loading = Boolean(state.pageLoading[key]);
-  const hasNext = total == null ? Boolean(state.pageCursors[key][current]) : current < total;
-  if ((total === 1 || total == null) && current === 1 && !hasNext) return "";
-  const pages =
-    total == null
-      ? []
-      : total <= 7
-        ? Array.from({ length: total }, (_, index) => index + 1)
-        : [...new Set([1, total, current - 1, current, current + 1].filter((page) => page >= 1 && page <= total))].sort(
-            (a, b) => a - b,
-          );
-  const items = [];
-  let previous = 0;
-  for (const page of pages) {
-    if (previous && page - previous > 1) items.push('<span class="pager-ellipsis">…</span>');
-    items.push(
-      `<button type="button" class="pager-page ${page === current ? "active" : ""}" data-goto-page="${key}:${page}" ${loading || page === current ? "disabled" : ""}>${page}</button>`,
-    );
-    previous = page;
-  }
-  return `<nav class="pager" aria-label="${pagerMessage("pagination", "Pagination")}">
-    <button type="button" class="pager-nav" data-goto-page="${key}:${current - 1}" ${loading || current <= 1 ? "disabled" : ""}>${pagerMessage("prevPage", "Prev")}</button>
-    ${items.join("")}
-    <button type="button" class="pager-nav" data-goto-page="${key}:${current + 1}" ${loading || !hasNext ? "disabled" : ""}>${pagerMessage("nextPage", "Next")}</button>
-    ${total == null ? "" : `<span class="pager-summary">${pagerMessage("pageOf", "Page {current} of {total}").replace("{current}", current).replace("{total}", total)}</span>`}
-  </nav>`;
-}
-
-document.querySelector("#content")?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-goto-page]");
-  if (!button) return;
-  const [key, page] = button.dataset.gotoPage.split(":");
-  goToPage(key, Number(page));
-});
-
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+syncResponsiveShell();
+render();
 boot();

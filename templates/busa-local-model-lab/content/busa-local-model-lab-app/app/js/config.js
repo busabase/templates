@@ -6,6 +6,16 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Where a record opens, per Base (see app.js for why each was chosen). The
+  // settings Base has no record view: it is read into Help & Settings.
+  ui: {
+    detail_modes: {
+      "training-examples": "split",
+      "training-runs": "drawer",
+      evaluations: "drawer",
+      "model-registry": "drawer",
+    },
+  },
   folder: {
     name: "Busa Local Model Lab",
     slug: "busa-local-model-lab",
@@ -127,7 +137,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

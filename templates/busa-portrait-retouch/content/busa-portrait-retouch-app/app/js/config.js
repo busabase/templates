@@ -6,6 +6,14 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Where a candidate opens, per view (busabase-app-creator "Choose The Detail
+  // Mode"). All four views read the one Candidates Base, filtered by status.
+  //   queue    → split:  the review queue is worked top to bottom, one
+  //                      comparison after the next, so the queue stays beside it.
+  //   approved, done, blocked → drawer: finished verdicts are scanned, one is
+  //                      glanced at (or re-decided) and the list comes back.
+  // Any mode can open the full page (`#/<view>/<id>`); phones always use it.
+  ui: { detail_modes: { queue: "split", approved: "drawer", done: "drawer", blocked: "drawer" } },
   folder: {
     name: "Busa Portrait Retouch",
     description: "Natural portrait retouch jobs, reviewable candidates, and non-secret workflow settings",
@@ -82,7 +90,15 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "assets.get"],
+    readProcedures: [
+      "nodes.list",
+      "nodes.get",
+      "bases.get",
+      "records.list",
+      "records.get",
+      "records.count",
+      "assets.get",
+    ],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

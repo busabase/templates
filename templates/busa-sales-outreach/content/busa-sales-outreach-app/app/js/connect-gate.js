@@ -15,7 +15,7 @@ const isDemo = () => new URLSearchParams(window.location.search).has("demo");
 
 const gate = createAirAppConnectGate({
   appName: "Busa Sales Outreach",
-  demoHref: "?demo=1#/to-send",
+  demoHref: "?demo=1#/overview",
   shouldGate: async () => !isDemo() && shouldUseLocalGateway(await initRuntime()),
   onProvision: async () => (await getProvider()).provisionResources(),
 });

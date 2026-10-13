@@ -126,8 +126,18 @@ export const appConfig = {
       ],
     },
   ],
+  // Where a record opens, per record view (busabase-app-creator "Choose The
+  // Detail Mode"). project/settings are single-row Bases edited on Overview,
+  // Song and Settings, so they have no list and no detail mode.
+  //   cast       → drawer: a handful of characters you open, fix a visual note
+  //                or request a reference card for, and close again.
+  //   storyboard → split:  shots are worked in order, one after the next
+  //                (describe → image → video), so the queue stays beside the shot.
+  ui: {
+    detail_modes: { cast: "drawer", storyboard: "split" },
+  },
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

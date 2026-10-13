@@ -1,33 +1,22 @@
 import { messages } from "./i18n/messages.js";
 import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
-import { createPagination } from "./js/pagination.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
-import {
-  renderBoard,
-  renderBoardDetail,
-  renderDispatch,
-  renderIntake,
-  renderIntakeDetail,
-  renderSettings,
-  submitDecision,
-} from "./js/ticket-views.js";
+import { renderOverview, renderRecordView, renderSettings, submitDecision } from "./js/ticket-views.js";
 import { computeMetrics } from "./js/tickets-model.js?v=0.1.0";
 
-export const state = {
-  snapshot: null,
-  settings: null,
-  route: parseRoute(),
-  query: "",
-  dispatchFilter: "all",
-  lang: normalizeLang(
-    new URLSearchParams(location.search).get("lang") || localStorage.getItem("busa-tickets-language") || "auto",
-  ),
-  demo: new URLSearchParams(location.search).get("demo") || "",
-  demoDecisions: {},
-};
+// Where a record opens, per view — declared once in config.js `ui.detail_modes`:
+//   intake   → drawer: a raw complaint is a fact scanned many of, classified
+//              with a couple of fields, then returned to the stream.
+//   dispatch → split:  the review queue is worked top to bottom, one
+//              proposal after the next, so the queue stays beside the card.
+//   board    → page:   a ticket is a workplace of its own — full history,
+//              resolution notes — people stay on it for minutes.
+// A `/record` path always opens the full page; `?peek=` drives drawer/split.
+// On a phone every mode is a page (base-ui.css handles that).
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
 
-const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-tickets.sidebarCollapsed";
 export const BOARD_STATUSES = ["open", "assigned", "in_progress", "waiting", "resolved"];
 export const DISPATCH_STATUSES = ["needs_review", "changes_requested", "approved", "done", "blocked"];
 export const CATEGORIES = [
@@ -44,43 +33,67 @@ export const CATEGORIES = [
 ];
 export const URGENCIES = ["urgent", "high", "normal", "low"];
 
-export const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  reviewCount: document.querySelector("#count-review"),
-  unclassifiedCount: document.querySelector("#count-unclassified"),
-  slaCount: document.querySelector("#count-sla"),
-  language: document.querySelector("#language"),
+// A route view's Base key (matches appConfig.bases[].key and the pagination/
+// totals keys the provider returns) and the snapshot array it reads.
+const VIEW_BASE_KEY = { intake: "intake", dispatch: "proposals", board: "tickets" };
+const VIEW_SNAPSHOT_KEY = { intake: "intake", dispatch: "dispatch_proposals", board: "tickets" };
+const VIEW_STATUS_VALUES = { dispatch: DISPATCH_STATUSES, board: BOARD_STATUSES };
+
+export const state = {
+  snapshot: null,
+  settings: null,
+  provider: null,
+  // Prev/Next pager for the three browsed Bases (intake, proposals, tickets).
+  // records.list only exposes a forward keyset cursor, so pageCursors[key][i]
+  // is the cursor that fetches page i+1. Only neighbouring pages are
+  // reachable — one click, one request; there is no "jump to page N" because
+  // reaching it would mean reading every page in between (see
+  // runtime-and-sdk.md's "A full scan in disguise").
+  pageCursors: {},
+  currentPage: {},
+  pageLoading: {},
+  // Records opened by URL that are not on the loaded page (records.get).
+  extra: { intake: new Map(), dispatch: new Map(), board: new Map() },
+  route: parseRoute(),
+  query: "",
+  lang: normalizeLang(
+    new URLSearchParams(location.search).get("lang") || localStorage.getItem("busa-tickets-language") || "auto",
+  ),
+  demo: new URLSearchParams(location.search).get("demo") || "",
+  demoDecisions: {},
+  notice: "",
 };
 
-const PAGINATED_KEYS = ["intake", "proposals", "tickets"];
-const pagination = createPagination({
-  getProvider,
-  pageSizes: Object.fromEntries(appConfig.bases.map((base) => [base.key, base.readLimit])),
-  applyPage: (key, rows) => {
-    state.snapshot[key === "proposals" ? "dispatch_proposals" : key] = rows;
-    state.snapshot.metrics = computeMetrics(state.snapshot);
-  },
-  render: () => render(),
-  label: (key) => t(key),
-  onError: (error) => {
-    state.pageError = error instanceof Error ? error.message : String(error);
-  },
-});
+const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-tickets.sidebarCollapsed";
 
-export function recordTotal(key, fallback = 0) {
-  return pagination.total(key, fallback);
-}
+const byId = (id) => document.getElementById(id);
+export const els = {
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  viewFilters: byId("viewFilters"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  reviewCount: byId("count-review"),
+  unclassifiedCount: byId("count-unclassified"),
+  slaCount: byId("count-sla"),
+  language: byId("language"),
+};
 
 function isMobileLayout() {
   return window.matchMedia("(max-width: 720px)").matches;
@@ -166,26 +179,189 @@ export function formatAge(iso) {
   return `${Math.floor(hours / 24)}d`;
 }
 
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&status=…&peek=…]`. Search, the status filter and
+// the peeked record live in the URL so refresh, shared links and Back
+// restore the same list context.
 function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] ? decodeURIComponent(parts[1]) : "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  const statusValues = VIEW_STATUS_VALUES[view];
+  const status = statusValues ? (statusValues.includes(params.get("status")) ? params.get("status") : "all") : "all";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+    status,
+  };
 }
 
+const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  if (VIEW_STATUS_VALUES[route.view] && route.status !== "all") params.set("status", route.status);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) => {
+  const route = view === state.route.view ? state.route : { view, query: "", status: "all" };
+  return `#/${view}/${encodeURIComponent(id)}${routeQuery({}, route)}`;
+};
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) => {
+  if (DETAIL_MODES[view] === "page") return detailUrl(id, view);
+  const route = view === state.route.view ? state.route : { view, query: "", status: "all" };
+  return `#/${view}${routeQuery({ peek: id }, route)}`;
+};
+
+let previousRouteWasList = false;
+let routeSerial = 0;
+
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back
+  // to that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  state.notice = "";
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
+  render();
+  ensureSelectedRecord();
+}
+
+// Replace the current entry without a hashchange: search keystrokes and
+// filter clicks should not each become a Back step.
+export function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
   render();
 }
 
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── Data ───────────────────────────────────────────────────────────────────
 export async function loadState() {
   const provider = await getProvider();
+  state.provider = provider;
   const data = await provider.getState();
-  pagination.reset(data.pagination, data.totals);
   closeConnectGate();
   state.snapshot = data.snapshot;
   state.settings = data;
+  state.extra = { intake: new Map(), dispatch: new Map(), board: new Map() };
+  // Seed each paginated Base's cursor list with page 1 (no cursor) and the
+  // page-2 cursor getState() learned while fetching page 1.
+  state.pageCursors = {};
+  state.currentPage = {};
+  for (const [key, nextCursor] of Object.entries(data.pagination || {})) {
+    state.pageCursors[key] = [undefined, nextCursor];
+    state.currentPage[key] = 1;
+  }
   applyDemoRoute();
   window.dispatchEvent(new CustomEvent("busa-tickets:state", { detail: data }));
   render();
+  ensureSelectedRecord();
+}
+
+// The configured page size for a paginated Base, straight from config.js.
+function pageSize(key) {
+  return appConfig.bases.find((entry) => entry.key === key)?.readLimit || 50;
+}
+
+// The real total (records.count, from provider.getState()'s `totals`), so a
+// pager has an honest total behind it when the SDK can supply one.
+export function pageCount(key) {
+  if (!state.pageCursors[key]) return null;
+  const total = state.settings?.totals?.[key];
+  if (total == null) return null;
+  return Math.max(1, Math.ceil(total / pageSize(key)));
+}
+
+// True while a Base holds only part of its rows — more pages exist, or the
+// user is on a later page. Anything summed from loaded rows must say so.
+export function isPartial(key) {
+  const cursors = state.pageCursors[key];
+  if (!cursors) return false;
+  const current = state.currentPage[key] || 1;
+  return current > 1 || Boolean(cursors[current]);
+}
+
+// Replaces the displayed page for `key` with a NEIGHBOURING page: exactly one
+// request per click, using a cursor already learned. Never appends.
+export async function goToPage(key, targetPage) {
+  if (state.pageLoading[key]) return;
+  const cursors = state.pageCursors[key];
+  if (!cursors) return;
+  const current = state.currentPage[key] || 1;
+  if (Math.abs(targetPage - current) !== 1 || targetPage < 1) return;
+  if (targetPage > current && !cursors[current]) return; // no next page
+  state.pageLoading[key] = true;
+  render();
+  try {
+    const provider = await getProvider();
+    if (typeof provider.fetchPage !== "function") return;
+    const { rows, nextCursor } = await provider.fetchPage(key, cursors[targetPage - 1]);
+    const snapshotKey = Object.entries(VIEW_BASE_KEY).find(([, baseKey]) => baseKey === key)?.[0];
+    state.snapshot[VIEW_SNAPSHOT_KEY[snapshotKey]] = rows;
+    state.snapshot.metrics = computeMetrics(state.snapshot);
+    cursors[targetPage] = nextCursor;
+    state.currentPage[key] = targetPage;
+  } catch (error) {
+    state.notice = error instanceof Error ? error.message : String(error);
+  } finally {
+    state.pageLoading[key] = false;
+    render();
+  }
+}
+
+// A record named by the URL but not on the loaded page is read on its own
+// (records.get by its business id) instead of loading more pages to find it.
+async function ensureSelectedRecord() {
+  const { view, selectedId } = state.route;
+  if (!state.snapshot || !selectedId || !RECORD_VIEWS.includes(view)) return;
+  if (recordById(view, selectedId) || state.extra[view].has(selectedId)) return;
+  const provider = state.provider;
+  if (typeof provider?.getRecord !== "function") {
+    state.extra[view].set(selectedId, null);
+    render();
+    return;
+  }
+  const serial = ++routeSerial;
+  state.extra[view].set(selectedId, undefined);
+  try {
+    const row = await provider.getRecord(view, selectedId);
+    state.extra[view].set(selectedId, row || null);
+  } catch {
+    state.extra[view].set(selectedId, null);
+  }
+  if (serial === routeSerial) render();
 }
 
 function applyDemoRoute() {
@@ -216,8 +392,8 @@ function applyI18n() {
     option.textContent = languageLabels[option.value] || option.textContent;
   }
   els.search.placeholder = t("search");
-  els.refresh.textContent = t("refresh");
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
 function applyLocalDecision(item, kindStatuses = true) {
@@ -267,8 +443,13 @@ export function crewName(crewId) {
   return crews().find((crew) => crew.crew_id === crewId)?.name || crewId || "";
 }
 
-export function ticketById(ticketId) {
-  return tickets().find((ticket) => ticket.id === ticketId);
+// Loaded page first (with the demo-decision overlay already applied by
+// intakeItems()/proposals()/tickets()), then a record fetched on its own for
+// the URL (records.get, never pre-resolved — see ensureSelectedRecord()).
+export function recordById(view, id) {
+  if (!id) return null;
+  const rows = view === "intake" ? intakeItems() : view === "dispatch" ? proposals() : tickets();
+  return rows.find((item) => item.id === id) || state.extra[view]?.get(id) || null;
 }
 
 function matchesQuery(values) {
@@ -293,8 +474,9 @@ export function filteredIntake() {
 }
 
 export function filteredTickets() {
-  return tickets().filter((ticket) =>
-    matchesQuery([
+  return tickets().filter((ticket) => {
+    if (state.route.status !== "all" && ticket.status !== state.route.status) return false;
+    return matchesQuery([
       ticket.id,
       ticket.title,
       ticket.category,
@@ -303,13 +485,13 @@ export function filteredTickets() {
       ticket.reporter,
       crewName(ticket.crew_id),
       ticket.status,
-    ]),
-  );
+    ]);
+  });
 }
 
 export function filteredProposals() {
   return proposals().filter((proposal) => {
-    if (state.dispatchFilter !== "all" && proposal.status !== state.dispatchFilter) return false;
+    if (state.route.status !== "all" && proposal.status !== state.route.status) return false;
     return matchesQuery([
       proposal.title,
       proposal.summary,
@@ -334,7 +516,7 @@ function renderShell() {
   const reviewCount = proposals().filter((proposal) => proposal.status === "needs_review").length;
   const unclassified = intakeItems().filter((item) => item.triage_state === "new").length;
   const slaCount = slaAtRiskCount();
-  els.syncStatus.textContent = snapshot?.property?.name || t("empty");
+  els.syncStatus.textContent = !snapshot ? t("loading") : snapshot?.property?.name || t("empty");
   if (els.reviewCount) els.reviewCount.textContent = reviewCount;
   if (els.unclassifiedCount) els.unclassifiedCount.textContent = unclassified;
   if (els.slaCount) els.slaCount.textContent = slaCount;
@@ -342,14 +524,14 @@ function renderShell() {
   if (els.mobileViewMeta) {
     els.mobileViewMeta.textContent = reviewCount
       ? `${reviewCount} ${t("dispatchToApprove")}`
-      : `${pagination.total("tickets", tickets().length)} ${t("tickets")}`;
+      : `${tickets().length}${isPartial("tickets") ? "+" : ""} ${t("tickets")}`;
   }
   document.querySelectorAll("[data-route]").forEach((link) => {
     link.classList.toggle("active", link.dataset.route === state.route.view);
   });
 }
 
-function viewLabel(view) {
+export function viewLabel(view) {
   if (view === "intake") return t("intake");
   if (view === "dispatch") return t("dispatch");
   if (view === "board") return t("board");
@@ -379,8 +561,8 @@ export function slaBadge(ticket) {
   return `<span class="badge sla-${escapeHtml(stateName)}" title="${t("slaTarget")}${escapeHtml(due)}">${escapeHtml(enumLabel(stateName, "sla"))}${due ? escapeHtml(due) : ""}</span>`;
 }
 
-export function warnings() {
-  const items = state.snapshot?.warnings || [];
+export function warnings(filter = () => true) {
+  const items = (state.snapshot?.warnings || []).filter(filter);
   if (!items.length) return "";
   return `<div class="warnings">${items
     .map(
@@ -394,156 +576,29 @@ export function warnings() {
     .join("")}</div>`;
 }
 
-function overviewAttention() {
-  const reviewCount = proposals().filter((proposal) => proposal.status === "needs_review").length;
-  const unclassified = intakeItems().filter((item) => item.triage_state === "new").length;
-  const breaching = tickets().filter(
-    (ticket) => ticket.status !== "resolved" && ticket.sla_state === "breached",
-  ).length;
-  return `
-    <div class="attention-row">
-      <a class="attention-card ${reviewCount ? "hot" : ""}" href="#/dispatch">
-        <strong>${reviewCount}</strong>
-        <span>${t("dispatchToApprove")}</span>
-      </a>
-      <a class="attention-card" href="#/intake">
-        <strong>${unclassified}</strong>
-        <span>${t("unclassified")}</span>
-      </a>
-      <a class="attention-card ${breaching ? "hot" : ""}" href="#/board">
-        <strong>${breaching}</strong>
-        <span>${t("slaBreaching")}</span>
-      </a>
-    </div>
-  `;
-}
-
-function overviewMetrics() {
-  const metrics = state.snapshot?.metrics || {};
-  const byChannel = metrics.intake_by_channel || {};
-  const channelBadges = Object.entries(byChannel)
-    .sort((a, b) => b[1] - a[1])
-    .map(
-      ([channel, count]) =>
-        `<span class="badge channel-${escapeHtml(channel)}">${escapeHtml(enumLabel(channel, "channel"))} ${count}</span>`,
-    )
-    .join(" ");
-  return `
-    <div class="metrics">
-      <div class="metric"><span>${t("openTickets")}</span><strong>${metrics.open_tickets ?? 0}</strong></div>
-      <div class="metric"><span>${t("avgResolution")}</span><strong>${metrics.avg_resolution_hours ?? 0}${t("hours")}</strong></div>
-      <div class="metric"><span>${t("slaAtRisk")}</span><strong>${metrics.sla_at_risk ?? 0}</strong></div>
-      <div class="metric"><span>${t("weekIntake")}</span><strong>${metrics.intake_count ?? 0}</strong><div class="channel-badges">${channelBadges}</div></div>
-    </div>
-  `;
-}
-
-function categoryDistributionSvg() {
-  const counts = new Map();
-  for (const ticket of tickets()) {
-    counts.set(ticket.category, (counts.get(ticket.category) || 0) + 1);
-  }
-  const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-  if (!entries.length) return `<div class="empty">${t("empty")}</div>`;
-  const max = entries[0][1];
-  const rowHeight = 26;
-  const labelWidth = 96;
-  const barSpan = 190;
-  const rows = entries
-    .map(([category, count], index) => {
-      const y = index * rowHeight;
-      const width = Math.max(4, Math.round((count / max) * barSpan));
-      return `
-      <text x="${labelWidth - 8}" y="${y + 16}" text-anchor="end" class="svg-label">${escapeHtml(enumLabel(category, "category"))}</text>
-      <rect x="${labelWidth}" y="${y + 6}" width="${barSpan}" height="12" rx="3" class="svg-track"></rect>
-      <rect x="${labelWidth}" y="${y + 6}" width="${width}" height="12" rx="3" class="svg-bar"></rect>
-      <text x="${labelWidth + barSpan + 8}" y="${y + 16}" class="svg-count">${count}</text>
-    `;
-    })
-    .join("");
-  return `
-    <svg viewBox="0 0 320 ${entries.length * rowHeight}" role="img" aria-label="${t("categoryDistribution")}" class="category-svg" preserveAspectRatio="xMinYMin meet">
-      ${rows}
-    </svg>
-  `;
-}
-
-function crewLoadPanel() {
-  const openByCrew = new Map();
-  for (const ticket of tickets()) {
-    if (ticket.status === "resolved" || !ticket.crew_id) continue;
-    openByCrew.set(ticket.crew_id, (openByCrew.get(ticket.crew_id) || 0) + 1);
-  }
-  const max = Math.max(1, ...openByCrew.values());
-  return (
-    crews()
-      .map((crew) => {
-        const count = openByCrew.get(crew.crew_id) || 0;
-        return `
-      <div class="crew-row">
-        <span class="crew-name"><strong>${escapeHtml(crew.name)}</strong><small>${escapeHtml((crew.skills || []).map((skill) => enumLabel(skill, "category")).join(" · "))}</small></span>
-        <span class="crew-bar"><i style="width:${Math.round((count / max) * 100)}%"></i></span>
-        <span class="crew-count">${count}</span>
-      </div>
-    `;
-      })
-      .join("") || `<div class="empty">${t("setupNeeded")}</div>`
-  );
-}
-
-function renderOverview() {
-  els.title.textContent = t("overview");
-  els.subtitle.textContent = state.snapshot?.generated_at
-    ? `${escapeText(state.snapshot?.property?.name || "")} · ${t("generated")} ${new Date(state.snapshot.generated_at).toLocaleString()}`
-    : t("empty");
-  els.content.innerHTML = `
-    ${overviewAttention()}
-    ${warnings()}
-    ${overviewMetrics()}
-    <section class="overview-grid">
-      <div class="overview-panel">
-        <h2>${t("categoryDistribution")}</h2>
-        ${categoryDistributionSvg()}
-      </div>
-      <div class="overview-panel">
-        <h2>${t("crewLoad")}</h2>
-        ${crewLoadPanel()}
-      </div>
-      <div class="overview-panel wide">
-        <h2>${t("syncLog")}</h2>
-        ${
-          (state.snapshot?.sync_log || [])
-            .slice(-6)
-            .reverse()
-            .map(
-              (entry) => `
-          <div class="log-row">
-            <span class="badge">${escapeHtml(entry.source)}</span>
-            <span class="log-detail">${escapeHtml(entry.detail || entry.action || "")}</span>
-            <span class="muted">${date(entry.at)}</span>
-          </div>
-        `,
-            )
-            .join("") || `<div class="empty">${t("empty")}</div>`
-        }
-      </div>
-    </section>
-  `;
-}
-
-function renderPagedList(renderList, key) {
-  renderList();
-  els.content.insertAdjacentHTML("beforeend", `${pagination.control(key)}`);
+export function noticeBanner() {
+  if (!state.notice) return "";
+  return `<div class="notice-banner">${escapeHtml(state.notice)}</div>`;
 }
 
 export function render() {
   renderShell();
-  if (state.route.view === "intake" && state.route.id) renderIntakeDetail();
-  else if (state.route.view === "intake") renderPagedList(renderIntake, "intake");
-  else if (state.route.view === "dispatch") renderPagedList(renderDispatch, "proposals");
-  else if (state.route.view === "board" && state.route.id) renderBoardDetail();
-  else if (state.route.view === "board") renderPagedList(renderBoard, "tickets");
-  else if (state.route.view === "settings") renderSettings();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
   else renderOverview();
 }
 
@@ -561,12 +616,48 @@ export function escapeHtml(value) {
   );
 }
 
-function escapeText(value) {
-  return String(value ?? "");
-}
-
-pagination.bind(els.content);
-
+// ── Events ─────────────────────────────────────────────────────────────────
+els.listPanel.addEventListener("click", (event) => {
+  const pager = event.target.closest("[data-goto-page]");
+  if (pager) {
+    const [key, page] = pager.dataset.gotoPage.split(":");
+    goToPage(key, Number(page));
+    return;
+  }
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+els.viewFilters.addEventListener("click", (event) => {
+  const chip = event.target.closest("[data-status]");
+  if (!chip) return;
+  replaceRoute(
+    `#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, status: chip.dataset.status })}`,
+  );
+});
+els.detailBody.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-decision]");
+  if (button && !button.disabled) submitDecision(button.dataset.id, button.dataset.decision);
+});
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  // Escape inside a draft only leaves the field; a second Escape closes.
+  if (event.target.closest?.("textarea, input")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
@@ -574,22 +665,10 @@ els.mobileSidebarToggle?.addEventListener("click", () => setMobileSidebarOpen(tr
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
 els.search.addEventListener("input", () => {
   state.query = els.search.value;
-  render();
+  replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`);
 });
 els.refresh.addEventListener("click", () => loadState());
 els.mobileRefresh?.addEventListener("click", () => loadState());
-els.content.addEventListener("click", (event) => {
-  const filterButton = event.target.closest("[data-dispatch-filter]");
-  if (filterButton) {
-    state.dispatchFilter = filterButton.dataset.dispatchFilter;
-    render();
-    return;
-  }
-  const button = event.target.closest("[data-decision]");
-  if (button && !button.disabled) {
-    submitDecision(button.dataset.id, button.dataset.decision);
-  }
-});
 els.language.value = state.lang;
 els.language.addEventListener("change", () => {
   state.lang = normalizeLang(els.language.value);
@@ -611,9 +690,13 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
 boot();

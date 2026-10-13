@@ -64,9 +64,9 @@ const renderLocalConnection = (status) => {
   form.querySelectorAll('input[name="server_mode"]').forEach((radio) => {
     radio.addEventListener("change", () => {
       const custom = radio.checked && radio.value === "custom";
-      form
-        .querySelectorAll(".provider-choice-card")
-        .forEach((card) => card.classList.toggle("active", card.querySelector("input")?.checked));
+      for (const card of form.querySelectorAll(".provider-choice-card")) {
+        card.classList.toggle("active", Boolean(card.querySelector("input")?.checked));
+      }
       customRow.classList.toggle("is-hidden", !custom);
       customInput.required = custom;
       baseUrl.value = custom ? customInput.value : status.cloudBaseUrl || "https://busabase.com";

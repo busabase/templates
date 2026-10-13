@@ -116,3 +116,12 @@ test("explicit next page appends without duplicate rows", () => {
     ["a", "b"],
   );
 });
+test("overview metric filters match the server's exact valueFilters semantics", async () => {
+  const { matchesValueFilters, metricQueries } = await import("../app/js/model.js");
+  const q = (key) => metricQueries.find((m) => m.key === key).valueFilters;
+  assert.equal(matchesValueFilters({ status: "litigation" }, q("activeCases")), true);
+  assert.equal(matchesValueFilters({ status: "closed" }, q("activeCases")), false);
+  assert.equal(matchesValueFilters({ status: "needs_review" }, q("deadlinesToVerify")), true);
+  assert.equal(matchesValueFilters({ status: "overdue" }, q("deadlinesToVerify")), false);
+  assert.equal(matchesValueFilters({ status: "verified" }, q("entriesToVerify")), false);
+});

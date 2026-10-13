@@ -12,6 +12,11 @@ export const appConfig = {
     slug: "busa-support",
   },
   airApp: { name: "Busa Support", slug: "busa-support-app", resourceKey: "busa-support-app" },
+  // Where each record view opens a record (see DETAIL_MODES in app.js for the
+  // why): tickets is the review queue, worked top to bottom with the next
+  // ticket beside the one being decided (split); knowledge is a fact you
+  // scan many of and return from (drawer).
+  ui: { detail_modes: { tickets: "split", knowledge: "drawer" } },
   bases: [
     {
       key: "accounts",
@@ -145,7 +150,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

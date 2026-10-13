@@ -147,12 +147,14 @@ available at `?demo=1` for screenshots/docs.
 
 ## Known Limitations (v0.1)
 
-- The AirApp is read-only (list + detail views only) — no in-app editing, filters,
+- The AirApp is read-only — an Overview (pipeline by stage, recording queue), a Videos
+  list whose rows open a full storyboard page, and a Shots queue that opens each shot
+  beside the list. Stage / recording-status filters and search, but no in-app editing
   or approve/reject actions yet. If Busabase isn't reachable, or the schema hasn't been
   provisioned yet, the standard Connect/setup gate handles it (unlike v0.1's plain
   inline error), but the "Initialize workspace" button on that gate can only create a
   from-scratch schema WITHOUT the working bidirectional relation — always run
   `scripts/ensure_schema.mjs` first, before ever opening the app on a brand-new Space.
-  No mobile-shell verification done yet.
+  On a phone every record opens as its own page.
 - No automated recording or rendering. This skill only tracks state; a human or a
   separate agent run does the actual screen-recording / voiceover / Remotion render.

@@ -80,8 +80,21 @@ export const appConfig = {
       ],
     },
   ],
+  // Where a company opens, per view (busabase-app-creator "Choose The Detail Mode"):
+  //   to-send → split:  the review queue is worked top to bottom — read the
+  //                     letter, fix a line, approve, next — so it stays beside
+  //                     the record.
+  //   sent    → drawer: a sent record is a fact you glance at (who, when) and
+  //                     return to the list.
+  //   all     → drawer: the whole ranked list is browsed; one company is
+  //                     peeked and closed.
+  // Every mode can open the full page (`#/<view>/<id>`); drawer and split use
+  // `?peek=<id>`. On a phone every mode is a page.
+  ui: {
+    detail_modes: { "to-send": "split", sent: "drawer", all: "drawer" },
+  },
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["bases.createChangeRequest", "records.changeRequest"],
   },

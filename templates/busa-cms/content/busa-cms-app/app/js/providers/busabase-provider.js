@@ -33,17 +33,56 @@ const baseFor = (key) => {
   return base;
 };
 
-const listRecords = async (base) => {
+const toRaw = (record) => ({
+  id: record.id,
+  headCommit: record.headCommit,
+  updatedAt: record.updatedAt,
+  fields: recordFields(record),
+});
+
+/**
+ * One page of one Base. The cursor is kept so "Load more" can fetch exactly the
+ * next page when someone asks for it — never a loop to the end.
+ */
+const listRecords = async (base, cursor) => {
   requireRead("records.listPaged");
   // The blueprint capability is records.listPaged; the SDK names the same
   // cursor-paged operation records.list.
-  const page = await client.records.list({ baseId: base.baseId, limit: base.readLimit });
-  return (page.records || []).map((record) => ({
-    id: record.id,
-    headCommit: record.headCommit,
-    updatedAt: record.updatedAt,
-    fields: recordFields(record),
-  }));
+  const page = await client.records.list({
+    baseId: base.baseId,
+    limit: base.readLimit,
+    ...(cursor ? { cursor } : {}),
+  });
+  return { records: (page.records || []).map(toRaw), nextCursor: page.nextCursor || null };
+};
+
+/**
+ * An exact server-side total, or null. A side read the actor may not make (or a
+ * server without the endpoint) must not fail the whole screen — the UI falls back
+ * to the loaded count and marks it as partial.
+ */
+const countRecords = async (base, filters) => {
+  if (!allowedReads.has("records.count")) return null;
+  try {
+    const result = await client.records.count({ baseId: base.baseId, ...(filters ? { filters } : {}) });
+    return typeof result?.total === "number" ? result.total : null;
+  } catch {
+    return null;
+  }
+};
+
+const LIVE_FILTER = [{ fieldSlug: "status", operator: "equals", value: LIVE_STATUS }];
+
+const countTotals = async () => {
+  const [posts, pages, categories, tags, livePosts, livePages] = await Promise.all([
+    countRecords(baseFor("posts")),
+    countRecords(baseFor("pages")),
+    countRecords(baseFor("categories")),
+    countRecords(baseFor("tags")),
+    countRecords(baseFor("posts"), LIVE_FILTER),
+    countRecords(baseFor("pages"), LIVE_FILTER),
+  ]);
+  return { posts, pages, categories, tags, livePosts, livePages };
 };
 
 /**
@@ -99,13 +138,18 @@ export const busabaseProvider = {
       };
     }
 
-    const [categories, tags, posts, pages, described] = await Promise.all([
+    const [categoryPage, tagPage, postPage, pagePage, described, totals] = await Promise.all([
       listRecords(baseFor("categories")),
       listRecords(baseFor("tags")),
       listRecords(baseFor("posts")),
       listRecords(baseFor("pages")),
       describeBases(),
+      countTotals(),
     ]);
+    const categories = categoryPage.records;
+    const tags = tagPage.records;
+    const posts = postPage.records;
+    const pages = pagePage.records;
 
     const schemaHealth = diffSchema(described);
     const schemaOk = schemaIsClean(schemaHealth);
@@ -114,6 +158,13 @@ export const busabaseProvider = {
 
     return {
       records: { categories, tags, posts, pages },
+      cursors: {
+        categories: categoryPage.nextCursor,
+        tags: tagPage.nextCursor,
+        posts: postPage.nextCursor,
+        pages: pagePage.nextCursor,
+      },
+      totals,
       connection,
       schemaHealth,
       provider_status: { ok: true, provider: "busabase", mode: "busabase" },
@@ -122,6 +173,19 @@ export const busabaseProvider = {
         onboarding: onboardingState({ ...resources, schemaOk, publishedCount }),
       },
     };
+  },
+
+  /** The next page of one Base — one request per click on "Load more". */
+  async loadMore(key, cursor) {
+    return listRecords(baseFor(key), cursor);
+  },
+
+  /** One record named by the URL that is not on the loaded page. */
+  async getRecord(recordId) {
+    requireRead("records.get");
+    if (!client) return null;
+    const record = await client.records.get({ recordId }).catch(() => null);
+    return record?.id ? toRaw(record) : null;
   },
 
   /**

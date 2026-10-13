@@ -397,12 +397,20 @@
 
   /* Main */
 
+  /* flex, not grid: several page sections are siblings here and only one is
+   * ever visible ([hidden] removes the rest from layout entirely, and
+   * .mobile-topbar is display:none at desktop width too) — a grid's
+   * `auto 1fr` row-track assignment depends on how many children are
+   * actually in flow, so the lone visible section can land in the `auto`
+   * track and size to its content instead of filling the viewport. Flex
+   * has no such row bookkeeping: .ws-view/.ws-overview already carry
+   * `flex: 1 1 auto` (base-ui.css) and simply grow to fill whatever is left. */
   .main {
     min-width: 0;
     min-height: 0;
     height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
   }
 
@@ -412,24 +420,6 @@
 
   .mobile-sidebar-toggle {
     display: none;
-  }
-
-  .topbar {
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    min-height: 58px;
-    padding: 10px 18px;
-    border-bottom: 1px solid var(--line);
-    background: var(--surface-blur);
-  }
-
-  .topbar-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
   }
 
   select,
@@ -495,6 +485,7 @@
   }
 
   .content {
+    flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
     padding: 16px 18px 24px;

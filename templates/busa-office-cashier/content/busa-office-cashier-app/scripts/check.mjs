@@ -11,6 +11,12 @@ for (const base of appConfig.bases) {
   assert.deepEqual(declared.fields, base.fields);
   assert.deepEqual(declared.views, base.views);
 }
+assert.deepEqual(blueprint.ui, appConfig.ui);
+for (const base of appConfig.bases)
+  assert(
+    ["page", "drawer", "split"].includes(appConfig.ui.detail_modes[base.key]),
+    "detail mode missing for " + base.key,
+  );
 assert.equal(pkg.dependencies["busabase-sdk"], "0.90.2");
 assert.equal(pkg.scripts.dev, "node server.js");
 assert.equal(appConfig.binding, "runtime");

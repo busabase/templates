@@ -1062,6 +1062,17 @@ export const appConfig = {
       columns: ["title", "owner", "status", "amount", "currency", "due"],
     },
   ],
+  // Where a record opens, per view (busabase-app-creator "Choose The Detail
+  // Mode"). Mirrored in airapp-blueprint.json `ui.detail_modes`.
+  ui: {
+    detail_modes: {
+      attention: "split",
+      accounts: "drawer",
+      checks: "drawer",
+      payments: "drawer",
+      ledger: "drawer",
+    },
+  },
   permissions: {
     readProcedures: [
       "nodes.list",
@@ -1069,6 +1080,7 @@ export const appConfig = {
       "bases.get",
       "records.list",
       "records.count",
+      "records.get",
     ],
     writeProcedures: [],
   },

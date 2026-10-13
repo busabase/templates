@@ -1,21 +1,5 @@
 @layer workflow {
   /* List-card thumbnail (characters with reference cards, shots with images) */
-  .item-card-thumb {
-    width: 46px;
-    height: 46px;
-    flex: 0 0 46px;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    background: var(--surface-soft);
-    border: 1px solid var(--line);
-  }
-
-  .item-card-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
 
   /* Character voice profile + reference voice slot */
   .character-voice {
@@ -81,108 +65,10 @@
   }
 
   /* Compact, expandable shot list (episode shots tab) */
-  .shot-list-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 18px 0 8px;
-    font-size: var(--text-sm);
-    color: var(--muted);
-  }
-
-  .shot-list {
-    display: grid;
-    gap: 8px;
-  }
-
-  .shot-row-wrap {
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: var(--surface);
-    overflow: hidden;
-  }
-
-  .shot-row-wrap.open {
-    border-color: var(--line-strong);
-    box-shadow: var(--shadow);
-  }
-
-  .shot-row {
-    display: grid;
-    grid-template-columns: 34px 84px 1fr auto 20px;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 8px 12px;
-    border: none;
-    background: transparent;
-    text-align: left;
-    cursor: pointer;
-    font: inherit;
-    color: var(--ink);
-  }
-
-  .shot-row:hover {
-    background: var(--surface-soft);
-  }
-
-  .shot-row-no {
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-    color: var(--faint);
-    font-size: var(--text-base);
-  }
-
-  .shot-row-thumb {
-    width: 84px;
-    height: 47px;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    background: var(--surface-soft);
-    border: 1px solid var(--line);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .shot-row-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
 
   .thumb-empty {
     font-size: var(--text-xs);
     color: var(--faint);
-  }
-
-  .shot-row-main {
-    min-width: 0;
-  }
-
-  .shot-row-main strong {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: var(--text-md);
-  }
-
-  .shot-row-main small {
-    display: block;
-    color: var(--muted);
-    font-size: var(--text-sm);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .shot-row-meta {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
   }
 
   .badge.soft {
@@ -202,25 +88,6 @@
 
   .row-ready.warn {
     color: var(--warning);
-  }
-
-  .shot-row-caret {
-    color: var(--faint);
-    font-size: var(--text-sm);
-    text-align: center;
-  }
-
-  .shot-row-detail {
-    padding: 4px 14px 16px;
-    border-top: 1px solid var(--line);
-    background: var(--surface-soft);
-  }
-
-  .shot-row-detail .shot-script-card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 14px 16px;
   }
 
   /* Video-ready shot production sheet */
@@ -453,7 +320,9 @@
     display: block;
   }
 
+  /* Positioned so the generation-mode badge sits on the image's corner. */
   .storyboard-actions {
+    position: relative;
     display: flex;
     gap: 8px;
   }
@@ -663,37 +532,6 @@
     color: var(--warning);
   }
 
-  .metrics {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .metric {
-    padding: 12px;
-    border-width: 0 1px 0 0;
-    border-radius: 0;
-    background: transparent;
-  }
-
-  .metric:last-child {
-    border-right: 0;
-  }
-
-  .metric strong {
-    display: block;
-    font-size: var(--text-lg);
-    line-height: 1;
-  }
-
-  .metric span {
-    display: block;
-    margin-top: 5px;
-    color: var(--muted);
-    font-size: var(--text-sm);
-  }
-
   .visual-bible-card,
   .character-reference {
     display: grid;
@@ -800,10 +638,6 @@
       height: 100vh;
     }
 
-    .workspace {
-      grid-template-columns: 1fr;
-    }
-
     .detail {
       position: static;
     }
@@ -867,51 +701,6 @@
       display: none;
     }
 
-    .back-to-list {
-      display: inline-flex;
-      align-items: center;
-      margin-bottom: 10px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 8px 10px;
-      color: var(--accent);
-      background: var(--surface);
-    }
-
-    .workspace {
-      grid-template-columns: 1fr;
-      padding: 12px;
-    }
-
-    .detail-panel {
-      display: none;
-    }
-
-    body.mobile-detail-open .list-panel {
-      display: none;
-    }
-
-    body.mobile-detail-open .detail-panel {
-      display: block;
-    }
-
-    .item-card {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 6px;
-    }
-
-    .card-meta {
-      justify-content: flex-start;
-    }
-
-    .metrics {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .metric:nth-child(2n) {
-      border-right: 0;
-    }
-
     .visual-bible-card {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -967,69 +756,6 @@
   }
   .attention-counts button:hover {
     border-color: var(--accent, #5e6ad2);
-  }
-
-  .mv-timeline {
-    margin: 4px 0 14px;
-  }
-  .mv-bands {
-    position: relative;
-    height: 34px;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    background: var(--surface-soft, var(--surface-soft));
-    border: 1px solid var(--line, var(--line));
-  }
-  .mv-shot {
-    position: absolute;
-    top: 4px;
-    bottom: 4px;
-    border-radius: var(--radius-sm);
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    background: var(--accent, #5e6ad2);
-    opacity: 0.9;
-    cursor: pointer;
-  }
-  .mv-shot:hover {
-    opacity: 1;
-  }
-  .mv-shot.performance {
-    background: #5e6ad2;
-  }
-  .mv-shot.narrative {
-    background: #d6409f;
-  }
-  .mv-shot.broll {
-    background: #8b8f9e;
-  }
-  .mv-shot.transition {
-    background: #f59e0b;
-  }
-  .mv-shot.has-img {
-    box-shadow: inset 0 0 0 2px #16a34a;
-  }
-  .mv-shot.active {
-    outline: 2px solid var(--ink, #18181b);
-    outline-offset: 1px;
-    opacity: 1;
-  }
-  .mv-timeline-meta {
-    margin-top: 6px;
-    font-size: var(--text-sm);
-    color: var(--muted, #71717a);
-  }
-  .item-card-thumb {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-sm);
-    object-fit: cover;
-    background: var(--surface-soft, var(--surface-soft));
-    font-size: var(--text-xs);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--muted, #71717a);
-    flex: 0 0 auto;
   }
   .asset-placeholder {
     height: 120px;
@@ -1091,10 +817,7 @@
     opacity: 0.52;
   }
 
-  .quick-stats button:hover,
-  .nav button:hover,
-  .item-card:hover,
-  .back-button:hover {
+  .nav button:hover {
     box-shadow: none;
   }
 
@@ -1120,12 +843,313 @@
       backdrop-filter: blur(10px);
     }
 
-    .content-title {
-      padding-top: 58px;
-    }
-
     .sidebar-scrim[hidden] {
       display: none;
     }
+  }
+}
+
+/* ── Overview + record views on the shared ws- primitives ─────────────────
+ * Unlayered on purpose: base-ui.css's "Record views" block is unlayered, so a
+ * customisation inside `@layer workflow` would lose to it. Everything here is
+ * a class selector that tunes those primitives; the layout itself is theirs. */
+.app-shell {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+}
+.main {
+  min-height: 0;
+  overflow: hidden;
+}
+.main .button {
+  border: 1px solid var(--line-strong);
+}
+.main .button.primary {
+  border-color: var(--accent);
+}
+.lock-banner {
+  flex: 0 0 auto;
+}
+.load-state {
+  padding: 28px 24px;
+  color: var(--muted);
+}
+.load-state.error {
+  color: var(--danger);
+}
+.nav button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.nav-count {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.ws-overview .page-hero h1,
+.ws-overview .page-hero p {
+  margin-bottom: 0;
+}
+/* Overview body: the checklist beside the concept the whole MV hangs on. */
+.overview-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  align-items: start;
+  gap: 20px;
+}
+.overview-column {
+  display: grid;
+  gap: 20px;
+}
+.overview-body .card-heading {
+  align-items: center;
+  margin-bottom: 12px;
+}
+.overview-body .card-heading h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+.card-copy {
+  margin: 0;
+  line-height: 1.6;
+}
+.step-list {
+  display: grid;
+  margin: 0 -20px -20px;
+  border-top: 1px solid var(--line);
+}
+.step-row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--line);
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  transition: background var(--ease);
+}
+.step-row:last-child {
+  border-bottom: 0;
+}
+.step-row:hover {
+  background: var(--surface-hover);
+}
+.step-main {
+  display: grid;
+  min-width: 0;
+}
+.step-main strong {
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+.step-main span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ready-chip {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: var(--muted);
+  background: var(--surface-soft);
+}
+.ready-chip.ok {
+  color: var(--positive);
+}
+
+/* Record views */
+.toolbar-search {
+  width: 220px;
+  min-height: 34px;
+  padding: 6px 10px;
+}
+.toolbar-meta {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.cell-name {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+.cell-name strong {
+  overflow: hidden;
+  font-weight: 560;
+  text-overflow: ellipsis;
+}
+.row-thumb {
+  flex: 0 0 auto;
+  border-radius: 4px;
+  background: var(--surface-soft);
+  object-fit: cover;
+}
+.row-thumb.thumb-empty {
+  border: 1px dashed var(--line-strong);
+}
+.cast-thumb {
+  width: 24px;
+  height: 24px;
+}
+.shot-thumb {
+  width: 43px;
+  height: 24px;
+}
+.shot-no {
+  flex: 0 0 auto;
+  min-width: 18px;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.media-cell .badge + .badge {
+  margin-left: 4px;
+}
+.ws-table td.muted {
+  color: var(--muted);
+}
+.cast-table {
+  --ws-first-col: 34%;
+}
+.shot-table .ws-col-narrow {
+  width: 16%;
+}
+body.ws-layout-split {
+  --ws-split-list: minmax(340px, 420px);
+}
+body.ws-layout-split .shot-table th:first-child {
+  width: auto;
+}
+body.ws-layout-split .shot-table .ws-col-narrow {
+  width: 120px;
+}
+body.ws-layout-split .shot-table .ws-col-num {
+  width: 84px;
+}
+.ws-detail-bar a.button {
+  text-decoration: none;
+}
+.load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px;
+  color: var(--muted);
+  font-size: var(--text-base);
+}
+
+/* Detail: the same markup in every mode, flat inside the panel. */
+.ws-detail .detail {
+  position: static;
+}
+.ws-detail .detail-card {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.ws-detail .detail-head h2 {
+  margin: 0;
+  font-size: var(--text-xl);
+}
+body.ws-detail-page .ws-detail .detail {
+  max-width: 880px;
+}
+
+/* Song: one record, a form under the toolbar. */
+.page-scroll {
+  overflow: auto;
+}
+.page-body {
+  max-width: 760px;
+  padding: 24px;
+}
+
+/* Phone: the app's own top bar names the view (body.ws-has-mobile-bar). */
+.mobile-topbar {
+  display: none;
+}
+@media (max-width: 980px) {
+  .overview-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 720px) {
+  .mobile-topbar {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 10px;
+    min-height: 52px;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .mobile-topbar .mobile-sidebar-toggle {
+    position: static;
+    display: grid;
+    flex: 0 0 auto;
+  }
+  .mobile-topbar-copy {
+    min-width: 0;
+  }
+  .mobile-view-title {
+    font-size: var(--text-md);
+    font-weight: 650;
+  }
+  .mobile-view-meta {
+    overflow: hidden;
+    color: var(--muted);
+    font-size: var(--text-sm);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* The top bar carries the view name and its total; the toolbar keeps the
+   * narrowed count only while a search is active. */
+  body.ws-has-mobile-bar:not(.ws-searching) #viewPage .ws-title {
+    display: none;
+  }
+  .ws-actions {
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+  }
+  .shot-thumb {
+    display: none;
+  }
+  /* The record replaces the list here: no list toolbar above it, and it is
+   * already the full page. */
+  body.ws-detail-open #viewPage .ws-toolbar,
+  #detailExpand {
+    display: none;
+  }
+  .toolbar-search {
+    flex: 1 1 120px;
+    width: auto;
+  }
+  .page-body {
+    padding: 14px;
+  }
+  /* The top bar already names Song and the toolbar has nothing else. */
+  #songPage .ws-toolbar {
+    display: none;
   }
 }

@@ -49,40 +49,48 @@ const defaultSortFor = (base) => {
   return null;
 };
 
+// Side reads (exact counts, pending reviews) never fail the whole page: a
+// denied or failed count comes back as null and the UI falls back to the
+// loaded window, labelled as such.
 const countRecords = async (client, base, filters) => {
-  requireRead("records.count");
-  const result = await client.records.count({
-    baseId: base.baseId,
-    ...(filters?.length ? { filters } : {}),
-  });
-  return result.total;
+  if (!allowedReads.has("records.count")) return null;
+  try {
+    const result = await client.records.count({
+      baseId: base.baseId,
+      ...(filters?.length ? { filters } : {}),
+    });
+    return Number.isFinite(result?.total) ? result.total : null;
+  } catch {
+    return null;
+  }
 };
+
+const readBaseTotals = async (client, bases) =>
+  Object.fromEntries(
+    await Promise.all(bases.map(async (base) => [base.key, await countRecords(client, base)])),
+  );
 
 const readOverviewCounts = async (client, bases) => {
   const companies = bases.find((base) => base.key === "companies");
   const deals = bases.find((base) => base.key === "deals");
   if (!companies || !deals) throw new Error("SCHEMA_INCOMPLETE: overview resources");
   const stages = deals.fields.find((field) => field.slug === "stage")?.options?.choices || [];
-  const requests = [
-    ["customerAccounts", countRecords(client, companies, [
+  const [customerAccounts, prospects, ...stageCounts] = await Promise.all([
+    countRecords(client, companies, [
       { fieldSlug: "relationship-type", operator: "equals", value: "customer" },
-    ])],
-    ["prospects", countRecords(client, companies, [
-      { fieldSlug: "relationship-type", operator: "equals", value: "prospect" },
-    ])],
-    ...stages.map((stage) => [
-      stage.id,
-      countRecords(client, deals, [
-        { fieldSlug: "stage", operator: "equals", value: stage.id },
-      ]),
     ]),
-  ];
-  const resolved = await Promise.all(requests.map(async ([key, request]) => [key, await request]));
+    countRecords(client, companies, [
+      { fieldSlug: "relationship-type", operator: "equals", value: "prospect" },
+    ]),
+    ...stages.map((stage) =>
+      countRecords(client, deals, [{ fieldSlug: "stage", operator: "equals", value: stage.id }]),
+    ),
+  ]);
   return {
-    exact: true,
-    customerAccounts: resolved.find(([key]) => key === "customerAccounts")?.[1] || 0,
-    prospects: resolved.find(([key]) => key === "prospects")?.[1] || 0,
-    dealStages: Object.fromEntries(resolved.filter(([key]) => stages.some((stage) => stage.id === key))),
+    exact: customerAccounts != null && prospects != null && stageCounts.every((count) => count != null),
+    customerAccounts,
+    prospects,
+    dealStages: Object.fromEntries(stages.map((stage, index) => [stage.id, stageCounts[index]])),
   };
 };
 
@@ -107,10 +115,15 @@ const readChangeRequests = async (client) => {
   }
   // The AirApp capability is named changeRequests.listPaged in the blueprint;
   // SDK 0.19 exposes the same cursor-paged contract as changeRequests.list.
-  const page = await client.changeRequests.list({
-    limit: PENDING_CHANGE_REQUEST_LIMIT,
-    status: PENDING_STATUSES,
-  });
+  let page;
+  try {
+    page = await client.changeRequests.list({
+      limit: PENDING_CHANGE_REQUEST_LIMIT,
+      status: PENDING_STATUSES,
+    });
+  } catch {
+    return { changeRequests: [], nextCursor: null, unavailable: true };
+  }
   const relevantIds = new Set([
     appConfig.schema.folder.nodeId,
     ...appConfig.schema.bases.flatMap((base) => [base.baseId, base.nodeId]),
@@ -133,12 +146,13 @@ export const busabaseProvider = {
     const bases = await resolveRuntimeResources(client);
     runtimeClient = client;
     runtimeBases = new Map(bases.map((base) => [base.key, base]));
-    const [pages, changeRequestPage, overviewCounts] = await Promise.all([
+    const [pages, changeRequestPage, overviewCounts, baseTotals] = await Promise.all([
       Promise.all(bases.map(async (base) => [base.key, await readPage(client, base, {
         sort: defaultSortFor(base),
       })])),
       readChangeRequests(client),
       readOverviewCounts(client, bases),
+      readBaseTotals(client, bases),
     ]);
     return {
       provider: {
@@ -159,6 +173,7 @@ export const busabaseProvider = {
         limit: PENDING_CHANGE_REQUEST_LIMIT,
       },
       overviewCounts,
+      baseTotals,
     };
   },
   async queryBase(baseKey, options = {}) {

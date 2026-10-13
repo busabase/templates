@@ -6,6 +6,14 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Mode per record view, chosen by what a dispatcher does with the record:
+  //   intake   → drawer: a raw complaint is a fact scanned many of, classified
+  //              with a couple of fields, then returned to the stream.
+  //   dispatch → split:  the review queue is worked top to bottom, one
+  //              proposal after the next, so the queue stays beside the card.
+  //   board    → page:   a ticket is a workplace of its own — full history,
+  //              resolution notes — people stay on it for minutes.
+  ui: { detail_modes: { intake: "drawer", dispatch: "split", board: "page" } },
   folder: {
     name: "Busa Tickets",
     description: "Complaint/ticket triage-and-dispatch desk: intake stream, ticket board, and a dispatch review queue",
@@ -149,7 +157,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

@@ -139,9 +139,16 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
   });
 }
 
+// Settings are a side read: the profile and the agent lock decorate the desk,
+// they do not gate it. A denied or failed read leaves them empty instead of
+// failing the creator list with it.
 async function readSettingsRows() {
-  const rows = await readFirstPage("settings");
-  return new Map(rows.map((row) => [row.record_id || row.kind, row]));
+  try {
+    const { rows } = await readPage("settings");
+    return new Map(rows.map((row) => [row.record_id || row.kind, row]));
+  } catch {
+    return new Map();
+  }
 }
 
 function configSummaryFromProfile(profile = {}) {
@@ -234,6 +241,18 @@ export const busabaseProvider = {
     };
     await upsert("creators", "creator-id", creatorId, fields, `Decision on creator ${creatorId}: ${action}`);
     return { ok: true };
+  },
+
+  // A record named by the URL but not on the loaded page: one records.get by
+  // its business id, never more pages to find it.
+  async getRecord(_view, creatorId) {
+    if (!allowedReads.has("records.get")) return null;
+    await ensureResources();
+    const record = await findRecord("creators", "creator-id", creatorId);
+    if (!record) return null;
+    return normalizeCreatorRow(
+      normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+    );
   },
 
   async fetchPage(key, cursor) {

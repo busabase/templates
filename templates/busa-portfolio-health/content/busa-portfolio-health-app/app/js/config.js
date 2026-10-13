@@ -6,6 +6,8 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Where a record opens, per view (see app.js for the reasoning).
+  ui: { detail_modes: { contracts: "drawer", watchlist: "split", concentration: "drawer" } },
   folder: {
     name: "Busa Portfolio Health",
     description:
@@ -60,7 +62,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

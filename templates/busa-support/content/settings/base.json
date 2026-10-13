@@ -44,18 +44,5 @@
       "options": {}
     }
   ],
-  "views": [],
-  "agentPrompts": [
-    {
-      "key": "policy-summary",
-      "label": "Show the current support config",
-      "body": "{target}\n\nRead the `busa-support` skill in this folder, then show me the current SLA policy, risk policy, reply style, and KB source path.",
-      "intent": "read-only"
-    },
-    {
-      "key": "update-sla-policy",
-      "label": "Update SLA or risk policy",
-      "body": "{target}\n\nRead the `busa-support` skill in this folder and follow its workflow, then update the SLA policy or risk policy I describe, such as a first-response target per priority or whether refunds require approval."
-    }
-  ]
+  "views": []
 }

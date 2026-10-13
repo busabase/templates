@@ -89,3 +89,19 @@ test('every page normalizes canonical API payload and deduplicates records', () 
   assert.deepEqual(mergePage([{ id: 'a', fields: { title: 'Old' } }, { id: 'b' }], [row]), [row, { id: 'b' }]);
   assert.equal(safeDisplay('recmtu6jct9xgoq405'), '-');
 });
+test('overview counts are exact server counts and a denied count is null, not zero', async () => {
+  const { client, calls } = fixture();
+  const provider = createLiveProvider(client);
+  const filters = [{ fieldSlug: 'status', operator: 'eq', value: 'conflict' }];
+  assert.equal(await provider.count('sources', filters), 87);
+  assert.deepEqual(calls.at(-1), ['count', { baseId: 'bsetestsources', valueFilters: filters }]);
+  client.records.count = async () => { throw new Error('FORBIDDEN'); };
+  assert.equal(await provider.count('sources', filters), null);
+});
+test('a record named by the URL is read once and only accepted from its own Base', async () => {
+  const { client } = fixture();
+  client.records.get = async ({ recordId }) => ({ id: recordId, baseId: recordId === 'recother' ? 'bsetestchecks' : 'bsetestsources', headCommit: { payload: { title: 'Linked' } } });
+  const provider = createLiveProvider(client);
+  assert.equal((await provider.getRecord('sources', 'recmine')).fields.title, 'Linked');
+  assert.equal(await provider.getRecord('sources', 'recother'), null);
+});

@@ -58,8 +58,9 @@ pnpm --dir skills/busa-lead-funnel/content/busa-lead-funnel-app dev
 Use the printed local URL, then add one of these demo paths:
 
 ```text
-/?demo=1&lang=en#/board
+/?demo=1&lang=en#/overview
 /?demo=board&lang=zh#/board
+/?demo=1&lang=en#/leads?peek=lead-001
 /?demo=lead&lang=en#/leads/lead-001
 /?demo=settings&lang=en#/settings
 ```

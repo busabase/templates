@@ -68,6 +68,20 @@ export const busabaseProvider = {
       reviewTime: Date.now(),
     };
   },
+  // A shared or refreshed `?peek=` / `/<id>` link can name a record that is
+  // not in the first loaded page. Read just that record instead of paging.
+  async getRecord(key, recordId) {
+    requireProcedure("records.get");
+    const base = bases?.get(key);
+    if (!base) throw Error("SCHEMA_INCOMPLETE");
+    const record = await client.records.get({ recordId });
+    if (record?.baseId && record.baseId !== base.baseId)
+      throw Error("NOT_FOUND");
+    const row = normalize(record, key);
+    if (!row.fields.title || typeof row.fields.title !== "string")
+      throw Error("SCHEMA_INCOMPLETE: record title missing");
+    return row;
+  },
   async loadMore(key, cursor) {
     const base = bases?.get(key),
       declared = appConfig.bases.find((b) => b.key === key);

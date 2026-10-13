@@ -1113,9 +1113,21 @@ export const demoProvider = {
         },
       ];
     }
+    // The same exact-count shape the Busabase provider gets from records.count.
+    // The demo holds every row in memory, so these are exact too.
+    const metrics = snapshot.metrics || {};
+    const counts = {
+      plans: metrics.plan_count,
+      plans_needs_review: metrics.plans_needs_review,
+      plans_changes_requested: metrics.plans_in_revision,
+      plans_approved: metrics.plans_approved,
+      checks_fail: metrics.checks_failed,
+      checks_pass_rate: metrics.compliance_pass_rate,
+    };
     return {
       demo: true,
       demo_scenario: scenario,
+      counts,
       app: "busa-lesson",
       data_provider: "demo",
       onboarding: { completed: true, completed_at: NOW, config_version: "demo" },

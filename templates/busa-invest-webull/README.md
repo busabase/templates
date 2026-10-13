@@ -44,7 +44,7 @@ Then add one of these demo paths:
 /?demo=overview&lang=en#/overview
 /?demo=positions&lang=en#/positions
 /?demo=accounts&lang=en#/accounts
-/?demo=detail&lang=en#/positions/AAPL
+/?demo=detail&lang=en#/positions?peek=AAPL
 ```
 
 Demo mode never reads or writes Busabase.

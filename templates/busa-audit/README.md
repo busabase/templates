@@ -4,7 +4,7 @@ Busa Audit is a Busabase App-in-Skill finance anomaly review desk: import orders
 
 ## What It Shows
 
-- Overview: human-attention panel (decisions needed, amount at stake, overdue receivables), KPI cards (orders/invoices/payments imported, matched %, open anomalies, receivable outstanding), a receivable aging bar (30/60/90+), and the recent import log.
+- Overview: amount at stake, overdue receivables and matched-payment rate in one band, a receivable aging bar (30/60/90+), the review-queue preview, and the recent import log. Decision counts sit in the sidebar; per-table totals sit next to each nav item.
 - Orders: normalized orders with invoice/payment status badges and linked anomalies; detail shows the order → invoice → payment document chain.
 - Invoices: issue/due dates, amount vs paid, days overdue, status; detail shows matched payments and deltas.
 - Anomalies: the review queue — rule and severity badges, evidence rows with the computed delta, an editable agent draft (e.g. a receivable-chasing email), review notes, and approve / request changes / block / dismiss decisions with stable refs like `Anomaly #1`.
@@ -46,7 +46,7 @@ Use the URL printed by the launcher, then add one of these demo paths:
 /?demo=orders&lang=en#/orders
 /?demo=invoices&lang=en#/invoices
 /?demo=anomalies&lang=en#/anomalies
-/?demo=detail&lang=en#/anomalies/anom-amount_mismatch-so-2026-1002
+/?demo=detail&lang=en#/anomalies?peek=anom-amount_mismatch-so-2026-1002
 /?demo=anomalies&lang=zh#/anomalies
 ```
 

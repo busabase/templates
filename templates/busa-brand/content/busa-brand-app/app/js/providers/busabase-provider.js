@@ -201,12 +201,32 @@ export const busabaseProvider = {
     for (const key of Object.keys(initialPageCursors)) delete initialPageCursors[key];
     for (const key of Object.keys(initialTotalCounts)) delete initialTotalCounts[key];
     await ensureResources();
+    // Narrative Items are the app; drift alerts and settings are side reads. A
+    // denied or failed side read empties that part with a warning instead of
+    // failing the whole page.
+    const sideReadWarnings = [];
+    const sideRead = async (name, read, fallback) => {
+      try {
+        return await read();
+      } catch (error) {
+        sideReadWarnings.push({
+          id: `read-failed-${name}`,
+          code: "read_failed",
+          name,
+          severity: "warning",
+          message: `Could not read ${name}`,
+          detail: error instanceof Error ? error.message : String(error),
+        });
+        return fallback;
+      }
+    };
     const [items, driftAlerts, settings] = await Promise.all([
       readFirstPage("items"),
-      readFirstPage("drift-alerts"),
-      readSettingsRows(),
+      sideRead("Drift Alerts", () => readFirstPage("drift-alerts"), []),
+      sideRead("Settings", readSettingsRows, new Map()),
     ]);
     const snapshot = buildSnapshot({ items, driftAlerts });
+    snapshot.warnings = sideReadWarnings;
     const profileRow = settings.get("busa-brand-profile") || {};
     const lockRow = settings.get("busa-brand-lock") || {};
     const profile = parsePayload(profileRow.payload);
@@ -258,6 +278,18 @@ export const busabaseProvider = {
       return { ok: true };
     }
     throw new Error(`Unsupported action: ${action}`);
+  },
+
+  // One record by its business id, for a URL that names a record not on the
+  // loaded page. Never pages through the Base to find it.
+  async getRecord(key, id) {
+    if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
+    await ensureResources();
+    const idField = key === "drift-alerts" ? "alert-id" : "item-id";
+    const record = await findRecord(key, idField, id);
+    if (!record) return null;
+    const row = normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields);
+    return normalizePageRows(key, [row])[0];
   },
 
   async fetchPage(key, cursor) {

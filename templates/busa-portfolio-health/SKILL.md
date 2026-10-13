@@ -73,14 +73,14 @@ exact missing dependency. Do not invent a second data backend.
     <td width="50%"><img src="assets/screenshots/concentration.webp" alt="Portfolio concentration"></td>
   </tr>
   <tr>
-    <td><strong>Overview</strong><br>Total AUM, total collected, weighted-average repayment progress, at-risk count, category allocation, and the contracts most lagging behind their expected repayment pace.</td>
-    <td><strong>Concentration</strong><br>Industry/category and city concentration by funding amount and contract count.</td>
+    <td><strong>Overview</strong><br>Total AUM, total collected, weighted-average repayment progress, category allocation, and the contracts most lagging behind their expected repayment pace.</td>
+    <td><strong>Concentration</strong><br>Industry/category or city concentration by funding amount and contract count; a bucket opens its contracts in a drawer.</td>
   </tr>
   <tr>
     <td colspan="2"><img src="assets/screenshots/watchlist.webp" alt="Portfolio watchlist" width="50%"></td>
   </tr>
   <tr>
-    <td colspan="2"><strong>Watchlist</strong><br>Contracts whose most recent month's revenue dropped materially below their trailing average, with a revenue sparkline and a flag-for-review / clear-flag / note action.</td>
+    <td colspan="2"><strong>Watchlist</strong><br>Contracts whose most recent month's revenue dropped materially below their trailing average, worked as a queue beside the selected contract: revenue sparkline and a flag-for-review / clear-flag / note action.</td>
   </tr>
 </table>
 
@@ -178,16 +178,22 @@ requested.
 
 ## Views
 
-- `#/overview`: total AUM, total collected, weighted-average repayment
-  progress, at-risk count, category allocation donut, and the contracts most
-  lagging their expected repayment pace.
-- `#/contracts`: sortable table (business, category, city, funding amount,
-  actual progress, lag, status).
-- `#/contracts/<id>`: per-contract detail — funding/cap/collected, expected
-  vs. actual progress, a revenue sparkline, and the flag/note action.
-- `#/concentration`: funding-amount concentration by category and city.
-- `#/watchlist`: contracts with a recent revenue decline, each with a
-  sparkline and a flag-for-review / clear-flag action.
+- `#/overview`: total AUM, total collected and weighted-average repayment
+  progress (the at-risk and watchlist counts sit in the sidebar), the
+  category allocation donut, and the contracts most lagging their expected
+  repayment pace.
+- `#/contracts[?filter=at_risk|flagged&q=…]`: sortable table (business,
+  category, city, funding amount, actual progress, lag, status). A row opens
+  the contract in a drawer (`?peek=<contract-id>`); `#/contracts/<id>` is the
+  same detail as a full page — funding/cap/collected, expected vs. actual
+  progress, a revenue sparkline, and the flag/note action.
+- `#/watchlist`: contracts with a recent revenue decline, worked as a queue
+  beside the selected contract (split; `?peek=<contract-id>`).
+- `#/concentration[?by=city]`: funding-amount concentration by category or
+  city; a bucket opens its contracts in a drawer (`?peek=<bucket>`).
+- Every view is derived from the contracts loaded so far (50 per page). While
+  more exist, sums and counts say "N of M loaded" and **Load more contracts**
+  reads exactly one more page.
 - `#/settings`: sanitized configuration summary — data provider, fund name,
   base currency, and risk-policy thresholds. Never expose secret values.
 

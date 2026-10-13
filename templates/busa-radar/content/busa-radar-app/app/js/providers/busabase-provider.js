@@ -67,6 +67,12 @@ function base(key) {
 
 const initialCursors = new Map();
 
+const recordToRow = (record) => ({
+  ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+  __recordId: record.id,
+  __headCommitId: record.headCommitId || record.headCommit?.id,
+});
+
 async function readPage(key, cursor) {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
   const declared = base(key);
@@ -76,18 +82,26 @@ async function readPage(key, cursor) {
     ...(cursor ? { cursor } : {}),
   });
   const records = Array.isArray(result) ? result : result.records || [];
-  const rows = records.map((record) => ({
-    ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
-    __recordId: record.id,
-    __headCommitId: record.headCommitId || record.headCommit?.id,
-  }));
-  return { rows, nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
+  return { rows: records.map(recordToRow), nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
 }
 
 async function readPageRows(key) {
   const page = await readPage(key);
   initialCursors.set(key, page.nextCursor);
   return page.rows;
+}
+
+// A side Base the screen can live without (briefs, reports, movers, the sync
+// log) must not take the whole page down when its read is denied or fails:
+// the views that use it show "not loaded" instead.
+async function readOptionalRows(key) {
+  try {
+    return await readPageRows(key);
+  } catch (error) {
+    if (String(error?.message || error).startsWith("SETUP_")) throw error;
+    console.warn(`busa-radar: could not read ${key}`, error instanceof Error ? error.message : error);
+    return [];
+  }
 }
 
 async function countRecords(key, filters) {
@@ -103,7 +117,51 @@ async function countRecords(key, filters) {
   }
 }
 
+// Exact attention counts: each is one server-side COUNT with exact `equals`
+// filters, so the sidebar and overview never show a number that only covers
+// the loaded page. null (procedure denied / failed) falls back to loaded rows.
+const ATTENTION_COUNTS = {
+  triage: ["signals", [["status", "needs_review"]]],
+  briefs: ["briefs", [["status", "needs_review"]]],
+  reports: ["questions", [["status", "report_ready"]]],
+  opportunities: ["opportunities", [["status", "needs_review"]]],
+  highTriage: [
+    "signals",
+    [
+      ["severity", "high"],
+      ["status", "needs_review"],
+    ],
+  ],
+};
+
+async function attentionCounts() {
+  const entries = await Promise.all(
+    Object.entries(ATTENTION_COUNTS).map(async ([name, [key, conditions]]) => [
+      name,
+      await countRecords(
+        key,
+        conditions.map(([fieldSlug, value]) => ({ fieldSlug, operator: "equals", value })),
+      ),
+    ]),
+  );
+  return Object.fromEntries(entries);
+}
+
+const ID_FIELD_SLUG = {
+  watchlist: "target-id",
+  signals: "signal-id",
+  questions: "question-id",
+  opportunities: "opportunity-id",
+};
+const NORMALIZE_BY_KEY = {
+  watchlist: normalizeWatchTarget,
+  signals: normalizeSignal,
+  questions: normalizeQuestion,
+  opportunities: normalizeOpportunity,
+};
+
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -162,17 +220,18 @@ export const busabaseProvider = {
     await ensureResources();
     initialCursors.clear();
     const recordCountsPromise = Promise.all(BROWSED_KEYS.map((key) => countRecords(key)));
+    const attentionPromise = attentionCounts();
     const [watchlist, signals, questions, briefs, reports, movers, opportunities, sync_log, settings] =
       await Promise.all([
         readPageRows("watchlist"),
         readPageRows("signals"),
         readPageRows("questions"),
-        readPageRows("briefs"),
-        readPageRows("reports"),
-        readPageRows("movers"),
-        readPageRows("opportunities"),
-        readPageRows("sync-log"),
-        readSettingsRow(),
+        readOptionalRows("briefs"),
+        readOptionalRows("reports"),
+        readOptionalRows("movers"),
+        readOptionalRows("opportunities"),
+        readOptionalRows("sync-log"),
+        readSettingsRow().catch(() => ({})),
       ]);
     const snapshot = buildSnapshot({
       watchlist,
@@ -186,12 +245,14 @@ export const busabaseProvider = {
     });
     const config_summary = buildConfigSummary({ watchlist: snapshot.watchlist, settings });
     const recordCounts = await recordCountsPromise;
+    const counts = await attentionPromise;
     return {
       app: "busa-radar",
       demo: false,
       data_provider: "busabase",
       pagination: Object.fromEntries(BROWSED_KEYS.map((key) => [key, initialCursors.get(key) || null])),
       totals: Object.fromEntries(BROWSED_KEYS.map((key, index) => [key, recordCounts[index]])),
+      counts,
       onboarding: { completed: watchlist.length > 0 || signals.length > 0, config_version: "1" },
       lock: null,
       config_summary,
@@ -331,13 +392,20 @@ export const busabaseProvider = {
   async fetchPage(key, cursor) {
     await ensureResources();
     const page = await readPage(key, cursor);
-    const normalize = {
-      watchlist: normalizeWatchTarget,
-      signals: normalizeSignal,
-      questions: normalizeQuestion,
-      opportunities: normalizeOpportunity,
-    }[key];
+    const normalize = NORMALIZE_BY_KEY[key];
     return { ...page, rows: normalize ? page.rows.map(normalize) : page.rows };
+  },
+
+  // One record named by the URL that is not on the loaded page — read on its
+  // own by business id instead of paging forward until it shows up.
+  async getRecord(key, businessId) {
+    if (!allowedReads.has("records.get") || !ID_FIELD_SLUG[key]) return null;
+    await ensureResources();
+    const record = await findRecord(key, ID_FIELD_SLUG[key], businessId);
+    if (!record) return null;
+    const normalize = NORMALIZE_BY_KEY[key];
+    const row = recordToRow(record);
+    return normalize ? normalize(row) : row;
   },
 
   async provisionResources() {

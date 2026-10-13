@@ -12,6 +12,17 @@ export const appConfig = {
     slug: "busa-standup",
   },
   airApp: { name: "Busa Standup", slug: "busa-standup-app", resourceKey: "busa-standup-app" },
+  // Detail mode per record view, chosen by what people do with the record:
+  //   members   → page:   a member's profile is a workplace of its own — open
+  //                       blockers plus a recent-updates timeline — people
+  //                       stay a while, so it earns the full page.
+  //   blockers  → drawer: a fact people scan many of (severity/status/text),
+  //                       read, and return to the list.
+  //   reminders → split:  the approval queue is worked top to bottom, one
+  //                       draft after the next, so the queue stays beside it.
+  //   history   → page:   a standup day is its own workspace — digest plus
+  //                       every member's update — people read for a while.
+  ui: { detail_modes: { members: "page", blockers: "drawer", reminders: "split", history: "page" } },
   bases: [
     {
       key: "members",

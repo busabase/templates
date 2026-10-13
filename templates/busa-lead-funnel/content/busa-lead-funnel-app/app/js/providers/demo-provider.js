@@ -10,7 +10,7 @@
 // convenience — so its logic is folded in here instead of becoming a
 // skill-root trusted script; there is no trusted-writer precedent (like
 // busa-money's provider sync or busa-family-fund's CSV import) to preserve.
-import { DEFAULT_SCORING_CRITERIA, buildSnapshot } from "../lead-funnel-model.js?v=0.1.0";
+import { DEFAULT_SCORING_CRITERIA, STAGES, buildSnapshot } from "../lead-funnel-model.js?v=0.1.0";
 
 const NOW = new Date("2026-07-01T15:00:00.000Z");
 
@@ -346,16 +346,28 @@ function localizeZh(leads) {
   }));
 }
 
+function demoSnapshot() {
+  const lang = String(new URLSearchParams(window.location.search).get("lang") || "");
+  const zh = lang.toLowerCase().startsWith("zh");
+  const rawLeads = zh ? localizeZh(generateMockLeads(NOW)) : generateMockLeads(NOW);
+  return buildSnapshot({ leads: rawLeads, criteria: DEFAULT_SCORING_CRITERIA });
+}
+
 export const demoProvider = {
   kind: "demo",
 
   async getState() {
     const params = new URLSearchParams(window.location.search);
-    const scenario = String(params.get("demo") || "board");
-    const lang = String(params.get("lang") || "");
-    const zh = lang.toLowerCase().startsWith("zh");
-    const rawLeads = zh ? localizeZh(generateMockLeads(NOW)) : generateMockLeads(NOW);
-    const snapshot = buildSnapshot({ leads: rawLeads, criteria: DEFAULT_SCORING_CRITERIA });
+    const scenario = String(params.get("demo") || "overview");
+    const snapshot = demoSnapshot();
+    // The whole demo pipeline is one page, so these counts are exact — the
+    // same shape the Busabase provider fills from records.count.
+    const counts = {
+      total: snapshot.leads.length,
+      by_stage: Object.fromEntries(
+        STAGES.map((stage) => [stage, snapshot.leads.filter((lead) => lead.stage === stage).length]),
+      ),
+    };
     return {
       app: "busa-lead-funnel",
       demo: true,
@@ -376,7 +388,18 @@ export const demoProvider = {
       },
       leads: snapshot.leads,
       summary: snapshot.summary,
+      counts,
+      pagination: { leads: null },
     };
+  },
+
+  async fetchPage(_key, _cursor, { stage = "" } = {}) {
+    const rows = demoSnapshot().leads.filter((lead) => !stage || lead.stage === stage);
+    return { rows, nextCursor: null };
+  },
+
+  async getRecord(_key, id) {
+    return demoSnapshot().leads.find((lead) => lead.id === id) || null;
   },
 
   async moveStage() {

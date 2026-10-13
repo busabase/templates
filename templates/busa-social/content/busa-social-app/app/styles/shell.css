@@ -454,12 +454,6 @@
     align-items: center;
   }
 
-  .content {
-    min-height: 0;
-    overflow: auto;
-    padding: 16px 18px 24px;
-  }
-
   .metrics {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -518,33 +512,13 @@
     margin-top: 10px;
   }
 
-  .table-wrap {
-    overflow: auto;
-    border-radius: 0;
-    border-left: 0;
-    border-right: 0;
-  }
-
-  table {
-    width: 100%;
-    min-width: 940px;
-    border-collapse: collapse;
-  }
-
-  th,
-  td {
-    padding: 11px 12px;
-    border-bottom: 1px solid var(--line);
-    text-align: left;
-    vertical-align: top;
-  }
-
-  th {
-    color: var(--muted);
-    font-size: var(--text-sm);
-    font-weight: 700;
-    background: var(--surface-hover);
-  }
+  /* table-wrap / table / th,td element rules used to live here. Every table
+   * in this app is now a `.ws-table` (base-ui.css's record-view primitive),
+   * which brings its own sizing — a leftover `min-width: 940px` on the bare
+   * `table` selector fought it (table-layout:fixed honors `width` but not
+   * `min-width`, so the split queue's 380px list column kept overflowing to
+   * 940px). Deleted rather than narrowed: nothing here renders a plain
+   * `<table>` anymore. */
 
   .strong {
     font-weight: 700;
@@ -654,8 +628,7 @@
     color: var(--accent);
   }
 
-  .kpi-grid,
-  .account-grid {
+  .kpi-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 14px;
@@ -907,6 +880,18 @@
   dd {
     margin: 0;
     overflow-wrap: anywhere;
+  }
+
+  /* The ws-view body for crisis/settings is a plain flex child of .ws-view —
+   * unlike the record-view workspace (.ws-list/.ws-detail, which already
+   * scroll), it needs its own grow + scroll since there is no list/detail
+   * split here. */
+  .settings-scroll,
+  .crisis-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 0 24px 32px;
   }
 
   .settings {

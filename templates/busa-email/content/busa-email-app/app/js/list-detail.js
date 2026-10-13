@@ -13,14 +13,7 @@ import {
 } from "./format.js";
 import { t, template } from "./i18n.js";
 import { setupNeeded } from "./provider.js";
-import {
-  applyRouteFromHash,
-  hashHasSelectedMessage,
-  navigateTo,
-  registerRouterHooks,
-  routeFor,
-  syncRoute,
-} from "./router.js";
+import { applyRouteFromHash, navigateTo, recordHref, registerRouterHooks, routeFor } from "./router.js";
 import {
   applyLockState,
   attachHtmlPreviewAutoResize,
@@ -31,7 +24,8 @@ import {
   isMobileLayout,
   pollLock,
   restoreScrollState,
-  setMobileDetailOpen,
+  syncLayoutClasses,
+  syncModeButtons,
 } from "./shell.js";
 import { $, appendStatePage, store } from "./store.js";
 
@@ -48,9 +42,27 @@ export function renderMobileTopbar() {
   const title = $("mobileViewTitle");
   const meta = $("mobileViewMeta");
   if (!title || !meta) return;
-  title.textContent =
-    store.selectedId && store.mobileDetailOpen ? selectedItem()?.subject || t("empty.select_message") : modeLabel();
-  meta.textContent = t("list.items", { count: store.state.items?.length || 0 });
+  if (store.page === "overview") {
+    title.textContent = t("nav.overview");
+    meta.textContent = t("list.items", { count: countFor("all") });
+    return;
+  }
+  // The detail names the message itself; the bar keeps naming the queue.
+  title.textContent = modeLabel();
+  meta.textContent = loadedLabel();
+}
+
+function isPartial() {
+  return Boolean(store.state.pagination?.next_cursor);
+}
+
+// "8 items", or "50 of 120 items" while more pages exist.
+function loadedLabel() {
+  const loaded = store.state.items?.length || 0;
+  if (store.mode === "all" && isPartial()) {
+    return t("list.loaded_items", { loaded, total: store.state.total_cached ?? loaded });
+  }
+  return t("list.items", { count: isPartial() ? `${loaded}+` : loaded });
 }
 
 export function renderCounts() {
@@ -59,12 +71,7 @@ export function renderCounts() {
     if (el) el.textContent = countFor(name);
   });
   const humanNeeds = $("count-human-needs_review");
-  const humanApproved = $("count-human-approved");
-  const humanBlocked = $("count-human-blocked");
   if (humanNeeds) humanNeeds.textContent = countFor("needs_review");
-  if (humanApproved) humanApproved.textContent = countFor("approved");
-  if (humanBlocked) humanBlocked.textContent = countFor("blocked");
-  renderMobileTopbar();
 }
 
 export function renderLoadMore() {
@@ -72,12 +79,14 @@ export function renderLoadMore() {
   const button = $("loadMore");
   const status = $("loadMoreStatus");
   if (!control || !button || !status) return;
-  const hasNext = Boolean(store.state.pagination?.next_cursor);
-  control.classList.toggle("is-hidden", !hasNext && !store.loadMoreError);
-  button.classList.toggle("is-hidden", !hasNext);
-  button.disabled = store.loadingMore;
+  const hasNext = isPartial();
+  control.hidden = !hasNext && !store.loadMoreError;
+  button.hidden = !hasNext;
+  button.disabled = store.loadingMore || isLocked();
   button.textContent = t(store.loadingMore ? "list.loading_more" : "list.load_more");
-  status.textContent = store.loadMoreError ? t("list.load_more_failed") : "";
+  status.textContent = store.loadMoreError
+    ? t("list.load_more_failed")
+    : t("list.loaded_items", { loaded: store.state.items.length, total: store.state.total_cached ?? "?" });
 }
 
 export function renderBulkActions() {
@@ -85,7 +94,11 @@ export function renderBulkActions() {
   const selected = $("selectedCount");
   if (!bar || !selected) return;
   const count = store.checked.size;
-  bar.classList.toggle("is-hidden", count === 0);
+  bar.hidden = count === 0;
+  // While messages are checked the toolbar row is for deciding them, so the
+  // search field steps aside instead of wrapping the row (the count stays).
+  const search = $("searchInput")?.closest("label");
+  if (search) search.hidden = count > 0;
   selected.textContent = t("list.selected", { count });
   const bulkSelect = $("bulkDecisionSelect");
   if (bulkSelect) bulkSelect.value = "";
@@ -243,80 +256,121 @@ function reviewBriefHtml(item) {
   `;
 }
 
+// The one state that matters in a queue row: what happened, else what was
+// decided, else where the message stands. Everything else is in the detail.
+function stateBadge(item) {
+  return executionLabel(item) || decisionLabel(item) || badge(item.status || t("badge.new"), item.status || "");
+}
+
+const SENSITIVE_RISKS = new Set(["security", "money", "identity", "privacy"]);
+function isSensitive(item) {
+  return (item.risk || []).some((risk) => SENSITIVE_RISKS.has(risk)) || SENSITIVE_RISKS.has(item.category);
+}
+
 function rowHtml(item) {
-  const risks = (item.risk || []).map((risk) => badge(risk, risk)).join("");
+  const id = escapeHtml(item.id);
   const checkedAttr = store.checked.has(item.id) ? "checked" : "";
-  const reviewRef = item.review_ref ? `<span class="review-ref">${escapeHtml(item.review_ref)}</span>` : "";
+  const selected = store.selectedId === item.id ? ' class="ws-selected"' : "";
+  // The full "Review #n" label is in the detail; the row keeps the number.
+  const reviewRef = item.review_number
+    ? `<span class="review-ref" title="${escapeHtml(item.review_ref)}">#${escapeHtml(item.review_number)}</span>`
+    : "";
+  const sender = shortSender(item.from);
+  const subject = item.subject || t("unknown.subject");
   return `
-    <div class="message-row ${store.selectedId === item.id ? "selected" : ""}" data-id="${escapeHtml(item.id)}">
-      <div><input type="checkbox" class="row-check" data-id="${escapeHtml(item.id)}" ${checkedAttr}></div>
-      <div>
-        <div class="row-top">
-          <div class="sender-line">${reviewRef}<span class="sender">${escapeHtml(shortSender(item.from))}</span></div>
-          <div class="date">${escapeHtml(item.uid)}</div>
-        </div>
-        <div class="row-account">
-          <span>${escapeHtml(t("list.account"))}</span>
-          <strong>${escapeHtml(accountLabel(item))}</strong>
-        </div>
-        <div class="subject">${escapeHtml(item.subject)}</div>
-        <div class="summary">${escapeHtml(item.summary)}</div>
-        <div class="badges">
-          ${badge(item.status || t("badge.new"), item.status || "")}
-          ${badge(item.category || t("badge.other"))}
-          ${planBadge(item)}
-          ${risks}
-          ${decisionLabel(item)}
-          ${executionLabel(item)}
-        </div>
-      </div>
-    </div>`;
+    <tr data-id="${id}"${selected}>
+      <td title="${escapeHtml(`${subject}\n${item.summary || ""}`)}">
+        <span class="row-subject">
+          <input type="checkbox" class="row-check" data-id="${id}" aria-label="${escapeHtml(t("list.select_row"))}" ${checkedAttr}>
+          ${reviewRef}<strong>${escapeHtml(subject)}</strong>
+        </span>
+      </td>
+      <td title="${escapeHtml(item.from || "")}">${escapeHtml(sender)}</td>
+      <td class="ws-split-keep row-state">${stateBadge(item)}</td>
+      <td>${escapeHtml(accountLabel(item))}</td>
+      <td>${planBadge(item)}</td>
+      <td class="row-date">${escapeHtml(item.date || "")}</td>
+    </tr>`;
+}
+
+function tableHtml(items) {
+  const allChecked = items.length > 0 && items.every((item) => store.checked.has(item.id));
+  return `
+    <table class="ws-table message-table">
+      <thead>
+        <tr>
+          <th><span class="row-subject"><input type="checkbox" id="selectAll" aria-label="${escapeHtml(t("list.select_all"))}" ${allChecked ? "checked" : ""}>${escapeHtml(t("col.subject"))}</span></th>
+          <th>${escapeHtml(t("col.from"))}</th>
+          <th class="ws-split-keep">${escapeHtml(t("col.state"))}</th>
+          <th>${escapeHtml(t("detail.source_account"))}</th>
+          <th>${escapeHtml(t("detail.next"))}</th>
+          <th class="row-date">${escapeHtml(t("detail.date"))}</th>
+        </tr>
+      </thead>
+      <tbody>${items.map(rowHtml).join("")}</tbody>
+    </table>`;
+}
+
+function emptyHtml(title, detail = "") {
+  return `<div class="empty-state"><strong>${escapeHtml(title)}</strong>${detail ? `<p>${escapeHtml(detail)}</p>` : ""}</div>`;
+}
+
+function searchQuery() {
+  return ($("searchInput")?.value || "").trim();
 }
 
 export function renderList() {
+  if (store.page !== "view") return;
+  const title = $("viewTitle");
+  title.textContent = modeLabel();
+  title.title = t(`filter.${store.mode}.tooltip`);
+  $("viewCount").textContent = `${store.state.items.length}${isPartial() ? "+" : ""}`;
   if (setupNeeded()) {
-    $("messageList").innerHTML = `<div class="empty-detail">${escapeHtml(t("setup.list_empty"))}</div>`;
-    $("listCount").textContent = t("list.setup_required");
+    $("messageList").innerHTML = emptyHtml(t("setup.list_empty"));
     renderLoadMore();
+    renderBulkActions();
     return;
   }
-  if (!store.selectedId || !store.state.items.some((item) => item.id === store.selectedId)) {
-    if (isMobileLayout() && !hashHasSelectedMessage()) {
-      store.selectedId = null;
-      setMobileDetailOpen(false);
-    } else {
-      store.selectedId = store.state.items[0]?.id || null;
-      syncRoute({ push: false });
-    }
-  }
-  $("messageList").innerHTML =
-    store.state.items.map(rowHtml).join("") || `<div class="empty-detail">${escapeHtml(t("list.no_items"))}</div>`;
-  $("listCount").textContent = t("list.loaded_items", {
-    loaded: store.state.items.length,
-    total: store.state.total_cached ?? store.state.items.length,
-  });
+  const items = store.state.items;
+  $("messageList").innerHTML = items.length
+    ? tableHtml(items)
+    : emptyHtml(searchQuery() ? t("list.no_matches") : t("list.no_items"));
   renderLoadMore();
   renderMobileTopbar();
-  document.querySelectorAll(".message-row").forEach((row) => {
-    row.addEventListener("click", (event) => {
-      if (isLocked()) return;
-      if (event.target.classList.contains("row-check")) return;
-      if (isMobileLayout()) setMobileDetailOpen(true);
-      navigateTo({ selectedId: row.dataset.id });
-    });
-  });
-  document.querySelectorAll(".row-check").forEach((box) => {
-    box.addEventListener("change", () => {
-      if (isLocked()) {
-        box.checked = store.checked.has(box.dataset.id);
-        return;
-      }
-      if (box.checked) store.checked.add(box.dataset.id);
-      else store.checked.delete(box.dataset.id);
-      renderBulkActions();
-    });
-  });
   renderBulkActions();
+}
+
+// Row clicks, checkboxes and select-all are delegated once from the list
+// container, so re-rendering the table never re-binds handlers.
+export function wireList() {
+  const list = $("messageList");
+  list.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target instanceof HTMLInputElement && target.type === "checkbox") return;
+    const row = target.closest?.("tbody tr[data-id]");
+    if (!row || isLocked()) return;
+    navigateTo({ page: "view", selectedId: row.dataset.id, presentation: store.presentation === "page" ? "page" : "peek" });
+  });
+  list.addEventListener("change", (event) => {
+    const box = event.target;
+    if (!(box instanceof HTMLInputElement)) return;
+    if (isLocked()) {
+      box.checked = box.id === "selectAll" ? false : store.checked.has(box.dataset.id);
+      toast(t("lock.processing"));
+      return;
+    }
+    if (box.id === "selectAll") {
+      if (box.checked) {
+        for (const item of store.state.items) store.checked.add(item.id);
+      } else store.checked.clear();
+      renderList();
+      return;
+    }
+    if (!box.classList.contains("row-check")) return;
+    if (box.checked) store.checked.add(box.dataset.id);
+    else store.checked.delete(box.dataset.id);
+    renderBulkActions();
+  });
 }
 
 export function onboardingHtml() {
@@ -345,16 +399,27 @@ export function selectedItem() {
 }
 
 export function renderDetail() {
-  const backButton = `<button class="back-to-list" type="button">${escapeHtml(t("detail.back_to_list"))}</button>`;
+  if (store.page !== "view") return;
+  const asPage = store.presentation === "page" || isMobileLayout();
+  $("detailBar").hidden = !store.selectedId;
+  $("detailBack").textContent = asPage ? t("detail.back_to_list") : t("detail.close");
+  $("detailExpand").hidden = !store.selectedId || store.presentation === "page";
+  if (store.selectedId) $("detailExpand").href = recordHref(store.selectedId, "page");
+  $("detailActions").innerHTML = "";
   if (setupNeeded()) {
-    $("detailPanel").innerHTML = `${backButton}<div class="empty-detail">${escapeHtml(t("setup.detail_empty"))}</div>`;
+    $("detailBody").innerHTML = `<div class="ws-detail-empty">${escapeHtml(t("setup.detail_empty"))}</div>`;
+    renderMobileTopbar();
+    return;
+  }
+  if (!store.selectedId) {
+    $("detailBody").innerHTML = `<div class="ws-detail-empty">${escapeHtml(t("empty.select_message"))}</div>`;
     renderMobileTopbar();
     return;
   }
   const item = selectedItem();
   if (!item) {
-    $("detailPanel").innerHTML =
-      `${backButton}<div class="empty-detail">${escapeHtml(t("empty.select_message"))}</div>`;
+    // A shared link to a message outside this queue or the loaded page.
+    $("detailBody").innerHTML = emptyHtml(t("detail.missing"), t("detail.missing_hint"));
     renderMobileTopbar();
     return;
   }
@@ -384,7 +449,6 @@ export function renderDetail() {
     ["noAction", "no_action", t("action.no_action"), t("detail.no_action.tooltip")],
   ].filter(([id]) => id !== primaryAction.id);
   const actionBar = `
-    <div class="detail-actions detail-actions-top">
       <div class="action-cluster">
         <button id="primaryDetailAction" class="detail-primary-action primary has-tooltip" data-tooltip="${escapeHtml(primaryAction.tooltip)}" title="${escapeHtml(primaryAction.tooltip)}">${escapeHtml(primaryAction.label)}</button>
         <button
@@ -407,12 +471,11 @@ export function renderDetail() {
             .join("")}
         </div>
       </div>
-    </div>
   `;
-  $("detailPanel").innerHTML = `
-    ${backButton}
-    ${actionBar}
-    <div class="detail-title">${escapeHtml(item.subject)}</div>
+  $("detailActions").innerHTML = actionBar;
+  $("detailBody").innerHTML = `
+    <h2 class="detail-title">${escapeHtml(item.subject || t("unknown.subject"))}</h2>
+    ${item.summary ? `<p class="detail-summary">${escapeHtml(item.summary)}</p>` : ""}
     <div class="detail-meta">
       ${reviewMeta}
       <strong>${escapeHtml(t("detail.source_account"))}</strong><div>${escapeHtml(accountLabel(item))} <span class="muted">· ${escapeHtml(accountEmailLabel(item))}</span></div>
@@ -471,6 +534,108 @@ export function renderDetail() {
   };
 }
 
+// ── Overview ─────────────────────────────────────────────────────────────
+// Three numbers the nav does not already show. The SDK pinned here has no
+// server aggregate for them, so they are counted over the loaded page and say
+// so while more pages exist.
+function metricsHtml() {
+  const items = store.state.items || [];
+  const open = items.filter((item) => item.execution?.status !== "executed" && item.decision?.action !== "no_action");
+  const drafts = open.filter((item) => suggestedReplyFor(item)).length;
+  const sensitive = open.filter(isSensitive).length;
+  const mailboxes = (store.state.email_accounts?.accounts || []).length;
+  const scope = isPartial() ? t("metric.loaded_scope", { count: items.length }) : "";
+  return [
+    [t("metric.drafts") + scope, drafts],
+    [t("metric.sensitive") + scope, sensitive],
+    [t("metric.mailboxes"), mailboxes],
+  ]
+    .map(([label, value]) => `<div><span title="${escapeHtml(label)}">${escapeHtml(label)}</span><strong>${value}</strong></div>`)
+    .join("");
+}
+
+function overviewRows(items, mode) {
+  return items
+    .map(
+      (item) => `
+      <a class="overview-row" href="${recordHref(item.id, "peek", mode)}">
+        <span class="overview-row-main">
+          <strong>${escapeHtml(item.subject || t("unknown.subject"))}</strong>
+          <small>${escapeHtml(shortSender(item.from))}</small>
+        </span>
+        <span class="overview-row-state">${stateBadge(item)}</span>
+      </a>`,
+    )
+    .join("");
+}
+
+function overviewPanel(title, href, body, empty) {
+  return `
+    <section class="card overview-panel">
+      <header class="overview-panel-head">
+        <h2>${escapeHtml(title)}</h2>
+        ${href ? `<a href="${href}">${escapeHtml(t("overview.see_all"))}</a>` : ""}
+      </header>
+      ${body || `<p class="overview-empty">${escapeHtml(empty)}</p>`}
+    </section>`;
+}
+
+export function renderOverview() {
+  if (store.page !== "overview") return;
+  const batch = store.state.batch || {};
+  const items = store.state.items || [];
+  const scanned = batch.last_scan || batch.updated_at || "";
+  $("overviewSummary").textContent = setupNeeded()
+    ? t("setup.list_empty")
+    : batch.batch_id
+      ? t("overview.summary", {
+          count: store.state.total_cached ?? items.length,
+          date: scanned ? new Date(scanned).toLocaleString(store.uiLanguage) : "—",
+        })
+      : t("overview.summary_empty");
+  $("overviewMetrics").innerHTML = metricsHtml();
+  const needs = items.filter((item) => item.review_ref).slice(0, 6);
+  const blocked = items.filter((item) => item.execution?.status === "blocked").slice(0, 4);
+  const accounts = store.state.email_accounts?.accounts || [];
+  const accountRows = accounts
+    .map(
+      (account) => `
+      <div class="overview-row">
+        <span class="overview-row-main">
+          <strong>${escapeHtml(account.display_name || account.primary_email || t("account.unknown"))}</strong>
+          <small>${escapeHtml(account.primary_email || "")}</small>
+        </span>
+        <span class="overview-row-state">${badge(account.imap_env_configured ? t("account.imap_ready") : t("account.imap_missing"), account.imap_env_configured ? "done" : "blocked")}</span>
+      </div>`,
+    )
+    .join("");
+  $("overviewBody").innerHTML = `
+    ${overviewPanel(t("overview.next_up"), "#/needs_review", overviewRows(needs, "needs_review"), t("overview.next_up_empty"))}
+    ${overviewPanel(t("overview.blocked"), blocked.length ? "#/blocked" : "", overviewRows(blocked, "blocked"), t("overview.blocked_empty"))}
+    ${overviewPanel(t("overview.mailboxes"), "", accountRows, t("overview.mailboxes_empty"))}
+  `;
+}
+
+// One render pass for whatever the route says is on screen.
+export function renderAll() {
+  const onView = store.page === "view";
+  $("overviewPage").hidden = onView;
+  $("viewPage").hidden = !onView;
+  syncModeButtons();
+  syncLayoutClasses();
+  renderCounts();
+  if (onView && store.stateMode !== store.mode) {
+    // The route moved to another queue before its page arrived.
+    $("messageList").innerHTML = "";
+  } else {
+    renderOverview();
+    renderList();
+    renderDetail();
+  }
+  renderMobileTopbar();
+  applyLockState();
+}
+
 export async function refresh({ preserveScroll = true, append = false } = {}) {
   if (isEditing()) return pollLock();
   applyRouteFromHash();
@@ -480,13 +645,14 @@ export async function refresh({ preserveScroll = true, append = false } = {}) {
   const pagination = append ? store.state.pagination || {} : {};
   const cursor = pagination.next_cursor ? `&cursor=${encodeURIComponent(pagination.next_cursor)}` : "";
   const batchId = pagination.batch_id ? `&batch_id=${encodeURIComponent(pagination.batch_id)}` : "";
-  const next = await api(`/api/state?mode=${store.mode}&q=${q}${cursor}${batchId}`);
+  // Overview summarises the whole batch; a queue reads only its own mode.
+  const mode = store.page === "overview" ? "all" : store.mode;
+  const query = store.page === "overview" ? "" : q;
+  const next = await api(`/api/state?mode=${mode}&q=${query}${cursor}${batchId}`);
   store.state = append ? appendStatePage(store.state, next) : next;
+  store.stateMode = mode;
   store.pagesLoaded = append ? store.pagesLoaded + 1 : 1;
-  renderCounts();
-  renderList();
-  renderDetail();
-  applyLockState();
+  renderAll();
   if (store.routeNeedsReplace) {
     history.replaceState(null, "", `#${routeFor()}`);
     store.routeNeedsReplace = false;
@@ -523,14 +689,22 @@ export async function decide(action, ids = null) {
     payload.draft = $("draftText")?.value || item.draft || "";
     payload.suggested_reply = $("draftText")?.value || item.suggested_reply || "";
   }
+  const order = store.state.items.map((entry) => entry.id);
   const data = await api("/api/decision", payload);
-  list.forEach((id) => store.checked.delete(id));
+  for (const id of list) store.checked.delete(id);
   toast(
     data.change_requests?.length
       ? t("toast.submitted_review_count", { count: data.changed.length })
       : t("toast.saved_count", { count: data.changed.length }),
   );
   await refresh({ preserveScroll: false });
+  // Working a queue top to bottom: when the decided message leaves this queue,
+  // open the one that followed it instead of leaving the detail empty.
+  if (isSingleDetailAction && store.selectedId === list[0] && !selectedItem()) {
+    const remaining = new Set(store.state.items.map((entry) => entry.id));
+    const nextId = order.slice(order.indexOf(list[0]) + 1).find((id) => remaining.has(id)) || null;
+    navigateTo({ selectedId: nextId }, { replace: true });
+  }
 }
 
 // router.js needs refresh/renderList/renderDetail (registered below) and this
@@ -539,6 +713,5 @@ export async function decide(action, ids = null) {
 // never at module-evaluation time.
 registerRouterHooks({
   refresh,
-  renderList,
-  renderDetail,
+  renderAll,
 });

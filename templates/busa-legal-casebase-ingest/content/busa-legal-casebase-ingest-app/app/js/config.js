@@ -6,6 +6,24 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Where a record opens, per view (the item views are status slices of one
+  // Base, so the queue gets its own mode):
+  //   items/approved/done/blocked → page:   a case record is a workplace —
+  //     extraction, redaction rail, evidence, draft and the decision.
+  //   review   → split:  the anonymization QA queue is worked top to bottom.
+  //   checks   → drawer: a QA check is a fact you scan, read, and return.
+  //   entities → drawer: a library grouping is read at a glance.
+  ui: {
+    detail_modes: {
+      items: "page",
+      review: "split",
+      approved: "page",
+      done: "page",
+      blocked: "page",
+      checks: "drawer",
+      entities: "drawer",
+    },
+  },
   folder: {
     name: "Legal Casebase Ingest",
     description:
@@ -139,7 +157,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

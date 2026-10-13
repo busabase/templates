@@ -164,24 +164,27 @@ preview/debugging is explicitly requested.
 
 Required app views (hash routes):
 
-- `#/overview`: KPI cards (products, active products, average margin,
-  inventory value, certificates at risk, agent-ready products at 7/7), a **"Certificates expiring soon"**
-  panel (the headline screen — soonest-first, linking to each product),
-  visual product cards, review-queue preview, and recent activity.
-- `#/products` and `#/products/<id>`: catalog (each card shows an
-  "Agent-ready x/7" badge) and product detail with gallery, pricing,
-  inventory, content readiness, compliance notes, the Agent readiness panel
-  (each check with ✓/✗ and its detail), channel matrix, linked certificates,
-  and linked review cards.
-- `#/inventory`: warehouse and days-cover table with low-stock and
-  stockout-risk badges.
-- `#/channels`: product × platform status table with channel issue notes
-  and content scores.
-- `#/certificates`: every certificate, sorted soonest-expiry-first, each
-  linking to its product.
-- `#/review`: approval queue with `approve` / `request_changes` / `block`
-  decisions. Decisions write directly onto the review item's own record
-  through `busabase-sdk` — there is no separate decisions bucket.
+- `#/overview`: the only page with a hero and a three-number band
+  (inventory value, average margin, agent-ready products at 7/7 — labelled
+  "loaded rows" when more products exist than are loaded), visual product
+  cards, review-queue preview, a **"Certificates expiring soon"** panel, and
+  recent activity. Per-view totals sit next to each nav item; low stock,
+  channel issues and expiring certificates sit in the sidebar attention block.
+- Record views are one toolbar row (title, search, refresh) over a
+  full-bleed 40px-row table. Each view opens a record its own way
+  (`ui.detail_modes` in `app/js/config.js`):
+  - `#/products` → `#/products/<id>` full page (gallery, pricing,
+    inventory, content readiness, compliance, the Agent readiness panel,
+    channel matrix, linked certificates, linked review items).
+  - `#/inventory`, `#/channels`, `#/certificates` → drawer at
+    `?peek=<id>`; Escape/Close returns to the list, "Open full page" goes
+    to `#/<view>/<id>`.
+  - `#/review` → split queue at `?peek=<item_id>`: the queue stays on the
+    left, the item's evidence, an optional review note and `approve` /
+    `request_changes` / `block` on the right. Decisions write directly onto
+    the review item's own record through `busabase-sdk` — there is no
+    separate decisions bucket.
+  On a phone every mode opens as a page with Back to list.
 - `#/settings`: sanitized seller profile, platform connectors, warehouses,
   review policy, and data-provider state, read live off the Settings Base.
 

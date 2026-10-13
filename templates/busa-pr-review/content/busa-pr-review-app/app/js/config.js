@@ -12,6 +12,22 @@ export const appConfig = {
     slug: "busa-pr-review",
   },
   airApp: { name: "Busa PR Review", slug: "busa-pr-review-app", resourceKey: "busa-pr-review-app" },
+  // Where a record opens. `reviews` is a review inbox, so split by default;
+  // the app shows one Base through several workflow views, and the history
+  // views (approved, tested, done, all) open a drawer instead — see app.js.
+  ui: {
+    detail_modes: { reviews: "split", settings: "drawer" },
+    view_detail_modes: {
+      needs_review: "split",
+      to_approve: "split",
+      approved: "drawer",
+      needs_test: "split",
+      tested: "drawer",
+      blocked: "split",
+      done: "drawer",
+      all: "drawer",
+    },
+  },
   bases: [
     {
       key: "reviews",
@@ -72,7 +88,7 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
   },

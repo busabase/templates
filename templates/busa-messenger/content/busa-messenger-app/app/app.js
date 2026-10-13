@@ -1,25 +1,42 @@
 import { messages } from "./i18n/messages.js";
+import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
 import {
   decideAction,
   queueReplyAction,
-  renderAccounts,
-  renderInbox,
-  renderOutbox,
+  renderOverview,
+  renderRecordView,
   renderSettings,
 } from "./js/message-views.js";
-import { withReplyRefs } from "./js/messenger-model.js?v=0.1.0";
+import { REPLY_STATUSES, withReplyRefs } from "./js/messenger-model.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
 
 const FEATURED_DEMO_CONVERSATION = "wa-lena-pricing";
 const PENDING_STATUSES = ["needs_review", "changes_requested", "approved"];
+
+// The Base behind each record view.
+export const VIEW_BASE = { inbox: "conversations", outbox: "replies", accounts: "accounts" };
+// Where a record opens, per view. Chosen by what people do with the record:
+//   inbox    → split:  conversations are worked top to bottom — read, decide,
+//                      queue a reply, next — so the queue stays beside the chat.
+//   outbox   → split:  the reply review queue is the same motion: approve or
+//                      send back one draft after the next.
+//   accounts → drawer: an account is a fact you scan, check its connector or
+//                      readiness, and return to the list.
+// A `/record` path always opens the full page; `?peek=` drives drawer/split.
+// On a phone every mode is a page (base-ui.css handles that).
+// Declared once, per Base, in config.js `ui.detail_modes`.
+export const DETAIL_MODES = Object.fromEntries(
+  Object.entries(VIEW_BASE).map(([view, base]) => [view, appConfig.ui.detail_modes[base] || "drawer"]),
+);
+const RECORD_VIEWS = Object.keys(VIEW_BASE);
+const OUTBOX_STATES = ["all", ...REPLY_STATUSES];
 
 export const state = {
   snapshot: null,
   outbox: null,
   settings: null,
   route: parseRoute(),
-  query: "",
   drafts: {},
   notes: {},
   edits: {},
@@ -38,24 +55,35 @@ export const state = {
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-messenger.sidebarCollapsed";
 
+const byId = (id) => document.getElementById(id);
 export const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  notice: document.querySelector("#notice"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  needsReplyCount: document.querySelector("#count-needs-reply"),
-  approvedCount: document.querySelector("#count-approved"),
-  blockedCount: document.querySelector("#count-blocked"),
-  language: document.querySelector("#language"),
+  loadState: byId("loadState"),
+  notice: byId("notice"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  statusSelect: byId("statusSelect"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  viewRefresh: byId("viewRefresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  syncStatus: byId("sync-status"),
+  needsReplyCount: byId("count-needs-reply"),
+  approvedCount: byId("count-approved"),
+  blockedCount: byId("count-blocked"),
+  language: byId("language"),
 };
 
 function isMobileLayout() {
@@ -76,10 +104,6 @@ function setSidebarCollapsed(collapsed, { persist = true } = {}) {
 function setMobileSidebarOpen(open) {
   document.body.classList.toggle("sidebar-open", Boolean(open));
   if (els.sidebarScrim) els.sidebarScrim.hidden = !open;
-}
-
-function setMobileDetailOpen(open) {
-  document.body.classList.toggle("mobile-detail-open", Boolean(open));
 }
 
 function toggleSidebar() {
@@ -125,12 +149,25 @@ export function enumLabel(value, group = "status") {
 
 export function dateTime(value) {
   if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
   return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
     month: "short",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(value));
+  }).format(parsed);
+}
+
+// Month and day only — for a narrow list column; the detail shows the time.
+export function shortDate(value) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return new Intl.DateTimeFormat(activeLang() === "zh" ? "zh-Hans" : "en-US", {
+    month: "short",
+    day: "2-digit",
+  }).format(parsed);
 }
 
 function referenceNow() {
@@ -151,16 +188,91 @@ export function waitingLabel(since) {
   return rest ? `${days}${zh ? " 天 " : "d "}${rest}${zh ? " 小时" : "h"}` : `${days}${zh ? " 天" : "d"}`;
 }
 
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&status=…&peek=…]`. Search, the outbox status filter
+// and the peeked record live in the URL so refresh, shared links and Back
+// restore the same list context.
 function parseRoute() {
-  const parts = (location.hash || "#/inbox").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "inbox", id: parts.slice(1).join("/") || "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts.slice(1).join("/")) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  const status = params.get("status") || "all";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+    status: view === "outbox" && OUTBOX_STATES.includes(status) ? status : "all",
+  };
 }
 
+export const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  if (route.view === "outbox" && route.status !== "all") params.set("status", route.status);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) => {
+  const route = view === state.route.view ? state.route : { view, query: "", status: "all" };
+  return `#/${view}/${encodeURIComponent(id)}${routeQuery({}, route)}`;
+};
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) => {
+  if (DETAIL_MODES[view] === "page") return detailUrl(id, view);
+  const route = view === state.route.view ? state.route : { view, query: "", status: "all" };
+  return `#/${view}${routeQuery({ peek: id }, route)}`;
+};
+
+let previousRouteWasList = false;
+
 function setRoute() {
+  const previous = state.route;
   state.route = parseRoute();
+  // Mark a detail entry opened from its list so Back/Close/Escape step back to
+  // that exact list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
   render();
 }
 
+// Replace the current entry without a hashchange: search keystrokes and filter
+// changes should not each become a Back step.
+export function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  const previousWasList = previousRouteWasList;
+  state.route = parseRoute();
+  previousRouteWasList = previousWasList;
+  render();
+}
+
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
+}
+
+// ── Data ───────────────────────────────────────────────────────────────────
 export async function loadState() {
   const provider = await getProvider();
   const data = await provider.getState();
@@ -177,6 +289,7 @@ export async function loadState() {
   render();
 }
 
+// One click, one page: appends the next page of one Base and stops.
 export async function loadMore(key) {
   const cursor = state.pagination[key];
   if (!cursor || state.loadingMore[key]) return;
@@ -244,7 +357,7 @@ function applyDemoRoute() {
     scenario === "inbox"
       ? "#/inbox"
       : scenario === "chat"
-        ? `#/inbox/${FEATURED_DEMO_CONVERSATION}`
+        ? `#/inbox?peek=${FEATURED_DEMO_CONVERSATION}`
         : scenario === "outbox"
           ? "#/outbox"
           : scenario === "accounts"
@@ -265,12 +378,22 @@ function applyI18n() {
     option.textContent = languageLabels[option.value] || option.textContent;
   }
   els.search.placeholder = t("search");
-  els.refresh.textContent = t("refresh");
+  for (const button of [els.refresh, els.viewRefresh]) {
+    button.textContent = t("refresh");
+    button.title = t("refresh");
+  }
   if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
+  byId("overviewTitle").textContent = t("overview");
+  byId("settingsTitle").textContent = t("settings");
+  els.detailExpand.textContent = t("openFullPage");
 }
 
-function conversations() {
+export function conversations() {
   return state.snapshot?.conversations || [];
+}
+
+export function accounts() {
+  return state.snapshot?.accounts || [];
 }
 
 export function outboxReplies() {
@@ -287,17 +410,36 @@ export function conversationById(id) {
   return conversations().find((item) => item.conversation_id === id);
 }
 
+export function accountById(id) {
+  return accounts().find((item) => item.account_id === id);
+}
+
+// A relation is a business id (`wa-biz`, `wa-lena-pricing`). Resolve it to a
+// name; when the target is not on the loaded page, say so — never print the id.
+export function accountName(id) {
+  if (!id) return "";
+  return accountById(id)?.display_name || t("notLoaded");
+}
+
+export function conversationTitle(reply) {
+  return conversationById(reply.conversation_id)?.title || reply.conversation_title || t("notLoaded");
+}
+
+const ID_FIELD = { inbox: "conversation_id", outbox: "reply_id", accounts: "account_id" };
+
+export function recordById(view, id) {
+  if (!id) return null;
+  const rows = view === "inbox" ? conversations() : view === "outbox" ? outboxReplies() : accounts();
+  return rows.find((item) => item[ID_FIELD[view]] === id) || null;
+}
+
 export function awaitingConversations() {
   return conversations().filter((item) => item.awaiting_reply);
 }
 
-function oldestWaiting() {
-  return (
-    awaitingConversations()
-      .filter((item) => item.last_incoming_at)
-      .sort((a, b) => String(a.last_incoming_at).localeCompare(String(b.last_incoming_at)))[0] || null
-  );
-}
+// True while a Base holds only part of its rows. Anything counted from loaded
+// rows must say so.
+export const isPartial = (key) => Boolean(state.pagination[key]);
 
 function renderShell() {
   applyI18n();
@@ -305,20 +447,19 @@ function renderShell() {
   const approved =
     state.workflowCount.approved ?? outboxReplies().filter((reply) => reply.status === "approved").length;
   const blocked = state.workflowCount.blocked ?? outboxReplies().filter((reply) => reply.status === "blocked").length;
-  const unread = state.workflowCount.unread ?? conversations().filter((item) => item.unread).length;
-  const conversationTotal =
-    state.totalCount.conversations ?? `${conversations().length}${state.pagination.conversations ? "+" : ""}`;
-  els.syncStatus.textContent = conversationTotal
-    ? `${conversationTotal} ${t("conversationCount")} · ${unread} ${t("unread")}`
-    : t("empty");
+  // Where the data comes from — the counts already sit in the attention block.
+  els.syncStatus.textContent = !state.snapshot ? t("loading") : state.settings?.demo ? t("demoData") : t("liveData");
   if (els.needsReplyCount) els.needsReplyCount.textContent = awaiting;
   if (els.approvedCount) els.approvedCount.textContent = approved;
   if (els.blockedCount) els.blockedCount.textContent = blocked;
   if (els.mobileViewTitle) {
-    const conversation = state.route.view === "inbox" && state.route.id ? conversationById(state.route.id) : null;
-    els.mobileViewTitle.textContent = conversation ? conversation.title : viewLabel(state.route.view);
+    const { view, selectedId } = state.route;
+    const record = selectedId ? recordById(view, selectedId) : null;
+    els.mobileViewTitle.textContent = record ? recordTitle(view, record) : viewLabel(view);
   }
   if (els.mobileViewMeta) {
+    const conversationTotal =
+      state.totalCount.conversations ?? `${conversations().length}${isPartial("conversations") ? "+" : ""}`;
     els.mobileViewMeta.textContent = awaiting
       ? `${awaiting} ${t("needsReply")}`
       : `${conversationTotal} ${t("conversationCount")}`;
@@ -326,40 +467,44 @@ function renderShell() {
   document.querySelectorAll("[data-route]").forEach((link) => {
     link.classList.toggle("active", link.dataset.route === state.route.view);
   });
-  if (els.notice && !els.notice.dataset.flash) {
-    if (state.settings?.demo) {
-      els.notice.textContent = t("demoNotice");
-      els.notice.hidden = false;
-      els.notice.className = "notice demo";
-    } else {
-      els.notice.hidden = true;
-    }
-  }
-  setMobileDetailOpen(state.route.view === "inbox" && state.route.id);
 }
 
-export function flashNotice(text) {
+export function recordTitle(view, record) {
+  if (view === "inbox") return record.title;
+  if (view === "outbox") return `${t("reply")} #${record.ref}`;
+  return record.display_name;
+}
+
+// Transient result of an action (queued, decided, failed). Floats over the
+// page instead of pushing the list down.
+export function flashNotice(text, tone = "ok") {
   if (!els.notice) return;
-  els.notice.dataset.flash = "1";
   els.notice.textContent = text;
-  els.notice.className = "notice flash";
+  els.notice.className = `notice ${tone}`;
   els.notice.hidden = false;
-  setTimeout(() => {
-    delete els.notice.dataset.flash;
-    renderShell();
+  clearTimeout(flashNotice.timer);
+  flashNotice.timer = setTimeout(() => {
+    els.notice.hidden = true;
   }, 3500);
 }
 
-function viewLabel(view) {
-  if (view === "overview") return t("overview");
+export function viewLabel(view) {
+  if (view === "inbox") return t("inbox");
   if (view === "outbox") return t("outbox");
   if (view === "accounts") return t("accounts");
   if (view === "settings") return t("settings");
-  return t("inbox");
+  return t("overview");
 }
 
 export function platformBadge(platform) {
   return `<span class="platform-badge ${escapeHtml(platform)}"><span class="dot"></span>${escapeHtml(enumLabel(platform, "platform"))}</span>`;
+}
+
+// The platform as a coloured dot only, named in its tooltip — for the narrow
+// first column of a queue.
+export function platformDot(platform) {
+  const label = enumLabel(platform, "platform");
+  return `<span class="platform-dot ${escapeHtml(platform)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"></span>`;
 }
 
 export function statusChip(status) {
@@ -367,7 +512,7 @@ export function statusChip(status) {
 }
 
 export function matchesQuery(values) {
-  const query = state.query.trim().toLowerCase();
+  const query = state.route.query.trim().toLowerCase();
   if (!query) return true;
   return values.filter(Boolean).some((value) => String(value).toLowerCase().includes(query));
 }
@@ -387,7 +532,7 @@ export function filteredConversations() {
         item.title,
         item.channel,
         item.workspace,
-        item.platform,
+        enumLabel(item.platform, "platform"),
         ...(item.participants || []),
         ...(item.messages || []).slice(-6).map((message) => message.text),
       ]),
@@ -395,91 +540,34 @@ export function filteredConversations() {
     .sort((a, b) => conversationActivityAt(b).localeCompare(conversationActivityAt(a)));
 }
 
-function warningsHtml() {
-  const items = state.snapshot?.warnings || [];
-  if (!items.length) return "";
-  return `<div class="warnings">${items
-    .map(
-      (item) => `
-    <div class="${escapeHtml(item.severity || "warning")}">
-      <strong>${escapeHtml(item.message)}</strong>
-      ${item.detail ? `<span>${escapeHtml(item.detail)}</span>` : ""}
-    </div>
-  `,
-    )
-    .join("")}</div>`;
+export function filteredReplies() {
+  return outboxReplies().filter(
+    (reply) =>
+      (state.route.status === "all" || reply.status === state.route.status) &&
+      matchesQuery([
+        reply.text,
+        reply.reason,
+        conversationTitle(reply),
+        enumLabel(reply.platform, "platform"),
+        enumLabel(reply.status),
+        `#${reply.ref}`,
+      ]),
+  );
 }
 
-function renderOverview() {
-  els.title.textContent = t("overview");
-  els.subtitle.textContent = state.snapshot?.generated_at
-    ? `${t("generated")} ${new Date(state.snapshot.generated_at).toLocaleString()}`
-    : t("empty");
-  const accounts = state.snapshot?.accounts || [];
-  const awaiting = awaitingConversations().length;
-  const approved = outboxReplies().filter((reply) => reply.status === "approved").length;
-  const blocked = outboxReplies().filter((reply) => reply.status === "blocked").length;
-  const unread = conversations().filter((item) => item.unread).length;
-  const oldest = oldestWaiting();
-  const recent = conversations()
-    .flatMap((item) => (item.messages || []).map((message) => ({ ...message, conversation: item })))
-    .sort((a, b) => String(b.sent_at).localeCompare(String(a.sent_at)))
-    .slice(0, 8);
-  els.content.innerHTML = `
-    <div class="metrics">
-      <a class="metric" href="#/inbox"><span>${t("needsReply")}</span><strong>${awaiting}</strong></a>
-      <a class="metric" href="#/outbox"><span>${t("approvedWaiting")}</span><strong>${approved}</strong></a>
-      <a class="metric" href="#/outbox"><span>${t("blocked")}</span><strong>${blocked}</strong></a>
-      <a class="metric ${oldest ? "warn" : ""}" href="${oldest ? `#/inbox/${encodeURIComponent(oldest.conversation_id)}` : "#/inbox"}">
-        <span>${t("oldestWaiting")}</span>
-        <strong>${oldest ? waitingLabel(oldest.last_incoming_at) : "—"}</strong>
-        ${oldest ? `<small>${escapeHtml(oldest.title)}</small>` : `<small>${unread} ${t("unread")}</small>`}
-      </a>
-    </div>
-    ${warningsHtml()}
-    <section class="overview-grid">
-      <div class="overview-panel">
-        <h2>${t("platforms")}</h2>
-        ${accounts
-          .map(
-            (account) => `
-          <a class="platform-row" href="#/accounts">
-            <span class="platform-row-head">
-              ${platformBadge(account.platform)}
-              <strong>${escapeHtml(account.display_name)}</strong>
-              <small>${escapeHtml(enumLabel(account.connector, "connector"))}</small>
-            </span>
-            <span class="platform-row-stats">
-              <span><strong>${account.unread_count ?? 0}</strong> ${t("unread")}</span>
-              <span><strong>${account.conversation_count ?? 0}</strong> ${t("conversationCount")}</span>
-              <small>${t("lastSync")} ${account.last_sync_at ? dateTime(account.last_sync_at) : "—"}</small>
-            </span>
-          </a>
-        `,
-          )
-          .join("")}
-      </div>
-      <div class="overview-panel">
-        <h2>${t("recentActivity")}</h2>
-        ${recent
-          .map(
-            (message) => `
-          <a class="activity-row" href="#/inbox/${encodeURIComponent(message.conversation.conversation_id)}">
-            <span class="activity-copy">
-              <strong>${escapeHtml(message.sender)}</strong>
-              <span>${escapeHtml(message.text)}</span>
-            </span>
-            <span class="activity-meta">
-              ${platformBadge(message.conversation.platform)}
-              <small>${dateTime(message.sent_at)}</small>
-            </span>
-          </a>
-        `,
-          )
-          .join("")}
-      </div>
-    </section>
-  `;
+export function filteredAccounts() {
+  return accounts().filter((account) =>
+    matchesQuery([
+      account.display_name,
+      account.workspace,
+      enumLabel(account.platform, "platform"),
+      enumLabel(account.connector, "connector"),
+    ]),
+  );
+}
+
+export function outboxStates() {
+  return OUTBOX_STATES;
 }
 
 export function conversationPreview(conversation) {
@@ -490,11 +578,24 @@ export function conversationPreview(conversation) {
 
 export function render() {
   renderShell();
-  if (state.route.view === "overview") renderOverview();
-  else if (state.route.view === "outbox") renderOutbox();
-  else if (state.route.view === "accounts") renderAccounts();
-  else if (state.route.view === "settings") renderSettings();
-  else renderInbox();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.add("ws-has-mobile-bar");
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
+  else renderOverview();
 }
 
 export function escapeHtml(value) {
@@ -511,17 +612,71 @@ export function escapeHtml(value) {
   );
 }
 
+// ── Events ─────────────────────────────────────────────────────────────────
+function onLoadMore(event) {
+  const button = event.target.closest("[data-load-more]");
+  if (!button) return false;
+  loadMore(button.dataset.loadMore);
+  return true;
+}
+
+els.listPanel.addEventListener("click", (event) => {
+  if (onLoadMore(event)) return;
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list the drawer was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
+});
+els.statusSelect.addEventListener("change", (event) => {
+  replaceRoute(`#/outbox${routeQuery({ peek: state.route.peek }, { ...state.route, status: event.target.value })}`);
+});
+els.detailBody.addEventListener("input", (event) => {
+  const field = event.target;
+  if (field.id === "composer-text") state.drafts[field.dataset.conversation] = field.value;
+  else if (field.id === "composer-note") state.notes[field.dataset.conversation] = field.value;
+  else if (field.matches("[data-reply-text]")) state.edits[field.closest("[data-reply-card]").dataset.replyCard] = field.value;
+});
+els.detailBody.addEventListener("click", (event) => {
+  if (onLoadMore(event)) return;
+  const button = event.target.closest("[data-action]");
+  if (!button) return;
+  if (button.dataset.action === "queue-reply") queueReplyAction(button.dataset.conversation);
+  else if (button.dataset.action === "decide") {
+    decideAction(button.dataset.reply, button.dataset.decision, button.closest("[data-reply-card]"));
+  }
+});
+byId("settingsBody").addEventListener("click", onLoadMore);
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  // Escape inside a draft only leaves the field; a second Escape closes.
+  if (event.target.closest?.("textarea, input, select")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
 window.addEventListener("hashchange", setRoute);
 window.addEventListener("resize", syncResponsiveShell);
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", () => setMobileSidebarOpen(true));
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
 els.search.addEventListener("input", () => {
-  state.query = els.search.value;
-  render();
+  replaceRoute(
+    `#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`,
+  );
 });
-els.refresh.addEventListener("click", () => loadState());
-els.mobileRefresh?.addEventListener("click", () => loadState());
+for (const button of [els.refresh, els.viewRefresh, els.mobileRefresh]) {
+  button?.addEventListener("click", () => loadState());
+}
 els.language.value = state.lang;
 els.language.addEventListener("change", () => {
   state.lang = normalizeLang(els.language.value);
@@ -531,26 +686,6 @@ els.language.addEventListener("change", () => {
     return;
   }
   render();
-});
-els.content.addEventListener("click", (event) => {
-  const loadMoreButton = event.target.closest("[data-load-more]");
-  if (loadMoreButton) {
-    loadMore(loadMoreButton.dataset.loadMore);
-    return;
-  }
-  const button = event.target.closest("[data-action]");
-  if (!button) return;
-  if (button.dataset.action === "back") {
-    location.hash = "#/inbox";
-    return;
-  }
-  if (button.dataset.action === "queue-reply") {
-    queueReplyAction(button.dataset.conversation);
-    return;
-  }
-  if (button.dataset.action === "decide") {
-    decideAction(button.dataset.reply, button.dataset.decision, button.closest("[data-reply-card]"));
-  }
 });
 
 async function boot() {
@@ -563,9 +698,13 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
 boot();

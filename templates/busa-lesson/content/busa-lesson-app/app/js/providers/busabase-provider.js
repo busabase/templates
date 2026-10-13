@@ -1,7 +1,14 @@
 import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js?v=0.1.0";
-import { DECISION_ACTIONS, buildConfigSummary, buildSnapshot, statusForVerdict } from "../lesson-model.js?v=0.1.0";
+import {
+  DECISION_ACTIONS,
+  buildConfigSummary,
+  buildSnapshot,
+  normalizeCheckRow,
+  normalizePlanRow,
+  statusForVerdict,
+} from "../lesson-model.js?v=0.1.0";
 
 const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
@@ -140,6 +147,49 @@ async function readSettingsRow() {
   return rows.find((row) => row.record_id === "config") || {};
 }
 
+// Teachers, Checks and Settings only decorate the plan library. A read that
+// is denied or fails there becomes a warning on the page instead of failing
+// the whole app; Plans is the one read the app cannot work without.
+const sideReadWarnings = [];
+async function sideRead(label, read, fallback) {
+  try {
+    return await read();
+  } catch (error) {
+    sideReadWarnings.push({
+      id: `read-${label.toLowerCase()}`,
+      severity: "warning",
+      message: `Could not read ${label}; that part of the page is empty.`,
+      detail: error instanceof Error ? error.message : String(error),
+    });
+    return fallback;
+  }
+}
+
+// Exact numbers for the sidebar and the overview band: records.count with an
+// exact text-equals filter, never a tally of whatever page is loaded. Each
+// figure is null when its count is unavailable, and the UI shows "—".
+const equals = (fieldSlug, value) => [{ fieldSlug, operator: "equals", value }];
+async function exactCounts() {
+  const [needsReview, inRevision, approved, done, pass, warn, fail] = await Promise.all([
+    countRecords("plans", equals("status", "needs_review")),
+    countRecords("plans", equals("status", "changes_requested")),
+    countRecords("plans", equals("status", "approved")),
+    countRecords("plans", equals("status", "done")),
+    countRecords("checks", equals("result", "pass")),
+    countRecords("checks", equals("result", "warn")),
+    countRecords("checks", equals("result", "fail")),
+  ]);
+  const known = (...values) => values.every((value) => typeof value === "number");
+  return {
+    plans: initialTotalCounts.plans ?? null,
+    plans_needs_review: needsReview,
+    plans_changes_requested: inRevision,
+    plans_approved: known(approved, done) ? approved + done : null,
+    checks_fail: fail,
+    checks_pass_rate: known(pass, warn, fail) ? Math.round((pass / Math.max(1, pass + warn + fail)) * 100) : null,
+  };
+}
+
 // Only known field slugs are ever written back for a decision — never spread
 // a raw row (it also carries __recordId/__headCommitId bookkeeping keys that
 // must not be sent as Busabase fields).
@@ -198,17 +248,21 @@ export const busabaseProvider = {
   async getState() {
     for (const key of Object.keys(initialPageCursors)) delete initialPageCursors[key];
     for (const key of Object.keys(initialTotalCounts)) delete initialTotalCounts[key];
+    sideReadWarnings.length = 0;
     await ensureResources();
     const [teachers, plans, checks, settings] = await Promise.all([
-      readFirstPage("teachers"),
+      sideRead("Teachers", () => readFirstPage("teachers"), []),
       readFirstPage("plans"),
-      readFirstPage("checks"),
-      readSettingsRow(),
+      sideRead("Checks", () => readFirstPage("checks"), []),
+      sideRead("Settings", readSettingsRow, {}),
     ]);
     currentPageContext = { teachers, plans, checks, settings };
     const snapshot = buildSnapshot(currentPageContext);
+    snapshot.warnings = [...(snapshot.warnings || []), ...sideReadWarnings];
     const config_summary = buildConfigSummary({ settings });
+    const counts = await exactCounts();
     return withPagination({
+      counts,
       app: "busa-lesson",
       demo: false,
       data_provider: "busabase",
@@ -249,6 +303,18 @@ export const busabaseProvider = {
     };
     await upsert("plans", "plan-id", plan_id, fields, `Decision on plan ${plan_id}: ${action}`);
     return { ok: true };
+  },
+
+  // A record named by the URL but not on the loaded page: one records.get by
+  // its business id, instead of paging until it turns up.
+  async getRecord(view, id) {
+    if (!allowedReads.has("records.get")) return null;
+    await ensureResources();
+    const [key, slug, normalize] =
+      view === "checks" ? ["checks", "check-id", normalizeCheckRow] : ["plans", "plan-id", normalizePlanRow];
+    const record = await findRecord(key, slug, id);
+    if (!record) return null;
+    return normalize(normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields));
   },
 
   async fetchPage(key, cursor) {

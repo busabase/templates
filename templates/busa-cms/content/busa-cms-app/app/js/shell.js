@@ -38,19 +38,12 @@ export function toggleSidebar() {
   setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
 }
 
-export function setMobileDetailOpen(open) {
-  store.mobileDetailOpen = Boolean(open);
-  document.body.classList.toggle("mobile-detail-open", store.mobileDetailOpen);
-}
-
 export function syncResponsiveShell() {
   if (isMobileLayout()) {
     document.body.classList.remove("sidebar-collapsed");
     setMobileSidebarOpen(false);
-    setMobileDetailOpen(Boolean(store.selectedId) && store.mobileDetailOpen);
   } else {
     setMobileSidebarOpen(false);
-    setMobileDetailOpen(false);
     setSidebarCollapsed(localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === "1", {
       persist: false,
     });
@@ -75,24 +68,6 @@ export function isEditing() {
   if (!active) return false;
   if (active.matches("textarea")) return true;
   return active.matches("input") && active.id !== "searchInput";
-}
-
-export function captureScrollState() {
-  const page = document.scrollingElement || document.documentElement;
-  return {
-    pageTop: page?.scrollTop || 0,
-    listTop: $("contentList")?.scrollTop || 0,
-    detailTop: $("detailPanel")?.scrollTop || 0,
-  };
-}
-
-export function restoreScrollState(scrollState) {
-  const page = document.scrollingElement || document.documentElement;
-  if (page) page.scrollTop = scrollState.pageTop;
-  const list = $("contentList");
-  if (list) list.scrollTop = scrollState.listTop;
-  const detail = $("detailPanel");
-  if (detail) detail.scrollTop = scrollState.detailTop;
 }
 
 /** The setup gate owns the screen while it is up; nothing behind it is clickable. */

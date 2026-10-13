@@ -81,15 +81,57 @@ async function readPage(key, cursor) {
   return { rows, nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
 }
 
-async function countRecords(key) {
+async function countRecords(key, filters = []) {
   if (!allowedReads.has("records.count")) return null;
   try {
-    const { total } = await runtimeClient.records.count({ baseId: base(key).baseId });
+    const { total } = await runtimeClient.records.count({
+      baseId: base(key).baseId,
+      ...(filters.length ? { filters } : {}),
+    });
     return total;
   } catch {
     return null;
   }
 }
+
+const equals = (fieldSlug, value) => ({ fieldSlug, fieldType: "text", operator: "equals", value });
+
+// The sidebar and overview figures are exact counts, never a tally of the first
+// loaded page: one records.count per figure ("text equals" stays a cheap SQL
+// COUNT). A figure the server cannot answer falls back to the loaded rows only
+// when that Base is fully loaded; otherwise it stays null and renders as "—".
+const COUNT_QUERIES = {
+  needs_review: [["training-examples", [equals("status", "needs_review")]]],
+  approved: [["training-examples", [equals("status", "approved")]]],
+  train: [["training-examples", [equals("status", "approved"), equals("split", "train")]]],
+  valid: [["training-examples", [equals("status", "approved"), equals("split", "valid")]]],
+  test: [["training-examples", [equals("status", "approved"), equals("split", "test")]]],
+  active_runs: [
+    ["training-runs", [equals("status", "ready")]],
+    ["training-runs", [equals("status", "in_progress")]],
+  ],
+  completed_runs: [["training-runs", [equals("status", "done")]]],
+  candidate_models: [["model-registry", [equals("status", "candidate")]]],
+};
+
+let exactCounts = {};
+
+async function readExactCounts() {
+  const entries = await Promise.all(
+    Object.entries(COUNT_QUERIES).map(async ([name, queries]) => {
+      const totals = await Promise.all(queries.map(([key, filters]) => countRecords(key, filters)));
+      return [name, totals.some((total) => total === null) ? null : totals.reduce((sum, total) => sum + total, 0)];
+    }),
+  );
+  return Object.fromEntries(entries);
+}
+
+// A record opened by URL (`?peek=` or `/<id>`) that is not on a loaded page.
+const ID_FIELDS = {
+  "training-examples": "example-id",
+  "training-runs": "run-id",
+  "model-registry": "model-id",
+};
 
 async function updateRecord(key, item, fields, message) {
   if (!allowedWrites.has("records.changeRequest")) throw new Error("PROCEDURE_DENIED: records.changeRequest");
@@ -118,6 +160,13 @@ function currentSnapshot() {
     models: loadedRows.get("model-registry") || [],
     settings: settingsPayload(settingsRows, "lab-config"),
   });
+  const fullyLoaded = (key) => !pageState.get(key)?.nextCursor;
+  const baseOf = (name) => COUNT_QUERIES[name][0][0];
+  for (const name of Object.keys(COUNT_QUERIES)) {
+    const exact = exactCounts[name];
+    if (exact !== null && exact !== undefined) snapshot.counts[name] = exact;
+    else if (!fullyLoaded(baseOf(name))) snapshot.counts[name] = null;
+  }
   const exampleTotal = pageState.get("training-examples")?.total;
   if (exampleTotal !== null && exampleTotal !== undefined) snapshot.counts.examples = exampleTotal;
   return snapshot;
@@ -142,12 +191,16 @@ export const busabaseProvider = {
   async getState() {
     const resources = await ensureResources();
     const keys = Object.keys(snapshotKeys);
-    const pages = await Promise.all(
-      keys.map(async (key) => {
-        const [page, total] = await Promise.all([readPage(key), countRecords(key)]);
-        return { key, page, total };
-      }),
-    );
+    const [pages, counts] = await Promise.all([
+      Promise.all(
+        keys.map(async (key) => {
+          const [page, total] = await Promise.all([readPage(key), countRecords(key)]);
+          return { key, page, total };
+        }),
+      ),
+      readExactCounts(),
+    ]);
+    exactCounts = counts;
     loadedRows = new Map(pages.map(({ key, page }) => [key, page.rows]));
     pageState = new Map(pages.map(({ key, page, total }) => [key, { nextCursor: page.nextCursor, total }]));
     const settingsRows = loadedRows.get("settings") || [];
@@ -157,12 +210,30 @@ export const busabaseProvider = {
       data_provider: "busabase",
       onboarding: { completed: Boolean(settingsRows.find((row) => row.kind === "lab-config")), config_version: "1" },
       resources: {
-        folder_id: resources.folder?.id || "",
+        folder_name: resources.folder?.name || appConfig.folder.name,
         base_ids: Object.fromEntries(resources.bases.map((item) => [item.key, item.baseId])),
       },
       snapshot: currentSnapshot(),
       paging: currentPaging(),
     };
+  },
+
+  // Returns the normalized record, or null when it does not exist or cannot be read.
+  async findRecord(key, id) {
+    const fieldSlug = ID_FIELDS[key];
+    if (!fieldSlug || !id || !allowedReads.has("records.get")) return null;
+    await ensureResources();
+    try {
+      const record = await runtimeClient.records.get({ baseId: base(key).baseId, fieldSlug, valueText: id });
+      const row = {
+        ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+        __recordId: record.id,
+        __headCommitId: record.headCommitId || record.headCommit?.id,
+      };
+      return buildSnapshot({ [snapshotKeys[key]]: [row] })[snapshotKeys[key]][0] || null;
+    } catch {
+      return null;
+    }
   },
 
   async loadMore(key) {

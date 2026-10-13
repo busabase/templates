@@ -5,14 +5,81 @@
   }
 
   .section-label {
-    padding: 10px 12px 7px;
+    padding: 14px 20px 10px;
     color: var(--muted);
     font-size: var(--text-sm);
     font-weight: 650;
   }
 
+  /* Overview body: guided next steps + production status on the left, the
+   * series bible form on the right. */
+  .ws-overview .page-hero h1 {
+    margin-bottom: 0;
+  }
+
+  .ws-overview .page-hero p {
+    max-width: 80ch;
+    margin: 8px 0 0;
+    line-height: 1.55;
+  }
+
+  .hyperframe-card h3,
+  .visual-bible-card h3 {
+    margin-top: 0;
+  }
+
+  .overview-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .overview-main {
+    display: grid;
+    gap: 20px;
+    min-width: 0;
+  }
+
+  .overview-steps,
+  .overview-side,
+  .overview-series {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .overview-series .detail-card {
+    border: 0;
+    padding: 18px 20px 20px;
+  }
+
+  .overview-side .hyperframe-card,
+  .overview-side .visual-bible-card {
+    border: 0;
+    padding: 16px 20px;
+  }
+
+  .overview-side .visual-bible-card {
+    border-top: 1px solid var(--line);
+  }
+
   .overview-row {
-    grid-template-columns: 64px minmax(0, 1fr) auto;
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    min-height: 52px;
+    padding: 8px 20px;
+    border-top: 1px solid var(--line);
+    color: inherit;
+    background: transparent;
+    text-align: left;
+    transition: background var(--ease);
+  }
+
+  .overview-row:hover {
+    background: var(--surface-hover);
   }
 
   .hyperframe-card {
@@ -99,37 +166,6 @@
     font-size: var(--text-xs);
   }
 
-  .metrics {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .metric {
-    padding: 12px;
-    border-width: 0 1px 0 0;
-    border-radius: 0;
-    background: transparent;
-  }
-
-  .metric:last-child {
-    border-right: 0;
-  }
-
-  .metric strong {
-    display: block;
-    font-size: var(--text-lg);
-    line-height: 1;
-  }
-
-  .metric span {
-    display: block;
-    margin-top: 5px;
-    color: var(--muted);
-    font-size: var(--text-sm);
-  }
-
   .visual-bible-card {
     grid-template-columns: minmax(0, 1fr) 116px;
     align-items: center;
@@ -147,17 +183,36 @@
     min-height: 64px;
   }
 
+  @media (max-width: 1100px) {
+    .overview-body {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
   @media (max-width: 720px) {
-    .metrics {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .overview-row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      padding: 8px 14px;
     }
 
-    .metric:nth-child(2n) {
-      border-right: 0;
+    .overview-row .row-key {
+      display: none;
+    }
+
+    .hyperframe-metrics {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .visual-bible-card {
       grid-template-columns: minmax(0, 1fr);
     }
+  }
+}
+
+/* Unlayered on purpose: base-ui's unlayered `.ws-overview .page-hero h1` sets
+ * the title size, and only an unlayered rule can step it down on a phone. */
+@media (max-width: 720px) {
+  .ws-overview .page-hero h1 {
+    font-size: var(--text-2xl);
   }
 }

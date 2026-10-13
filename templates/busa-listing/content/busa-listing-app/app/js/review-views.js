@@ -5,24 +5,35 @@ import {
   claimRefLinks,
   claimStatusBadge,
   claimsRegistry,
+  countOf,
+  DETAIL_MODES,
   date,
+  detailUrl,
   draftById,
   draftLabel,
   drafts,
   els,
   enumLabel,
   escapeHtml,
+  filteredChecks,
+  filteredClaims,
   filteredDrafts,
+  filteredProducts,
+  filteredReviewItems,
+  isPartial,
+  isPendingRecord,
   loadState,
   localeBadge,
-  metricCards,
   noticeBanner,
   pagerControl,
   platformBadge,
   platformRulesFor,
   productById,
+  productName,
   products,
-  recordCountLabel,
+  REVIEW_STATES,
+  recordById,
+  recordUrl,
   render,
   resultBadge,
   reviewForDraft,
@@ -31,6 +42,7 @@ import {
   rules,
   scoreCell,
   severityBadge,
+  sourceBadge,
   state,
   statusBadge,
   t,
@@ -38,49 +50,524 @@ import {
 } from "../app.js";
 import { getProvider } from "./providers/index.js?v=0.1.0";
 
-export function renderDrafts() {
-  els.title.textContent = t("drafts");
-  const items = filteredDrafts();
-  els.subtitle.textContent = `${recordCountLabel("drafts", items.length, Boolean(state.query))} ${t("draftsLower")}`;
-  els.content.innerHTML = `
-    ${metricCards()}
-    ${warnings()}
-    ${
-      items.length
-        ? `
-      <div class="table-wrap">
-        <table>
-          <thead>
+const cell = (html, title = "", className = "") =>
+  `<td${className ? ` class="${className}"` : ""}${title ? ` title="${escapeHtml(title)}"` : ""}>${html}</td>`;
+const emptyState = (title, detail = "") =>
+  `<div class="empty-state"><strong>${escapeHtml(title)}</strong>${detail ? `<p>${escapeHtml(detail)}</p>` : ""}</div>`;
+const draftRef = (draft) => `${t("draftRef")} #${draft?.ref ?? ""}`;
+// In a table whose column is already headed "Draft", the row only needs "#4".
+const shortRef = (draft) => `#${draft?.ref ?? ""}`;
+
+// ── Overview ───────────────────────────────────────────────────────────────
+// Three numbers the sidebar does not already show (it carries review / failed
+// / ready-to-export). Exact counts come from records.count when the provider
+// has them; anything tallied from loaded rows says so when more rows exist.
+function passRate() {
+  const { checks_pass: pass, checks_warn: warn, checks_fail: fail } = state.counts || {};
+  if (pass != null && warn != null && fail != null) {
+    return { value: `${Math.round((pass / Math.max(1, pass + warn + fail)) * 100)}%`, partial: false };
+  }
+  return { value: `${state.snapshot?.metrics?.compliance_pass_rate || 0}%`, partial: isPartial("checks") };
+}
+
+function metricsBand() {
+  const metrics = state.snapshot?.metrics || {};
+  const rate = passRate();
+  const loadedScope = (key) => (isPartial(key) ? ` · ${t("loadedOnly")}` : "");
+  return [
+    [`${t("passRate")}${rate.partial ? ` · ${t("loadedOnly")}` : ""}`, rate.value],
+    [t("inRevision"), countOf("drafts_changes_requested", "drafts", metrics.drafts_in_revision || 0)],
+    [`${t("exportedThisWeek")}${loadedScope("drafts")}`, metrics.exported_this_week || 0],
+  ]
+    .map(([label, value]) => `<div><span title="${escapeHtml(label)}">${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`)
+    .join("");
+}
+
+function matrixCell(product, platform) {
+  if (!(product.platforms || []).includes(platform)) return { state: "none", drafts: [] };
+  const cellDrafts = drafts().filter((draft) => draft.product_id === product.product_id && draft.platform === platform);
+  if (!cellDrafts.length) return { state: "none", drafts: [] };
+  const statuses = cellDrafts.map((draft) => draft.status);
+  if (statuses.includes("done")) return { state: "exported", drafts: cellDrafts };
+  if (statuses.every((status) => status === "approved")) return { state: "approved", drafts: cellDrafts };
+  return { state: "draft", drafts: cellDrafts };
+}
+
+function statusMatrix() {
+  const platforms = (state.settings?.config_summary?.platforms || []).map((entry) => entry.platform);
+  const allPlatforms = platforms.length ? platforms : [...new Set(drafts().map((draft) => draft.platform))];
+  if (!products().length) return `<div class="empty-inline">${t("noProducts")}</div>`;
+  return `
+    <div class="matrix-wrap">
+      <table class="matrix-table">
+        <thead>
+          <tr><th>${t("product")}</th>${allPlatforms.map((platform) => `<th>${escapeHtml(enumLabel(platform, "platform"))}</th>`).join("")}</tr>
+        </thead>
+        <tbody>
+          ${products()
+            .map(
+              (product) => `
             <tr>
-              <th>${t("draft")}</th><th>${t("product")}</th><th>${t("platform")}</th><th>${t("locale")}</th><th>${t("title")}</th><th>${t("score")}</th><th>${t("status")}</th><th>${t("lastUpdated")}</th>
+              <td><a class="strong" href="${detailUrl(product.product_id, "products")}">${escapeHtml(product.name)}</a><div class="muted">${escapeHtml(product.sku)}</div></td>
+              ${allPlatforms
+                .map((platform) => {
+                  const entry = matrixCell(product, platform);
+                  const first = entry.drafts[0];
+                  const label = enumLabel(entry.state, "cell");
+                  if (entry.state === "none") return `<td><span class="matrix-cell none">${escapeHtml(label)}</span></td>`;
+                  return `<td><a class="matrix-cell ${escapeHtml(entry.state)}" href="${detailUrl(first.draft_id, "drafts")}">${escapeHtml(label)}${entry.drafts.length > 1 ? ` ×${entry.drafts.length}` : ""}</a></td>`;
+                })
+                .join("")}
             </tr>
-          </thead>
-          <tbody>
-            ${items
-              .map((item) => {
-                const product = productById(item.product_id);
-                const title = item.fields?.title || "";
-                return `
-                <tr>
-                  <td><a href="#/drafts/${encodeURIComponent(item.draft_id)}"><span class="strong">${t("draftRef")} #${item.ref}</span></a></td>
-                  <td><a href="#/products/${encodeURIComponent(item.product_id)}">${escapeHtml(product?.name || item.product_id)}</a></td>
-                  <td>${platformBadge(item.platform)}</td>
-                  <td>${localeBadge(item.locale)}</td>
-                  <td class="title-cell">${escapeHtml(title.length > 90 ? `${title.slice(0, 90)}…` : title)}</td>
-                  <td>${scoreCell(item.compliance_score)}</td>
-                  <td>${statusBadge(item.status)}</td>
-                  <td>${date(item.updated_at)}</td>
-                </tr>
-              `;
-              })
-              .join("")}
-          </tbody>
-        </table>
+          `,
+            )
+            .join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+export function renderOverview() {
+  const generated = state.snapshot?.generated_at ? new Date(state.snapshot.generated_at).toLocaleString() : "";
+  document.getElementById("overviewSummary").textContent = [
+    state.snapshot?.seller?.brand || "",
+    `${countOf("products_total", "products", products().length)} ${t("productsLower")}`,
+    `${countOf("drafts_total", "drafts", drafts().length)} ${t("draftsLower")}`,
+    generated ? `${t("generated")} ${generated}` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  document.getElementById("overviewMetrics").innerHTML = metricsBand();
+  const awaiting = reviewItems().filter((item) => item.status === "needs_review");
+  const activity = (state.snapshot?.activity_log || [])
+    .slice()
+    .sort((a, b) => String(b.at).localeCompare(String(a.at)))
+    .slice(0, 8);
+  document.getElementById("overviewBody").innerHTML = `
+    ${warnings()}
+    <section class="overview-grid">
+      <div class="card overview-panel overview-wide">
+        <h2>${t("matrix")}</h2>
+        ${statusMatrix()}
       </div>
-    `
-        : `<div class="empty">${t("noDrafts")}</div>`
-    }
-    ${pagerControl("drafts")}
+      <div class="card overview-panel">
+        <h2>${t("reviewQueue")}</h2>
+        ${
+          awaiting
+            .map((item) => {
+              const draft = draftById(item.draft_id);
+              return `
+            <a class="due-row" href="${recordUrl(item.draft_id, "review")}">
+              <span><strong>${draftRef(item)} · ${escapeHtml(draft ? draftLabel(draft) : t("notLoaded"))}</strong><small>${escapeHtml(item.compliance_summary || "")}</small></span>
+              <span class="due-meta">${statusBadge(item.status)}${draft ? `<small>${scoreCell(draft.compliance_score)}</small>` : ""}</span>
+            </a>
+          `;
+            })
+            .join("") || `<div class="empty-inline">${t("noReviewItems")}</div>`
+        }
+      </div>
+      <div class="card overview-panel">
+        <h2>${t("activities")}</h2>
+        ${
+          activity
+            .map(
+              (item) => `
+          <div class="activity-row">
+            <span class="badge">${escapeHtml(enumLabel(item.actor, "actor"))}</span>
+            <span><small>${escapeHtml(item.detail)}</small></span>
+            <span class="muted">${date(item.at)}</span>
+          </div>
+        `,
+            )
+            .join("") || `<div class="empty-inline">${t("noActivity")}</div>`
+        }
+      </div>
+    </section>
+  `;
+}
+
+// ── Record views ───────────────────────────────────────────────────────────
+const VIEW_HINT = {
+  products: "productsHint",
+  drafts: "draftsHint",
+  checks: "checksHint",
+  claims: "claimsIntro",
+  review: "reviewHint",
+};
+
+const tableHead = (columns) =>
+  `<thead><tr>${columns.map(([label, className = ""]) => `<th${className ? ` class="${className}"` : ""}>${escapeHtml(label)}</th>`).join("")}</tr></thead>`;
+
+const rowOpen = (id) =>
+  `<tr data-id="${escapeHtml(id)}"${id === state.route.selectedId ? ' class="ws-selected"' : ""}>`;
+
+function productStatus(own) {
+  if (!own.length) return "";
+  if (own.some((draft) => draft.status === "needs_review")) return "needs_review";
+  if (own.some((draft) => draft.status === "changes_requested")) return "changes_requested";
+  if (own.every((draft) => draft.status === "done")) return "done";
+  return "approved";
+}
+
+function productsTable(items) {
+  return `
+    <table class="ws-table listing-table products-table">
+      ${tableHead([
+        [t("product")],
+        [t("sku")],
+        [t("category")],
+        [t("source")],
+        [t("platforms")],
+        [t("drafts"), "ws-col-num"],
+        [t("status")],
+        [t("lastUpdated")],
+      ])}
+      <tbody>
+        ${items
+          .map((item) => {
+            const own = drafts().filter((draft) => draft.product_id === item.product_id);
+            const overall = productStatus(own);
+            return `${rowOpen(item.product_id)}
+              ${cell(`<span class="strong">${escapeHtml(item.name)}</span>`, item.name)}
+              ${cell(escapeHtml(item.sku), item.sku)}
+              ${cell(escapeHtml(item.category || ""), item.category)}
+              ${cell(sourceBadge(item.source))}
+              ${cell((item.platforms || []).map(platformBadge).join(" "), (item.platforms || []).map((p) => enumLabel(p, "platform")).join(", "))}
+              ${cell(String(own.length), "", "ws-col-num")}
+              ${cell(overall ? statusBadge(overall) : `<span class="muted">${enumLabel("none", "cell")}</span>`)}
+              ${cell(date(item.updated_at))}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function draftsTable(items) {
+  return `
+    <table class="ws-table listing-table drafts-table">
+      ${tableHead([
+        [t("draft")],
+        [t("platform")],
+        [t("locale")],
+        [t("title")],
+        [t("score"), "ws-col-num"],
+        [t("status")],
+        [t("lastUpdated")],
+      ])}
+      <tbody>
+        ${items
+          .map((item) => {
+            const name = `${shortRef(item)} · ${productName(item.product_id)}`;
+            const title = item.fields?.title || "";
+            return `${rowOpen(item.draft_id)}
+              ${cell(`<span class="strong">${escapeHtml(name)}</span>`, name)}
+              ${cell(platformBadge(item.platform))}
+              ${cell(localeBadge(item.locale))}
+              ${cell(escapeHtml(title), title)}
+              ${cell(scoreCell(item.compliance_score), "", "ws-col-num")}
+              ${cell(statusBadge(item.status))}
+              ${cell(date(item.updated_at))}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function checksTable(items) {
+  return `
+    <table class="ws-table listing-table checks-table">
+      ${tableHead([[t("rule")], [t("result")], [t("draft")], [t("platform")], [t("severity")], [t("evidence")]])}
+      <tbody>
+        ${items
+          .map((item) => {
+            const draft = draftById(item.draft_id);
+            const name = draft
+              ? `${shortRef(draft)} · ${productName(draft.product_id)}${draft.locale ? ` · ${draft.locale}` : ""}`
+              : t("notLoaded");
+            const ruleName = ruleById(item.rule_id)?.name || enumLabel(item.rule_id, "rule");
+            return `${rowOpen(item.check_id)}
+              ${cell(`<span class="strong">${escapeHtml(ruleName)}</span>`, ruleName)}
+              ${cell(resultBadge(item.result))}
+              ${cell(escapeHtml(name), name)}
+              ${cell(draft ? platformBadge(draft.platform) : "")}
+              ${cell(severityBadge(item.severity))}
+              ${cell(escapeHtml(item.evidence || ""), item.evidence)}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function claimsTable(items) {
+  if (state.route.tab === "rules") {
+    return `
+      <table class="ws-table listing-table rules-table">
+        ${tableHead([[t("phrase")], [t("severity")], [t("type")], [t("reason")], [t("alternative")]])}
+        <tbody>
+          ${items
+            .map(
+              (rule) => `${rowOpen(rule.rule_id)}
+              ${cell(`<span class="strong">${escapeHtml(rule.phrase)}</span>`, rule.phrase)}
+              ${cell(severityBadge(rule.severity || "error"))}
+              ${cell(`<span class="tag">${escapeHtml(enumLabel(rule.type, "claim"))}</span>`)}
+              ${cell(escapeHtml(rule.reason || ""), rule.reason)}
+              ${cell(escapeHtml(rule.alternative || ""), rule.alternative)}
+            </tr>`,
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
+  }
+  return `
+    <table class="ws-table listing-table claims-table">
+      ${tableHead([[t("claimText")], [t("claimStatus")], [t("category")], [t("substantiation")], [t("claimEvidence")]])}
+      <tbody>
+        ${items
+          .map(
+            (claim) => `${rowOpen(claim.claim_id)}
+            ${cell(`<span class="strong">${escapeHtml(claim.text)}</span>`, claim.text)}
+            ${cell(claimStatusBadge(claim.status))}
+            ${cell(escapeHtml(claim.category || ""), claim.category)}
+            ${cell(escapeHtml(claim.substantiation || ""), claim.substantiation)}
+            ${cell(escapeHtml((claim.evidence || []).join(", ")), (claim.evidence || []).join(", "))}
+          </tr>`,
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function reviewTable(items) {
+  return `
+    <table class="ws-table listing-table review-table">
+      ${tableHead([[t("draft")], [t("status")], [t("score"), "ws-col-num ws-split-keep"]])}
+      <tbody>
+        ${items
+          .map((item) => {
+            const draft = draftById(item.draft_id);
+            const name = `${shortRef(item)} · ${draft ? draftLabel(draft) : t("notLoaded")}`;
+            return `${rowOpen(item.draft_id)}
+              ${cell(`<span class="strong">${escapeHtml(name)}</span>`, name)}
+              ${cell(statusBadge(item.status))}
+              ${cell(draft ? scoreCell(draft.compliance_score) : "", "", "ws-col-num ws-split-keep")}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function reviewFilterCount(value) {
+  return value === "all" ? reviewItems().length : reviewItems().filter((item) => item.status === value).length;
+}
+
+function toolbarControls(view) {
+  els.viewFilters.hidden = !["review", "claims"].includes(view);
+  els.viewFilters.classList.toggle("view-tabs", view === "claims");
+  els.statusSelect.hidden = view !== "review";
+  els.viewSelects.hidden = view !== "checks";
+  if (view === "review") {
+    els.viewFilters.innerHTML = REVIEW_STATES.map((value) => {
+      const label = value === "all" ? t("all") : enumLabel(value);
+      return `<button type="button" class="segment ${state.route.status === value ? "active" : ""}" data-status="${value}">${escapeHtml(label)} <b>${reviewFilterCount(value)}</b></button>`;
+    }).join("");
+    els.statusSelect.innerHTML = REVIEW_STATES.map(
+      (value) =>
+        `<option value="${value}"${state.route.status === value ? " selected" : ""}>${escapeHtml(value === "all" ? t("all") : enumLabel(value))} (${reviewFilterCount(value)})</option>`,
+    ).join("");
+  } else if (view === "claims") {
+    const registry = claimsRegistry();
+    const tabs = [
+      ["claims", t("approvedClaimsTab"), `${(registry.claims || []).length}${isPartial("claims") ? "+" : ""}`],
+      ["rules", t("bannedPhrasesTab"), `${(registry.rules || []).length}${isPartial("claim-rules") ? "+" : ""}`],
+    ];
+    els.viewFilters.innerHTML = tabs
+      .map(
+        ([value, label, count]) =>
+          `<button type="button" class="segment ${state.route.tab === value ? "active" : ""}" data-tab="${value}">${escapeHtml(label)} <b>${count}</b></button>`,
+      )
+      .join("");
+  } else {
+    els.viewFilters.innerHTML = "";
+  }
+  if (view === "checks") {
+    const { filters } = state.route;
+    const platforms = [...new Set(drafts().map((draft) => draft.platform))];
+    const select = (key, label, options) => `
+      <select data-filter="${key}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">
+        <option value="all">${escapeHtml(`${t("all")} · ${label}`)}</option>
+        ${options.map(([value, text]) => `<option value="${escapeHtml(value)}"${filters[key] === value ? " selected" : ""}>${escapeHtml(text)}</option>`).join("")}
+      </select>`;
+    els.viewSelects.innerHTML = [
+      select(
+        "rule",
+        t("rule"),
+        rules().map((rule) => [rule.rule_id, rule.name]),
+      ),
+      select(
+        "platform",
+        t("platform"),
+        platforms.map((platform) => [platform, enumLabel(platform, "platform")]),
+      ),
+      select(
+        "product",
+        t("product"),
+        products().map((product) => [product.product_id, product.name]),
+      ),
+      select(
+        "result",
+        t("result"),
+        ["pass", "warn", "fail"].map((result) => [result, enumLabel(result, "result")]),
+      ),
+    ].join("");
+  } else {
+    els.viewSelects.innerHTML = "";
+  }
+}
+
+export function renderRecordView() {
+  const { view } = state.route;
+  els.viewTitle.textContent = view === "claims" ? t("claims") : t(view);
+  els.viewTitle.title = t(VIEW_HINT[view]);
+  toolbarControls(view);
+  let items;
+  let table;
+  let pagerKey = view;
+  let empty;
+  if (view === "products") {
+    items = filteredProducts();
+    table = productsTable(items);
+    empty = state.route.query ? t("noMatches") : t("noProducts");
+  } else if (view === "drafts") {
+    items = filteredDrafts();
+    table = draftsTable(items);
+    empty = state.route.query ? t("noMatches") : t("noDrafts");
+  } else if (view === "checks") {
+    items = filteredChecks();
+    table = checksTable(items);
+    empty = t("noChecks");
+  } else if (view === "claims") {
+    items = filteredClaims();
+    table = claimsTable(items);
+    pagerKey = state.route.tab === "rules" ? "claim-rules" : "claims";
+    empty = state.route.tab === "rules" ? t("noClaimRules") : t("noClaims");
+  } else {
+    items = filteredReviewItems();
+    table = reviewTable(items);
+    pagerKey = "drafts";
+    empty = t("noReviewItems");
+  }
+  els.viewCount.textContent = `${items.length}${isPartial(pagerKey) ? "+" : ""}`;
+  els.listPanel.innerHTML = `${state.route.view === "review" ? noticeBanner() : ""}${items.length ? table : emptyState(empty)}${pagerControl(pagerKey)}`;
+  renderDetail();
+}
+
+function renderDetail() {
+  const { view, selectedId, presentation } = state.route;
+  const phone = window.matchMedia("(max-width: 720px)").matches;
+  els.detailBack.textContent = presentation === "page" || phone ? t("backToList") : t("close");
+  els.detailExpand.hidden = !selectedId || presentation === "page";
+  if (selectedId) {
+    els.detailExpand.href = detailUrl(selectedId, view);
+  }
+  els.detailPanel.querySelector(".ws-detail-bar").hidden = !selectedId;
+  if (!selectedId) {
+    els.detailBody.innerHTML = DETAIL_MODES[view] === "split" ? `<div class="ws-detail-empty">${t("selectReview")}</div>` : "";
+    return;
+  }
+  const item = view === "review" ? draftById(selectedId) : recordById(view, selectedId);
+  if (!item) {
+    els.detailBody.innerHTML = isPendingRecord(view, selectedId)
+      ? `<div class="empty-inline">${t("loading")}</div>`
+      : emptyState(t("recordMissing"), t("recordMissingDetail"));
+    return;
+  }
+  const renderers = {
+    products: productDetail,
+    drafts: draftDetail,
+    checks: checkDetail,
+    claims: state.route.tab === "rules" ? ruleDetail : claimDetail,
+    review: reviewDetail,
+  };
+  els.detailBody.innerHTML = renderers[view](item);
+}
+
+// ── Detail renderers (one markup for page, drawer and split) ───────────────
+function productDetail(product) {
+  const own = drafts().filter((draft) => draft.product_id === product.product_id);
+  return `
+    <header class="detail-head">
+      <h2>${escapeHtml(product.name)}</h2>
+      <p class="muted">${escapeHtml([product.sku, product.category, enumLabel(product.source, "source")].filter(Boolean).join(" · "))}</p>
+    </header>
+    <section class="detail">
+      <div class="detail-main">
+        <div class="card overview-panel">
+          <h3>${t("specs")}</h3>
+          <dl class="spec-list">
+            ${(product.specs || []).map((spec) => `<dt>${escapeHtml(spec.name)}</dt><dd>${escapeHtml(spec.value)}</dd>`).join("")}
+          </dl>
+        </div>
+        <div class="card overview-panel">
+          <h3>${t("features")}</h3>
+          <ul class="plain-list">${(product.features || []).map((feature) => `<li>${escapeHtml(feature)}</li>`).join("")}</ul>
+        </div>
+        <div class="card overview-panel">
+          <h3>${t("keywords")}</h3>
+          <div class="chip-list">${(product.keywords || []).map((keyword) => `<span class="tag">${escapeHtml(keyword)}</span>`).join("")}</div>
+        </div>
+        <div class="card overview-panel">
+          <h3>${t("linkedDrafts")}</h3>
+          ${
+            own
+              .map(
+                (draft) => `
+            <a class="due-row" href="${detailUrl(draft.draft_id, "drafts")}">
+              <span><strong>${draftRef(draft)} · ${escapeHtml(enumLabel(draft.platform, "platform"))} ${escapeHtml(draft.locale || "")}</strong><small>${escapeHtml(draft.fields?.title || "")}</small></span>
+              <span class="due-meta">${statusBadge(draft.status)}<small>${scoreCell(draft.compliance_score)}</small></span>
+            </a>
+          `,
+              )
+              .join("") || `<div class="empty-inline">${t("noDrafts")}</div>`
+          }
+        </div>
+      </div>
+      <aside class="detail-side-stack">
+        <div class="card detail-side">
+          <dl>
+            <dt>${t("sku")}</dt><dd>${escapeHtml(product.sku)}</dd>
+            <dt>${t("source")}</dt><dd>${sourceBadge(product.source)}</dd>
+            <dt>${t("platforms")}</dt><dd>${(product.platforms || []).map(platformBadge).join(" ")}</dd>
+            <dt>${t("locales")}</dt><dd>${(product.locales || []).map(localeBadge).join(" ")}</dd>
+            <dt>${t("lastUpdated")}</dt><dd>${date(product.updated_at)}</dd>
+          </dl>
+          ${product.notes ? `<p class="muted product-notes">${escapeHtml(product.notes)}</p>` : ""}
+        </div>
+        <div class="card detail-side">
+          <h3>${t("imageChecklist")}</h3>
+          ${(product.images || [])
+            .map(
+              (image) => `
+            <div class="check-row">
+              <span class="image-tick ${escapeHtml(image.status)}" aria-hidden="true">${image.status === "ready" ? "✓" : image.status === "missing" ? "✕" : "…"}</span>
+              <span><strong>${escapeHtml(image.name)}</strong><small>${escapeHtml(enumLabel(image.status, "image"))}</small></span>
+            </div>
+          `,
+            )
+            .join("")}
+        </div>
+      </aside>
+    </section>
   `;
 }
 
@@ -158,7 +645,7 @@ function localeTabs(draft) {
       ${variants
         .map(
           (variant) => `
-        <a role="tab" aria-selected="${variant.draft_id === draft.draft_id}" class="locale-tab ${variant.draft_id === draft.draft_id ? "active" : ""}" href="#/drafts/${encodeURIComponent(variant.draft_id)}">${escapeHtml(variant.locale || variant.draft_id)}</a>
+        <a role="tab" aria-selected="${variant.draft_id === draft.draft_id}" class="locale-tab ${variant.draft_id === draft.draft_id ? "active" : ""}" href="${detailUrl(variant.draft_id, "drafts")}">${escapeHtml(variant.locale || draftRef(variant))}</a>
       `,
         )
         .join("")}
@@ -166,336 +653,236 @@ function localeTabs(draft) {
   `;
 }
 
-export function renderDraftDetail() {
-  const draft = draftById(state.route.id);
-  if (!draft) {
-    renderDrafts();
-    return;
-  }
-  const product = productById(draft.product_id);
+function draftChecksList(draft) {
   const draftChecks = checks().filter((item) => item.draft_id === draft.draft_id);
+  return (
+    draftChecks
+      .map(
+        (item) => `
+    <div class="check-row">
+      ${resultBadge(item.result)}
+      <span>
+        <strong>${escapeHtml(ruleById(item.rule_id)?.name || enumLabel(item.rule_id, "rule"))}</strong>
+        <small>${escapeHtml(item.evidence || "")}</small>
+        ${claimRefLinks(item.refs)}
+      </span>
+    </div>
+  `,
+      )
+      .join("") || `<div class="empty-inline">${t("noChecks")}</div>`
+  );
+}
+
+function draftDetail(draft) {
+  const product = productById(draft.product_id);
   const review = reviewForDraft(draft.draft_id);
-  els.title.textContent = `${t("draftRef")} #${draft.ref} · ${product?.name || draft.product_id}`;
-  els.subtitle.textContent = `${enumLabel(draft.platform, "platform")} · ${draft.locale || ""} · ${enumLabel(draft.status)}`;
-  els.content.innerHTML = `
+  return `
+    <header class="detail-head">
+      <h2>${draftRef(draft)} · ${escapeHtml(productName(draft.product_id))}</h2>
+      <p class="muted">${escapeHtml([enumLabel(draft.platform, "platform"), draft.locale, enumLabel(draft.status)].filter(Boolean).join(" · "))}</p>
+    </header>
     ${warnings(draft.draft_id)}
+    ${noticeBanner()}
     <section class="detail">
       <div class="detail-main">
         ${localeTabs(draft)}
-        <div class="section-block workbench" data-draft="${escapeHtml(draft.draft_id)}">
-          <h2>${t("editFields")}</h2>
+        <div class="card overview-panel workbench" data-draft="${escapeHtml(draft.draft_id)}">
+          <h3>${t("editFields")}</h3>
           ${draftFieldsEditor(draft)}
           <div class="notes-actions">
-            <button id="saveFields" type="button" ${!review ? "disabled" : ""}>${t("saveEdits")}</button>
+            <button id="saveFields" class="button" type="button" ${!review ? "disabled" : ""}>${t("saveEdits")}</button>
             <span class="muted">${t("fieldsSavedHint")}</span>
           </div>
         </div>
       </div>
-      <aside class="detail-side">
-        <div>
-          <h2>${t("draftDetail")}</h2>
+      <aside class="detail-side-stack">
+        <div class="card detail-side">
           <dl>
             <dt>${t("status")}</dt><dd>${statusBadge(draft.status)}</dd>
             <dt>${t("score")}</dt><dd>${scoreCell(draft.compliance_score)}</dd>
             <dt>${t("platform")}</dt><dd>${platformBadge(draft.platform)}</dd>
             <dt>${t("locale")}</dt><dd>${localeBadge(draft.locale)}</dd>
-            <dt>${t("product")}</dt><dd><a href="#/products/${encodeURIComponent(draft.product_id)}">${escapeHtml(product?.name || draft.product_id)}</a></dd>
+            <dt>${t("product")}</dt><dd>${product ? `<a href="${detailUrl(draft.product_id, "products")}">${escapeHtml(product.name)}</a>` : `<span class="muted">${t("notLoaded")}</span>`}</dd>
             <dt>${t("sku")}</dt><dd>${escapeHtml(product?.sku || "")}</dd>
             <dt>${t("lastUpdated")}</dt><dd>${date(draft.updated_at)}</dd>
           </dl>
+          <a class="button detail-link" href="${recordUrl(draft.draft_id, "review")}">${t("openInReview")}</a>
         </div>
-        ${
-          draft.keyword_strategy
-            ? `
-          <div class="agent-panel">
-            <h2>${t("keywordStrategy")}</h2>
-            <p>${escapeHtml(draft.keyword_strategy)}</p>
-          </div>
-        `
-            : ""
-        }
-        <div>
-          <h2>${t("complianceChecks")}</h2>
-          ${
-            draftChecks
-              .map(
-                (item) => `
-            <div class="check-row">
-              ${resultBadge(item.result)}
-              <span>
-                <strong>${escapeHtml(ruleById(item.rule_id)?.name || item.rule_id)}</strong>
-                <small>${escapeHtml(item.evidence || "")}</small>
-                ${claimRefLinks(item.refs)}
-              </span>
-            </div>
-          `,
-              )
-              .join("") || `<div class="empty-inline">${t("noChecks")}</div>`
-          }
+        ${draft.keyword_strategy ? `<div class="agent-panel"><h3>${t("keywordStrategy")}</h3><p>${escapeHtml(draft.keyword_strategy)}</p></div>` : ""}
+        <div class="card detail-side">
+          <h3>${t("complianceChecks")}</h3>
+          ${draftChecksList(draft)}
         </div>
       </aside>
     </section>
   `;
-  bindWorkbenchEvents(draft, review);
 }
 
-function bindWorkbenchEvents(draft, review) {
-  const workbench = els.content.querySelector(".workbench");
-  if (!workbench) return;
-  workbench.querySelectorAll("textarea.field-input").forEach((input) => {
-    input.addEventListener("input", () => {
-      const key = input.dataset.field;
-      const edits = state.fieldEdits[draft.draft_id] || (state.fieldEdits[draft.draft_id] = {});
-      if (input.dataset.kind === "list") {
-        const values = input.value
-          .split("\n")
-          .map((line) => line.trim())
-          .filter(Boolean);
-        edits[key] =
-          key === "item_specifics"
-            ? values.map((line) => {
-                const idx = line.indexOf(":");
-                return idx === -1
-                  ? { name: line, value: "" }
-                  : { name: line.slice(0, idx).trim(), value: line.slice(idx + 1).trim() };
-              })
-            : values;
-        const counter = workbench.querySelector(`#count-${CSS.escape(key)}`);
-        if (counter) counter.textContent = String(values.length);
-      } else {
-        edits[key] = input.value;
-        const counter = workbench.querySelector(`#count-${CSS.escape(key)}`);
-        if (counter) {
-          const max = Number(input.dataset.max) || 0;
-          const unit = input.dataset.unit || "chars";
-          const current = unit === "bytes" ? byteLength(input.value) : charLength(input.value);
-          counter.textContent = `${current}${max ? ` / ${max}` : ""} ${t(unit)}`;
-          counter.classList.toggle("over", Boolean(max) && current > max);
-        }
-      }
-    });
-  });
-  workbench.querySelector("#saveFields")?.addEventListener("click", () => {
-    if (!review) return;
-    submitDecision(draft.draft_id, "revise", { fields: editedFields(draft) });
-  });
-}
-
-function filteredChecks() {
-  const query = state.query.trim().toLowerCase();
-  return checks().filter((item) => {
-    if (state.checkRuleFilter !== "all" && item.rule_id !== state.checkRuleFilter) return false;
-    const draft = draftById(item.draft_id);
-    if (state.checkPlatformFilter !== "all" && draft?.platform !== state.checkPlatformFilter) return false;
-    if (state.checkProductFilter !== "all" && draft?.product_id !== state.checkProductFilter) return false;
-    if (state.checkResultFilter !== "all" && item.result !== state.checkResultFilter) return false;
-    if (!query) return true;
-    return [ruleById(item.rule_id)?.name, item.evidence, item.result, draft ? draftLabel(draft) : ""]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query));
-  });
-}
-
-export function renderChecks() {
-  els.title.textContent = t("checks");
-  const items = filteredChecks();
-  const all = checks();
-  const passCount = all.filter((item) => item.result === "pass").length;
-  const warnCount = all.filter((item) => item.result === "warn").length;
-  const failCount = all.filter((item) => item.result === "fail").length;
-  const checkTotal = recordCountLabel("checks", all.length);
-  els.subtitle.textContent = `${checkTotal} ${t("checksTotal")} · ${failCount} ${t("failedChecks")}`;
-  const platforms = [...new Set(drafts().map((draft) => draft.platform))];
-  els.content.innerHTML = `
-    ${warnings()}
-    <div class="metrics">
-      <div class="metric"><span>${t("checks")}</span><strong>${checkTotal}</strong></div>
-      <div class="metric"><span>${enumLabel("pass", "result")}</span><strong>${passCount}</strong></div>
-      <div class="metric"><span>${enumLabel("warn", "result")}</span><strong>${warnCount}</strong></div>
-      <div class="metric"><span>${enumLabel("fail", "result")}</span><strong>${failCount}</strong></div>
-    </div>
-    <div class="check-filters">
-      <select id="ruleFilter" aria-label="${t("rule")}">
-        <option value="all">${t("all")} · ${t("rule")}</option>
-        ${rules()
-          .map(
-            (rule) =>
-              `<option value="${escapeHtml(rule.rule_id)}" ${state.checkRuleFilter === rule.rule_id ? "selected" : ""}>${escapeHtml(rule.name)}</option>`,
-          )
-          .join("")}
-      </select>
-      <select id="platformFilter" aria-label="${t("platform")}">
-        <option value="all">${t("all")} · ${t("platform")}</option>
-        ${platforms.map((platform) => `<option value="${escapeHtml(platform)}" ${state.checkPlatformFilter === platform ? "selected" : ""}>${escapeHtml(enumLabel(platform, "platform"))}</option>`).join("")}
-      </select>
-      <select id="productFilter" aria-label="${t("product")}">
-        <option value="all">${t("all")} · ${t("product")}</option>
-        ${products()
-          .map(
-            (product) =>
-              `<option value="${escapeHtml(product.product_id)}" ${state.checkProductFilter === product.product_id ? "selected" : ""}>${escapeHtml(product.name)}</option>`,
-          )
-          .join("")}
-      </select>
-      <select id="resultFilter" aria-label="${t("result")}">
-        <option value="all">${t("all")} · ${t("result")}</option>
-        ${["pass", "warn", "fail"].map((result) => `<option value="${result}" ${state.checkResultFilter === result ? "selected" : ""}>${escapeHtml(enumLabel(result, "result"))}</option>`).join("")}
-      </select>
-    </div>
-    ${
-      items.length
-        ? `
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>${t("draft")}</th><th>${t("platform")}</th><th>${t("rule")}</th><th>${t("severity")}</th><th>${t("result")}</th><th>${t("evidence")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${items
-              .map((item) => {
-                const draft = draftById(item.draft_id);
-                const rule = ruleById(item.rule_id);
-                return `
-                <tr>
-                  <td><a href="#/drafts/${encodeURIComponent(item.draft_id)}"><span class="strong">${t("draftRef")} #${draft?.ref || ""} · ${escapeHtml(draft ? productById(draft.product_id)?.name || "" : item.draft_id)}</span></a><div class="muted">${escapeHtml(draft?.locale || "")}</div></td>
-                  <td>${draft ? platformBadge(draft.platform) : ""}</td>
-                  <td>${escapeHtml(rule?.name || item.rule_id)}</td>
-                  <td>${severityBadge(item.severity)}</td>
-                  <td>${resultBadge(item.result)}</td>
-                  <td class="evidence-cell">${escapeHtml(item.evidence || "")}</td>
-                </tr>
-              `;
-              })
-              .join("")}
-          </tbody>
-        </table>
-      </div>
-    `
-        : `<div class="empty">${t("noChecks")}</div>`
-    }
-    ${pagerControl("checks")}
-  `;
-  const bind = (id, prop) => {
-    els.content.querySelector(id)?.addEventListener("change", (event) => {
-      state[prop] = event.target.value;
-      render();
-    });
-  };
-  bind("#ruleFilter", "checkRuleFilter");
-  bind("#platformFilter", "checkPlatformFilter");
-  bind("#productFilter", "checkProductFilter");
-  bind("#resultFilter", "checkResultFilter");
-}
-
-function filteredReviewItems() {
-  const query = state.query.trim().toLowerCase();
-  return reviewItems().filter((item) => {
-    if (state.reviewFilter !== "all" && item.status !== state.reviewFilter) return false;
-    if (!query) return true;
-    const draft = draftById(item.draft_id);
-    return [draft ? draftLabel(draft) : item.draft_id, item.compliance_summary, item.status, draft?.fields?.title]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query));
-  });
-}
-
-function reviewFilters() {
-  const stateValues = ["all", "needs_review", "changes_requested", "approved", "done", "blocked"];
+function checkDetail(check) {
+  const draft = draftById(check.draft_id);
+  const ruleName = ruleById(check.rule_id)?.name || enumLabel(check.rule_id, "rule");
   return `
-    <div class="queue-filters">
-      ${stateValues
-        .map((value) => {
-          const count =
-            value === "all" ? reviewItems().length : reviewItems().filter((item) => item.status === value).length;
-          const label = value === "all" ? t("all") : enumLabel(value);
-          return `<button type="button" class="queue-filter ${state.reviewFilter === value ? "active" : ""}" data-filter="${value}">${escapeHtml(label)} <small>${count}</small></button>`;
-        })
-        .join("")}
+    <header class="detail-head">
+      <h2>${escapeHtml(ruleName)}</h2>
+      <p class="muted">${escapeHtml(draft ? `${draftRef(draft)} · ${draftLabel(draft)}` : t("notLoaded"))}</p>
+    </header>
+    <div class="detail-stack">
+      <dl class="detail-fields">
+        <dt>${t("result")}</dt><dd>${resultBadge(check.result)}</dd>
+        <dt>${t("severity")}</dt><dd>${severityBadge(check.severity)}</dd>
+        <dt>${t("draft")}</dt><dd>${draft ? `<a href="${detailUrl(draft.draft_id, "drafts")}">${escapeHtml(`${draftRef(draft)} · ${productName(draft.product_id)}`)}</a>` : `<span class="muted">${t("notLoaded")}</span>`}</dd>
+        <dt>${t("platform")}</dt><dd>${draft ? platformBadge(draft.platform) : ""} ${draft ? localeBadge(draft.locale) : ""}</dd>
+        <dt>${t("checkedAt")}</dt><dd>${date(check.checked_at)}</dd>
+      </dl>
+      <section>
+        <h3>${t("evidence")}</h3>
+        <p class="detail-text">${escapeHtml(check.evidence || "—")}</p>
+        ${claimRefLinks(check.refs)}
+      </section>
     </div>
   `;
 }
 
-export function renderReview() {
-  els.title.textContent = t("review");
-  const items = filteredReviewItems();
-  const reviewCount = reviewItems().filter((item) => item.status === "needs_review").length;
-  els.subtitle.textContent = `${reviewCount} ${t("awaitingReview")}`;
+function claimDetail(claim) {
+  return `
+    <header class="detail-head">
+      <h2>${escapeHtml(claim.text)}</h2>
+      <p class="muted">${escapeHtml([enumLabel(claim.status, "claim"), claim.category].filter(Boolean).join(" · "))}</p>
+    </header>
+    <div class="detail-stack">
+      <dl class="detail-fields">
+        <dt>${t("claimStatus")}</dt><dd>${claimStatusBadge(claim.status)}</dd>
+        <dt>${t("category")}</dt><dd>${escapeHtml(claim.category || "")}</dd>
+        <dt>${t("claimEvidence")}</dt><dd>${(claim.evidence || []).map((entry) => `<span class="tag">${escapeHtml(entry)}</span>`).join(" ")}</dd>
+      </dl>
+      <section>
+        <h3>${t("substantiation")}</h3>
+        <p class="detail-text">${escapeHtml(claim.substantiation || "—")}</p>
+      </section>
+    </div>
+  `;
+}
+
+function ruleDetail(rule) {
+  return `
+    <header class="detail-head">
+      <h2>${escapeHtml(rule.phrase)}</h2>
+      <p class="muted">${escapeHtml(enumLabel(rule.type, "claim"))}</p>
+    </header>
+    <div class="detail-stack">
+      <dl class="detail-fields">
+        <dt>${t("severity")}</dt><dd>${severityBadge(rule.severity || "error")}</dd>
+        <dt>${t("type")}</dt><dd><span class="tag">${escapeHtml(enumLabel(rule.type, "claim"))}</span></dd>
+        <dt>${t("alternative")}</dt><dd>${rule.alternative ? `<span class="tag">${escapeHtml(rule.alternative)}</span>` : "—"}</dd>
+      </dl>
+      <section>
+        <h3>${t("reason")}</h3>
+        <p class="detail-text">${escapeHtml(rule.reason || "—")}</p>
+      </section>
+    </div>
+  `;
+}
+
+function reviewDetail(draft) {
+  const item = reviewForDraft(draft.draft_id);
   const demo = Boolean(state.settings?.demo);
   const disabled = demo ? "disabled" : "";
-  els.content.innerHTML = `
-    ${noticeBanner()}
-    ${warnings()}
-    ${reviewFilters()}
-    <div class="queue">
+  const edits = state.edits[item.review_id] || {};
+  const note = edits.note ?? draft.decision_note ?? "";
+  return `
+    <article class="review-detail status-${escapeHtml(item.status)}" data-review="${escapeHtml(item.review_id)}">
+      <header class="queue-head">
+        <span class="queue-ref">${draftRef(item)}</span>
+        ${statusBadge(item.status)}
+        ${platformBadge(draft.platform)}
+        ${localeBadge(draft.locale)}
+        <span class="queue-score muted">${t("score")} ${scoreCell(draft.compliance_score)}</span>
+      </header>
+      <h2 class="queue-subject">${escapeHtml(draft.fields?.title || draftLabel(draft))}</h2>
+      <div class="queue-meta">
+        ${productById(draft.product_id) ? `<a href="${detailUrl(draft.product_id, "products")}">${escapeHtml(productName(draft.product_id))}</a>` : `<span>${t("notLoaded")}</span>`}
+        · <a href="${detailUrl(draft.draft_id, "drafts")}">${t("openWorkbench")}</a>
+      </div>
+      ${warnings(draft.draft_id)}
+      <p class="queue-summary"><span class="muted">${t("complianceSummary")}:</span> ${escapeHtml(item.compliance_summary || "—")}</p>
+      ${draft.keyword_strategy ? `<p class="queue-summary"><span class="muted">${t("keywordStrategy")}:</span> ${escapeHtml(draft.keyword_strategy)}</p>` : ""}
       ${
-        items
-          .map((item) => {
-            const draft = draftById(item.draft_id);
-            const edits = state.edits[item.review_id] || {};
-            const note = edits.note ?? draft?.decision_note ?? "";
-            return `
-          <article class="queue-card status-${escapeHtml(item.status)}" data-review="${escapeHtml(item.review_id)}">
-            <header class="queue-head">
-              <span class="queue-ref">${t("draftRef")} #${item.ref}</span>
-              ${statusBadge(item.status)}
-              ${draft ? platformBadge(draft.platform) : ""}
-              ${draft ? localeBadge(draft.locale) : ""}
-              <span class="queue-score muted">${t("score")} ${draft ? scoreCell(draft.compliance_score) : ""}</span>
-            </header>
-            <div class="queue-meta">
-              ${draft ? `<a href="#/drafts/${encodeURIComponent(draft.draft_id)}">${escapeHtml(productById(draft.product_id)?.name || draft.draft_id)}</a> · ${escapeHtml(draft.fields?.title?.slice(0, 110) || "")}` : escapeHtml(item.draft_id)}
-            </div>
-            <p class="queue-summary"><span class="muted">${t("complianceSummary")}:</span> ${escapeHtml(item.compliance_summary || "")}</p>
-            ${draft?.keyword_strategy ? `<p class="queue-summary"><span class="muted">${t("keywordStrategy")}:</span> ${escapeHtml(draft.keyword_strategy)}</p>` : ""}
-            ${
-              item.suggestions?.length
-                ? `
-              <span class="queue-label">${t("suggestions")}</span>
-              <ul class="queue-suggestions">${item.suggestions.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("")}</ul>
-            `
-                : ""
-            }
-            <label class="queue-label">${t("reviewNote")}</label>
-            <textarea class="queue-note" data-field="note" rows="2" placeholder="${escapeHtml(t("reviewNotePlaceholder"))}" ${disabled}>${escapeHtml(note)}</textarea>
-            <div class="queue-actions">
-              <button type="button" class="approve" data-action="approve" title="${t("approve")}" ${disabled}>${t("approve")}</button>
-              <button type="button" data-action="request_changes" title="${t("requestChanges")}" ${disabled}>${t("requestChanges")}</button>
-              <button type="button" class="danger" data-action="block" title="${t("block")}" ${disabled}>${t("block")}</button>
-              ${draft?.decision_action ? `<span class="queue-decision muted">${t("decision")}: ${escapeHtml(enumLabel(draft.decision_action, "action"))} · ${escapeHtml(draft.decided_at ? new Date(draft.decided_at).toLocaleString() : "")}</span>` : ""}
-            </div>
-          </article>
-        `;
-          })
-          .join("") || `<div class="empty">${t("noReviewItems")}</div>`
+        item.suggestions?.length
+          ? `
+        <span class="queue-label">${t("suggestions")}</span>
+        <ul class="queue-suggestions">${item.suggestions.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("")}</ul>
+      `
+          : ""
       }
-    </div>
-    ${pagerControl("drafts")}
+      <label class="queue-label" for="note-${escapeHtml(item.review_id)}">${t("reviewNote")}</label>
+      <textarea id="note-${escapeHtml(item.review_id)}" class="queue-note" data-field="note" rows="2" placeholder="${escapeHtml(t("reviewNotePlaceholder"))}" ${disabled}>${escapeHtml(note)}</textarea>
+      ${noticeBanner()}
+      <div class="queue-actions">
+        <button type="button" class="approve" data-action="approve" title="${t("approve")}" ${disabled}>${t("approve")}</button>
+        <button type="button" data-action="request_changes" title="${t("requestChanges")}" ${disabled}>${t("requestChanges")}</button>
+        <button type="button" class="danger" data-action="block" title="${t("block")}" ${disabled}>${t("block")}</button>
+        ${draft.decision_action ? `<span class="queue-decision muted">${t("decision")}: ${escapeHtml(enumLabel(draft.decision_action, "action"))} · ${escapeHtml(draft.decided_at ? new Date(draft.decided_at).toLocaleString() : "")}</span>` : ""}
+      </div>
+      <h3 class="review-checks-title">${t("complianceChecks")}</h3>
+      ${draftChecksList(draft)}
+    </article>
   `;
-  bindReviewEvents();
 }
 
-function bindReviewEvents() {
-  els.content.querySelectorAll(".queue-filter").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.reviewFilter = button.dataset.filter;
-      render();
-    });
+// ── Detail events (delegated: the detail body is re-rendered) ──────────────
+export function bindDetailEvents() {
+  els.detailBody.addEventListener("input", (event) => {
+    const reviewField = event.target.closest("[data-review] textarea[data-field]");
+    if (reviewField) {
+      const id = reviewField.closest("[data-review]").dataset.review;
+      state.edits[id] = { ...state.edits[id], [reviewField.dataset.field]: reviewField.value };
+      return;
+    }
+    const input = event.target.closest(".workbench textarea.field-input");
+    if (!input) return;
+    const workbench = input.closest(".workbench");
+    const draftId = workbench.dataset.draft;
+    const key = input.dataset.field;
+    const edits = state.fieldEdits[draftId] || (state.fieldEdits[draftId] = {});
+    const counter = workbench.querySelector(`#count-${CSS.escape(key)}`);
+    if (input.dataset.kind === "list") {
+      const values = input.value
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+      edits[key] =
+        key === "item_specifics"
+          ? values.map((line) => {
+              const idx = line.indexOf(":");
+              return idx === -1
+                ? { name: line, value: "" }
+                : { name: line.slice(0, idx).trim(), value: line.slice(idx + 1).trim() };
+            })
+          : values;
+      if (counter) counter.textContent = String(values.length);
+      return;
+    }
+    edits[key] = input.value;
+    if (counter) {
+      const max = Number(input.dataset.max) || 0;
+      const unit = input.dataset.unit || "chars";
+      const current = unit === "bytes" ? byteLength(input.value) : charLength(input.value);
+      counter.textContent = `${current}${max ? ` / ${max}` : ""} ${t(unit)}`;
+      counter.classList.toggle("over", Boolean(max) && current > max);
+    }
   });
-  els.content.querySelectorAll(".queue-card textarea").forEach((textarea) => {
-    textarea.addEventListener("input", () => {
-      const id = textarea.closest(".queue-card").dataset.review;
-      const field = textarea.dataset.field;
-      state.edits[id] = { ...state.edits[id], [field]: textarea.value };
-    });
-  });
-  els.content.querySelectorAll(".queue-actions button[data-action]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const card = button.closest(".queue-card");
-      const note = card.querySelector('[data-field="note"]')?.value ?? "";
-      submitDecision(card.dataset.review, button.dataset.action, { comment: note });
-    });
+  els.detailBody.addEventListener("click", (event) => {
+    const save = event.target.closest("#saveFields");
+    if (save) {
+      const draft = draftById(save.closest(".workbench")?.dataset.draft);
+      if (draft && reviewForDraft(draft.draft_id)) submitDecision(draft.draft_id, "revise", { fields: editedFields(draft) });
+      return;
+    }
+    const button = event.target.closest("[data-review] button[data-action]");
+    if (!button) return;
+    const card = button.closest("[data-review]");
+    const note = card.querySelector('[data-field="note"]')?.value ?? "";
+    submitDecision(card.dataset.review, button.dataset.action, { comment: note });
   });
 }
 
@@ -514,95 +901,22 @@ async function submitDecision(draftId, action, { comment = "", fields } = {}) {
     return;
   }
   delete state.edits[draftId];
-  state.notice = t("saved");
+  if (fields) delete state.fieldEdits[draftId];
   await loadState();
+  state.notice = t("saved");
+  render();
 }
 
-export function renderClaims() {
-  els.title.textContent = t("claimsRegistry");
-  const registry = claimsRegistry();
-  const query = state.query.trim().toLowerCase();
-  const matches = (haystack) =>
-    !query ||
-    String(haystack || "")
-      .toLowerCase()
-      .includes(query);
-  const claims = (registry.claims || []).filter(
-    (claim) => matches(claim.text) || matches(claim.substantiation) || matches(claim.category),
-  );
-  const claimRules = (registry.rules || []).filter(
-    (rule) => matches(rule.phrase) || matches(rule.reason) || matches(rule.alternative),
-  );
-  const approvedCount = (registry.claims || []).filter((claim) => claim.status === "approved").length;
-  els.subtitle.textContent = `${approvedCount} ${t("approved")} · ${(registry.rules || []).length} ${t("bannedPhrases")}`;
-  els.content.innerHTML = `
-    ${warnings()}
-    <div class="warnings"><div class="info"><strong>${t("claimsIntro")}</strong></div></div>
-    <div class="section-block">
-      <h2>${t("approvedClaims")}</h2>
-      ${
-        claims.length
-          ? `<div class="table-wrap"><table>
-        <thead><tr>
-          <th>${t("claimText")}</th><th>${t("claimStatus")}</th><th>${t("category")}</th><th>${t("substantiation")}</th><th>${t("claimEvidence")}</th>
-        </tr></thead>
-        <tbody>
-          ${claims
-            .map(
-              (claim) => `
-            <tr id="claim-${escapeHtml(claim.claim_id)}">
-              <td class="strong">${escapeHtml(claim.text)}</td>
-              <td>${claimStatusBadge(claim.status)}</td>
-              <td>${escapeHtml(claim.category || "")}</td>
-              <td>${escapeHtml(claim.substantiation || "")}</td>
-              <td>${(claim.evidence || []).map((entry) => `<span class="tag">${escapeHtml(entry)}</span>`).join(" ")}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody></table></div>`
-          : `<div class="empty-inline">${t("noClaims")}</div>`
-      }
-    </div>
-    <div class="section-block">
-      <h2>${t("bannedPhrases")}</h2>
-      ${
-        claimRules.length
-          ? `<div class="table-wrap"><table>
-        <thead><tr>
-          <th>${t("phrase")}</th><th>${t("severity")}</th><th>${t("reason")}</th><th>${t("alternative")}</th>
-        </tr></thead>
-        <tbody>
-          ${claimRules
-            .map(
-              (rule) => `
-            <tr id="claimrule-${escapeHtml(rule.rule_id)}">
-              <td class="strong">${escapeHtml(rule.phrase)}</td>
-              <td>${severityBadge(rule.severity || "error")} <span class="tag">${escapeHtml(enumLabel(rule.type, "claim"))}</span></td>
-              <td>${escapeHtml(rule.reason || "")}</td>
-              <td>${rule.alternative ? `<span class="tag">${escapeHtml(rule.alternative)}</span>` : ""}</td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody></table></div>`
-          : `<div class="empty-inline">${t("noClaimRules")}</div>`
-      }
-    </div>
-    ${pagerControl("claims")}
-  `;
-}
-
+// ── Help & Settings ────────────────────────────────────────────────────────
 export function renderSettings() {
-  els.title.textContent = t("settings");
-  els.subtitle.textContent = t("localFilesOnly");
+  document.getElementById("settingsTitle").title = t("localFilesOnly");
   const summary = state.settings?.config_summary || {};
   const seller = summary.seller || {};
   const exportPrefs = summary.export || {};
   const publish = summary.publish || {};
-  els.content.innerHTML = `
+  document.getElementById("settingsBody").innerHTML = `
     <div class="settings">
-      <section>
+      <section class="card">
         <h2>${t("configuration")}</h2>
         <dl>
           <dt>${t("dataProvider")}</dt><dd>${escapeHtml(state.settings?.data_provider || "busabase")}</dd>
@@ -610,7 +924,7 @@ export function renderSettings() {
           <dt>${t("onboarding")}</dt><dd>${state.settings?.onboarding?.completed ? t("completed") : t("incomplete")}</dd>
         </dl>
       </section>
-      <section>
+      <section class="card">
         <h2>${t("seller")}</h2>
         <dl>
           <dt>${t("brand")}</dt><dd>${escapeHtml(seller.brand || "")}</dd>
@@ -619,7 +933,7 @@ export function renderSettings() {
           <dt>${t("locales")}</dt><dd>${(summary.locales || []).map(localeBadge).join(" ")}</dd>
         </dl>
       </section>
-      <section>
+      <section class="card">
         <h2>${t("platforms")} · ${t("rules")}</h2>
         ${
           (summary.platforms || [])
@@ -642,7 +956,7 @@ export function renderSettings() {
             .join("") || `<div class="empty-inline">${t("setupNeeded")}</div>`
         }
       </section>
-      <section>
+      <section class="card">
         <h2>${t("bannedWords")} · ${t("competitorBrands")}</h2>
         <dl>
           <dt>${t("bannedWords")}</dt><dd>${summary.banned_words_count || 0}</dd>
@@ -650,14 +964,14 @@ export function renderSettings() {
           <dt>${t("maxRepeats")}</dt><dd>${summary.keyword_stuffing?.max_repeats || 3}</dd>
         </dl>
       </section>
-      <section>
+      <section class="card">
         <h2>${t("exportPrefs")}</h2>
         <dl>
           <dt>${t("format")}</dt><dd>${escapeHtml(exportPrefs.format || "markdown+csv")}</dd>
           <dt>${t("outDir")}</dt><dd>${escapeHtml(exportPrefs.out_dir || "exports")}</dd>
         </dl>
       </section>
-      <section>
+      <section class="card">
         <h2>${t("publishHandoff")}</h2>
         <dl>
           <dt>${t("handoffToAgent")}</dt><dd>${publish.handoff_to_agent ? t("byAgentAfterApproval") : t("no")}</dd>
@@ -678,3 +992,4 @@ export function renderSettings() {
     </div>
   `;
 }
+

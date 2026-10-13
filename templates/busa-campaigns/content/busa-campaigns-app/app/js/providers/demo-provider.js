@@ -105,6 +105,7 @@ function demoSegments() {
 function demoSuppression() {
   return [
     {
+      entry_id: "sup-unsub-1",
       address: "unsub-1@example.com",
       reason: "unsubscribe",
       note: "Clicked unsubscribe on the June dispatch.",
@@ -112,6 +113,7 @@ function demoSuppression() {
       source: "esp-webhook",
     },
     {
+      entry_id: "sup-bounce-1",
       address: "bounced-1@example.com",
       reason: "hard_bounce",
       note: "Mailbox does not exist (550).",
@@ -119,6 +121,7 @@ function demoSuppression() {
       source: "esp-webhook",
     },
     {
+      entry_id: "sup-complaint-1",
       address: "complaint-1@example.com",
       reason: "complaint",
       note: "Marked a campaign as spam.",
@@ -127,6 +130,7 @@ function demoSuppression() {
     },
     {
       // Whole segment suppressed while its consent is re-confirmed.
+      entry_id: "sup-lapsed-90d",
       segment_id: "lapsed-90d",
       reason: "complaint",
       note: "Elevated complaint rate; hold the lapsed segment until re-permission.",

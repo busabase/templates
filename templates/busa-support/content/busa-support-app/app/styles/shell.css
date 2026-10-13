@@ -402,8 +402,8 @@
     min-width: 0;
     min-height: 0;
     height: 100vh;
-    display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
   }
 
@@ -415,25 +415,22 @@
     display: none;
   }
 
-  .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    min-height: 58px;
-    padding: 10px 18px;
-    border-bottom: 1px solid var(--line);
-    background: var(--surface-blur);
+  .load-state {
+    padding: 24px;
+    color: var(--muted);
   }
 
-  .topbar p {
-    margin: 2px 0 0;
+  .load-state.error {
+    color: var(--danger);
   }
 
-  .topbar-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
   select,
@@ -515,11 +512,5 @@
 
   .notice[hidden] {
     display: none;
-  }
-
-  .content {
-    min-height: 0;
-    overflow: auto;
-    padding: 16px 18px 24px;
   }
 }

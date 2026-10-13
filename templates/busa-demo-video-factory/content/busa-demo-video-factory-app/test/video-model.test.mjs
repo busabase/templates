@@ -7,6 +7,7 @@ import {
   normalizeVideoRow,
   shotCounts,
   shotsForVideo,
+  statusLabel,
   withShotRollup,
 } from "../app/js/video-model.js";
 
@@ -56,11 +57,31 @@ test("shotCounts returns an empty rollup for a video with no shots", () => {
   assert.deepEqual(counts, { total: 0, byStatus: {} });
 });
 
-test("withShotRollup attaches shots.{total,byStatus} to every video", () => {
+test("withShotRollup attaches shots.{total,byStatus,linked} to every video", () => {
   const videos = [normalizeVideoRow({ __recordId: "rec-1", title: "V1" })];
   const shots = [normalizeShotRow({ __recordId: "s1", video: "rec-1", recording_status: "pending" })];
   const [video] = withShotRollup(videos, shots);
-  assert.deepEqual(video.shots, { total: 1, byStatus: { pending: 1 } });
+  assert.deepEqual(video.shots, { total: 1, byStatus: { pending: 1 }, linked: 1 });
+});
+
+test("withShotRollup keeps the relation's shot count when only part of the shots is loaded", () => {
+  const videos = [normalizeVideoRow({ __recordId: "rec-1", title: "V1", shots: ["s1", "s2", "s3"] })];
+  const shots = [normalizeShotRow({ __recordId: "s1", video: "rec-1" })];
+  const [video] = withShotRollup(videos, shots);
+  assert.equal(video.shots.total, 1);
+  assert.equal(video.shots.linked, 3);
+});
+
+test("normalizeShotRow reads a relation stored as an array of ids", () => {
+  const shot = normalizeShotRow({ __recordId: "s1", video: ["rec-9"], title: "Shot 1" });
+  assert.equal(shot.video, "rec-9");
+  assert.equal(shot.title, "Shot 1");
+});
+
+test("statusLabel never shows a raw option id", () => {
+  assert.equal(statusLabel("needs_reshoot"), "Needs reshoot");
+  assert.equal(statusLabel("post_production"), "Post-production");
+  assert.equal(statusLabel("custom_value"), "custom value");
 });
 
 test("buildState reports videoCount and joins shots onto every video", () => {

@@ -68,8 +68,18 @@ export const appConfig = {
       ],
     },
   ],
+  // Where a record opens, per browsed Base (busabase-app-creator "Choose The
+  // Detail Mode"). The Settings Base is a sanitized config record the app
+  // reads for Help & Settings; it has no record view, so it has no mode.
+  //   accounts  → page:   an account owns a related list (its holdings) and its
+  //                       balances; you open it and stay to review it.
+  //   positions → drawer: a holding is a fact you scan many of — read its cost,
+  //                       P/L and weight, then return to the list.
+  ui: {
+    detail_modes: { accounts: "page", positions: "drawer" },
+  },
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     writeProcedures: [],
   },

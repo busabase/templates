@@ -1,106 +1,69 @@
 import { messages } from "./i18n/messages.js";
+import { appConfig } from "./js/config.js?v=0.1.0";
 import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
-import {
-  activeHtml,
-  dateTime,
-  emptyText,
-  field,
-  fieldTile,
-  issueColumn,
-  issueTree,
-  listValue,
-  matchMeterHtml,
-  percentText,
-  practiceBarHtml,
-  redactionStep,
-  renderChecks,
-  renderEntities,
-  renderItems,
-  renderReview,
-  renderSettings,
-  rowHtml,
-  sumField,
-} from "./js/review-views.js";
+import { renderOverview, renderRecordView, renderSettings } from "./js/review-views.js";
+
+// Where a record opens, per view — declared once in config.js `ui.detail_modes`
+// (the reasoning sits next to the declaration). A `/record` path always opens
+// the full page; `?peek=` drives drawer and split. On a phone every mode is a
+// page (base-ui.css handles that).
+export const DETAIL_MODES = appConfig.ui.detail_modes;
+const RECORD_VIEWS = Object.keys(DETAIL_MODES);
+// Views over the Case Records Base, and the workflow status each one slices.
+export const ITEM_VIEW_STATUS = { items: null, review: "needs_review", approved: "approved", done: "done", blocked: "blocked" };
+// The Base behind each record view.
+export const VIEW_BASE = { items: "items", review: "items", approved: "items", done: "items", blocked: "items", checks: "checks", entities: "entities" };
 
 export const state = {
   snapshot: null,
   settings: null,
+  provider: null,
   route: parseRoute(),
-  query: "",
   lang: normalizeLang(
     new URLSearchParams(location.search).get("lang") || localStorage.getItem("legal-app-language") || "auto",
   ),
   demo: new URLSearchParams(location.search).get("demo") || "",
   edits: { note: {}, draft: {} },
+  notice: "",
   pagination: {},
   totalCount: {},
   workflowCount: null,
   loadingMore: {},
   loadMoreError: {},
   hasLoadedMore: false,
+  // Records opened by URL that are not on the loaded page (records.get).
+  extra: { items: new Map(), checks: new Map(), entities: new Map() },
 };
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "legal-app.sidebarCollapsed";
 const AUTO_REFRESH_MS = 15_000;
-export const STATUS_ROUTES = new Set(["approved", "done", "blocked"]);
-const PROFILE_CLASS_PREFIX = "legal-profile-";
-const BUSINESS_PROFILES = {
-  "busa-legal-casebase-ingest": {
-    id: "casebase",
-    icon: "IN",
-    lane: { en: "Ingest QA", zh: "入库质检" },
-    primary: { en: "source documents", zh: "来源文书" },
-    secondary: { en: "redaction and taxonomy", zh: "脱敏与分类" },
-    spotlight: { en: "Document intake line", zh: "文书入库流水线" },
-    reviewTitle: { en: "Records waiting for anonymization QA", zh: "等待脱敏质检的记录" },
-  },
-  "busa-legal-precedent-desk": {
-    id: "precedent",
-    icon: "PR",
-    lane: { en: "Precedent Research", zh: "类案研究" },
-    primary: { en: "matched precedent packs", zh: "匹配类案包" },
-    secondary: { en: "similarity, citations, court patterns", zh: "相似度、引用与裁判尺度" },
-    spotlight: { en: "Research pack assembly", zh: "类案包组装" },
-    reviewTitle: { en: "Research packs waiting for lawyer review", zh: "等待律师复核的类案包" },
-  },
-  "busa-legal-matter-strategy": {
-    id: "matter",
-    icon: "MS",
-    lane: { en: "Matter Strategy", zh: "案件策略" },
-    primary: { en: "strategy packs", zh: "策略包" },
-    secondary: { en: "issues, evidence, pleadings", zh: "争点、证据与文书" },
-    spotlight: { en: "Strategy and evidence map", zh: "策略与证据地图" },
-    reviewTitle: { en: "Strategies waiting for partner judgment", zh: "等待合伙人判断的策略" },
-  },
-  "busa-legal-firm-radar": {
-    id: "firm",
-    icon: "FR",
-    lane: { en: "Firm Radar", zh: "律所雷达" },
-    primary: { en: "analytics cards", zh: "分析卡" },
-    secondary: { en: "practice mix, talent, proof points", zh: "业务结构、人才与品牌证据" },
-    spotlight: { en: "Management analytics board", zh: "管理分析看板" },
-    reviewTitle: { en: "Management insights waiting for partner review", zh: "等待管理层复核的经营洞察" },
-  },
-};
 
+const byId = (id) => document.getElementById(id);
 export const els = {
-  title: document.querySelector("#page-title"),
-  subtitle: document.querySelector("#page-subtitle"),
-  content: document.querySelector("#content"),
-  search: document.querySelector("#search"),
-  refresh: document.querySelector("#refresh"),
-  mobileRefresh: document.querySelector("#mobileRefresh"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
-  mobileSidebarToggle: document.querySelector("#mobileSidebarToggle"),
-  sidebarScrim: document.querySelector("#sidebarScrim"),
-  mobileViewTitle: document.querySelector("#mobileViewTitle"),
-  mobileViewMeta: document.querySelector("#mobileViewMeta"),
-  syncStatus: document.querySelector("#sync-status"),
-  countNeeds: document.querySelector("#count-needs"),
-  countReady: document.querySelector("#count-ready"),
-  countBlocked: document.querySelector("#count-blocked"),
-  language: document.querySelector("#language"),
+  loadState: byId("loadState"),
+  overviewPage: byId("overviewPage"),
+  viewPage: byId("viewPage"),
+  settingsPage: byId("settingsPage"),
+  viewTitle: byId("viewTitle"),
+  viewCount: byId("viewCount"),
+  listPanel: byId("listPanel"),
+  detailPanel: byId("detailPanel"),
+  detailBody: byId("detailBody"),
+  detailBack: byId("detailBack"),
+  detailExpand: byId("detailExpand"),
+  search: byId("search"),
+  refresh: byId("refresh"),
+  mobileRefresh: byId("mobileRefresh"),
+  sidebarToggle: byId("sidebarToggle"),
+  mobileSidebarToggle: byId("mobileSidebarToggle"),
+  sidebarScrim: byId("sidebarScrim"),
+  mobileViewTitle: byId("mobileViewTitle"),
+  mobileViewMeta: byId("mobileViewMeta"),
+  countNeeds: byId("count-needs"),
+  countReady: byId("count-ready"),
+  countBlocked: byId("count-blocked"),
+  language: byId("language"),
 };
 
 function normalizeLang(lang) {
@@ -119,15 +82,12 @@ export function t(key) {
   return messages[activeLang()]?.[key] || messages.en[key] || key;
 }
 
-function l10n(value) {
-  if (value && typeof value === "object")
-    return activeLang() === "zh" ? value.zh || value.en || "" : value.en || value.zh || "";
-  return value || "";
-}
-
-export function currentProfile() {
-  const source = state.snapshot?.source || state.settings?.app || "";
-  return BUSINESS_PROFILES[source] || BUSINESS_PROFILES["busa-legal-casebase-ingest"];
+// Option values (risk, severity, activity kind, metric key) never reach the
+// screen raw: a label when one exists, else the words without underscores.
+export function enumLabel(value, group) {
+  if (value === null || value === undefined || value === "") return "";
+  const key = String(value);
+  return messages[activeLang()]?.enum?.[group]?.[key] || messages.en.enum?.[group]?.[key] || key.replaceAll("_", " ");
 }
 
 function isMobileLayout() {
@@ -163,9 +123,84 @@ function toggleSidebar() {
   setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
 }
 
+// ── Routing ────────────────────────────────────────────────────────────────
+// `#/<view>[/<record>][?q=…&peek=…]`. Search and the peeked record live in the
+// URL so refresh, shared links and Back restore the same list context.
 function parseRoute() {
-  const parts = (location.hash || "#/overview").replace(/^#\/?/, "").split("/").filter(Boolean);
-  return { view: parts[0] || "overview", id: parts[1] ? decodeURIComponent(parts[1]) : "" };
+  const raw = (location.hash || "#/overview").replace(/^#\/?/, "");
+  const [path, query = ""] = raw.split("?");
+  const parts = path.split("/").filter(Boolean);
+  const params = new URLSearchParams(query);
+  let view = parts[0] || "overview";
+  let id = "";
+  try {
+    id = parts[1] ? decodeURIComponent(parts[1]) : "";
+  } catch {
+    id = "";
+  }
+  if (!RECORD_VIEWS.includes(view) && view !== "settings") view = "overview";
+  const mode = DETAIL_MODES[view];
+  const peek = mode && mode !== "page" && !id ? params.get("peek") || "" : "";
+  return {
+    view,
+    id,
+    peek,
+    selectedId: mode ? id || peek : "",
+    presentation: !mode ? null : id ? "page" : mode === "page" ? null : mode,
+    query: params.get("q") || "",
+  };
+}
+
+const routeQuery = (extra = {}, route = state.route) => {
+  const params = new URLSearchParams();
+  if (route.query) params.set("q", route.query);
+  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
+
+const routeFor = (view) => (view === state.route.view ? state.route : { view, query: "" });
+
+export const listUrl = (route = state.route) => `#/${route.view}${routeQuery({}, route)}`;
+// The full page: the record in the path. Always a page, whatever the view's mode.
+export const detailUrl = (id, view = state.route.view) =>
+  `#/${view}/${encodeURIComponent(id)}${routeQuery({}, routeFor(view))}`;
+// What a row (or a cross-link) opens: the page for a `page` view, else `?peek=`.
+export const recordUrl = (id, view = state.route.view) => {
+  if (DETAIL_MODES[view] === "page") return detailUrl(id, view);
+  return `#/${view}${routeQuery({ peek: id }, routeFor(view))}`;
+};
+
+let previousRouteWasList = false;
+let routeSerial = 0;
+
+function setRoute() {
+  const previous = state.route;
+  state.route = parseRoute();
+  // A detail opened from its own list steps Back/Close/Escape to that exact
+  // list entry instead of pushing a new one.
+  if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
+    history.replaceState({ fromList: true }, "");
+  }
+  previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  if (previous.selectedId !== state.route.selectedId) state.notice = "";
+  els.search.value = state.route.query;
+  setMobileSidebarOpen(false);
+  render();
+  ensureSelectedRecord();
+}
+
+// Replace the current entry without a hashchange: search keystrokes should not
+// each become a Back step.
+function replaceRoute(url) {
+  history.replaceState(history.state, "", url);
+  state.route = parseRoute();
+  render();
+}
+
+export function closeDetail() {
+  if (history.state?.fromList) history.back();
+  else location.hash = listUrl();
 }
 
 function applyDemoRoute() {
@@ -187,8 +222,10 @@ function applyDemoRoute() {
   state.route = parseRoute();
 }
 
-async function loadState() {
+// ── Data ───────────────────────────────────────────────────────────────────
+export async function loadState() {
   const provider = await getProvider();
+  state.provider = provider;
   const data = await provider.getState();
   closeConnectGate();
   state.snapshot = data.snapshot;
@@ -197,9 +234,11 @@ async function loadState() {
   state.totalCount = data.totalCount || {};
   state.workflowCount = data.workflowCount || null;
   state.hasLoadedMore = false;
+  state.extra = { items: new Map(), checks: new Map(), entities: new Map() };
   applyDemoRoute();
   window.dispatchEvent(new CustomEvent("busa-legal-casebase-ingest:state", { detail: data }));
   render();
+  ensureSelectedRecord();
 }
 
 function shouldSkipAutoRefresh() {
@@ -215,123 +254,7 @@ function scheduleAutoRefresh() {
   }, AUTO_REFRESH_MS);
 }
 
-function applyI18n() {
-  document.documentElement.lang = activeLang() === "zh" ? "zh-CN" : "en";
-  document.querySelectorAll("[data-i18n]").forEach((node) => {
-    node.textContent = t(node.dataset.i18n);
-  });
-  document.querySelectorAll("[data-i18n-title]").forEach((node) => {
-    node.title = t(node.dataset.i18nTitle);
-  });
-  if (els.search) els.search.placeholder = t("search");
-  if (els.refresh) els.refresh.textContent = t("refresh");
-  if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
-  if (els.language) {
-    els.language.value = state.lang;
-    const labels =
-      activeLang() === "zh" ? { auto: "自动", en: "English", zh: "中文" } : { auto: "Auto", en: "English", zh: "中文" };
-    for (const option of els.language.options) option.textContent = labels[option.value] || option.textContent;
-  }
-}
-
-// A reviewer decision is no longer a separate decisions.json overlay: the
-// Busabase provider writes decision_action/review_note/decided_at/draft/
-// status directly onto the item row, and Busabase reads are always live, so
-// state.snapshot.items already reflects the latest decision on every load.
-export function items() {
-  return state.snapshot?.items || [];
-}
-
-export function entities() {
-  return state.snapshot?.entities || [];
-}
-
-export function checks() {
-  return state.snapshot?.checks || [];
-}
-
-export function filteredItems(status) {
-  const q = state.query.trim().toLowerCase();
-  return items().filter((item) => {
-    if (status && item.status !== status) return false;
-    if (!q) return true;
-    return [item.title, item.summary, item.category, item.owner, item.body, item.recommendation]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase()
-      .includes(q);
-  });
-}
-
-export function itemsForRoute() {
-  if (state.route.view === "review") return filteredItems("needs_review");
-  if (STATUS_ROUTES.has(state.route.view)) return filteredItems(state.route.view);
-  return filteredItems();
-}
-
-function renderShell() {
-  applyI18n();
-  const profile = currentProfile();
-  document.body.classList.remove(
-    ...Object.values(BUSINESS_PROFILES).map((item) => `${PROFILE_CLASS_PREFIX}${item.id}`),
-  );
-  document.body.classList.add(`${PROFILE_CLASS_PREFIX}${profile.id}`);
-  const all = items();
-  const needs = state.workflowCount?.needs_review ?? all.filter((item) => item.status === "needs_review").length;
-  const ready =
-    state.workflowCount?.approved != null && state.workflowCount?.done != null
-      ? state.workflowCount.approved + state.workflowCount.done
-      : all.filter((item) => item.status === "approved" || item.status === "done").length;
-  const blocked = state.workflowCount?.blocked ?? all.filter((item) => item.status === "blocked").length;
-  if (els.countNeeds) els.countNeeds.textContent = needs;
-  if (els.countReady) els.countReady.textContent = ready;
-  if (els.countBlocked) els.countBlocked.textContent = blocked;
-  if (els.syncStatus)
-    els.syncStatus.textContent = state.snapshot
-      ? `${state.totalCount.items ?? `${all.length}${state.pagination.items ? "+" : ""}`} ${t("allItems")} · ${state.totalCount.checks ?? `${checks().length}${state.pagination.checks ? "+" : ""}`} ${t("checks").toLowerCase()}`
-      : t("empty");
-  if (els.mobileViewTitle) els.mobileViewTitle.textContent = viewLabel(state.route.view);
-  if (els.mobileViewMeta)
-    els.mobileViewMeta.textContent = needs
-      ? `${needs} ${t("needsReview")}`
-      : `${state.totalCount.items ?? `${all.length}${state.pagination.items ? "+" : ""}`} ${t("allItems")}`;
-  document.querySelectorAll("[data-route]").forEach((link) => {
-    link.classList.toggle("active", link.dataset.route === state.route.view);
-  });
-}
-
-export function viewLabel(view) {
-  if (view === "review") return t("needsReview");
-  if (view === "approved") return t("approved");
-  if (view === "done") return t("done");
-  if (view === "blocked") return t("blocked");
-  if (view === "items") return t("allItems");
-  if (view === "checks") return t("checks");
-  if (view === "entities") return t("entities");
-  if (view === "settings") return t("settings");
-  return t("overview");
-}
-
-function render() {
-  renderShell();
-  document.body.classList.toggle("route-detail", Boolean(state.route.id));
-  if (!state.snapshot) {
-    els.content.innerHTML = `<div class="empty">${escapeHtml(t("empty"))}</div>`;
-    return;
-  }
-  if (state.route.view === "review" || STATUS_ROUTES.has(state.route.view)) renderReview();
-  else if (state.route.view === "items") renderItems();
-  else if (state.route.view === "checks") renderChecks();
-  else if (state.route.view === "entities") renderEntities();
-  else if (state.route.view === "settings") renderSettings();
-  else renderOverview();
-}
-
-export function lockBanner() {
-  if (!state.settings?.lock) return "";
-  return `<div class="lock-banner">${escapeHtml(t("lockActive"))}${state.settings.lock.message ? ` — ${escapeHtml(state.settings.lock.message)}` : ""}</div>`;
-}
-
+// "Load more" fetches exactly one further page per click and appends it.
 export async function loadMore(key) {
   const cursor = state.pagination[key];
   if (!cursor || state.loadingMore[key]) return;
@@ -355,252 +278,217 @@ export async function loadMore(key) {
   }
 }
 
-function renderOverview() {
-  const metrics = state.snapshot.metrics || {};
-  const review = filteredItems("needs_review").slice(0, 5);
-  const profile = currentProfile();
-  els.title.textContent = state.snapshot.workspace?.title || t("appTitle");
-  els.subtitle.textContent = state.snapshot.workspace?.subtitle || t("appSubtitle");
-  els.content.innerHTML = `
-    ${lockBanner()}
-    <section class="business-hero ${escapeAttr(profile.id)}">
-      <div>
-        <div class="business-kicker"><span class="profile-mark">${escapeHtml(profile.icon)}</span>${escapeHtml(l10n(profile.lane))}</div>
-        <h2>${escapeHtml(l10n(profile.spotlight))}</h2>
-        <p>${escapeHtml(l10n(profile.secondary))}</p>
-      </div>
-      <div class="business-metrics">${businessMetricsHtml(profile, metrics)}</div>
-    </section>
-    ${businessOverviewHtml(profile, review)}
-    <section class="panel">
-      <div class="panel-head"><h2>${escapeHtml(t("activity"))}</h2><span>${escapeHtml(t("generated"))}: ${escapeHtml(dateTime(state.snapshot.generated_at))}</span></div>
-      <div class="activity-list">${(state.snapshot.activity_log || [])
-        .slice(-5)
-        .map((entry) => `<div><b>${escapeHtml(entry.action)}</b><span>${escapeHtml(entry.detail || "")}</span></div>`)
-        .join("")}</div>
-    </section>`;
+// A record named by the URL but not on the loaded page is read on its own
+// (records.get by its business id) instead of loading more pages to find it.
+async function ensureSelectedRecord() {
+  const { view, selectedId } = state.route;
+  const key = VIEW_BASE[view];
+  if (!state.snapshot || !selectedId || !key) return;
+  if (recordById(key, selectedId) || state.extra[key].has(selectedId)) return;
+  const provider = state.provider;
+  if (typeof provider?.getRecord !== "function") {
+    state.extra[key].set(selectedId, null);
+    render();
+    return;
+  }
+  const serial = ++routeSerial;
+  state.extra[key].set(selectedId, undefined);
+  render();
+  try {
+    state.extra[key].set(selectedId, (await provider.getRecord(key, selectedId)) || null);
+  } catch {
+    state.extra[key].set(selectedId, null);
+  }
+  if (serial === routeSerial) render();
 }
 
-function metricCard(label, value) {
-  return `<div class="metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
+// A reviewer decision is written straight onto the item row by the Busabase
+// provider, and Busabase reads are always live, so state.snapshot.items
+// already reflects the latest decision on every load.
+export function items() {
+  return state.snapshot?.items || [];
 }
 
-function businessMetricsHtml(profile, metrics) {
-  const all = items();
-  const itemTotal = metrics.items_total ?? state.totalCount.items ?? all.length;
-  const failed =
-    metrics.checks_failed != null && metrics.checks_warn != null
-      ? metrics.checks_failed + metrics.checks_warn
-      : checks().filter((check) => check.status === "fail" || check.status === "warn").length;
-  const ready =
-    metrics.approved != null && metrics.done != null
-      ? metrics.approved + metrics.done
-      : all.filter((item) => item.status === "approved" || item.status === "done").length;
-  const definitions = {
-    casebase: [
-      [activeLang() === "zh" ? "来源文书" : "Source docs", metrics.source_docs || itemTotal],
-      [activeLang() === "zh" ? "脱敏提醒" : "Redaction alerts", metrics.pii_warnings ?? failed],
-      [activeLang() === "zh" ? "分类完成" : "Taxonomy ready", `${ready}/${itemTotal}`],
-      [activeLang() === "zh" ? "疑似重复" : "Possible dupes", metrics.duplicate_candidates || 1],
-    ],
-    precedent: [
-      [activeLang() === "zh" ? "检索问题" : "Research questions", metrics.query_count || itemTotal],
-      [activeLang() === "zh" ? "高相似类案" : "High matches", metrics.high_matches || sumField("high_match_count")],
-      [
-        activeLang() === "zh" ? "引用覆盖" : "Citation checks",
-        `${metrics.checks_pass ?? checks().filter((check) => check.status === "pass").length}/${state.totalCount.checks ?? checks().length}`,
-      ],
-      [activeLang() === "zh" ? "本地尺度" : "Court patterns", metrics.local_patterns || 2],
-    ],
-    matter: [
-      [activeLang() === "zh" ? "进行中案件" : "Active matters", itemTotal],
-      [activeLang() === "zh" ? "证据缺口" : "Evidence gaps", metrics.evidence_gaps || sumField("evidence_gap_count")],
-      [activeLang() === "zh" ? "临近期限" : "Near deadlines", metrics.deadlines_soon || 1],
-      [activeLang() === "zh" ? "可进文书" : "Draft-ready", metrics.draft_ready || ready],
-    ],
-    firm: [
-      [activeLang() === "zh" ? "脱敏样本" : "Anonymized cases", metrics.case_samples || sumField("sample_size")],
-      [activeLang() === "zh" ? "业务组" : "Practice groups", metrics.practice_groups || entities().length],
-      [activeLang() === "zh" ? "律师画像" : "Lawyer profiles", metrics.lawyers_profiled || sumField("lawyer_count")],
-      [activeLang() === "zh" ? "可公开证据" : "Public proof", metrics.public_citable || sumField("public_citable")],
-    ],
-  };
-  return (definitions[profile.id] || definitions.casebase).map(([label, value]) => metricCard(label, value)).join("");
+export function entities() {
+  return state.snapshot?.entities || [];
 }
 
-function businessOverviewHtml(profile, review) {
-  if (profile.id === "precedent") return precedentOverviewHtml(review);
-  if (profile.id === "matter") return matterOverviewHtml(review);
-  if (profile.id === "firm") return firmOverviewHtml(review);
-  return casebaseOverviewHtml(review);
+export function checks() {
+  return state.snapshot?.checks || [];
 }
 
-function casebaseOverviewHtml(review) {
-  const first = review[0] || items()[0];
-  const second = items()[1] || first;
-  return `<div class="business-layout casebase-layout">
-    <section class="panel document-panel wide">
-      <div class="panel-head"><h2>${activeLang() === "zh" ? "入库文书流水线" : "Case document intake"}</h2><a href="#/items">${escapeHtml(t("allItems"))}</a></div>
-      <div class="document-sheet">
-        <div class="sheet-spine">${escapeHtml(field(first, "court", activeLang() === "zh" ? "法院" : "Court"))}</div>
-        <div class="sheet-body">
-          <span class="source-pill">${escapeHtml(field(first, "procedure", activeLang() === "zh" ? "二审" : "appeal"))}</span>
-          <h3>${escapeHtml(first?.title || "")}</h3>
-          <p>${escapeHtml(first?.summary || "")}</p>
-          <div class="field-grid compact-fields">
-            ${fieldTile(activeLang() === "zh" ? "案由" : "Cause", field(first, "cause", first?.category))}
-            ${fieldTile(activeLang() === "zh" ? "结果" : "Outcome", field(first, "outcome", "review"))}
-            ${fieldTile(activeLang() === "zh" ? "段落引用" : "Source refs", listValue(field(first, "paragraphs")).join(", ") || "3")}
-          </div>
-        </div>
-      </div>
-      <div class="redaction-rail">
-        ${redactionStep(activeLang() === "zh" ? "身份信息" : "Identities", field(first, "pii_cleared", true))}
-        ${redactionStep(activeLang() === "zh" ? "联系方式" : "Contact data", true)}
-        ${redactionStep(activeLang() === "zh" ? "经营数据" : "Business metrics", !listValue(first?.risk).includes("business_secret"))}
-        ${redactionStep(activeLang() === "zh" ? "分类标签" : "Taxonomy", Boolean(field(first, "cause")))}
-      </div>
-    </section>
-    <section class="panel review-focus">
-      <div class="panel-head"><h2>${activeLang() === "zh" ? "待人工脱敏" : "Manual redaction queue"}</h2><a href="#/review">${escapeHtml(t("review"))}</a></div>
-      <div class="list compact">${review.map(rowHtml).join("") || emptyText()}</div>
-    </section>
-    <section class="panel qa-panel">
-      <h2>${activeLang() === "zh" ? "入库质检差异点" : "QA-specific controls"}</h2>
-      ${fieldTile(activeLang() === "zh" ? "近似重复" : "Near duplicate", field(second, "duplicate_score", "0.18"))}
-      ${fieldTile(activeLang() === "zh" ? "抽取置信度" : "Extraction confidence", percentText(field(first, "extraction_confidence", 0.92)))}
-      ${fieldTile(activeLang() === "zh" ? "入库专题" : "Casebase bucket", field(first, "ingest_bucket", first?.category))}
-    </section>
-  </div>`;
+// Loaded page first, then a record fetched on its own for the URL.
+export function recordById(key, id) {
+  if (!id) return null;
+  const rows = state.snapshot?.[key] || [];
+  return rows.find((row) => row.id === id) || state.extra[key]?.get(id) || null;
 }
 
-function precedentOverviewHtml(review) {
-  const rows = items();
-  return `<div class="business-layout precedent-layout">
-    <section class="panel research-panel wide">
-      <div class="panel-head"><h2>${activeLang() === "zh" ? "类案检索实验台" : "Precedent research lab"}</h2><a href="#/items">${escapeHtml(t("allItems"))}</a></div>
-      <div class="query-strip">${rows
-        .map(
-          (item) =>
-            `<a href="#/items/${encodeURIComponent(item.id)}"><span>${escapeHtml(field(item, "query", item.title))}</span><strong>${escapeHtml(field(item, "match_count", 0))}</strong></a>`,
-        )
-        .join("")}</div>
-      <div class="match-stack">${rows.map(matchMeterHtml).join("")}</div>
-    </section>
-    <section class="panel court-panel">
-      <h2>${activeLang() === "zh" ? "本地裁判尺度" : "Local court pattern"}</h2>
-      ${rows
-        .map(
-          (item) =>
-            `<div class="pattern-note"><b>${escapeHtml(field(item, "jurisdiction", item.category))}</b><span>${escapeHtml(field(item, "court_pattern", item.body))}</span></div>`,
-        )
-        .join("")}
-    </section>
-    <section class="panel review-focus">
-      <div class="panel-head"><h2>${activeHtml("待复核类案包", "Packs needing review")}</h2><a href="#/review">${escapeHtml(t("review"))}</a></div>
-      <div class="list compact">${review.map(rowHtml).join("") || emptyText()}</div>
-    </section>
-  </div>`;
-}
+const matches = (values, query) => values.filter(Boolean).join(" ").toLowerCase().includes(query);
 
-function matterOverviewHtml(review) {
-  const selected = review[0] || items()[0];
-  const gaps = listValue(field(selected, "evidence_gaps_list", field(selected, "evidence_gaps")));
-  return `<div class="business-layout matter-layout">
-    <section class="panel strategy-panel wide">
-      <div class="panel-head"><h2>${activeLang() === "zh" ? "案件策略地图" : "Matter strategy map"}</h2><a href="#/items">${escapeHtml(t("allItems"))}</a></div>
-      <div class="issue-board">
-        ${issueTree(activeLang() === "zh" ? "争点" : "Issues", field(selected, "issue_tree", ["delivery", "breach", "damages"]))}
-        ${issueColumn(activeLang() === "zh" ? "证据" : "Evidence", selected?.evidence || [])}
-        ${issueColumn(activeLang() === "zh" ? "路径" : "Options", listValue(field(selected, "negotiation_options", ["demand letter", "filing outline"])))}
-      </div>
-      <div class="deadline-band">
-        <span>${activeLang() === "zh" ? "下一期限" : "Next deadline"}</span>
-        <strong>${escapeHtml(field(selected, "deadline", field(selected, "next_deadline", "2026-07-20")))}</strong>
-        <p>${escapeHtml(field(selected, "posture", selected?.recommendation || ""))}</p>
-      </div>
-    </section>
-    <section class="panel evidence-panel">
-      <h2>${activeLang() === "zh" ? "证据缺口" : "Evidence gaps"}</h2>
-      <div class="gap-list">${(gaps.length ? gaps : [selected?.summary || ""]).map((gap) => `<span>${escapeHtml(gap)}</span>`).join("")}</div>
-    </section>
-    <section class="panel review-focus">
-      <div class="panel-head"><h2>${activeLang() === "zh" ? "待合伙人判断" : "Partner judgment queue"}</h2><a href="#/review">${escapeHtml(t("review"))}</a></div>
-      <div class="list compact">${review.map(rowHtml).join("") || emptyText()}</div>
-    </section>
-  </div>`;
-}
-
-function firmOverviewHtml(review) {
-  const cards = entities();
-  return `<div class="business-layout firm-layout">
-    <section class="panel firm-panel wide">
-      <div class="panel-head"><h2>${activeLang() === "zh" ? "业务结构与画像" : "Practice mix and profiles"}</h2><a href="#/entities">${escapeHtml(t("entities"))}</a></div>
-      <div class="practice-bars">${cards.map(practiceBarHtml).join("")}</div>
-      <div class="proof-grid">${items()
-        .map(
-          (item) =>
-            `<a href="#/items/${encodeURIComponent(item.id)}"><span>${escapeHtml(item.category || "")}</span><strong>${escapeHtml(field(item, "visibility", ""))}</strong><small>${escapeHtml(item.title)}</small></a>`,
-        )
-        .join("")}</div>
-    </section>
-    ${outcomeTrendsPanel()}
-    <section class="panel talent-panel">
-      <h2>${activeLang() === "zh" ? "律师能力信号" : "Lawyer capability signals"}</h2>
-      ${cards
-        .map(
-          (entity) =>
-            `<div class="signal-row"><b>${escapeHtml(entity.title)}</b><span>${escapeHtml(field(entity, "lawyer_count", field(entity, "lawyers", 0)))} ${activeLang() === "zh" ? "名律师" : "lawyers"}</span></div>`,
-        )
-        .join("")}
-    </section>
-    <section class="panel review-focus">
-      <div class="panel-head"><h2>${activeLang() === "zh" ? "待管理层复核" : "Partner review queue"}</h2><a href="#/review">${escapeHtml(t("review"))}</a></div>
-      <div class="list compact">${review.map(rowHtml).join("") || emptyText()}</div>
-    </section>
-  </div>`;
-}
-
-// Outcome trends: a small time-series of win/partial-win rate over recent periods.
-// Only firm-radar seeds metrics.outcome_trends; the panel is empty (hidden) otherwise.
-function outcomeTrendsPanel() {
-  const trends = state.snapshot?.metrics?.outcome_trends || [];
-  if (!trends.length) return "";
-  return `<section class="panel trends-panel">
-    <h2>${activeLang() === "zh" ? "结果趋势" : "Outcome trends"}</h2>
-    ${trendChart(trends)}
-    <div class="trend-legend">${trends
-      .map((point) => `<span><b>${escapeHtml(point.period)}</b>${escapeHtml(percentText(point.win_rate))}</span>`)
-      .join("")}</div>
-  </section>`;
-}
-
-function trendChart(points) {
-  const values = points.map((point) => {
-    const value = Number(point.win_rate) || 0;
-    return value > 1 ? value / 100 : value;
+export function filteredItems(status) {
+  const q = state.route.query.trim().toLowerCase();
+  return items().filter((item) => {
+    if (status && item.status !== status) return false;
+    if (!q) return true;
+    return matches(
+      [item.title, item.ref, item.summary, item.category, item.owner, item.body, item.recommendation, item.fields?.cause, item.fields?.court],
+      q,
+    );
   });
-  const width = 280;
-  const height = 96;
-  const step = points.length > 1 ? width / (points.length - 1) : width;
-  const coords = values.map((value, index) => `${Math.round(index * step)},${Math.round(height - value * height)}`);
-  return `<svg class="trend-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="outcome trend">
-    <polyline fill="none" stroke="currentColor" stroke-width="2" points="${coords.join(" ")}" />
-    ${values
-      .map(
-        (value, index) =>
-          `<circle cx="${Math.round(index * step)}" cy="${Math.round(height - value * height)}" r="3" fill="currentColor" />`,
-      )
-      .join("")}
-  </svg>`;
+}
+
+export function filteredChecks() {
+  const q = state.route.query.trim().toLowerCase();
+  if (!q) return checks();
+  return checks().filter((check) =>
+    matches([check.label, check.detail, check.status, check.severity, recordById("items", check.item_id)?.title], q),
+  );
+}
+
+export function filteredEntities() {
+  const q = state.route.query.trim().toLowerCase();
+  const order = ["needs_review", "changes_requested", "approved", "done", "blocked"];
+  const rank = (entity) => (order.includes(entity.status) ? order.indexOf(entity.status) : order.length);
+  const list = q
+    ? entities().filter((entity) => matches([entity.title, entity.meta, entity.summary, entity.owner, ...(entity.tags || [])], q))
+    : entities();
+  // Grouped by workflow status, as the library always was.
+  return list.slice().sort((a, b) => rank(a) - rank(b));
+}
+
+export function itemsForView(view = state.route.view) {
+  return filteredItems(ITEM_VIEW_STATUS[view]);
+}
+
+// "N" when the count is known, "N+" while more pages exist.
+export const loadedCount = (rows, key) => `${rows.length}${state.pagination[key] ? "+" : ""}`;
+
+function needsCount() {
+  return state.workflowCount?.needs_review ?? items().filter((item) => item.status === "needs_review").length;
+}
+
+function navCount(key) {
+  if (key === "items") return state.totalCount.items ?? loadedCount(items(), "items");
+  if (key === "checks") return state.totalCount.checks ?? loadedCount(checks(), "checks");
+  if (key === "entities") return state.totalCount.entities ?? loadedCount(entities(), "entities");
+  return state.workflowCount?.[key] ?? items().filter((item) => item.status === key).length;
+}
+
+function applyI18n() {
+  document.documentElement.lang = activeLang() === "zh" ? "zh-CN" : "en";
+  document.querySelectorAll("[data-i18n]").forEach((node) => {
+    node.textContent = t(node.dataset.i18n);
+  });
+  els.search.placeholder = t("searchView");
+  if (els.mobileRefresh) els.mobileRefresh.title = t("refresh");
+  els.detailExpand.textContent = t("openFullPage");
+  byId("settingsTitle").textContent = t("settings");
+  if (els.language) {
+    els.language.value = state.lang;
+    const labels =
+      activeLang() === "zh" ? { auto: "自动", en: "English", zh: "中文" } : { auto: "Auto", en: "English", zh: "中文" };
+    for (const option of els.language.options) option.textContent = labels[option.value] || option.textContent;
+  }
+}
+
+function renderShell() {
+  applyI18n();
+  const all = items();
+  const needs = needsCount();
+  const ready =
+    state.workflowCount?.approved != null && state.workflowCount?.done != null
+      ? state.workflowCount.approved + state.workflowCount.done
+      : all.filter((item) => item.status === "approved" || item.status === "done").length;
+  const blocked = state.workflowCount?.blocked ?? all.filter((item) => item.status === "blocked").length;
+  els.countNeeds.textContent = state.snapshot ? needs : "–";
+  els.countReady.textContent = state.snapshot ? ready : "–";
+  els.countBlocked.textContent = state.snapshot ? blocked : "–";
+  document.querySelectorAll("[data-nav-count]").forEach((node) => {
+    node.textContent = state.snapshot ? navCount(node.dataset.navCount) : "";
+  });
+  els.mobileViewTitle.textContent = viewLabel(state.route.view);
+  els.mobileViewMeta.textContent = !state.snapshot
+    ? ""
+    : state.settings?.demo
+      ? t("demoData")
+      : needs
+        ? `${needs} ${t("needsReview")}`
+        : t("liveData");
+  document.querySelectorAll("[data-route]").forEach((link) => {
+    link.classList.toggle("active", link.dataset.route === state.route.view);
+  });
+}
+
+export function viewLabel(view) {
+  if (view === "review") return t("needsReview");
+  if (view === "approved") return t("approved");
+  if (view === "done") return t("done");
+  if (view === "blocked") return t("blocked");
+  if (view === "items") return t("allItems");
+  if (view === "checks") return t("checks");
+  if (view === "entities") return t("entities");
+  if (view === "settings") return t("settings");
+  return t("overview");
+}
+
+export function render() {
+  renderShell();
+  const { view, selectedId, presentation } = state.route;
+  const ready = Boolean(state.snapshot);
+  const onRecordView = ready && RECORD_VIEWS.includes(view);
+  const body = document.body.classList;
+  body.toggle("ws-detail-open", onRecordView && Boolean(selectedId));
+  body.toggle("ws-detail-page", onRecordView && presentation === "page" && Boolean(selectedId));
+  body.toggle("ws-detail-drawer", onRecordView && presentation === "drawer");
+  body.toggle("ws-layout-split", onRecordView && DETAIL_MODES[view] === "split" && presentation !== "page");
+  body.toggle("ws-searching", onRecordView && Boolean(state.route.query));
+  els.loadState.hidden = ready;
+  els.overviewPage.hidden = !ready || view !== "overview";
+  els.viewPage.hidden = !onRecordView;
+  els.settingsPage.hidden = !ready || view !== "settings";
+  if (!ready) return;
+  if (onRecordView) renderRecordView();
+  else if (view === "settings") renderSettings();
+  else renderOverview();
+}
+
+export function lockBanner() {
+  if (!state.settings?.lock) return "";
+  return `<div class="lock-banner">${escapeHtml(t("lockActive"))}${state.settings.lock.message ? ` — ${escapeHtml(state.settings.lock.message)}` : ""}</div>`;
+}
+
+export function noticeBanner() {
+  if (!state.notice) return "";
+  return `<div class="notice-banner" role="status">${escapeHtml(state.notice)}</div>`;
+}
+
+// A side read (library, checks, settings) that failed is named, not hidden.
+export function unavailableBanner() {
+  const failed = state.settings?.unavailable || [];
+  if (!failed.length) return "";
+  const names = { entities: t("entities"), checks: t("checks"), settings: t("settings") };
+  return `<div class="notice-banner warning" role="status">${escapeHtml(t("sideUnavailable").replace("{list}", failed.map((key) => names[key] || key).join(", ")))}</div>`;
 }
 
 async function submitDecision(id, action) {
-  if (state.settings?.demo) throw new Error("Demo mode is read-only.");
-  const comment = document.querySelector(`[data-note="${CSS.escape(id)}"]`)?.value || "";
-  const draft = document.querySelector(`[data-draft="${CSS.escape(id)}"]`)?.value || "";
-  const provider = await getProvider();
-  await provider.decideItem({ id, action, comment, draft });
+  if (state.settings?.demo) {
+    state.notice = t("demoReadOnly");
+    render();
+    return;
+  }
+  const comment = state.edits.note[id] ?? document.querySelector(`[data-note="${CSS.escape(id)}"]`)?.value ?? "";
+  const draft = state.edits.draft[id] ?? document.querySelector(`[data-draft="${CSS.escape(id)}"]`)?.value ?? "";
+  try {
+    const provider = await getProvider();
+    await provider.decideItem({ id, action, comment, draft });
+  } catch (error) {
+    state.notice = error instanceof Error ? error.message : String(error);
+    render();
+    return;
+  }
+  delete state.edits.note[id];
+  delete state.edits.draft[id];
   await loadState();
 }
 
@@ -609,25 +497,68 @@ export function escapeHtml(value) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
-export function escapeAttr(value) {
-  return escapeHtml(value).replace(/'/g, "&#39;");
-}
+export const escapeAttr = escapeHtml;
 
-window.addEventListener("hashchange", () => {
-  state.route = parseRoute();
-  render();
+// ── Events ─────────────────────────────────────────────────────────────────
+els.listPanel.addEventListener("click", async (event) => {
+  const loadMoreButton = event.target.closest("[data-load-more]");
+  if (loadMoreButton) {
+    await loadMore(loadMoreButton.dataset.loadMore);
+    return;
+  }
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  const url = recordUrl(row.dataset.id);
+  // Switching records while a drawer/split is open replaces the entry, so
+  // Close still steps back to the list it was opened from.
+  if (state.route.peek) {
+    history.replaceState(history.state, "", url);
+    setRoute();
+  } else {
+    location.hash = url;
+  }
 });
-
-els.search?.addEventListener("input", (event) => {
-  state.query = event.target.value || "";
-  render();
+els.listPanel.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter") return;
+  const row = event.target.closest("tr[data-id]");
+  if (row) location.hash = recordUrl(row.dataset.id);
 });
-
-els.refresh?.addEventListener("click", loadState);
-els.mobileRefresh?.addEventListener("click", loadState);
+els.detailBody.addEventListener("input", (event) => {
+  const draftId = event.target?.dataset?.draft;
+  const noteId = event.target?.dataset?.note;
+  if (draftId) state.edits.draft[draftId] = event.target.value;
+  if (noteId) state.edits.note[noteId] = event.target.value;
+});
+els.detailBody.addEventListener("click", async (event) => {
+  const button = event.target.closest("button[data-action][data-id]");
+  if (!button) return;
+  event.preventDefault();
+  button.disabled = true;
+  await submitDecision(button.dataset.id, button.dataset.action);
+  button.disabled = false;
+});
+els.detailBack.addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  // Escape inside a field only leaves the field; a second Escape closes.
+  if (event.target.closest?.("textarea, input, select")) {
+    event.target.blur();
+    return;
+  }
+  if (state.route.selectedId && state.route.presentation && state.route.presentation !== "page") closeDetail();
+});
+window.addEventListener("hashchange", setRoute);
+window.addEventListener("resize", syncResponsiveShell);
+els.search.addEventListener("input", () => {
+  replaceRoute(`#/${state.route.view}${routeQuery({ peek: state.route.peek }, { ...state.route, query: els.search.value })}`);
+});
+els.refresh?.addEventListener("click", () => loadState());
+els.mobileRefresh?.addEventListener("click", () => loadState());
 els.sidebarToggle?.addEventListener("click", toggleSidebar);
 els.mobileSidebarToggle?.addEventListener("click", toggleSidebar);
 els.sidebarScrim?.addEventListener("click", () => setMobileSidebarOpen(false));
@@ -636,33 +567,6 @@ els.language?.addEventListener("change", (event) => {
   localStorage.setItem("legal-app-language", state.lang);
   render();
 });
-
-document.addEventListener("input", (event) => {
-  const draftId = event.target?.dataset?.draft;
-  const noteId = event.target?.dataset?.note;
-  if (draftId) state.edits.draft[draftId] = event.target.value;
-  if (noteId) state.edits.note[noteId] = event.target.value;
-});
-
-document.addEventListener("click", async (event) => {
-  const loadMoreButton = event.target.closest("[data-load-more]");
-  if (loadMoreButton) {
-    await loadMore(loadMoreButton.dataset.loadMore);
-    return;
-  }
-  const button = event.target.closest("[data-action][data-id]");
-  if (!button) return;
-  event.preventDefault();
-  button.disabled = true;
-  try {
-    await submitDecision(button.dataset.id, button.dataset.action);
-  } catch (error) {
-    alert(error.message);
-    button.disabled = false;
-  }
-});
-
-window.addEventListener("resize", syncResponsiveShell);
 
 let autoRefreshStarted = false;
 
@@ -680,9 +584,13 @@ async function boot() {
       renderSetupRequired(error, boot);
       return;
     }
-    els.content.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    els.loadState.hidden = false;
+    els.loadState.classList.add("error");
+    els.loadState.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
+els.search.value = state.route.query;
+previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
 syncResponsiveShell();
 boot();

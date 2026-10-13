@@ -19,6 +19,8 @@ const normalizeFields = (fields) =>
 const toBusabaseFields = (fields) =>
   Object.fromEntries(Object.entries(fields).map(([key, value]) => [key.replaceAll("_", "-"), value]));
 
+const ID_FIELD_SLUG = { campaigns: "campaign-id", anomalies: "anomaly-id", adjustments: "adjustment-id" };
+
 let runtimeClient;
 let runtimeBases = new Map();
 let pendingSetupError = "";
@@ -155,16 +157,31 @@ export const busabaseProvider = {
     for (const key of Object.keys(initialPageCursors)) delete initialPageCursors[key];
     for (const key of Object.keys(initialTotalCounts)) delete initialTotalCounts[key];
     await ensureResources();
+    // Platforms, the sync log and the settings row only decorate the desk. A
+    // denied or failing read of one of them is reported, not allowed to blank
+    // the campaigns, alerts and review queue the operator came for.
+    const sideWarnings = [];
+    const side = (name, promise, fallback) =>
+      promise.catch((error) => {
+        sideWarnings.push({
+          id: `side-read-${name}`,
+          severity: "warning",
+          message: `${name} could not be read; the rest of the desk is shown.`,
+          detail: String(error?.message || error),
+        });
+        return fallback;
+      });
     const [platforms, campaigns, anomalies, adjustments, sync_log, settings] = await Promise.all([
-      readFirstPage("platforms"),
+      side("Platforms", readFirstPage("platforms"), []),
       readFirstPage("campaigns"),
       readFirstPage("anomalies"),
       readFirstPage("adjustments"),
-      readFirstPage("sync-log"),
-      readSettingsRow(),
+      side("Sync Log", readFirstPage("sync-log"), []),
+      side("Settings", readSettingsRow(), {}),
     ]);
     currentPageContext = { platforms, campaigns, anomalies, adjustments, sync_log, settings };
     const snapshot = buildSnapshot(currentPageContext);
+    snapshot.warnings = [...sideWarnings, ...(snapshot.warnings || [])];
     const config_summary = buildConfigSummary({ platforms, settings });
     return withPagination({
       app: "busa-ads",
@@ -208,6 +225,23 @@ export const busabaseProvider = {
       `Decision on adjustment ${adjustment_id}: ${verdict}`,
     );
     return { ok: true };
+  },
+
+  // One record by its business id (records.get), for a URL that names a
+  // record not on the loaded page — instead of paging until it turns up.
+  async getRecord(key, id) {
+    await ensureResources();
+    const slug = ID_FIELD_SLUG[key];
+    if (!slug || !allowedReads.has("records.get")) return null;
+    const record = await findRecord(key, slug, id);
+    if (!record) return null;
+    const row = {
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
+      __headCommitId: record.headCommitId || record.headCommit?.id,
+    };
+    const snapshotKey = key.replaceAll("-", "_");
+    return buildSnapshot({ ...currentPageContext, [snapshotKey]: [row] })[snapshotKey]?.[0] || null;
   },
 
   async fetchPage(key, cursor) {

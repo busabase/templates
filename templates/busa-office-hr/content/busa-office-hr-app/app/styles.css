@@ -413,8 +413,8 @@ strong {
 }
 
 .main {
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   min-height: 0;
   background: var(--canvas);
@@ -423,91 +423,8 @@ strong {
   display: none;
 }
 
-/* ── Page header ─────────────────────────────────────────────────────── */
-.workspace-header {
-  display: flex;
-  min-width: 0;
-  align-items: end;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 24px 24px 16px;
-}
-.workspace-header > div {
-  min-width: 0;
-}
-.workspace-header h1 {
-  margin-top: 4px;
-}
-.workspace-header p {
-  max-width: 720px;
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: var(--text-base);
-}
-.search {
-  position: relative;
-  flex: 0 0 auto;
-}
-.search input {
-  width: min(280px, 30vw);
-  height: 36px;
-  padding: 0 12px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--ink);
-  font-size: var(--text-md);
-}
-.search input::placeholder {
-  color: var(--muted);
-}
-
-/* ── Metric cards ────────────────────────────────────────────────────── */
-/* A band, not a row of cards.
- *
- * `grid-auto-flow: column` rather than `repeat(auto-fit, minmax(...))`: auto-fit
- * wraps when space runs short, so the summary grows downward with every metric
- * added and pushes the record list past the fold. Nothing overflows
- * horizontally, so width-based checks keep passing while the app has stopped
- * showing its content. A band that cannot wrap squeezes itself instead.
- *
- * Hairline dividers, no per-cell border/radius/shadow: framed numbers read as
- * separately clickable things. */
-.metrics {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  margin: 0 24px 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-}
-.metric {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  min-width: 0;
-  padding: 12px 18px;
-  border-right: 1px solid var(--line);
-}
-.metric:last-child {
-  border-right: 0;
-}
-.metric span {
-  overflow: hidden;
-  color: var(--muted);
-  font-size: var(--text-sm);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.metric strong {
-  font-size: var(--text-xl);
-  font-weight: 650;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
+/* ── Metrics ─────────────────────────────────────────────────────────────
+ * The band itself is `.ws-metrics` in base-ui.css (overview only). */
 /* Optional trend line under a metric. The arrow glyph carries the direction,
  * so the color is a reinforcement and never the only signal. */
 .metric-delta {
@@ -528,93 +445,8 @@ strong {
   color: var(--danger);
 }
 
-/* ── Workspace card (list + detail) ──────────────────────────────────── */
-.content-split {
-  display: grid;
-  grid-template-columns: minmax(300px, 36%) minmax(0, 1fr);
-  min-width: 0;
-  min-height: 0;
-  margin: 0 24px 24px;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-card);
-}
-.list-panel,
-.detail-panel {
-  min-width: 0;
-  min-height: 0;
-  overflow: auto;
-}
-.list-panel {
-  border-right: 1px solid var(--line);
-}
-.panel-heading {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-blur);
-  backdrop-filter: blur(10px);
-}
-.panel-heading h2 {
-  margin-top: 2px;
-}
-.count {
-  flex: 0 0 auto;
-  min-width: 24px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--surface-soft);
-  color: var(--muted);
-  font-size: var(--text-xs);
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-}
-.record-list {
-  display: grid;
-}
-.record-row {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-  padding: 13px 20px;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    background var(--ease),
-    box-shadow var(--ease);
-}
-.record-row:hover {
-  background: var(--surface-hover);
-}
-.record-row.selected {
-  background: var(--accent-soft);
-  box-shadow: inset 2px 0 var(--accent);
-}
-.record-row strong {
-  overflow: hidden;
-  font-size: var(--text-md);
-  font-weight: 580;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.record-row span {
-  overflow: hidden;
-  color: var(--muted);
-  font-size: var(--text-base);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+/* ── Record list & detail ──────────────────────────────────────────────
+ * Layout is base-ui.css `.ws-*`; these are the pieces inside it. */
 .load-more {
   min-height: 36px;
   margin: 16px auto;
@@ -649,17 +481,6 @@ strong {
   color: var(--danger);
 }
 
-.detail-panel {
-  padding: 24px 28px;
-  background: var(--surface);
-}
-.detail-panel article {
-  max-width: 720px;
-}
-.detail-panel h2 {
-  margin: 4px 0 20px;
-  font-size: var(--text-xl);
-}
 .detail-fields {
   display: grid;
   border-top: 1px solid var(--line);
@@ -680,9 +501,6 @@ strong {
   overflow-wrap: anywhere;
   font-size: var(--text-base);
   font-weight: 550;
-}
-.back-button {
-  display: none;
 }
 .sidebar-scrim {
   display: none;
@@ -1163,7 +981,6 @@ strong {
     display: none;
   }
   .main {
-    grid-template-rows: auto auto auto minmax(0, 1fr);
     height: 100dvh;
   }
   .mobile-bar {
@@ -1182,89 +999,8 @@ strong {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .workspace-header {
-    align-items: stretch;
-    gap: 12px;
-    padding: 16px 14px 12px;
-  }
-  .workspace-header h1 {
-    font-size: var(--text-lg);
-  }
-  .workspace-header p {
-    font-size: var(--text-sm);
-  }
-  .search {
-    align-self: end;
-  }
-  .search input {
-    width: 120px;
-  }
-  /* Still one row on a phone, still no wrapping: the label stacks over the value
-   * and the cells narrow. Wrapping here costs the scarcest screen its list. */
-  .metrics {
-    margin: 0 14px 12px;
-    border-radius: var(--radius-md);
-  }
-  .metric {
-    display: grid;
-    gap: 2px;
-    padding: 9px 10px;
-  }
-  .metric span {
-    font-size: var(--text-xs);
-  }
-  .metric strong {
-    font-size: var(--text-lg);
-  }
-  /* Full-bleed: a rounded card inset inside a 390px viewport wastes the only
-   * horizontal space the list has. */
-  .content-split {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 1fr);
-    margin: 0;
-    overflow: hidden;
-    border: 0;
-    border-top: 1px solid var(--line);
-    border-radius: 0;
-    box-shadow: none;
-  }
-  .list-panel {
-    height: 100%;
-    border-right: 0;
-  }
-  .record-row {
-    padding: 13px 14px;
-  }
-  .panel-heading,
   .toolbar {
     padding: 14px;
-  }
-  .detail-panel {
-    display: none;
-    height: 100%;
-    padding: 0 14px 24px;
-  }
-  body.mobile-detail-open .list-panel {
-    display: none;
-  }
-  body.mobile-detail-open .detail-panel {
-    display: block;
-  }
-  .back-button {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-    display: block;
-    width: calc(100% + 28px);
-    margin: 0 -14px 18px;
-    padding: 12px 14px;
-    border: 0;
-    border-bottom: 1px solid var(--line);
-    background: var(--surface);
-    color: var(--accent);
-    font-size: var(--text-md);
-    text-align: left;
-    cursor: pointer;
   }
   .modal-backdrop {
     padding: 0;

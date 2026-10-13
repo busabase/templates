@@ -98,11 +98,11 @@ Default behavior is AirApp-first — give the user the clickable AirApp URL. Sta
 
 Required app views (hash routes):
 
-- `#/overview`: precedent research desk with open questions, match quality, and local court-pattern summaries.
-- `#/review`: approval queue for precedent packs with citations, quote snippets, and reviewer notes.
-- `#/items`: research-pack workbench with question, answer outline, similar cases, and recommended use.
-- `#/checks`: citation and confidentiality checks for source coverage, quote limits, and internal-use labels.
-- `#/entities`: similar-case library grouped by issue, court, outcome, and lawyer.
+- `#/overview`: precedent research desk — research-pack total, high-similarity matches, citation checks passing, the research lab (question, jurisdiction, top-match bar per pack), the review queue, and local court-pattern notes.
+- `#/review`: lawyer-review queue as a split view — the queue stays on the left, the selected pack (`#/review?peek=<item-id>`) on the right with approve / request changes / block / save revision.
+- `#/items` (and `#/approved`, `#/done`, `#/blocked`): research-pack tables (jurisdiction, matches, top match, citations, owner); a row opens the full pack page at `#/items/<item-id>` with the research question, local court pattern, cited internal cases, related checks, and the editable memo draft.
+- `#/checks`: citation and confidentiality checks table; a row opens a drawer (`?peek=<check-id>`) linking to its research pack.
+- `#/entities`: precedent library table (cases · courts, owner, case count, average similarity, citations); a row opens a drawer.
 - `#/settings`: sanitized casebase/search-policy configuration.
 
 Demo mode:

@@ -4,12 +4,19 @@ import { escapeHtml } from "./js/format.js";
 import { closeModal, isModalOpen } from "./js/modal.js";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
 import { render } from "./js/render.js";
-import { applyRouteFromHash, navigateTo, routeFor } from "./js/router.js";
+import {
+  applyRouteFromHash,
+  closeDetail,
+  DETAIL_MODES,
+  navigateTo,
+  openFullPage,
+  openRecord,
+  routeFor,
+} from "./js/router.js";
 import { closeSettings, openSettings, setSettingsTab } from "./js/settings.js";
 import {
   isTypingTarget,
   moveSelection,
-  setMobileDetailOpen,
   setMobileSidebarOpen,
   syncResponsiveShell,
   toggleSidebar,
@@ -43,9 +50,18 @@ document.addEventListener("click", (event) => {
   const viewButton = event.target.closest("[data-view]");
   if (viewButton) {
     setMobileSidebarOpen(false);
-    setMobileDetailOpen(false);
-    navigateTo({ view: viewButton.dataset.view, selectedId: null, episodeMode: "list", episodeTab: "summary" });
+    store.cursorId = null;
+    navigateTo({ view: viewButton.dataset.view, selectedId: null, presentation: null, query: "" });
   }
+});
+
+// A row opens its record in the view's declared mode (page / drawer / split).
+$("list").addEventListener("click", (event) => {
+  if (event.target.closest("a, button, input, select, textarea")) return;
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  store.cursorId = row.dataset.id;
+  openRecord(row.dataset.id);
 });
 
 async function loadMore(key) {
@@ -70,21 +86,20 @@ async function loadMore(key) {
   }
 }
 
+// Search lives in the URL (`?q=`) so Back and refresh keep the list context;
+// keystrokes replace the entry instead of each becoming a Back step.
 $("searchInput").addEventListener("input", (event) => {
-  store.query = event.target.value;
-  render();
+  navigateTo({ query: event.target.value }, { replace: true });
 });
 
 $("newItemButton").addEventListener("click", newItem);
 $("sidebarToggle").addEventListener("click", toggleSidebar);
 $("mobileSidebarToggle").addEventListener("click", () => setMobileSidebarOpen(true));
 $("sidebarScrim").addEventListener("click", () => setMobileSidebarOpen(false));
-$("backToList").addEventListener("click", () => {
-  if (store.view === "episodes" && store.episodeMode === "detail")
-    navigateTo({ view: "episodes", selectedId: null, episodeMode: "list", episodeTab: "summary" });
-  else setMobileDetailOpen(false);
-});
+$("backToList").addEventListener("click", closeDetail);
+$("openFullPage").addEventListener("click", () => openFullPage());
 window.addEventListener("resize", syncResponsiveShell);
+window.addEventListener("busa-drama:layout", () => render());
 $("settingsButton").addEventListener("click", openSettings);
 $("closeSettings").addEventListener("click", closeSettings);
 $("settingsModal").addEventListener("click", (event) => {
@@ -95,13 +110,13 @@ document.querySelectorAll("[data-settings-tab]").forEach((node) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k" && store.view !== "overview") {
     event.preventDefault();
     $("searchInput").focus();
     $("searchInput").select();
     return;
   }
-  if (event.key === "/" && !isTypingTarget(event.target)) {
+  if (event.key === "/" && !isTypingTarget(event.target) && store.view !== "overview") {
     event.preventDefault();
     $("searchInput").focus();
     return;
@@ -121,14 +136,17 @@ document.addEventListener("keydown", (event) => {
       return;
     }
     if (document.activeElement === $("searchInput") && store.query) {
-      store.query = "";
-      $("searchInput").value = "";
-      render();
+      navigateTo({ query: "" }, { replace: true });
       return;
     }
-    if (store.view === "episodes" && store.episodeMode === "detail") {
-      navigateTo({ view: "episodes", selectedId: null, episodeMode: "list", episodeTab: "summary" });
+    // Escape inside a field only leaves the field; a second Escape closes.
+    if (isTypingTarget(event.target)) {
+      event.target.blur();
+      return;
     }
+    // Escape closes a drawer or split selection (a full page has Back).
+    if (store.selectedId && store.presentation && store.presentation !== "page") closeDetail();
+    return;
   }
   if (!isTypingTarget(event.target) && event.key === "ArrowDown") {
     event.preventDefault();
@@ -141,12 +159,12 @@ document.addEventListener("keydown", (event) => {
   if (
     !isTypingTarget(event.target) &&
     event.key === "Enter" &&
-    store.view === "episodes" &&
-    store.episodeMode === "list" &&
-    store.selectedId
+    DETAIL_MODES[store.view] === "page" &&
+    !store.selectedId &&
+    store.cursorId
   ) {
     event.preventDefault();
-    navigateTo({ view: "episodes", selectedId: store.selectedId, episodeMode: "detail", episodeTab: "summary" });
+    openRecord(store.cursorId);
   }
 });
 

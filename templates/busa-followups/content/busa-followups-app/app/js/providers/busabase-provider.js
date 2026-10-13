@@ -24,6 +24,13 @@ const normalizeFields = (fields) =>
 const toBusabaseFields = (fields) =>
   Object.fromEntries(Object.entries(fields).map(([key, value]) => [key.replaceAll("_", "-"), value]));
 
+// The viewer's calendar day, not UTC's: "due today" must flip at local
+// midnight, and `toISOString()` alone would flip at 08:00 in UTC+8.
+const localTodayIso = () => {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+};
+
 let runtimeClient;
 let runtimeBases = new Map();
 let pendingSetupError = "";
@@ -57,15 +64,9 @@ function base(key) {
 }
 
 // One page per call, cursor returned to the caller -- never several pages in
-// one function call. A capped loop here (however high the cap) still hides a
-// multi-page scan behind a single loading state instead of fetching a page
-// per user action; the cap only bounds how bad that gets, it doesn't fix the
-// shape. ideas and questions surface the returned nextCursor through a
-// numbered pager in the UI (see app.js#goToPage). documents and settings are
-// read once on boot: documents are looked up by idea rather than browsed as
-// their own list (at most three per idea), and settings is a handful of rows.
-// If either genuinely outgrows one page in practice, it needs the same pager
-// treatment ideas/questions already got, not a bigger cap.
+// one function call. getState() reads page 1; every further page is a visible
+// "Load more" click in the UI (app.js#loadMore), one request each. Totals the
+// Overview shows come from records.count, never from draining pages.
 async function readPage(key, cursor) {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
   const declared = base(key);
@@ -98,6 +99,7 @@ async function countRecords(key, filters) {
 }
 
 async function findRecord(key, idFieldSlug, idValue) {
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
   try {
     return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
@@ -140,16 +142,43 @@ export const busabaseProvider = {
 
   async getState() {
     await ensureResources();
-    const { rows } = await readPage("followups");
-    const todayIso = new Date().toISOString().slice(0, 10);
+    const { rows, nextCursor } = await readPage("followups");
+    const todayIso = localTodayIso();
     const snapshot = buildSnapshot({ followups: rows }, todayIso);
+    // Exact totals for the Overview band. Either may be denied or fail on its
+    // own; that hides its number ("—"), it never fails the page.
+    const [total, done] = await Promise.all([
+      countRecords("followups"),
+      countRecords("followups", [{ fieldSlug: "status", operator: "equals", value: "done" }]),
+    ]);
+    snapshot.totals = { total, done };
     return {
       app: "busa-followups",
       data_provider: "busabase",
+      pagination: { followups: nextCursor },
       lock: null,
       agent_tasks: { updated_at: "", tasks: [] },
       execution_report: null,
       snapshot,
+    };
+  },
+
+  // The next page after `cursor`: one request, called once per Load more click.
+  async fetchPage(key, cursor) {
+    await ensureResources();
+    return readPage(key, cursor);
+  },
+
+  // A record named by the URL that is not on a loaded page — read on its own
+  // by its business id, never by loading more pages to find it.
+  async getRecord(key, recordId) {
+    if (!allowedReads.has("records.get")) return null;
+    await ensureResources();
+    const record = await findRecord(key, "record-id", recordId);
+    if (!record) return null;
+    return {
+      ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+      __recordId: record.id,
     };
   },
 

@@ -6,6 +6,8 @@ export const appConfig = {
   readOnly: false,
   spaceId: "",
   schemaVersion: 1,
+  // Where a record opens, per view (see app.js for the reasoning).
+  ui: { detail_modes: { contracts: "page", obligations: "drawer", renewals: "split", approvals: "split" } },
   folder: {
     name: "Busa CLM",
     description:
@@ -81,7 +83,10 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    // records.get: every update/acknowledge/decision re-reads its target row
+    // first (findRecord), and a record named by the URL but not on the loaded
+    // page is read on its own rather than by paging until it turns up.
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     // No delete operation exists in this skill's UI (create/edit a contract,
     // mark an obligation done, acknowledge a renewal notice, and record an

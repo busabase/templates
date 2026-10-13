@@ -117,10 +117,11 @@ structural edit, processing a minor's portrait, or using an external image model
 
 ## App Contract
 
-The canonical App source is in `content/busa-portrait-retouch-app/`. It provides a quiet list/detail review
-desk with hash routes, before/after inspection, strength and preset metadata,
-approve/change/block decisions, bilingual chrome, phone navigation, and Help &
-Settings. `?demo=queue` opens deterministic read-only data.
+The canonical App source is in `content/busa-portrait-retouch-app/`. It provides a quiet review desk: an
+Overview, then queue / approved / exported / blocked tables (the queue as a
+split view, the others with a drawer, any candidate as a full page), before/after
+inspection, strength and preset metadata, approve/change/block decisions,
+bilingual chrome, phone navigation, and Help & Settings. `?demo=queue` opens deterministic read-only data.
 
 Busabase resources:
 

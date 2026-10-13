@@ -14,6 +14,15 @@ export const appConfig = {
   spaceId: "",
   schemaVersion: 1,
   accent: "#8A5A2B",
+  // Where a record opens, per view (the app reads this; see app.js):
+  //   questions   → drawer: scanned many at a time in the position grid; open
+  //                 one to read its per-agent answers, then back to the grid.
+  //   observations→ drawer: an answer is a log entry — read the excerpt, return.
+  //   competitors → drawer: a fact about a rival listing, read and return.
+  //   fixes       → split:  the review queue is worked top to bottom, one fix
+  //                 decision after the next, so the queue stays beside it.
+  // Settings is a single row with no list, so it has no detail mode.
+  ui: { detail_modes: { questions: "drawer", observations: "drawer", competitors: "drawer", fixes: "split" } },
   folder: {
     name: "Busa Agent Shelf",
     description:
@@ -115,7 +124,9 @@ export const appConfig = {
     },
   ],
   permissions: {
-    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count"],
+    // records.get: a record named by a shared link (`?peek=` / `/<id>`) that is
+    // not on the loaded page is read on its own, never by paging to find it.
+    readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.count", "records.get"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
     // The only write this app makes: a person's decision on one listing fix,
     // updating `status` and `decision-note` on that fix's own record. It never

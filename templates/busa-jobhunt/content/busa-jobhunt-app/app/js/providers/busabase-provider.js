@@ -1,13 +1,14 @@
 import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient, isStandaloneLocalRuntime } from "../busabase-client.js";
-import { appConfig } from "../config.js?v=0.3.0";
+import { appConfig } from "../config.js?v=0.4.0";
 
 const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 // Transport pagination belongs to the provider, never to a Base declaration.
-// The API caps a page at 100; a desk that stops after one page silently loses
-// every row past it — and `research` makes 100+ contact addresses routine.
+// One page per Base per user action: cold load reads page 1 of each Base, and
+// every further page is a visible "加载更多" click. Totals come from
+// records.count, never from draining the cursor. The API caps a page at 100.
 const BUSABASE_RECORD_PAGE_SIZE = 100;
 
 const normalizeFields = (fields) =>
@@ -20,11 +21,16 @@ const normalizeRecords = (records, baseKey) =>
     fields: normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
   }));
 
+// Companies are ranked by match score, so the first page is the best page.
+// The desk re-ranks the loaded rows by evidence × score in the browser.
+const SORT_BY_BASE = { companies: { fieldSlug: "match-score", fieldType: "number", direction: "desc" } };
+
 const readPage = async (client, base, cursor) => {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
   const page = await client.records.list({
     baseId: base.baseId,
     limit: BUSABASE_RECORD_PAGE_SIZE,
+    ...(SORT_BY_BASE[base.key] ? { sort: SORT_BY_BASE[base.key] } : {}),
     ...(cursor ? { cursor } : {}),
   });
   return {
@@ -34,26 +40,20 @@ const readPage = async (client, base, cursor) => {
   };
 };
 
-export const readAllPages = async (client, base) => {
-  const records = [];
-  const seenCursors = new Set();
-  let cursor;
-  let pageCount = 0;
-
-  while (true) {
-    pageCount += 1;
-    const page = await readPage(client, base, cursor);
-    records.push(...page.records);
-    if (!page.nextCursor) {
-      return { records, nextCursor: null, limit: BUSABASE_RECORD_PAGE_SIZE, pageCount };
-    }
-    if (seenCursors.has(page.nextCursor)) {
-      throw new Error(`PAGINATION_LOOP: ${base.key}`);
-    }
-    seenCursors.add(page.nextCursor);
-    cursor = page.nextCursor;
+// An exact server-side count, or null when the procedure is not granted or
+// the server cannot answer — the UI then falls back to "loaded N+" rather
+// than inventing a total.
+const countRecords = async (client, base, filters) => {
+  if (!allowedReads.has("records.count")) return null;
+  try {
+    const result = await client.records.count({ baseId: base.baseId, ...(filters ? { filters } : {}) });
+    return Number.isFinite(result?.total) ? result.total : null;
+  } catch {
+    return null;
   }
 };
+
+const statusIs = (value) => [{ fieldSlug: "status", fieldType: "text", operator: "equals", value }];
 
 let runtimeClient;
 let runtimeBases = new Map();
@@ -84,7 +84,7 @@ export const busabaseProvider = {
     }
     pendingSetupError = "";
     runtimeBases = new Map(resources.bases.map((base) => [base.key, base]));
-    const profilePage = await readAllPages(runtimeClient, requireBase("profile"));
+    const profilePage = await readPage(runtimeClient, requireBase("profile"));
     return {
       provider: {
         ok: true,
@@ -102,8 +102,16 @@ export const busabaseProvider = {
   async getState() {
     if (!runtimeClient || !runtimeBases.size) await this.getReadinessState();
     const pages = await Promise.all(
-      [...runtimeBases.values()].map(async (base) => [base.key, await readAllPages(runtimeClient, base)]),
+      [...runtimeBases.values()].map(async (base) => [base.key, await readPage(runtimeClient, base)]),
     );
+    const companies = requireBase("companies");
+    // Three exact counts, in parallel with nothing after them: everything the
+    // nav shows is total − queued − sent arithmetic on these.
+    const [total, queued, sent] = await Promise.all([
+      countRecords(runtimeClient, companies),
+      countRecords(runtimeClient, companies, statusIs("queued")),
+      countRecords(runtimeClient, companies, statusIs("sent")),
+    ]);
     return {
       provider: {
         ok: true,
@@ -116,12 +124,39 @@ export const busabaseProvider = {
       pageInfo: Object.fromEntries(
         pages.map(([key, page]) => [key, { nextCursor: page.nextCursor, limit: page.limit }]),
       ),
+      totals: total === null || queued === null || sent === null ? null : { all: total, queued, sent },
     };
   },
+  // One more page of one Base, on an explicit click.
   async loadMore(baseKey, cursor) {
     const base = runtimeBases.get(baseKey);
     if (!runtimeClient || !base || !cursor) throw new Error(`SCHEMA_INCOMPLETE: ${baseKey}`);
     return readPage(runtimeClient, base, cursor);
+  },
+  // The record a URL names, when it is not on a loaded page: one records.get.
+  async getCompany(recordId) {
+    if (!allowedReads.has("records.get")) return null;
+    const client = runtimeClient || createRuntimeClient();
+    try {
+      const record = await client.records.get({ recordId });
+      return normalizeRecords([record], "companies")[0] || null;
+    } catch {
+      return null;
+    }
+  },
+  // The contact addresses of the one company on screen, when the leads page
+  // that holds them has not been loaded. One request for one opened record;
+  // `filters` is a superset, so the caller still narrows by company key.
+  async leadsForCompany(companyKey) {
+    if (!allowedReads.has("records.list") || !companyKey) return [];
+    const base = runtimeBases.get("leads");
+    if (!runtimeClient || !base) return [];
+    const page = await runtimeClient.records.list({
+      baseId: base.baseId,
+      limit: BUSABASE_RECORD_PAGE_SIZE,
+      filters: [{ fieldSlug: "company-key", fieldType: "text", operator: "equals", value: companyKey }],
+    });
+    return normalizeRecords(page.records, "leads").filter((record) => record.fields.company_key === companyKey);
   },
   async provisionResources() {
     if (!allowedSetup.has("nodes.createChangeRequest")) {

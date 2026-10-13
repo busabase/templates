@@ -143,20 +143,23 @@ Default behavior is AirApp-first — give the user the clickable AirApp URL.
 Start `pnpm --dir content/busa-standup-app dev` only when local preview/debugging is explicitly
 requested.
 
-Required app views (hash routes):
+Required app views (hash routes). Overview is the only page with the hero + metrics band;
+every other view is a toolbar row over a full-bleed table, with a per-Base detail mode declared
+in `config.js` `ui.detail_modes` (`members`/`history` → full page, `blockers` → drawer,
+`reminders` → split queue):
 
-- `#/today` (default): today's board — human-attention panel (missing check-ins, open blockers, reminders awaiting approval), the agent-written team digest paragraph, participation stat (e.g. `6/8 submitted`) with an inline bar, then per-member cards: avatar initial, name + role, submitted time + source badge, Yesterday / Today / Blockers sections (blockers highlighted by severity), mood dot. Missing members get a visually distinct "not submitted" card with their last check-in date and a link to the drafted reminder; on-leave members get an on-leave card.
-- `#/members` and `#/members/<id>`: roster — name, role, timezone, channel, check-in streak, 30-day participation, open blocker count, last submission. Detail shows a day-by-day timeline of recent updates, the member's open blockers, and notes.
-- `#/blockers`: all blockers across the team — severity badge, owner, raised date, age, status (`open`/`resolved`, filterable), the linked day, and the agent-suggested next action per blocker.
-- `#/reminders`: the review queue with workflow states `needs_review / changes_requested / approved / done / blocked`. Each card shows the stable ref (`Reminder #1`), type badge (missing check-in / blocker escalation), target member, channel badge, the reason, an editable message draft, a `Review note`, and approve / request changes / revise (save note) / block buttons that write the verdict directly onto the reminder record. Approved items are planned by `scripts/execute_decisions.mjs` and sent by the agent outside the app via busa-messenger / busa-email.
-- `#/history` and `#/history/<date>`: recent days with an inline-SVG participation bar and one-line digest; selecting a date shows that day's full board (same card layout as today).
+- `#/overview` (default): human-attention panel in the sidebar (missing check-ins, open blockers, reminders awaiting approval) plus a 3-number metrics band that is *not* already in the sidebar (submitted today, on leave today, 30-day avg participation), the agent-written team digest paragraph, participation stat (e.g. `6/8 submitted`) with an inline bar, then per-member cards: avatar initial, name + role, submitted time + source badge, Yesterday / Today / Blockers sections (blockers highlighted by severity), mood dot. Missing members get a visually distinct "not submitted" card with their last check-in date and a link to the drafted reminder; on-leave members get an on-leave card.
+- `#/members` (table) and `#/members/<id>` (full page, `?peek=<id>` not used — members always open the full page): name, role, timezone, channel, check-in streak, 30-day participation, open blocker count, last submission. Detail shows a day-by-day timeline of recent updates, the member's open blockers, and notes.
+- `#/blockers` (table, drawer detail via `#/blockers?peek=<id>` or full page via `#/blockers/<id>`): severity badge, owner, status (`open`/`resolved`/`all`, filterable via chips on desktop / a select on phone), raised date, age, and the blocker text; the drawer shows the full text, the agent-suggested next action, the owner, and the linked day.
+- `#/reminders` (narrow queue + split detail via `#/reminders?peek=<id>` or full page via `#/reminders/<id>`): workflow states `needs_review / changes_requested / approved / done / blocked`, filterable via chips/select. The detail panel shows the stable ref (`Reminder #1`), type badge (missing check-in / blocker escalation), target member, channel badge, the reason, an editable message draft, a `Review note`, and approve / request changes / revise (save note) / block buttons that write the verdict directly onto the reminder record. Approved items are planned by `scripts/execute_decisions.mjs` and sent by the agent outside the app via busa-messenger / busa-email.
+- `#/history` (table) and `#/history/<date>` (full page): recent days with submitted/expected counts and the digest excerpt; selecting a date shows that day's full board (same card layout as Overview).
 - `#/settings`: sanitized config — team profile, members with `contact-env` readiness booleans, standup questions, workdays, digest style, and onboarding state. Never exposes contact values or secrets.
 
 Demo mode:
 
-- `?demo=today`, `?demo=members`, `?demo=blockers`, `?demo=history`, and `?demo=detail` (a member's update timeline) select named mock scenes.
+- `?demo=1` (or `?demo=today`) opens Overview; `?demo=members`, `?demo=blockers`, `?demo=history`, `?demo=reminders`, and `?demo=detail` (a member's update timeline, `#/members/alex`) select named mock scenes.
 - `lang=en` or `lang=zh` forces UI chrome language; with `lang=zh` the demo content itself (中文姓名、角色、日报内容、阻塞、摘要、提醒草稿) is meaningfully localized for Chinese screenshots.
-- Deep links such as `/?demo=today&lang=zh#/today` must work.
+- Deep links such as `/?demo=today&lang=zh#/overview` must work.
 - Demo mode never reads or writes Busabase.
 
 UI language: English and Chinese chrome with `Auto` default (browser language), plus an explicit selector persisted locally. Keep real member names and update content in their original language.
@@ -170,7 +173,7 @@ Invoked on demand — there is NO cron and NO scheduler in this skill. Each run:
 3. Write the digest: a short agent-written paragraph summarizing the day (what shipped, what is blocked, who is missing), included as `digest` in the payload.
 4. Draft reminders for missing check-ins or aging high blockers as `reminders[]` payload items (`needs_review` by default).
 5. Merge deterministically with `node scripts/ingest_updates.mjs <payload.json> --apply`. The script validates against the roster, upserts checkins by member + date (re-ingesting is idempotent), dedupes blockers by content hash and applies resolve transitions, upserts reminders with stable content-hash ids (resetting to `needs_review` only when a reminder's content actually changed, preserving a human's pending decision otherwise), and upserts the day's digest/on_leave list. Omit `--apply` first to see a dry-run validation summary.
-6. Give the user the AirApp URL (or local preview URL) pointed at `#/today`.
+6. Give the user the AirApp URL (or local preview URL) pointed at `#/overview`.
 
 ## Reminder Workflow
 
