@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark">
+  <title>R&amp;D Projects</title>
+  <link rel="stylesheet" href="./base-ui.css"><link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./rnd.css"><link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
+</head>
+<body class="ws-has-mobile-bar">
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-row"><div class="brand-mark" aria-hidden="true">R</div><div class="brand-copy"><strong id="brandName"></strong><span id="brandDescription"></span></div><button class="icon-button panel-button" id="sidebarClose" type="button"><i data-lucide="panel-left-close"></i></button></div>
+    <a class="attention" id="attentionOpen" href="#/attention"><span class="eyebrow" id="attentionTitle"></span><strong id="attentionValue"></strong><span id="attentionCopy"></span></a>
+    <nav class="base-nav" id="baseNav"></nav>
+    <div class="sidebar-footer"><select id="locale"><option value="en">English</option><option value="zh-CN">简体中文</option></select><button class="settings-button" id="guideOpen" type="button"></button></div>
+  </aside>
+  <main class="main">
+    <header class="mobile-bar"><button class="icon-button" id="sidebarOpen" type="button"><i data-lucide="menu"></i></button><strong id="mobileTitle"></strong><button class="icon-button" id="refreshMobile" type="button"><i data-lucide="refresh-cw"></i></button></header>
+    <div class="state-message" id="loadingState" role="status"></div><div class="state-message error" id="errorState" role="alert" hidden></div><button class="button retry" id="retry" type="button" hidden></button>
+    <div class="state-message notice" id="partialState" role="status" hidden></div><div class="state-message notice" id="staleState" role="status" hidden></div>
+    <!-- Overview: the only page with a hero and a metrics band. -->
+    <section class="ws-overview" id="overviewPage" hidden>
+      <header class="page-hero"><div><span class="page-hero-context" id="overviewContext"></span><h1 id="overviewTitle"></h1><p id="overviewSummary"></p></div><div class="page-actions"><button class="button" id="refresh" type="button"><i data-lucide="refresh-cw"></i><span id="refreshLabel"></span></button></div></header>
+      <section class="ws-metrics" id="metrics"></section>
+      <div class="overview-grid">
+        <section class="card overview-card"><h2 class="card-title" id="attentionCardTitle"></h2><div id="attentionCard"></div></section>
+        <section class="card overview-card"><h2 class="card-title" id="reportCardTitle"></h2><div id="reportCard"></div></section>
+      </div>
+      <section class="card product-card"><h2 class="card-title" id="productCardTitle"></h2><div class="product-scroll" id="productCard"></div></section>
+    </section>
+    <!-- Record views: one toolbar row over a full-bleed table or the task board. -->
+    <section class="ws-view" id="viewPage" hidden>
+      <header class="ws-toolbar">
+        <div class="ws-title"><h1 id="viewTitle"></h1><span class="ws-count" id="recordCount"></span></div>
+        <div class="ws-actions">
+          <select id="productFilter"></select><select id="statusFilter"></select>
+          <label class="search-label"><span class="sr-only" id="searchLabel"></span><input id="searchInput" class="search-field" type="search" autocomplete="off"></label>
+          <button class="icon-button" id="refreshView" type="button"><i data-lucide="refresh-cw"></i></button>
+        </div>
+      </header>
+      <div class="ws-workspace" id="workspace">
+        <div class="ws-list" id="listPanel"><div id="recordList"></div><button class="load-more" id="loadMore" type="button" hidden></button></div>
+        <aside class="ws-detail" id="detailPanel" aria-live="polite">
+          <div class="ws-detail-bar" id="detailBar"><button class="button" id="backButton" type="button"></button><a class="button" id="detailExpand" hidden></a></div>
+          <div class="ws-detail-empty" id="detailEmpty"></div>
+          <article id="detailContent" hidden></article>
+        </aside>
+      </div>
+    </section>
+  </main>
+</div>
+<button class="sidebar-scrim" id="sidebarScrim" type="button" hidden></button>
+<dialog id="guideDialog" class="modal"><header class="modal-header"><h2 id="guideTitle"></h2><button class="icon-button" id="guideClose" type="button"><i data-lucide="x"></i></button></header><div class="guide-body" id="guideBody"></div></dialog>
+<script type="module" src="./js/app.js"></script>
+</body></html>

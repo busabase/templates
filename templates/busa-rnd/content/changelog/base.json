@@ -1,0 +1,197 @@
+{
+  "name": "Changelog / 变更记录",
+  "description": "One row per merged change, in one plain sentence, written by whoever merged it. / 每次合并一条，用一句人话写清楚，由合并的人或 Agent 当场写。",
+  "position": 3,
+  "agentPrompts": [
+    {
+      "key": "log-change",
+      "label": {
+        "en": "Log a change I just merged",
+        "zh-CN": "记一条刚合并的变更"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-coder` skill, and follow them. Write one changelog row for the pull request I name: one plain sentence a non-engineer understands, the kind, product, linked task, merge date, link, and how it was verified. Check that the same link is not already logged.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-coder` Skill，按它们的流程做。为我指定的 PR 写一条变更记录：一句非工程师也看得懂的话，类型、产品、关联任务、合并日期、链接和验证情况。先确认同一个链接没记过。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "backfill",
+      "label": {
+        "en": "Backfill merges that have no changelog entry",
+        "zh-CN": "从 git 补记漏写的合并"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-coder` skill, and follow them. Compare last week's merged pull requests in this repository with the changelog and add a row for each one that is missing, marking it as backfilled from git. Show me the list first.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-coder` Skill，按它们的流程做。对比这个仓库上周合并的 PR 和变更记录，为每个漏记的合并补一条，并注明「从 git 补记」。写入前先给我看清单。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "release-notes",
+      "label": {
+        "en": "Draft release notes for a version",
+        "zh-CN": "生成某个版本的版本说明"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-pmo` skill, and follow them. Collect the changes for the product and version I name and write release notes in the Reports table as a draft, grouped into new, improved and fixed, in words users understand.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-pmo` Skill，按它们的流程做。汇总我指定产品和版本的变更，在「周报与产出」表里写一份版本说明草稿，分「新功能 / 优化 / 修复」三组，用用户听得懂的话。"
+      },
+      "intent": "change"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Change / 变更摘要",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "kind",
+      "name": "Kind / 类型",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "feature",
+            "name": "Feature / 新功能",
+            "color": "cyan"
+          },
+          {
+            "id": "fix",
+            "name": "Fix / 修复",
+            "color": "rose"
+          },
+          {
+            "id": "improvement",
+            "name": "Improvement / 优化",
+            "color": "emerald"
+          },
+          {
+            "id": "refactor",
+            "name": "Refactor / 重构",
+            "color": "slate"
+          },
+          {
+            "id": "docs",
+            "name": "Docs / 文档",
+            "color": "slate"
+          },
+          {
+            "id": "chore",
+            "name": "Chore / 杂项",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "product",
+      "name": "Product / 所属产品",
+      "type": "relation",
+      "required": false,
+      "position": 2,
+      "options": {
+        "targetBaseSlug": "products",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "task",
+      "name": "Task / 关联任务",
+      "type": "relation",
+      "required": false,
+      "position": 3,
+      "options": {
+        "targetBaseSlug": "tasks",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "merged-on",
+      "name": "Merged on / 合并日期",
+      "type": "date",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "version",
+      "name": "Version / 版本",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "pr-url",
+      "name": "Pull request or commit / PR 或提交",
+      "type": "url",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "repo",
+      "name": "Repository / 仓库",
+      "type": "text",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "author",
+      "name": "Author / 作者",
+      "type": "text",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "verification",
+      "name": "How it was verified / 验证情况",
+      "type": "longtext",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "details",
+      "name": "Details / 详情",
+      "type": "longtext",
+      "required": false,
+      "position": 10,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest",
+      "name": "Latest first / 最新在前",
+      "description": "Merged changes, newest first / 已合并的变更，最新在前",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "merged-on",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "kind",
+          "product",
+          "merged-on",
+          "version",
+          "author"
+        ]
+      }
+    }
+  ]
+}

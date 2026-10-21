@@ -1,0 +1,241 @@
+{
+  "name": "Deliveries / 交付验收",
+  "description": "What users can now do, packaged from tasks and changes for a person to accept. / 用户现在能做到的事：由任务和变更整理而成，交给人来验收。",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "package-deliveries",
+      "label": {
+        "en": "Package last week's changes for acceptance",
+        "zh-CN": "把上周的改动整理成待验收的交付"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-prd` skill, and follow them. Group last week's merged changes and finished tasks into deliveries a user would recognise as one capability each, write acceptance steps from the tasks' criteria, and mark each Ready once its steps cover every criterion (otherwise keep it Preparing). Show me the grouping before writing.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-prd` Skill，按它们的流程做。把上周合并的变更和完成的任务，按「用户能感知的一项功能」归并成交付，根据任务的验收标准写验收步骤；步骤覆盖全部标准的标为「待验收」，否则保持「整理中」。写入前先给我看归并结果。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "write-steps",
+      "label": {
+        "en": "Write acceptance steps for this delivery",
+        "zh-CN": "给这项交付写验收步骤"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-prd` skill, and follow them. Write numbered acceptance steps for this delivery, each with the action a user takes and the result they should see, covering every acceptance criterion of its tasks. Note any criterion that cannot be checked yet.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-prd` Skill，按它们的流程做。为这项交付写编号的验收步骤：每步写用户做什么、应该看到什么，覆盖所含任务的每一条验收标准。暂时验不了的标准要注明。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "record-decision",
+      "label": {
+        "en": "Record my acceptance result",
+        "zh-CN": "记录我的验收结论"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-prd` skill, and follow them. Record the result I give you on this delivery: accepted, or changes requested with my notes. When changes are requested, create a follow-up task for each problem and link it.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-prd` Skill，按它们的流程做。把我给的结论写到这项交付上：通过，或需修改并附上我的意见。需修改时，为每个问题新建一条跟进任务并关联上。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "waiting-for-me",
+      "label": {
+        "en": "What is waiting for my acceptance?",
+        "zh-CN": "有哪些在等我验收"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-prd` skill, and follow them. List deliveries that are ready for acceptance, oldest first, each with its product, how long it has waited, and the first acceptance step. Do not change anything.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-prd` Skill，按它们的流程做。列出待验收的交付，等得最久的在前，附上所属产品、已等待天数和第一条验收步骤。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Delivery / 交付内容",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "product",
+      "name": "Product / 所属产品",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "products",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "project",
+      "name": "Project / 所属项目",
+      "type": "relation",
+      "required": false,
+      "position": 2,
+      "options": {
+        "targetBaseSlug": "projects",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "status",
+      "name": "Status / 状态",
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "preparing",
+            "name": "Preparing / 整理中",
+            "color": "slate"
+          },
+          {
+            "id": "ready",
+            "name": "Ready for acceptance / 待验收",
+            "color": "amber"
+          },
+          {
+            "id": "accepted",
+            "name": "Accepted / 验收通过",
+            "color": "emerald"
+          },
+          {
+            "id": "changes-requested",
+            "name": "Changes requested / 需修改",
+            "color": "rose"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "tasks",
+      "name": "Tasks / 包含任务",
+      "type": "relation",
+      "required": false,
+      "position": 4,
+      "options": {
+        "targetBaseSlug": "tasks",
+        "multiple": true
+      }
+    },
+    {
+      "slug": "changes",
+      "name": "Changes / 包含变更",
+      "type": "relation",
+      "required": false,
+      "position": 5,
+      "options": {
+        "targetBaseSlug": "changelog",
+        "multiple": true
+      }
+    },
+    {
+      "slug": "how-to-verify",
+      "name": "Acceptance steps / 验收步骤",
+      "type": "markdown",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "evidence",
+      "name": "Evidence / 验收证据",
+      "type": "markdown",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "submitted-on",
+      "name": "Submitted on / 提交验收日期",
+      "type": "date",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "acceptor",
+      "name": "Acceptor / 验收人",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "decided-on",
+      "name": "Decided on / 验收日期",
+      "type": "date",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "feedback",
+      "name": "Acceptance notes / 验收意见",
+      "type": "longtext",
+      "required": false,
+      "position": 11,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "ready",
+      "name": "Ready for acceptance / 待验收",
+      "description": "Waiting for a person to accept / 等人验收",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "ready"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "submitted-on",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "product",
+          "status",
+          "acceptor",
+          "submitted-on"
+        ]
+      }
+    },
+    {
+      "slug": "all",
+      "name": "All deliveries / 全部交付",
+      "description": "Every delivery, newest submission first / 全部交付，最近提交在前",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "submitted-on",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "product",
+          "status",
+          "acceptor",
+          "submitted-on",
+          "decided-on"
+        ]
+      }
+    }
+  ]
+}

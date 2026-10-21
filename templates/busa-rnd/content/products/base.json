@@ -1,0 +1,132 @@
+{
+  "name": "Products / 产品",
+  "description": "Every product the team builds: who owns it and which repositories carry it. / 团队在做的每个产品：谁负责、由哪些代码仓库承载。",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "register-product",
+      "label": {
+        "en": "Register a new product and its repositories",
+        "zh-CN": "登记一个新产品和它的代码仓库"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-pmo` skill, and follow them. Register the product I describe: give it a short kebab-case product key, its owner, and one repository URL per line. Check for an existing product with the same name or key first.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-pmo` Skill，按它们的流程做。登记我描述的产品：起一个简短的 kebab-case 产品标识，写上负责人，代码仓库一行一个地址。先查有没有同名或同标识的产品。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "product-picture",
+      "label": {
+        "en": "Give me the full picture of one product",
+        "zh-CN": "看一个产品的全貌"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-pmo` skill, and follow them. For the product I name, summarise its open projects and their health, what shipped in the last two weeks, what is waiting for acceptance, and the top of its backlog. Do not change anything.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-pmo` Skill，按它们的流程做。针对我说的产品，汇总进行中的项目及健康度、最近两周上线了什么、有什么在等验收、需求池排在最前面的几项。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Product / 产品",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "product-key",
+      "name": "Product key / 产品标识",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status / 状态",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "active",
+            "name": "Active / 在研",
+            "color": "emerald"
+          },
+          {
+            "id": "maintenance",
+            "name": "Maintenance / 维护中",
+            "color": "slate"
+          },
+          {
+            "id": "planned",
+            "name": "Planned / 规划中",
+            "color": "cyan"
+          },
+          {
+            "id": "retired",
+            "name": "Retired / 已下线",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "owner",
+      "name": "Owner / 负责人",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "repos",
+      "name": "Repositories / 代码仓库",
+      "type": "longtext",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "try-at",
+      "name": "Where to try / 验收环境",
+      "type": "longtext",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "description",
+      "name": "About / 产品简介",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "All products / 全部产品",
+      "description": "Every product and its owner / 每个产品及负责人",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "title",
+          "product-key",
+          "status",
+          "owner",
+          "repos",
+          "try-at"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "type": "skill",
+  "name": "rnd-prd",
+  "description": "Needs and acceptance for the R&D desk: tasks with testable criteria, backlog grooming, deliveries packaged for acceptance. / 需求与验收手册：带验收标准的任务、需求池整理、按功能整理待验收的交付。",
+  "position": 8,
+  "agentPrompts": [
+    {
+      "key": "intake",
+      "label": {
+        "en": "Turn notes into tasks",
+        "zh-CN": "把会议纪要拆成任务"
+      },
+      "intent": "change",
+      "body": {
+        "en": "{target}\n\nFollow this skill's intake steps on the text I paste: split it into tasks with outcome titles, requester and testable acceptance criteria, check for duplicates, and show me the list before writing.",
+        "zh-CN": "{target}\n\n按这份手册的拆需求步骤处理我贴的内容：拆成以结果命名、写明提出人和可验证验收标准的任务，先查重，写入前先给我看清单。"
+      }
+    },
+    {
+      "key": "package",
+      "label": {
+        "en": "Package last week's work for acceptance",
+        "zh-CN": "把上周的改动整理成待验收的交付"
+      },
+      "intent": "change",
+      "body": {
+        "en": "{target}\n\nFollow this skill's packaging steps for last Monday to Sunday: group the merged changes by what users can now do, write acceptance steps that cover every criterion, and show me the grouping before writing.",
+        "zh-CN": "{target}\n\n按这份手册的整理步骤处理上周一到周日：把合并的改动按「用户现在能做到什么」归并，写出覆盖每条验收标准的验收步骤，写入前先给我看归并结果。"
+      }
+    },
+    {
+      "key": "check-intake",
+      "label": {
+        "en": "Check tasks and deliveries against the rules",
+        "zh-CN": "按规矩检查需求和交付"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "{target}\n\nCheck open tasks and ready deliveries against this skill: untestable criteria, missing requesters, deliveries named after code, steps that skip a criterion. List problems with a fix for each. Do not change anything.",
+        "zh-CN": "{target}\n\n按这份手册检查未完成的任务和待验收的交付：无法验证的标准、缺提出人、按代码命名的交付、漏掉标准的验收步骤。列出问题并给出改法。不要修改任何记录。"
+      }
+    },
+    {
+      "key": "add-rule",
+      "label": {
+        "en": "Add a new rule to the needs playbook",
+        "zh-CN": "把新定的规矩写进需求手册"
+      },
+      "intent": "change",
+      "body": {
+        "en": "{target}\n\nFold the rule I describe into this skill's SKILL.md where it belongs, keeping the rest unchanged, and show me the diff before proposing the change.",
+        "zh-CN": "{target}\n\n把我说的新规矩写进这份 SKILL.md 合适的位置，其余内容保持不变，提交变更前先给我看改动。"
+      }
+    },
+    {
+      "key": "explain",
+      "label": {
+        "en": "Explain how we write needs and accept work",
+        "zh-CN": "讲讲我们怎么写需求、怎么验收"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "{target}\n\nExplain this skill to a new product manager: how a need becomes a task, what good acceptance criteria look like, and how a delivery is accepted. Use one example from the desk. Do not change anything.",
+        "zh-CN": "{target}\n\n给新来的产品经理讲清这份手册：需求怎么变成任务、好的验收标准长什么样、交付怎么验收。用工作台里的一个例子说明。不要修改任何记录。"
+      }
+    }
+  ]
+}

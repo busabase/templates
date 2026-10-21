@@ -1,0 +1,68 @@
+{
+  "type": "skill",
+  "name": "rnd-coder",
+  "description": "Coding loop for the R&D desk: connect a repository, pick up a task, write back through PR and merge, log the changelog. / 研发执行手册：接入仓库、领任务、开发到合并全程回写、写变更记录。",
+  "position": 7,
+  "agentPrompts": [
+    {
+      "key": "pick-up",
+      "label": {
+        "en": "Pick up a task and deliver it",
+        "zh-CN": "领一个任务并做到合并"
+      },
+      "intent": "change",
+      "body": {
+        "en": "{target}\n\nFollow this skill's coding loop for the task I name (or the top To do task of this repository's product): claim it, implement and verify it against its acceptance criteria, open the pull request, and on merge mark it done and write the changelog row.",
+        "zh-CN": "{target}\n\n按这份手册的研发流程处理我指定的任务（没指定就领本仓库所属产品里排第一的「待开始」任务）：认领、实现、对照验收标准验证、开 PR，合并后标为已完成并写变更记录。"
+      }
+    },
+    {
+      "key": "connect-repo",
+      "label": {
+        "en": "Connect this code repository to the desk",
+        "zh-CN": "把这个代码仓库接到研发管理台"
+      },
+      "intent": "change",
+      "body": {
+        "en": "{target}\n\nFollow this skill's 'Connect a repository' steps for the repository I am in: find or register its product, then draft the pointer block for AGENTS.md or CLAUDE.md with the real ids. Show me before committing.",
+        "zh-CN": "{target}\n\n按这份手册「接入代码仓库」的步骤处理当前仓库：找到或登记它所属的产品，然后用真实 id 起草写进 AGENTS.md 或 CLAUDE.md 的指针段落。提交前先给我看。"
+      }
+    },
+    {
+      "key": "check-changelog",
+      "label": {
+        "en": "Check this week's changelog for gaps",
+        "zh-CN": "检查本周变更记录有没有漏"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "{target}\n\nCompare this week's merged pull requests with the changelog using this skill's backfill steps, and list what is missing or written in engineer-speak. Do not change anything.",
+        "zh-CN": "{target}\n\n按这份手册的补记步骤，对比本周已合并的 PR 和变更记录，列出漏记的、以及写成工程师黑话的条目。不要修改任何记录。"
+      }
+    },
+    {
+      "key": "add-rule",
+      "label": {
+        "en": "Add a new rule to the coding playbook",
+        "zh-CN": "把新定的规矩写进研发手册"
+      },
+      "intent": "change",
+      "body": {
+        "en": "{target}\n\nFold the rule I describe into this skill's SKILL.md where it belongs, keeping the rest unchanged, and show me the diff before proposing the change.",
+        "zh-CN": "{target}\n\n把我说的新规矩写进这份 SKILL.md 合适的位置，其余内容保持不变，提交变更前先给我看改动。"
+      }
+    },
+    {
+      "key": "explain",
+      "label": {
+        "en": "Explain the coding loop to a new engineer",
+        "zh-CN": "给新同事讲清研发流程"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "{target}\n\nExplain this skill to a new engineer in five minutes: the two promises, what to update at each step, and what an agent must never do. Do not change anything.",
+        "zh-CN": "{target}\n\n用五分钟给新同事讲清这份手册：两条承诺、每一步要回写什么、Agent 绝不能做什么。不要修改任何记录。"
+      }
+    }
+  ]
+}

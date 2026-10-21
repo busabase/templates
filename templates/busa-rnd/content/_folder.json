@@ -1,0 +1,54 @@
+{
+  "name": "R&D Projects / 研发项目管理",
+  "description": "Products, projects, tasks, changelog, acceptance and the weekly report. / 产品、项目、任务、变更记录、交付验收和周报。",
+  "agentPrompts": [
+    {
+      "key": "weekly-report",
+      "label": {
+        "en": "Write last week's R&D weekly report",
+        "zh-CN": "生成上周研发周报"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-pmo` skill, and follow them. Write the weekly report for last Monday to Sunday as a draft in Reports: what shipped, what is in progress, the open needs, and the risks and decisions waiting on people. Update project health on the way.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-pmo` Skill，按它们的流程做。为上周一到周日在「周报与产出」里写一份周报草稿：上线了什么、进行中的工作、还有什么需求、风险和需要人拍板的事。顺手更新各项目的健康度。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "needs-me",
+      "label": {
+        "en": "What needs my attention this week?",
+        "zh-CN": "这周有什么需要我处理"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder and follow it. List what is waiting on a person: deliveries ready for acceptance, report drafts to finalise, projects at risk or off track, and overdue tasks. Do not change anything.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，按它的规则做。列出等人处理的事：待验收的交付、待定稿的周报、有风险或已延误的项目、超期任务。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "connect-repo",
+      "label": {
+        "en": "Connect a code repository to this desk",
+        "zh-CN": "把一个代码仓库接到研发管理台"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-coder` skill, and follow them. Register this repository under its product (create the product if it is new), then add the desk's pointer block to the repository's AGENTS.md or CLAUDE.md so every coding agent working there reads the playbook and writes back. Show me the block before committing it.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-coder` Skill，按它们的流程做。把这个代码仓库登记到对应产品下（产品不存在就新建），再把研发管理台的指针段落写进仓库的 AGENTS.md 或 CLAUDE.md，让在这里干活的每个 coding agent 都会读手册并回写。提交前先给我看这段内容。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "intake",
+      "label": {
+        "en": "Turn notes into tasks",
+        "zh-CN": "把会议纪要拆成任务"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-prd` skill, and follow them. Split the text I paste into separate tasks with the right product, type, requester and testable acceptance criteria. Check for duplicates and show me the list before writing.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-prd` Skill，按它们的流程做。把我贴的内容拆成独立任务：选对产品和类型，写上提出人和可验证的验收标准。先查重，写入前先给我看清单。"
+      },
+      "intent": "change"
+    }
+  ]
+}

@@ -1,0 +1,322 @@
+{
+  "name": "Tasks / 任务",
+  "description": "Every need, bug and improvement, from first request to done. / 每一个需求、缺陷和优化，从提出到完成。",
+  "position": 2,
+  "agentPrompts": [
+    {
+      "key": "intake",
+      "label": {
+        "en": "Turn notes into tasks",
+        "zh-CN": "把会议纪要拆成任务"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-prd` skill, and follow them. Split the text I paste into separate tasks: one need per task, the right product and type, the person who asked, and acceptance criteria written as what a user can see. Check for duplicates first and show me the list before writing.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-prd` Skill，按它们的流程做。把我贴的内容拆成独立的任务：一件事一条，选对产品和类型，写上提出人，验收标准写成「用户能看到什么」。先查重，写入前先给我看清单。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "pick-up",
+      "label": {
+        "en": "Pick up the next task and start coding",
+        "zh-CN": "领一个任务开始写代码"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-coder` skill, and follow them. Take the task I name (or the highest-priority To do task in this repository's product), mark it In progress with yourself as assignee, then implement it on a branch and keep the record updated through review and merge.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-coder` Skill，按它们的流程做。领我指定的任务（没指定就领本仓库所属产品里优先级最高的「待开始」任务），改成「进行中」并把自己写成负责人，然后在分支上实现，评审和合并时同步更新这条记录。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "groom",
+      "label": {
+        "en": "Groom the backlog and suggest priorities",
+        "zh-CN": "整理需求池并建议优先级"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-prd` skill, and follow them. Read the backlog, merge duplicates, flag tasks with no acceptance criteria, and propose a priority for each with a one-line reason. Apply nothing until I confirm.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-prd` Skill，按它们的流程做。读需求池：合并重复项，标出没写验收标准的任务，为每条建议优先级并附一句理由。我确认之前不要改。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "check-acceptance",
+      "label": {
+        "en": "Check that open tasks have acceptance criteria",
+        "zh-CN": "检查未完成的任务是否都写了验收标准"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-prd` skill, and follow them. List open tasks whose acceptance criteria are missing or not testable, and suggest a rewrite for each. Do not change anything.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-prd` Skill，按它们的流程做。列出验收标准缺失或无法验证的未完成任务，并给每条建议改写。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Task / 任务",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "product",
+      "name": "Product / 所属产品",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "products",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "project",
+      "name": "Project / 所属项目",
+      "type": "relation",
+      "required": false,
+      "position": 2,
+      "options": {
+        "targetBaseSlug": "projects",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "type",
+      "name": "Type / 类型",
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "feature",
+            "name": "Feature / 需求",
+            "color": "cyan"
+          },
+          {
+            "id": "bug",
+            "name": "Bug / 缺陷",
+            "color": "rose"
+          },
+          {
+            "id": "improvement",
+            "name": "Improvement / 优化",
+            "color": "slate"
+          },
+          {
+            "id": "chore",
+            "name": "Chore / 杂项",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "status",
+      "name": "Status / 状态",
+      "type": "select",
+      "required": false,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "backlog",
+            "name": "Backlog / 待规划",
+            "color": "slate"
+          },
+          {
+            "id": "todo",
+            "name": "To do / 待开始",
+            "color": "cyan"
+          },
+          {
+            "id": "in-progress",
+            "name": "In progress / 进行中",
+            "color": "amber"
+          },
+          {
+            "id": "in-review",
+            "name": "In review / 评审中",
+            "color": "amber"
+          },
+          {
+            "id": "done",
+            "name": "Done / 已完成",
+            "color": "emerald"
+          },
+          {
+            "id": "canceled",
+            "name": "Canceled / 已取消",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "priority",
+      "name": "Priority / 优先级",
+      "type": "select",
+      "required": false,
+      "position": 5,
+      "options": {
+        "choices": [
+          {
+            "id": "urgent",
+            "name": "Urgent / 紧急",
+            "color": "rose"
+          },
+          {
+            "id": "high",
+            "name": "High / 高",
+            "color": "amber"
+          },
+          {
+            "id": "medium",
+            "name": "Medium / 中",
+            "color": "slate"
+          },
+          {
+            "id": "low",
+            "name": "Low / 低",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "assignee",
+      "name": "Assignee / 负责人",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "requester",
+      "name": "Requested by / 提出人",
+      "type": "text",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "due-date",
+      "name": "Due date / 截止日期",
+      "type": "date",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "acceptance",
+      "name": "Acceptance criteria / 验收标准",
+      "type": "longtext",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "details",
+      "name": "Details / 详情",
+      "type": "longtext",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "pr-url",
+      "name": "Pull request / PR 链接",
+      "type": "url",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "completed-on",
+      "name": "Completed on / 完成日期",
+      "type": "date",
+      "required": false,
+      "position": 12,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "open",
+      "name": "Open tasks / 未完成任务",
+      "description": "Everything not done or canceled, by due date / 未完成、未取消的任务，按截止日期",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "due-date",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "product",
+          "status",
+          "priority",
+          "assignee",
+          "due-date"
+        ]
+      }
+    },
+    {
+      "slug": "backlog",
+      "name": "Backlog / 需求池",
+      "description": "Needs nobody has scheduled yet / 还没排期的需求",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "backlog"
+          }
+        ],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "title",
+          "product",
+          "type",
+          "priority",
+          "requester"
+        ]
+      }
+    },
+    {
+      "slug": "in-review",
+      "name": "In review / 评审中",
+      "description": "Waiting on a pull-request review / 等待 PR 评审",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "in-review"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "due-date",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "product",
+          "assignee",
+          "pr-url",
+          "due-date"
+        ]
+      }
+    }
+  ]
+}
