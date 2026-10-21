@@ -1,0 +1,22 @@
+{
+  "name": "busa-rnd-airapp",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "check": "node scripts/check.mjs && node --test",
+    "test": "node --test",
+    "build:sdk": "node scripts/bundle-sdk.mjs"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.5",
+    "hono": "4.13.13",
+    "busabase-sdk": "0.96.0",
+    "lucide": "1.60.0"
+  },
+  "devDependencies": {
+    "esbuild-wasm": "0.28.1"
+  }
+}

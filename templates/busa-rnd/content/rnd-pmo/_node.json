@@ -1,0 +1,68 @@
+{
+  "type": "skill",
+  "name": "rnd-pmo",
+  "description": "Products, projects and the weekly R&D report: project health rules, report format, release notes, weekly schedule. / 产品、项目和研发周报：健康度规则、周报格式、版本说明、每周定时。",
+  "position": 9,
+  "agentPrompts": [
+    {
+      "key": "weekly-report",
+      "label": {
+        "en": "Write last week's weekly report",
+        "zh-CN": "生成上周研发周报"
+      },
+      "intent": "change",
+      "body": {
+        "en": "{target}\n\nFollow this skill's weekly report steps for last Monday to Sunday: read the bounded windows, check coverage, update project health, and write the report as a draft. Then tell me what needs a decision.",
+        "zh-CN": "{target}\n\n按这份手册的周报步骤处理上周一到周日：按范围读取、检查覆盖、更新项目健康度，写成周报草稿。然后告诉我有哪些需要拍板。"
+      }
+    },
+    {
+      "key": "project-health",
+      "label": {
+        "en": "Update project health",
+        "zh-CN": "更新项目健康度"
+      },
+      "intent": "change",
+      "body": {
+        "en": "{target}\n\nApply this skill's health rules to every live project and write a two-sentence latest update for each. Tell me which ones changed and why.",
+        "zh-CN": "{target}\n\n按这份手册的健康度规则检查每个进行中的项目，并各写两句话的最新进展。告诉我哪些变了、为什么。"
+      }
+    },
+    {
+      "key": "check-report",
+      "label": {
+        "en": "Check a report against the records",
+        "zh-CN": "核对周报和记录是否一致"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "{target}\n\nRe-read the records for the latest weekly report's period and list every line or number in the report that the records do not support. Do not change anything.",
+        "zh-CN": "{target}\n\n重新读取最新一份周报周期内的记录，列出周报里每一处与记录对不上的句子或数字。不要修改任何记录。"
+      }
+    },
+    {
+      "key": "add-rule",
+      "label": {
+        "en": "Add a new rule to the report playbook",
+        "zh-CN": "把新定的规矩写进周报手册"
+      },
+      "intent": "change",
+      "body": {
+        "en": "{target}\n\nFold the rule I describe into this skill's SKILL.md where it belongs, keeping the rest unchanged, and show me the diff before proposing the change.",
+        "zh-CN": "{target}\n\n把我说的新规矩写进这份 SKILL.md 合适的位置，其余内容保持不变，提交变更前先给我看改动。"
+      }
+    },
+    {
+      "key": "explain",
+      "label": {
+        "en": "Explain how the weekly loop works",
+        "zh-CN": "讲讲每周闭环怎么转"
+      },
+      "intent": "read-only",
+      "body": {
+        "en": "{target}\n\nExplain this skill to a team lead: what the weekly report contains, where each number comes from, how health is set, and how to schedule it. Do not change anything.",
+        "zh-CN": "{target}\n\n给团队负责人讲清这份手册：周报包含什么、每个数字从哪来、健康度怎么定、怎么设置每周定时。不要修改任何记录。"
+      }
+    }
+  ]
+}

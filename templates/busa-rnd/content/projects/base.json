@@ -1,0 +1,257 @@
+{
+  "name": "Projects / 项目",
+  "description": "Work with a goal and a target date, inside one product. / 某个产品里有目标、有目标日期的一段工作。",
+  "position": 1,
+  "agentPrompts": [
+    {
+      "key": "start-project",
+      "label": {
+        "en": "Start a new project",
+        "zh-CN": "新建一个项目"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-pmo` skill, and follow them. Create the project I describe under the right product, with an owner, a start and a target date, and a goal written as what users will be able to do when it is done.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-pmo` Skill，按它们的流程做。在对应产品下新建我描述的项目：写上负责人、开始和目标日期，目标要写成「做完后用户能做什么」。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "update-project",
+      "label": {
+        "en": "Update this project's progress and health",
+        "zh-CN": "更新这个项目的进展和健康度"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-pmo` skill, and follow them. Read this project's tasks, changes and deliveries from the last week, then write a two-sentence latest update and set health by the playbook's rules. Tell me why if health changes.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-pmo` Skill，按它们的流程做。读这个项目最近一周的任务、变更和交付，写两句话的最新进展，并按手册规则设置健康度。健康度有变化时告诉我原因。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "projects-at-risk",
+      "label": {
+        "en": "Which projects are at risk, and why?",
+        "zh-CN": "哪些项目有风险，原因是什么"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-pmo` skill, and follow them. List the projects that are at risk or off track, with the overdue or blocked tasks behind each one. Do not change anything.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-pmo` Skill，按它们的流程做。列出有风险或已延误的项目，以及每个项目背后超期或卡住的任务。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Project / 项目",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "product",
+      "name": "Product / 所属产品",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "products",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "status",
+      "name": "Status / 状态",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "planned",
+            "name": "Planned / 规划中",
+            "color": "cyan"
+          },
+          {
+            "id": "in-progress",
+            "name": "In progress / 进行中",
+            "color": "amber"
+          },
+          {
+            "id": "paused",
+            "name": "Paused / 已暂停",
+            "color": "slate"
+          },
+          {
+            "id": "done",
+            "name": "Done / 已完成",
+            "color": "emerald"
+          },
+          {
+            "id": "canceled",
+            "name": "Canceled / 已取消",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "health",
+      "name": "Health / 健康度",
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "on-track",
+            "name": "On track / 正常",
+            "color": "emerald"
+          },
+          {
+            "id": "at-risk",
+            "name": "At risk / 有风险",
+            "color": "amber"
+          },
+          {
+            "id": "off-track",
+            "name": "Off track / 已延误",
+            "color": "rose"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "owner",
+      "name": "Owner / 负责人",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "start-date",
+      "name": "Start date / 开始日期",
+      "type": "date",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "target-date",
+      "name": "Target date / 目标日期",
+      "type": "date",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "goal",
+      "name": "Goal and scope / 目标与范围",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "latest-update",
+      "name": "Latest update / 最新进展",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "updated-on",
+      "name": "Update written on / 进展更新于",
+      "type": "date",
+      "required": false,
+      "position": 9,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "All projects / 全部项目",
+      "description": "Projects by target date / 按目标日期排列",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "target-date",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "product",
+          "status",
+          "health",
+          "owner",
+          "target-date"
+        ]
+      }
+    },
+    {
+      "slug": "at-risk",
+      "name": "At risk / 有风险",
+      "description": "Projects marked at risk / 标记为有风险的项目",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "health",
+            "operator": "equals",
+            "value": "at-risk"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "target-date",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "product",
+          "health",
+          "owner",
+          "target-date",
+          "latest-update"
+        ]
+      }
+    },
+    {
+      "slug": "off-track",
+      "name": "Off track / 已延误",
+      "description": "Projects that will miss their date / 会错过目标日期的项目",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "health",
+            "operator": "equals",
+            "value": "off-track"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "target-date",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "product",
+          "health",
+          "owner",
+          "target-date",
+          "latest-update"
+        ]
+      }
+    }
+  ]
+}

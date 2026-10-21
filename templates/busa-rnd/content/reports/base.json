@@ -1,0 +1,168 @@
+{
+  "name": "Reports / 周报与产出",
+  "description": "Weekly reports and release notes, written by an agent from the records and finalised by a person. / 周报和版本说明：由 Agent 根据记录生成，由人定稿。",
+  "position": 5,
+  "agentPrompts": [
+    {
+      "key": "weekly-report",
+      "label": {
+        "en": "Write last week's weekly report",
+        "zh-CN": "生成上周研发周报"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-pmo` skill, and follow them. Write the weekly report for last Monday to Sunday as a draft: what shipped, what is in progress, the open needs, and the risks and decisions waiting on people, every line traceable to the rows it came from. Update project health while you are at it.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-pmo` Skill，按它们的流程做。为上周一到周日写一份周报草稿：上线了什么、进行中的工作、还有什么需求、风险和需要人拍板的事，每一条都能对应到原记录。顺手更新各项目的健康度。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "leadership-brief",
+      "label": {
+        "en": "Give me a one-minute version for leadership",
+        "zh-CN": "改成给老板看的一分钟简版"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-pmo` skill, and follow them. From the latest weekly report, write a five-line brief for leadership: the headline, the two biggest deliveries, the top risk, and the one decision needed. Reply in chat; do not change the report.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-pmo` Skill，按它们的流程做。基于最新一份周报，写五行给老板看的简版：一句话结论、最重要的两项交付、最大的风险、需要拍板的一件事。直接回复在对话里，不要改周报。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "finalise",
+      "label": {
+        "en": "Finalise this report",
+        "zh-CN": "定稿这份周报"
+      },
+      "body": {
+        "en": "{target}\n\nRead the `busa-rnd` skill in this folder, then the `rnd-pmo` skill, and follow them. Apply the edits I give you to this report, re-check every number against the records, and mark it Final.",
+        "zh-CN": "{target}\n\n先阅读本文件夹里的 `busa-rnd` Skill，再读 `rnd-pmo` Skill，按它们的流程做。按我给的修改意见改这份报告，逐条对照记录复核数字，然后标为「已定稿」。"
+      },
+      "intent": "change"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Report / 报告",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "kind",
+      "name": "Kind / 类型",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "weekly",
+            "name": "Weekly report / 周报",
+            "color": "cyan"
+          },
+          {
+            "id": "release",
+            "name": "Release notes / 版本说明",
+            "color": "slate"
+          },
+          {
+            "id": "other",
+            "name": "Other / 其他",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "status",
+      "name": "Status / 状态",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "draft",
+            "name": "Draft / 草稿",
+            "color": "amber"
+          },
+          {
+            "id": "final",
+            "name": "Final / 已定稿",
+            "color": "emerald"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "period-start",
+      "name": "Period start / 周期开始",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "period-end",
+      "name": "Period end / 周期结束",
+      "type": "date",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "product",
+      "name": "Product / 所属产品",
+      "type": "relation",
+      "required": false,
+      "position": 5,
+      "options": {
+        "targetBaseSlug": "products",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "summary",
+      "name": "One-line summary / 一句话结论",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "body",
+      "name": "Report / 正文",
+      "type": "markdown",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest",
+      "name": "Latest first / 最新在前",
+      "description": "Reports by period, newest first / 按周期排列，最新在前",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "period-end",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "kind",
+          "status",
+          "period-start",
+          "period-end",
+          "summary"
+        ]
+      }
+    }
+  ]
+}

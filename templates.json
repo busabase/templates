@@ -305,7 +305,7 @@
         "docs": 0,
         "bases": 3,
         "records": 3,
-        "files": 21,
+        "files": 22,
         "airapps": 1,
         "skill": true
       }
@@ -391,7 +391,7 @@
         "docs": 0,
         "bases": 3,
         "records": 3,
-        "files": 21,
+        "files": 22,
         "airapps": 1,
         "skill": true
       }
@@ -441,7 +441,7 @@
         "docs": 0,
         "bases": 4,
         "records": 21,
-        "files": 48,
+        "files": 47,
         "airapps": 1,
         "skill": true
       }
@@ -868,7 +868,7 @@
         "docs": 0,
         "bases": 5,
         "records": 3,
-        "files": 22,
+        "files": 23,
         "airapps": 1,
         "skill": true
       }
@@ -1338,7 +1338,7 @@
         "docs": 0,
         "bases": 4,
         "records": 3,
-        "files": 21,
+        "files": 22,
         "airapps": 1,
         "skill": true
       }
@@ -1378,8 +1378,8 @@
         "folders": 0,
         "docs": 0,
         "bases": 2,
-        "records": 3,
-        "files": 21,
+        "records": 5,
+        "files": 22,
         "airapps": 1,
         "skill": true
       }
@@ -1915,7 +1915,7 @@
         "docs": 0,
         "bases": 4,
         "records": 16,
-        "files": 23,
+        "files": 24,
         "airapps": 1,
         "skill": true
       }
@@ -2051,7 +2051,7 @@
         "docs": 0,
         "bases": 4,
         "records": 16,
-        "files": 23,
+        "files": 24,
         "airapps": 1,
         "skill": true
       }
@@ -2099,7 +2099,7 @@
         "docs": 0,
         "bases": 5,
         "records": 16,
-        "files": 24,
+        "files": 25,
         "airapps": 1,
         "skill": true
       }
@@ -2147,7 +2147,7 @@
         "docs": 0,
         "bases": 4,
         "records": 15,
-        "files": 24,
+        "files": 25,
         "airapps": 1,
         "skill": true
       }
@@ -2231,7 +2231,7 @@
         "docs": 0,
         "bases": 2,
         "records": 3,
-        "files": 24,
+        "files": 25,
         "airapps": 1,
         "skill": true
       }
@@ -2316,7 +2316,7 @@
         "docs": 0,
         "bases": 7,
         "records": 3,
-        "files": 21,
+        "files": 22,
         "airapps": 1,
         "skill": true
       }
@@ -2493,7 +2493,58 @@
         "docs": 0,
         "bases": 5,
         "records": 3,
-        "files": 21,
+        "files": 22,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-rnd",
+      "name": "busa-rnd",
+      "displayName": {
+        "en": "R&D Projects",
+        "zh-CN": "研发项目管理"
+      },
+      "description": {
+        "en": "Products, projects, tasks, changelog and delivery acceptance that coding agents keep current, closed every week by an agent-written R&D report.",
+        "zh-CN": "产品、项目、任务、变更记录和交付验收由 coding agent 随手维护，每周由 Agent 写一份研发周报闭环。"
+      },
+      "category": "platform",
+      "risk": "gated-write",
+      "tags": [
+        "engineering",
+        "project-management",
+        "changelog",
+        "acceptance",
+        "weekly-report",
+        "risk:gated-write",
+        "coding-agents",
+        "multi-product"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/board.webp",
+        "assets/screenshots/acceptance.webp",
+        "assets/screenshots/weekly-report.webp",
+        "assets/screenshots/overview-zh-CN.webp",
+        "assets/screenshots/board-zh-CN.webp",
+        "assets/screenshots/acceptance-zh-CN.webp",
+        "assets/screenshots/weekly-report-zh-CN.webp"
+      ],
+      "agentPrompts": [
+        "Write last week's R&D weekly report: what shipped in each product, what is in progress, the open needs, and the deliveries waiting for my acceptance.\n生成上周研发周报：各产品上线了什么、进行中的工作、还有什么需求、哪些交付在等我验收。",
+        "Connect this code repository to the R&D desk, so every coding agent working here updates its task and logs a changelog row when it merges.\n把这个代码仓库接到研发管理台，让在这里干活的 coding agent 都会更新任务，并在合并时写一条变更记录。",
+        "Package last week's merged changes into deliveries I can accept, with acceptance steps written from each task's criteria.\n把上周合并的改动整理成待我验收的交付，并根据每个任务的验收标准写好验收步骤。"
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 6,
+        "records": 46,
+        "files": 29,
         "airapps": 1,
         "skill": true
       }
@@ -2762,7 +2813,7 @@
         "docs": 0,
         "bases": 6,
         "records": 3,
-        "files": 23,
+        "files": 22,
         "airapps": 1,
         "skill": true
       }
