@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["marketing", "risk:gated-write", "surface:busabase"],
+  "tags": [
+    "marketing",
+    "risk:gated-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "marketing",
     "schemaVersion": 1,
     "airapp": "busa-campaigns-app",
-    "tags": ["marketing", "risk:gated-write", "surface:busabase"],
+    "tags": [
+      "marketing",
+      "risk:gated-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/campaigns.webp",
@@ -25,6 +33,17 @@
       "assets/screenshots/performance.webp"
     ],
     "video": "assets/recordings/busa-campaigns.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/campaigns-zh-CN.webp",
+          "assets/screenshots/deliverability-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/performance-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Segments and flag what needs my attention.",
       "Open Busa Campaigns and show me the items that need review."

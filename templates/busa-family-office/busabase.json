@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["invest", "risk:read-only", "industry:family", "surface:busabase"],
+  "tags": [
+    "invest",
+    "risk:read-only",
+    "industry:family",
+    "surface:busabase"
+  ],
   "template": {
     "category": "invest",
     "schemaVersion": 1,
     "airapp": "busa-family-office-app",
-    "tags": ["invest", "risk:read-only", "industry:family", "surface:busabase"],
+    "tags": [
+      "invest",
+      "risk:read-only",
+      "industry:family",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/assets.webp",
@@ -26,6 +36,18 @@
       "assets/screenshots/performance.webp"
     ],
     "video": "assets/recordings/busa-family-office.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/assets-zh-CN.webp",
+          "assets/screenshots/entities-zh-CN.webp",
+          "assets/screenshots/institutions-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/performance-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Entities and flag what needs my attention.",
       "Open Busa Family Office and show me the items that need review."

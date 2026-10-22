@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["marketing", "risk:gated-write", "surface:busabase"],
+  "tags": [
+    "marketing",
+    "risk:gated-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "marketing",
     "schemaVersion": 1,
     "airapp": "busa-social-app",
-    "tags": ["marketing", "risk:gated-write", "surface:busabase"],
+    "tags": [
+      "marketing",
+      "risk:gated-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/accounts.webp",
@@ -30,6 +38,22 @@
       "assets/screenshots/timeline.webp"
     ],
     "video": "assets/recordings/busa-social.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/accounts-zh-CN.webp",
+          "assets/screenshots/calendar-zh-CN.webp",
+          "assets/screenshots/compose-zh-CN.webp",
+          "assets/screenshots/crisis-zh-CN.webp",
+          "assets/screenshots/detail-zh-CN.webp",
+          "assets/screenshots/engagement-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/shorts-zh-CN.webp",
+          "assets/screenshots/timeline-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Accounts and flag what needs my attention.",
       "Open Busa Social and show me the items that need review."

@@ -28,6 +28,19 @@
       "surface:busabase"
     ],
     "video": "assets/recordings/busa-agent-shelf.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/fixes-zh-CN.webp",
+          "assets/screenshots/questions-zh-CN.webp",
+          "assets/screenshots/answers-zh-CN.webp",
+          "assets/screenshots/competitors-zh-CN.webp",
+          "assets/screenshots/settings-zh-CN.webp"
+        ]
+      }
+    },
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",

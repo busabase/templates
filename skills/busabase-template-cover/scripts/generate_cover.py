@@ -41,6 +41,17 @@ SANS_FALLBACKS = (
     "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
 )
 
+# CJK sans faces for a localized description. Inter has no CJK glyphs, so a
+# Chinese description would render as boxes; system faces come first, and the
+# bundled Noto Serif SC is the deterministic last resort.
+CJK_SANS_FALLBACKS = (
+    "/System/Library/Fonts/PingFang.ttc",
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+    "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+    "/usr/share/fonts/google-noto-cjk/NotoSansCJK-Regular.ttc",
+    str(FONT_DIR / "NotoSerifSC-Variable.ttf"),
+)
+
 SERIF_FALLBACKS = (
     "/System/Library/Fonts/Supplemental/Georgia.ttf",
     "/System/Library/Fonts/Supplemental/Songti.ttc",
@@ -93,6 +104,8 @@ def load_font(
     if family == "display":
         primary = NOTO_SERIF_SC_FONT if contains_cjk(text) else FRAUNCES_FONT
         candidates = (str(primary), *SERIF_FALLBACKS)
+    elif contains_cjk(text):
+        candidates = CJK_SANS_FALLBACKS
     else:
         candidates = (str(INTER_FONT), *SANS_FALLBACKS)
     for candidate in candidates:
@@ -143,10 +156,17 @@ def wrap_text(
     if not normalized:
         return []
 
-    tokens = normalized.split(" ") if " " in normalized else list(normalized)
+    if contains_cjk(normalized):
+        # CJK breaks between any two characters; only Latin words and numbers
+        # stay whole. Splitting on spaces instead treats a run of Chinese as
+        # one huge "word" and leaves a stub like "面向 AI" alone on line one.
+        tokens = re.findall(r"[A-Za-z0-9][A-Za-z0-9.'’/&+-]*| |.", normalized)
+        separator = ""
+    else:
+        tokens = normalized.split(" ")
+        separator = " "
     lines: list[str] = []
     current = ""
-    separator = " " if " " in normalized else ""
 
     for token in tokens:
         pieces = [token]
@@ -155,12 +175,12 @@ def wrap_text(
         for piece in pieces:
             candidate = f"{current}{separator if current else ''}{piece}"
             if current and text_width(draw, candidate, font) > max_width:
-                lines.append(current)
-                current = piece
+                lines.append(current.rstrip())
+                current = piece.lstrip()
             else:
                 current = candidate
     if current:
-        lines.append(current)
+        lines.append(current.rstrip())
 
     if len(lines) <= max_lines:
         return lines
@@ -248,17 +268,18 @@ def add_ambient_shadow(
     return result
 
 
-def resolve_source(template_dir: Path, screenshots: list[str], source_override: str | None) -> tuple[Path, str]:
-    cover_path = (template_dir / COVER_RELATIVE_PATH).resolve()
+def resolve_source(template_dir: Path, screenshots: list[str], source_override: str | None, locale: str = "en") -> tuple[Path, str]:
+    covers = {COVER_RELATIVE_PATH.as_posix(), cover_relative(locale).as_posix()}
+    cover_paths = {(template_dir / value).resolve() for value in covers}
     candidates = [source_override] if source_override else [
-        screenshot for screenshot in screenshots if Path(screenshot).as_posix() != COVER_RELATIVE_PATH.as_posix()
+        screenshot for screenshot in screenshots if Path(screenshot).as_posix() not in covers
     ]
     for candidate in candidates:
         if not candidate:
             continue
         path = Path(candidate)
         resolved = (path if path.is_absolute() else template_dir / path).resolve()
-        if resolved == cover_path:
+        if resolved in cover_paths:
             raise CoverError("The generated cover cannot be used as its own source")
         if resolved.is_file():
             try:
@@ -286,7 +307,15 @@ def read_manifest(template_dir: Path) -> tuple[Path, dict]:
     return manifest_path, manifest
 
 
-def draw_cover(manifest: dict, screenshot_path: Path, title_override: str | None) -> Image.Image:
+def localized(value: object, locale: str) -> str | None:
+    """Pick `locale` from an `{"en": ..., "zh-CN": ...}` manifest string, else English."""
+    if isinstance(value, dict):
+        picked = value.get(locale) or value.get("en") or next(iter(value.values()), None)
+        return str(picked) if picked else None
+    return str(value) if value else None
+
+
+def draw_cover(manifest: dict, screenshot_path: Path, title_override: str | None, locale: str = "en") -> Image.Image:
     if max(TITLE_DESCRIPTION_GAP, DESCRIPTION_SCREENSHOT_GAP) >= SAFE_VERTICAL_INSET:
         raise CoverError("Internal vertical gaps must be smaller than the vertical safe inset")
 
@@ -295,12 +324,9 @@ def draw_cover(manifest: dict, screenshot_path: Path, title_override: str | None
     draw_dot_matrix(draw)
 
     raw_name = str(manifest.get("name") or "Template")
-    title = title_override or display_name(raw_name)
-    raw_description = manifest.get("description")
-    # A localized manifest stores `{"en": ..., "zh-CN": ...}`; the cover is English.
-    if isinstance(raw_description, dict):
-        raw_description = raw_description.get("en") or next(iter(raw_description.values()), None)
-    description = str(raw_description or "A ready-to-install Busabase workspace template.")
+    # The manifest's own display name, in the cover's locale; the slug is the last resort.
+    title = title_override or localized(manifest.get("displayName"), locale) or display_name(raw_name)
+    description = localized(manifest.get("description"), locale) or "A ready-to-install Busabase workspace template."
 
     safe_left = SAFE_HORIZONTAL_INSET
     safe_top = SAFE_VERTICAL_INSET
@@ -366,6 +392,34 @@ def draw_cover(manifest: dict, screenshot_path: Path, title_override: str | None
     return image.convert("RGB")
 
 
+def cover_relative(locale: str) -> Path:
+    return COVER_RELATIVE_PATH if locale == "en" else COVER_RELATIVE_PATH.with_name(f"cover-{locale}.webp")
+
+
+def locale_screenshots(manifest: dict, locale: str) -> list[str]:
+    if locale == "en":
+        return manifest["template"]["screenshots"]
+    entry = (manifest["template"].get("locales") or {}).get(locale) or {}
+    shots = entry.get("screenshots")
+    if not isinstance(shots, list) or not shots:
+        raise CoverError(f"template.locales.{locale}.screenshots is empty; add the localized screenshots first")
+    return shots
+
+
+def update_locale_manifest(manifest_path: Path, manifest: dict, locale: str) -> bool:
+    """Pin cover-<locale>.webp first in template.locales.<locale>.screenshots."""
+    shots = locale_screenshots(manifest, locale)
+    cover = cover_relative(locale).as_posix()
+    default_cover = COVER_RELATIVE_PATH.as_posix()
+    rest = [value for value in shots if Path(value).as_posix() not in (cover, default_cover)]
+    updated = [cover, *rest]
+    if updated == shots:
+        return False
+    manifest["template"]["locales"][locale]["screenshots"] = updated
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return True
+
+
 def update_manifest(manifest_path: Path, manifest: dict) -> bool:
     screenshots = manifest["template"]["screenshots"]
     cover = COVER_RELATIVE_PATH.as_posix()
@@ -391,13 +445,14 @@ def update_manifest(manifest_path: Path, manifest: dict) -> bool:
     return True
 
 
-def validate_cover(template_dir: Path) -> None:
+def validate_cover(template_dir: Path, locale: str = "en") -> None:
     _, manifest = read_manifest(template_dir)
-    screenshots = manifest["template"]["screenshots"]
-    cover = COVER_RELATIVE_PATH.as_posix()
+    screenshots = locale_screenshots(manifest, locale)
+    cover = cover_relative(locale).as_posix()
+    field = "template.screenshots" if locale == "en" else f"template.locales.{locale}.screenshots"
     if not screenshots or Path(screenshots[0]).as_posix() != cover:
-        raise CoverError(f"{template_dir}: {cover} is not template.screenshots[0]")
-    cover_path = template_dir / COVER_RELATIVE_PATH
+        raise CoverError(f"{template_dir}: {cover} is not {field}[0]")
+    cover_path = template_dir / cover_relative(locale)
     if not cover_path.is_file():
         raise CoverError(f"Missing cover: {cover_path}")
     with Image.open(cover_path) as image:
@@ -405,23 +460,24 @@ def validate_cover(template_dir: Path) -> None:
             raise CoverError(f"{cover_path} is {image.width}x{image.height}, expected 1440x900")
         if image.format != "WEBP":
             raise CoverError(f"{cover_path} is {image.format}, expected WEBP")
-    resolve_source(template_dir, screenshots, None)
+    resolve_source(template_dir, screenshots, None, locale)
 
 
-def generate(template_dir: Path, source_override: str | None, title_override: str | None) -> tuple[Path, str, bool]:
+def generate(template_dir: Path, source_override: str | None, title_override: str | None, locale: str = "en") -> tuple[Path, str, bool]:
     template_dir = template_dir.resolve()
     manifest_path, manifest = read_manifest(template_dir)
     screenshot_path, screenshot_label = resolve_source(
         template_dir,
-        manifest["template"]["screenshots"],
+        locale_screenshots(manifest, locale),
         source_override,
+        locale,
     )
-    cover = draw_cover(manifest, screenshot_path, title_override)
-    output_path = template_dir / COVER_RELATIVE_PATH
+    cover = draw_cover(manifest, screenshot_path, title_override, locale)
+    output_path = template_dir / cover_relative(locale)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     cover.save(output_path, format="WEBP", quality=92, method=6)
-    manifest_updated = update_manifest(manifest_path, manifest)
-    validate_cover(template_dir)
+    manifest_updated = update_manifest(manifest_path, manifest) if locale == "en" else update_locale_manifest(manifest_path, manifest, locale)
+    validate_cover(template_dir, locale)
     return output_path, screenshot_label, manifest_updated
 
 
@@ -431,6 +487,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--source", help="Screenshot path relative to the template directory, or an absolute path")
     parser.add_argument("--title", help="Cover title override; valid only with one template directory")
     parser.add_argument("--check", action="store_true", help="Validate existing covers without changing files")
+    parser.add_argument("--locale", default="en", help="Render cover-<locale>.webp from template.locales.<locale> (default: en, the default cover)")
     return parser.parse_args()
 
 
@@ -444,10 +501,10 @@ def main() -> int:
     for template_dir in args.template_dirs:
         try:
             if args.check:
-                validate_cover(template_dir.resolve())
+                validate_cover(template_dir.resolve(), args.locale)
                 print(f"OK {template_dir}: cover is first, 1440x900 WEBP, with a real source screenshot")
             else:
-                output_path, source, manifest_updated = generate(template_dir, args.source, args.title)
+                output_path, source, manifest_updated = generate(template_dir, args.source, args.title, args.locale)
                 update_label = "updated" if manifest_updated else "already first"
                 print(f"OK {template_dir}: {output_path} from {source}; manifest {update_label}")
         except (CoverError, OSError) as error:

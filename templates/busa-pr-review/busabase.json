@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["platform", "risk:gated-write", "surface:busabase", "surface:github"],
+  "tags": [
+    "platform",
+    "risk:gated-write",
+    "surface:busabase",
+    "surface:github"
+  ],
   "template": {
     "category": "platform",
     "schemaVersion": 1,
     "airapp": "busa-pr-review-app",
-    "tags": ["platform", "risk:gated-write", "surface:busabase", "surface:github"],
+    "tags": [
+      "platform",
+      "risk:gated-write",
+      "surface:busabase",
+      "surface:github"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/blocked-security.webp",
@@ -27,6 +37,19 @@
       "assets/screenshots/tested.webp"
     ],
     "video": "assets/recordings/busa-pr-review.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/blocked-security-zh-CN.webp",
+          "assets/screenshots/needs-review-zh-CN.webp",
+          "assets/screenshots/needs-test-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/ready-zh-CN.webp",
+          "assets/screenshots/tested-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Reviews and flag what needs my attention.",
       "Open Busa PR Review and show me the items that need review."

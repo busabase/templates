@@ -141,7 +141,7 @@ function cardHtml(ctx, tasks, row) {
   const overdue = isOverdue(row, ctx.asOf);
   const due = row.fields['due-date'] ? `<span class="${overdue ? 'due overdue' : 'due'}">${esc(ctx.t.due)} ${esc(ctx.date(row.fields['due-date']))}</span>` : '';
   const done = row.fields['completed-on'] ? `<span class="due">${esc(ctx.date(row.fields['completed-on']))}</span>` : '';
-  return `<button class="task-card${row.id === ctx.route.selectedId ? ' selected' : ''}" type="button" data-record="${esc(row.id)}"><span class="task-title">${esc(ctx.title(row))}</span><span class="task-meta">${esc(ctx.relationText(row.fields.product))} · ${esc(safeDisplay(row.fields.assignee) === '-' ? ctx.t.unassigned : safeDisplay(row.fields.assignee))}</span><span class="task-foot">${ctx.badge(tasks, 'priority', row.fields.priority)}${ctx.badge(tasks, 'type', row.fields.type)}${row.fields.status === 'done' ? done : due}</span></button>`;
+  return `<button class="task-card${row.id === ctx.route.selectedId ? ' selected' : ''}" type="button" data-record="${esc(row.id)}"><span class="task-title">${esc(ctx.title(row))}</span><span class="task-meta">${esc(ctx.relationText(row.fields.product))} · ${esc(safeDisplay(row.fields.assignee) === '-' ? ctx.t.unassigned : safeDisplay(row.fields.assignee))}</span><span class="task-foot">${row.fields.priority ? ctx.badge(tasks, 'priority', row.fields.priority) : ''}${row.fields.type ? ctx.badge(tasks, 'type', row.fields.type) : ''}${row.fields.status === 'done' ? done : due}</span></button>`;
 }
 
 // ── Detail ─────────────────────────────────────────────────────────────────

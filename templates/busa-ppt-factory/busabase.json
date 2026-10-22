@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["production", "risk:local-write", "surface:busabase"],
+  "tags": [
+    "production",
+    "risk:local-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "production",
     "schemaVersion": 1,
     "airapp": "busa-ppt-factory-app",
-    "tags": ["production", "risk:local-write", "surface:busabase"],
+    "tags": [
+      "production",
+      "risk:local-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/decks.webp",
@@ -28,6 +36,20 @@
       "assets/screenshots/style.webp"
     ],
     "video": "assets/recordings/busa-ppt-factory.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/decks-zh-CN.webp",
+          "assets/screenshots/exports-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/projects-zh-CN.webp",
+          "assets/screenshots/review-zh-CN.webp",
+          "assets/screenshots/slides-zh-CN.webp",
+          "assets/screenshots/style-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Projects and flag what needs my attention.",
       "Open Busa PPT Factory and show me the items that need review."

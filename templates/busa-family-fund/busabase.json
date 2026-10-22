@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["invest", "risk:read-only", "industry:family", "surface:busabase"],
+  "tags": [
+    "invest",
+    "risk:read-only",
+    "industry:family",
+    "surface:busabase"
+  ],
   "template": {
     "category": "invest",
     "schemaVersion": 1,
     "airapp": "busa-family-fund-app",
-    "tags": ["invest", "risk:read-only", "industry:family", "surface:busabase"],
+    "tags": [
+      "invest",
+      "risk:read-only",
+      "industry:family",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/category.webp",
@@ -25,6 +35,17 @@
       "assets/screenshots/overview.webp"
     ],
     "video": "assets/recordings/busa-family-fund.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/category-zh-CN.webp",
+          "assets/screenshots/family-zh-CN.webp",
+          "assets/screenshots/ledger-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Beneficiaries and flag what needs my attention.",
       "Open Busa Family Fund and show me the items that need review."

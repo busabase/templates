@@ -1,36 +1,64 @@
 {
   "format": "busabase-package@1",
   "name": "busa-rnd",
-  "displayName": { "en": "R&D Projects", "zh-CN": "研发项目管理" },
+  "displayName": {
+    "en": "R&D Projects",
+    "zh-CN": "研发项目管理"
+  },
   "description": {
     "en": "Products, projects, tasks, changelog and delivery acceptance that coding agents keep current, closed every week by an agent-written R&D report.",
     "zh-CN": "产品、项目、任务、变更记录和交付验收由 coding agent 随手维护，每周由 Agent 写一份研发周报闭环。"
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["engineering", "project-management", "changelog", "acceptance", "weekly-report", "risk:gated-write"],
+  "tags": [
+    "engineering",
+    "project-management",
+    "changelog",
+    "acceptance",
+    "weekly-report",
+    "risk:gated-write"
+  ],
   "template": {
     "category": "platform",
     "schemaVersion": 1,
     "airapp": "busa-rnd-app",
-    "tags": ["engineering", "coding-agents", "changelog", "acceptance", "weekly-report", "multi-product"],
+    "tags": [
+      "engineering",
+      "coding-agents",
+      "changelog",
+      "acceptance",
+      "weekly-report",
+      "multi-product"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",
       "assets/screenshots/board.webp",
       "assets/screenshots/acceptance.webp",
-      "assets/screenshots/weekly-report.webp",
-      "assets/screenshots/overview-zh-CN.webp",
-      "assets/screenshots/board-zh-CN.webp",
-      "assets/screenshots/acceptance-zh-CN.webp",
-      "assets/screenshots/weekly-report-zh-CN.webp"
+      "assets/screenshots/weekly-report.webp"
     ],
+    "video": "assets/recordings/busa-rnd.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/board-zh-CN.webp",
+          "assets/screenshots/acceptance-zh-CN.webp",
+          "assets/screenshots/weekly-report-zh-CN.webp"
+        ],
+        "video": "assets/recordings/busa-rnd-zh-CN.mp4"
+      }
+    },
     "agentPrompts": [
       "Write last week's R&D weekly report: what shipped in each product, what is in progress, the open needs, and the deliveries waiting for my acceptance.\n生成上周研发周报：各产品上线了什么、进行中的工作、还有什么需求、哪些交付在等我验收。",
       "Connect this code repository to the R&D desk, so every coding agent working here updates its task and logs a changelog row when it merges.\n把这个代码仓库接到研发管理台，让在这里干活的 coding agent 都会更新任务，并在合并时写一条变更记录。",
       "Package last week's merged changes into deliveries I can accept, with acceptance steps written from each task's criteria.\n把上周合并的改动整理成待我验收的交付，并根据每个任务的验收标准写好验收步骤。"
     ],
     "secrets": [],
-    "requires": { "airapp": true }
+    "requires": {
+      "airapp": true
+    }
   }
 }

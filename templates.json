@@ -76,6 +76,17 @@
         "assets/screenshots/overview.webp"
       ],
       "video": "assets/recordings/busa-ads.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/adjustments-zh-CN.webp",
+            "assets/screenshots/alerts-zh-CN.webp",
+            "assets/screenshots/campaigns-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Platforms and flag what needs my attention.",
         "Open Busa Ads and show me the items that need review."
@@ -121,6 +132,19 @@
         "assets/screenshots/settings.webp"
       ],
       "video": "assets/recordings/busa-agent-orders.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/proposals-zh-CN.webp",
+            "assets/screenshots/orders-zh-CN.webp",
+            "assets/screenshots/exceptions-zh-CN.webp",
+            "assets/screenshots/guardrails-zh-CN.webp",
+            "assets/screenshots/settings-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Which AI agents brought us orders this week, and were any paid below the listed price?",
         "Show me the price proposals that breach a guardrail and what each would cost.",
@@ -167,6 +191,19 @@
         "assets/screenshots/settings.webp"
       ],
       "video": "assets/recordings/busa-agent-shelf.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/fixes-zh-CN.webp",
+            "assets/screenshots/questions-zh-CN.webp",
+            "assets/screenshots/answers-zh-CN.webp",
+            "assets/screenshots/competitors-zh-CN.webp",
+            "assets/screenshots/settings-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Run this week's check: ask each buyer question in ChatGPT, Gemini and Meta Muse and record where we rank.",
         "Which high-priority buyer questions are we missing from, and who gets recommended instead?",
@@ -210,6 +247,17 @@
         "assets/screenshots/signals.webp"
       ],
       "video": "assets/recordings/busa-ai-newsroom.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/actions-zh-CN.webp",
+            "assets/screenshots/drafts-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/signals-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Signals and flag what needs my attention.",
         "Open Busa AI Newsroom and show me the items that need review."
@@ -252,6 +300,17 @@
         "assets/screenshots/overview.webp"
       ],
       "video": "assets/recordings/busa-audit.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/anomalies-zh-CN.webp",
+            "assets/screenshots/invoices-zh-CN.webp",
+            "assets/screenshots/orders-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Orders and flag what needs my attention.",
         "Open Busa Audit and show me the items that need review."
@@ -294,6 +353,17 @@
         "assets/screenshots/stories.webp"
       ],
       "video": "assets/recordings/busa-brand.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/drift-zh-CN.webp",
+            "assets/screenshots/narrative-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/stories-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Narrative Items and flag what needs my attention.",
         "Open Busa Brand and show me the items that need review."
@@ -336,6 +406,17 @@
         "assets/screenshots/performance.webp"
       ],
       "video": "assets/recordings/busa-campaigns.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/campaigns-zh-CN.webp",
+            "assets/screenshots/deliverability-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/performance-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Segments and flag what needs my attention.",
         "Open Busa Campaigns and show me the items that need review."
@@ -380,6 +461,18 @@
         "assets/screenshots/renewals.webp"
       ],
       "video": "assets/recordings/busa-clm.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/approvals-zh-CN.webp",
+            "assets/screenshots/contracts-zh-CN.webp",
+            "assets/screenshots/obligations-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/renewals-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Contracts and flag what needs my attention.",
         "Open Busa CLM and show me the items that need review."
@@ -472,6 +565,17 @@
         "assets/screenshots/roi.webp"
       ],
       "video": "assets/recordings/busa-creators.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/creators-zh-CN.webp",
+            "assets/screenshots/outreach-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/roi-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Creator Engagements and flag what needs my attention.",
         "Open Busa Creators and show me the items that need review."
@@ -514,6 +618,17 @@
         "assets/screenshots/overview.webp"
       ],
       "video": "assets/recordings/busa-crm.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/contacts-zh-CN.webp",
+            "assets/screenshots/deals-zh-CN.webp",
+            "assets/screenshots/followups-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest 公司 and flag what needs my attention.",
         "Open Busa CRM and show me the items that need review."
@@ -597,6 +712,18 @@
         "assets/screenshots/spend.webp"
       ],
       "video": "assets/recordings/busa-devops.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/actions-zh-CN.webp",
+            "assets/screenshots/expiries-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/services-zh-CN.webp",
+            "assets/screenshots/spend-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Services and flag what needs my attention.",
         "Open Busa DevOps and show me the items that need review."
@@ -639,6 +766,17 @@
         "assets/screenshots/vendors.webp"
       ],
       "video": "assets/recordings/busa-digital-human.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/qa-zh-CN.webp",
+            "assets/screenshots/studio-zh-CN.webp",
+            "assets/screenshots/vendors-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest QA Decisions and flag what needs my attention.",
         "Open Busa Digital Human and show me the items that need review."
@@ -683,6 +821,17 @@
         "assets/screenshots/relationships.webp"
       ],
       "video": "assets/recordings/busa-drama.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/characters-zh-CN.webp",
+            "assets/screenshots/episodes-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/relationships-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Project and flag what needs my attention.",
         "Open Busa Drama and show me the items that need review."
@@ -726,6 +875,17 @@
         "assets/screenshots/signals.webp"
       ],
       "video": "assets/recordings/busa-ecommerce-intel.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/actions-zh-CN.webp",
+            "assets/screenshots/drafts-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/signals-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Signals and flag what needs my attention.",
         "Open Busa Ecommerce Intel and show me the items that need review."
@@ -770,6 +930,17 @@
         "assets/screenshots/needs-review.webp",
         "assets/screenshots/blocked-security.webp"
       ],
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/inbox-approval-zh-CN.webp",
+            "assets/screenshots/needs-review-zh-CN.webp",
+            "assets/screenshots/blocked-security-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Triage this morning's mail and draft replies for anything high priority.",
         "List the reviews still waiting on me, newest first.",
@@ -814,6 +985,16 @@
         "assets/screenshots/followups.webp"
       ],
       "video": "assets/recordings/busa-expo-leads.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/leads-zh-CN.webp",
+            "assets/screenshots/followups-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Show me which leads are about to blow past the 24-hour follow-up window.",
         "Open Busa Expo Leads and show me the follow-ups that need review."
@@ -857,6 +1038,17 @@
         "assets/screenshots/overview.webp"
       ],
       "video": "assets/recordings/busa-family-fund.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/category-zh-CN.webp",
+            "assets/screenshots/family-zh-CN.webp",
+            "assets/screenshots/ledger-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Beneficiaries and flag what needs my attention.",
         "Open Busa Family Fund and show me the items that need review."
@@ -901,6 +1093,18 @@
         "assets/screenshots/performance.webp"
       ],
       "video": "assets/recordings/busa-family-office.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/assets-zh-CN.webp",
+            "assets/screenshots/entities-zh-CN.webp",
+            "assets/screenshots/institutions-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/performance-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Entities and flag what needs my attention.",
         "Open Busa Family Office and show me the items that need review."
@@ -943,6 +1147,17 @@
         "assets/screenshots/roadmap.webp"
       ],
       "video": "assets/recordings/busa-feedback.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/inbox-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/requests-zh-CN.webp",
+            "assets/screenshots/roadmap-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Products and flag what needs my attention.",
         "Open Busa Feedback and show me the items that need review."
@@ -984,6 +1199,16 @@
         "assets/screenshots/workbook.webp"
       ],
       "video": "assets/recordings/busa-finance.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/checks-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/workbook-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Model and flag what needs my attention.",
         "Open Busa Finance and show me the items that need review."
@@ -1065,6 +1290,17 @@
         "assets/screenshots/student.webp"
       ],
       "video": "assets/recordings/busa-homework-coach.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/mistakes-zh-CN.webp",
+            "assets/screenshots/papers-zh-CN.webp",
+            "assets/screenshots/review-zh-CN.webp",
+            "assets/screenshots/student-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Questions and flag what needs my attention.",
         "Open Busa Homework Coach and show me the items that need review."
@@ -1197,6 +1433,17 @@
         "assets/screenshots/positions.webp"
       ],
       "video": "assets/recordings/busa-invest-webull.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/accounts-zh-CN.webp",
+            "assets/screenshots/detail-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/positions-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
         "Open Busa Invest (Webull) and show me the items that need review."
@@ -1240,6 +1487,18 @@
         "assets/screenshots/overview.webp"
       ],
       "video": "assets/recordings/busa-invoice-sheet.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/detail-mobile.webp",
+            "assets/screenshots/detail-zh-CN.webp",
+            "assets/screenshots/extract-data-zh-CN.webp",
+            "assets/screenshots/overview-mobile.webp",
+            "assets/screenshots/overview-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Invoices and flag what needs my attention.",
         "Open Busa Invoice Sheet and show me the items that need review."
@@ -1327,6 +1586,17 @@
         "assets/screenshots/overview.webp"
       ],
       "video": "assets/recordings/busa-launch.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/assets-zh-CN.webp",
+            "assets/screenshots/checklist-zh-CN.webp",
+            "assets/screenshots/launchday-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Launch Items and flag what needs my attention.",
         "Open Busa Launch and show me the items that need review."
@@ -1368,6 +1638,16 @@
         "assets/screenshots/overview.webp"
       ],
       "video": "assets/recordings/busa-lead-funnel.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/kanban-zh-CN.webp",
+            "assets/screenshots/lead-detail-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Leads and flag what needs my attention.",
         "Open Busa Lead Funnel and show me the items that need review."
@@ -1413,6 +1693,19 @@
         "assets/screenshots/workbench.webp"
       ],
       "video": "assets/recordings/busa-legal-casebase-ingest.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/checks-zh-CN.webp",
+            "assets/screenshots/entities-zh-CN.webp",
+            "assets/screenshots/mobile-detail-zh-CN.webp",
+            "assets/screenshots/needs-review-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/workbench-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Case Records and flag what needs my attention.",
         "Open Legal Casebase Ingest and show me the items that need review."
@@ -1458,6 +1751,19 @@
         "assets/screenshots/playbook.webp"
       ],
       "video": "assets/recordings/busa-legal-contracts.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/checks-zh-CN.webp",
+            "assets/screenshots/contracts-zh-CN.webp",
+            "assets/screenshots/issues-zh-CN.webp",
+            "assets/screenshots/needs-review-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/playbook-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Contracts and flag what needs my attention.",
         "Open Busa Legal Contracts and show me the items that need review."
@@ -1502,6 +1808,18 @@
         "assets/screenshots/workbench.webp"
       ],
       "video": "assets/recordings/busa-legal-firm-radar.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/checks-zh-CN.webp",
+            "assets/screenshots/entities-zh-CN.webp",
+            "assets/screenshots/needs-review-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/workbench-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Management Insights and flag what needs my attention.",
         "Open Legal Firm Radar and show me the items that need review."
@@ -1546,6 +1864,18 @@
         "assets/screenshots/workbench.webp"
       ],
       "video": "assets/recordings/busa-legal-matter-strategy.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/checks-zh-CN.webp",
+            "assets/screenshots/entities-zh-CN.webp",
+            "assets/screenshots/needs-review-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/workbench-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Strategy Packs and flag what needs my attention.",
         "Open Legal Matter Strategy and show me the items that need review."
@@ -1590,6 +1920,18 @@
         "assets/screenshots/workbench.webp"
       ],
       "video": "assets/recordings/busa-legal-precedent-desk.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/checks-zh-CN.webp",
+            "assets/screenshots/entities-zh-CN.webp",
+            "assets/screenshots/needs-review-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/workbench-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Research Packs and flag what needs my attention.",
         "Open Legal Precedent Desk and show me the items that need review."
@@ -1633,6 +1975,17 @@
         "assets/screenshots/plans.webp"
       ],
       "video": "assets/recordings/busa-lesson.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/checks-zh-CN.webp",
+            "assets/screenshots/needs-review-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/plans-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Teachers and flag what needs my attention.",
         "Open Busa Lesson and show me the items that need review."
@@ -1678,6 +2031,19 @@
         "assets/screenshots/products.webp"
       ],
       "video": "assets/recordings/busa-listing.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/checks-zh-CN.webp",
+            "assets/screenshots/claims-zh-CN.webp",
+            "assets/screenshots/drafts-zh-CN.webp",
+            "assets/screenshots/needs-review-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/products-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Products and flag what needs my attention.",
         "Open Busa Listing and show me the items that need review."
@@ -1768,6 +2134,18 @@
         "assets/screenshots/overview.webp"
       ],
       "video": "assets/recordings/busa-messenger.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/accounts-zh-CN.webp",
+            "assets/screenshots/chat-zh-CN.webp",
+            "assets/screenshots/inbox-zh-CN.webp",
+            "assets/screenshots/outbox-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
         "Open Busa Messenger and show me the items that need review."
@@ -1815,6 +2193,18 @@
         "assets/screenshots/overview.webp"
       ],
       "video": "assets/recordings/busa-money.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/accounts-zh-CN.webp",
+            "assets/screenshots/detail-zh-CN.webp",
+            "assets/screenshots/invoices-zh-CN.webp",
+            "assets/screenshots/ledger-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
         "Open Busa Money and show me the items that need review."
@@ -1858,6 +2248,17 @@
         "assets/screenshots/storyboard.webp"
       ],
       "video": "assets/recordings/busa-mv.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/cast-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/song-zh-CN.webp",
+            "assets/screenshots/storyboard-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Project and flag what needs my attention.",
         "Open Busa MV and show me the items that need review."
@@ -1898,12 +2299,20 @@
         "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp",
         "assets/screenshots/certificates.webp",
-        "assets/screenshots/attention.webp",
-        "assets/screenshots/overview-zh-CN.webp",
-        "assets/screenshots/certificates-zh-CN.webp",
-        "assets/screenshots/attention-zh-CN.webp"
+        "assets/screenshots/attention.webp"
       ],
       "video": "assets/recordings/busa-office-admin.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/certificates-zh-CN.webp",
+            "assets/screenshots/attention-zh-CN.webp"
+          ],
+          "video": "assets/recordings/busa-office-admin-zh-CN.mp4"
+        }
+      },
       "agentPrompts": [
         "Review certificates and administrative contracts expiring within 60 days and draft an owner-by-owner renewal plan.\n检查 60 天内到期的证照和行政合同，按负责人拟定续期计划。",
         "Compare original-document dates with archive summaries and prepare verification tasks without resolving conflicting evidence by guesswork.\n比较原件日期与归档汇总，拟定核验待办，不凭猜测处理证据冲突。"
@@ -1941,13 +2350,21 @@
       "screenshots": [
         "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp",
-        "assets/screenshots/overview-zh-CN.webp",
         "assets/screenshots/core.webp",
-        "assets/screenshots/core-zh-CN.webp",
-        "assets/screenshots/attention.webp",
-        "assets/screenshots/attention-zh-CN.webp"
+        "assets/screenshots/attention.webp"
       ],
       "video": "assets/recordings/busa-office-cashier.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/core-zh-CN.webp",
+            "assets/screenshots/attention-zh-CN.webp"
+          ],
+          "video": "assets/recordings/busa-office-cashier-zh-CN.mp4"
+        }
+      },
       "agentPrompts": [
         "List active bank accounts and their last checked date; flag stale balances and restricted accounts without treating book balances as live bank data. / 列出正常银行账户及最近核查时间，标记过期余额和受限账户；不将账面余额视为银行实时数据。",
         "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments. / 将每日走查记录与账面余额及银行依据核对，列出差异和过期核查；不编造调整记录。",
@@ -1986,13 +2403,21 @@
       "screenshots": [
         "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp",
-        "assets/screenshots/overview-zh-CN.webp",
         "assets/screenshots/core.webp",
-        "assets/screenshots/core-zh-CN.webp",
-        "assets/screenshots/attention.webp",
-        "assets/screenshots/attention-zh-CN.webp"
+        "assets/screenshots/attention.webp"
       ],
       "video": "assets/recordings/busa-office-finance.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/core-zh-CN.webp",
+            "assets/screenshots/attention-zh-CN.webp"
+          ],
+          "video": "assets/recordings/busa-office-finance-zh-CN.mp4"
+        }
+      },
       "agentPrompts": [
         "Review pending and blocked expense claims, list missing evidence and duplicates before suggesting approval. / 复核待审核和已阻塞的报销申请；在提出审批建议前，列出缺失凭证与重复申请。",
         "Check invoice requests against supplied customer and contract details; flag missing tax information without inventing it. / 根据已提供的客户和合同资料核对开票申请；标记缺失的税务信息，不编造信息。",
@@ -2034,12 +2459,20 @@
         "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp",
         "assets/screenshots/payroll.webp",
-        "assets/screenshots/attention.webp",
-        "assets/screenshots/overview-zh-CN.webp",
-        "assets/screenshots/payroll-zh-CN.webp",
-        "assets/screenshots/attention-zh-CN.webp"
+        "assets/screenshots/attention.webp"
       ],
       "video": "assets/recordings/busa-office-hr.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/payroll-zh-CN.webp",
+            "assets/screenshots/attention-zh-CN.webp"
+          ],
+          "video": "assets/recordings/busa-office-hr-zh-CN.mp4"
+        }
+      },
       "agentPrompts": [
         "Compare salary proposals with confirmed employee salaries and prepare a payroll-review checklist without applying unapproved changes.\n比较薪酬提案与员工已确认工资，拟定工资复核清单，不应用未批准的变动。",
         "Review labor contracts expiring within 60 days and assign renewal follow-ups to their HR owners.\n复核 60 天内到期的劳动合同，向其人事负责人分派续签跟进。"
@@ -2081,13 +2514,21 @@
       "screenshots": [
         "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp",
-        "assets/screenshots/overview-zh-CN.webp",
         "assets/screenshots/core.webp",
-        "assets/screenshots/core-zh-CN.webp",
-        "assets/screenshots/attention.webp",
-        "assets/screenshots/attention-zh-CN.webp"
+        "assets/screenshots/attention.webp"
       ],
       "video": "assets/recordings/busa-office-legal.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/core-zh-CN.webp",
+            "assets/screenshots/attention-zh-CN.webp"
+          ],
+          "video": "assets/recordings/busa-office-legal-zh-CN.mp4"
+        }
+      },
       "agentPrompts": [
         "Review active cases and preservation deadlines and identify missing legal evidence.\n核查在办案件与保全期限，列出缺少法律证据的事项。",
         "Reconcile case recovery and legal costs by currency, then prepare a review summary.\n按币种核对案件回款及法务成本，拟定人工复核摘要。"
@@ -2129,13 +2570,21 @@
       "screenshots": [
         "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp",
-        "assets/screenshots/overview-zh-CN.webp",
         "assets/screenshots/core.webp",
-        "assets/screenshots/core-zh-CN.webp",
-        "assets/screenshots/attention.webp",
-        "assets/screenshots/attention-zh-CN.webp"
+        "assets/screenshots/attention.webp"
       ],
       "video": "assets/recordings/busa-office-recruiting.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/core-zh-CN.webp",
+            "assets/screenshots/attention-zh-CN.webp"
+          ],
+          "video": "assets/recordings/busa-office-recruiting-zh-CN.mp4"
+        }
+      },
       "agentPrompts": [
         "Review applicants whose next step is overdue and prepare a hiring follow-up plan.\n梳理下一步逾期的候选人，拟定招聘跟进计划。",
         "Check interview feedback and draft offer proposals for human review.\n核对面试反馈，拟定录用草案供人工复核。"
@@ -2179,6 +2628,17 @@
         "assets/screenshots/overview.webp"
       ],
       "video": "assets/recordings/busa-picks.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/candidates-zh-CN.webp",
+            "assets/screenshots/decisions-zh-CN.webp",
+            "assets/screenshots/detail-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Candidates and flag what needs my attention.",
         "Open Busa Picks and show me the items that need review."
@@ -2220,6 +2680,16 @@
         "assets/screenshots/watchlist.webp"
       ],
       "video": "assets/recordings/busa-portfolio-health.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/concentration-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/watchlist-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Contracts and flag what needs my attention.",
         "Open Busa Portfolio Health and show me the items that need review."
@@ -2305,6 +2775,20 @@
         "assets/screenshots/style.webp"
       ],
       "video": "assets/recordings/busa-ppt-factory.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/decks-zh-CN.webp",
+            "assets/screenshots/exports-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/projects-zh-CN.webp",
+            "assets/screenshots/review-zh-CN.webp",
+            "assets/screenshots/slides-zh-CN.webp",
+            "assets/screenshots/style-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Projects and flag what needs my attention.",
         "Open Busa PPT Factory and show me the items that need review."
@@ -2350,6 +2834,19 @@
         "assets/screenshots/tested.webp"
       ],
       "video": "assets/recordings/busa-pr-review.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/blocked-security-zh-CN.webp",
+            "assets/screenshots/needs-review-zh-CN.webp",
+            "assets/screenshots/needs-test-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/ready-zh-CN.webp",
+            "assets/screenshots/tested-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Reviews and flag what needs my attention.",
         "Open Busa PR Review and show me the items that need review."
@@ -2395,6 +2892,19 @@
         "assets/screenshots/channels.webp"
       ],
       "video": "assets/recordings/busa-product-hub.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/products-zh-CN.webp",
+            "assets/screenshots/certificates-zh-CN.webp",
+            "assets/screenshots/review-zh-CN.webp",
+            "assets/screenshots/inventory-zh-CN.webp",
+            "assets/screenshots/channels-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Show me which certificates are expiring soon or already expired.",
         "Summarize the latest products and flag what needs my attention.",
@@ -2439,6 +2949,18 @@
         "assets/screenshots/watchlist.webp"
       ],
       "video": "assets/recordings/busa-radar.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/research-zh-CN.webp",
+            "assets/screenshots/signals-zh-CN.webp",
+            "assets/screenshots/trends-zh-CN.webp",
+            "assets/screenshots/watchlist-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Watchlist and flag what needs my attention.",
         "Open Busa Radar and show me the items that need review."
@@ -2482,6 +3004,17 @@
         "assets/screenshots/signals.webp"
       ],
       "video": "assets/recordings/busa-retail-intel.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/actions-zh-CN.webp",
+            "assets/screenshots/drafts-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/signals-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Signals and flag what needs my attention.",
         "Open Busa Retail Intel and show me the items that need review."
@@ -2526,12 +3059,21 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/board.webp",
         "assets/screenshots/acceptance.webp",
-        "assets/screenshots/weekly-report.webp",
-        "assets/screenshots/overview-zh-CN.webp",
-        "assets/screenshots/board-zh-CN.webp",
-        "assets/screenshots/acceptance-zh-CN.webp",
-        "assets/screenshots/weekly-report-zh-CN.webp"
+        "assets/screenshots/weekly-report.webp"
       ],
+      "video": "assets/recordings/busa-rnd.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/board-zh-CN.webp",
+            "assets/screenshots/acceptance-zh-CN.webp",
+            "assets/screenshots/weekly-report-zh-CN.webp"
+          ],
+          "video": "assets/recordings/busa-rnd-zh-CN.mp4"
+        }
+      },
       "agentPrompts": [
         "Write last week's R&D weekly report: what shipped in each product, what is in progress, the open needs, and the deliveries waiting for my acceptance.\n生成上周研发周报：各产品上线了什么、进行中的工作、还有什么需求、哪些交付在等我验收。",
         "Connect this code repository to the R&D desk, so every coding agent working here updates its task and logs a changelog row when it merges.\n把这个代码仓库接到研发管理台，让在这里干活的 coding agent 都会更新任务，并在合并时写一条变更记录。",
@@ -2623,6 +3165,21 @@
         "assets/screenshots/sites.webp"
       ],
       "video": "assets/recordings/busa-seo.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/entity-zh-CN.webp",
+            "assets/screenshots/geo-zh-CN.webp",
+            "assets/screenshots/opportunities-zh-CN.webp",
+            "assets/screenshots/optimize-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/pages-zh-CN.webp",
+            "assets/screenshots/queries-zh-CN.webp",
+            "assets/screenshots/sites-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Sites and flag what needs my attention.",
         "Open Busa SEO and show me the items that need review."
@@ -2670,6 +3227,22 @@
         "assets/screenshots/timeline.webp"
       ],
       "video": "assets/recordings/busa-social.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/accounts-zh-CN.webp",
+            "assets/screenshots/calendar-zh-CN.webp",
+            "assets/screenshots/compose-zh-CN.webp",
+            "assets/screenshots/crisis-zh-CN.webp",
+            "assets/screenshots/detail-zh-CN.webp",
+            "assets/screenshots/engagement-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/shorts-zh-CN.webp",
+            "assets/screenshots/timeline-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
         "Open Busa Social and show me the items that need review."
@@ -2713,6 +3286,18 @@
         "assets/screenshots/reminders.webp"
       ],
       "video": "assets/recordings/busa-standup.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/blockers-zh-CN.webp",
+            "assets/screenshots/history-zh-CN.webp",
+            "assets/screenshots/members-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/reminders-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Members and flag what needs my attention.",
         "Open Busa Standup and show me the items that need review."
@@ -2758,6 +3343,17 @@
         "assets/screenshots/tickets.webp"
       ],
       "video": "assets/recordings/busa-support.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/knowledge-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/sla-zh-CN.webp",
+            "assets/screenshots/tickets-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
         "Open Busa Support and show me the items that need review."
@@ -2802,6 +3398,17 @@
         "assets/screenshots/overview.webp"
       ],
       "video": "assets/recordings/busa-tickets.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/board-zh-CN.webp",
+            "assets/screenshots/dispatch-zh-CN.webp",
+            "assets/screenshots/intake-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Crews and flag what needs my attention.",
         "Open Busa Tickets and show me the items that need review."
@@ -2844,6 +3451,17 @@
         "assets/screenshots/topics.webp"
       ],
       "video": "assets/recordings/busa-writer.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/distribution-zh-CN.webp",
+            "assets/screenshots/main-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/topics-zh-CN.webp"
+          ]
+        }
+      },
       "agentPrompts": [
         "Summarize the latest Drafts and flag what needs my attention.",
         "Open Busa Writer and show me the items that need review."

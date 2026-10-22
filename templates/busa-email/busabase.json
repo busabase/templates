@@ -11,12 +11,20 @@
   },
   "version": "0.3.0",
   "license": "MIT",
-  "tags": ["email", "triage", "approval"],
+  "tags": [
+    "email",
+    "triage",
+    "approval"
+  ],
   "template": {
     "category": "email",
     "schemaVersion": 3,
     "airapp": "busa-email-app",
-    "tags": ["inbox", "review-queue", "drafts"],
+    "tags": [
+      "inbox",
+      "review-queue",
+      "drafts"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",
@@ -24,6 +32,17 @@
       "assets/screenshots/needs-review.webp",
       "assets/screenshots/blocked-security.webp"
     ],
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/inbox-approval-zh-CN.webp",
+          "assets/screenshots/needs-review-zh-CN.webp",
+          "assets/screenshots/blocked-security-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Triage this morning's mail and draft replies for anything high priority.",
       "List the reviews still waiting on me, newest first.",
@@ -31,9 +50,19 @@
     ],
     "vaultNamespace": "busa-email",
     "secrets": [
-      { "key": "BUSA_EMAIL_IMAP_PASSWORD_PRIMARY", "description": "IMAP password for the primary mailbox", "required": true },
-      { "key": "BUSA_EMAIL_SMTP_PASSWORD_PRIMARY", "description": "SMTP password for the primary mailbox", "required": false }
+      {
+        "key": "BUSA_EMAIL_IMAP_PASSWORD_PRIMARY",
+        "description": "IMAP password for the primary mailbox",
+        "required": true
+      },
+      {
+        "key": "BUSA_EMAIL_SMTP_PASSWORD_PRIMARY",
+        "description": "SMTP password for the primary mailbox",
+        "required": false
+      }
     ],
-    "requires": { "airapp": true }
+    "requires": {
+      "airapp": true
+    }
   }
 }

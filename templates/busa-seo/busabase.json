@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["growth", "risk:local-write", "surface:busabase", "surface:gsc"],
+  "tags": [
+    "growth",
+    "risk:local-write",
+    "surface:busabase",
+    "surface:gsc"
+  ],
   "template": {
     "category": "growth",
     "schemaVersion": 1,
     "airapp": "busa-seo-app",
-    "tags": ["growth", "risk:local-write", "surface:busabase", "surface:gsc"],
+    "tags": [
+      "growth",
+      "risk:local-write",
+      "surface:busabase",
+      "surface:gsc"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/entity.webp",
@@ -29,6 +39,21 @@
       "assets/screenshots/sites.webp"
     ],
     "video": "assets/recordings/busa-seo.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/entity-zh-CN.webp",
+          "assets/screenshots/geo-zh-CN.webp",
+          "assets/screenshots/opportunities-zh-CN.webp",
+          "assets/screenshots/optimize-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/pages-zh-CN.webp",
+          "assets/screenshots/queries-zh-CN.webp",
+          "assets/screenshots/sites-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Sites and flag what needs my attention.",
       "Open Busa SEO and show me the items that need review."

@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["platform", "risk:gated-write", "surface:busabase", "surface:sendgrid"],
+  "tags": [
+    "platform",
+    "risk:gated-write",
+    "surface:busabase",
+    "surface:sendgrid"
+  ],
   "template": {
     "category": "platform",
     "schemaVersion": 1,
     "airapp": "busa-devops-app",
-    "tags": ["platform", "risk:gated-write", "surface:busabase", "surface:sendgrid"],
+    "tags": [
+      "platform",
+      "risk:gated-write",
+      "surface:busabase",
+      "surface:sendgrid"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/actions.webp",
@@ -26,6 +36,18 @@
       "assets/screenshots/spend.webp"
     ],
     "video": "assets/recordings/busa-devops.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/actions-zh-CN.webp",
+          "assets/screenshots/expiries-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/services-zh-CN.webp",
+          "assets/screenshots/spend-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Services and flag what needs my attention.",
       "Open Busa DevOps and show me the items that need review."

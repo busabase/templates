@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["marketing", "risk:local-write", "surface:busabase"],
+  "tags": [
+    "marketing",
+    "risk:local-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "marketing",
     "schemaVersion": 1,
     "airapp": "busa-brand-app",
-    "tags": ["marketing", "risk:local-write", "surface:busabase"],
+    "tags": [
+      "marketing",
+      "risk:local-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/drift.webp",
@@ -25,6 +33,17 @@
       "assets/screenshots/stories.webp"
     ],
     "video": "assets/recordings/busa-brand.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/drift-zh-CN.webp",
+          "assets/screenshots/narrative-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/stories-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Narrative Items and flag what needs my attention.",
       "Open Busa Brand and show me the items that need review."

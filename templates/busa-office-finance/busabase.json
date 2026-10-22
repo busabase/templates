@@ -16,15 +16,27 @@
     "schemaVersion": 1,
     "airapp": "busa-office-finance-app",
     "video": "assets/recordings/busa-office-finance.mp4",
-    "tags": ["office", "finance", "evidence-review"],
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/core-zh-CN.webp",
+          "assets/screenshots/attention-zh-CN.webp"
+        ],
+        "video": "assets/recordings/busa-office-finance-zh-CN.mp4"
+      }
+    },
+    "tags": [
+      "office",
+      "finance",
+      "evidence-review"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",
-      "assets/screenshots/overview-zh-CN.webp",
       "assets/screenshots/core.webp",
-      "assets/screenshots/core-zh-CN.webp",
-      "assets/screenshots/attention.webp",
-      "assets/screenshots/attention-zh-CN.webp"
+      "assets/screenshots/attention.webp"
     ],
     "agentPrompts": [
       "Review pending and blocked expense claims, list missing evidence and duplicates before suggesting approval. / 复核待审核和已阻塞的报销申请；在提出审批建议前，列出缺失凭证与重复申请。",
