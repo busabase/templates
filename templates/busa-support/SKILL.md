@@ -114,6 +114,17 @@ read — **never stored**, so a stale record can never carry a stale verdict.
 On invocation, check the `accounts` Base. If empty, guide setup before
 collecting real tickets.
 
+A fresh install is not empty: it carries a worked-example desk for an invented
+note-taking SaaS, Nimbus Notes — five channel accounts, fourteen tickets with
+their conversations, a knowledge base, a sync log, and a settings row. None of
+it is connected to a real mailbox, number, or customer; every address is on the
+reserved `.example` domain. If the accounts are those Nimbus Notes ones
+(`help@nimbusnotes.example` and its siblings), treat the desk as **not yet
+onboarded**: run the questions below, replace the accounts and the settings row
+with the user's real ones, and remove the Nimbus Notes tickets, messages, and
+articles only when the user asks. Never collect from, send to, or execute
+against a Nimbus Notes account.
+
 Onboarding asks, turn by turn:
 
 1. Which channels receive tickets (email / WhatsApp / web chat / form / WeChat) and the connector per account (see Collection Workflow). Ask for non-secret details only: channel, display name, handle, and which env var names hold the tokens. Never ask the user to paste secret values into chat; secrets belong only in local env files.
