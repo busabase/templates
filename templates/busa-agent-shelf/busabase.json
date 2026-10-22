@@ -6,8 +6,8 @@
     "zh-CN": "Busa 智能体货架"
   },
   "description": {
-    "en": "Agent shelf desk for e-commerce sellers: track whether AI shopping agents (ChatGPT, Gemini, Meta Muse, Amazon Rufus, Perplexity) recommend your products for the questions buyers ask, who they pick instead and why, and a review queue of sourced listing fixes. The AirApp only records a person's decision on a fix; it never contacts a shopping agent or edits a store.",
-    "zh-CN": "面向电商卖家的智能体货架工作台：追踪 AI 购物智能体（ChatGPT、Gemini、Meta Muse、Amazon Rufus、Perplexity）在买家提问时是否推荐你的商品、推荐了谁、为什么，并把缺口变成有来源、需人审核的商品数据修改。AirApp 只记录人对修改的决定，从不访问购物智能体，也不改动店铺。"
+    "en": "Track whether AI shopping agents (ChatGPT, Gemini, Meta Muse, Amazon Rufus, Perplexity) recommend your products for real buyer questions, who they pick instead and why, and turn each gap into a sourced listing fix.",
+    "zh-CN": "追踪 AI 购物智能体（ChatGPT、Gemini、Meta Muse、Amazon Rufus、Perplexity）在买家提问时是否推荐你的商品、改推了谁、为什么，并把缺口变成有来源的商品修改。"
   },
   "version": "0.1.0",
   "license": "MIT",

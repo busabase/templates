@@ -6,8 +6,8 @@
     "zh-CN": "Busa 内容工坊"
   },
   "description": {
-    "en": "Channel-ready content drafting and review desk",
-    "zh-CN": "面向各渠道发布就绪的内容撰写与审核工作台。"
+    "en": "Channel-ready content desk: turn one source into drafts for every channel, then export a publish-ready pack",
+    "zh-CN": "面向各渠道的内容工坊：把一份素材改写成各渠道草稿，再导出可直接发布的内容包。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -46,7 +46,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Drafts and flag what needs my attention.",
-      "Open Busa Writer and show me the items that need review."
+      "Turn this article into drafts for LinkedIn, X and our newsletter."
     ],
     "requires": {
       "airapp": true

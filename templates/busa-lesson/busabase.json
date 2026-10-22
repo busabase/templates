@@ -6,8 +6,8 @@
     "zh-CN": "Busa 教案工坊"
   },
   "description": {
-    "en": "Lesson-plan generation and compliance-check desk: plan library, compliance checks, and a review queue",
-    "zh-CN": "教案生成与合规检查台：教案库、合规检查，配合审核队列。"
+    "en": "Lesson-plan desk: plans drafted from your curriculum materials and school template, a plan library, and curriculum-compliance checks on every plan",
+    "zh-CN": "教案工作台：依据课程资料与学校模板起草教案，配教案库，并逐份做课程合规检查。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -48,7 +48,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Teachers and flag what needs my attention.",
-      "Open Busa Lesson and show me the items that need review."
+      "Draft a lesson plan from this curriculum material and run the compliance checks."
     ],
     "requires": {
       "airapp": true

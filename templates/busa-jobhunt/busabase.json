@@ -28,8 +28,8 @@
     ],
     "video": "assets/recordings/busa-jobhunt.mp4",
     "agentPrompts": [
-      "Summarize the latest 求职档案 and flag what needs my attention.",
-      "Open Busa JobHunt and show me the items that need review."
+      "Summarize my job-search profile and flag what needs my attention.",
+      "Find new target companies that fit my profile and draft a tailored email for each."
     ],
     "requires": {
       "airapp": true

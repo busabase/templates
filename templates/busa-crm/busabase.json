@@ -6,8 +6,8 @@
     "zh-CN": "Busa 客户管理"
   },
   "description": {
-    "en": "Contacts, companies, deals, and follow-up review workspace",
-    "zh-CN": "客户、公司、成交机会与跟进审核工作台。"
+    "en": "A CRM for contacts, companies, deals and interactions, where your agent logs every touchpoint and drafts the next follow-up",
+    "zh-CN": "联系人、公司、成交机会与沟通记录集于一处，Agent 记下每次接触并起草跟进。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -45,8 +45,8 @@
       }
     },
     "agentPrompts": [
-      "Summarize the latest 公司 and flag what needs my attention.",
-      "Open Busa CRM and show me the items that need review."
+      "Summarize the pipeline and flag which deals need my attention this week.",
+      "Draft follow-ups for the contacts I met this week, based on our last conversations."
     ],
     "requires": {
       "airapp": true

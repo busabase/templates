@@ -6,8 +6,8 @@
     "zh-CN": "Busa 运维台"
   },
   "description": {
-    "en": "Product-fleet ops desk: service health, SSL/domain/key expiries, cloud spend, and an action review queue",
-    "zh-CN": "产品矩阵运维台：服务健康状态、SSL/域名/密钥到期提醒、云服务开销，配合动作审核队列。"
+    "en": "Product-fleet ops desk: service health, SSL, domain and key expiries, cloud spend, and agent-proposed fixes with the evidence and plan for each",
+    "zh-CN": "产品矩阵运维台：服务健康状态、SSL/域名/密钥到期提醒、云服务开销，以及 Agent 提出的修复动作（附证据与执行计划）。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -50,7 +50,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Services and flag what needs my attention.",
-      "Open Busa DevOps and show me the items that need review."
+      "Run the checks that are due and tell me what is down, expiring or overspending."
     ],
     "requires": {
       "airapp": true

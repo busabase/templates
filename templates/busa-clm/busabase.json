@@ -6,8 +6,8 @@
     "zh-CN": "Busa 合同管理"
   },
   "description": {
-    "en": "Lightweight contract lifecycle desk: contract inventory, lifecycle stage, owners, obligations, renewal/notice dates, and a simple approval reminder queue. Not a legal redline/clause-review product -- see busa-legal-contracts for that. Contract records, obligation status, renewal acknowledgements, and approval decisions are all direct writes made by the operator in the browser, not a review/approval pipeline.",
-    "zh-CN": "轻量级合同生命周期台：合同台账、生命周期阶段、责任人、履约义务、续约/到期提醒日期，配合简单的审批提醒队列。不是法务红线/条款审查产品——那类需求见 busa-legal-contracts。合同记录、履约状态、续约确认与审批决定均由操作者在浏览器中直接写入，不是一条审核流水线。"
+    "en": "Lightweight contract lifecycle desk: contract inventory, lifecycle stage, owners, obligations, renewal and notice dates, and sign-off reminders, so nothing lapses unnoticed. For clause-level redlines, see busa-legal-contracts.",
+    "zh-CN": "轻量级合同生命周期台：合同台账、生命周期阶段、责任人、履约义务、续约与到期通知日期，以及签批提醒，不让任何合同悄悄过期。条款级红线修订请用 busa-legal-contracts。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -50,7 +50,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Contracts and flag what needs my attention.",
-      "Open Busa CLM and show me the items that need review."
+      "List the renewals and notice deadlines coming up in the next 60 days, with the owner for each."
     ],
     "requires": {
       "airapp": true

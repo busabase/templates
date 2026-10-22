@@ -46,7 +46,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Creator Engagements and flag what needs my attention.",
-      "Open Busa Creators and show me the items that need review."
+      "Find creators who fit our product and draft the first outreach for the top three."
     ],
     "requires": {
       "airapp": true

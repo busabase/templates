@@ -46,7 +46,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Segments and flag what needs my attention.",
-      "Open Busa Campaigns and show me the items that need review."
+      "Draft this month's newsletter for our most engaged segment and run the deliverability checks."
     ],
     "requires": {
       "airapp": true

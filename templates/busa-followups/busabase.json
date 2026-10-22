@@ -22,7 +22,7 @@
       "assets/screenshots/today.webp"
     ],
     "video": "assets/recordings/busa-followups.mp4",
-    "agentPrompts": ["帮我记一条跟进：跟进谁、跟进什么事", "今天该跟进哪些人和事"],
+    "agentPrompts": ["Log a follow-up: who to follow up with, and what about.", "Who do I need to follow up with today, and about what?"],
     "requires": { "airapp": true }
   }
 }

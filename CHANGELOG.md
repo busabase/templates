@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Rewrite catalog copy (descriptions, zh-CN descriptions, template-level agent prompts, and the covers that render them) so templates describe the work the agent does instead of selling a review/approval step; keep review wording only where reviewing is the user's actual job (PR review, contract review, audit, expense/payment/payroll/offer approval). Template-level prompts are English-only, since `template.agentPrompts` has no per-locale slot.
 - Move the WeChat CRM scenario to `mr-kelly/skills` and regenerate the generic catalog without its regional template; the six demo Bases, source workflow and recording are retained in the Kelly package.
 - Add a B2B CRM Sales Overview with exact account and Deal-stage counts, a multi-currency Revenue Rail, bounded follow-up attention, and responsive activity and outcome views.
 - Replace character and hand-drawn B2B CRM controls with a tree-shaken, locally bundled Lucide icon system; add restrained iconography to navigation and actions, plus large left-column icons and deep-green values for Overview KPIs.

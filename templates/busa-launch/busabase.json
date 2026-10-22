@@ -46,7 +46,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Launch Items and flag what needs my attention.",
-      "Open Busa Launch and show me the items that need review."
+      "Assemble the launch checklist from my product docs and tell me what is blocking launch."
     ],
     "requires": {
       "airapp": true

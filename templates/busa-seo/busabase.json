@@ -6,8 +6,8 @@
     "zh-CN": "Busa SEO优化"
   },
   "description": {
-    "en": "SEO + GEO (AI-search) + brand-entity desk: Search Console analytics, an SEO opportunities review queue, an AI-visibility tracker, a geo-qa-gated GEO content queue, and an entity/knowledge-panel readiness checklist",
-    "zh-CN": "SEO + GEO（AI 搜索优化）+ 品牌实体工作台：Search Console 数据分析、SEO 机会审核队列、AI 可见度追踪、经质检把关的 GEO 内容队列，以及实体/知识面板就绪度清单。"
+    "en": "SEO + GEO (AI-search) + brand-entity desk: Search Console analytics, SEO opportunities, an AI-visibility tracker, a GEO content queue with quality checks, and an entity/knowledge-panel readiness checklist",
+    "zh-CN": "SEO + GEO（AI 搜索优化）+ 品牌实体工作台：Search Console 数据分析、SEO 机会、AI 可见度追踪、带质量检查的 GEO 内容队列，以及实体/知识面板就绪度清单。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -56,7 +56,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Sites and flag what needs my attention.",
-      "Open Busa SEO and show me the items that need review."
+      "Find the queries closest to breaking through and draft SEO opportunities for them."
     ],
     "requires": {
       "airapp": true

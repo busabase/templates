@@ -6,8 +6,8 @@
     "zh-CN": "Busa 发票台账"
   },
   "description": {
-    "en": "Busa Invoice Sheet: invoice/receipt/credit-note/statement extraction batches under human review, with field confidence, line items, and export-ready approved rows",
-    "zh-CN": "Busa Invoice Sheet：发票/收据/贷记通知单/对账单的批量提取任务，配合人工审核、字段置信度、明细行，以及可导出的已批准记录。"
+    "en": "Turn invoices, receipts, credit notes and statements into one clean table: extraction batches, field confidence, line items, and export-ready rows",
+    "zh-CN": "把发票、收据、贷记通知单和对账单整理成一张干净的表：批量提取、字段置信度、明细行，以及可直接导出的记录。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -48,7 +48,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Invoices and flag what needs my attention.",
-      "Open Busa Invoice Sheet and show me the items that need review."
+      "Extract this batch of invoices and flag any fields with low confidence."
     ],
     "requires": {
       "airapp": true

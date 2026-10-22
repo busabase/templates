@@ -50,7 +50,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Entities and flag what needs my attention.",
-      "Open Busa Family Office and show me the items that need review."
+      "Show me total AUM by entity and where we are most concentrated."
     ],
     "requires": {
       "airapp": true

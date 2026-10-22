@@ -52,9 +52,9 @@
       }
     },
     "agentPrompts": [
-      "Write last week's R&D weekly report: what shipped in each product, what is in progress, the open needs, and the deliveries waiting for my acceptance.\n生成上周研发周报：各产品上线了什么、进行中的工作、还有什么需求、哪些交付在等我验收。",
-      "Connect this code repository to the R&D desk, so every coding agent working here updates its task and logs a changelog row when it merges.\n把这个代码仓库接到研发管理台，让在这里干活的 coding agent 都会更新任务，并在合并时写一条变更记录。",
-      "Package last week's merged changes into deliveries I can accept, with acceptance steps written from each task's criteria.\n把上周合并的改动整理成待我验收的交付，并根据每个任务的验收标准写好验收步骤。"
+      "Write last week's R&D weekly report: what shipped in each product, what is in progress, the open needs, and the deliveries waiting for my acceptance.",
+      "Connect this code repository to the R&D desk, so every coding agent working here updates its task and logs a changelog row when it merges.",
+      "Package last week's merged changes into deliveries I can accept, with acceptance steps written from each task's criteria."
     ],
     "secrets": [],
     "requires": {

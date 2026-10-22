@@ -42,7 +42,12 @@ for (const domain of names) {
   assert.ok(!appConfig.spaceId, `${name}: no author space binding`);
   assert.ok(!appConfig.folder.nodeId, `${name}: no author folder binding`);
   assert.ok(manifest.template.agentPrompts.length >= 2);
-  for (const prompt of manifest.template.agentPrompts) bilingual(prompt, `${name}: catalog prompt`);
+  // template.agentPrompts is a plain string list with no per-locale slot (template.locales
+  // carries media only), and the catalog shows it to every viewer, so it stays English.
+  for (const prompt of manifest.template.agentPrompts) {
+    assert.ok(typeof prompt === "string" && /[A-Za-z]/.test(prompt) && !/[㐀-鿿]/.test(prompt),
+      `${name}: catalog prompt must be English-only`);
+  }
   for (const property of ["displayName", "description"]) {
     assert.ok(manifest[property].en?.trim() && manifest[property]["zh-CN"]?.trim(), `${name}: localized ${property}`);
   }
