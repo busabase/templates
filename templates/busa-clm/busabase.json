@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["legal", "risk:gated-write", "industry:legal", "surface:busabase"],
+  "tags": [
+    "legal",
+    "risk:gated-write",
+    "industry:legal",
+    "surface:busabase"
+  ],
   "template": {
     "category": "legal",
     "schemaVersion": 1,
     "airapp": "busa-clm-app",
-    "tags": ["legal", "risk:gated-write", "industry:legal", "surface:busabase"],
+    "tags": [
+      "legal",
+      "risk:gated-write",
+      "industry:legal",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/approvals.webp",
@@ -26,6 +36,18 @@
       "assets/screenshots/renewals.webp"
     ],
     "video": "assets/recordings/busa-clm.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/approvals-zh-CN.webp",
+          "assets/screenshots/contracts-zh-CN.webp",
+          "assets/screenshots/obligations-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/renewals-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Contracts and flag what needs my attention.",
       "Open Busa CLM and show me the items that need review."

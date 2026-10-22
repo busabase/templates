@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["marketing", "risk:gated-write", "surface:busabase"],
+  "tags": [
+    "marketing",
+    "risk:gated-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "marketing",
     "schemaVersion": 1,
     "airapp": "busa-writer-app",
-    "tags": ["marketing", "risk:gated-write", "surface:busabase"],
+    "tags": [
+      "marketing",
+      "risk:gated-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/distribution.webp",
@@ -25,6 +33,17 @@
       "assets/screenshots/topics.webp"
     ],
     "video": "assets/recordings/busa-writer.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/distribution-zh-CN.webp",
+          "assets/screenshots/main-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/topics-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Drafts and flag what needs my attention.",
       "Open Busa Writer and show me the items that need review."

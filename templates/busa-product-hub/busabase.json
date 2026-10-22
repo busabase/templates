@@ -11,12 +11,22 @@
   },
   "version": "0.2.0",
   "license": "MIT",
-  "tags": ["ecommerce", "risk:local-write", "industry:ecommerce", "surface:busabase"],
+  "tags": [
+    "ecommerce",
+    "risk:local-write",
+    "industry:ecommerce",
+    "surface:busabase"
+  ],
   "template": {
     "category": "ecommerce",
     "schemaVersion": 1,
     "airapp": "busa-product-hub-app",
-    "tags": ["ecommerce", "risk:local-write", "industry:ecommerce", "surface:busabase"],
+    "tags": [
+      "ecommerce",
+      "risk:local-write",
+      "industry:ecommerce",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",
@@ -27,6 +37,19 @@
       "assets/screenshots/channels.webp"
     ],
     "video": "assets/recordings/busa-product-hub.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/products-zh-CN.webp",
+          "assets/screenshots/certificates-zh-CN.webp",
+          "assets/screenshots/review-zh-CN.webp",
+          "assets/screenshots/inventory-zh-CN.webp",
+          "assets/screenshots/channels-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Show me which certificates are expiring soon or already expired.",
       "Summarize the latest products and flag what needs my attention.",

@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["education", "risk:gated-write", "industry:education", "surface:busabase"],
+  "tags": [
+    "education",
+    "risk:gated-write",
+    "industry:education",
+    "surface:busabase"
+  ],
   "template": {
     "category": "education",
     "schemaVersion": 1,
     "airapp": "busa-lesson-app",
-    "tags": ["education", "risk:gated-write", "industry:education", "surface:busabase"],
+    "tags": [
+      "education",
+      "risk:gated-write",
+      "industry:education",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/checks.webp",
@@ -25,6 +35,17 @@
       "assets/screenshots/plans.webp"
     ],
     "video": "assets/recordings/busa-lesson.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/checks-zh-CN.webp",
+          "assets/screenshots/needs-review-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/plans-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Teachers and flag what needs my attention.",
       "Open Busa Lesson and show me the items that need review."

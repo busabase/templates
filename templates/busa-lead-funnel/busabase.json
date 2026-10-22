@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["rbf", "risk:local-write", "surface:busabase"],
+  "tags": [
+    "rbf",
+    "risk:local-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "rbf",
     "schemaVersion": 1,
     "airapp": "busa-lead-funnel-app",
-    "tags": ["rbf", "risk:local-write", "surface:busabase"],
+    "tags": [
+      "rbf",
+      "risk:local-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/kanban.webp",
@@ -24,6 +32,16 @@
       "assets/screenshots/overview.webp"
     ],
     "video": "assets/recordings/busa-lead-funnel.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/kanban-zh-CN.webp",
+          "assets/screenshots/lead-detail-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Leads and flag what needs my attention.",
       "Open Busa Lead Funnel and show me the items that need review."

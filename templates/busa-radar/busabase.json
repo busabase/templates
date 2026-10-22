@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["growth", "risk:local-write", "surface:busabase"],
+  "tags": [
+    "growth",
+    "risk:local-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "growth",
     "schemaVersion": 1,
     "airapp": "busa-radar-app",
-    "tags": ["growth", "risk:local-write", "surface:busabase"],
+    "tags": [
+      "growth",
+      "risk:local-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",
@@ -26,6 +34,18 @@
       "assets/screenshots/watchlist.webp"
     ],
     "video": "assets/recordings/busa-radar.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/research-zh-CN.webp",
+          "assets/screenshots/signals-zh-CN.webp",
+          "assets/screenshots/trends-zh-CN.webp",
+          "assets/screenshots/watchlist-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Watchlist and flag what needs my attention.",
       "Open Busa Radar and show me the items that need review."

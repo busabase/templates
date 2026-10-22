@@ -42,6 +42,18 @@
       "assets/screenshots/overview.webp"
     ],
     "video": "assets/recordings/busa-messenger.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/accounts-zh-CN.webp",
+          "assets/screenshots/chat-zh-CN.webp",
+          "assets/screenshots/inbox-zh-CN.webp",
+          "assets/screenshots/outbox-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Accounts and flag what needs my attention.",
       "Open Busa Messenger and show me the items that need review."

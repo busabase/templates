@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["education", "risk:local-write", "industry:education", "surface:busabase"],
+  "tags": [
+    "education",
+    "risk:local-write",
+    "industry:education",
+    "surface:busabase"
+  ],
   "template": {
     "category": "education",
     "schemaVersion": 1,
     "airapp": "busa-homework-coach-app",
-    "tags": ["education", "risk:local-write", "industry:education", "surface:busabase"],
+    "tags": [
+      "education",
+      "risk:local-write",
+      "industry:education",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/mistakes.webp",
@@ -25,6 +35,17 @@
       "assets/screenshots/student.webp"
     ],
     "video": "assets/recordings/busa-homework-coach.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/mistakes-zh-CN.webp",
+          "assets/screenshots/papers-zh-CN.webp",
+          "assets/screenshots/review-zh-CN.webp",
+          "assets/screenshots/student-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Questions and flag what needs my attention.",
       "Open Busa Homework Coach and show me the items that need review."

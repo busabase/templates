@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["sales-crm", "risk:gated-write", "surface:busabase"],
+  "tags": [
+    "sales-crm",
+    "risk:gated-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "sales-crm",
     "schemaVersion": 1,
     "airapp": "busa-feedback-app",
-    "tags": ["sales-crm", "risk:gated-write", "surface:busabase"],
+    "tags": [
+      "sales-crm",
+      "risk:gated-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/inbox.webp",
@@ -25,6 +33,17 @@
       "assets/screenshots/roadmap.webp"
     ],
     "video": "assets/recordings/busa-feedback.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/inbox-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/requests-zh-CN.webp",
+          "assets/screenshots/roadmap-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Products and flag what needs my attention.",
       "Open Busa Feedback and show me the items that need review."

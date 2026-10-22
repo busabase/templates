@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["marketing", "risk:gated-write", "surface:busabase"],
+  "tags": [
+    "marketing",
+    "risk:gated-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "marketing",
     "schemaVersion": 1,
     "airapp": "busa-launch-app",
-    "tags": ["marketing", "risk:gated-write", "surface:busabase"],
+    "tags": [
+      "marketing",
+      "risk:gated-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/assets.webp",
@@ -25,6 +33,17 @@
       "assets/screenshots/overview.webp"
     ],
     "video": "assets/recordings/busa-launch.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/assets-zh-CN.webp",
+          "assets/screenshots/checklist-zh-CN.webp",
+          "assets/screenshots/launchday-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Launch Items and flag what needs my attention.",
       "Open Busa Launch and show me the items that need review."

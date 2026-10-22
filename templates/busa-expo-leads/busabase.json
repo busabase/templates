@@ -11,12 +11,24 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["sales-crm", "industry:ecommerce", "surface:whatsapp", "surface:busabase", "risk:gated-write"],
+  "tags": [
+    "sales-crm",
+    "industry:ecommerce",
+    "surface:whatsapp",
+    "surface:busabase",
+    "risk:gated-write"
+  ],
   "template": {
     "category": "sales-crm",
     "schemaVersion": 1,
     "airapp": "busa-expo-leads-app",
-    "tags": ["sales-crm", "industry:ecommerce", "surface:whatsapp", "surface:busabase", "risk:gated-write"],
+    "tags": [
+      "sales-crm",
+      "industry:ecommerce",
+      "surface:whatsapp",
+      "surface:busabase",
+      "risk:gated-write"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",
@@ -24,6 +36,16 @@
       "assets/screenshots/followups.webp"
     ],
     "video": "assets/recordings/busa-expo-leads.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/leads-zh-CN.webp",
+          "assets/screenshots/followups-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Show me which leads are about to blow past the 24-hour follow-up window.",
       "Open Busa Expo Leads and show me the follow-ups that need review."

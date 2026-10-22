@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["legal", "risk:local-write", "industry:legal", "surface:busabase"],
+  "tags": [
+    "legal",
+    "risk:local-write",
+    "industry:legal",
+    "surface:busabase"
+  ],
   "template": {
     "category": "legal",
     "schemaVersion": 1,
     "airapp": "busa-legal-casebase-ingest-app",
-    "tags": ["legal", "risk:local-write", "industry:legal", "surface:busabase"],
+    "tags": [
+      "legal",
+      "risk:local-write",
+      "industry:legal",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/checks.webp",
@@ -27,6 +37,19 @@
       "assets/screenshots/workbench.webp"
     ],
     "video": "assets/recordings/busa-legal-casebase-ingest.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/checks-zh-CN.webp",
+          "assets/screenshots/entities-zh-CN.webp",
+          "assets/screenshots/mobile-detail-zh-CN.webp",
+          "assets/screenshots/needs-review-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/workbench-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Case Records and flag what needs my attention.",
       "Open Legal Casebase Ingest and show me the items that need review."

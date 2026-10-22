@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["finance", "risk:local-write", "surface:busabase"],
+  "tags": [
+    "finance",
+    "risk:local-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "finance",
     "schemaVersion": 1,
     "airapp": "busa-finance-app",
-    "tags": ["finance", "risk:local-write", "surface:busabase"],
+    "tags": [
+      "finance",
+      "risk:local-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/checks.webp",
@@ -24,6 +32,16 @@
       "assets/screenshots/workbook.webp"
     ],
     "video": "assets/recordings/busa-finance.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/checks-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/workbook-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Model and flag what needs my attention.",
       "Open Busa Finance and show me the items that need review."

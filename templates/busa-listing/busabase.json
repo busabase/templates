@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["ecommerce", "risk:gated-write", "industry:ecommerce", "surface:busabase"],
+  "tags": [
+    "ecommerce",
+    "risk:gated-write",
+    "industry:ecommerce",
+    "surface:busabase"
+  ],
   "template": {
     "category": "ecommerce",
     "schemaVersion": 1,
     "airapp": "busa-listing-app",
-    "tags": ["ecommerce", "risk:gated-write", "industry:ecommerce", "surface:busabase"],
+    "tags": [
+      "ecommerce",
+      "risk:gated-write",
+      "industry:ecommerce",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/checks.webp",
@@ -27,6 +37,19 @@
       "assets/screenshots/products.webp"
     ],
     "video": "assets/recordings/busa-listing.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/checks-zh-CN.webp",
+          "assets/screenshots/claims-zh-CN.webp",
+          "assets/screenshots/drafts-zh-CN.webp",
+          "assets/screenshots/needs-review-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/products-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Products and flag what needs my attention.",
       "Open Busa Listing and show me the items that need review."

@@ -39,6 +39,17 @@
       "assets/screenshots/tickets.webp"
     ],
     "video": "assets/recordings/busa-support.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/knowledge-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/sla-zh-CN.webp",
+          "assets/screenshots/tickets-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Accounts and flag what needs my attention.",
       "Open Busa Support and show me the items that need review."

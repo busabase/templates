@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["comms", "risk:local-write", "surface:busabase"],
+  "tags": [
+    "comms",
+    "risk:local-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "comms",
     "schemaVersion": 1,
     "airapp": "busa-standup-app",
-    "tags": ["comms", "risk:local-write", "surface:busabase"],
+    "tags": [
+      "comms",
+      "risk:local-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/blockers.webp",
@@ -26,6 +34,18 @@
       "assets/screenshots/reminders.webp"
     ],
     "video": "assets/recordings/busa-standup.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/blockers-zh-CN.webp",
+          "assets/screenshots/history-zh-CN.webp",
+          "assets/screenshots/members-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/reminders-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Members and flag what needs my attention.",
       "Open Busa Standup and show me the items that need review."

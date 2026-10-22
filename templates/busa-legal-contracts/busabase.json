@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["legal", "risk:gated-write", "industry:legal", "surface:busabase"],
+  "tags": [
+    "legal",
+    "risk:gated-write",
+    "industry:legal",
+    "surface:busabase"
+  ],
   "template": {
     "category": "legal",
     "schemaVersion": 1,
     "airapp": "busa-legal-contracts-app",
-    "tags": ["legal", "risk:gated-write", "industry:legal", "surface:busabase"],
+    "tags": [
+      "legal",
+      "risk:gated-write",
+      "industry:legal",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/checks.webp",
@@ -27,6 +37,19 @@
       "assets/screenshots/playbook.webp"
     ],
     "video": "assets/recordings/busa-legal-contracts.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/checks-zh-CN.webp",
+          "assets/screenshots/contracts-zh-CN.webp",
+          "assets/screenshots/issues-zh-CN.webp",
+          "assets/screenshots/needs-review-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/playbook-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Contracts and flag what needs my attention.",
       "Open Busa Legal Contracts and show me the items that need review."

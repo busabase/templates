@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["marketing", "risk:gated-write", "surface:busabase"],
+  "tags": [
+    "marketing",
+    "risk:gated-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "marketing",
     "schemaVersion": 1,
     "airapp": "busa-creators-app",
-    "tags": ["marketing", "risk:gated-write", "surface:busabase"],
+    "tags": [
+      "marketing",
+      "risk:gated-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/creators.webp",
@@ -25,6 +33,17 @@
       "assets/screenshots/roi.webp"
     ],
     "video": "assets/recordings/busa-creators.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/creators-zh-CN.webp",
+          "assets/screenshots/outreach-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/roi-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Creator Engagements and flag what needs my attention.",
       "Open Busa Creators and show me the items that need review."

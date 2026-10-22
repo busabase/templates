@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["finance", "risk:gated-write", "surface:busabase"],
+  "tags": [
+    "finance",
+    "risk:gated-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "finance",
     "schemaVersion": 1,
     "airapp": "busa-audit-app",
-    "tags": ["finance", "risk:gated-write", "surface:busabase"],
+    "tags": [
+      "finance",
+      "risk:gated-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/anomalies.webp",
@@ -25,6 +33,17 @@
       "assets/screenshots/overview.webp"
     ],
     "video": "assets/recordings/busa-audit.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/anomalies-zh-CN.webp",
+          "assets/screenshots/invoices-zh-CN.webp",
+          "assets/screenshots/orders-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Orders and flag what needs my attention.",
       "Open Busa Audit and show me the items that need review."

@@ -11,12 +11,20 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["industry-intel", "risk:gated-write", "surface:busabase"],
+  "tags": [
+    "industry-intel",
+    "risk:gated-write",
+    "surface:busabase"
+  ],
   "template": {
     "category": "industry-intel",
     "schemaVersion": 1,
     "airapp": "busa-ai-newsroom-app",
-    "tags": ["industry-intel", "risk:gated-write", "surface:busabase"],
+    "tags": [
+      "industry-intel",
+      "risk:gated-write",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/actions.webp",
@@ -25,6 +33,17 @@
       "assets/screenshots/signals.webp"
     ],
     "video": "assets/recordings/busa-ai-newsroom.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/actions-zh-CN.webp",
+          "assets/screenshots/drafts-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/signals-zh-CN.webp"
+        ]
+      }
+    },
     "agentPrompts": [
       "Summarize the latest Signals and flag what needs my attention.",
       "Open Busa AI Newsroom and show me the items that need review."

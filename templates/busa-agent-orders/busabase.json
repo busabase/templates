@@ -28,6 +28,19 @@
       "surface:busabase"
     ],
     "video": "assets/recordings/busa-agent-orders.mp4",
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/proposals-zh-CN.webp",
+          "assets/screenshots/orders-zh-CN.webp",
+          "assets/screenshots/exceptions-zh-CN.webp",
+          "assets/screenshots/guardrails-zh-CN.webp",
+          "assets/screenshots/settings-zh-CN.webp"
+        ]
+      }
+    },
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",
