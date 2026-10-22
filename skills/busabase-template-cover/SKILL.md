@@ -14,7 +14,7 @@ Create a quiet, single-column catalog cover that puts the template identity firs
 - Read the repository's `AGENTS.md` before changing a checked-out template.
 - Use a real running-app screenshot already declared by the template. Repository rules prohibit mock product UI.
 - Generate `assets/screenshots/cover.webp` at exactly 1440 by 900 pixels.
-- Keep `assets/screenshots/cover.webp` at `template.screenshots[0]` and preserve the order of every other screenshot.
+- Keep `assets/screenshots/cover.webp` at `template.screenshots[0]` and preserve the order of every other screenshot. A localized cover `cover-<locale>.webp` sits at `template.locales.<locale>.screenshots[0]` instead.
 - On regeneration, never use the existing cover as its own source. The renderer selects the first declared non-cover screenshot unless `--source` is given.
 - Keep the fixed single-column layout: centered template name at the top, centered manifest description below it, then one centered real screenshot.
 - Keep a 120px horizontal safe area and a 72px vertical safe area. The title and description must stay fully inside it; the screenshot's left, right, and top edges must also stay inside it, while only the screenshot bottom may overflow the canvas.
@@ -43,6 +43,20 @@ python3 <skill-dir>/scripts/generate_cover.py <template-dir> --title "B2B CRM"
 ```
 
 `--source` may be relative to the template directory or absolute. `--title` applies only when generating a single template.
+
+### Localized covers
+
+A template that ships per-locale media declares it in `template.locales` (see the template format). Render that locale's cover from its own screenshots and its own `displayName` / `description`:
+
+```bash
+python3 <skill-dir>/scripts/generate_cover.py <template-dir> --locale zh-CN
+python3 <skill-dir>/scripts/generate_cover.py --check --locale zh-CN <template-dir>
+```
+
+- Output is `assets/screenshots/cover-<locale>.webp`, pinned at `template.locales.<locale>.screenshots[0]`; the default `cover.webp` stays first in the English `template.screenshots`.
+- The title and description come from the manifest's localized `displayName` / `description` (falling back to English), so the cover reads in the viewer's language.
+- CJK text uses a CJK sans face for the description (system PingFang / Noto Sans CJK, with the bundled Noto Serif SC as the last resort) and breaks between characters, never only at spaces.
+- Without `--locale` the title is the manifest's English `displayName`; the slug-derived name is only the last resort.
 
 ## Verify
 
