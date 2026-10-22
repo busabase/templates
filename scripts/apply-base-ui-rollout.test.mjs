@@ -52,3 +52,17 @@ test("registers base-ui before split CSS layers", () => {
   assert.match(html, /^ {2}<meta name="color-scheme" content="light dark">$/m);
   assert.equal(layers, "@layer base-ui, base, components;\n");
 });
+
+test("keeps every stylesheet when several links share one line", () => {
+  const { root, appDir } = fixture();
+  fs.writeFileSync(
+    path.join(appDir, "index.html"),
+    '<head>\n  <meta name="viewport" content="width=device-width"><meta name="color-scheme" content="light dark">\n  <link rel="stylesheet" href="./base-ui.css"><link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./app.css">\n</head>\n',
+  );
+  applyRollout({ root });
+  assert.deepEqual(applyRollout({ root, check: true }), []);
+  const html = fs.readFileSync(path.join(appDir, "index.html"), "utf8");
+  for (const href of ["./base-ui.css", "./styles.css", "./app.css"]) assert.match(html, new RegExp(href.replace(".", "\\.")));
+  assert.ok(html.indexOf("base-ui.css") < html.indexOf("styles.css"));
+  assert.ok(html.indexOf("app.css") < html.indexOf("</head>"));
+});

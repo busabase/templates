@@ -42,8 +42,24 @@ const ensureColorScheme = (html) => {
   return lines.join("\n");
 };
 
+// The rest of this script works line by line, so first give every stylesheet
+// <link> its own line. A head that keeps several links on one line would
+// otherwise lose all of them when the base-ui line is filtered out.
+const splitStylesheetLinks = (html) =>
+  html
+    .split("\n")
+    .flatMap((line) => {
+      const links = line.match(/<link\s+rel=["']stylesheet["'][^>]*>/gi) ?? [];
+      // Only a line the filter below would drop (base-ui / accent-theme) needs splitting.
+      if (links.length < 2 || !/base-ui\.css|accent-theme\.css/.test(line)) return [line];
+      const indent = line.match(/^[ \t]*/)?.[0] ?? "";
+      const rest = line.replace(/<link\s+rel=["']stylesheet["'][^>]*>/gi, "").trim();
+      return [...(rest ? [`${indent}${rest}`] : []), ...links.map((link) => `${indent}${link}`)];
+    })
+    .join("\n");
+
 const ensureStylesheetOrder = (html, baseUiHref = "./base-ui.css") => {
-  const lines = html.split("\n");
+  const lines = splitStylesheetLinks(html).split("\n");
   const stylesheet = /<link\s+rel=["']stylesheet["'][^>]*>/i;
   const firstLine = lines.find((line) => stylesheet.test(line));
   if (!firstLine) throw new Error("index.html has no app stylesheet link");
