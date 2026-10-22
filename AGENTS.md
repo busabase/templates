@@ -95,6 +95,8 @@ the source.
 
 ## Submitting
 
+The full contributor workflow (media, new templates, pull requests) is in [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 Open a pull request. Before you do:
 
 ```bash

@@ -98,6 +98,8 @@ installs, so a card can never promise something its install does not do. A
 template that declares itself one and does not qualify is reported in the
 catalog's `rejected` list with the reason.
 
+To add a video or screenshots to a template, or to submit a new one, follow [CONTRIBUTING.md](CONTRIBUTING.md) ([中文](CONTRIBUTING.zh-CN.md)).
+
 ## Why this is not in `busabase/skills`
 
 That repository holds the two general-purpose Busabase skills, and people clone
