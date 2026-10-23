@@ -90,7 +90,7 @@ const assertions = [
     message: "Busabase starts an app with its dev script; it must be `node server.js`",
   },
   {
-    ok: packageJson.dependencies?.["busabase-sdk"] === "0.30.1",
+    ok: /^\d+\.\d+\.\d+$/.test(packageJson.dependencies?.["busabase-sdk"] ?? ""),
     message: "busabase-sdk must stay exact-pinned so airapp-check's rules are versioned with it",
   },
 

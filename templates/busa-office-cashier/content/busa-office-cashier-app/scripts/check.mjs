@@ -17,7 +17,7 @@ for (const base of appConfig.bases)
     ["page", "drawer", "split"].includes(appConfig.ui.detail_modes[base.key]),
     "detail mode missing for " + base.key,
   );
-assert.equal(pkg.dependencies["busabase-sdk"], "0.90.2");
+assert.match(pkg.dependencies["busabase-sdk"], /^\d+\.\d+\.\d+$/, "busabase-sdk must be exact-pinned");
 assert.equal(pkg.scripts.dev, "node server.js");
 assert.equal(appConfig.binding, "runtime");
 assert.equal(appConfig.spaceId, undefined);

@@ -324,6 +324,27 @@ The path, in order:
 5. **Check and index**, exactly as in
    [Regenerate the catalog and check](#regenerate-the-catalog-and-check).
 
+### Updating busabase-sdk in every AirApp
+
+Each AirApp pins `busabase-sdk` in its `package.json` and bundles it into `app/vendor/busabase-*`
+with its own `build:sdk` script, so an SDK fix reaches an app only when both move. One command does
+both for every app, then runs each app's own `check` and `test`:
+
+```bash
+node scripts/update-app-sdk.mjs --check            # apps not on npm latest; exits 1 if any
+node scripts/update-app-sdk.mjs                    # move every app to npm latest
+node scripts/update-app-sdk.mjs --version 0.98.0   # or to one version
+node scripts/update-app-sdk.mjs templates/busa-crm/content/busa-crm-app   # or one app (paths and globs)
+```
+
+It prints one row per app (install, `build:sdk`, `check`, `test`) and exits non-zero if any fails.
+A committed lockfile is refreshed and no new one is written, `node_modules` is removed afterwards,
+and only the `busabase-*` bundles are rebuilt; another vendored library stays as committed.
+
+Then read the diff, run [Regenerate the catalog and check](#regenerate-the-catalog-and-check) on
+every template, and install a few templates locally as in step 3. A passing `check` does not prove
+that an app still opens.
+
 ## 4. Submitting
 
 ### Scope: one template, or one media batch, per pull request
@@ -332,6 +353,8 @@ The path, in order:
 - A **media batch** is the same kind of change across several templates, such as "Chinese films for
   five templates". Do not mix media with changes to a template's copy, data or code.
 - Touch only the templates you are working on, plus the regenerated `templates.json`.
+- An SDK update is one batch too: what `scripts/update-app-sdk.mjs` changed in every app, plus the
+  smallest fix for any app it broke, and nothing else.
 
 ### Push and open the pull request
 

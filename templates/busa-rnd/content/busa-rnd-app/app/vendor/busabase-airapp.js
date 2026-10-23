@@ -19722,7 +19722,7 @@ function date4(params) {
   return _coercedDate(ZodDate, params);
 }
 
-// node_modules/busabase-sdk/dist/template-DRMp6tKv.js
+// node_modules/busabase-sdk/dist/template-CMJMkyse.js
 async function hashBytes(bytes) {
   const subtle = globalThis.crypto?.subtle;
   if (!subtle) return void 0;
@@ -19805,6 +19805,12 @@ var TemplateSecretSchema = external_exports.object({
   description: external_exports.string().default(""),
   required: external_exports.boolean().default(true)
 });
+var TemplateLocaleMediaSchema = external_exports.object({
+  /** Replaces the default list WHOLE for this locale — never merged per index. */
+  screenshots: external_exports.array(external_exports.string()).optional(),
+  video: external_exports.string().optional()
+});
+var TemplateLocalesSchema = external_exports.record(external_exports.string(), TemplateLocaleMediaSchema);
 external_exports.object({
   /** Template Center category, e.g. `"crm"`, `"email"`, `"content"`. */
   category: external_exports.string().min(1),
@@ -19824,6 +19830,21 @@ external_exports.object({
   * it just vanishes, with no error from `busabase-cli check`.
   */
   video: external_exports.string().optional(),
+  /**
+  * Localized gallery media, the App Store / Google Play rule: a viewer whose
+  * locale has an entry sees that entry's `screenshots` / `video`; anything the
+  * entry leaves out, and every locale without an entry, falls back to the two
+  * fields above. Those stay the English/default set — they are what every
+  * deployed server and CLI already reads, so their meaning cannot change.
+  *
+  * `{ "zh-CN": { "screenshots": ["assets/screenshots/cover-zh-CN.webp"],
+  *               "video": "assets/recordings/busa-rnd-zh-CN.mp4" } }`
+  *
+  * Additive by construction: an older parser strips the key (see the note on
+  * `video`), so an older server simply shows the defaults. Selection lives in
+  * one place — `pickTemplateMedia` in `domains/templates/media`.
+  */
+  locales: TemplateLocalesSchema.optional(),
   /**
   * Ready-made prompts shown after install ("Ask agent" prefills the first).
   *

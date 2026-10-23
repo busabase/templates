@@ -270,6 +270,25 @@ npx skills add busabase/skills --skill busabase-app-creator --skill busabase-tem
 4. **用 `busabase-template-creator` 达到发布标准**，并按[第 2 节](#2-添加或替换媒体)加上媒体。
 5. **检查并生成目录**，和[重新生成目录并检查](#重新生成目录并检查)完全一样。
 
+### 更新所有 AirApp 的 busabase-sdk
+
+每个 AirApp 都在自己的 `package.json` 里固定 `busabase-sdk` 的版本，再用自己的 `build:sdk` 脚本把它打包进
+`app/vendor/busabase-*`。所以 SDK 的修复只有在这两样都更新之后才会到达这个应用。一条命令就能对所有应用做完这两件事，
+再逐个运行应用自己的 `check` 和 `test`：
+
+```bash
+node scripts/update-app-sdk.mjs --check            # 列出不在 npm 最新版上的应用；有就以 1 退出
+node scripts/update-app-sdk.mjs                    # 把所有应用更新到 npm 最新版
+node scripts/update-app-sdk.mjs --version 0.98.0   # 或更新到指定版本
+node scripts/update-app-sdk.mjs templates/busa-crm/content/busa-crm-app   # 或只更新一个应用（支持路径和通配符）
+```
+
+它为每个应用打印一行结果（安装、`build:sdk`、`check`、`test`），任何一个失败就以非零退出。已提交的锁文件会被刷新，
+不会新写锁文件；`node_modules` 用完即删；只重建 `busabase-*` 打包文件，其他打包进来的库保持已提交的样子。
+
+之后先读一遍 diff，对每个模板跑一遍[重新生成目录并检查](#重新生成目录并检查)，再按第 3 步在本地装几个模板。
+`check` 通过不代表应用还能打开。
+
 ## 4. 提交
 
 ### 范围：每个 PR 只放一个模板，或一批媒体
@@ -277,6 +296,7 @@ npx skills add busabase/skills --skill busabase-app-creator --skill busabase-tem
 - 一个新模板单独一个 PR。
 - **一批媒体**指跨多个模板的同一类改动，比如“五个模板的中文视频”。不要把媒体和模板的文案、数据或代码改动混在一起。
 - 只动你正在处理的模板，加上重新生成的 `templates.json`。
+- 一次 SDK 更新也算一批：`scripts/update-app-sdk.mjs` 在各应用里改动的内容，加上为它弄坏的应用所做的最小修复，别的都不放。
 
 ### 推送并提 PR
 

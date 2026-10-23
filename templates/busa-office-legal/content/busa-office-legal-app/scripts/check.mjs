@@ -3,7 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { appConfig } from "../app/js/config.js";
 import { seedRecords } from "../app/js/demo-data.js";
 const pkg = JSON.parse(await readFile("package.json", "utf8"));
-assert.equal(pkg.dependencies["busabase-sdk"], "0.90.2");
+assert.match(pkg.dependencies["busabase-sdk"], /^\d+\.\d+\.\d+$/, "busabase-sdk must be exact-pinned");
 assert.equal(appConfig.binding, "runtime");
 assert.equal(appConfig.readOnly, true);
 assert(!appConfig.spaceId);
