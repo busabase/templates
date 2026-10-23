@@ -80,6 +80,25 @@ that records an execution marker on each approved ticket; it connects with
 `BUSABASE_BASE_URL` / `BUSABASE_API_KEY` / `BUSABASE_SPACE_ID` and performs
 no send, refund, or channel API call itself.
 
+### Starter records
+
+An installed desk starts populated, not empty: `content/<base>/records.ndjson`
+carries the Nimbus Notes desk (5 accounts, 14 tickets, 22 messages, 9 KB
+articles, 11 sync-log runs, 1 settings row), the same story the demo mode shows.
+Every address is on the reserved `.example` domain, so nothing can route.
+
+Timestamps are fixed, but SLA breach and "tickets this week" read the real
+clock, so the rows describe one day (the latest sync-log run) and drift from it.
+The healthy open tickets are due several days after that day rather than at the
+2/4/8/24h policy offsets, so a fresh install holds its shape for about a week;
+after that every open ticket reads as breached, which is what an unattended
+queue honestly looks like. Re-anchor before a release:
+
+```bash
+node scripts/redate-records.mjs --to 2026-12-01   # shift every timestamp together
+(cd content/busa-support-app && node --test)      # records.test.mjs re-checks the picture
+```
+
 ## Philosophy
 
 The App-in-Skill pattern pairs an agent skill with a small companion UI. See the spec paper: <https://mr-kelly.github.io/research/app-in-skill-specification-for-pairing-agent-skills-with-a-local-companion-ui.pdf>.
