@@ -71,6 +71,18 @@ cd templates/<name> && node scripts/sync-content.mjs --check # verify
 If a template has no such script, its `base.json` files are hand-written and are
 the source.
 
+**`app/vendor/busabase-*` in an AirApp** — the SDK bundle its `build:sdk` script
+builds from the busabase-sdk version its `package.json` pins. Move the pin and
+the bundle together, for one app or all of them, and run each app's own checks:
+
+```bash
+node scripts/update-app-sdk.mjs --check                 # apps not on npm latest
+node scripts/update-app-sdk.mjs [--version x.y.z] [<path-or-glob>...]
+```
+
+An app's own check may require the SDK to be exact-pinned, but not pinned to one
+particular version: that fails on every update.
+
 ## Things that are load-bearing and easy to get wrong
 
 - **`SKILL.md` must opt in**: `metadata.busabase.template: true`. It is never

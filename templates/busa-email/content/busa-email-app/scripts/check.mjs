@@ -15,7 +15,7 @@ const listText = await readFile(path.join(root, "app", "js", "list-detail.js"), 
 const serverText = await readFile(path.join(root, "server", "hono.ts"), "utf8");
 
 if (packageJson.scripts.start !== "node server.js") throw new Error("AirApp start must be node server.js");
-if (packageJson.dependencies["busabase-sdk"] !== "0.30.1") throw new Error("busabase-sdk must be exact-pinned");
+if (!/^\d+\.\d+\.\d+$/.test(packageJson.dependencies["busabase-sdk"] ?? "")) throw new Error("busabase-sdk must be exact-pinned");
 if (!configText.includes('deployment: "cloud"')) throw new Error("Busa Email must be Cloud-only");
 if (!configText.includes('resourceKey: "busa-email-files"')) {
   throw new Error("Drive ownership must match the slug installed by the template");
