@@ -80,6 +80,8 @@ export const messages = {
     reviewNote: "Review note",
     saveNote: "Save note",
     saved: "Saved",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     search: "Search",
     selectProposal: "Select a dispatch proposal to review its details.",
     settings: "Help & Settings",
@@ -259,6 +261,7 @@ export const messages = {
     reviewNote: "审批备注",
     saveNote: "保存备注",
     saved: "已保存",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     search: "搜索",
     selectProposal: "选择一条派单建议，查看详情并审批。",
     settings: "帮助与设置",

@@ -110,7 +110,8 @@ export const demoProvider = {
       fields,
     };
     pendingRequests = [request, ...pendingRequests];
-    return request;
+    // Demo mode cannot write, so it always shows the queued outcome.
+    return { ...request, pending: true };
   },
   async createDeal(fields) {
     const id = `cr_demo_deal_${String(requestSequence).padStart(3, "0")}`;
@@ -124,7 +125,8 @@ export const demoProvider = {
       fields,
     };
     pendingRequests = [request, ...pendingRequests];
-    return request;
+    // Demo mode cannot write, so it always shows the queued outcome.
+    return { ...request, pending: true };
   },
   async updateDealStage({ recordId, stage }) {
     const id = `cr_demo_stage_${String(requestSequence).padStart(3, "0")}`;
@@ -139,7 +141,8 @@ export const demoProvider = {
       fields: { stage },
     };
     pendingRequests = [request, ...pendingRequests];
-    return request;
+    // Demo mode cannot write, so it always shows the queued outcome.
+    return { ...request, pending: true };
   },
   async refreshPending() {
     return { changeRequests: [...pendingRequests], nextCursor: null };

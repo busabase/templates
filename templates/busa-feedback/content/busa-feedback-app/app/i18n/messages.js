@@ -67,6 +67,8 @@ export const messages = {
     reviewNotePlaceholder: "Optional note for the agent or the record",
     roadmap: "Roadmap",
     save: "Save",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     scoringWeights: "Scoring weights",
     search: "Search",
     secretsReady: "secrets ready",
@@ -269,6 +271,7 @@ export const messages = {
     reviewNotePlaceholder: "给智能体或留档的可选备注",
     roadmap: "路线图",
     save: "保存",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     scoringWeights: "打分权重",
     search: "搜索",
     secretsReady: "密钥已就绪",

@@ -8,16 +8,6 @@ const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 const FOLLOWUP_ACTIONS = new Set(["create", "done"]);
 
-// A deployed AirApp is served through the ambient Busabase session (a Busabase
-// iframe/preview host, or same-origin proxy under /api/airapp-preview/); a
-// standalone local preview runs on loopback outside that host. Human verdicts
-// made from a standalone local preview (the trusted operator's own machine)
-// merge immediately; verdicts made from the deployed AirApp create a pending
-// ChangeRequest for the trusted process to merge, per the AirApp boundary.
-// Only a standalone run may merge its own writes; a deployed AirApp is inside
-// the Busabase review boundary. Too consequential to infer from the URL.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 
@@ -109,6 +99,13 @@ async function findRecord(key, idFieldSlug, idValue) {
   }
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 async function upsert(key, idFieldSlug, idValue, fields, message) {
   if (!allowedWrites.has("bases.createChangeRequest") || !allowedWrites.has("records.changeRequest")) {
     throw new Error("PROCEDURE_DENIED: records.changeRequest");
@@ -116,14 +113,12 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
   const declared = base(key);
   const existing = await findRecord(key, idFieldSlug, idValue);
   const normalized = toBusabaseFields(fields);
-  const autoMerge = isStandaloneLocalRuntime();
   if (!existing) {
     return runtimeClient.bases.createChangeRequest({
       baseId: declared.baseId,
       fields: normalized,
       message,
       submittedBy: appConfig.appId,
-      autoMerge,
     });
   }
   return runtimeClient.records.changeRequest({
@@ -133,7 +128,6 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
     message,
     author: appConfig.appId,
     baseCommitId: existing.headCommitId,
-    autoMerge,
   });
 }
 
@@ -190,7 +184,7 @@ export const busabaseProvider = {
 
     if (action === "create") {
       const recordId = String(payload.record_id || `fu-${Date.now()}`);
-      await upsert(
+      const result = await upsert(
         "followups",
         "record-id",
         recordId,
@@ -205,19 +199,27 @@ export const busabaseProvider = {
         },
         `Created followup ${recordId}`,
       );
-      return { updated_at: now };
+      return {
+        updated_at: now,
+        pending: isQueued(result),
+        change_request_id: isQueued(result) ? result?.id || "" : "",
+      };
     }
 
     const recordId = String(payload.record_id || "");
     if (!recordId) throw new Error("record_id is required");
-    await upsert(
+    const result = await upsert(
       "followups",
       "record-id",
       recordId,
       { record_id: recordId, status: "done" },
       `Marked ${recordId} done`,
     );
-    return { updated_at: now };
+    return {
+      updated_at: now,
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   async provisionResources() {

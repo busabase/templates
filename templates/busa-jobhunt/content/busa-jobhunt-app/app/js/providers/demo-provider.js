@@ -316,7 +316,6 @@ export const demoProvider = {
         name: "demo",
         mode: "deterministic_preview",
         readOnly: true,
-        pendingReview: false,
         asOf: "2026-08-11 09:20 CST",
         today: "2026-08-11",
       },

@@ -22,6 +22,8 @@ export const messages = {
     nothingUpcoming: "Nothing scheduled after today.",
     markDone: "Mark done",
     markedDone: "Submitted: marked done.",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     done: "Done",
     pending: "Pending",
     lockedBanner: "Locked",
@@ -72,6 +74,7 @@ export const messages = {
     nothingUpcoming: "今天之后没有排期的跟进。",
     markDone: "标记完成",
     markedDone: "已提交：标记完成。",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     done: "已完成",
     pending: "待跟进",
     lockedBanner: "已锁定",

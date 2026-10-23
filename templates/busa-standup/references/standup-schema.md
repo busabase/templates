@@ -184,6 +184,7 @@ A human verdict writes `status`, `decision-action`, `decision-note`, and
 `decided-at` directly onto the reminder record through `busabase-sdk` (and,
 for any action, the current draft-textarea value onto `draft`). There is no
 separate decisions file: the reminder record is the single source of truth.
-From a standalone local preview the write merges immediately (trusted
-operator); from the deployed AirApp it creates a pending ChangeRequest for
-the trusted process to merge.
+The write follows the person's own permission, wherever the AirApp runs:
+with write access it lands at once; without it, it becomes a ChangeRequest
+for someone who has write access, and the app says the decision was sent for
+review. The app never forces review on its own writes.

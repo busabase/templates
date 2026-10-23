@@ -199,9 +199,11 @@ UI language: English and Chinese chrome with `Auto` default (`navigator.language
 
 1. The operator's verdicts write directly onto the item record (`status`,
    `decision_verdict`, `decision_comment`, `decided_at`) through
-   `busabase-sdk`. From a standalone local preview the write merges
-   immediately (trusted operator); from the deployed AirApp it creates a
-   pending ChangeRequest for the trusted process to merge.
+   `busabase-sdk`. The write follows the person's own permission, wherever
+   the AirApp runs: with write access it lands at once; without it, it
+   becomes a ChangeRequest for someone who has write access, and the app says
+   the decision was sent for review. The app never forces review on its own
+   writes.
 2. Before executing anything, run `node scripts/execute_decisions.mjs`
    (dry-run). It prints the concrete operation for every approved
    signal/brief/opportunity: `handoff_content_brief` → busa-writer,

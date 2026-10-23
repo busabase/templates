@@ -23,19 +23,6 @@ const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 const NORMALIZE_ROW_BY_KEY = { items: normalizeItemRow, entities: normalizeEntityRow, checks: normalizeCheckRow };
 const ID_FIELD_BY_KEY = { items: "item-id", entities: "entity-id", checks: "check-id" };
 
-// A deployed AirApp is served through the ambient Busabase session (a Busabase
-// iframe/preview host, or same-origin proxy under /api/airapp-preview/); a
-// standalone local preview runs on loopback outside that host. Human actions
-// made from a standalone local preview (the trusted operator's own machine)
-// merge immediately; actions made from the deployed AirApp create a pending
-// ChangeRequest for the trusted process to merge, per the AirApp boundary.
-// A deployed AirApp sits inside the Busabase review boundary; only a standalone
-// run may merge its own writes. That is far too consequential to infer from the
-// URL — see ../runtime.js.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
-export { isStandaloneLocalRuntime };
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 const toBusabaseFields = (fields) =>
@@ -173,6 +160,13 @@ function baseItemFields(row) {
   };
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 export const busabaseProvider = {
   kind: "busabase",
 
@@ -283,16 +277,16 @@ export const busabaseProvider = {
       updated_at: now,
     };
     if (!allowedWrites.has("records.changeRequest")) throw new Error("PROCEDURE_DENIED: records.changeRequest");
-    await runtimeClient.records.changeRequest({
+    const result = await runtimeClient.records.changeRequest({
       recordId: existing.id,
       operation: "update",
       fields: toBusabaseFields(nextFields),
       message: `Decision on precedent research pack ${id}: ${action}`,
       author: appConfig.appId,
       baseCommitId: existing.headCommitId,
-      autoMerge: isStandaloneLocalRuntime(),
     });
-    return { ok: true };
+    const pending = isQueued(result);
+    return { ok: true, pending, change_request_id: pending ? result?.id || "" : "" };
   },
 
   async provisionResources() {

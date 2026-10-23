@@ -204,11 +204,14 @@ attempt to retry).
 
 ## Write surface
 
-Direct field writes via `records.changeRequest`/`bases.createChangeRequest`
-(`autoMerge = isStandaloneLocalRuntime()`): series bible, visual bible,
-character cards/visual/voice-profile, relationships, episode beats, shot
-production-sheet fields, tasks, and every `*-status = "requested"` write. AI
-generation (reference cards, reference voices, storyboard images, shot
+Direct field writes via `records.changeRequest`/`bases.createChangeRequest`:
+series bible, visual bible, character cards/visual/voice-profile,
+relationships, episode beats, shot production-sheet fields, tasks, and every
+`*-status = "requested"` write. The write follows the person's own
+permission, wherever the AirApp runs: with write access it lands at once;
+without it, it becomes a ChangeRequest for someone who has write access, and
+the app says the change was sent for review. The app never forces review on
+its own writes. AI generation (reference cards, reference voices, storyboard images, shot
 videos) and the local-filesystem HyperFrame status read are never done from
 the browser — only requested; `scripts/execute_generation_requests.mjs` and
 `scripts/read_hyperframe_status.mjs` are the trusted processes authorized to

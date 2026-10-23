@@ -84,7 +84,7 @@ Six Bases under one application Folder (`busa-picks`), declared in `content/busa
 - `sync-log`: append-only history of ingest/compute/execute runs.
 - `settings`: one row (`record-id: "config"`) with the seller profile, platform fee tables, freight rules, and ad-cost default.
 
-Resources provision lazily through an idempotent Busabase ChangeRequest the first time the app runs in a Space; see `references/picks-schema.md` for exact field shapes. A candidate's `develop`/`watch`/`drop` verdict and a proposal's `approve`/`request_changes`/`revise`/`block` review are both written directly onto the item record — the human verdict IS the field write, merged immediately from a standalone local preview or as a pending ChangeRequest from a deployed AirApp.
+Resources provision lazily through an idempotent Busabase ChangeRequest the first time the app runs in a Space; see `references/picks-schema.md` for exact field shapes. A candidate's `develop`/`watch`/`drop` verdict and a proposal's `approve`/`request_changes`/`revise`/`block` review are both written directly onto the item record — the human verdict IS the field write. The write follows the person's own permission, wherever the AirApp runs: with write access it lands at once; without it, it becomes a ChangeRequest for someone who has write access, and the app says the decision was sent for review. The app never forces review on its own writes.
 
 ## First Run And Onboarding
 

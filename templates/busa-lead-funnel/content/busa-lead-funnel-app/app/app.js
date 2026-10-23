@@ -534,7 +534,7 @@ async function runWrite(action) {
     return;
   }
   await loadState();
-  state.notice = result?.pending ? t("submittedForReview") : t("saved");
+  state.notice = result?.pending ? t("savedForReview") : t("saved");
   render();
 }
 

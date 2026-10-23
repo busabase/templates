@@ -79,7 +79,8 @@ export const messages = {
     review: "Review",
     fail: "Fail",
     decisionNote: "Decision note",
-    pendingCr: "ChangeRequest {id} was submitted and is waiting for review. The candidate's state changes once it is approved.",
+    pendingCr:
+      "Sent for review as ChangeRequest {id}. You don't have write access here, so the candidate's state changes once someone who does approves it.",
     pendingCrNoId: "pending",
     folder: "Folder",
     bases: "Bases",
@@ -174,7 +175,7 @@ export const messages = {
     review: "待复核",
     fail: "未通过",
     decisionNote: "裁决备注",
-    pendingCr: "变更请求 {id} 已提交，等待审核。审核通过后候选状态才会改变。",
+    pendingCr: "已作为变更请求 {id} 提交审核。你在这里没有写权限，需要有写权限的人批准后候选状态才会改变。",
     pendingCrNoId: "待处理",
     folder: "文件夹",
     bases: "数据表",

@@ -331,7 +331,9 @@ async function saveDetail() {
   item.review_body = reviewBody;
   item.decision_note = comment;
   const provider = await getProvider();
-  await provider.saveDraft(item.id, { review_body: reviewBody, comment });
+  const result = await provider.saveDraft(item.id, { review_body: reviewBody, comment });
+  // Without write access the draft is a ChangeRequest, not the record's text yet.
+  if (result?.pending) toast(t("savedForReview"));
 }
 
 async function decide(action) {
@@ -340,8 +342,10 @@ async function decide(action) {
   const reviewBody = $("reviewBody")?.value || "";
   const comment = $("reviewComment")?.value || "";
   const provider = await getProvider();
-  await provider.applyDecision(item.id, { action, review_body: reviewBody, comment });
-  toast(t("decision.saved"));
+  const result = await provider.applyDecision(item.id, { action, review_body: reviewBody, comment });
+  // Without write access the decision is a ChangeRequest and the review keeps its
+  // old status until someone who has it approves: say that, not "saved".
+  toast(result?.pending ? t("savedForReview") : t("decision.saved"));
   await reloadAfterWrite(item.id);
 }
 
@@ -362,8 +366,8 @@ async function setTestedStatus(tested) {
     return;
   }
   const provider = await getProvider();
-  await provider.setTested(item.id, tested, { note, evidence });
-  toast(t("tested.saved"));
+  const result = await provider.setTested(item.id, tested, { note, evidence });
+  toast(result?.pending ? t("savedForReview") : t("tested.saved"));
   await reloadAfterWrite(item.id);
 }
 

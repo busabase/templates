@@ -155,9 +155,10 @@ A human verdict (`approve`/`request_changes`/`block`/`revise`) writes the new
 Save-reply or an edited approval, the new `suggested-reply`) directly onto
 the ticket record through `busabase-sdk`. There is no separate decisions
 file: the ticket record is the single source of truth for both the draft and
-its review state. From a standalone local preview the write merges
-immediately (trusted operator); from the deployed AirApp it creates a
-pending ChangeRequest for the trusted process to merge.
+its review state. The write follows the person's own permission, wherever the
+AirApp runs: with write access it lands at once; without it, it becomes a
+ChangeRequest for someone who has write access, and the app says the decision
+was sent for review. The app never forces review on its own writes.
 
 ## The Quality Gate (`support-qa`, computed, never stored)
 

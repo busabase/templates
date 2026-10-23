@@ -35,7 +35,7 @@ Resolve the installed Folder and Bases by ownership metadata, not by workspace-s
 - Contacts Base: `resourceKey: contacts`. One row per person, linked to a canonical Company record.
 - Activities Base: `resourceKey: activities`. Calls, emails, meetings, and notes linked to a Company and optionally a Contact, with an optional next follow-up date.
 - Deals Base: `resourceKey: deals`. Opportunities linked to a Company and optionally a Primary Contact, with amount, currency, stage, close date, next step, and notes.
-- AirApp: `resourceKey: b2b-crm`. Point users to it for directory browsing, relationship detail, pipeline review, and review-first deal and activity changes.
+- AirApp: `resourceKey: b2b-crm`. Point users to it for directory browsing, relationship detail, pipeline review, and deal and activity changes that follow the person's own permission (with write access they land at once; without it, they wait for review).
 
 Template installation prefixes Base slugs with the selected Folder slug. Never assume the installed slug is literally `companies`, `contacts`, `activities`, or `deals`; use the ownership `resourceKey`. If more than one B2B CRM instance exists in a Space, ask which Folder the user means before reading or proposing changes.
 

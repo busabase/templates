@@ -575,16 +575,19 @@ export async function saveReplyAction(ticketId) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.saveReply({ ticket_id: ticketId, text, note });
+    result = await provider.saveReply({ ticket_id: ticketId, text, note });
   } catch (error) {
     flashNotice(error.message || "Save failed");
     return;
   }
   delete state.drafts[ticketId];
   delete state.notes[ticketId];
-  flashNotice(t("queueReply"));
+  // Without write access the reply is a ChangeRequest and the ticket keeps its
+  // old reply until someone who has it approves: say that, not "saved".
+  flashNotice(result?.pending ? t("savedForReview") : t("queueReply"));
   await loadState();
 }
 
@@ -611,15 +614,19 @@ export async function decideAction(ticketId, action) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.decideApproval({ ticket_id: ticketId, action, comment, text });
+    result = await provider.decideApproval({ ticket_id: ticketId, action, comment, text });
   } catch (error) {
     flashNotice(error.message || "Decision failed");
     return;
   }
   delete state.drafts[ticketId];
   await loadState();
+  // Without write access the decision is a ChangeRequest and the ticket keeps its
+  // old status until someone who has it approves: say so instead of nothing.
+  if (result?.pending) flashNotice(t("savedForReview"));
 }
 
 export async function saveSlaAction(ticketId) {
@@ -643,15 +650,16 @@ export async function saveSlaAction(ticketId) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.saveSla({ ticket_id: ticketId, due_by: dueBy });
+    result = await provider.saveSla({ ticket_id: ticketId, due_by: dueBy });
   } catch (error) {
     flashNotice(error.message || "Save failed");
     return;
   }
   delete state.slas[ticketId];
-  flashNotice(t("saveSla"));
+  flashNotice(result?.pending ? t("savedForReview") : t("saveSla"));
   await loadState();
 }
 

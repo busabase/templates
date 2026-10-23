@@ -26,7 +26,9 @@ The AirApp is a focused review queue with list/detail comparison.
 
 Humans compare before/after imagery and issue exactly one verdict: `approve`,
 `request_changes`, or `block`. Every verdict is a Busabase ChangeRequest against
-the exact head commit. The trusted Agent owns processing, asset upload,
+the exact head commit, and it follows the person's own permission: with write
+access it lands at once; without it, it waits for someone who has write access,
+and the app says so. The trusted Agent owns processing, asset upload,
 idempotent record writes, and any requested revision. Approval only makes a
 candidate eligible for an explicitly requested export; it never publishes or
 replaces an original.
@@ -37,8 +39,9 @@ Runtime readiness requires explicit authentication/Space selection, the owned
 app Folder, three compatible Bases, and schema version 1. Product onboarding is
 separate and persists one structured `config` record with default preset,
 default strength, privacy policies, completion time, and onboarding version.
-No live workflow rows are returned before both dimensions are ready. A submitted
-configuration ChangeRequest remains `needs_review` until it materializes.
+No live workflow rows are returned before both dimensions are ready. With write
+access the configuration lands at once; without it, the configuration
+ChangeRequest remains `in_review` until someone who has write access approves it.
 
 ## Resource Map
 

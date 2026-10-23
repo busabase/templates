@@ -428,9 +428,9 @@ function bindDetail(host) {
     const f = collect(host.querySelector("#conceptForm"));
     try {
       const provider = await getProvider();
-      await provider.saveTreatment(f);
+      const result = await provider.saveTreatment(f);
       await loadState();
-      toast(t("toast_concept_saved"));
+      toast(result?.pending ? t("savedForReview") : t("toast_concept_saved"));
     } catch (e) {
       toast(e.message, "danger");
     }
@@ -444,9 +444,11 @@ function bindDetail(host) {
     e.target.textContent = t("song_uploading");
     try {
       const provider = await getProvider();
-      await provider.uploadSong(file, { title: project().song?.title || file.name.replace(/\.[^.]+$/, "") });
+      const result = await provider.uploadSong(file, {
+        title: project().song?.title || file.name.replace(/\.[^.]+$/, ""),
+      });
       await loadState();
-      toast(t("toast_song_uploaded"));
+      toast(result?.pending ? t("savedForReview") : t("toast_song_uploaded"));
     } catch (err) {
       toast(err.message, "danger");
       render();
@@ -456,9 +458,9 @@ function bindDetail(host) {
     const f = collect(host.querySelector(".detail-card"));
     try {
       const provider = await getProvider();
-      await provider.saveSongMeta({ title: f.title, artist: f.artist });
+      const result = await provider.saveSongMeta({ title: f.title, artist: f.artist });
       await loadState();
-      toast(t("toast_song_saved"));
+      toast(result?.pending ? t("savedForReview") : t("toast_song_saved"));
     } catch (e) {
       toast(e.message, "danger");
     }
@@ -488,9 +490,9 @@ function bindDetail(host) {
     };
     try {
       const provider = await getProvider();
-      await provider.saveCharacter(payload);
+      const result = await provider.saveCharacter(payload);
       await loadState();
-      toast(t("toast_cast_saved"));
+      toast(result?.pending ? t("savedForReview") : t("toast_cast_saved"));
     } catch (e) {
       toast(e.message, "danger");
     }
@@ -500,9 +502,9 @@ function bindDetail(host) {
     e.target.textContent = t("loading");
     try {
       const provider = await getProvider();
-      await provider.requestCharacterCardGeneration(state.selectedId);
+      const result = await provider.requestCharacterCardGeneration(state.selectedId);
       await loadState();
-      toast(t("toast_ref_generated"));
+      toast(result?.pending ? t("savedForReview") : t("toast_ref_generated"));
     } catch (err) {
       toast(err.message, "danger");
       render();
@@ -512,10 +514,10 @@ function bindDetail(host) {
     if (!confirm(`${t("cast_delete")}?`)) return;
     try {
       const provider = await getProvider();
-      await provider.deleteCharacter(state.selectedId);
+      const result = await provider.deleteCharacter(state.selectedId);
       closeDetail();
       await loadState();
-      toast(t("toast_cast_deleted"));
+      toast(result?.pending ? t("savedForReview") : t("toast_cast_deleted"));
     } catch (e) {
       toast(e.message, "danger");
     }
@@ -529,9 +531,9 @@ function bindDetail(host) {
     e.target.textContent = t("loading");
     try {
       const provider = await getProvider();
-      await provider.requestStoryboardImageGeneration(state.selectedId);
+      const result = await provider.requestStoryboardImageGeneration(state.selectedId);
       await loadState();
-      toast(t("toast_img_generated"));
+      toast(result?.pending ? t("savedForReview") : t("toast_img_generated"));
     } catch (err) {
       toast(err.message, "danger");
       render();
@@ -544,9 +546,9 @@ function bindDetail(host) {
     e.target.textContent = t("loading");
     try {
       const provider = await getProvider();
-      await provider.requestShotVideoGeneration(state.selectedId);
+      const result = await provider.requestShotVideoGeneration(state.selectedId);
       await loadState();
-      toast(t("toast_vid_generated"));
+      toast(result?.pending ? t("savedForReview") : t("toast_vid_generated"));
     } catch (err) {
       toast(err.message, "danger");
       render();
@@ -561,10 +563,10 @@ function bindDetail(host) {
     if (!confirm(`${t("shot_delete")}?`)) return;
     try {
       const provider = await getProvider();
-      await provider.deleteShot(state.selectedId);
+      const result = await provider.deleteShot(state.selectedId);
       closeDetail();
       await loadState();
-      toast(t("toast_shot_deleted"));
+      toast(result?.pending ? t("savedForReview") : t("toast_shot_deleted"));
     } catch (e) {
       toast(e.message, "danger");
     }
@@ -573,8 +575,9 @@ function bindDetail(host) {
     n.addEventListener("click", async () => {
       try {
         const provider = await getProvider();
-        await provider.setShotActive(state.selectedId, "image", n.dataset.imgActive);
+        const result = await provider.setShotActive(state.selectedId, "image", n.dataset.imgActive);
         await loadState();
+        if (result?.pending) toast(t("savedForReview"));
       } catch (e) {
         toast(e.message, "danger");
       }
@@ -584,8 +587,9 @@ function bindDetail(host) {
     n.addEventListener("click", async () => {
       try {
         const provider = await getProvider();
-        await provider.setShotActive(state.selectedId, "video", n.dataset.vidActive);
+        const result = await provider.setShotActive(state.selectedId, "video", n.dataset.vidActive);
         await loadState();
+        if (result?.pending) toast(t("savedForReview"));
       } catch (e) {
         toast(e.message, "danger");
       }
@@ -599,9 +603,9 @@ async function uploadShotAsset(host, kind) {
   if (!file) return;
   try {
     const provider = await getProvider();
-    await provider.uploadShotAsset(state.selectedId, kind, file);
+    const result = await provider.uploadShotAsset(state.selectedId, kind, file);
     await loadState();
-    toast(t("toast_asset_uploaded"));
+    toast(result?.pending ? t("savedForReview") : t("toast_asset_uploaded"));
   } catch (e) {
     toast(e.message, "danger");
   }
@@ -623,10 +627,12 @@ async function saveShot(host, silent = false) {
   };
   try {
     const provider = await getProvider();
-    await provider.saveShot(payload);
+    const result = await provider.saveShot(payload);
     if (!silent) {
       await loadState();
-      toast(t("toast_shot_saved"));
+      toast(result?.pending ? t("savedForReview") : t("toast_shot_saved"));
+    } else if (result?.pending) {
+      toast(t("savedForReview"));
     }
   } catch (e) {
     toast(e.message, "danger");
@@ -637,7 +643,7 @@ export async function newCharacter() {
   const id = `char-${Date.now()}`;
   try {
     const provider = await getProvider();
-    await provider.saveCharacter({
+    const result = await provider.saveCharacter({
       id,
       name: t("new_character_name"),
       role: "",
@@ -647,6 +653,8 @@ export async function newCharacter() {
     });
     await loadState();
     openRecord(id, "cast");
+    // Without write access the new character waits as a ChangeRequest.
+    if (result?.pending) toast(t("savedForReview"));
   } catch (e) {
     toast(e.message, "danger");
   }
@@ -655,9 +663,17 @@ export async function newShot() {
   const id = `shot-${Date.now()}`;
   try {
     const provider = await getProvider();
-    await provider.saveShot({ id, title: t("new_shot_name"), description: "", duration_seconds: 8, characters: [] });
+    const result = await provider.saveShot({
+      id,
+      title: t("new_shot_name"),
+      description: "",
+      duration_seconds: 8,
+      characters: [],
+    });
     await loadState();
     openRecord(id, "storyboard");
+    // Without write access the new shot waits as a ChangeRequest.
+    if (result?.pending) toast(t("savedForReview"));
   } catch (e) {
     toast(e.message, "danger");
   }

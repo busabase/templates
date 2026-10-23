@@ -560,6 +560,15 @@ textarea {
   color: var(--warning);
 }
 
+.notice-banner {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-soft);
+  color: var(--warning);
+}
+
 /* ── Overview ──────────────────────────────────────────────────────────── */
 .ws-overview .page-hero h1 {
   margin-bottom: 0;

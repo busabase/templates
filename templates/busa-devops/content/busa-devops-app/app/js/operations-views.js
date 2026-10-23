@@ -627,16 +627,19 @@ export async function submitDecision(actionId, verdict) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.decideAction({ action_id: actionId, verdict, note });
+    result = await provider.decideAction({ action_id: actionId, verdict, note });
   } catch (error) {
     state.notice = error instanceof Error ? error.message : String(error);
     render();
     return;
   }
   await loadState();
-  state.notice = t("decisionSaved");
+  // Without write access the verdict is a ChangeRequest, and the action card
+  // keeps its old status until someone who has it approves: say that, not "Saved".
+  state.notice = result?.pending ? t("savedForReview") : t("decisionSaved");
   render();
 }
 

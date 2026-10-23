@@ -77,6 +77,8 @@ export const messages = {
     requiredAnswerEmpty: "An answer is required before this idea can advance.",
     answerSaved: "Answer saved.",
     answerPendingReview: "Answer and Idea update submitted for review. The gate changes after both are approved.",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     requiredAnswerPending: "Answer and Idea update are awaiting review.",
     requiredAnswerPartialPending: "One related change is awaiting review. Save the same answer to finish submitting both changes.",
     requiredAnswerRejected: "The Question change was rejected while the Idea field was saved. Review the answer, then resubmit this Question.",
@@ -212,6 +214,7 @@ export const messages = {
     requiredAnswerEmpty: "这项需要回答后才能推进灵感。",
     answerSaved: "回答已保存。",
     answerPendingReview: "回答和灵感字段修改已提交审核；两项都通过后，推进条件才会更新。",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     requiredAnswerPending: "回答和灵感字段修改正在等待审核。",
     requiredAnswerPartialPending: "已有一项相关修改等待审核；保存同一回答可补交另一项。",
     requiredAnswerRejected: "灵感字段已保存，但问题修改被拒绝。请核对回答后重新提交此问题。",

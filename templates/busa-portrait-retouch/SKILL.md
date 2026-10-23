@@ -135,7 +135,9 @@ Busabase resources:
 The browser never receives filesystem access, API keys, or Vault values. The
 trusted Agent runs the CLI and performs content-addressed asset upload plus
 idempotent record writes. The App only reads approved state and records human
-decisions through stale-version-protected ChangeRequests. Runtime readiness and
+decisions through stale-version-protected ChangeRequests, which follow the
+person's own permission: with write access a decision lands at once; without
+it, it waits for someone who has write access. Runtime readiness and
 product onboarding are separate; incomplete onboarding suppresses workflow rows.
 
 ## Validation

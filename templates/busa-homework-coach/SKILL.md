@@ -109,7 +109,7 @@ Required app views (hash routes):
 
 ## Review And Execution Loop
 
-1. Send parent/teacher users to `#/review`. Decisions write straight onto the review record through `busabase-sdk` (`records.changeRequest`), with `autoMerge = isStandaloneLocalRuntime()` — local preview merges immediately, a deployed AirApp creates a pending ChangeRequest. Approving or blocking also mirrors the resulting status onto the linked question/mistake/paper's own row.
+1. Send parent/teacher users to `#/review`. Decisions write straight onto the review record through `busabase-sdk` (`records.changeRequest`). The write follows the person's own permission, wherever the AirApp runs: with write access it lands at once; without it, it becomes a ChangeRequest for someone who has write access, and the app says the decision was sent for review. The app never forces review on its own writes. Approving or blocking also mirrors the resulting status onto the linked question/mistake/paper's own row.
 2. Before executing anything, run `node scripts/execute_decisions.mjs` for a dry run. With `--apply`, it re-reads every decided review and writes an execution marker (`execution-status`, `execution-detail`, `executed-at`) onto it, reporting the local-only operation (`add_to_mistake_book`, `mark_understood`, `queue_practice_paper`, `export_paper_plan`, `request_revision`, `block_item`) the agent should perform next, and for approve/block also sets the review's final status (`done`/`blocked`). It performs no export, filing, or external transmission.
 
 ## Safety Defaults

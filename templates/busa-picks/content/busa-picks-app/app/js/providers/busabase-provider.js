@@ -25,13 +25,6 @@ const RECORD_LOOKUP = {
   proposals: { slug: "proposal-id", normalize: (row) => normalizeProposal(row) },
 };
 
-// A deployed AirApp sits inside the Busabase review boundary; only a standalone
-// run may merge its own writes. That is far too consequential to infer from the
-// URL — see ../runtime.js.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
-export { isStandaloneLocalRuntime };
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 const toBusabaseFields = (fields) =>
@@ -118,6 +111,13 @@ async function findRecord(key, idFieldSlug, idValue) {
   }
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 async function upsert(key, idFieldSlug, idValue, fields, message) {
   if (!allowedWrites.has("bases.createChangeRequest") || !allowedWrites.has("records.changeRequest")) {
     throw new Error("PROCEDURE_DENIED: records.changeRequest");
@@ -125,14 +125,12 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
   const declared = base(key);
   const existing = await findRecord(key, idFieldSlug, idValue);
   const normalized = toBusabaseFields(fields);
-  const autoMerge = isStandaloneLocalRuntime();
   if (!existing) {
     return runtimeClient.bases.createChangeRequest({
       baseId: declared.baseId,
       fields: normalized,
       message,
       submittedBy: appConfig.appId,
-      autoMerge,
     });
   }
   return runtimeClient.records.changeRequest({
@@ -142,7 +140,6 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
     message,
     author: appConfig.appId,
     baseCommitId: existing.headCommitId,
-    autoMerge,
   });
 }
 
@@ -204,12 +201,13 @@ export const busabaseProvider = {
     await ensureResources();
     const now = new Date().toISOString();
 
+    let result;
     try {
       if (kind === "candidate") {
         const existing = await findRecord("candidates", "candidate-id", id);
         if (!existing) throw new Error(`Unknown candidate: ${id}`);
         const current = normalizeFields(existing.headCommit?.payload || existing.headCommit?.fields || existing.fields);
-        await upsert(
+        result = await upsert(
           "candidates",
           "candidate-id",
           id,
@@ -236,12 +234,12 @@ export const busabaseProvider = {
           next.review_comment = comment;
           next.review_decided_at = now;
         }
-        await upsert("proposals", "proposal-id", id, next, `Decision on proposal ${id}: ${action}`);
+        result = await upsert("proposals", "proposal-id", id, next, `Decision on proposal ${id}: ${action}`);
       } else if (kind === "trend") {
         const existing = await findRecord("trend-items", "trend-id", id);
         if (!existing) throw new Error(`Unknown trend item: ${id}`);
         const current = normalizeFields(existing.headCommit?.payload || existing.headCommit?.fields || existing.fields);
-        await upsert(
+        result = await upsert(
           "trend-items",
           "trend-id",
           id,
@@ -252,7 +250,12 @@ export const busabaseProvider = {
     } catch (error) {
       return { ok: false, status: 400, error: error instanceof Error ? error.message : String(error) };
     }
-    return { ok: true, decision: { id, kind, action, comment, decided_at: now } };
+    return {
+      ok: true,
+      decision: { id, kind, action, comment, decided_at: now },
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   // A record named by the URL that is not on the loaded page: read it on its

@@ -166,9 +166,11 @@ Read `references/brand-schema.md` before editing the app or its domain logic.
 A human verdict (`approve` / `request_changes` / `block` / `revise` for a
 narrative item; `resolve_drift` / `dismiss_drift` for a drift alert) writes
 the new `status` plus `decision-note` / `decided-at` directly onto the
-record through `busabase-sdk`. From a standalone local preview the write
-merges immediately (trusted operator); from the deployed AirApp it creates a
-pending ChangeRequest for the trusted process to merge.
+record through `busabase-sdk`. The write follows the person's own
+permission, wherever the AirApp runs: with write access it lands at once;
+without it, it becomes a ChangeRequest for someone who has write access, and
+the app says the decision was sent for review. The app never forces review on
+its own writes.
 
 ## Normal Workflow
 

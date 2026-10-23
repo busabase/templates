@@ -44,6 +44,9 @@ export const state = {
   ),
   demo: new URLSearchParams(location.search).get("demo") || "",
   busy: false,
+  // Set when the last operation was queued as a ChangeRequest (no write
+  // access); shown above the card that made it, cleared on the next op or route.
+  notice: "",
 };
 
 const REVIEW_STATES = ["needs_review", "changes_requested", "approved", "done", "blocked"];
@@ -250,6 +253,7 @@ let previousRouteWasList = false;
 function setRoute() {
   const previous = state.route;
   state.route = parseRoute();
+  state.notice = "";
   // Mark a detail entry opened from its list so Back/Close/Escape step back to
   // that exact list entry instead of pushing a new history entry.
   if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
@@ -372,13 +376,18 @@ export function openReview(list) {
 async function applyOperation(op) {
   if (state.busy) return;
   state.busy = true;
+  state.notice = "";
   render();
   try {
     const provider = await getProvider();
     const data = await provider.applyOperation(op);
     if (data?.snapshot) {
-      state.snapshot = data.snapshot;
-      state.settings = { ...state.settings, ...data };
+      const { pending, change_request_id, ...fresh } = data;
+      state.snapshot = fresh.snapshot;
+      state.settings = { ...state.settings, ...fresh };
+      // Without write access the operation is a ChangeRequest and the item keeps
+      // its old status until someone who has it approves: say so.
+      state.notice = pending ? t("savedForReview") : "";
       state.busy = false;
       render();
     } else {
@@ -685,6 +694,13 @@ export function bindWorkflowChips() {
       render();
     });
   });
+}
+
+// The queued-operation notice, in the same banner style as the sync warnings.
+export function noticeBanner() {
+  return state.notice
+    ? `<div class="warnings" role="status"><div class="warning"><strong>${escapeHtml(state.notice)}</strong></div></div>`
+    : "";
 }
 
 // Review actions shared by drafts / shorts / engagement. `kind` picks the op.

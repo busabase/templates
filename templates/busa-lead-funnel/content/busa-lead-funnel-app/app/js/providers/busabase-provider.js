@@ -15,19 +15,6 @@ const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 
-// A deployed AirApp is served through the ambient Busabase session (a Busabase
-// iframe/preview host, or same-origin proxy under /api/airapp-preview/); a
-// standalone local preview runs on loopback outside that host. Human actions
-// made from a standalone local preview (the trusted operator's own machine)
-// merge immediately; actions made from the deployed AirApp create a pending
-// ChangeRequest for the trusted process to merge, per the AirApp boundary.
-// A deployed AirApp sits inside the Busabase review boundary; only a standalone
-// run may merge its own writes. That is far too consequential to infer from the
-// URL — see ../runtime.js.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
-export { isStandaloneLocalRuntime };
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 const toBusabaseFields = (fields) =>
@@ -148,6 +135,13 @@ async function findRecord(key, idFieldSlug, idValue) {
   }
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 // Every lead a human can act on already exists (leads enter the pipeline
 // through Busabase directly, e.g. an upstream sourcing process — the app
 // itself never creates a lead record), so moveStage/addNote only ever
@@ -163,11 +157,10 @@ async function updateLeadRecord(existing, lead, message) {
     message,
     author: appConfig.appId,
     baseCommitId: existing.headCommitId,
-    autoMerge: isStandaloneLocalRuntime(),
   });
-  // A ChangeRequest that has not merged yet leaves the board unchanged until a
-  // reviewer merges it — the UI says so instead of looking like nothing happened.
-  return { lead, pending: !(result?.mergedAt || result?.status === "merged") };
+  // A queued ChangeRequest leaves the board unchanged until someone with write
+  // access approves it — the UI says so instead of looking like nothing happened.
+  return { lead, pending: isQueued(result), change_request_id: isQueued(result) ? result?.id || "" : "" };
 }
 
 function findSettingsRow(rows = [], kind = "") {

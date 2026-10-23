@@ -896,9 +896,11 @@ async function submitDecision(payload) {
   render();
   try {
     const provider = await getProvider();
-    await provider.submitReview(payload);
+    const result = await provider.submitReview(payload);
     await loadState();
-    state.notice = t("saved");
+    // Without write access the decision is a ChangeRequest, and the item keeps
+    // its old status until someone who has it approves: say that, not "Saved".
+    state.notice = result?.pending ? t("savedForReview") : t("saved");
   } catch (error) {
     state.notice = error instanceof Error ? error.message : String(error);
   } finally {

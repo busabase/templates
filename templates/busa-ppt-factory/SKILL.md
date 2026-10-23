@@ -126,10 +126,10 @@ chooses `approve` / `request_changes` / `block` / `revise`; the decision and
 its resulting workflow `status` are written directly onto the slide card's
 or deck's own Busabase row (`content/busa-ppt-factory-app/app/js/providers/busabase-provider.js`'s
 `decideItem()`) — there is no separate decisions bucket, since Busabase
-reads are always live. From a standalone local preview the write merges
-immediately (trusted operator); from the deployed AirApp it creates a
-pending ChangeRequest for the trusted process to merge, per the AirApp
-boundary in `$busabase-app-creator`.
+reads are always live. The write follows the person's own permission,
+wherever the AirApp runs: with write access it lands at once; without it, it
+becomes a ChangeRequest for someone who has write access, and the app says the
+decision was sent for review. The app never forces review on its own writes.
 
 ## PPT Factory Workflow
 

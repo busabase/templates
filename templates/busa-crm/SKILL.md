@@ -129,10 +129,11 @@ Follow-ups use the standard workflow states: `needs_review`,
 `changes_requested`, `approved`, `done`, `blocked`. A human verdict
 (`approve` / `request_changes` / `block` / `revise`) writes the new `status`
 plus `decision_comment` / `decided_at` / `decided_by` directly onto the
-followup record through `busabase-sdk`. From a standalone local preview the
-write merges immediately (trusted operator); from the deployed AirApp it
-creates a pending ChangeRequest for the trusted process to merge, per the
-AirApp boundary in `$busabase-app-creator`.
+followup record through `busabase-sdk`. The write follows the person's own
+permission, wherever the AirApp runs: with write access it lands at once;
+without it, it becomes a ChangeRequest for someone who has write access, and
+the app says the decision was sent for review. The app never forces review on
+its own writes.
 
 1. When the operator feeds new material (emails, meeting notes, chat asks): upsert
    companies/contacts/deals by stable domain id (`company_id`, `contact_id`,

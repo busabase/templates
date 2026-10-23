@@ -110,6 +110,8 @@ export const messages = {
     safetyNotes: "Safety notes",
     saveNote: "Save note",
     saved: "Saved.",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     school: "School profile",
     schoolName: "School",
     score: "Score",
@@ -289,6 +291,7 @@ export const messages = {
     safetyNotes: "安全提示",
     saveNote: "保存备注",
     saved: "已保存。",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     school: "学校信息",
     schoolName: "学校",
     score: "得分",

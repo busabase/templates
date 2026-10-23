@@ -235,6 +235,7 @@ export const MESSAGES = {
     toast_saved: "已保存",
     toast_save_failed: "保存失败",
     toast_deleted: "已删除",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     toast_voice_generated: "参考声音任务已加入待执行队列",
     toast_image_generated: "分镜图任务已加入待执行队列",
     toast_video_generated: "分镜视频任务已加入待执行队列",
@@ -501,6 +502,8 @@ export const MESSAGES = {
     toast_saved: "Saved",
     toast_save_failed: "Save failed",
     toast_deleted: "Deleted",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     toast_voice_generated: "Reference voice task queued for the agent",
     toast_image_generated: "Storyboard image task queued for the agent",
     toast_video_generated: "Shot video task queued for the agent",

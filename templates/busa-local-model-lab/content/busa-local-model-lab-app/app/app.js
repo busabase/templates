@@ -31,6 +31,9 @@ const state = {
   lang: normalizeLang(params.get("lang") || localStorage.getItem("busa-local-model-lab-language") || "auto"),
   messages: { en: {}, zh: {} },
   busy: false,
+  // Set after a write the server queued for review; cleared on the next write
+  // or when another record is opened.
+  notice: "",
   loadingMore: new Set(),
   settingsTab: "guide",
   // Records opened by URL that are not on a loaded page: id → record | null (missing) | undefined (loading).
@@ -153,6 +156,7 @@ function setRoute() {
     history.replaceState({ fromList: true }, "");
   }
   previousRouteWasList = RECORD_VIEWS.includes(state.route.view) && !state.route.selectedId;
+  if (previous.view !== state.route.view || previous.selectedId !== state.route.selectedId) state.notice = "";
   els.search.value = state.route.query;
   setSidebarOpen(false);
   render();
@@ -502,14 +506,16 @@ function renderDetail() {
     els.detailBody.innerHTML = `<div class="ws-detail-empty">${escapeHtml(loading ? t("loading") : t("recordMissing"))}</div>`;
     return;
   }
+  const notice = state.notice ? `<div class="notice-banner" role="status">${escapeHtml(state.notice)}</div>` : "";
   els.detailBody.innerHTML =
-    view === "examples"
+    notice +
+    (view === "examples"
       ? exampleDetail(item)
       : view === "runs"
         ? runDetail(item)
         : view === "evaluations"
           ? evaluationDetail(item)
-          : modelDetail(item);
+          : modelDetail(item));
 }
 
 const facts = (rows) =>
@@ -640,11 +646,18 @@ async function reviewExample(id, verdict) {
   const example = recordById("examples", id);
   if (!example || state.busy) return;
   state.busy = true;
+  state.notice = "";
   try {
     const note = document.querySelector("#review-note")?.value || "";
     const provider = await getProvider();
-    await provider.reviewExample(example, verdict, note);
+    const result = await provider.reviewExample(example, verdict, note);
     await loadState();
+    // Without write access the verdict is a ChangeRequest, and the example
+    // keeps its old status until someone who has it approves: say so.
+    if (result?.pending) {
+      state.notice = t("savedForReview");
+      render();
+    }
   } finally {
     state.busy = false;
   }
@@ -654,11 +667,18 @@ async function decideEvaluation(id, verdict) {
   const evaluation = state.data.snapshot.evaluations.find((item) => item.evaluation_id === id);
   if (!evaluation || state.busy) return;
   state.busy = true;
+  state.notice = "";
   try {
     const note = document.querySelector(`.evaluation-note[data-evaluation-id="${CSS.escape(id)}"]`)?.value || "";
     const provider = await getProvider();
-    await provider.decideEvaluation(evaluation, verdict, note);
+    const result = await provider.decideEvaluation(evaluation, verdict, note);
     await loadState();
+    // Without write access the verdict is a ChangeRequest, and the evaluation
+    // keeps its old decision until someone who has it approves: say so.
+    if (result?.pending) {
+      state.notice = t("savedForReview");
+      render();
+    }
   } finally {
     state.busy = false;
   }

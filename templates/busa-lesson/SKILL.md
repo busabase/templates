@@ -126,7 +126,7 @@ The script validates the payload against the school template sections stored on 
 
 ## Decisions And Execution Workflow
 
-1. The dean reviews at `#/review`: approve, request changes (with a note), save an edited draft (revise), or block. Decisions write directly onto the plan record. From a standalone local preview the write merges immediately (trusted operator); from the deployed AirApp it creates a pending ChangeRequest for the trusted process to merge.
+1. The dean reviews at `#/review`: approve, request changes (with a note), save an edited draft (revise), or block. Decisions write directly onto the plan record. The write follows the person's own permission, wherever the AirApp runs: with write access it lands at once; without it, it becomes a ChangeRequest for someone who has write access, and the app says the decision was sent for review. The app never forces review on its own writes.
 2. On explicit user request to execute, run `scripts/execute_decisions.mjs` (dry-run by default; `--apply` writes `execution-status: "ready_for_agent"` onto each decided plan with the concrete operation — `publish_plan` (from `approve`) or `request_revision` (from `request_changes`) — and target). No external side effects either way; the plan's workflow `status` never changes.
 3. The agent then performs the approved follow-up outside the app: for `publish_plan`, run `scripts/export_plans.mjs` and send the feedback draft via other channels (e.g. busa-email) after approval; for `request_revision`, redraft the plan per the review note, re-ingest, and re-run checks.
 

@@ -107,6 +107,8 @@ export const messages = {
     roas: "ROAS",
     roas7d: "ROAS 7d",
     saveNote: "Save note",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     search: "Search",
     secretsReady: "secrets ready",
     settings: "Help & Settings",
@@ -321,6 +323,7 @@ export const messages = {
     roas: "ROAS",
     roas7d: "7 天 ROAS",
     saveNote: "保存备注",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     search: "搜索",
     secretsReady: "密钥已就绪",
     settings: "帮助与设置",

@@ -472,9 +472,10 @@ export async function submitDecision(button) {
   }
   const note = document.querySelector(`[data-review-note="${CSS.escape(reviewId)}"]`)?.value || "";
   button.disabled = true;
+  let result;
   try {
     const provider = await getProvider();
-    await provider.decideItem({
+    result = await provider.decideItem({
       targetType: item.target_type,
       id: item.target_id,
       action: button.dataset.action,
@@ -488,7 +489,9 @@ export async function submitDecision(button) {
   }
   delete state.edits[`review:${reviewId}`];
   await loadState();
-  state.notice = t("decisionSaved");
+  // Without write access the decision is a ChangeRequest, and the item keeps
+  // its old status until someone who has it approves: say that, not "saved".
+  state.notice = result?.pending ? t("savedForReview") : t("decisionSaved");
   render();
 }
 

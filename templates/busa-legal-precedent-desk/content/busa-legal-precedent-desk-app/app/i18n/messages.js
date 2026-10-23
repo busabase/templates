@@ -60,6 +60,8 @@ export const messages = {
     selectPack: "Select a research pack from the queue to review it here.",
     demoNotice: "Demo mode is read-only — decisions are not saved.",
     saved: "Decision submitted.",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     noMatches: "No records match this search.",
     sideReadFailed: "This table couldn't be read",
     pack: "Research pack",
@@ -168,6 +170,7 @@ export const messages = {
     selectPack: "从左侧队列选择一个类案包，在此复核。",
     demoNotice: "演示模式为只读，决定不会保存。",
     saved: "决定已提交。",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     noMatches: "没有符合搜索的记录。",
     sideReadFailed: "无法读取此表",
     pack: "类案包",

@@ -65,6 +65,8 @@ export const messages = {
     selectInQueue: "Pick a record from the queue to review its anonymization, extraction and draft.",
     noMatches: "Nothing matches this search.",
     demoReadOnly: "Demo mode is read-only — decisions are not saved.",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     sideUnavailable: "Some data could not be read: {list}.",
     caseCol: "Case",
     refCol: "Ref",
@@ -188,6 +190,7 @@ export const messages = {
     selectInQueue: "从队列中选择一条记录，复核脱敏、抽取结果与草稿。",
     noMatches: "没有匹配的记录。",
     demoReadOnly: "演示模式为只读，决定不会保存。",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     sideUnavailable: "部分数据无法读取：{list}。",
     caseCol: "案例",
     refCol: "编号",

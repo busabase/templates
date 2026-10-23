@@ -9,9 +9,6 @@ import {
   buildSnapshot,
   parseJson,
 } from "../lab-model.js?v=0.1.0";
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
-export { isStandaloneLocalRuntime };
 
 const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
@@ -133,6 +130,13 @@ const ID_FIELDS = {
   "model-registry": "model-id",
 };
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 async function updateRecord(key, item, fields, message) {
   if (!allowedWrites.has("records.changeRequest")) throw new Error("PROCEDURE_DENIED: records.changeRequest");
   if (!item.__recordId || !item.__headCommitId) throw new Error(`STALE_ITEM: ${key}`);
@@ -143,7 +147,6 @@ async function updateRecord(key, item, fields, message) {
     message,
     author: appConfig.appId,
     baseCommitId: item.__headCommitId,
-    autoMerge: isStandaloneLocalRuntime(),
   });
 }
 
@@ -249,24 +252,32 @@ export const busabaseProvider = {
 
   async reviewExample(example, verdict, note = "") {
     const next = applyExampleVerdict(example, verdict, note);
-    await updateRecord(
+    const result = await updateRecord(
       "training-examples",
       example,
       baseExampleFields(next),
       `${verdict} training example ${example.example_id}`,
     );
-    return next;
+    return {
+      ...next,
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   async decideEvaluation(evaluation, verdict, note = "") {
     const next = applyEvaluationVerdict(evaluation, verdict, note);
-    await updateRecord(
+    const result = await updateRecord(
       "evaluations",
       evaluation,
       baseEvaluationFields(next),
       `${verdict} evaluation ${evaluation.evaluation_id}`,
     );
-    return next;
+    return {
+      ...next,
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   async provisionResources() {

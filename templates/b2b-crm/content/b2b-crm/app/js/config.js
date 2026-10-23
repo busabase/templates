@@ -776,7 +776,7 @@ export const appConfig = {
       },
       {
         "id": "request-stage-change",
-        "label": "Request Stage Change",
+        "label": "Change Stage",
         "kind": "change_request",
         "base": "deals",
         "fields": [

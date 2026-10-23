@@ -600,6 +600,9 @@ export async function submitDecision(payload) {
     if (!body.ok) throw new Error(body.error || "Decision failed");
     state.saving = false;
     await loadState();
+    // Without write access the decision is a ChangeRequest, and the item keeps
+    // its old state until someone who has it approves: say so on the record.
+    if (body.pending) showFeedback(t("savedForReview"));
   } catch (error) {
     state.saving = false;
     showFeedback(error instanceof Error ? error.message : String(error));

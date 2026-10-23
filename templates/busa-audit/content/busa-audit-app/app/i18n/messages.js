@@ -115,6 +115,8 @@ export const messages = {
     rule: "Rule",
     rules: "Tolerance Rules",
     saveDraft: "Save draft",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     search: "Search",
     settings: "Help & Settings",
     setupNeeded: "Needs configuration",
@@ -291,6 +293,7 @@ export const messages = {
     rule: "规则",
     rules: "容差规则",
     saveDraft: "保存草稿",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     search: "搜索",
     settings: "帮助与设置",
     setupNeeded: "需要配置",

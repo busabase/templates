@@ -707,15 +707,18 @@ async function decideFeedbackAction(feedbackId, action, requestId) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.decideFeedback({ feedback_id: feedbackId, action, request_id: requestId });
+    result = await provider.decideFeedback({ feedback_id: feedbackId, action, request_id: requestId });
   } catch (error) {
     toast(error.message);
     return;
   }
   delete state.edits.assign[feedbackId];
-  toast(t("decisionSaved"));
+  // Without write access the change is a ChangeRequest and the record keeps its
+  // old value until someone who has it approves: say that, not "saved".
+  toast(result?.pending ? t("savedForReview") : t("decisionSaved"));
   await loadState();
 }
 
@@ -728,15 +731,18 @@ async function saveEffortAction(requestId, effortEstimate) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.saveRequestEffort({ request_id: requestId, effort_estimate: effortEstimate });
+    result = await provider.saveRequestEffort({ request_id: requestId, effort_estimate: effortEstimate });
   } catch (error) {
     toast(error.message);
     return;
   }
   delete state.edits.effort[requestId];
-  toast(t("decisionSaved"));
+  // Without write access the change is a ChangeRequest and the record keeps its
+  // old value until someone who has it approves: say that, not "saved".
+  toast(result?.pending ? t("savedForReview") : t("decisionSaved"));
   await loadState();
 }
 
@@ -755,15 +761,18 @@ async function decideProposalAction(proposalId, action, reviewNote, draft) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.decideProposal({ proposal_id: proposalId, action, review_note: reviewNote, draft });
+    result = await provider.decideProposal({ proposal_id: proposalId, action, review_note: reviewNote, draft });
   } catch (error) {
     toast(error.message);
     return;
   }
   delete state.edits.draft[proposalId];
   delete state.edits.note[proposalId];
-  toast(t("decisionSaved"));
+  // Without write access the change is a ChangeRequest and the record keeps its
+  // old value until someone who has it approves: say that, not "saved".
+  toast(result?.pending ? t("savedForReview") : t("decisionSaved"));
   await loadState();
 }

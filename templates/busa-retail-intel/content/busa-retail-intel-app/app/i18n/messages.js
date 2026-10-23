@@ -22,7 +22,8 @@ export const messages = {
     recordMissing: "Record not found",
     recordMissingDetail: "It may have been removed, or you may not have access to it.",
     noMatches: "No matches in the loaded rows",
-    decisionPending: "Submitted for review — the status changes once the change request is merged.",
+    decisionPending:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     signal: "Signal",
     action: "Action",
     draft: "Draft",
@@ -130,7 +131,7 @@ export const messages = {
     recordMissing: "找不到这条记录",
     recordMissingDetail: "它可能已被删除，或你没有访问权限。",
     noMatches: "已加载的记录中没有匹配项",
-    decisionPending: "已提交审核 —— 变更请求合并后状态才会更新。",
+    decisionPending: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     signal: "信号",
     action: "行动",
     draft: "草稿",

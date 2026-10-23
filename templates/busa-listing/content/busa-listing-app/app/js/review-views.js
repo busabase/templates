@@ -892,9 +892,10 @@ async function submitDecision(draftId, action, { comment = "", fields } = {}) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.decideDraft({ draft_id: draftId, action, note: comment, fields });
+    result = await provider.decideDraft({ draft_id: draftId, action, note: comment, fields });
   } catch (error) {
     state.notice = error?.message || `Decision failed: ${action}`;
     render();
@@ -903,7 +904,9 @@ async function submitDecision(draftId, action, { comment = "", fields } = {}) {
   delete state.edits[draftId];
   if (fields) delete state.fieldEdits[draftId];
   await loadState();
-  state.notice = t("saved");
+  // Without write access the decision is a ChangeRequest, and the draft keeps
+  // its old status until someone who has it approves: say that, not "Saved".
+  state.notice = result?.pending ? t("savedForReview") : t("saved");
   render();
 }
 

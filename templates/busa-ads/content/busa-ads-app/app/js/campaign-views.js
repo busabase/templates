@@ -796,16 +796,19 @@ export async function submitDecision(adjustmentId, verdict) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.decideAdjustment({ adjustment_id: adjustmentId, verdict, note });
+    result = await provider.decideAdjustment({ adjustment_id: adjustmentId, verdict, note });
   } catch (error) {
     state.notice = error instanceof Error ? error.message : String(error);
     render();
     return;
   }
   await loadState();
-  state.notice = t("decisionSaved");
+  // Without write access the verdict is a ChangeRequest, and the adjustment
+  // keeps its old status until someone who has it approves: say that, not "Saved".
+  state.notice = result?.pending ? t("savedForReview") : t("decisionSaved");
   render();
 }
 

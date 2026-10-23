@@ -84,6 +84,8 @@ export const messages = {
     riskPolicy: "Risk policy",
     saveEdit: "Save edit",
     saveSla: "Save due-by",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     search: "Search",
     secretsReady: "secrets ready",
     sentVia: "Sent via",
@@ -250,6 +252,7 @@ export const messages = {
     riskPolicy: "风险策略",
     saveEdit: "保存修改",
     saveSla: "保存截止时间",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     search: "搜索",
     secretsReady: "密钥已就绪",
     sentVia: "发送渠道",

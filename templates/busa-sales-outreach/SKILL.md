@@ -210,8 +210,10 @@ reply ingestion are out of scope for v1.
   only in Busabase through `busabase-sdk`.
 - Local OAuth appears only in an explicitly requested standalone preview;
   hosted AirApp uses its ambient Busabase session.
-- Browser writes go through ChangeRequests and may auto-merge only in a
-  standalone local runtime.
+- Browser writes go through ChangeRequests that follow the person's own
+  permission, wherever the AirApp runs: with write access they land at once;
+  without it, they wait for someone who has write access, and the app says so.
+  The app never forces review on its own writes.
 - Demo data is explicit, deterministic, non-persistent, and cannot send.
 - Keep the desktop sidebar/list/detail shell, true mobile list/detail flow,
   hash routes, and responsive Help & Settings from the creator contract.

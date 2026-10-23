@@ -324,7 +324,7 @@ async function submitDecision(action) {
   const provider = await getProvider();
   state.submitting = true;
   try {
-    await provider.submitReview({
+    const result = await provider.submitReview({
       id: selected.id,
       action,
       comment: byId("decisionComment")?.value || "",
@@ -332,6 +332,12 @@ async function submitDecision(action) {
     });
     state.submitting = false;
     await loadState();
+    // Without write access the decision is a ChangeRequest, and the check
+    // keeps its old status until someone who has it approves: say so.
+    if (result?.pending) {
+      state.notice = t("savedForReview");
+      render();
+    }
   } catch (error) {
     state.submitting = false;
     const message = error instanceof Error ? error.message : String(error);

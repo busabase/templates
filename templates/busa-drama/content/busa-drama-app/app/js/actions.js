@@ -160,7 +160,9 @@ async function saveForm(form) {
     store.state = await provider.saveItem(kind, payload);
     store.selectedId = payload.id;
   }
-  toast(t("toast_saved"));
+  // Without write access the save is a ChangeRequest, and the record keeps its
+  // old content until someone who has it approves: say that, not "Saved".
+  toast(store.state?.pending ? t("savedForReview") : t("toast_saved"));
   syncRoute({ replace: true });
   hooks.render();
 }
@@ -245,7 +247,7 @@ export function bindForm() {
       try {
         const provider = await getProvider();
         store.state = await provider.requestStoryboardImageGeneration(shotId);
-        toast(t("toast_image_generated"));
+        toast(store.state?.pending ? t("savedForReview") : t("toast_image_generated"));
         hooks.render();
       } catch (error) {
         toast(error.message || t("generate_image_failed"));
@@ -262,7 +264,7 @@ export function bindForm() {
       try {
         const provider = await getProvider();
         store.state = await provider.requestShotVideoGeneration(shotId);
-        toast(t("toast_video_generated"));
+        toast(store.state?.pending ? t("savedForReview") : t("toast_video_generated"));
         hooks.render();
       } catch (error) {
         toast(error.message || t("generate_video_failed"));
@@ -279,7 +281,7 @@ export function bindForm() {
       try {
         const provider = await getProvider();
         store.state = await provider.requestCharacterVoiceGeneration(id);
-        toast(t("toast_voice_generated"));
+        toast(store.state?.pending ? t("savedForReview") : t("toast_voice_generated"));
         hooks.render();
       } catch (error) {
         toast(error.message || t("generate_voice_failed"));
@@ -296,7 +298,7 @@ export function bindForm() {
       try {
         const provider = await getProvider();
         store.state = await provider.requestCharacterCardGeneration(id);
-        toast(t("toast_card_generated"));
+        toast(store.state?.pending ? t("savedForReview") : t("toast_card_generated"));
         hooks.render();
       } catch (error) {
         toast(error.message || t("generate_card_failed"));
@@ -310,7 +312,7 @@ export function bindForm() {
       try {
         const provider = await getProvider();
         store.state = await provider.setCharacterVoiceActive(node.dataset.char, node.dataset.setVoiceActive);
-        toast(t("toast_voice_active"));
+        toast(store.state?.pending ? t("savedForReview") : t("toast_voice_active"));
         hooks.render();
       } catch (error) {
         toast(error.message || "Failed");
@@ -322,7 +324,7 @@ export function bindForm() {
       try {
         const provider = await getProvider();
         store.state = await provider.setShotActive(node.dataset.shot, "image", node.dataset.setActiveImage);
-        toast(t("toast_image_active"));
+        toast(store.state?.pending ? t("savedForReview") : t("toast_image_active"));
         hooks.render();
       } catch (error) {
         toast(error.message || "Failed");
@@ -334,7 +336,7 @@ export function bindForm() {
       try {
         const provider = await getProvider();
         store.state = await provider.setShotActive(node.dataset.shot, "video", node.dataset.setActiveVideo);
-        toast(t("toast_video_active"));
+        toast(store.state?.pending ? t("savedForReview") : t("toast_video_active"));
         hooks.render();
       } catch (error) {
         toast(error.message || "Failed");
@@ -384,7 +386,7 @@ export function bindForm() {
         toast(error?.message || t("toast_save_failed"));
         return;
       }
-      toast(t("toast_deleted"));
+      toast(store.state?.pending ? t("savedForReview") : t("toast_deleted"));
       navigateTo({ selectedId: null, presentation: null }, { replace: true });
     });
   }

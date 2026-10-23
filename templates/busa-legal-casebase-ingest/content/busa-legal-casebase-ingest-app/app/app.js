@@ -479,9 +479,10 @@ async function submitDecision(id, action) {
   }
   const comment = state.edits.note[id] ?? document.querySelector(`[data-note="${CSS.escape(id)}"]`)?.value ?? "";
   const draft = state.edits.draft[id] ?? document.querySelector(`[data-draft="${CSS.escape(id)}"]`)?.value ?? "";
+  let result;
   try {
     const provider = await getProvider();
-    await provider.decideItem({ id, action, comment, draft });
+    result = await provider.decideItem({ id, action, comment, draft });
   } catch (error) {
     state.notice = error instanceof Error ? error.message : String(error);
     render();
@@ -490,6 +491,12 @@ async function submitDecision(id, action) {
   delete state.edits.note[id];
   delete state.edits.draft[id];
   await loadState();
+  // Without write access the decision is a ChangeRequest, and the record keeps
+  // its old status until someone who has it approves: say so, after the reload.
+  if (result?.pending) {
+    state.notice = t("savedForReview");
+    render();
+  }
 }
 
 export function escapeHtml(value) {

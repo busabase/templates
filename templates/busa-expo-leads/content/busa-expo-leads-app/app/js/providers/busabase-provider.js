@@ -8,15 +8,6 @@ const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 const DECISION_ACTIONS = new Set(["approve", "request_changes", "block"]);
 
-// A deployed AirApp is served through the ambient Busabase session; a
-// standalone local preview runs on loopback outside that host. A human
-// decision made from a standalone local preview (the trusted operator's own
-// machine) merges immediately; a decision made from the deployed AirApp
-// creates a pending ChangeRequest for the trusted process to merge. Only a
-// standalone run may merge its own writes — a deployed AirApp is inside the
-// Busabase review boundary. Too consequential to infer from the URL.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 
@@ -101,11 +92,17 @@ async function readSettingsRow() {
   return rows.find((row) => row.record_id === "config") || rows[0] || {};
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 async function upsertFollowupDecision(followupRecordId, headCommitId, fields, message) {
   if (!allowedWrites.has("records.changeRequest")) {
     throw new Error("PROCEDURE_DENIED: records.changeRequest");
   }
-  const autoMerge = isStandaloneLocalRuntime();
   return runtimeClient.records.changeRequest({
     recordId: followupRecordId,
     operation: "update",
@@ -113,7 +110,6 @@ async function upsertFollowupDecision(followupRecordId, headCommitId, fields, me
     message,
     author: appConfig.appId,
     baseCommitId: headCommitId,
-    autoMerge,
   });
 }
 
@@ -184,8 +180,19 @@ export const busabaseProvider = {
       updated_at: now,
       ...(payload.draft !== undefined ? { draft_text: String(payload.draft) } : {}),
     };
-    await upsertFollowupDecision(followupId, headCommitId, fields, `Decision on follow-up ${followupId}: ${action}`);
-    return { updated_at: now, followup_id: followupId, action };
+    const result = await upsertFollowupDecision(
+      followupId,
+      headCommitId,
+      fields,
+      `Decision on follow-up ${followupId}: ${action}`,
+    );
+    return {
+      updated_at: now,
+      followup_id: followupId,
+      action,
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   async provisionResources() {

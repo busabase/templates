@@ -616,15 +616,22 @@ export async function submitDecision(id, action) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.decideAnomaly({ anomaly_id: id, action, note, draft });
+    result = await provider.decideAnomaly({ anomaly_id: id, action, note, draft });
   } catch (error) {
     state.notice = error instanceof Error ? error.message : t("decisionFailed");
     render();
     return;
   }
   await loadState();
+  // Without write access the decision is a ChangeRequest, and the anomaly keeps
+  // its old status until someone who has it approves: say so instead of nothing.
+  if (result?.pending) {
+    state.notice = t("savedForReview");
+    render();
+  }
 }
 
 function cssEscape(value) {

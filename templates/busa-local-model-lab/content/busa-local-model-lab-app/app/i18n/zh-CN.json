@@ -99,6 +99,7 @@
   "noMatches": "没有匹配的结果。",
   "openFullPage": "打开完整页面",
   "recordMissing": "这条记录不在已加载的页里，也无法读取。",
+  "savedForReview": "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
   "reviewed": "审核时间",
   "inputs": "输入",
   "baseRevision": "底模 revision",

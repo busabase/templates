@@ -436,10 +436,13 @@ export function escapeHtml(value) {
 
 // ── Writes ─────────────────────────────────────────────────────────────────
 // Direct decision write: flag-for-review / clear-flag / note, applied straight
-// through the active provider onto the contract's own record (a pending
-// ChangeRequest from the deployed AirApp, merged immediately only from a
-// standalone local run) — there is no separate approval step. Demo mode never
-// writes anywhere; it only reflects the decision in memory.
+// through the active provider onto the contract's own record — there is no
+// separate approval step. The write follows the person's own permission,
+// wherever the AirApp runs: with write access it lands at once; without it, it
+// becomes a ChangeRequest for someone who has write access, and the app says
+// the decision was sent for review. The app never forces review on its own
+// writes. Demo mode never writes anywhere; it only reflects the decision in
+// memory.
 async function submitDecision(id, patch) {
   const contract = contractById(id);
   if (!contract) return;
@@ -453,8 +456,11 @@ async function submitDecision(id, patch) {
   render();
   try {
     const provider = await getProvider();
-    await provider.decideContract(id, patch);
+    const result = await provider.decideContract(id, patch);
     await loadState();
+    // Without write access the decision is a ChangeRequest, and the contract
+    // keeps its old flag/note until someone who has it approves: say so.
+    if (result?.pending) state.notice = t("savedForReview");
   } catch (error) {
     state.notice = error instanceof Error ? error.message : String(error);
   } finally {

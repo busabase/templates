@@ -1241,10 +1241,12 @@ async function postDecision(action, itemId) {
   render();
   try {
     const provider = await getProvider();
-    await provider.decideReview(itemId, action, comment);
+    const result = await provider.decideReview(itemId, action, comment);
     delete state.edits[itemId];
     await loadState();
-    state.notice = t("decisionSaved");
+    // Without write access the verdict is a ChangeRequest, and the item keeps
+    // its old status until someone who has it approves: say that, not "recorded".
+    state.notice = result?.pending ? t("savedForReview") : t("decisionSaved");
   } catch (error) {
     state.notice = error?.message || String(error);
   } finally {

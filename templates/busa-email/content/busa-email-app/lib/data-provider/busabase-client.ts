@@ -1,7 +1,7 @@
 import { createBusabaseClient as createSdkClient, getRecordByField } from "busabase-sdk";
 import { inspectProvisionedResources, provisionDeclaredResources } from "busabase-sdk/airapp";
 import { appConfig } from "../../app/js/config.js";
-import { isAirAppRequest, runtimeHeaders, runtimeOrigin } from "../runtime-context.ts";
+import { runtimeHeaders, runtimeOrigin } from "../runtime-context.ts";
 
 type BaseKey = "reviews" | "contacts" | "settings";
 type Fields = Record<string, unknown>;
@@ -44,6 +44,11 @@ function recordFields(record: any) {
   return fromBusabaseFields(record?.headCommit?.payload || record?.headCommit?.fields || record?.fields || {});
 }
 
+// A person's decision from the AirApp and an agent's batch write both leave
+// `autoMerge` unset, so Busabase decides from the caller's own permission: with
+// write access the change lands now; without it the same change becomes a
+// ChangeRequest. `crId` is the id of a queued one, empty when the write landed,
+// and callers report which happened.
 function crId(result: any) {
   return result?.materialized === false || result?.status === "in_review" ? String(result.id || "") : "";
 }
@@ -192,7 +197,6 @@ export function createBusabaseClient() {
       ...(key === "contacts" ? { email: fields.email || `${recordId}@invalid.local` } : {}),
       ...(key === "settings" ? { name: fields.name || recordId } : {}),
     });
-    const autoMerge = !isAirAppRequest();
     if (!existing) {
       const result = await sdk.bases.createChangeRequest({
         baseId: declaration.baseId,
@@ -200,7 +204,6 @@ export function createBusabaseClient() {
         message,
         submittedBy: appConfig.appId,
         idempotencyKey: `${appConfig.appId}:${recordId}:${String(fields.updated_at || "create")}`,
-        autoMerge,
       });
       return { result, change_request_id: crId(result) };
     }
@@ -211,7 +214,6 @@ export function createBusabaseClient() {
       message,
       author: appConfig.appId,
       baseCommitId: existing.headCommitId,
-      autoMerge,
     });
     return { result, change_request_id: crId(result) };
   }

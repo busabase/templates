@@ -152,10 +152,11 @@ there is no approval queue and no separate decisions bucket:
 - **Flag for review** / **Clear flag**: toggles `flagged` (`"true"`/`"false"`).
 - **Save note**: sets `note` (free text).
 
-Both stamp `decision-updated-at` with the current time. From a standalone
-local preview the write merges immediately (trusted operator); from the
-deployed AirApp it creates a pending ChangeRequest for the trusted process
-to merge, per the AirApp boundary in `$busabase-app-creator`.
+Both stamp `decision-updated-at` with the current time. The write follows
+the person's own permission, wherever the AirApp runs: with write access it
+lands at once; without it, it becomes a ChangeRequest for someone who has
+write access, and the app says the decision was sent for review. The app
+never forces review on its own writes.
 
 ## Demo Mode
 

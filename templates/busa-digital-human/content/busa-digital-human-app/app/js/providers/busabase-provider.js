@@ -14,20 +14,6 @@ const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 
-// A deployed AirApp is served through the ambient Busabase session (a Busabase
-// iframe/preview host, or same-origin proxy under /api/airapp-preview/); a
-// standalone local preview runs on loopback outside that host. A decision
-// submitted from a standalone local preview (the trusted operator's own
-// machine) merges immediately; one submitted from the deployed AirApp creates
-// a pending ChangeRequest for the trusted process to merge, per the AirApp
-// boundary.
-// A deployed AirApp sits inside the Busabase review boundary; only a standalone
-// run may merge its own writes. That is far too consequential to infer from the
-// URL — see ../runtime.js.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
-export { isStandaloneLocalRuntime };
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 const toBusabaseFields = (fields) =>
@@ -107,6 +93,13 @@ function normalizePageRows(key, rows) {
   return key === "qa-decisions" ? rows.map(normalizeDecisionRow) : rows;
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 async function createRecord(key, fields, message) {
   if (!allowedWrites.has("bases.createChangeRequest")) throw new Error("PROCEDURE_DENIED: bases.createChangeRequest");
   const declared = base(key);
@@ -115,7 +108,6 @@ async function createRecord(key, fields, message) {
     fields: toBusabaseFields(fields),
     message,
     submittedBy: appConfig.appId,
-    autoMerge: isStandaloneLocalRuntime(),
   });
 }
 
@@ -128,7 +120,6 @@ async function updateRecord(existing, fields, message) {
     message,
     author: appConfig.appId,
     baseCommitId: existing.headCommitId,
-    autoMerge: isStandaloneLocalRuntime(),
   });
 }
 
@@ -183,13 +174,18 @@ export const busabaseProvider = {
     const rows = await readFirstPage("qa-decisions");
     const existingRow = rows.find((row) => row.check_id === checkId);
     const next = buildDecision({ check_id: checkId, action, note });
+    let result;
     if (existingRow) {
       const existing = { id: existingRow.__recordId, headCommitId: existingRow.__headCommitId };
-      await updateRecord(existing, decisionToFields(next), `Record decision for ${checkId}`);
+      result = await updateRecord(existing, decisionToFields(next), `Record decision for ${checkId}`);
     } else {
-      await createRecord("qa-decisions", decisionToFields(next), `Record decision for ${checkId}`);
+      result = await createRecord("qa-decisions", decisionToFields(next), `Record decision for ${checkId}`);
     }
-    return next;
+    return {
+      ...next,
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   async fetchPage(key, cursor) {

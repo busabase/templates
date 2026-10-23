@@ -454,9 +454,10 @@ export async function submitDecision(id, action) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.saveDecision(id, { action, note, draft: typeof draft === "string" ? draft : null });
+    result = await provider.saveDecision(id, { action, note, draft: typeof draft === "string" ? draft : null });
   } catch (error) {
     els.detailBody.insertAdjacentHTML(
       "afterbegin",
@@ -465,6 +466,15 @@ export async function submitDecision(id, action) {
     return;
   }
   await loadState();
+  // Without write access the decision is a ChangeRequest, and the reminder
+  // keeps its old status until someone who has it approves: say so here,
+  // after the reload has redrawn the record.
+  if (result?.pending) {
+    els.detailBody.insertAdjacentHTML(
+      "afterbegin",
+      `<div class="warnings" role="status"><div class="info"><strong>${escapeHtml(t("savedForReview"))}</strong></div></div>`,
+    );
+  }
 }
 
 function cssAttr(value) {

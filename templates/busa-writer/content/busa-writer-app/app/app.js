@@ -559,9 +559,10 @@ async function submitDecision(draftId, action, card) {
   const title = card.querySelector('[data-field="title"]')?.value ?? "";
   const body = card.querySelector('[data-field="body"]')?.value ?? "";
   const note = card.querySelector('[data-field="note"]')?.value ?? "";
+  let result;
   try {
     const provider = await getProvider();
-    await provider.applyDecision(draftId, { action, comment: note, title, body });
+    result = await provider.applyDecision(draftId, { action, comment: note, title, body });
   } catch (error) {
     state.notice = error instanceof Error ? error.message : String(error);
     render();
@@ -569,7 +570,9 @@ async function submitDecision(draftId, action, card) {
   }
   delete state.edits[draftId];
   await loadState();
-  state.notice = t("saved");
+  // Without write access the decision is a ChangeRequest, and the draft keeps
+  // its old status until someone who has it approves: say that, not "Saved".
+  state.notice = result?.pending ? t("savedForReview") : t("saved");
   render();
 }
 
