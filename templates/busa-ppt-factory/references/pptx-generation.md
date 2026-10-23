@@ -5,11 +5,16 @@ and its slide cards from Busabase and requires the deck to already have a
 genuine `approve` decision recorded through the review queue:
 
 ```bash
-node skills/busa-ppt-factory/scripts/generate_pptx.mjs --deck=deck-seed-pitch
-node skills/busa-ppt-factory/scripts/execute_decisions.mjs --apply
+node scripts/generate_pptx.mjs --deck=deck-seed-pitch
+node scripts/execute_decisions.mjs --apply
 ```
 
-For production-quality decks, combine this skill with the `pptx` skill:
+Run these commands from the installed template root after the dependency
+setup in [Installation and first deck](installation.md). The built-in
+generator produces a review draft, not a finished client deliverable: its
+visual-brief areas contain text rather than generated illustrations. A
+separately available `pptx` skill can improve the approved draft, but is not
+required to install this template or run its built-in generator:
 
 1. Create or update projects, decks, and slide cards through the AirApp (or
    an ingest process you control) writing into Busabase.

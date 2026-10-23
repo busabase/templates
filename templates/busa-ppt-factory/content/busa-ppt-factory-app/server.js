@@ -9,10 +9,9 @@ const app = new Hono();
 
 /**
  * Canonical local gateway from busabase-sdk/airapp-node — see
- * kelly-app-skill-creator/references/busabase-data-contract.md: "do not
- * copy PKCE, token refresh, Space persistence, or proxy code into each
- * server.js." This replaces hand-rolled OAuth/Space/proxy code that
- * predated the export (busabase-sdk 0.11.0 didn't have it).
+ * busabase-app-creator/references/runtime-and-sdk.md: keep PKCE, token
+ * refresh, Space persistence, and proxy behavior in the SDK gateway. This
+ * replaces the hand-rolled OAuth/Space/proxy code that predated that export.
  *
  * Its proxy() always sets x-busabase-space from its OWN validated
  * selectedSpace — it never reads the header off the incoming request, which
