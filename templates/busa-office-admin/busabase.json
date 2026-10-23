@@ -45,8 +45,8 @@
       "assets/screenshots/attention.webp"
     ],
     "agentPrompts": [
-      "Review certificates and administrative contracts expiring within 60 days and draft an owner-by-owner renewal plan.\n检查 60 天内到期的证照和行政合同，按负责人拟定续期计划。",
-      "Compare original-document dates with archive summaries and prepare verification tasks without resolving conflicting evidence by guesswork.\n比较原件日期与归档汇总，拟定核验待办，不凭猜测处理证据冲突。"
+      "Find certificates and administrative contracts expiring within 60 days and draft an owner-by-owner renewal plan.",
+      "Compare original-document dates with archive summaries and prepare verification tasks without resolving conflicting evidence by guesswork."
     ],
     "requires": {
       "airapp": true

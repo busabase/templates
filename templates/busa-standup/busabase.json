@@ -48,7 +48,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Members and flag what needs my attention.",
-      "Open Busa Standup and show me the items that need review."
+      "Collect today's updates and show me the open blockers."
     ],
     "requires": {
       "airapp": true

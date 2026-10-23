@@ -46,7 +46,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Narrative Items and flag what needs my attention.",
-      "Open Busa Brand and show me the items that need review."
+      "Show me the message house and where our channels have drifted off-brand."
     ],
     "requires": {
       "airapp": true

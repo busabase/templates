@@ -6,8 +6,8 @@
     "zh-CN": "Busa 展会线索"
   },
   "description": {
-    "en": "Trade-show lead capture desk: an SLA countdown board and a multilingual follow-up review queue",
-    "zh-CN": "展会线索采集台：SLA 倒计时看板，配合多语言跟进审核队列。"
+    "en": "Trade-show lead desk: capture booth leads, watch the follow-up SLA count down, and get a multilingual follow-up drafted for every lead",
+    "zh-CN": "展会线索台：记下展位线索，盯住跟进 SLA 倒计时，Agent 为每条线索起草多语言跟进。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -48,7 +48,7 @@
     },
     "agentPrompts": [
       "Show me which leads are about to blow past the 24-hour follow-up window.",
-      "Open Busa Expo Leads and show me the follow-ups that need review."
+      "Draft follow-ups in each lead's language for everyone I met at the booth today."
     ],
     "requires": {
       "airapp": true

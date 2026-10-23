@@ -26,9 +26,9 @@
     ],
     "video": "assets/recordings/busa-ideas.mp4",
     "agentPrompts": [
-      "我有个想法但说不太清楚，帮我理一理。",
-      "打开灵感库，看看哪些还等着我回答问题。",
-      "把这条灵感推进到 PRD，缺什么先问我。"
+      "I have an idea but can't quite put it into words. Help me think it through.",
+      "Open the idea vault and show me which ideas are still waiting on my answers.",
+      "Take this idea all the way to a PRD, and ask me about anything that's missing first."
     ],
     "requires": {
       "airapp": true

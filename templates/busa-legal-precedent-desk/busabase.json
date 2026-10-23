@@ -6,8 +6,8 @@
     "zh-CN": "Busa 判例研究"
   },
   "description": {
-    "en": "Precedent-research desk over internal casebase search, local court-pattern analysis, similar-case packs, citations, and approval-gated research exports (approve / request changes / revise / block) before a research pack becomes a matter-strategy input",
-    "zh-CN": "判例研究台：内部案例库检索、地方法院裁判规律分析、类案检索包、引证，以及研究成果在成为案件策略输入前需审批放行的导出物（通过 / 打回修改 / 需修订 / 拦截）。"
+    "en": "Precedent-research desk: internal casebase search, local court-pattern analysis, similar-case packs and citations, packaged as research ready for matter strategy",
+    "zh-CN": "判例研究台：内部案例库检索、地方法院裁判规律分析、类案检索包与引证，整理成可直接用于案件策略的研究成果。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -50,7 +50,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Research Packs and flag what needs my attention.",
-      "Open Legal Precedent Desk and show me the items that need review."
+      "Research precedents for this legal question and package the most similar cases with citations."
     ],
     "requires": {
       "airapp": true

@@ -6,8 +6,8 @@
     "zh-CN": "Busa 人像修图"
   },
   "description": {
-    "en": "Natural portrait retouch jobs, reviewable candidates, and non-secret workflow settings",
-    "zh-CN": "自然风人像修图任务、可审核的候选方案，以及不含密钥的工作流设置。"
+    "en": "Natural portrait retouching: retouch jobs, candidate edits to compare against the original, and non-secret workflow settings",
+    "zh-CN": "自然风人像修图：修图任务、可与原图对比挑选的候选效果，以及不含密钥的设置。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -23,8 +23,8 @@
     ],
     "video": "assets/recordings/busa-portrait-retouch.mp4",
     "agentPrompts": [
-      "Summarize the retouch batches and flag what needs my approval.",
-      "Open Busa Portrait Retouch and show me the edits waiting for review."
+      "Summarize the retouch batches and flag what needs my attention.",
+      "Retouch this portrait naturally and show me the candidates next to the original."
     ],
     "requires": {
       "airapp": true

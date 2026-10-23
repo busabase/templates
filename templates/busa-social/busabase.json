@@ -56,7 +56,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Accounts and flag what needs my attention.",
-      "Open Busa Social and show me the items that need review."
+      "Show me what is scheduled this week and draft replies for anything that needs an urgent answer."
     ],
     "requires": {
       "airapp": true

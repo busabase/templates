@@ -56,7 +56,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Accounts and flag what needs my attention.",
-      "Open Busa Messenger and show me the items that need review."
+      "Show me the conversations waiting on a reply and draft responses in my style."
     ],
     "requires": {
       "airapp": true

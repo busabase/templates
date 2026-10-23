@@ -24,7 +24,7 @@
     ],
     "agentPrompts": [
       "Summarize the videos in production and flag which claims still need verification.",
-      "Open Busa Demo Video Factory and show me the shots that need review."
+      "Show me which shots are still left to record for each video."
     ],
     "requires": {
       "airapp": true

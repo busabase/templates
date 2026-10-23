@@ -48,7 +48,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Beneficiaries and flag what needs my attention.",
-      "Open Busa Family Fund and show me the items that need review."
+      "Which family is furthest from a fair share, and what does this month's ledger show?"
     ],
     "requires": {
       "airapp": true

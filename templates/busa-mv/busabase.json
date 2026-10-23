@@ -48,7 +48,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Project and flag what needs my attention.",
-      "Open Busa MV and show me the items that need review."
+      "Which storyboard shots still need images or videos?"
     ],
     "requires": {
       "airapp": true
