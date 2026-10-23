@@ -82,7 +82,7 @@ const serverSource = await readFile(path.join(root, "server.js"), "utf8");
 const configSource = await readFile(path.join(root, "app/js/config.js"), "utf8");
 // Provisioning is busabase-sdk/airapp now, vendored for the browser. The
 // assertion still matters: it proves the bundle in this app really is the
-// provisioning module and still goes through the approval-first procedures.
+// provisioning module and still goes through the ChangeRequest procedures.
 const provisioningSource = await readFile(path.join(root, "app/vendor/busabase-airapp.js"), "utf8");
 const appSource = await readFile(path.join(root, "app/js/app.js"), "utf8");
 const providerSource = await readFile(path.join(root, "app/js/providers/busabase-provider.js"), "utf8");

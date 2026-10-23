@@ -23,7 +23,7 @@ const RAW_DEMO_VIDEOS = [
     purpose: "讲清楚 Busabase 对「每天在 Vibe Coding、用 AI 写各种 APP」的人来说，怎么让他们更简单。",
     hook: "你是不是也每天在 Vibe Coding，用 AI 写各种各样的 APP？",
     pain_point: "代码 AI 一会儿就写完了，UI 你甚至都不用看。可一到要自己搭一个数据库，反而比写代码本身还麻烦。",
-    concept: "Busabase = AI coder 的小白宝箱：Spaces + 审批优先的知识库工作台。",
+    concept: "Busabase = AI coder 的小白宝箱：Spaces + 每次改动都带说明、差异和历史的知识库工作台。",
     status: "needs_review",
     verified_claims: '| 原草稿说法 | 代码库实际情况 |\n| --- | --- |\n| "钱包" | 实际是 Vault |',
     hyperframe_path: "",
