@@ -40,18 +40,32 @@ when local preview/debugging is explicitly requested; it uses the same
 Busabase resources and never offers another data provider. Use chat-only
 mode only when the user says "纯聊天", "chat only", "不要打开 UI", or similar.
 
-## Mandatory Dependencies
+## Public Dependencies and Installation
 
-1. Read and follow `$kelly-app-skill-creator` for product behavior, visual
-   quality, responsive layout, and the complete canonical `content/busa-ppt-factory-app/` artifact.
-2. Read and follow `$busabase` for connection, target Space, node discovery,
-   ChangeRequests, review, and merge behavior.
-3. Read and follow `$busabase-app-creator` for resource modeling, AirApp
-   runtime limits, security, validation, and deployment.
+Read `$busabase` for connection, target Space, node discovery,
+ChangeRequests, and permission-aware writes. Read `$busabase-app-creator`
+before changing the resource model, AirApp code, runtime, or deployment.
+Both are publicly installable:
 
-If a dependency is unavailable, preserve this skill's artifact and product
-contracts, stop before the unavailable Busabase operation, and report the
-exact missing dependency. Do not invent a second data backend.
+```bash
+npx skills add busabase/skills --skill busabase --skill busabase-app-creator
+```
+
+This template contains its own product workflow, responsive UI, canonical
+`content/busa-ppt-factory-app/` source, review rules, and PPTX QA contract.
+It does not require an author's private app-creation skill or a catalog
+publishing skill to install or operate. Use `busabase-template-creator` only
+when contributing changes back to the public template catalog; it is not
+an end-user prerequisite.
+
+For fresh installation, an existing partial installation, trusted script
+setup, and the first approved PPTX, follow
+[Installation and first deck](references/installation.md). Installing an
+Agent skill locally and installing its resources in a Space are separate
+steps. Resolve paths from this `SKILL.md`'s directory, not from an assumed
+`skills/` directory. If a required public skill is unavailable, report its
+public installation command and stop only the operation that needs it;
+never invent a second data backend or look for private author tooling.
 
 ## App UI Screenshots
 
@@ -189,8 +203,8 @@ requested.
 ## Trusted Scripts
 
 ```bash
-node skills/busa-ppt-factory/scripts/generate_pptx.mjs --deck=<deck_id>
-node skills/busa-ppt-factory/scripts/execute_decisions.mjs --apply
+node scripts/generate_pptx.mjs --deck=<deck_id>
+node scripts/execute_decisions.mjs --apply
 ```
 
 Both connect with their own credentials (`BUSABASE_BASE_URL`,

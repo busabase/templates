@@ -10,6 +10,14 @@ training materials, reports, proposals, courseware, or any workflow where
 The operator wants a reusable PPT style system and a visible approval queue
 before generation.
 
+## Install and create your first deck
+
+Read [Installation and first deck](references/installation.md). All required
+Agent skills are public; no private author skill is needed. The guide
+separates the Agent's local installation, the workspace template, and the
+trusted PPTX generator, so installing the skill is not mistaken for a
+running app or a generated presentation.
+
 ## App UI Screenshots
 
 <table>
@@ -64,7 +72,7 @@ before generation.
 Run the app and open a safe, fully offline mock scene:
 
 ```bash
-pnpm --dir skills/busa-ppt-factory/content/busa-ppt-factory-app dev
+pnpm --dir content/busa-ppt-factory-app dev
 ```
 
 Use the printed local URL, then add one of these demo paths:
@@ -90,9 +98,9 @@ separate provider choice.
 ## Trusted Scripts
 
 ```bash
-node skills/busa-ppt-factory/scripts/generate_pptx.mjs --deck=<deck_id>
-node skills/busa-ppt-factory/scripts/execute_decisions.mjs --apply
+node scripts/generate_pptx.mjs --deck=<deck_id>
+node scripts/execute_decisions.mjs --apply
 ```
 
-Generated exports live under `skills/busa-ppt-factory/exports/` by default
+Generated exports live under `exports/` by default
 and are gitignored.
