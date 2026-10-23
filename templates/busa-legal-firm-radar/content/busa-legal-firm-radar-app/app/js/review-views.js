@@ -136,6 +136,10 @@ function lockBanner() {
   return `<div class="lock-banner">${escapeHtml(t("lockActive"))}${state.settings.lock.message ? ` — ${escapeHtml(state.settings.lock.message)}` : ""}</div>`;
 }
 
+function noticeBanner() {
+  return state.notice ? `<div class="notice-banner" role="status">${escapeHtml(state.notice)}</div>` : "";
+}
+
 // ── Overview ────────────────────────────────────────────────────────────────
 
 // A summed metric over a partially loaded Base is labelled as such: the pinned
@@ -375,6 +379,7 @@ function itemDetail(item) {
   const risk = (item.risk || []).map(optionLabel).join(", ");
   return `
     ${lockBanner()}
+    ${noticeBanner()}
     <article class="record-detail">
       <header class="record-head">
         ${item.ref ? `<div class="record-meta">${escapeHtml(item.ref)}</div>` : ""}

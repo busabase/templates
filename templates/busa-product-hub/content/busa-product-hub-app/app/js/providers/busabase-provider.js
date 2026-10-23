@@ -19,19 +19,6 @@ const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 const BROWSED_KEYS = ["products", "channels", "inventory", "review", "certificates"];
 
-// A deployed AirApp is served through the ambient Busabase session (a Busabase
-// iframe/preview host, or same-origin proxy under /api/airapp-preview/); a
-// standalone local preview runs on loopback outside that host. Direct writes
-// made from a standalone local preview (the trusted operator's own machine)
-// merge immediately; writes made from the deployed AirApp create a pending
-// ChangeRequest for the trusted process to merge, per the AirApp boundary.
-// A deployed AirApp sits inside the Busabase review boundary; only a standalone
-// run may merge its own writes. That is far too consequential to infer from the
-// URL — see ../runtime.js.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
-export { isStandaloneLocalRuntime };
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 const toBusabaseFields = (fields) =>
@@ -117,6 +104,13 @@ async function findRecord(key, idFieldSlug, idValue) {
   }
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 async function updateRecord(existing, fields, message) {
   if (!allowedWrites.has("records.changeRequest")) throw new Error("PROCEDURE_DENIED: records.changeRequest");
   return runtimeClient.records.changeRequest({
@@ -126,7 +120,6 @@ async function updateRecord(existing, fields, message) {
     message,
     author: appConfig.appId,
     baseCommitId: existing.headCommitId,
-    autoMerge: isStandaloneLocalRuntime(),
   });
 }
 
@@ -208,8 +201,16 @@ export const busabaseProvider = {
       decided_at: now,
       updated_at: now,
     };
-    await updateRecord(existing, reviewToFields(next), `Decision on review item ${itemId}: ${action}`);
-    return next;
+    const result = await updateRecord(
+      existing,
+      reviewToFields(next),
+      `Decision on review item ${itemId}: ${action}`,
+    );
+    return {
+      ...next,
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   // One record named by the URL that is not on the loaded page: read it on

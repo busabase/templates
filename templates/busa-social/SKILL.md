@@ -230,9 +230,10 @@ writes the new `status` and `review-note` directly onto the record through
 non-`BLOCK` gate, then writes `status: "done"` plus `scheduled-for` — the
 recorded intent, never a real publish. `send_reply` requires a prior
 `approved` status, then writes `status: "done"`. `crisis_toggle` updates the
-`busa-social-crisis` settings row. From a standalone local preview the write
-merges immediately (trusted operator); from the deployed AirApp it creates a
-pending ChangeRequest for the trusted process to merge.
+`busa-social-crisis` settings row. The write follows the person's own permission,
+wherever the AirApp runs: with write access it lands at once; without it, it
+becomes a ChangeRequest for someone who has write access, and the app says the
+decision was sent for review. The app never forces review on its own writes.
 
 Demo mode:
 

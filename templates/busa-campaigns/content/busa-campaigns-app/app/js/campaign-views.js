@@ -559,9 +559,10 @@ export async function submitDecision(sendId, action, card) {
   const body = card.querySelector('[data-field="body"]')?.value ?? "";
   const note = card.querySelector('[data-field="note"]')?.value ?? "";
   const chosenVariant = card.querySelector('input[type="radio"]:checked')?.value;
+  let result;
   try {
     const provider = await getProvider();
-    await provider.applyDecision(sendId, { action, comment: note, body, chosen_variant: chosenVariant });
+    result = await provider.applyDecision(sendId, { action, comment: note, body, chosen_variant: chosenVariant });
   } catch (error) {
     state.notice = error instanceof Error ? error.message : `Decision failed: ${error}`;
     render();
@@ -569,7 +570,9 @@ export async function submitDecision(sendId, action, card) {
   }
   delete state.edits[sendId];
   await loadState();
-  state.notice = t("saved");
+  // Without write access the decision is a ChangeRequest, and the send
+  // keeps its old status until someone who has it approves: say that, not "Saved".
+  state.notice = result?.pending ? t("savedForReview") : t("saved");
   render();
 }
 

@@ -9,6 +9,7 @@ import {
 	escapeHtml,
 	loadState,
 	n,
+	noticeBanner,
 	recordMissingMarkup,
 	recordTotal,
 	render,
@@ -308,6 +309,7 @@ export function renderGeoDetail() {
 	els.detailBody.innerHTML = `
     ${state.settings?.lock ? `<div class="warnings"><div class="warning"><strong>${t("lockBanner")}</strong><span>${escapeHtml(state.settings.lock?.message || "")}</span></div></div>` : ""}
     ${state.demo ? `<div class="demo-note">${t("demoDecisionNote")}</div>` : ""}
+    ${noticeBanner()}
     ${geoDetailMarkup(item, locked)}
   `;
 }
@@ -357,9 +359,11 @@ export async function submitGeoDecision(id, action) {
 		render();
 		return;
 	}
+	let result;
+	state.notice = "";
 	try {
 		const provider = await getProvider();
-		await provider.decideGeoOpportunity({
+		result = await provider.decideGeoOpportunity({
 			geo_opportunity_id: id,
 			action,
 			note,
@@ -370,6 +374,12 @@ export async function submitGeoDecision(id, action) {
 		return;
 	}
 	await loadState();
+	// Without write access the decision is a ChangeRequest and the GEO change
+	// keeps its old status until someone who has it approves: say so.
+	if (result?.pending) {
+		state.notice = t("savedForReview");
+		render();
+	}
 }
 
 // ── GEO: entity / knowledge-panel readiness (checklist — no detail mode) ───
@@ -392,6 +402,7 @@ export function renderEntity() {
       </div>
     </div>
     ${state.demo ? `<div class="demo-note">${t("demoDecisionNote")}</div>` : ""}
+    ${noticeBanner()}
     <div class="entity-list">
       ${signals.map((signal) => entityCard(signal, locked)).join("")}
     </div>
@@ -450,12 +461,20 @@ export async function submitEntitySignal(id, status) {
 		render();
 		return;
 	}
+	let result;
+	state.notice = "";
 	try {
 		const provider = await getProvider();
-		await provider.updateEntitySignal({ signal_id: id, status });
+		result = await provider.updateEntitySignal({ signal_id: id, status });
 	} catch (error) {
 		els.entityTitle.title = error?.message || "Update failed";
 		return;
 	}
 	await loadState();
+	// Without write access the update is a ChangeRequest and the signal keeps
+	// its old status until someone who has it approves: say so.
+	if (result?.pending) {
+		state.notice = t("savedForReview");
+		render();
+	}
 }

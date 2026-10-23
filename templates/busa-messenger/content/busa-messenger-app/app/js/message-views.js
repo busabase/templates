@@ -592,16 +592,19 @@ export async function queueReplyAction(conversationId) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.queueReply({ conversation_id: conversationId, text, note, suggested_by: "human" });
+    result = await provider.queueReply({ conversation_id: conversationId, text, note, suggested_by: "human" });
   } catch (error) {
     flashNotice(error.message || "Queue failed", "error");
     return;
   }
   delete state.drafts[conversationId];
   delete state.notes[conversationId];
-  flashNotice(t("queuedNotice"));
+  // Without write access the new reply is a ChangeRequest and does not reach
+  // the outbox until someone who has write access approves it: say that.
+  flashNotice(result?.pending ? t("savedForReview") : t("queuedNotice"));
   await loadState();
 }
 
@@ -621,14 +624,18 @@ export async function decideAction(replyId, action, card) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.decideReply({ reply_id: replyId, action, comment, text });
+    result = await provider.decideReply({ reply_id: replyId, action, comment, text });
   } catch (error) {
     flashNotice(error.message || "Decision failed", "error");
     return;
   }
   delete state.edits[replyId];
   await loadState();
+  // Without write access the decision is a ChangeRequest and the reply keeps its
+  // old status until someone who has it approves: say so instead of nothing.
+  if (result?.pending) flashNotice(t("savedForReview"));
 }
 

@@ -99,6 +99,7 @@
   "noMatches": "Nothing matches this search.",
   "openFullPage": "Open full page",
   "recordMissing": "This record is not in the loaded pages and could not be read.",
+  "savedForReview": "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
   "reviewed": "Reviewed",
   "inputs": "Inputs",
   "baseRevision": "Base revision",

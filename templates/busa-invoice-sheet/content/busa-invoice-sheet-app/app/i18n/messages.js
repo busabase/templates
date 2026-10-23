@@ -81,6 +81,8 @@ window.KELLY_INVOICE_SHEET_MESSAGES = {
     demoNotice: "Demo mode is read-only.",
     decisionFailed: "Decision failed",
     saved: "Saved.",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     lockedBanner: "An agent is writing files right now. Review actions are paused until the lock clears.",
     loadMore: "Load more",
     loadingMore: "Loading...",
@@ -213,6 +215,7 @@ window.KELLY_INVOICE_SHEET_MESSAGES = {
     demoNotice: "演示模式为只读。",
     decisionFailed: "提交决定失败",
     saved: "已保存。",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     lockedBanner: "代理正在写入文件，审核操作暂时锁定，请稍候再试。",
     loadMore: "加载更多",
     loadingMore: "加载中...",

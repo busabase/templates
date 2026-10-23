@@ -446,7 +446,7 @@ const renderRecordView = () => {
         route.query ? shown : countText(route.view)
       }</span></div>
       <div class="ws-actions">
-        ${statusChip}${currentState.provider.pendingReview ? '<span class="read-only" title="每次写入都会提交待审 ChangeRequest">写入待审</span>' : ""}
+        ${statusChip}
         <input class="search-input" type="search" data-search placeholder="搜索公司、行业、邮箱" value="${escapeHtml(route.query)}" aria-label="搜索公司" autocomplete="off" />
         <button class="button" type="button" data-refresh>刷新</button>
       </div>
@@ -644,7 +644,7 @@ const renderHelp =
     <section class="help-tab-panel ${helpTab === "connection" ? "active" : ""}"><h2>连接状态</h2><dl class="settings-list">
       <div><dt>数据提供方</dt><dd>${currentState.provider.name === "demo" ? "固定演示数据（不写入）" : "Busabase SDK"}</dd></div>
       <div><dt>Space</dt><dd>${authStatus?.space ? escapeHtml(authStatus.space.name || "当前 Space") : currentState.provider.name === "demo" ? "演示模式" : "由 Busabase 当前环境提供"}</dd></div>
-      <div><dt>写入方式</dt><dd>${currentState.provider.pendingReview ? "AirApp 内提交待审 ChangeRequest" : "本地预览直接合并"}</dd></div>
+      <div><dt>写入方式</dt><dd>按你的权限：有写权限直接生效，没有则提交审核</dd></div>
       <div><dt>资源版本</dt><dd>Schema v${appConfig.schemaVersion}</dd></div>
       <div><dt>运行边界</dt><dd>本地与 AirApp 使用同一份 Hono 应用源码。</dd></div>
     </dl></section>
@@ -723,7 +723,7 @@ const renderOnboarding = () => {
 // ── Writes ─────────────────────────────────────────────────────────────────
 const writeNotice = (result) => {
   if (result?.demo) return "演示模式：没有写入 Busabase，也没有真的发出邮件。";
-  if (currentState.provider.pendingReview) return "已提交 ChangeRequest，等待 Space 审核后生效。";
+  if (result?.pending) return "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。";
   return "";
 };
 
@@ -847,11 +847,11 @@ const completeOnboarding = async (event) => {
     button.disabled = false;
     return;
   }
-  if (!result.merged && currentState.provider.pendingReview) {
+  if (result.pending) {
     error.className = "setup-notice";
-    error.textContent = "已提交 onboarding 资料，等待当前 Space 审批。审批合并后刷新页面即可进入投递台。";
+    error.textContent = "已提交审核：你在这里没有写权限，需要有写权限的人批准。批准后刷新页面即可进入投递台。";
     error.hidden = false;
-    button.textContent = "等待 Space 审批";
+    button.textContent = "等待审批";
     return;
   }
   profileEdited = false;

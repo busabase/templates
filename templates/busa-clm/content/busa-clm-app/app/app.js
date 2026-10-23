@@ -480,6 +480,10 @@ async function runWrite(write) {
     const provider = await getProvider();
     const result = await write(provider);
     await loadState();
+    // Without write access the change is a ChangeRequest, and the record keeps
+    // its old values until someone who has it approves: say that, after the
+    // reload, so the person is not left thinking nothing happened.
+    if (result?.pending) state.notice = t("savedForReview");
     return result;
   } catch (error) {
     showError(error);
@@ -619,7 +623,9 @@ els.detailBody.addEventListener("submit", async (event) => {
     return;
   }
   const contract = await submitCreateContract(input);
-  if (contract?.id) location.hash = detailUrl(contract.id, "contracts");
+  // A queued contract does not exist yet, so there is no page to open: stay
+  // here, where the sent-for-review notice is showing.
+  if (contract?.id && !contract.pending) location.hash = detailUrl(contract.id, "contracts");
 });
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;

@@ -927,9 +927,10 @@ async function submitDecision(issueId, action, { comment = "", fields } = {}) {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.decideIssue({ issue_id: issueId, action, note: comment, fields });
+    result = await provider.decideIssue({ issue_id: issueId, action, note: comment, fields });
   } catch (error) {
     state.notice = error?.message || `Decision failed: ${action}`;
     render();
@@ -938,7 +939,9 @@ async function submitDecision(issueId, action, { comment = "", fields } = {}) {
   delete state.edits[issueId];
   delete state.fieldEdits[issueId];
   await loadState();
-  state.notice = t("saved");
+  // Without write access the decision is a ChangeRequest, and the issue keeps
+  // its old status until someone who has it approves: say that, not "Saved".
+  state.notice = result?.pending ? t("savedForReview") : t("saved");
   render();
 }
 

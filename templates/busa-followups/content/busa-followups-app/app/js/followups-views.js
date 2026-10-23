@@ -251,23 +251,28 @@ function followupDetail(item) {
   `;
 }
 
-// One write per click (a ChangeRequest outside a standalone run). In Today's
-// split queue the next item opens once this one leaves the queue, so the list
-// is worked top to bottom without reaching for the mouse.
+// One write per click, following the person's own permission: with write
+// access it lands at once; without it, it waits as a ChangeRequest and the
+// notice says so. In Today's split queue the next item opens once this one
+// leaves the queue, so the list is worked top to bottom without reaching for
+// the mouse.
 export async function markDone(recordId) {
   const { view, selectedId } = state.route;
   const queue = viewRows(view);
   const index = queue.findIndex((item) => item.record_id === recordId);
   const advance = view === "today" && selectedId === recordId;
+  let result;
   try {
-    await state.provider.applyDecision({ action: "done", record_id: recordId });
+    result = await state.provider.applyDecision({ action: "done", record_id: recordId });
   } catch (error) {
     state.notice = error instanceof Error ? error.message : String(error);
     render();
     return;
   }
   await loadState();
-  state.notice = t("markedDone");
+  // Without write access the follow-up stays pending until someone who has it
+  // approves the ChangeRequest: say that, not "marked done".
+  state.notice = result?.pending ? t("savedForReview") : t("markedDone");
   if (advance) {
     const next = viewRows(view).find((item, position) => position >= index) || viewRows(view).at(-1);
     replaceRoute(next ? recordUrl(next.record_id, view) : listUrl());

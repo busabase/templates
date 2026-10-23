@@ -42,13 +42,13 @@ function bindImageConfigForm() {
     event.preventDefault();
     try {
       const provider = await getProvider();
-      await provider.saveImageConfig({
+      const result = await provider.saveImageConfig({
         base_url: value(imageConfigForm, "base_url"),
         model: value(imageConfigForm, "model"),
         size: value(imageConfigForm, "size"),
       });
       await loadState();
-      toast(t("image_config_saved"));
+      toast(result?.pending ? t("savedForReview") : t("image_config_saved"));
       openSettings();
     } catch (error) {
       toast(error.message || "Failed");

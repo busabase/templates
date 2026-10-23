@@ -21,6 +21,7 @@ import {
   gatePanel,
   mediaIndicator,
   methodBadge,
+  noticeBanner,
   num,
   openReview,
   paginationControl,
@@ -123,7 +124,7 @@ export function renderComposeView() {
   `;
   bindWorkflowChips();
   const draft = renderDetailChrome(t("selectRecord"));
-  if (draft) els.detailBody.innerHTML = draftCard(draft);
+  if (draft) els.detailBody.innerHTML = `${noticeBanner()}${draftCard(draft)}`;
   bindOps();
 }
 
@@ -191,7 +192,7 @@ export function renderShortsView() {
   `;
   bindWorkflowChips();
   const short = renderDetailChrome(t("selectRecord"));
-  if (short) els.detailBody.innerHTML = shortCard(short);
+  if (short) els.detailBody.innerHTML = `${noticeBanner()}${shortCard(short)}`;
   bindOps();
 }
 
@@ -262,7 +263,7 @@ export function renderEngagementView() {
   `;
   bindWorkflowChips();
   const item = renderDetailChrome(t("selectRecord"));
-  if (item) els.detailBody.innerHTML = engagementCard(item);
+  if (item) els.detailBody.innerHTML = `${noticeBanner()}${engagementCard(item)}`;
   bindOps();
 }
 
@@ -303,6 +304,7 @@ export function renderCrisis() {
   }
   const disabled = state.busy ? "disabled" : "";
   els.crisisBody.innerHTML = `
+    ${noticeBanner()}
     <section class="crisis">
       <div class="crisis-status crisis-${escapeHtml(plan.status)}">
         <div>

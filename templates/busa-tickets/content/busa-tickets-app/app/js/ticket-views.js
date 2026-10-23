@@ -590,14 +590,20 @@ export async function submitDecision(id, action) {
   const proposal = proposals().find((item) => item.id === id);
   const intakeItem = proposal ? null : intakeItems().find((item) => item.id === id);
   const ticket = proposal || intakeItem ? null : tickets().find((item) => item.id === id);
+  let result;
   try {
     const provider = await getProvider();
     if (proposal) {
-      await provider.decideProposal({ proposal_id: id, action, note, draft });
+      result = await provider.decideProposal({ proposal_id: id, action, note, draft });
     } else if (intakeItem) {
-      await provider.decideIntake({ intake_id: id, action, note, fields: Object.keys(fields).length ? fields : null });
+      result = await provider.decideIntake({
+        intake_id: id,
+        action,
+        note,
+        fields: Object.keys(fields).length ? fields : null,
+      });
     } else if (ticket) {
-      await provider.reviseTicket({ ticket_id: id, note });
+      result = await provider.reviseTicket({ ticket_id: id, note });
     } else {
       state.notice = `Unknown item id: ${id}`;
       render();
@@ -609,7 +615,9 @@ export async function submitDecision(id, action) {
     return;
   }
   await loadState();
-  state.notice = t("saved") || "";
+  // Without write access the decision is a ChangeRequest and the item keeps its
+  // old status until someone who has it approves: say that, not "Saved".
+  state.notice = (result?.pending ? t("savedForReview") : t("saved")) || "";
   render();
 }
 

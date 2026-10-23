@@ -410,9 +410,7 @@ const renderSidebar = () => {
   const providerLabel =
     currentState.provider.name === "demo"
       ? "演示数据 · 不写入"
-      : currentState.provider.pendingReview
-        ? "实时数据 · 写入待审"
-        : "实时数据";
+      : "实时数据";
   return `<aside class="sidebar ${sidebarCollapsed ? "collapsed" : ""}" id="appSidebar">
     <div class="brand"><div class="brand-icon" aria-hidden="true">KS</div><div class="brand-copy"><div class="brand-title">Busa 销售拓客</div><div class="brand-subtitle">${escapeHtml(providerLabel)}</div></div><button class="sidebar-toggle" type="button" data-sidebar-toggle aria-controls="appSidebar" aria-expanded="${!sidebarCollapsed}" aria-label="切换侧栏" title="切换侧栏"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button></div>
     <section class="human-work" aria-labelledby="humanWorkTitle"><div class="human-work-eyebrow">需要你</div><div id="humanWorkTitle" class="human-work-title">今天的拓客</div>${primary}<div class="human-work-secondary"><button type="button" data-view="all" title="缺业务邮箱或草稿，需要 Agent 补线索"><strong>${attention.blocked}</strong><span>被阻塞</span></button><button type="button" data-view="sent" title="已完成首触达"><strong>${desk.counts.sent}</strong><span>已触达</span></button></div></section>
@@ -462,7 +460,7 @@ const renderHelp =
     <section class="help-tab-panel ${helpTab === "connection" ? "active" : ""}"><h2>连接状态</h2><dl class="settings-list">
       <div><dt>数据提供方</dt><dd>${currentState.provider.name === "demo" ? "固定演示数据（不写入）" : "Busabase SDK"}</dd></div>
       <div><dt>Space</dt><dd>${authStatus?.space ? `${escapeHtml(authStatus.space.name || "Space")} · <code>${escapeHtml(authStatus.space.id)}</code>` : currentState.provider.name === "demo" ? "演示模式" : "由 Busabase 当前环境提供"}</dd></div>
-      <div><dt>写入方式</dt><dd>${currentState.provider.pendingReview ? "AirApp 内提交待审 ChangeRequest" : "本地预览直接合并"}</dd></div>
+      <div><dt>写入方式</dt><dd>按你的权限：有写权限直接生效，没有则提交审核</dd></div>
       <div><dt>资源版本</dt><dd>Schema v${appConfig.schemaVersion}</dd></div>
       <div><dt>运行边界</dt><dd>本地与 AirApp 使用同一份 Hono 应用源码。</dd></div>
     </dl></section>
@@ -527,7 +525,7 @@ const renderOnboarding = () => {
 
 const writeNotice = (result) => {
   if (result?.demo) return "演示模式：没有写入 Busabase，也没有真的发出邮件。";
-  if (currentState.provider.pendingReview) return "已提交 ChangeRequest，等待 Space 审核后生效。";
+  if (result?.pending) return "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。";
   return "";
 };
 
@@ -646,11 +644,11 @@ const completeOnboarding = async (event) => {
     button.disabled = false;
     return;
   }
-  if (!result.merged && currentState.provider.pendingReview) {
+  if (result.pending) {
     error.className = "setup-notice";
-    error.textContent = "已提交产品资料，等待当前 Space 审批。审批合并后刷新页面即可进入拓客台。";
+    error.textContent = "已提交审核：你在这里没有写权限，需要有写权限的人批准。批准后刷新页面即可进入拓客台。";
     error.hidden = false;
-    button.textContent = "等待 Space 审批";
+    button.textContent = "等待审批";
     return;
   }
   profileEdited = false;

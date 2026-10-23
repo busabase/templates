@@ -926,6 +926,9 @@ export async function submitDecision(payload) {
     delete state.drafts[`${payload.kind}:${payload.id}`];
     state.saving = false;
     await loadState();
+    // Without write access the decision is a ChangeRequest, and the item keeps
+    // its old status until someone who has it approves: say so on the record.
+    if (body.pending) showFeedback(t("savedForReview"));
   } catch (error) {
     state.saving = false;
     showFeedback(error instanceof Error ? error.message : String(error));
@@ -943,6 +946,7 @@ export async function submitFollowup(questionId) {
     delete state.drafts[`followup:${questionId}`];
     state.saving = false;
     await loadState();
+    if (body.pending) showFeedback(t("savedForReview"));
   } catch (error) {
     state.saving = false;
     showFeedback(error instanceof Error ? error.message : String(error));

@@ -144,7 +144,7 @@ Rules, driven by the Settings row's tolerances: `missing_invoice` (order without
 
 ## Decisions And Execution Workflow
 
-1. The user reviews at `#/anomalies`: approve, request changes (with a note), save an edited draft (revise), block, or dismiss. Decisions write directly onto the anomaly record. From a standalone local preview the write merges immediately (trusted operator); from the deployed AirApp it creates a pending ChangeRequest for the trusted process to merge.
+1. The user reviews at `#/anomalies`: approve, request changes (with a note), save an edited draft (revise), block, or dismiss. Decisions write directly onto the anomaly record. The write follows the person's own permission, wherever the AirApp runs: with write access it lands at once; without it, it becomes a ChangeRequest for someone who has write access, and the app says the decision was sent for review. The app never forces review on its own writes.
 2. On explicit user request to execute, run `scripts/execute_decisions.mjs` (dry-run by default; `--apply` writes `execution_status: "ready_for_agent"` onto each approved anomaly with the concrete operation — `chase_receivable` (with the drafted email handoff), `reissue_invoice`, `flag_to_accountant` — and target document id). No external side effects either way.
 3. The agent then performs the approved follow-ups outside the app (send the chasing email via the email skill, open the billing/accountant task) and records the real result on the anomaly (`execution_status: "executed"`, `execution_detail`). Executed anomalies still require the app or a follow-up decision to move to `done` — this script never flips the workflow status itself.
 

@@ -104,6 +104,8 @@ export const messages = {
     registrar: "Registrar",
     requestChanges: "Request changes",
     saveNote: "Save note",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     search: "Search",
     secretsReady: "secrets ready",
     services: "Services",
@@ -285,6 +287,7 @@ export const messages = {
     registrar: "注册商",
     requestChanges: "请求修改",
     saveNote: "保存备注",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     search: "搜索",
     secretsReady: "密钥已就绪",
     services: "服务",

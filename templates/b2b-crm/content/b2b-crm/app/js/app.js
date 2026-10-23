@@ -194,10 +194,15 @@ const resetFormResult = (id) => {
   element.className = "form-result";
   element.textContent = "";
 };
-const showRequestSuccess = (id, requestId) => {
+// What happened to a write, as Busabase decided it from the person's own
+// permission: it landed (and the records on screen were reloaded), or it is a
+// ChangeRequest waiting for someone who has write access.
+const showWriteResult = (id, request, savedText) => {
   const element = byId(id);
   element.className = "form-result success";
-  element.innerHTML = `<span class="result-icon" aria-hidden="true"><i data-lucide="circle-check"></i></span><span class="result-copy"><strong>Request submitted</strong><span>Ready for human review</span><code>${escapeHtml(requestId)}</code></span>`;
+  element.innerHTML = request.pending
+    ? `<span class="result-icon" aria-hidden="true"><i data-lucide="send"></i></span><span class="result-copy"><strong>${escapeHtml(messages.sentForReview)}</strong><span>${escapeHtml(messages.sentForReviewDetail)}</span><code>${escapeHtml(request.id)}</code></span>`
+    : `<span class="result-icon" aria-hidden="true"><i data-lucide="circle-check"></i></span><span class="result-copy"><strong>${escapeHtml(savedText)}</strong><span>${escapeHtml(messages.savedDetail)}</span></span>`;
   element.hidden = false;
   renderIcons(element);
 };
@@ -781,18 +786,28 @@ function reviewActivity() {
   byId("activitySubmit").hidden = false;
 }
 
+// A write that landed changes the records on screen, so reload them; a queued
+// one only adds to the requests awaiting review.
+async function refreshAfterWrite(request) {
+  if (!request.pending) {
+    await load();
+    return;
+  }
+  const pending = await state.provider.refreshPending();
+  state.payload.changeRequests = pending.changeRequests;
+  state.payload.changeRequestPageInfo.nextCursor = pending.nextCursor;
+}
+
 async function submitActivity() {
   if (!state.activityDraft) return;
   const button = byId("activitySubmit");
   button.disabled = true;
-  setButtonLabel("activitySubmit", "Submitting...");
+  setButtonLabel("activitySubmit", "Saving...");
   try {
     const request = await state.provider.createActivity(state.activityDraft);
-    const pending = await state.provider.refreshPending();
-    state.payload.changeRequests = pending.changeRequests;
-    state.payload.changeRequestPageInfo.nextCursor = pending.nextCursor;
+    await refreshAfterWrite(request);
     byId("requestPreview").hidden = true;
-    showRequestSuccess("activityResult", request.id);
+    showWriteResult("activityResult", request, messages.activitySaved);
     byId("activityBack").hidden = true;
     byId("activitySubmit").hidden = true;
     byId("activityCancel").textContent = "Close";
@@ -801,7 +816,7 @@ async function submitActivity() {
     showRequestError("activityResult", error);
   } finally {
     button.disabled = false;
-    setButtonLabel("activitySubmit", "Submit request");
+    setButtonLabel("activitySubmit", "Save");
   }
 }
 
@@ -884,14 +899,12 @@ async function submitDeal() {
   if (!state.dealDraft) return;
   const button = byId("dealSubmit");
   button.disabled = true;
-  setButtonLabel("dealSubmit", "Submitting...");
+  setButtonLabel("dealSubmit", "Saving...");
   try {
     const request = await state.provider.createDeal(state.dealDraft);
-    const pending = await state.provider.refreshPending();
-    state.payload.changeRequests = pending.changeRequests;
-    state.payload.changeRequestPageInfo.nextCursor = pending.nextCursor;
+    await refreshAfterWrite(request);
     byId("dealPreview").hidden = true;
-    showRequestSuccess("dealResult", request.id);
+    showWriteResult("dealResult", request, messages.dealSaved);
     byId("dealBack").hidden = true;
     byId("dealSubmit").hidden = true;
     byId("dealCancel").textContent = "Close";
@@ -900,7 +913,7 @@ async function submitDeal() {
     showRequestError("dealResult", error);
   } finally {
     button.disabled = false;
-    setButtonLabel("dealSubmit", "Submit request");
+    setButtonLabel("dealSubmit", "Save");
   }
 }
 
@@ -999,14 +1012,12 @@ async function submitStage() {
   if (!state.stageDraft) return;
   const button = byId("stageSubmit");
   button.disabled = true;
-  setButtonLabel("stageSubmit", "Submitting...");
+  setButtonLabel("stageSubmit", "Saving...");
   try {
     const request = await state.provider.updateDealStage(state.stageDraft);
-    const pending = await state.provider.refreshPending();
-    state.payload.changeRequests = pending.changeRequests;
-    state.payload.changeRequestPageInfo.nextCursor = pending.nextCursor;
+    await refreshAfterWrite(request);
     byId("stagePreview").hidden = true;
-    showRequestSuccess("stageResult", request.id);
+    showWriteResult("stageResult", request, messages.stageSaved);
     byId("stageBack").hidden = true;
     byId("stageSubmit").hidden = true;
     byId("stageCancel").textContent = "Close";
@@ -1015,7 +1026,7 @@ async function submitStage() {
     showRequestError("stageResult", error);
   } finally {
     button.disabled = false;
-    setButtonLabel("stageSubmit", "Submit request");
+    setButtonLabel("stageSubmit", "Save");
   }
 }
 

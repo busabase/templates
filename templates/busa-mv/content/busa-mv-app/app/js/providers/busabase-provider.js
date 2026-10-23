@@ -30,13 +30,6 @@ const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 
-// A deployed AirApp sits inside the Busabase review boundary; only a standalone
-// run may merge its own writes. That is far too consequential to infer from the
-// URL — see ../runtime.js.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
-export { isStandaloneLocalRuntime };
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 const toBusabaseFields = (fields) =>
@@ -154,6 +147,19 @@ async function findRecord(key, idFieldSlug, idValue) {
   }
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
+// What every write method below adds to its return value.
+const writeOutcome = (result) => ({
+  pending: isQueued(result),
+  change_request_id: isQueued(result) ? result?.id || "" : "",
+});
+
 async function upsert(key, idFieldSlug, idValue, fields, message) {
   if (!allowedWrites.has("bases.createChangeRequest") || !allowedWrites.has("records.changeRequest")) {
     throw new Error("PROCEDURE_DENIED: records.changeRequest");
@@ -161,14 +167,12 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
   const declared = base(key);
   const existing = await findRecord(key, idFieldSlug, idValue);
   const normalized = toBusabaseFields(fields);
-  const autoMerge = isStandaloneLocalRuntime();
   if (!existing) {
     return runtimeClient.bases.createChangeRequest({
       baseId: declared.baseId,
       fields: normalized,
       message,
       submittedBy: appConfig.appId,
-      autoMerge,
     });
   }
   return runtimeClient.records.changeRequest({
@@ -178,7 +182,6 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
     message,
     author: appConfig.appId,
     baseCommitId: existing.headCommitId,
-    autoMerge,
   });
 }
 
@@ -439,16 +442,16 @@ export const busabaseProvider = {
       treatment_look: look,
       treatment_aspect_ratio: aspect_ratio,
     };
-    await upsert("project", "project-id", fields.project_id, fields, "Update MV concept");
-    return { ok: true };
+    const result = await upsert("project", "project-id", fields.project_id, fields, "Update MV concept");
+    return { ok: true, ...writeOutcome(result) };
   },
 
   async saveSongMeta({ title = "", artist = "" } = {}) {
     await ensureResources();
     const current = await readProjectRow();
     const fields = { ...projectFields(current), song_title: title, song_artist: artist };
-    await upsert("project", "project-id", fields.project_id, fields, "Update song metadata");
-    return { ok: true };
+    const result = await upsert("project", "project-id", fields.project_id, fields, "Update song metadata");
+    return { ok: true, ...writeOutcome(result) };
   },
 
   async uploadSong(file, { title = "", artist = "" } = {}) {
@@ -476,8 +479,8 @@ export const busabaseProvider = {
       song_source: "uploaded",
       song_uploaded_at: new Date().toISOString(),
     };
-    await upsert("project", "project-id", fields.project_id, fields, "Upload song");
-    return { ok: true };
+    const result = await upsert("project", "project-id", fields.project_id, fields, "Upload song");
+    return { ok: true, ...writeOutcome(result) };
   },
 
   async saveCharacter(character = {}) {
@@ -506,25 +509,25 @@ export const busabaseProvider = {
       ),
       reference_card_prompt: character.reference_card?.prompt ?? currentFields.reference_card_prompt ?? "",
     };
-    await upsert("cast", "character-id", id, fields, `Save character ${id}`);
-    return { ok: true };
+    const result = await upsert("cast", "character-id", id, fields, `Save character ${id}`);
+    return { ok: true, ...writeOutcome(result) };
   },
 
   async deleteCharacter(id) {
     await ensureResources();
     const existing = await findRecord("cast", "character-id", id);
-    if (!existing) return { ok: true };
+    if (!existing) return { ok: true, pending: false, change_request_id: "" };
     const currentFields = normalizeFields(
       existing.headCommit?.payload || existing.headCommit?.fields || existing.fields,
     );
-    await upsert(
+    const result = await upsert(
       "cast",
       "character-id",
       id,
       { ...characterFields(currentFields), character_id: id, deleted: "true" },
       `Delete character ${id}`,
     );
-    return { ok: true };
+    return { ok: true, ...writeOutcome(result) };
   },
 
   // Writes a generation REQUEST only — see the module header comment for why
@@ -536,14 +539,14 @@ export const busabaseProvider = {
     const currentFields = normalizeFields(
       existing.headCommit?.payload || existing.headCommit?.fields || existing.fields,
     );
-    await upsert(
+    const result = await upsert(
       "cast",
       "character-id",
       id,
       { ...characterFields(currentFields), character_id: id, reference_card_status: "requested" },
       `Request reference card generation for ${id}`,
     );
-    return { ok: true };
+    return { ok: true, ...writeOutcome(result) };
   },
 
   async saveShot(shot = {}) {
@@ -565,25 +568,25 @@ export const busabaseProvider = {
       duration_seconds: Number(shot.duration_seconds) || Number(existingRow?.duration_seconds) || 8,
       characters_json: JSON.stringify(shot.characters || parseJsonArray(existingRow?.characters_json)),
     };
-    await upsert("shots", "shot-id", id, fields, `Save shot ${id}`);
-    return { ok: true };
+    const result = await upsert("shots", "shot-id", id, fields, `Save shot ${id}`);
+    return { ok: true, ...writeOutcome(result) };
   },
 
   async deleteShot(id) {
     await ensureResources();
     const existing = await findRecord("shots", "shot-id", id);
-    if (!existing) return { ok: true };
+    if (!existing) return { ok: true, pending: false, change_request_id: "" };
     const currentFields = normalizeFields(
       existing.headCommit?.payload || existing.headCommit?.fields || existing.fields,
     );
-    await upsert(
+    const result = await upsert(
       "shots",
       "shot-id",
       id,
       { ...shotFields(currentFields), shot_id: id, deleted: "true" },
       `Delete shot ${id}`,
     );
-    return { ok: true };
+    return { ok: true, ...writeOutcome(result) };
   },
 
   async requestStoryboardImageGeneration(shotId) {
@@ -593,14 +596,14 @@ export const busabaseProvider = {
     const currentFields = normalizeFields(
       existing.headCommit?.payload || existing.headCommit?.fields || existing.fields,
     );
-    await upsert(
+    const result = await upsert(
       "shots",
       "shot-id",
       shotId,
       { ...shotFields(currentFields), shot_id: shotId, image_status: "requested" },
       `Request storyboard image generation for ${shotId}`,
     );
-    return { ok: true };
+    return { ok: true, ...writeOutcome(result) };
   },
 
   async requestShotVideoGeneration(shotId) {
@@ -610,14 +613,14 @@ export const busabaseProvider = {
     const currentFields = normalizeFields(
       existing.headCommit?.payload || existing.headCommit?.fields || existing.fields,
     );
-    await upsert(
+    const result = await upsert(
       "shots",
       "shot-id",
       shotId,
       { ...shotFields(currentFields), shot_id: shotId, video_status: "requested" },
       `Request draft video generation for ${shotId}`,
     );
-    return { ok: true };
+    return { ok: true, ...writeOutcome(result) };
   },
 
   async uploadShotAsset(shotId, kind, file) {
@@ -652,8 +655,8 @@ export const busabaseProvider = {
             image_status: "uploaded",
           }),
     };
-    await upsert("shots", "shot-id", shotId, fields, `Upload ${kind} for shot ${shotId}`);
-    return { ok: true };
+    const result = await upsert("shots", "shot-id", shotId, fields, `Upload ${kind} for shot ${shotId}`);
+    return { ok: true, ...writeOutcome(result) };
   },
 
   async setShotActive(shotId, kind, assetId) {
@@ -682,8 +685,8 @@ export const busabaseProvider = {
             image_generation_json: JSON.stringify(match.generation || {}),
           }),
     };
-    await upsert("shots", "shot-id", shotId, fields, `Select active ${kind} for shot ${shotId}`);
-    return { ok: true };
+    const result = await upsert("shots", "shot-id", shotId, fields, `Select active ${kind} for shot ${shotId}`);
+    return { ok: true, ...writeOutcome(result) };
   },
 
   async saveImageConfig({ base_url = "", model = "", size = "" } = {}) {
@@ -701,8 +704,14 @@ export const busabaseProvider = {
       video_fps: current.video_fps ?? 24,
       video_max_frames: current.video_max_frames ?? 121,
     };
-    await upsert("settings", "record-id", "config", fields, "Update image generation settings");
-    return { base_url: fields.image_base_url, model: fields.image_model, size: fields.image_size, has_api_key: false };
+    const result = await upsert("settings", "record-id", "config", fields, "Update image generation settings");
+    return {
+      base_url: fields.image_base_url,
+      model: fields.image_model,
+      size: fields.image_size,
+      has_api_key: false,
+      ...writeOutcome(result),
+    };
   },
 
   async provisionResources() {

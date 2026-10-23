@@ -645,8 +645,11 @@ async function submitDecision(action) {
       strength: state.draftStrength ?? candidate.strength,
     });
     state.draftStrength = null;
-    state.pendingDecision = { candidate_id: candidate.candidate_id, ...result };
-    render();
+    // A decision that landed is already the candidate's state, so reload it. Without
+    // write access it is a ChangeRequest, and the detail says so until it is approved.
+    state.pendingDecision = result.pending ? { candidate_id: candidate.candidate_id, ...result } : null;
+    if (result.pending) render();
+    else await loadState();
   } catch (error) {
     window.alert(error instanceof Error ? error.message : String(error));
   } finally {

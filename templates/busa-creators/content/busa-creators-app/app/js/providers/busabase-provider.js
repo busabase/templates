@@ -8,10 +8,6 @@ const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 const DECISION_ACTION_SET = new Set(DECISION_ACTIONS);
 
-// Only a standalone run may merge its own writes; a deployed AirApp is inside
-// the Busabase review boundary. Too consequential to infer from the URL.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 const toBusabaseFields = (fields) =>
@@ -111,6 +107,13 @@ async function findRecord(key, idFieldSlug, idValue) {
   }
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 async function upsert(key, idFieldSlug, idValue, fields, message) {
   if (!allowedWrites.has("bases.createChangeRequest") || !allowedWrites.has("records.changeRequest")) {
     throw new Error("PROCEDURE_DENIED: records.changeRequest");
@@ -118,14 +121,12 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
   const declared = base(key);
   const existing = await findRecord(key, idFieldSlug, idValue);
   const normalized = toBusabaseFields(fields);
-  const autoMerge = isStandaloneLocalRuntime();
   if (!existing) {
     return runtimeClient.bases.createChangeRequest({
       baseId: declared.baseId,
       fields: normalized,
       message,
       submittedBy: appConfig.appId,
-      autoMerge,
     });
   }
   return runtimeClient.records.changeRequest({
@@ -135,7 +136,6 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
     message,
     author: appConfig.appId,
     baseCommitId: existing.headCommitId,
-    autoMerge,
   });
 }
 
@@ -239,8 +239,14 @@ export const busabaseProvider = {
       decided_at: now,
       ...(payload.draft !== undefined ? { suggested_reply: String(payload.draft) } : {}),
     };
-    await upsert("creators", "creator-id", creatorId, fields, `Decision on creator ${creatorId}: ${action}`);
-    return { ok: true };
+    const result = await upsert(
+      "creators",
+      "creator-id",
+      creatorId,
+      fields,
+      `Decision on creator ${creatorId}: ${action}`,
+    );
+    return { ok: true, pending: isQueued(result), change_request_id: isQueued(result) ? result?.id || "" : "" };
   },
 
   // A record named by the URL but not on the loaded page: one records.get by

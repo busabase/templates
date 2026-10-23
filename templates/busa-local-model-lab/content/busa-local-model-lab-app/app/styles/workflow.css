@@ -443,6 +443,16 @@
   line-height: 1.55;
 }
 
+.notice-banner {
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--warning) 34%, var(--line));
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--warning) var(--badge-wash), var(--surface));
+  color: color-mix(in srgb, var(--warning) var(--badge-ink), var(--ink));
+  font-size: var(--text-base);
+}
+
 .error-block {
   padding: 11px 13px;
   border: 1px solid color-mix(in srgb, var(--danger) 34%, var(--line));

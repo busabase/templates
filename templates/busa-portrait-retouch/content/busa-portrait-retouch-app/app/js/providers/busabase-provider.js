@@ -20,9 +20,12 @@ let bases = new Map();
 let setupError = "";
 let pendingOnboardingCr = null;
 
-// Only a standalone run may merge its own writes; a deployed AirApp is inside
-// the Busabase review boundary. Too consequential to infer from the URL.
-import { isStandaloneLocalRuntime } from "../runtime.js";
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
 
 async function ensureResources() {
   client ||= createRuntimeClient();
@@ -242,12 +245,13 @@ export const busabaseProvider = {
       message: `Portrait candidate ${candidate_id}: ${action}`,
       author: appConfig.appId,
       baseCommitId: record.headCommitId || record.headCommit?.id,
-      autoMerge: false,
     });
+    const pending = isQueued(changeRequest);
     return {
       ok: true,
-      change_request_id: changeRequest?.id || null,
-      change_request_status: changeRequest?.status || "pending",
+      pending,
+      change_request_id: pending ? changeRequest?.id || null : null,
+      change_request_status: pending ? changeRequest?.status || "in_review" : "merged",
       reviewed_version: current.review_version,
     };
   },
@@ -271,7 +275,6 @@ export const busabaseProvider = {
       overwrite_policy: "explicit-only",
       updated_at: now,
     });
-    const autoMerge = isStandaloneLocalRuntime();
     const base = bases.get("settings");
     const changeRequest = existing
       ? await client.records.changeRequest({
@@ -281,20 +284,22 @@ export const busabaseProvider = {
           message: "Configure portrait retouch defaults and privacy policy",
           author: appConfig.appId,
           baseCommitId: existing.headCommitId || existing.headCommit?.id,
-          autoMerge,
         })
       : await client.bases.createChangeRequest({
           baseId: base.baseId,
           fields,
           message: "Configure portrait retouch defaults and privacy policy",
           submittedBy: appConfig.appId,
-          autoMerge,
         });
-    pendingOnboardingCr = changeRequest;
+    // Only a queued write leaves anything to wait for; a merged one is already
+    // the settings record the next getState() reads.
+    const pending = isQueued(changeRequest);
+    pendingOnboardingCr = pending ? changeRequest : null;
     return {
       ok: true,
-      change_request_id: changeRequest?.id || null,
-      change_request_status: changeRequest?.status || "pending",
+      pending,
+      change_request_id: pending ? changeRequest?.id || null : null,
+      change_request_status: pending ? changeRequest?.status || "in_review" : "merged",
     };
   },
   async provisionResources() {

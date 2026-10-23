@@ -14,16 +14,6 @@ const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 const ANSWER_ACTIONS = new Set(["answer", "skip", "park", "advance"]);
 
-// A deployed AirApp is served through the ambient Busabase session (a Busabase
-// iframe/preview host, or same-origin proxy under /api/airapp-preview/); a
-// standalone local preview runs on loopback outside that host. Human verdicts
-// made from a standalone local preview (the trusted operator's own machine)
-// merge immediately; verdicts made from the deployed AirApp create a pending
-// ChangeRequest for the trusted process to merge, per the AirApp boundary.
-// Only a standalone run may merge its own writes; a deployed AirApp is inside
-// the Busabase review boundary. Too consequential to infer from the URL.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 
@@ -245,6 +235,13 @@ async function findRecord(key, idFieldSlug, idValue) {
   }
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 async function upsert(key, idFieldSlug, idValue, fields, message) {
   if (!allowedWrites.has("bases.createChangeRequest") || !allowedWrites.has("records.changeRequest")) {
     throw new Error("PROCEDURE_DENIED: records.changeRequest");
@@ -252,14 +249,12 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
   const declared = base(key);
   const existing = await findRecord(key, idFieldSlug, idValue);
   const normalized = toBusabaseFields(fields);
-  const autoMerge = isStandaloneLocalRuntime();
   if (!existing) {
     return runtimeClient.bases.createChangeRequest({
       baseId: declared.baseId,
       fields: normalized,
       message,
       submittedBy: appConfig.appId,
-      autoMerge,
     });
   }
   return runtimeClient.records.changeRequest({
@@ -269,7 +264,6 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
     message,
     author: appConfig.appId,
     baseCommitId: existing.headCommitId,
-    autoMerge,
   });
 }
 
@@ -457,7 +451,7 @@ export const busabaseProvider = {
           throw new Error("The Question has a different answer; refresh the idea before editing it");
         }
         if (canonicalIdeaAnswer === answer && canonicalQuestionAnswer === answer) {
-          return { updated_at: now, pending: false };
+          return { updated_at: now, pending: false, change_request_id: "" };
         }
         if ((pendingQuestion && pendingQuestion !== answer) || (pendingIdea && pendingIdea !== answer)) {
           throw new Error("A different answer for this required field is awaiting review; check the Inbox before resubmitting");
@@ -469,10 +463,12 @@ export const busabaseProvider = {
         if ((pendingQuestion === answer || canonicalQuestionAnswer === answer) &&
           (pendingIdea === answer || canonicalIdeaAnswer === answer)) {
           pendingAnswers.add(questionId);
-          return { updated_at: now, pending: true };
+          return { updated_at: now, pending: true, change_request_id: "" };
         }
+        let questionResult;
+        let ideaResult;
         if (!pendingQuestion && !submittedAnswer && canonicalQuestionAnswer !== answer) {
-          await upsert(
+          questionResult = await upsert(
             "questions",
             "record-id",
             questionId,
@@ -492,7 +488,7 @@ export const busabaseProvider = {
         }
         try {
           if (pendingIdea !== answer && canonicalIdeaAnswer !== answer) {
-            await upsert(
+            ideaResult = await upsert(
               "ideas",
               "record-id",
               ideaId,
@@ -503,12 +499,15 @@ export const busabaseProvider = {
         } catch (error) {
           throw new Error(`Question answer was submitted, but the Idea update failed: ${String(error?.message || error)}`);
         }
-        const pending = !isStandaloneLocalRuntime() || Boolean(pendingQuestion || pendingIdea);
+        // Pending if either write was queued just now, or if an earlier
+        // ChangeRequest for the same answer is still waiting for approval.
+        const queued = [questionResult, ideaResult].find(isQueued);
+        const pending = Boolean(queued || pendingQuestion || pendingIdea);
         if (pending) pendingAnswers.add(questionId);
-        return { updated_at: now, pending };
+        return { updated_at: now, pending, change_request_id: queued?.id || "" };
       }
       if (!existingQuestion) throw new Error(`Unknown question: ${questionId}`);
-      await upsert(
+      const result = await upsert(
         "questions",
         "record-id",
         questionId,
@@ -520,21 +519,29 @@ export const busabaseProvider = {
         },
         `${action === "answer" ? "Answered" : "Skipped"} question ${questionId}`,
       );
-      return { updated_at: now, pending: !isStandaloneLocalRuntime() };
+      return {
+        updated_at: now,
+        pending: isQueued(result),
+        change_request_id: isQueued(result) ? result?.id || "" : "",
+      };
     }
 
     const ideaId = String(payload.idea_id || "");
     if (!ideaId) throw new Error("idea_id is required");
 
     if (action === "park") {
-      await upsert(
+      const result = await upsert(
         "ideas",
         "record-id",
         ideaId,
         { record_id: ideaId, status: "已搁置", notes: String(payload.comment || ""), updated_at: now },
         `Parked idea ${ideaId}`,
       );
-      return { updated_at: now };
+      return {
+        updated_at: now,
+        pending: isQueued(result),
+        change_request_id: isQueued(result) ? result?.id || "" : "",
+      };
     }
 
     // Re-read review state as well as canonical rows before every advance.
@@ -559,14 +566,19 @@ export const busabaseProvider = {
         : `${idea.advance.openQuestions.length} unanswered question(s)`;
       throw new Error(`This idea cannot advance yet: ${blocked}`);
     }
-    await upsert(
+    const result = await upsert(
       "ideas",
       "record-id",
       ideaId,
       { record_id: ideaId, stage: idea.advance.target, updated_at: now },
       `Advanced idea ${ideaId} to ${idea.advance.target}`,
     );
-    return { updated_at: now, stage: idea.advance.target };
+    return {
+      updated_at: now,
+      stage: idea.advance.target,
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   async provisionResources() {

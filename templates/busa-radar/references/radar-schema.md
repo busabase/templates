@@ -180,7 +180,8 @@ One row, `record-id: "config"`.
 
 A human verdict writes `status` (where applicable), `decision-verdict`,
 `decision-comment`, and `decided-at` directly onto the item record. There is
-no separate decisions Base: the item record is the single source of truth,
-and `autoMerge` is gated by `isStandaloneLocalRuntime()` — a standalone
-local preview merges immediately (trusted operator), a deployed AirApp
-creates a pending ChangeRequest for the trusted process to merge.
+no separate decisions Base: the item record is the single source of truth.
+The write follows the person's own permission, wherever the AirApp runs:
+with write access it lands at once; without it, it becomes a ChangeRequest
+for someone who has write access, and the app says the decision was sent for
+review. The app never forces review on its own writes.

@@ -21,13 +21,6 @@ const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 const BROWSED_KEYS = ["watchlist", "signals", "questions", "opportunities"];
 
-// A deployed AirApp sits inside the Busabase review boundary; only a standalone
-// run may merge its own writes. That is far too consequential to infer from the
-// URL — see ../runtime.js.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
-export { isStandaloneLocalRuntime };
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 const toBusabaseFields = (fields) =>
@@ -171,6 +164,13 @@ async function findRecord(key, idFieldSlug, idValue) {
   }
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 async function upsert(key, idFieldSlug, idValue, fields, message) {
   if (!allowedWrites.has("bases.createChangeRequest") || !allowedWrites.has("records.changeRequest")) {
     throw new Error("PROCEDURE_DENIED: records.changeRequest");
@@ -178,14 +178,12 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
   const declared = base(key);
   const existing = await findRecord(key, idFieldSlug, idValue);
   const normalized = toBusabaseFields(fields);
-  const autoMerge = isStandaloneLocalRuntime();
   if (!existing) {
     return runtimeClient.bases.createChangeRequest({
       baseId: declared.baseId,
       fields: normalized,
       message,
       submittedBy: appConfig.appId,
-      autoMerge,
     });
   }
   return runtimeClient.records.changeRequest({
@@ -195,7 +193,6 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
     message,
     author: appConfig.appId,
     baseCommitId: existing.headCommitId,
-    autoMerge,
   });
 }
 
@@ -282,10 +279,11 @@ export const busabaseProvider = {
     await ensureResources();
     const now = new Date().toISOString();
 
+    let result;
     try {
       if (kind === "signal") {
         const { current } = await requireRecord("signals", "signal-id", id, "signal");
-        await upsert(
+        result = await upsert(
           "signals",
           "signal-id",
           id,
@@ -301,7 +299,7 @@ export const busabaseProvider = {
         );
       } else if (kind === "brief") {
         const { current } = await requireRecord("briefs", "brief-id", id, "brief");
-        await upsert(
+        result = await upsert(
           "briefs",
           "brief-id",
           id,
@@ -317,7 +315,7 @@ export const busabaseProvider = {
         );
       } else if (kind === "opportunity") {
         const { current } = await requireRecord("opportunities", "opportunity-id", id, "opportunity");
-        await upsert(
+        result = await upsert(
           "opportunities",
           "opportunity-id",
           id,
@@ -335,7 +333,7 @@ export const busabaseProvider = {
         const { current } = await requireRecord("reports", "report-id", id, "report");
         const rating = Number(confidence);
         if (!Number.isFinite(rating)) throw new Error("confidence must be a number between 0 and 5");
-        await upsert(
+        result = await upsert(
           "reports",
           "report-id",
           id,
@@ -346,7 +344,12 @@ export const busabaseProvider = {
     } catch (error) {
       return { ok: false, status: 400, error: error instanceof Error ? error.message : String(error) };
     }
-    return { ok: true, decision: { id, kind, action, comment, decided_at: now } };
+    return {
+      ok: true,
+      decision: { id, kind, action, comment, decided_at: now },
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   // Files a follow-up research question, appended onto the parent question's
@@ -376,14 +379,19 @@ export const busabaseProvider = {
         asked_at: now,
       };
       followups.push(followup);
-      await upsert(
+      const result = await upsert(
         "questions",
         "question-id",
         questionId,
         { ...current, question_id: questionId, followups: JSON.stringify(followups) },
         `Follow-up on question ${questionId}`,
       );
-      return { ok: true, task: { kind: "research_followup", ref_id: questionId, note: text, status: "queued" } };
+      return {
+        ok: true,
+        task: { kind: "research_followup", ref_id: questionId, note: text, status: "queued" },
+        pending: isQueued(result),
+        change_request_id: isQueued(result) ? result?.id || "" : "",
+      };
     } catch (error) {
       return { ok: false, status: 400, error: error instanceof Error ? error.message : String(error) };
     }

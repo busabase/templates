@@ -94,6 +94,8 @@ export const messages = {
     reopen: "Reopen",
     acknowledge: "Acknowledge",
     acknowledged: "Acknowledged",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     enum: {
       intake: "intake",
       review: "review",
@@ -210,6 +212,7 @@ export const messages = {
     reopen: "重新打开",
     acknowledge: "确认",
     acknowledged: "已确认",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     enum: {
       intake: "需求接入",
       review: "审阅",

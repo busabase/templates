@@ -785,7 +785,9 @@ async function submitDecision(id, action) {
     delete state.edits[id];
     state.saving = false;
     await loadState();
-    state.notice = { id, text: t("decisionSaved"), tone: "positive" };
+    // Without write access the decision is a ChangeRequest, and the item keeps
+    // its old status until someone who has it approves: say that, not "Saved".
+    state.notice = { id, text: result.pending ? t("savedForReview") : t("decisionSaved"), tone: "positive" };
   } catch (error) {
     state.notice = { id, text: error instanceof Error ? error.message : String(error), tone: "negative" };
   } finally {

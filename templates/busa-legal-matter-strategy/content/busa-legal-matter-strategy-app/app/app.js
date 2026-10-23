@@ -443,9 +443,10 @@ async function submitDecision(id, action) {
   }
   const comment = document.querySelector(`[data-note="${CSS.escape(id)}"]`)?.value || "";
   const draft = document.querySelector(`[data-draft="${CSS.escape(id)}"]`)?.value || "";
+  let result;
   try {
     const provider = await getProvider();
-    await provider.decideItem({ id, action, comment, draft });
+    result = await provider.decideItem({ id, action, comment, draft });
   } catch (error) {
     state.notice = error instanceof Error ? error.message : String(error);
     render();
@@ -454,7 +455,9 @@ async function submitDecision(id, action) {
   delete state.edits.note[id];
   delete state.edits.draft[id];
   await loadState();
-  state.notice = t("saved");
+  // Without write access the decision is a ChangeRequest, and the pack keeps
+  // its old status until someone who has it approves: say that, not "submitted".
+  state.notice = result?.pending ? t("savedForReview") : t("saved");
   render();
 }
 

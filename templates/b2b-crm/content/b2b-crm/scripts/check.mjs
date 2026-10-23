@@ -171,8 +171,10 @@ if (!appConfig.permissions?.read_procedures?.includes("records.count"))
   throw new Error("Overview exact counts require the records.count read procedure.");
 if (/mobile-detail-open/.test(contents["app/js/app.js"]) || /body\.mobile-detail-open/.test(contents["app/styles.css"]))
   throw new Error("Legacy split-pane mobile detail state found.");
-if (!contents["app/js/app.js"].includes("Request submitted") || !contents["app/js/app.js"].includes("Ready for human review"))
-  throw new Error("ChangeRequest success state hierarchy is missing.");
+// A write's result says what Busabase did with it: it landed, or it waits for
+// someone with write access. The app must not announce either in advance.
+if (!contents["app/js/app.js"].includes("request.pending") || !contents["app/js/app.js"].includes("messages.sentForReview"))
+  throw new Error("Write result must distinguish a saved change from one sent for review.");
 if (!contents["app/js/app.js"].includes("routeFromHash") ||
     !contents["app/js/app.js"].includes('addEventListener("popstate"') ||
     !contents["app/js/app.js"].includes('addEventListener("hashchange"'))

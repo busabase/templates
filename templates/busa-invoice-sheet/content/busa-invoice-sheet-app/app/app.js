@@ -827,8 +827,9 @@ async function submitDecision(id, action, patch = null, comment = "") {
     render();
     return;
   }
+  let result;
   try {
-    await state.provider.submitDecision({ item_id: id, action, comment, patch });
+    result = await state.provider.submitDecision({ item_id: id, action, comment, patch });
   } catch (error) {
     state.notice = error?.message || t("decisionFailed");
     render();
@@ -836,7 +837,9 @@ async function submitDecision(id, action, patch = null, comment = "") {
   }
   delete state.edits[id];
   await loadState();
-  state.notice = t("saved");
+  // Without write access the decision is a ChangeRequest, and the invoice
+  // keeps its old status until someone who has it approves: say that, not "Saved".
+  state.notice = result?.pending ? t("savedForReview") : t("saved");
   render();
 }
 

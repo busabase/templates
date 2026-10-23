@@ -18,20 +18,6 @@ const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 
-// A deployed AirApp is served through the ambient Busabase session (a Busabase
-// iframe/preview host, or same-origin proxy under /api/airapp-preview/); a
-// standalone local preview runs on loopback outside that host. A decision
-// submitted from a standalone local preview (the trusted operator's own
-// machine) merges immediately; one submitted from the deployed AirApp creates
-// a pending ChangeRequest for the trusted process to merge, per the AirApp
-// boundary.
-// A deployed AirApp sits inside the Busabase review boundary; only a standalone
-// run may merge its own writes. That is far too consequential to infer from the
-// URL — see ../runtime.js.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
-export { isStandaloneLocalRuntime };
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 const toBusabaseFields = (fields) =>
@@ -110,6 +96,13 @@ async function findRecord(key, idFieldSlug, idValue) {
   }
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 async function upsert(key, idFieldSlug, idValue, fields, message) {
   if (!allowedWrites.has("bases.createChangeRequest") || !allowedWrites.has("records.changeRequest")) {
     throw new Error("PROCEDURE_DENIED: records.changeRequest");
@@ -117,27 +110,22 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
   const declared = base(key);
   const existing = await findRecord(key, idFieldSlug, idValue);
   const normalized = toBusabaseFields(fields);
-  const autoMerge = isStandaloneLocalRuntime();
-  if (!existing) {
-    await runtimeClient.bases.createChangeRequest({
-      baseId: declared.baseId,
-      fields: normalized,
-      message,
-      submittedBy: appConfig.appId,
-      autoMerge,
-    });
-    return { autoMerge };
-  }
-  await runtimeClient.records.changeRequest({
-    recordId: existing.id,
-    operation: "update",
-    fields: normalized,
-    message,
-    author: appConfig.appId,
-    baseCommitId: existing.headCommitId,
-    autoMerge,
-  });
-  return { autoMerge };
+  const result = existing
+    ? await runtimeClient.records.changeRequest({
+        recordId: existing.id,
+        operation: "update",
+        fields: normalized,
+        message,
+        author: appConfig.appId,
+        baseCommitId: existing.headCommitId,
+      })
+    : await runtimeClient.bases.createChangeRequest({
+        baseId: declared.baseId,
+        fields: normalized,
+        message,
+        submittedBy: appConfig.appId,
+      });
+  return { pending: isQueued(result), change_request_id: isQueued(result) ? result?.id || "" : "" };
 }
 
 // Side reads: the batch-metadata row and the source list decorate the
@@ -258,7 +246,7 @@ export const busabaseProvider = {
     if (!allowed.includes(action)) return { ok: false, status: 400, error: `Unknown action for ${kind}: ${action}` };
     await ensureResources();
     const now = new Date().toISOString();
-    let written = { autoMerge: false };
+    let written = { pending: false, change_request_id: "" };
 
     try {
       if (kind === "signal") {
@@ -314,9 +302,14 @@ export const busabaseProvider = {
     } catch (error) {
       return { ok: false, status: 400, error: error instanceof Error ? error.message : String(error) };
     }
-    // A hosted AirApp's write is a pending ChangeRequest: the record keeps its
-    // old status until someone merges it, and the UI has to say so.
-    return { ok: true, pending: !written.autoMerge, decision: { id, kind, action, comment, decided_at: now } };
+    // Without write access the decision is a ChangeRequest: the record keeps its
+    // old status until someone who has write access approves it, and the UI says so.
+    return {
+      ok: true,
+      pending: written.pending,
+      change_request_id: written.change_request_id,
+      decision: { id, kind, action, comment, decided_at: now },
+    };
   },
 
   async provisionResources() {

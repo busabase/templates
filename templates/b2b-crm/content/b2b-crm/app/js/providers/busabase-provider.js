@@ -139,6 +139,14 @@ const readChangeRequests = async (client) => {
 let runtimeClient;
 let runtimeBases = new Map();
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+const writeOutcome = (result) => ({ ...result, pending: isQueued(result) });
+
 export const busabaseProvider = {
   name: "busabase",
   async getState() {
@@ -206,41 +214,38 @@ export const busabaseProvider = {
     if (!runtimeClient || !base) throw new Error("SCHEMA_INCOMPLETE: activities");
     const subject = String(fields["activity-subject"] || "Activity");
     const type = String(fields["activity-type"] || "activity");
-    return runtimeClient.bases.createChangeRequest({
+    return writeOutcome(await runtimeClient.bases.createChangeRequest({
       baseId: base.baseId,
       fields,
       message: `Log ${type}: ${subject}`,
       submittedBy: "airapp",
       idempotencyKey: crypto.randomUUID(),
-      autoMerge: false,
-    });
+    }));
   },
   async createDeal(fields) {
     requireWrite("bases.createChangeRequest");
     const base = runtimeBases.get("deals");
     if (!runtimeClient || !base) throw new Error("SCHEMA_INCOMPLETE: deals");
     const name = String(fields["deal-name"] || "Deal");
-    return runtimeClient.bases.createChangeRequest({
+    return writeOutcome(await runtimeClient.bases.createChangeRequest({
       baseId: base.baseId,
       fields,
       message: `Add deal: ${name}`,
       submittedBy: "airapp",
       idempotencyKey: crypto.randomUUID(),
-      autoMerge: false,
-    });
+    }));
   },
   async updateDealStage({ recordId, baseCommitId, stage }) {
     requireWrite("records.changeRequest");
     if (!runtimeClient || !recordId) throw new Error("SCHEMA_INCOMPLETE: deal record");
-    return runtimeClient.records.changeRequest({
+    return writeOutcome(await runtimeClient.records.changeRequest({
       recordId,
       operation: "update",
       fields: { stage },
       message: `Move deal to ${stage}`,
       author: "airapp",
       ...(baseCommitId ? { baseCommitId } : {}),
-      autoMerge: false,
-    });
+    }));
   },
   async refreshPending() {
     if (!runtimeClient) throw new Error("SESSION_REQUIRED: runtime client is unavailable");

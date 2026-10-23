@@ -33,6 +33,7 @@ export const state = {
   ),
   demo: new URLSearchParams(location.search).get("demo") || "",
   edits: { note: {}, draft: {} },
+  notice: "",
   pagination: {},
   totalCount: {},
   workflowCount: null,
@@ -184,6 +185,7 @@ let previousRouteWasList = false;
 function setRoute() {
   const previous = state.route;
   state.route = parseRoute();
+  if (previous.selectedId !== state.route.selectedId) state.notice = "";
   // Mark a detail entry opened from its list so Back/Close/Escape step back to
   // that exact list entry instead of pushing a new one.
   if (state.route.selectedId && previousRouteWasList && previous.view === state.route.view) {
@@ -339,8 +341,14 @@ async function submitDecision(id, action) {
   const comment = document.querySelector(`[data-note="${CSS.escape(id)}"]`)?.value || "";
   const draft = document.querySelector(`[data-draft="${CSS.escape(id)}"]`)?.value || "";
   const provider = await getProvider();
-  await provider.decideItem({ id, action, comment, draft });
+  const result = await provider.decideItem({ id, action, comment, draft });
   await loadState();
+  // Without write access the decision is a ChangeRequest, and the insight keeps
+  // its old status until someone who has it approves: say so, after the reload.
+  if (result?.pending) {
+    state.notice = t("savedForReview");
+    render();
+  }
 }
 
 // ── Render ─────────────────────────────────────────────────────────────────

@@ -610,9 +610,10 @@ export async function submitDecision(planId, action, { comment = "", draft } = {
     render();
     return;
   }
+  let result;
   try {
     const provider = await getProvider();
-    await provider.decidePlan({ plan_id: planId, action, note: comment, draft });
+    result = await provider.decidePlan({ plan_id: planId, action, note: comment, draft });
   } catch (error) {
     state.notice = error instanceof Error ? error.message : `Decision failed: ${action}`;
     render();
@@ -621,7 +622,9 @@ export async function submitDecision(planId, action, { comment = "", draft } = {
   delete state.edits[planId];
   delete state.edits[`note:${planId}`];
   await loadState();
-  state.notice = t("saved");
+  // Without write access the decision is a ChangeRequest, and the plan keeps
+  // its old status until someone who has it approves: say that, not "Saved".
+  state.notice = result?.pending ? t("savedForReview") : t("saved");
   render();
 }
 

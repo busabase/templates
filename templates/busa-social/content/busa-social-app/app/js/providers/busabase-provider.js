@@ -20,10 +20,6 @@ const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 const BROWSED_KEYS = ["accounts", "posts", "calendar", "drafts", "shorts", "engagement"];
 
-// Only a standalone run may merge its own writes; a deployed AirApp is inside
-// the Busabase review boundary. Too consequential to infer from the URL.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 const toBusabaseFields = (fields) =>
@@ -119,6 +115,13 @@ async function findRecord(key, idFieldSlug, idValue) {
   }
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 async function upsert(key, idFieldSlug, idValue, fields, message) {
   if (!allowedWrites.has("bases.createChangeRequest") || !allowedWrites.has("records.changeRequest")) {
     throw new Error("PROCEDURE_DENIED: records.changeRequest");
@@ -126,14 +129,12 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
   const declared = base(key);
   const existing = await findRecord(key, idFieldSlug, idValue);
   const normalized = toBusabaseFields(fields);
-  const autoMerge = isStandaloneLocalRuntime();
   if (!existing) {
     return runtimeClient.bases.createChangeRequest({
       baseId: declared.baseId,
       fields: normalized,
       message,
       submittedBy: appConfig.appId,
-      autoMerge,
     });
   }
   return runtimeClient.records.changeRequest({
@@ -143,7 +144,6 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
     message,
     author: appConfig.appId,
     baseCommitId: existing.headCommitId,
-    autoMerge,
   });
 }
 
@@ -240,14 +240,18 @@ export const busabaseProvider = {
     const current = normalizeFields(
       existing?.headCommit?.payload || existing?.headCommit?.fields || existing?.fields || {},
     );
-    await upsert(
+    const result = await upsert(
       "drafts",
       "draft-id",
       draftId,
       { ...current, draft_id: draftId, status, review_note: review_note || current.review_note || "", updated_at: now },
       `Review draft ${draftId}: ${status}`,
     );
-    return this.getState();
+    return {
+      ...(await this.getState()),
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   async reviewShort(shortId, { status, review_note = "" } = {}) {
@@ -259,14 +263,18 @@ export const busabaseProvider = {
     const current = normalizeFields(
       existing.headCommit?.payload || existing.headCommit?.fields || existing.fields || {},
     );
-    await upsert(
+    const result = await upsert(
       "shorts",
       "short-id",
       shortId,
       { ...current, short_id: shortId, status, review_note: review_note || current.review_note || "", updated_at: now },
       `Review short ${shortId}: ${status}`,
     );
-    return this.getState();
+    return {
+      ...(await this.getState()),
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   async reviewEngagement(itemId, { status, review_note = "" } = {}) {
@@ -277,14 +285,18 @@ export const busabaseProvider = {
     const current = normalizeFields(
       existing.headCommit?.payload || existing.headCommit?.fields || existing.fields || {},
     );
-    await upsert(
+    const result = await upsert(
       "engagement",
       "item-id",
       itemId,
       { ...current, item_id: itemId, status, review_note: review_note || current.review_note || "" },
       `Review engagement ${itemId}: ${status}`,
     );
-    return this.getState();
+    return {
+      ...(await this.getState()),
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   // publish_post: requires prior human approval and a non-BLOCK gate. Writes
@@ -301,19 +313,22 @@ export const busabaseProvider = {
     const current = normalizeFields(
       existing?.headCommit?.payload || existing?.headCommit?.fields || existing?.fields || {},
     );
-    await upsert(
-      "drafts",
-      "draft-id",
-      draftId,
-      {
-        ...current,
-        draft_id: draftId,
-        status: "done",
-        scheduled_for: scheduled_for || current.scheduled_for || now,
-        review_note: channel ? `Publish intent recorded for ${channel}.` : current.review_note || "",
-        updated_at: now,
-      },
-      `Publish draft ${draftId}`,
+    const results = [];
+    results.push(
+      await upsert(
+        "drafts",
+        "draft-id",
+        draftId,
+        {
+          ...current,
+          draft_id: draftId,
+          status: "done",
+          scheduled_for: scheduled_for || current.scheduled_for || now,
+          review_note: channel ? `Publish intent recorded for ${channel}.` : current.review_note || "",
+          updated_at: now,
+        },
+        `Publish draft ${draftId}`,
+      ),
     );
     // Reflect on any calendar entry that links to this draft.
     const linked = (snapshot.calendar || []).find((entry) => entry.draft_id === draftId);
@@ -322,20 +337,23 @@ export const busabaseProvider = {
       const currentEntry = normalizeFields(
         existingEntry?.headCommit?.payload || existingEntry?.headCommit?.fields || existingEntry?.fields || {},
       );
-      await upsert(
-        "calendar",
-        "entry-id",
-        linked.entry_id,
-        {
-          ...currentEntry,
-          entry_id: linked.entry_id,
-          status: "scheduled",
-          scheduled_for: scheduled_for || currentEntry.scheduled_for || "",
-        },
-        `Schedule calendar entry ${linked.entry_id} for draft ${draftId}`,
+      results.push(
+        await upsert(
+          "calendar",
+          "entry-id",
+          linked.entry_id,
+          {
+            ...currentEntry,
+            entry_id: linked.entry_id,
+            status: "scheduled",
+            scheduled_for: scheduled_for || currentEntry.scheduled_for || "",
+          },
+          `Schedule calendar entry ${linked.entry_id} for draft ${draftId}`,
+        ),
       );
     }
-    return this.getState();
+    const queued = results.find(isQueued);
+    return { ...(await this.getState()), pending: Boolean(queued), change_request_id: queued?.id || "" };
   },
 
   // send_reply: requires prior human approval. Writes status="done" as the
@@ -350,7 +368,7 @@ export const busabaseProvider = {
     const current = normalizeFields(
       existing?.headCommit?.payload || existing?.headCommit?.fields || existing?.fields || {},
     );
-    await upsert(
+    const result = await upsert(
       "engagement",
       "item-id",
       itemId,
@@ -362,7 +380,11 @@ export const busabaseProvider = {
       },
       `Send reply ${itemId}`,
     );
-    return this.getState();
+    return {
+      ...(await this.getState()),
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   async crisisToggle({ status, publishing_paused, step_id, done } = {}) {
@@ -377,7 +399,7 @@ export const busabaseProvider = {
       );
     }
     crisis.updated_at = new Date().toISOString();
-    await upsert(
+    const result = await upsert(
       "settings",
       "record-id",
       "busa-social-crisis",
@@ -390,7 +412,11 @@ export const busabaseProvider = {
       },
       "Update crisis playbook",
     );
-    return this.getState();
+    return {
+      ...(await this.getState()),
+      pending: isQueued(result),
+      change_request_id: isQueued(result) ? result?.id || "" : "",
+    };
   },
 
   // Generic dispatcher matching the retired PublishingOperation union — kept

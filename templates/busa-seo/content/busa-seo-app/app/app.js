@@ -61,6 +61,9 @@ export const state = {
 	demoDecisions: {},
 	geoDecisions: {},
 	entityOverrides: {},
+	// Set after a write the server queued as a ChangeRequest (no write access),
+	// shown on the view that made it, and cleared on the next write or route.
+	notice: "",
 };
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "busa-seo.sidebarCollapsed";
@@ -300,6 +303,7 @@ let previousRouteWasList = false;
 function setRoute() {
 	const previous = state.route;
 	state.route = parseRoute();
+	state.notice = "";
 	// A detail opened from its list replaces the entry, so Back/Close/Escape
 	// step to that exact list instead of pushing a new history entry.
 	if (
@@ -653,6 +657,13 @@ export function badgeList(badges, group = "badge") {
 				`<span class="badge badge-${escapeHtml(badge)}">${escapeHtml(enumLabel(badge, group))}</span>`,
 		)
 		.join(" ");
+}
+
+// The pending-write notice, in the same banner the lock uses.
+export function noticeBanner() {
+	return state.notice
+		? `<div class="warnings" role="status"><div class="warning"><strong>${escapeHtml(state.notice)}</strong></div></div>`
+		: "";
 }
 
 export function statusBadge(status) {

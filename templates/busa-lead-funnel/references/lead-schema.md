@@ -74,7 +74,7 @@ onto the lead's own record via `records.changeRequest`:
 - **Add note** (`addNote`): appends `{id, text, author, created_at}` to
   `notes` and updates `updated_at`.
 
-From a standalone local preview the write merges immediately (trusted
-operator); from the deployed AirApp it creates a pending ChangeRequest for
-the trusted process to merge, per the AirApp boundary in
-`$busabase-app-creator`.
+The write follows the person's own permission, wherever the AirApp runs:
+with write access it lands at once; without it, it becomes a ChangeRequest
+for someone who has write access, and the app says the change was sent for
+review. The app never forces review on its own writes.

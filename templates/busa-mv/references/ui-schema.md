@@ -152,10 +152,14 @@ the error left for the next attempt to retry).
 
 ## Write surface
 
-Direct field writes via `records.changeRequest`/`bases.createChangeRequest`
-(`autoMerge = isStandaloneLocalRuntime()`): concept, song metadata, cast
-visual notes, shot description/duration/on-screen-characters, and every
-`*-status = "requested"` write. Binary uploads (MP3, reference image, shot
+Direct field writes via `records.changeRequest`/`bases.createChangeRequest`:
+concept, song metadata, cast visual notes, shot
+description/duration/on-screen-characters, and every
+`*-status = "requested"` write. The write follows the person's own
+permission, wherever the AirApp runs: with write access it lands at once;
+without it, it becomes a ChangeRequest for someone who has write access, and
+the app says the change was sent for review. The app never forces review on
+its own writes. Binary uploads (MP3, reference image, shot
 image/video the user already has) go through the Busabase `assets` client
 directly from the browser. AI generation (character cards, storyboard
 images, draft video, song drafts) is never called from the browser — only

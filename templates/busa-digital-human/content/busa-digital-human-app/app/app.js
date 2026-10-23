@@ -70,6 +70,8 @@ const messages = {
     safety: "Safety boundary",
     demoNotice: "Demo mode: this is a read-only tour, nothing was saved.",
     saved: "Saved.",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     search: "Search",
     empty: "No matching items.",
     loading: "Loading",
@@ -152,6 +154,7 @@ const messages = {
     safety: "安全边界",
     demoNotice: "Demo 模式：这是只读演示，没有保存任何内容。",
     saved: "已保存。",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     search: "搜索",
     empty: "没有匹配项。",
     loading: "加载中",
@@ -653,9 +656,11 @@ export async function submitDecision(checkId, action, card) {
   render();
   try {
     const provider = await getProvider();
-    await provider.saveDecision(checkId, action, note);
+    const result = await provider.saveDecision(checkId, action, note);
     delete state.edits[checkId];
-    state.notice = t("saved");
+    // Without write access the decision is a ChangeRequest, and the check keeps
+    // its old verdict until someone who has it approves: say that, not "Saved".
+    state.notice = result?.pending ? t("savedForReview") : t("saved");
     await loadState();
   } catch (error) {
     state.notice = `${t("decisionFailed")}: ${error?.message || error}`;

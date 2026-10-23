@@ -20,13 +20,6 @@ const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
 const allowedWrites = new Set(appConfig.permissions.writeProcedures);
 
-// A deployed AirApp sits inside the Busabase review boundary; only a standalone
-// run may merge its own writes. That is far too consequential to infer from the
-// URL — see ../runtime.js.
-import { isStandaloneLocalRuntime } from "../runtime.js";
-
-export { isStandaloneLocalRuntime };
-
 const normalizeFields = (fields) =>
   Object.fromEntries(Object.entries(fields || {}).map(([slug, value]) => [slug.replaceAll("-", "_"), value]));
 const toBusabaseFields = (fields) =>
@@ -105,6 +98,13 @@ async function findRecord(key, idFieldSlug, idValue) {
   }
 }
 
+// A person's write from this app leaves `autoMerge` unset, so Busabase decides
+// from that person's own permission: with write access the change lands now;
+// without it the same change becomes a ChangeRequest for someone who has it.
+// The response says which happened (`materialized: false` is the queued one),
+// and the caller reports it rather than assuming either.
+const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
+
 async function updateRecord(key, existing, fields, message) {
   if (!allowedWrites.has("records.changeRequest")) throw new Error("PROCEDURE_DENIED: records.changeRequest");
   return runtimeClient.records.changeRequest({
@@ -114,7 +114,6 @@ async function updateRecord(key, existing, fields, message) {
     message,
     author: appConfig.appId,
     baseCommitId: existing.headCommitId,
-    autoMerge: isStandaloneLocalRuntime(),
   });
 }
 
@@ -266,7 +265,8 @@ export const busabaseProvider = {
     const now = new Date().toISOString();
     const nextStatus = statusForAction(action);
 
-    await updateRecord(
+    const results = [];
+    const reviewResult = await updateRecord(
       "reviews",
       existing,
       baseReviewFields({
@@ -279,6 +279,7 @@ export const busabaseProvider = {
       }),
       `Decision on review ${review_id}: ${action}`,
     );
+    results.push(reviewResult);
 
     const targetType = current.target_type;
     const targetId = current.target_id;
@@ -298,16 +299,18 @@ export const busabaseProvider = {
           mistakes: computeMistakeFromRow,
           papers: computePaperFromRow,
         }[targetBase];
-        await updateRecord(
+        const targetResult = await updateRecord(
           targetBase,
           targetExisting,
           fieldsBuilder({ ...normalizer(targetCurrent), status: nextStatus }),
           `Decision on review ${review_id} updates ${targetType} ${targetId}: ${nextStatus}`,
         );
+        results.push(targetResult);
       }
     }
 
-    return { ok: true };
+    const queued = results.find(isQueued);
+    return { ok: true, pending: Boolean(queued), change_request_id: queued?.id || "" };
   },
 
   async provisionResources() {

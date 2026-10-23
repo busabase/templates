@@ -446,6 +446,10 @@ async function applyAndReload(payload) {
     const result = await provider.applyDecision(payload);
     if (payload.action === "answer" || payload.action === "skip") {
       state.notice = result?.pending ? t("answerPendingReview") : t("answerSaved");
+    } else if (result?.pending) {
+      // Without write access the change is a ChangeRequest, and the idea stays
+      // where it was until someone who has it approves: say so.
+      state.notice = t("savedForReview");
     }
     await loadState();
   } catch (error) {

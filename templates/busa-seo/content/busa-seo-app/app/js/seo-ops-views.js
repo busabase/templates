@@ -8,6 +8,7 @@ import {
 	filteredSites,
 	loadState,
 	n,
+	noticeBanner,
 	opportunities,
 	pct,
 	pos1,
@@ -144,6 +145,7 @@ export function renderOpportunityDetail() {
 	els.detailBody.innerHTML = `
     ${state.settings?.lock ? `<div class="warnings"><div class="warning"><strong>${t("lockBanner")}</strong><span>${escapeHtml(state.settings.lock?.message || "")}</span></div></div>` : ""}
     ${state.demo ? `<div class="demo-note">${t("demoDecisionNote")}</div>` : ""}
+    ${noticeBanner()}
     ${opportunityDetailMarkup(item, locked)}
   `;
 }
@@ -161,9 +163,11 @@ export async function submitDecision(id, action) {
 		render();
 		return;
 	}
+	let result;
+	state.notice = "";
 	try {
 		const provider = await getProvider();
-		await provider.decideOpportunity({
+		result = await provider.decideOpportunity({
 			opportunity_id: id,
 			action,
 			note,
@@ -174,6 +178,12 @@ export async function submitDecision(id, action) {
 		return;
 	}
 	await loadState();
+	// Without write access the decision is a ChangeRequest and the opportunity
+	// keeps its old status until someone who has it approves: say so.
+	if (result?.pending) {
+		state.notice = t("savedForReview");
+		render();
+	}
 }
 
 // ── Sites: drawer detail over a compact table ──────────────────────────────

@@ -321,8 +321,10 @@ Goal: the user's own mailbox sends the letters they approved.
   company whose addresses sit on an unloaded page shows 邮箱未加载 (never
   未找到邮箱), and opening it reads just its own addresses. The trusted
   scripts, which are not interactive, still follow `nextCursor` to exhaustion.
-- Writes auto-merge only on a standalone loopback preview. A deployed AirApp
-  submits each write as a ChangeRequest for review.
+- A write follows the person's own permission, wherever the AirApp runs: with
+  write access it lands at once; without it, it becomes a ChangeRequest for
+  someone who has write access, and the app says it was sent for review. The
+  app never forces review on its own writes.
 - A standalone OAuth connection verifies accessible Spaces before reading app
   resources. One Space is selected automatically; multiple Spaces require an
   explicit in-app choice that is validated and attached to every proxied SDK

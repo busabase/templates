@@ -63,6 +63,8 @@ export const messages = {
     batchId: "Batch ID",
     decisionSaving: "Saving…",
     decisionSaved: "Saved",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     decisionError: "Could not save decision",
     loading: "Loading",
     demoData: "Demo data",
@@ -166,6 +168,7 @@ export const messages = {
     batchId: "批次编号",
     decisionSaving: "保存中…",
     decisionSaved: "已保存",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     decisionError: "无法保存决定",
     loading: "加载中",
     demoData: "演示数据",

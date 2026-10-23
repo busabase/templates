@@ -132,7 +132,7 @@ The script validates the payload against the workstream field shapes and the req
 
 ## Decisions And Execution Workflow
 
-1. The reviewer decides at `#/review` or the issue workbench: approve, request changes (with a note), save edited fields (revise), or block. Decisions write directly onto the issue record. From a standalone local preview the write merges immediately (trusted operator); from the deployed AirApp it creates a pending ChangeRequest for the trusted process to merge.
+1. The reviewer decides at `#/review` or the issue workbench: approve, request changes (with a note), save edited fields (revise), or block. Decisions write directly onto the issue record. The write follows the person's own permission, wherever the AirApp runs: with write access it lands at once; without it, it becomes a ChangeRequest for someone who has write access, and the app says the decision was sent for review. The app never forces review on its own writes.
 2. On explicit user request to execute, run `scripts/execute_decisions.mjs` (dry-run by default; `--apply` writes `execution-status: "ready_for_agent"` onto each decided issue with the concrete operation — `export_issue_list` (from `approve`) or `request_revision` (from `request_changes`) — and target). No external side effects either way; the issue's workflow `status` never changes.
 3. The agent then performs the approved follow-up outside the app: for `export_issue_list`, run `scripts/export_issues.mjs` and hand off the redline/counsel communication through the user or a separate approved connector after approval; for `request_revision`, redraft the issue per the review note, re-ingest, and re-run checks.
 

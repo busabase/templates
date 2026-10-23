@@ -126,7 +126,7 @@ The script validates required fields and upserts entities/items/checks into Busa
 
 ## Decisions And Execution Workflow
 
-1. The reviewer decides at `#/review` or the item workbench: approve, request changes (with a note), save an edited draft (revise), or block. Decisions write directly onto the item record. From a standalone local preview the write merges immediately (trusted operator); from the deployed AirApp it creates a pending ChangeRequest for the trusted process to merge.
+1. The reviewer decides at `#/review` or the item workbench: approve, request changes (with a note), save an edited draft (revise), or block. Decisions write directly onto the item record. The write follows the person's own permission, wherever the AirApp runs: with write access it lands at once; without it, it becomes a ChangeRequest for someone who has write access, and the app says the decision was sent for review. The app never forces review on its own writes.
 2. On explicit user request to execute, run `scripts/execute_decisions.mjs` (dry-run by default; `--apply` writes `execution-status: "ready_for_agent"` onto each decided item with the concrete operation — `export_case_record` (from `approve`) or `request_revision` (from `request_changes`) — and target). No external side effects either way; the item's workflow `status` never changes.
 3. The agent then performs the approved follow-up outside the app: for `export_case_record`, run `scripts/export_case_records.mjs`; for `request_revision`, redraft the record per the review note and re-ingest.
 

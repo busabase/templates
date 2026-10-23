@@ -488,10 +488,10 @@ function openSettings() {
     };
     try {
       const provider = await getProvider();
-      await provider.saveImageConfig(body);
+      const result = await provider.saveImageConfig(body);
       await loadState();
       openSettings();
-      toast(t("toast_concept_saved"));
+      toast(result?.pending ? t("savedForReview") : t("toast_concept_saved"));
     } catch (e) {
       toast(e.message, "danger");
     }

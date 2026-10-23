@@ -173,7 +173,7 @@ form.
 
 ## Actions Workflow
 
-1. The user reviews action cards in `#/actions` (or by ref in chat) and gives verdicts: approve, request changes (with a note), or block — written directly onto the action record. From a standalone local preview the write merges immediately (trusted operator); from the deployed AirApp it creates a pending ChangeRequest for the trusted process to merge.
+1. The user reviews action cards in `#/actions` (or by ref in chat) and gives verdicts: approve, request changes (with a note), or block — written directly onto the action record. The write follows the person's own permission, wherever the AirApp runs: with write access it lands at once; without it, it becomes a ChangeRequest for someone who has write access, and the app says the decision was sent for review. The app never forces review on its own writes.
 2. For approved cards, run `node scripts/execute_decisions.mjs` to print the plan (`renew_domain` → registrar + domain, `rotate_key` → env var name, `investigate_spend` → provider, `restart_service` → service id, `ack_incident` → event id). This performs no external side effects and no Busabase writes.
 3. Execute the approved operation outside the app with the user's own tools. Then run `node scripts/execute_decisions.mjs --complete <action_id> --note "what was done"` to mark the card `done` and append an event — the only write path this script has, and it only runs when explicitly asked.
 4. If a target is missing (no registrar, no env var name), block and ask for configuration instead of guessing.

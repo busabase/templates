@@ -83,6 +83,8 @@ export const messages = {
     risk: "Risk",
     runbook: "Runbook",
     saved: "Saved.",
+    savedForReview:
+      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
     search: "Search",
     secretsReady: "secrets ready",
     settings: "Help & Settings",
@@ -238,6 +240,7 @@ export const messages = {
     risk: "风险",
     runbook: "作战手册",
     saved: "已保存。",
+    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
     search: "搜索",
     secretsReady: "密钥已就绪",
     settings: "帮助与设置",
