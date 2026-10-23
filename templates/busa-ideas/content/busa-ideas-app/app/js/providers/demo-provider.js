@@ -6,7 +6,7 @@
 // classroom can point at busa-email and say "this is the conversation that
 // produced it", plus one still-vague idea mid-interrogation and one honestly
 // parked idea.
-import { buildSnapshot } from "../ideas-model.js?v=0.2.0";
+import { buildSnapshot } from "../ideas-model.js?v=0.2.1";
 
 const NOW = "2026-09-02T09:30:00.000Z";
 

@@ -24,9 +24,9 @@ import {
   viewLabel,
   warnings,
 } from "../app.js";
-import { DOC_KINDS, STAGES } from "./ideas-model.js?v=0.2.0";
-import { hydrateDocumentVisuals, renderMarkdownDocument } from "./markdown-renderer.js?v=0.2.0";
-import { getProvider } from "./providers/index.js?v=0.2.0";
+import { DOC_KINDS, STAGES } from "./ideas-model.js?v=0.2.1";
+import { hydrateDocumentVisuals, renderMarkdownDocument } from "./markdown-renderer.js?v=0.2.1";
+import { getProvider } from "./providers/index.js?v=0.2.1";
 
 const DOC_TABS = ["overview", "questions", ...DOC_KINDS];
 
@@ -268,26 +268,41 @@ function renderDetail() {
   void hydrateDocumentVisuals(els.detailBody);
 }
 
+function reviewLink(requestId = "") {
+  const inbox = state.settings?.reviewInboxUrl;
+  if (!inbox) return `<p class="muted">${t("reviewInboxHint")}</p>`;
+  const url = requestId ? `${inbox}/${encodeURIComponent(requestId)}` : inbox;
+  return `<p><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${t("openReviewInbox")}</a></p>`;
+}
+
 function questionCard(question) {
   const answered = question.status === "answered";
   const skipped = question.status === "skipped";
   const pending = state.settings?.pendingAnswers?.includes(question.record_id);
   const stateClass = answered ? "answered" : skipped ? "skipped" : "open";
   const why = question.why_asking ? `<p class="question-why">${escapeHtml(question.why_asking)}</p>` : "";
-  const body = answered
+  const review = state.settings?.questionReviews?.[question.record_id];
+  const draft = state.edits[question.record_id] ?? state.settings?.pendingDrafts?.[question.record_id] ?? question.answer;
+  const disabled = state.decisionPending || state.settings?.reviewReadIncomplete ? "disabled" : "";
+  const body = pending
+    ? `<p role="status">${t(question.target_field ? "requiredAnswerPending" : review?.action === "skip" ? "skipPendingReview" : "answerPendingReview")}</p>
+      ${review?.action === "skip" ? "" : `<blockquote class="question-answer">${escapeHtml(state.settings?.pendingDrafts?.[question.record_id] || question.answer)}</blockquote>`}
+      ${review?.reviewStatus === "changes_requested" ? `<p class="muted">${t("reviewChangesRequested")}</p>` : ""}
+      ${review?.reviewStatus === "conflict" ? `<p class="muted">${t("reviewConflict")}</p>` : ""}
+      ${reviewLink(review?.requestId)}`
+    : answered
     ? `<blockquote class="question-answer">${escapeHtml(question.answer)}</blockquote>`
     : skipped
       ? `<p class="muted">${t("questionSkipped")}</p>`
-      : pending
-        ? `<p class="muted">${t("requiredAnswerPending")}</p>`
       : `
         <textarea class="question-input" data-answer-for="${escapeHtml(question.record_id)}"
-          rows="3" placeholder="${t("answerPlaceholder")}">${escapeHtml(state.settings?.pendingDrafts?.[question.record_id] || question.answer)}</textarea>
-        ${question.recovery ? `<p class="muted">${t("requiredAnswerRejected")}</p>` :
+          rows="3" ${disabled} placeholder="${t("answerPlaceholder")}">${escapeHtml(draft)}</textarea>
+        ${review?.reviewStatus === "rejected" ? `<p class="muted">${t("answerRejected")}</p>${reviewLink(review.requestId)}` : question.recovery ? `<p class="muted">${t("requiredAnswerRejected")}</p>` :
           state.settings?.pendingDrafts?.[question.record_id] ? `<p class="muted">${t("requiredAnswerPartialPending")}</p>` : ""}
+        ${state.settings?.reviewReadIncomplete ? `<p role="status">${t("reviewReadIncomplete")}</p>${reviewLink()}` : ""}
         <div class="question-actions">
-          <button type="button" class="btn primary" data-answer="${escapeHtml(question.record_id)}">${t("submitAnswer")}</button>
-          ${question.target_field ? "" : `<button type="button" class="btn quiet" data-skip="${escapeHtml(question.record_id)}">${t("skipQuestion")}</button>`}
+          <button type="button" class="btn primary" data-answer="${escapeHtml(question.record_id)}" ${disabled}>${t("submitAnswer")}</button>
+          ${question.target_field ? "" : `<button type="button" class="btn quiet" data-skip="${escapeHtml(question.record_id)}" ${disabled}>${t("skipQuestion")}</button>`}
         </div>
       `;
   return `
@@ -400,6 +415,9 @@ function renderIdeaPage(idea) {
 
 // Delegated once on the detail panel: answer / skip / advance, and tabs.
 export function bindDetailEvents() {
+  els.detailBody.addEventListener("input", (event) => {
+    if (event.target.matches("[data-answer-for]")) state.edits[event.target.dataset.answerFor] = event.target.value;
+  });
   els.detailBody.addEventListener("click", (event) => {
     const tabLink = event.target.closest("a[data-tab]");
     if (tabLink) {
@@ -441,19 +459,36 @@ async function submitAnswer(id) {
 }
 
 async function applyAndReload(payload) {
+  if (state.decisionPending) return;
+  state.decisionPending = true;
+  render();
+  let submitted = false;
   try {
     const provider = await getProvider();
     const result = await provider.applyDecision(payload);
+    submitted = true;
     if (payload.action === "answer" || payload.action === "skip") {
-      state.notice = result?.pending ? t("answerPendingReview") : t("answerSaved");
+      const question = ideaById(state.route.id)?.questions.find((item) => item.record_id === payload.question_id);
+      state.notice = result?.pending
+        ? t(question?.target_field ? "requiredAnswerPendingReview" : payload.action === "skip" ? "skipPendingReview" : "answerPendingReview")
+        : t(payload.action === "skip" ? "questionSkipped" : "answerSaved");
+      if (result?.pending) {
+        state.settings.pendingAnswers = [...new Set([...(state.settings.pendingAnswers || []), payload.question_id])];
+        state.settings.pendingDrafts = { ...state.settings.pendingDrafts, [payload.question_id]: payload.answer || "" };
+        state.settings.questionReviews = { ...state.settings.questionReviews,
+          [payload.question_id]: { action: payload.action, answer: payload.answer || "", requestId: result.change_request_id } };
+      }
     } else if (result?.pending) {
       // Without write access the change is a ChangeRequest, and the idea stays
       // where it was until someone who has it approves: say so.
       state.notice = t("savedForReview");
     }
     await loadState();
+    delete state.edits[payload.question_id];
   } catch (error) {
-    state.notice = String(error?.message || error);
+    state.notice = `${submitted ? `${t("submittedRefreshFailed")} ` : ""}${String(error?.message || error)}`;
+  } finally {
+    state.decisionPending = false;
     render();
   }
 }

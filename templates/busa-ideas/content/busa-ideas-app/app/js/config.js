@@ -97,7 +97,7 @@ export const appConfig = {
   permissions: {
     readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count", "changeRequests.list"],
     setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata", "bases.fieldChangeRequest"],
-    writeProcedures: ["records.changeRequest", "bases.createChangeRequest"],
+    writeProcedures: ["records.changeRequest", "bases.createChangeRequest", "bases.createBulkUpdateChangeRequest"],
   },
 };
 

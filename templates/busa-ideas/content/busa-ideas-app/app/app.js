@@ -1,9 +1,9 @@
 import { messages } from "./i18n/messages.js";
-import { appConfig } from "./js/config.js?v=0.2.0";
-import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.2.0";
-import { buildSnapshot, DOC_KINDS, NORMALIZE_ROW_BY_KEY } from "./js/ideas-model.js?v=0.2.0";
+import { appConfig } from "./js/config.js?v=0.2.1";
+import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.2.1";
+import { buildSnapshot, DOC_KINDS, NORMALIZE_ROW_BY_KEY } from "./js/ideas-model.js?v=0.2.1";
 import { bindDetailEvents, renderOverview, renderRecordView, renderSettings } from "./js/ideas-views.js";
-import { getProvider } from "./js/providers/index.js?v=0.2.0";
+import { getProvider } from "./js/providers/index.js?v=0.2.1";
 
 // Where a record opens, per view. Chosen by what people do with the record:
 //   ideas         → page:  an idea is a workplace — its questions to answer, its
