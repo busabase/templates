@@ -195,13 +195,15 @@ npx busabase-cli@latest --version     # 必须是 0.98.0 或更高
 npx busabase-cli@latest check ./templates/<name>
 npx busabase-cli@latest index . --repo busabase/templates -o templates.json
 npx busabase-cli@latest index . --repo busabase/templates -o templates.json --check
+node scripts/check-app-writes.mjs
 ```
 
 - 你改动过的每个模板，`check` 都必须是 **0 个错误**。声明了但磁盘上不存在的文件会报错；语言代码拼错、英文列表里混入本地化文件会报警告。改动之前就存在的警告不归你修。
 - `check` 只确认声明的文件存在，不看视频的格式、时长、内容，也不看它是否存在 LFS 里；这些靠 `ffprobe`、你自己看片和 `git lfs status`。
 - `index` 重新生成 `templates.json`，也就是模板中心（Template Center）读取的目录。绝不要手改。`@latest`
   很关键：0.98.0 之前的 CLI 会悄悄把 `locales` 从目录里丢掉。`AGENTS.md` 里的示例没写版本号，运行时加上 `@latest`。
-- 最后一条命令必须输出 `templates.json is up to date`。
+- `index --check` 必须输出 `templates.json is up to date`。
+- `scripts/check-app-writes.mjs` 会在 AirApp 对用户自己的写入强制送审时报错（写死 `autoMerge: false`，或按运行环境推算这个值）。不要传 `autoMerge`，按 Busabase 返回的结果告诉用户是已保存还是已提交审核。如果某个写入确实要第二个人批准后才能对外发出，就在那一行用 `// allow-forced-review: <原因>` 写明原因。
 
 ### 用 Git LFS 提交
 

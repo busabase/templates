@@ -101,7 +101,13 @@ Open a pull request. Before you do:
 
 ```bash
 npx busabase-cli index . --repo busabase/templates -o templates.json --check
+node scripts/check-app-writes.mjs
 ```
+
+The second command fails when an AirApp forces review on a person's own write
+(`autoMerge: false`, or a value worked out from where the app runs). How an
+AirApp writes is `busabase-app-creator`'s rule; this only keeps it from
+regressing here.
 
 A template that declares itself one and does not qualify appears in the
 catalog's `rejected` list with its reasons — that list is the first place to

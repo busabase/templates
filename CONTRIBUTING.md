@@ -226,6 +226,7 @@ npx busabase-cli@latest --version     # must print 0.98.0 or later
 npx busabase-cli@latest check ./templates/<name>
 npx busabase-cli@latest index . --repo busabase/templates -o templates.json
 npx busabase-cli@latest index . --repo busabase/templates -o templates.json --check
+node scripts/check-app-writes.mjs
 ```
 
 - `check` must report **0 errors** for every template you touched. It errors on a declared file
@@ -236,7 +237,11 @@ npx busabase-cli@latest index . --repo busabase/templates -o templates.json --ch
 - `index` rebuilds `templates.json`, the catalog the Template Center reads. Never edit it by hand.
   `@latest` matters: a CLI older than 0.98.0 silently drops `locales` from the catalog. The
   examples in `AGENTS.md` omit the version; add `@latest` when you run them.
-- The last command must print `templates.json is up to date`.
+- `index --check` must print `templates.json is up to date`.
+- `scripts/check-app-writes.mjs` fails when an AirApp forces review on a person's own write
+  (`autoMerge: false`, or a value worked out from where the app runs). Leave `autoMerge` unset and
+  report the outcome Busabase returns. If a write truly needs a second person before something is
+  sent, say why on that line with `// allow-forced-review: <reason>`.
 
 ### Commit with Git LFS
 
