@@ -6,8 +6,8 @@
     "zh-CN": "Busa 选品台"
   },
   "description": {
-    "en": "Product-research (选品) desk: trend sweeps, margin cards, competition reads, and a develop/watch/drop review queue",
-    "zh-CN": "选品研究台：趋势扫描、利润测算卡、竞品分析，配合开发/观察/放弃的审核队列。"
+    "en": "Product-research desk: trend sweeps, margin cards, competition reads, and a develop, watch or drop call on every candidate",
+    "zh-CN": "选品研究台：趋势扫描、利润测算卡、竞品分析，每个候选品都定下开发、观察或放弃。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -48,7 +48,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Candidates and flag what needs my attention.",
-      "Open Busa Picks and show me the items that need review."
+      "Sweep this week's trend sources and file the candidates that clear our margin floor."
     ],
     "requires": {
       "airapp": true

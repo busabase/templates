@@ -6,8 +6,8 @@
     "zh-CN": "Busa 智能体订单"
   },
   "description": {
-    "en": "Agent-channel orders and price guardrails for e-commerce sellers: orders that AI shopping agents (Meta Muse, ChatGPT, Gemini, Perplexity) bring in, with the price paid versus the price listed; per-SKU guardrails; a review queue for agent-proposed price changes; and order exceptions. The AirApp only records a person's decision; it never touches a store, a payment or a price.",
-    "zh-CN": "面向电商卖家的智能体渠道订单与价格护栏：记录 AI 购物智能体（Meta Muse、ChatGPT、Gemini、Perplexity）带来的订单及实付价与标价；每个 SKU 的价格护栏；智能体改价提议的审核队列；以及订单异常。AirApp 只记录人的决定，从不改动店铺、付款或价格。"
+    "en": "Orders that AI shopping agents (Meta Muse, ChatGPT, Gemini, Perplexity) bring in, the price paid versus the price listed, per-SKU price guardrails, price changes checked against them, and order exceptions.",
+    "zh-CN": "AI 购物智能体（Meta Muse、ChatGPT、Gemini、Perplexity）带来的订单、实付价与标价对比、每个 SKU 的价格护栏、按护栏核对的改价提议，以及订单异常。"
   },
   "version": "0.1.0",
   "license": "MIT",

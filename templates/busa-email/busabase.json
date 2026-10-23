@@ -6,8 +6,8 @@
     "zh-CN": "Busa 邮件台"
   },
   "description": {
-    "en": "Inbox triage, human review, and trusted execution — an approval-first email desk.",
-    "zh-CN": "收件箱分诊、人工审核与可信执行——先审后发的邮件工作台。"
+    "en": "Inbox-zero desk: your agent triages unread mail across your accounts, drafts replies, and carries out the archive, mark-read and send actions you decide on.",
+    "zh-CN": "收件箱清零工作台：Agent 跨账号分拣未读邮件、起草回复，并按你的决定执行归档、标记已读与发送。"
   },
   "version": "0.3.0",
   "license": "MIT",
@@ -45,7 +45,7 @@
     },
     "agentPrompts": [
       "Triage this morning's mail and draft replies for anything high priority.",
-      "List the reviews still waiting on me, newest first.",
+      "List the drafted replies that are ready to send, newest first.",
       "Summarise what changed in the inbox since yesterday."
     ],
     "vaultNamespace": "busa-email",

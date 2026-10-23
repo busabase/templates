@@ -11,8 +11,8 @@
         "zh-CN": "B2B客户管理"
       },
       "description": {
-        "en": "A lightweight B2B CRM with a daily sales overview, accounts, activities, follow-ups, and a review-first pipeline.",
-        "zh-CN": "轻量级 B2B CRM：每日销售总览、客户、跟进动态，以及先审后办的成交流水线。"
+        "en": "A lightweight B2B CRM: a daily sales overview, accounts, contacts, activities, follow-ups, and a deal pipeline by stage.",
+        "zh-CN": "轻量级 B2B CRM：每日销售总览、客户、联系人、跟进动态、待办跟进，以及按阶段推进的成交流水线。"
       },
       "category": "crm",
       "tags": [
@@ -57,8 +57,8 @@
         "zh-CN": "Busa 广告管家"
       },
       "description": {
-        "en": "Ad-campaign command desk: Amazon/Meta/TikTok/Google spend and performance, deterministic anomaly detection, and an adjustment-card review queue",
-        "zh-CN": "广告投放指挥台：汇总 Amazon/Meta/TikTok/Google 的投放支出与效果，规则化异常检测，配合调整卡片的审核队列。"
+        "en": "Ad-campaign command desk: Amazon, Meta, TikTok and Google spend and performance in one place, rule-based anomaly detection, and evidence-backed budget and bid adjustments",
+        "zh-CN": "广告投放指挥台：一处汇总 Amazon、Meta、TikTok、Google 的投放支出与效果，规则化异常检测，并给出有依据的预算与出价调整。"
       },
       "category": "ecommerce",
       "risk": "gated-write",
@@ -89,7 +89,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Platforms and flag what needs my attention.",
-        "Open Busa Ads and show me the items that need review."
+        "Show me the campaigns wasting the most spend and the adjustment the evidence supports for each."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -111,8 +111,8 @@
         "zh-CN": "Busa 智能体订单"
       },
       "description": {
-        "en": "Agent-channel orders and price guardrails for e-commerce sellers: orders that AI shopping agents (Meta Muse, ChatGPT, Gemini, Perplexity) bring in, with the price paid versus the price listed; per-SKU guardrails; a review queue for agent-proposed price changes; and order exceptions. The AirApp only records a person's decision; it never touches a store, a payment or a price.",
-        "zh-CN": "面向电商卖家的智能体渠道订单与价格护栏：记录 AI 购物智能体（Meta Muse、ChatGPT、Gemini、Perplexity）带来的订单及实付价与标价；每个 SKU 的价格护栏；智能体改价提议的审核队列；以及订单异常。AirApp 只记录人的决定，从不改动店铺、付款或价格。"
+        "en": "Orders that AI shopping agents (Meta Muse, ChatGPT, Gemini, Perplexity) bring in, the price paid versus the price listed, per-SKU price guardrails, price changes checked against them, and order exceptions.",
+        "zh-CN": "AI 购物智能体（Meta Muse、ChatGPT、Gemini、Perplexity）带来的订单、实付价与标价对比、每个 SKU 的价格护栏、按护栏核对的改价提议，以及订单异常。"
       },
       "category": "ecommerce",
       "risk": "gated-write",
@@ -170,8 +170,8 @@
         "zh-CN": "Busa 智能体货架"
       },
       "description": {
-        "en": "Agent shelf desk for e-commerce sellers: track whether AI shopping agents (ChatGPT, Gemini, Meta Muse, Amazon Rufus, Perplexity) recommend your products for the questions buyers ask, who they pick instead and why, and a review queue of sourced listing fixes. The AirApp only records a person's decision on a fix; it never contacts a shopping agent or edits a store.",
-        "zh-CN": "面向电商卖家的智能体货架工作台：追踪 AI 购物智能体（ChatGPT、Gemini、Meta Muse、Amazon Rufus、Perplexity）在买家提问时是否推荐你的商品、推荐了谁、为什么，并把缺口变成有来源、需人审核的商品数据修改。AirApp 只记录人对修改的决定，从不访问购物智能体，也不改动店铺。"
+        "en": "Track whether AI shopping agents (ChatGPT, Gemini, Meta Muse, Amazon Rufus, Perplexity) recommend your products for real buyer questions, who they pick instead and why, and turn each gap into a sourced listing fix.",
+        "zh-CN": "追踪 AI 购物智能体（ChatGPT、Gemini、Meta Muse、Amazon Rufus、Perplexity）在买家提问时是否推荐你的商品、改推了谁、为什么，并把缺口变成有来源的商品修改。"
       },
       "category": "ecommerce",
       "risk": "gated-write",
@@ -229,8 +229,8 @@
         "zh-CN": "Busa AI新闻编辑室"
       },
       "description": {
-        "en": "Daily industry-intelligence cockpit for AI/news-source intelligence: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (sales opener / LinkedIn post / client memo) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
-        "zh-CN": "面向 AI 与新闻信源情报的每日行业情报驾驶舱：有出处的情报信号、买家意向解读、经审批的销售/运营动作，以及对外发出前待审的渠道文案草稿（开场白 / LinkedIn 帖子 / 客户备忘录）。信号、动作与草稿只通过 Agent 自身的浏览与写入流程进入 Busabase（见 SKILL.md）；AirApp 本身只负责查看与决策。"
+        "en": "Daily industry-intelligence cockpit for AI and news sources: source-backed signals, what each means for buyer intent, recommended sales and operating actions, and channel drafts (sales opener, LinkedIn post, client memo).",
+        "zh-CN": "面向 AI 与新闻信源的每日行业情报驾驶舱：有出处的情报信号、买家意向解读、建议的销售与运营动作，以及渠道文案草稿（开场白、LinkedIn 帖子、客户备忘录）。"
       },
       "category": "industry-intel",
       "risk": "gated-write",
@@ -260,7 +260,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Signals and flag what needs my attention.",
-        "Open Busa AI Newsroom and show me the items that need review."
+        "Turn today's strongest signals into sales actions and draft the LinkedIn post for the best one."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -366,7 +366,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Narrative Items and flag what needs my attention.",
-        "Open Busa Brand and show me the items that need review."
+        "Show me the message house and where our channels have drifted off-brand."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -419,7 +419,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Segments and flag what needs my attention.",
-        "Open Busa Campaigns and show me the items that need review."
+        "Draft this month's newsletter for our most engaged segment and run the deliverability checks."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -441,8 +441,8 @@
         "zh-CN": "Busa 合同管理"
       },
       "description": {
-        "en": "Lightweight contract lifecycle desk: contract inventory, lifecycle stage, owners, obligations, renewal/notice dates, and a simple approval reminder queue. Not a legal redline/clause-review product -- see busa-legal-contracts for that. Contract records, obligation status, renewal acknowledgements, and approval decisions are all direct writes made by the operator in the browser, not a review/approval pipeline.",
-        "zh-CN": "轻量级合同生命周期台：合同台账、生命周期阶段、责任人、履约义务、续约/到期提醒日期，配合简单的审批提醒队列。不是法务红线/条款审查产品——那类需求见 busa-legal-contracts。合同记录、履约状态、续约确认与审批决定均由操作者在浏览器中直接写入，不是一条审核流水线。"
+        "en": "Lightweight contract lifecycle desk: contract inventory, lifecycle stage, owners, obligations, renewal and notice dates, and sign-off reminders, so nothing lapses unnoticed. For clause-level redlines, see busa-legal-contracts.",
+        "zh-CN": "轻量级合同生命周期台：合同台账、生命周期阶段、责任人、履约义务、续约与到期通知日期，以及签批提醒，不让任何合同悄悄过期。条款级红线修订请用 busa-legal-contracts。"
       },
       "category": "legal",
       "risk": "gated-write",
@@ -475,7 +475,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Contracts and flag what needs my attention.",
-        "Open Busa CLM and show me the items that need review."
+        "List the renewals and notice deadlines coming up in the next 60 days, with the owner for each."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -578,7 +578,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Creator Engagements and flag what needs my attention.",
-        "Open Busa Creators and show me the items that need review."
+        "Find creators who fit our product and draft the first outreach for the top three."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -600,8 +600,8 @@
         "zh-CN": "Busa 客户管理"
       },
       "description": {
-        "en": "Contacts, companies, deals, and follow-up review workspace",
-        "zh-CN": "客户、公司、成交机会与跟进审核工作台。"
+        "en": "A CRM for contacts, companies, deals and interactions, where your agent logs every touchpoint and drafts the next follow-up",
+        "zh-CN": "联系人、公司、成交机会与沟通记录集于一处，Agent 记下每次接触并起草跟进。"
       },
       "category": "sales-crm",
       "risk": "gated-write",
@@ -630,8 +630,8 @@
         }
       },
       "agentPrompts": [
-        "Summarize the latest 公司 and flag what needs my attention.",
-        "Open Busa CRM and show me the items that need review."
+        "Summarize the pipeline and flag which deals need my attention this week.",
+        "Draft follow-ups for the contacts I met this week, based on our last conversations."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -670,7 +670,7 @@
       ],
       "agentPrompts": [
         "Summarize the videos in production and flag which claims still need verification.",
-        "Open Busa Demo Video Factory and show me the shots that need review."
+        "Show me which shots are still left to record for each video."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -692,8 +692,8 @@
         "zh-CN": "Busa 运维台"
       },
       "description": {
-        "en": "Product-fleet ops desk: service health, SSL/domain/key expiries, cloud spend, and an action review queue",
-        "zh-CN": "产品矩阵运维台：服务健康状态、SSL/域名/密钥到期提醒、云服务开销，配合动作审核队列。"
+        "en": "Product-fleet ops desk: service health, SSL, domain and key expiries, cloud spend, and agent-proposed fixes with the evidence and plan for each",
+        "zh-CN": "产品矩阵运维台：服务健康状态、SSL/域名/密钥到期提醒、云服务开销，以及 Agent 提出的修复动作（附证据与执行计划）。"
       },
       "category": "platform",
       "risk": "gated-write",
@@ -726,7 +726,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Services and flag what needs my attention.",
-        "Open Busa DevOps and show me the items that need review."
+        "Run the checks that are due and tell me what is down, expiring or overspending."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -748,8 +748,8 @@
         "zh-CN": "Busa 数字人"
       },
       "description": {
-        "en": "Digital-human solution desk: a fast 2D vendor-service path and a high-control 3D UE/Unity path, plus a launch QA gate. The project overview, personas, pipeline routes, vendor comparison, and QA checklist are curated reference content, not per-user data -- the only genuinely dynamic state is the human review verdict (approve / request changes / block) recorded against each QA gate check, written as a direct field write on its own record, mirroring busa-clm's approvals.",
-        "zh-CN": "数字人方案台：既有快速交付的 2D 供应商服务路线，也有高把控力的 3D UE/Unity 路线，外加上线前的质检关卡。项目总览、人设、制作路线、供应商对比与质检清单都是精选的参考内容，不是逐用户数据——唯一真正会变化的状态是记在每项质检关卡上的人工审核结论（通过 / 打回修改 / 拦截），以字段直接写入自身记录的方式落地，与 busa-clm 的审批方式一致。"
+        "en": "Digital-human solution desk: a fast 2D vendor-service route and a high-control 3D UE/Unity route, with personas, a vendor comparison and a launch QA checklist.",
+        "zh-CN": "数字人方案台：快速交付的 2D 供应商服务路线与高把控的 3D UE/Unity 路线，配套人物设定、制作路线、供应商对比和上线质检清单。"
       },
       "category": "production",
       "risk": "local-write",
@@ -779,7 +779,7 @@
       },
       "agentPrompts": [
         "Summarize the latest QA Decisions and flag what needs my attention.",
-        "Open Busa Digital Human and show me the items that need review."
+        "Which route fits my scenario, 2D or 3D, and what still blocks launch?"
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -834,7 +834,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Project and flag what needs my attention.",
-        "Open Busa Drama and show me the items that need review."
+        "Show me which characters still need reference cards and which shots are ready to generate."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -856,8 +856,8 @@
         "zh-CN": "Busa 电商情报"
       },
       "description": {
-        "en": "Daily industry-intelligence cockpit for e-commerce and cross-border sellers: source-backed signals, buyer-intent interpretation, approved sales/operating actions, and channel drafts (listing copy / ad angle / customer reply) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
-        "zh-CN": "面向电商与跨境卖家的每日行业情报驾驶舱：有出处的情报信号、买家意向解读、经审批的销售/运营动作，以及对外发出前待审的渠道文案草稿（商品文案 / 广告角度 / 客户回复）。信号、动作与草稿只通过 Agent 自身的浏览与写入流程进入 Busabase（见 SKILL.md）；AirApp 本身只负责查看与决策。"
+        "en": "Daily industry-intelligence cockpit for e-commerce and cross-border sellers: source-backed signals, what each means for buyer intent, recommended sales and operating actions, and channel drafts (listing copy, ad angle, customer reply).",
+        "zh-CN": "面向电商与跨境卖家的每日行业情报驾驶舱：有出处的情报信号、买家意向解读、建议的销售与运营动作，以及渠道文案草稿（商品文案、广告角度、客户回复）。"
       },
       "category": "industry-intel",
       "risk": "gated-write",
@@ -888,7 +888,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Signals and flag what needs my attention.",
-        "Open Busa Ecommerce Intel and show me the items that need review."
+        "Turn today's strongest signals into actions and draft the listing copy for the best one."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -910,8 +910,8 @@
         "zh-CN": "Busa 邮件台"
       },
       "description": {
-        "en": "Inbox triage, human review, and trusted execution — an approval-first email desk.",
-        "zh-CN": "收件箱分诊、人工审核与可信执行——先审后发的邮件工作台。"
+        "en": "Inbox-zero desk: your agent triages unread mail across your accounts, drafts replies, and carries out the archive, mark-read and send actions you decide on.",
+        "zh-CN": "收件箱清零工作台：Agent 跨账号分拣未读邮件、起草回复，并按你的决定执行归档、标记已读与发送。"
       },
       "category": "email",
       "risk": "gated-write",
@@ -943,7 +943,7 @@
       },
       "agentPrompts": [
         "Triage this morning's mail and draft replies for anything high priority.",
-        "List the reviews still waiting on me, newest first.",
+        "List the drafted replies that are ready to send, newest first.",
         "Summarise what changed in the inbox since yesterday."
       ],
       "version": "0.3.0",
@@ -966,8 +966,8 @@
         "zh-CN": "Busa 展会线索"
       },
       "description": {
-        "en": "Trade-show lead capture desk: an SLA countdown board and a multilingual follow-up review queue",
-        "zh-CN": "展会线索采集台：SLA 倒计时看板，配合多语言跟进审核队列。"
+        "en": "Trade-show lead desk: capture booth leads, watch the follow-up SLA count down, and get a multilingual follow-up drafted for every lead",
+        "zh-CN": "展会线索台：记下展位线索，盯住跟进 SLA 倒计时，Agent 为每条线索起草多语言跟进。"
       },
       "category": "sales-crm",
       "risk": "gated-write",
@@ -997,7 +997,7 @@
       },
       "agentPrompts": [
         "Show me which leads are about to blow past the 24-hour follow-up window.",
-        "Open Busa Expo Leads and show me the follow-ups that need review."
+        "Draft follow-ups in each lead's language for everyone I met at the booth today."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1051,7 +1051,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Beneficiaries and flag what needs my attention.",
-        "Open Busa Family Fund and show me the items that need review."
+        "Which family is furthest from a fair share, and what does this month's ledger show?"
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1107,7 +1107,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Entities and flag what needs my attention.",
-        "Open Busa Family Office and show me the items that need review."
+        "Show me total AUM by entity and where we are most concentrated."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1160,7 +1160,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Products and flag what needs my attention.",
-        "Open Busa Feedback and show me the items that need review."
+        "Cluster this week's new feedback into feature requests and show me what people ask for most."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1182,8 +1182,8 @@
         "zh-CN": "Busa 财务模型"
       },
       "description": {
-        "en": "Busa Finance: a review workspace for a three-statement financial model — the current model snapshot (company/currency/periods/workbook), its model-quality check queue (balance-sheet ties, cash roll-forward, formula reviews), and sanitized settings",
-        "zh-CN": "Busa Finance：三表联动财务模型的审核工作台——当前模型快照（公司/币种/期间/工作簿）、模型质量检查队列（资产负债表勾稽、现金滚存、公式复核），以及脱敏后的设置。"
+        "en": "Three-statement financial model desk: the current model snapshot (company, currency, periods, workbook) and model-quality checks such as balance-sheet ties, cash roll-forward and formula checks",
+        "zh-CN": "三表联动财务模型工作台：当前模型快照（公司/币种/期间/工作簿）与模型质量检查，如资产负债表勾稽、现金滚存与公式检查。"
       },
       "category": "finance",
       "risk": "local-write",
@@ -1211,7 +1211,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Model and flag what needs my attention.",
-        "Open Busa Finance and show me the items that need review."
+        "Build a three-statement model from these assumptions and check that the balance sheet ties."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1248,8 +1248,8 @@
       ],
       "video": "assets/recordings/busa-followups.mp4",
       "agentPrompts": [
-        "帮我记一条跟进：跟进谁、跟进什么事",
-        "今天该跟进哪些人和事"
+        "Log a follow-up: who to follow up with, and what about.",
+        "Who do I need to follow up with today, and about what?"
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1271,8 +1271,8 @@
         "zh-CN": "Busa 作业辅导"
       },
       "description": {
-        "en": "Busa Homework Coach: a child-friendly homework desk — questions the agent explained (with the gentle step-by-step explanation), the mistake notebook, practice papers, the parent/teacher review queue, and sanitized settings",
-        "zh-CN": "Busa 作业辅导：面向孩子的作业工作台——Agent 讲解过的题目（附耐心的分步讲解）、错题本、练习卷，配合家长/老师审核队列，以及脱敏后的设置。"
+        "en": "A child-friendly homework desk: homework questions explained gently, step by step, plus a mistake notebook and practice papers",
+        "zh-CN": "面向孩子的作业工作台：耐心分步讲解作业题，配错题本和练习卷。"
       },
       "category": "education",
       "risk": "local-write",
@@ -1303,7 +1303,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Questions and flag what needs my attention.",
-        "Open Busa Homework Coach and show me the items that need review."
+        "Explain this homework question step by step, the way a patient tutor would."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1347,9 +1347,9 @@
       ],
       "video": "assets/recordings/busa-ideas.mp4",
       "agentPrompts": [
-        "我有个想法但说不太清楚，帮我理一理。",
-        "打开灵感库，看看哪些还等着我回答问题。",
-        "把这条灵感推进到 PRD，缺什么先问我。"
+        "I have an idea but can't quite put it into words. Help me think it through.",
+        "Open the idea vault and show me which ideas are still waiting on my answers.",
+        "Take this idea all the way to a PRD, and ask me about anything that's missing first."
       ],
       "version": "0.2.0",
       "license": "MIT",
@@ -1371,8 +1371,8 @@
         "zh-CN": "Busa 保险数据"
       },
       "description": {
-        "en": "Insurance-industry App-in-Skill for read-only data governance, backed by an operator-provisioned Busabase workspace (one Drive node for the file drive plus four Bases for QA pairs, featured information, insurer notices, and user feedback) and trusted export/restore/PDF-text-backfill scripts. Use when the user invokes $busa-insure-data or /busa-insure-data, wants an insurance data workspace with UI, needs to review insurance files, metadata completeness, QA pairs, featured information, insurer notices, or user feedback, wants to back up or restore a Busa Insure Data Busabase workspace from local PDFs, or wants Busabase Drive/Base data surfaced for data quality review and ongoing data governance.",
-        "zh-CN": "保险行业只读数据治理 App-in-Skill，依托操作者预置的 Busabase 工作空间（一个文件网盘 Drive 节点，加上问答对、精选资讯、保司通知、用户反馈四张 Base），配合可信的导出/还原/PDF 文本回填脚本。适用场景：用户调用 $busa-insure-data 或 /busa-insure-data、想要一个带界面的保险数据工作空间、需要审核保险文件与元数据完整性、问答对、精选资讯、保司通知或用户反馈、想从本地 PDF 备份或还原 Busa Insure Data 工作空间，或希望把 Busabase Drive/Base 数据摊开做数据质量审查与持续数据治理。"
+        "en": "Read-only insurance data governance desk: the policy file drive plus QA pairs, featured information, insurer notices and user feedback, with metadata completeness checks and backup and restore from local PDFs.",
+        "zh-CN": "只读的保险数据治理工作台：保险文件网盘，加上问答对、精选资讯、保司通知与用户反馈，配合元数据完整度检查，以及从本地 PDF 备份与还原。"
       },
       "category": "industry-intel",
       "risk": "read-only",
@@ -1391,8 +1391,8 @@
       ],
       "video": "assets/recordings/busa-insure-data.mp4",
       "agentPrompts": [
-        "Summarize the latest 资讯精选 and flag what needs my attention.",
-        "Open Busa Insure Data and show me the items that need review."
+        "Summarize the latest featured information and flag what needs my attention.",
+        "Which insurance files are missing metadata or PDF text, and which QA pairs lack a source?"
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1446,7 +1446,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
-        "Open Busa Invest (Webull) and show me the items that need review."
+        "What changed in my portfolio today, and where am I most concentrated?"
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1468,8 +1468,8 @@
         "zh-CN": "Busa 发票台账"
       },
       "description": {
-        "en": "Busa Invoice Sheet: invoice/receipt/credit-note/statement extraction batches under human review, with field confidence, line items, and export-ready approved rows",
-        "zh-CN": "Busa Invoice Sheet：发票/收据/贷记通知单/对账单的批量提取任务，配合人工审核、字段置信度、明细行，以及可导出的已批准记录。"
+        "en": "Turn invoices, receipts, credit notes and statements into one clean table: extraction batches, field confidence, line items, and export-ready rows",
+        "zh-CN": "把发票、收据、贷记通知单和对账单整理成一张干净的表：批量提取、字段置信度、明细行，以及可直接导出的记录。"
       },
       "category": "finance",
       "risk": "local-write",
@@ -1501,7 +1501,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Invoices and flag what needs my attention.",
-        "Open Busa Invoice Sheet and show me the items that need review."
+        "Extract this batch of invoices and flag any fields with low confidence."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1545,8 +1545,8 @@
       ],
       "video": "assets/recordings/busa-jobhunt.mp4",
       "agentPrompts": [
-        "Summarize the latest 求职档案 and flag what needs my attention.",
-        "Open Busa JobHunt and show me the items that need review."
+        "Summarize my job-search profile and flag what needs my attention.",
+        "Find new target companies that fit my profile and draft a tailored email for each."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1599,7 +1599,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Launch Items and flag what needs my attention.",
-        "Open Busa Launch and show me the items that need review."
+        "Assemble the launch checklist from my product docs and tell me what is blocking launch."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1650,7 +1650,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Leads and flag what needs my attention.",
-        "Open Busa Lead Funnel and show me the items that need review."
+        "Explain how the newest leads were scored and which ones should move to the next stage."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1672,8 +1672,8 @@
         "zh-CN": "Busa 案例录入"
       },
       "description": {
-        "en": "Casebase intake and anonymization QA desk for law-firm judgment and arbitral award documents: agent-prepared case records, canonical case-library groupings, deterministic QA checks, and a review queue (approve / request changes / revise / block) before a record becomes a searchable knowledge asset",
-        "zh-CN": "面向律所判决书与仲裁裁决文书的案例库录入与脱敏质检台：Agent 整理好的案例记录、规范化的案例库分组、规则化质检检查，以及记录成为可检索知识资产前的审核队列（通过 / 打回修改 / 需修订 / 拦截）。"
+        "en": "Casebase intake and anonymization desk for law-firm judgments and arbitral awards: agent-prepared case records, canonical case-library groupings, and deterministic QA checks that turn documents into a searchable case library",
+        "zh-CN": "面向律所判决书与仲裁裁决文书的案例库录入与脱敏台：Agent 整理好的案例记录、规范化的案例库分组，以及把文书变成可检索案例库的规则化质检。"
       },
       "category": "legal",
       "risk": "local-write",
@@ -1708,7 +1708,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Case Records and flag what needs my attention.",
-        "Open Legal Casebase Ingest and show me the items that need review."
+        "Ingest this judgment as a case record and show me which QA checks it fails."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1788,8 +1788,8 @@
         "zh-CN": "Busa 律所雷达"
       },
       "description": {
-        "en": "Firm-level radar desk over anonymized casebase analytics: practice-area mix, case-quality indicators, lawyer capability profiles, brand proof points, and approval-gated management insights (approve / request changes / revise / block) before a report becomes a management or brand handoff",
-        "zh-CN": "基于脱敏案例库分析的律所级雷达台：业务领域构成、案件质量指标、律师能力画像、品牌佐证素材，以及报告成为管理层或品牌交付物前需审批放行的管理洞察（通过 / 打回修改 / 需修订 / 拦截）。"
+        "en": "Firm-level radar over anonymized casebase analytics: practice-area mix, case-quality indicators, lawyer capability profiles, brand proof points, and management insights ready to hand to leadership or the brand team",
+        "zh-CN": "基于脱敏案例库分析的律所级雷达台：业务领域构成、案件质量指标、律师能力画像、品牌佐证素材，以及可直接交给管理层或品牌团队的经营洞察。"
       },
       "category": "legal",
       "risk": "local-write",
@@ -1822,7 +1822,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Management Insights and flag what needs my attention.",
-        "Open Legal Firm Radar and show me the items that need review."
+        "Prepare a management insight on our practice-area mix from the anonymized metrics."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1844,8 +1844,8 @@
         "zh-CN": "Busa 案件策略"
       },
       "description": {
-        "en": "Matter-strategy desk over new-case strategy, issue trees, evidence checklists, risk analysis, pleading outlines, and approval-gated drafting packs grounded in internal precedents (approve / request changes / revise / block) before a strategy pack becomes a drafting handoff",
-        "zh-CN": "案件策略台：新案策略、争议焦点树、证据清单、风险分析、诉状大纲，以及基于内部判例、在成为撰写交付物前需审批放行的策略包（通过 / 打回修改 / 需修订 / 拦截）。"
+        "en": "Matter-strategy desk: new-case strategy, issue trees, evidence checklists, risk analysis, pleading outlines, and drafting packs grounded in internal precedents",
+        "zh-CN": "案件策略台：新案策略、争议焦点树、证据清单、风险分析、诉状大纲，以及基于内部判例的文书撰写包。"
       },
       "category": "legal",
       "risk": "local-write",
@@ -1878,7 +1878,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Strategy Packs and flag what needs my attention.",
-        "Open Legal Matter Strategy and show me the items that need review."
+        "Draft a strategy pack for this new matter: issue tree, evidence checklist and main risks."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1900,8 +1900,8 @@
         "zh-CN": "Busa 判例研究"
       },
       "description": {
-        "en": "Precedent-research desk over internal casebase search, local court-pattern analysis, similar-case packs, citations, and approval-gated research exports (approve / request changes / revise / block) before a research pack becomes a matter-strategy input",
-        "zh-CN": "判例研究台：内部案例库检索、地方法院裁判规律分析、类案检索包、引证，以及研究成果在成为案件策略输入前需审批放行的导出物（通过 / 打回修改 / 需修订 / 拦截）。"
+        "en": "Precedent-research desk: internal casebase search, local court-pattern analysis, similar-case packs and citations, packaged as research ready for matter strategy",
+        "zh-CN": "判例研究台：内部案例库检索、地方法院裁判规律分析、类案检索包与引证，整理成可直接用于案件策略的研究成果。"
       },
       "category": "legal",
       "risk": "local-write",
@@ -1934,7 +1934,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Research Packs and flag what needs my attention.",
-        "Open Legal Precedent Desk and show me the items that need review."
+        "Research precedents for this legal question and package the most similar cases with citations."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -1956,8 +1956,8 @@
         "zh-CN": "Busa 教案工坊"
       },
       "description": {
-        "en": "Lesson-plan generation and compliance-check desk: plan library, compliance checks, and a review queue",
-        "zh-CN": "教案生成与合规检查台：教案库、合规检查，配合审核队列。"
+        "en": "Lesson-plan desk: plans drafted from your curriculum materials and school template, a plan library, and curriculum-compliance checks on every plan",
+        "zh-CN": "教案工作台：依据课程资料与学校模板起草教案，配教案库，并逐份做课程合规检查。"
       },
       "category": "education",
       "risk": "gated-write",
@@ -1988,7 +1988,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Teachers and flag what needs my attention.",
-        "Open Busa Lesson and show me the items that need review."
+        "Draft a lesson plan from this curriculum material and run the compliance checks."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2010,8 +2010,8 @@
         "zh-CN": "Busa 商品详情页"
       },
       "description": {
-        "en": "Listing factory desk: product library, platform drafts, compliance checks, claims registry, and a review queue",
-        "zh-CN": "商品详情页生产台：商品库、各平台文案草稿、合规检查、卖点主张登记，配合审核队列。"
+        "en": "Listing factory: a product library, listing drafts for each platform, compliance checks for banned words and claims, and a registry of the claims you can use",
+        "zh-CN": "商品详情页生产台：商品库、各平台详情页草稿、禁用词与卖点合规检查，以及可放心使用的卖点主张库。"
       },
       "category": "ecommerce",
       "risk": "gated-write",
@@ -2046,7 +2046,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Products and flag what needs my attention.",
-        "Open Busa Listing and show me the items that need review."
+        "Draft Amazon and TikTok Shop listings for this product and run the compliance checks."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2087,8 +2087,8 @@
       ],
       "video": "assets/recordings/busa-local-model-lab.mp4",
       "agentPrompts": [
-        "Open Busa Local Model Lab and show me which examples need review.",
-        "Prepare a reproducible local QLoRA run from the approved Busabase dataset.",
+        "Open Busa Local Model Lab and show me which training examples are ready to export.",
+        "Prepare a reproducible local QLoRA run from the curated Busabase dataset.",
         "Compare the latest adapter with its untouched baseline on locked cases."
       ],
       "version": "0.1.0",
@@ -2148,7 +2148,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
-        "Open Busa Messenger and show me the items that need review."
+        "Show me the conversations waiting on a reply and draft responses in my style."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2207,7 +2207,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
-        "Open Busa Money and show me the items that need review."
+        "Which transactions still need to be matched to an invoice?"
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2261,7 +2261,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Project and flag what needs my attention.",
-        "Open Busa MV and show me the items that need review."
+        "Which storyboard shots still need images or videos?"
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2314,8 +2314,8 @@
         }
       },
       "agentPrompts": [
-        "Review certificates and administrative contracts expiring within 60 days and draft an owner-by-owner renewal plan.\n检查 60 天内到期的证照和行政合同，按负责人拟定续期计划。",
-        "Compare original-document dates with archive summaries and prepare verification tasks without resolving conflicting evidence by guesswork.\n比较原件日期与归档汇总，拟定核验待办，不凭猜测处理证据冲突。"
+        "Find certificates and administrative contracts expiring within 60 days and draft an owner-by-owner renewal plan.",
+        "Compare original-document dates with archive summaries and prepare verification tasks without resolving conflicting evidence by guesswork."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2366,9 +2366,9 @@
         }
       },
       "agentPrompts": [
-        "List active bank accounts and their last checked date; flag stale balances and restricted accounts without treating book balances as live bank data. / 列出正常银行账户及最近核查时间，标记过期余额和受限账户；不将账面余额视为银行实时数据。",
-        "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments. / 将每日走查记录与账面余额及银行依据核对，列出差异和过期核查；不编造调整记录。",
-        "Review pending, approved and blocked payments, separating approval from actual payment and flagging missing invoice or bank receipt references. / 复核待审核、已批准和已阻塞的付款申请，区分审批与实际付款，并标记缺失的发票或银行回单引用。"
+        "List active bank accounts and their last checked date; flag stale balances and restricted accounts without treating book balances as live bank data.",
+        "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments.",
+        "Review pending, approved and blocked payments, separating approval from actual payment and flagging missing invoice or bank receipt references."
       ],
       "version": "1.0.0",
       "license": "MIT",
@@ -2419,9 +2419,9 @@
         }
       },
       "agentPrompts": [
-        "Review pending and blocked expense claims, list missing evidence and duplicates before suggesting approval. / 复核待审核和已阻塞的报销申请；在提出审批建议前，列出缺失凭证与重复申请。",
-        "Check invoice requests against supplied customer and contract details; flag missing tax information without inventing it. / 根据已提供的客户和合同资料核对开票申请；标记缺失的税务信息，不编造信息。",
-        "Compare monthly actual reports against their evidence, identify incomplete sources and explain variances without presenting this as an audited statement. / 将月度实际报告与原始依据核对，找出不完整的资料并解释差异，不将报告描述为经审计的报表。"
+        "Review pending and blocked expense claims, list missing evidence and duplicates before suggesting approval.",
+        "Check invoice requests against supplied customer and contract details; flag missing tax information without inventing it.",
+        "Compare monthly actual reports against their evidence, identify incomplete sources and explain variances without presenting this as an audited statement."
       ],
       "version": "1.0.0",
       "license": "MIT",
@@ -2474,8 +2474,8 @@
         }
       },
       "agentPrompts": [
-        "Compare salary proposals with confirmed employee salaries and prepare a payroll-review checklist without applying unapproved changes.\n比较薪酬提案与员工已确认工资，拟定工资复核清单，不应用未批准的变动。",
-        "Review labor contracts expiring within 60 days and assign renewal follow-ups to their HR owners.\n复核 60 天内到期的劳动合同，向其人事负责人分派续签跟进。"
+        "Compare salary proposals with confirmed employee salaries and prepare a payroll-review checklist without applying unapproved changes.",
+        "Find labor contracts expiring within 60 days and assign renewal follow-ups to their HR owners."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2530,8 +2530,8 @@
         }
       },
       "agentPrompts": [
-        "Review active cases and preservation deadlines and identify missing legal evidence.\n核查在办案件与保全期限，列出缺少法律证据的事项。",
-        "Reconcile case recovery and legal costs by currency, then prepare a review summary.\n按币种核对案件回款及法务成本，拟定人工复核摘要。"
+        "Check active cases and preservation deadlines and identify missing legal evidence.",
+        "Reconcile case recovery and legal costs by currency, then prepare a summary by case."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2586,8 +2586,8 @@
         }
       },
       "agentPrompts": [
-        "Review applicants whose next step is overdue and prepare a hiring follow-up plan.\n梳理下一步逾期的候选人，拟定招聘跟进计划。",
-        "Check interview feedback and draft offer proposals for human review.\n核对面试反馈，拟定录用草案供人工复核。"
+        "Find applicants whose next step is overdue and prepare a hiring follow-up plan.",
+        "Check interview feedback and draft offer proposals for human review."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2609,8 +2609,8 @@
         "zh-CN": "Busa 选品台"
       },
       "description": {
-        "en": "Product-research (选品) desk: trend sweeps, margin cards, competition reads, and a develop/watch/drop review queue",
-        "zh-CN": "选品研究台：趋势扫描、利润测算卡、竞品分析，配合开发/观察/放弃的审核队列。"
+        "en": "Product-research desk: trend sweeps, margin cards, competition reads, and a develop, watch or drop call on every candidate",
+        "zh-CN": "选品研究台：趋势扫描、利润测算卡、竞品分析，每个候选品都定下开发、观察或放弃。"
       },
       "category": "ecommerce",
       "risk": "local-write",
@@ -2641,7 +2641,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Candidates and flag what needs my attention.",
-        "Open Busa Picks and show me the items that need review."
+        "Sweep this week's trend sources and file the candidates that clear our margin floor."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2663,8 +2663,8 @@
         "zh-CN": "Busa 组合健康"
       },
       "description": {
-        "en": "Read-mostly dashboard over a revenue-based-financing (RBF) fund or private-credit book of many small SME contracts: portfolio health, AUM, repayment progress, industry/city concentration risk, and a watchlist of contracts with declining revenue. The only human action — flag a contract for review, clear a flag, or leave a note — is written directly onto the contract's own record; there is no separate approval queue and no transaction path. Generic and brand-free.",
-        "zh-CN": "面向收入分成融资（RBF）基金或由大量小微企业合同组成的私募信贷组合的以查看为主的看板：组合健康度、管理规模、还款进度、行业/城市集中度风险，以及收入下滑合同的观察名单。唯一的人工动作——标记合同待审核、清除标记或留言——直接写入合同自身记录，没有单独的审批队列，也没有交易通路。通用且不带品牌信息。"
+        "en": "Dashboard for a revenue-based-financing fund or private-credit book of many small SME contracts: portfolio health, AUM, repayment progress, industry and city concentration risk, and a watchlist of contracts with declining revenue.",
+        "zh-CN": "面向收入分成融资（RBF）基金或由大量小微企业合同组成的私募信贷组合的看板：组合健康度、管理规模、还款进度、行业与城市集中度风险，以及收入下滑合同的观察名单。"
       },
       "category": "rbf",
       "risk": "local-write",
@@ -2692,7 +2692,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Contracts and flag what needs my attention.",
-        "Open Busa Portfolio Health and show me the items that need review."
+        "Which contracts need attention this week, and why are they on the watchlist?"
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2714,8 +2714,8 @@
         "zh-CN": "Busa 人像修图"
       },
       "description": {
-        "en": "Natural portrait retouch jobs, reviewable candidates, and non-secret workflow settings",
-        "zh-CN": "自然风人像修图任务、可审核的候选方案，以及不含密钥的工作流设置。"
+        "en": "Natural portrait retouching: retouch jobs, candidate edits to compare against the original, and non-secret workflow settings",
+        "zh-CN": "自然风人像修图：修图任务、可与原图对比挑选的候选效果，以及不含密钥的设置。"
       },
       "category": "production",
       "risk": "local-write",
@@ -2731,8 +2731,8 @@
       ],
       "video": "assets/recordings/busa-portrait-retouch.mp4",
       "agentPrompts": [
-        "Summarize the retouch batches and flag what needs my approval.",
-        "Open Busa Portrait Retouch and show me the edits waiting for review."
+        "Summarize the retouch batches and flag what needs my attention.",
+        "Retouch this portrait naturally and show me the candidates next to the original."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2754,8 +2754,8 @@
         "zh-CN": "Busa PPT工厂"
       },
       "description": {
-        "en": "Project-based PPTX production desk — project, deck, slide card, style system, QA checks, and generated exports, with a review queue (approve / request changes / block / revise) gating PPTX generation",
-        "zh-CN": "基于项目的 PPTX 生产台——项目、演示文稿、幻灯片卡片、样式体系、质检，以及生成的导出文件，PPTX 生成前需过审核队列（通过 / 打回修改 / 拦截 / 需修订）。"
+        "en": "Project-based PPTX production desk: projects, decks, slide cards, style systems, QA checks, and generated PPTX exports",
+        "zh-CN": "基于项目的 PPTX 生产台：项目、演示文稿、幻灯片卡片、样式体系、质检，以及生成的 PPTX 导出文件。"
       },
       "category": "production",
       "risk": "local-write",
@@ -2791,7 +2791,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Projects and flag what needs my attention.",
-        "Open Busa PPT Factory and show me the items that need review."
+        "Start a new deck from this outline in our style kit and draft the slide cards."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2871,8 +2871,8 @@
         "zh-CN": "Busa 产品枢纽"
       },
       "description": {
-        "en": "Product & certification hub for export/trade sellers: catalog/SKU master data, pricing, inventory, channel status (Amazon/Shopify/TikTok Shop/eBay), content readiness, compliance notes, lifecycle state, a certificate expiry tracker (CE/FCC/RoHS/UN38.3/UKCA), and an approval-gated review queue (channel publish approvals, price-change review, quality holds, lifecycle decisions, and unsourced spec claims). The AirApp itself only ever decides on a review item (approve/request_changes/block) directly onto its own record -- it never creates a product, channel, inventory, or certificate row.",
-        "zh-CN": "面向出口贸易卖家的产品与认证枢纽：商品/SKU 主数据、定价、库存、渠道状态（Amazon/Shopify/TikTok Shop/eBay）、内容就绪度、合规备注、生命周期状态、认证到期追踪（CE/FCC/RoHS/UN38.3/UKCA），以及需审批放行的审核队列（渠道上架审批、调价审核、质量冻结、生命周期决策，以及无依据的规格主张）。AirApp 本身只会对审核事项做出决定（通过/打回修改/拦截）并直接写回该事项自身的记录——绝不会自行创建商品、渠道、库存或认证记录。"
+        "en": "Product and certification hub for export sellers: SKU master data, pricing, inventory, channel status (Amazon, Shopify, TikTok Shop, eBay), content readiness, compliance notes, lifecycle state, and a certificate expiry tracker (CE/FCC/RoHS/UN38.3/UKCA).",
+        "zh-CN": "面向出口卖家的产品与认证枢纽：SKU 主数据、定价、库存、渠道状态（Amazon、Shopify、TikTok Shop、eBay）、内容就绪度、合规备注、生命周期状态，以及认证到期追踪（CE/FCC/RoHS/UN38.3/UKCA）。"
       },
       "category": "ecommerce",
       "risk": "local-write",
@@ -2908,7 +2908,7 @@
       "agentPrompts": [
         "Show me which certificates are expiring soon or already expired.",
         "Summarize the latest products and flag what needs my attention.",
-        "Open Busa Product Hub and show me the items that need review."
+        "Which products are at stock risk or not ready to publish on a new channel?"
       ],
       "version": "0.2.0",
       "license": "MIT",
@@ -2930,8 +2930,8 @@
         "zh-CN": "Busa 市场雷达"
       },
       "description": {
-        "en": "Market-intelligence desk: competitor signals, research briefs/reports, trend movers/opportunities, and a triage review queue",
-        "zh-CN": "市场情报工作台：竞对信号、调研简报/报告、趋势变化与机会，配合分诊审核队列。"
+        "en": "Market-intelligence desk: competitor signals, research briefs and cited reports, trend movers, and opportunities, triaged into what to act on",
+        "zh-CN": "市场情报工作台：竞对信号、带引用的调研报告、趋势变化与机会，分诊出值得做的事。"
       },
       "category": "growth",
       "risk": "local-write",
@@ -2963,7 +2963,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Watchlist and flag what needs my attention.",
-        "Open Busa Radar and show me the items that need review."
+        "Run a monitoring pass on my watchlist and tell me which competitor moves matter."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -2985,8 +2985,8 @@
         "zh-CN": "Busa 零售情报"
       },
       "description": {
-        "en": "Daily industry-intelligence cockpit for retail stores and consumer brands: source-backed signals, buyer-intent interpretation, approved sales/merchandising actions, and channel drafts (staff brief / IG story / store sign) for review before any external handoff. Signals/actions/drafts enter Busabase only through the agent's own browsing-and-writing workflow (see SKILL.md); the AirApp itself is read/decision-only.",
-        "zh-CN": "面向零售门店与消费品牌的每日行业情报驾驶舱：有出处的情报信号、买家意向解读、经审批的销售/陈列运营动作，以及对外发出前待审的渠道文案草稿（店员简报 / IG 故事 / 门店海报）。信号、动作与草稿只通过 Agent 自身的浏览与写入流程进入 Busabase（见 SKILL.md）；AirApp 本身只负责查看与决策。"
+        "en": "Daily industry-intelligence cockpit for retail stores and consumer brands: source-backed signals, what each means for buyer intent, recommended sales and merchandising actions, and channel drafts (staff brief, IG story, store sign).",
+        "zh-CN": "面向零售门店与消费品牌的每日行业情报驾驶舱：有出处的情报信号、买家意向解读、建议的销售与陈列动作，以及渠道文案草稿（店员简报、IG 故事、门店海报）。"
       },
       "category": "industry-intel",
       "risk": "gated-write",
@@ -3017,7 +3017,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Signals and flag what needs my attention.",
-        "Open Busa Retail Intel and show me the items that need review."
+        "Turn today's strongest signals into store actions and draft the staff brief."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -3075,9 +3075,9 @@
         }
       },
       "agentPrompts": [
-        "Write last week's R&D weekly report: what shipped in each product, what is in progress, the open needs, and the deliveries waiting for my acceptance.\n生成上周研发周报：各产品上线了什么、进行中的工作、还有什么需求、哪些交付在等我验收。",
-        "Connect this code repository to the R&D desk, so every coding agent working here updates its task and logs a changelog row when it merges.\n把这个代码仓库接到研发管理台，让在这里干活的 coding agent 都会更新任务，并在合并时写一条变更记录。",
-        "Package last week's merged changes into deliveries I can accept, with acceptance steps written from each task's criteria.\n把上周合并的改动整理成待我验收的交付，并根据每个任务的验收标准写好验收步骤。"
+        "Write last week's R&D weekly report: what shipped in each product, what is in progress, the open needs, and the deliveries waiting for my acceptance.",
+        "Connect this code repository to the R&D desk, so every coding agent working here updates its task and logs a changelog row when it merges.",
+        "Package last week's merged changes into deliveries I can accept, with acceptance steps written from each task's criteria."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -3099,8 +3099,8 @@
         "zh-CN": "Busa 销售外联"
       },
       "description": {
-        "en": "Product positioning, ideal-customer profile, target accounts, contacts, and reviewed outreach",
-        "zh-CN": "产品定位、理想客户画像、目标客户、联系人，以及经审核的外联触达。"
+        "en": "Product positioning, ideal-customer profile, target accounts, contacts, and personalized first-touch outreach",
+        "zh-CN": "产品定位、理想客户画像、目标客户、联系人，以及个性化的首次触达外联。"
       },
       "category": "sales-crm",
       "risk": "gated-write",
@@ -3119,8 +3119,8 @@
       ],
       "video": "assets/recordings/busa-sales-outreach.mp4",
       "agentPrompts": [
-        "Summarize the latest 产品与 ICP and flag what needs my attention.",
-        "Open Busa Sales Outreach and show me the items that need review."
+        "Summarize my product and ICP and flag what needs my attention.",
+        "Find new target accounts that match my ICP and draft a first-touch email for each."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -3142,8 +3142,8 @@
         "zh-CN": "Busa SEO优化"
       },
       "description": {
-        "en": "SEO + GEO (AI-search) + brand-entity desk: Search Console analytics, an SEO opportunities review queue, an AI-visibility tracker, a geo-qa-gated GEO content queue, and an entity/knowledge-panel readiness checklist",
-        "zh-CN": "SEO + GEO（AI 搜索优化）+ 品牌实体工作台：Search Console 数据分析、SEO 机会审核队列、AI 可见度追踪、经质检把关的 GEO 内容队列，以及实体/知识面板就绪度清单。"
+        "en": "SEO + GEO (AI-search) + brand-entity desk: Search Console analytics, SEO opportunities, an AI-visibility tracker, a GEO content queue with quality checks, and an entity/knowledge-panel readiness checklist",
+        "zh-CN": "SEO + GEO（AI 搜索优化）+ 品牌实体工作台：Search Console 数据分析、SEO 机会、AI 可见度追踪、带质量检查的 GEO 内容队列，以及实体/知识面板就绪度清单。"
       },
       "category": "growth",
       "risk": "local-write",
@@ -3182,7 +3182,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Sites and flag what needs my attention.",
-        "Open Busa SEO and show me the items that need review."
+        "Find the queries closest to breaking through and draft SEO opportunities for them."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -3245,7 +3245,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
-        "Open Busa Social and show me the items that need review."
+        "Show me what is scheduled this week and draft replies for anything that needs an urgent answer."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -3300,7 +3300,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Members and flag what needs my attention.",
-        "Open Busa Standup and show me the items that need review."
+        "Collect today's updates and show me the open blockers."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -3322,8 +3322,8 @@
         "zh-CN": "Busa 客户支持"
       },
       "description": {
-        "en": "Customer-support desk: tickets, knowledge base, and the support-qa quality gate",
-        "zh-CN": "客户支持工作台：工单、知识库，以及支持质量把关。"
+        "en": "Customer-support desk: tickets from every channel, a knowledge base, and replies drafted from it with a built-in quality check",
+        "zh-CN": "客户支持工作台：各渠道工单、知识库，以及依据知识库起草并经质量检查的回复。"
       },
       "category": "sales-crm",
       "risk": "gated-write",
@@ -3356,7 +3356,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Accounts and flag what needs my attention.",
-        "Open Busa Support and show me the items that need review."
+        "Triage the latest incoming tickets and draft replies from the knowledge base."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -3378,8 +3378,8 @@
         "zh-CN": "Busa 工单派单"
       },
       "description": {
-        "en": "Complaint/ticket triage-and-dispatch desk: intake stream, ticket board, and a dispatch review queue",
-        "zh-CN": "投诉/工单分诊派单台：接入流、工单看板，配合派单审核队列。"
+        "en": "Complaint and ticket desk: an intake stream, a ticket board, and dispatch suggestions that match each ticket to the right crew",
+        "zh-CN": "投诉/工单分诊派单台：接入流、工单看板，以及把每张工单派给合适班组的建议。"
       },
       "category": "sales-crm",
       "risk": "gated-write",
@@ -3411,7 +3411,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Crews and flag what needs my attention.",
-        "Open Busa Tickets and show me the items that need review."
+        "Triage the new complaints into tickets and suggest which crew should take each one."
       ],
       "version": "0.1.0",
       "license": "MIT",
@@ -3433,8 +3433,8 @@
         "zh-CN": "Busa 内容工坊"
       },
       "description": {
-        "en": "Channel-ready content drafting and review desk",
-        "zh-CN": "面向各渠道发布就绪的内容撰写与审核工作台。"
+        "en": "Channel-ready content desk: turn one source into drafts for every channel, then export a publish-ready pack",
+        "zh-CN": "面向各渠道的内容工坊：把一份素材改写成各渠道草稿，再导出可直接发布的内容包。"
       },
       "category": "marketing",
       "risk": "gated-write",
@@ -3464,7 +3464,7 @@
       },
       "agentPrompts": [
         "Summarize the latest Drafts and flag what needs my attention.",
-        "Open Busa Writer and show me the items that need review."
+        "Turn this article into drafts for LinkedIn, X and our newsletter."
       ],
       "version": "0.1.0",
       "license": "MIT",

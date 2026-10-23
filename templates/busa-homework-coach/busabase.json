@@ -6,8 +6,8 @@
     "zh-CN": "Busa 作业辅导"
   },
   "description": {
-    "en": "Busa Homework Coach: a child-friendly homework desk — questions the agent explained (with the gentle step-by-step explanation), the mistake notebook, practice papers, the parent/teacher review queue, and sanitized settings",
-    "zh-CN": "Busa 作业辅导：面向孩子的作业工作台——Agent 讲解过的题目（附耐心的分步讲解）、错题本、练习卷，配合家长/老师审核队列，以及脱敏后的设置。"
+    "en": "A child-friendly homework desk: homework questions explained gently, step by step, plus a mistake notebook and practice papers",
+    "zh-CN": "面向孩子的作业工作台：耐心分步讲解作业题，配错题本和练习卷。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -48,7 +48,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Questions and flag what needs my attention.",
-      "Open Busa Homework Coach and show me the items that need review."
+      "Explain this homework question step by step, the way a patient tutor would."
     ],
     "requires": {
       "airapp": true

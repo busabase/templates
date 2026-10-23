@@ -34,8 +34,8 @@
     ],
     "video": "assets/recordings/busa-local-model-lab.mp4",
     "agentPrompts": [
-      "Open Busa Local Model Lab and show me which examples need review.",
-      "Prepare a reproducible local QLoRA run from the approved Busabase dataset.",
+      "Open Busa Local Model Lab and show me which training examples are ready to export.",
+      "Prepare a reproducible local QLoRA run from the curated Busabase dataset.",
       "Compare the latest adapter with its untouched baseline on locked cases."
     ],
     "requires": {

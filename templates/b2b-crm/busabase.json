@@ -6,8 +6,8 @@
     "zh-CN": "B2B客户管理"
   },
   "description": {
-    "en": "A lightweight B2B CRM with a daily sales overview, accounts, activities, follow-ups, and a review-first pipeline.",
-    "zh-CN": "轻量级 B2B CRM：每日销售总览、客户、跟进动态，以及先审后办的成交流水线。"
+    "en": "A lightweight B2B CRM: a daily sales overview, accounts, contacts, activities, follow-ups, and a deal pipeline by stage.",
+    "zh-CN": "轻量级 B2B CRM：每日销售总览、客户、联系人、跟进动态、待办跟进，以及按阶段推进的成交流水线。"
   },
   "version": "0.3.0",
   "license": "MIT",

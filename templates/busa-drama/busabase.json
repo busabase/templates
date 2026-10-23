@@ -50,7 +50,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Project and flag what needs my attention.",
-      "Open Busa Drama and show me the items that need review."
+      "Show me which characters still need reference cards and which shots are ready to generate."
     ],
     "requires": {
       "airapp": true

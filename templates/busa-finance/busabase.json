@@ -6,8 +6,8 @@
     "zh-CN": "Busa 财务模型"
   },
   "description": {
-    "en": "Busa Finance: a review workspace for a three-statement financial model — the current model snapshot (company/currency/periods/workbook), its model-quality check queue (balance-sheet ties, cash roll-forward, formula reviews), and sanitized settings",
-    "zh-CN": "Busa Finance：三表联动财务模型的审核工作台——当前模型快照（公司/币种/期间/工作簿）、模型质量检查队列（资产负债表勾稽、现金滚存、公式复核），以及脱敏后的设置。"
+    "en": "Three-statement financial model desk: the current model snapshot (company, currency, periods, workbook) and model-quality checks such as balance-sheet ties, cash roll-forward and formula checks",
+    "zh-CN": "三表联动财务模型工作台：当前模型快照（公司/币种/期间/工作簿）与模型质量检查，如资产负债表勾稽、现金滚存与公式检查。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -44,7 +44,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Model and flag what needs my attention.",
-      "Open Busa Finance and show me the items that need review."
+      "Build a three-statement model from these assumptions and check that the balance sheet ties."
     ],
     "requires": {
       "airapp": true

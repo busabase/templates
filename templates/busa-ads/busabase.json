@@ -6,8 +6,8 @@
     "zh-CN": "Busa 广告管家"
   },
   "description": {
-    "en": "Ad-campaign command desk: Amazon/Meta/TikTok/Google spend and performance, deterministic anomaly detection, and an adjustment-card review queue",
-    "zh-CN": "广告投放指挥台：汇总 Amazon/Meta/TikTok/Google 的投放支出与效果，规则化异常检测，配合调整卡片的审核队列。"
+    "en": "Ad-campaign command desk: Amazon, Meta, TikTok and Google spend and performance in one place, rule-based anomaly detection, and evidence-backed budget and bid adjustments",
+    "zh-CN": "广告投放指挥台：一处汇总 Amazon、Meta、TikTok、Google 的投放支出与效果，规则化异常检测，并给出有依据的预算与出价调整。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -48,7 +48,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Platforms and flag what needs my attention.",
-      "Open Busa Ads and show me the items that need review."
+      "Show me the campaigns wasting the most spend and the adjustment the evidence supports for each."
     ],
     "requires": {
       "airapp": true

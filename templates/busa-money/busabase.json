@@ -56,7 +56,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Accounts and flag what needs my attention.",
-      "Open Busa Money and show me the items that need review."
+      "Which transactions still need to be matched to an invoice?"
     ],
     "requires": {
       "airapp": true

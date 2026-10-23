@@ -6,8 +6,8 @@
     "zh-CN": "Busa 市场雷达"
   },
   "description": {
-    "en": "Market-intelligence desk: competitor signals, research briefs/reports, trend movers/opportunities, and a triage review queue",
-    "zh-CN": "市场情报工作台：竞对信号、调研简报/报告、趋势变化与机会，配合分诊审核队列。"
+    "en": "Market-intelligence desk: competitor signals, research briefs and cited reports, trend movers, and opportunities, triaged into what to act on",
+    "zh-CN": "市场情报工作台：竞对信号、带引用的调研报告、趋势变化与机会，分诊出值得做的事。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -48,7 +48,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Watchlist and flag what needs my attention.",
-      "Open Busa Radar and show me the items that need review."
+      "Run a monitoring pass on my watchlist and tell me which competitor moves matter."
     ],
     "requires": {
       "airapp": true

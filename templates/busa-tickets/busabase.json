@@ -6,8 +6,8 @@
     "zh-CN": "Busa 工单派单"
   },
   "description": {
-    "en": "Complaint/ticket triage-and-dispatch desk: intake stream, ticket board, and a dispatch review queue",
-    "zh-CN": "投诉/工单分诊派单台：接入流、工单看板，配合派单审核队列。"
+    "en": "Complaint and ticket desk: an intake stream, a ticket board, and dispatch suggestions that match each ticket to the right crew",
+    "zh-CN": "投诉/工单分诊派单台：接入流、工单看板，以及把每张工单派给合适班组的建议。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -50,7 +50,7 @@
     },
     "agentPrompts": [
       "Summarize the latest Crews and flag what needs my attention.",
-      "Open Busa Tickets and show me the items that need review."
+      "Triage the new complaints into tickets and suggest which crew should take each one."
     ],
     "requires": {
       "airapp": true

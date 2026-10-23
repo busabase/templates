@@ -6,8 +6,8 @@
     "zh-CN": "Busa 销售外联"
   },
   "description": {
-    "en": "Product positioning, ideal-customer profile, target accounts, contacts, and reviewed outreach",
-    "zh-CN": "产品定位、理想客户画像、目标客户、联系人，以及经审核的外联触达。"
+    "en": "Product positioning, ideal-customer profile, target accounts, contacts, and personalized first-touch outreach",
+    "zh-CN": "产品定位、理想客户画像、目标客户、联系人，以及个性化的首次触达外联。"
   },
   "version": "0.1.0",
   "license": "MIT",
@@ -26,8 +26,8 @@
     ],
     "video": "assets/recordings/busa-sales-outreach.mp4",
     "agentPrompts": [
-      "Summarize the latest 产品与 ICP and flag what needs my attention.",
-      "Open Busa Sales Outreach and show me the items that need review."
+      "Summarize my product and ICP and flag what needs my attention.",
+      "Find new target accounts that match my ICP and draft a first-touch email for each."
     ],
     "requires": {
       "airapp": true
