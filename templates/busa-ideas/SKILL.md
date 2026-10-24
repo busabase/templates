@@ -102,6 +102,19 @@ The operator may answer a consultant question either in Agent chat or in the
 AirApp UI. Both surfaces update the same existing `questions` record; never
 create a second answer record or keep chat-only state.
 
+- Before answering or skipping an ordinary follow-up, inspect its canonical
+  Question and the Questions Base's active ChangeRequests, including conflicts.
+  Match the exact Question record id or `record-id`, never question text. A
+  pending skip has an empty answer and still counts as a submission. Reuse an
+  identical pending answer/skip and report its review link; if a different
+  action is pending, let the operator inspect it before proposing another.
+  Reads are bounded to 20 active and 20 terminal requests per check; if another
+  cursor remains, stop and inspect the Inbox rather than assuming no duplicate.
+  A reviewer asking for changes (`changes_requested`) leaves the request active:
+  revise that existing request in the Inbox rather than submitting a duplicate.
+  Use server-backed idempotency for retries (the one-row bulk-update endpoint
+  supports it); a rejected or closed request starts a new review cycle. Leave
+  `autoMerge` unset so the operator's actual permission decides the outcome.
 - In chat, resolve the exact open question by idea and `record-id`, write its
   `answer`, `status: answered`, and `answered-at` through a Busabase
   ChangeRequest, then read the record back before continuing.
@@ -125,6 +138,11 @@ create a second answer record or keep chat-only state.
   which idea or question they mean instead of guessing.
 - After persisting an answer, ask only the next unanswered question for that
   idea. Do not generate a document or advance the rung until its gate is met.
+
+The UI retains the submitted answer and links to the Workspace Inbox while
+review is pending. It shows the canonical answer or skipped state only after
+merge. See [references/question-review.md](references/question-review.md) for
+operator instructions and upgrading an existing installation safely.
 
 ## Mandatory Dependency
 

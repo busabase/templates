@@ -74,3 +74,14 @@ Demo mode never reads or writes Busabase.
 All persistent data — ideas, documents, questions, and settings — lives in
 Busabase Bases under one application Folder. See `SKILL.md` and
 `references/ideas-schema.md` for the resource map and record shapes.
+
+## Answer Review And Existing Installations
+
+Saving an answer or skipping a question uses your Busabase permissions. With
+write access it saves immediately; otherwise it submits for review, keeps your
+submitted answer visible, and links to the Workspace Inbox. Refreshing or
+retrying an identical pending answer does not create another review request.
+Required-field answers still need both the Question and Idea changes merged.
+
+See [the answer-review guide](references/question-review.md) for the workflow
+and how an Agent can update an existing installation without recreating data.

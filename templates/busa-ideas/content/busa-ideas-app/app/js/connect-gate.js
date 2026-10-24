@@ -13,7 +13,7 @@
 // that: where the app runs never decides whether a write merges. Busabase
 // decides that from the person's own permission.
 import { createAirAppConnectGate } from "../vendor/busabase-airapp-gate.js";
-import { getProvider } from "./providers/index.js?v=0.2.0";
+import { getProvider } from "./providers/index.js?v=0.2.1";
 import { shouldUseLocalGateway } from "./runtime.js";
 
 export { shouldUseLocalGateway };

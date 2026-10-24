@@ -1,13 +1,16 @@
 import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
+import { runtime } from "../runtime.js";
+import { reviewInboxUrl } from "../review-link.js";
+import { OPEN_REVIEW_STATUSES, questionReview, submitOrdinaryQuestion } from "../question-review.js";
 import { createRuntimeClient } from "../busabase-client.js";
-import { appConfig } from "../config.js?v=0.2.0";
+import { appConfig } from "../config.js?v=0.2.1";
 import {
   buildSnapshot,
   parseRequiredQuestionId,
   requiredQuestionId,
   REQUIRED_QUESTION_TEXT,
   REQUIRED_TO_LEAVE,
-} from "../ideas-model.js?v=0.2.0";
+} from "../ideas-model.js?v=0.2.1";
 
 const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
@@ -71,13 +74,22 @@ async function pendingChanges(key, strict = true) {
   if (!allowedReads.has("changeRequests.list")) throw new Error("PROCEDURE_DENIED: changeRequests.list");
   const result = await runtimeClient.changeRequests.list({
     affectsNodeId: base(key).nodeId,
-    status: ["in_review", "changes_requested", "approved"],
+    status: OPEN_REVIEW_STATUSES,
     limit: 20,
   });
   if (strict && result.nextCursor) {
     throw new Error("More than 20 pending changes affect this Base. Review its Inbox before submitting another answer.");
   }
   return result.changeRequests.flatMap((request) => request.operations || []);
+}
+
+async function readQuestionReviews(status, strict = true) {
+  if (!allowedReads.has("changeRequests.list")) throw new Error("PROCEDURE_DENIED: changeRequests.list");
+  const result = await runtimeClient.changeRequests.list({ affectsNodeId: base("questions").nodeId, status, limit: 20 });
+  if (strict && result.nextCursor) {
+    throw new Error("More than 20 Question changes match this review check. Open the Workspace Inbox before submitting again.");
+  }
+  return result;
 }
 
 export function pendingQuestionAnswer(operations, questionId, existingRecordId) {
@@ -318,15 +330,17 @@ export const busabaseProvider = {
       readSettingsRows(),
       countRecords("ideas"),
     ]);
-    const [pendingQuestionOperations, pendingIdeaOperations] = await Promise.all([
-      pendingChanges("questions", false),
+    const [questionReviews, pendingIdeaOperations] = await Promise.all([
+      readQuestionReviews(OPEN_REVIEW_STATUSES, false),
       pendingChanges("ideas", false),
     ]);
+    const pendingQuestionOperations = questionReviews.changeRequests.flatMap((request) => request.operations || []);
+    const rejectedQuestions = await readRejectedQuestionRequests(false);
     const { questions: reviewQuestions, rejectedAnswers } = reviewBlockingQuestions(
       ideasPage.rows,
       questionsPage.rows,
       pendingQuestionOperations,
-      await readRejectedQuestionRequests(false),
+      rejectedQuestions,
     );
     const snapshot = buildSnapshot({
       ideas: ideasPage.rows,
@@ -336,6 +350,21 @@ export const busabaseProvider = {
     pendingAnswers.clear();
     const ideaRecordIds = new Map(ideasPage.rows.map((row) => [row.record_id, row.__recordId]));
     const pendingDrafts = {};
+    const ordinaryReviews = {};
+    for (const question of questionsPage.rows.filter((item) => !item.target_field)) {
+      const reviews = questionReview(questionReviews.changeRequests, question.record_id, question.__recordId);
+      if (!reviews.length) {
+        const rejected = questionReview(rejectedQuestions, question.record_id, question.__recordId)[0];
+        if (rejected && !["answered", "skipped"].includes(question.status)) {
+          ordinaryReviews[question.record_id] = rejected;
+          pendingDrafts[question.record_id] = rejected.answer;
+        }
+        continue;
+      }
+      ordinaryReviews[question.record_id] = reviews[0];
+      pendingAnswers.add(question.record_id);
+      pendingDrafts[question.record_id] = reviews[0].answer;
+    }
     for (const question of reviewQuestions.filter((item) => item.recovery)) {
       pendingDrafts[question.record_id] = rejectedAnswers.get(question.record_id);
     }
@@ -370,6 +399,9 @@ export const busabaseProvider = {
       snapshot,
       pendingAnswers: [...pendingAnswers],
       pendingDrafts,
+      questionReviews: ordinaryReviews,
+      reviewReadIncomplete: Boolean(questionReviews.nextCursor),
+      reviewInboxUrl: await reviewInboxUrl({ hosted: runtime.hosted }),
       // Seeds app.js's page-cursor cache: the cursor needed to fetch page 2 of
       // each Base that has its own browsed list view (page 1 was just fetched
       // above). Settings is read once; see the comment on readPage.
@@ -507,23 +539,14 @@ export const busabaseProvider = {
         return { updated_at: now, pending, change_request_id: queued?.id || "" };
       }
       if (!existingQuestion) throw new Error(`Unknown question: ${questionId}`);
-      const result = await upsert(
-        "questions",
-        "record-id",
-        questionId,
-        {
-          record_id: questionId,
-          answer,
-          status: action === "answer" ? "answered" : "skipped",
-          answered_at: now,
-        },
-        `${action === "answer" ? "Answered" : "Skipped"} question ${questionId}`,
-      );
-      return {
-        updated_at: now,
-        pending: isQueued(result),
-        change_request_id: isQueued(result) ? result?.id || "" : "",
-      };
+      if (!allowedWrites.has("bases.createBulkUpdateChangeRequest")) {
+        throw new Error("PROCEDURE_DENIED: bases.createBulkUpdateChangeRequest");
+      }
+      return submitOrdinaryQuestion({
+        client: runtimeClient, declared: base("questions"), existing: existingQuestion,
+        questionId, action, answer, now, submittedBy: appConfig.appId,
+        readReviews: async (status) => (await readQuestionReviews(status)).changeRequests,
+      });
     }
 
     const ideaId = String(payload.idea_id || "");
