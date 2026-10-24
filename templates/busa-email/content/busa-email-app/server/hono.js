@@ -2,16 +2,20 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { describeBusabaseAirAppRuntime } from "busabase-sdk/airapp-node";
 import { Hono } from "hono";
-import { createProvider } from "../lib/data-provider/index.js";
-import { withRuntimeRequest } from "../lib/runtime-context.js";
-import { updateDetail, updateItems } from "./decisions.js";
-import { demoDecisionResponse, demoStatePayload, isDemoQuery } from "./demo.js";
+import { demoDecisionResponse, demoStatePayload } from "./demo.js";
 import { installLocalBusabaseAuth } from "./local-auth.js";
-import { lockPayload } from "./lock.js";
 import { APP_DIR } from "./paths.js";
-import { statePayload } from "./state.js";
 
-// The AirApp server forwards its ambient Busabase session to busabase-sdk.
+/**
+ * What this process is, and is not.
+ *
+ * It serves the app's files, tells the page which runtime it is in, answers the
+ * `?demo=` fixture, and — standalone only — proxies `/api/v1` with the credential
+ * it holds. It never reads the workspace itself. A Busabase-hosted AirApp process
+ * is given `BUSABASE_AIRAPP_RUNTIME` and nothing else — no API origin, no
+ * credential — so the page's own same-origin `/api/v1` is the only route to the
+ * data, and the page does every read and write (`app/js/data/page-api.js`).
+ */
 
 const CONTENT_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -44,49 +48,22 @@ async function sendFile(c, absPath, { store = false } = {}) {
 }
 
 export const app = new Hono();
+// Standalone, adds the connect gate and the `/api/v1` proxy that attaches the
+// credential and the operator's confirmed Space. Hosted, the page's `/api/v1` is
+// Busabase's own and none of these routes are reached.
 installLocalBusabaseAuth(app, { appId: "busa-email" });
-app.use("*", async (c, next) => {
-  const headers = {};
-  for (const name of ["cookie", "authorization"]) {
-    const value = c.req.header(name);
-    if (value) headers[name] = value;
-  }
-  return withRuntimeRequest({ origin: new URL(c.req.url).origin, headers }, next);
-});
 
 // The SDK owns the runtime vocabulary and, critically, decides hosting from
 // presence of BUSABASE_AIRAPP_RUNTIME rather than membership in a stale list.
 app.get("/__airapp/runtime", (c) => c.json(describeBusabaseAirAppRuntime()));
 
-// ---- API ----
-app.get("/api/state", async (c) => {
-  const query = c.req.query();
-  return c.json(isDemoQuery(query) ? demoStatePayload(query) : await statePayload(query));
-});
-
-app.get("/api/lock", async (c) => {
-  const query = c.req.query();
-  return c.json({ lock: isDemoQuery(query) ? { locked: false } : await lockPayload() });
-});
-
-app.post("/api/decision", async (c) => {
-  const query = c.req.query();
-  const body = await c.req.json().catch(() => ({}));
-  if (isDemoQuery(query)) return c.json(demoDecisionResponse(body));
-  return c.json(await updateItems(body));
-});
-
-app.post("/api/detail", async (c) => {
-  const query = c.req.query();
-  const body = await c.req.json().catch(() => ({}));
-  if (isDemoQuery(query)) return c.json(demoDecisionResponse(body));
-  return c.json(await updateDetail(body));
-});
-
-app.post("/api/reload", async (c) => {
-  const query = c.req.query();
-  return c.json(isDemoQuery(query) ? demoStatePayload(query) : await statePayload({}));
-});
+// ---- Demo fixture ----
+// `?demo=<scenario>` shows sample mail without any Busabase connection. Real
+// data never passes through here; the page reads and writes it over `/api/v1`.
+app.get("/api/state", (c) => c.json(demoStatePayload(c.req.query())));
+app.get("/api/lock", (c) => c.json({ lock: { locked: false } }));
+app.post("/api/decision", async (c) => c.json(demoDecisionResponse(await c.req.json().catch(() => ({})))));
+app.post("/api/detail", async (c) => c.json(demoDecisionResponse(await c.req.json().catch(() => ({})))));
 
 // ---- Static (vanilla frontend) ----
 app.get("/", (c) => sendFile(c, path.join(APP_DIR, "index.html")));
@@ -123,19 +100,14 @@ app.get("/js/*", (c) => {
   return sendFile(c, resolved);
 });
 
-app.get("/api/provider-file/*", async (c) => {
-  const pathname = decodeURIComponent(c.req.path.replace(/^\/api\/provider-file\//, ""));
-  const provider = createProvider();
-  if (!provider.getFile) return c.text("Not Found", 404);
-  const file = await provider.getFile(pathname).catch(() => null);
-  const data = file?.data;
-  if (typeof data !== "string") return c.text("Not Found", 404);
-  const meta = file.meta && typeof file.meta === "object" ? file.meta : {};
-  const buffer = Buffer.from(data, meta.encoding === "base64" ? "base64" : "utf8");
-  return c.body(buffer, 200, {
-    "Content-Type": String(meta.content_type || "application/octet-stream"),
-    "Cache-Control": "no-store",
-  });
+// The vendored busabase-sdk bundle the page's data layer imports.
+app.get("/vendor/*", (c) => {
+  const rel = decodeURIComponent(c.req.path.replace(/^\/vendor\//, ""));
+  const resolved = path.resolve(APP_DIR, "vendor", rel);
+  if (!resolved.startsWith(path.resolve(APP_DIR, "vendor") + path.sep) || path.extname(resolved) !== ".js") {
+    return c.text("Forbidden", 403);
+  }
+  return sendFile(c, resolved, { store: true });
 });
 
 app.onError((err, c) => {

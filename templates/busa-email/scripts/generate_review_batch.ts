@@ -21,9 +21,13 @@ import {
   summaryFrom,
   utcNow,
   writeAgentLock,
-} from "../app/lib/common.ts";
-import { createProvider } from "../app/lib/data-provider/index.ts";
-import type { Config, Mailbox, ReviewItem } from "../app/lib/types.ts";
+} from "../content/busa-email-app/lib/common.js";
+import { createProvider } from "../content/busa-email-app/app/js/data/index.js";
+
+// Shapes are documented in references/; these scripts only need names for them.
+type Config = Record<string, any>;
+type Mailbox = Record<string, any>;
+type ReviewItem = Record<string, any>;
 
 interface BatchArgs {
   reviewQuota: number;

@@ -1,6 +1,6 @@
-import { createProvider } from "../lib/data-provider/index.js";
+import { createProvider } from "./index.js";
 import { loadBatchPage, normalizeItem } from "./batch-store.js";
-import { loadConfigWithMeta, onboardingStatus, publicAccounts } from "./config.js";
+import { loadConfigWithMeta, onboardingStatus, publicAccounts } from "./accounts.js";
 import { lockPayload } from "./lock.js";
 import { providerStatus } from "./provider-status.js";
 

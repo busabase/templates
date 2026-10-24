@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { join } from "node:path";
-import { createProvider, loadConfig, loadConfigWithMeta, loadDotenv, onboardingStatus } from "./data-provider/index.js";
+import { createProvider, loadConfig, loadConfigWithMeta, loadDotenv, onboardingStatus } from "../app/js/data/index.js";
 import { APP_DIR, ROOT_DIR, SKILL_DIR } from "./paths.js";
 
 export const SCRIPTS_DIR = join(SKILL_DIR, "scripts");

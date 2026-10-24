@@ -9,8 +9,8 @@ const baseUiText = await readFile(path.join(root, "app", "styles", "base-ui.css"
 const layersText = await readFile(path.join(root, "app", "styles", "layers.css"), "utf8");
 const setupText = await readFile(path.join(root, "app", "js", "setup.js"), "utf8");
 const localAuthText = await readFile(path.join(root, "server", "local-auth.js"), "utf8");
-const providerText = await readFile(path.join(root, "lib", "data-provider", "busabase-client.js"), "utf8");
-const providerModelText = await readFile(path.join(root, "lib", "data-provider", "busabase-provider.js"), "utf8");
+const providerText = await readFile(path.join(root, "app", "js", "busabase-client.js"), "utf8");
+const providerModelText = await readFile(path.join(root, "app", "js", "data", "busabase-provider.js"), "utf8");
 const listText = await readFile(path.join(root, "app", "js", "list-detail.js"), "utf8");
 const serverText = await readFile(path.join(root, "server", "hono.js"), "utf8");
 
@@ -35,6 +35,15 @@ if (!listText.includes("export async function loadMore()") || !listText.includes
 }
 if (!serverText.includes("describeBusabaseAirAppRuntime")) {
   throw new Error("AirApp runtime reporting must use busabase-sdk/airapp-node");
+}
+// A hosted AirApp process has no Busabase origin and no credential, so the
+// server must never read the workspace: the page does, over same-origin /api/v1.
+const serverImports = [...serverText.matchAll(/^import[^;]*from\s+["']([^"']+)["']/gm)].map((match) => match[1]);
+if (/\bcreateProvider\s*\(/.test(serverText) || serverImports.some((spec) => /data-provider|app\/js\/data\//.test(spec))) {
+  throw new Error("The AirApp server must not read Busabase; the page's data layer does");
+}
+if (!providerText.includes("../vendor/busabase-sdk.js")) {
+  throw new Error("The page's data layer must use the vendored busabase-sdk bundle");
 }
 if (/BUSA_EMAIL_DATA_PROVIDER|local-file-provider|folders\.get/.test(configText)) {
   throw new Error("Retired provider/runtime contract remains in app config");
