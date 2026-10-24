@@ -40,7 +40,8 @@ const walk = (dir) => {
   });
 };
 
-const appSourceFiles = (root) => {
+// Every AirApp source file of a template under `root` (vendored bundles, tests and dev scripts left out).
+export const appSourceFiles = (root) => {
   const templates = path.join(root, "templates");
   if (!fs.existsSync(templates)) return [];
   return fs
@@ -57,13 +58,15 @@ const REGEX_KEYWORD = /\b(?:return|typeof|instanceof|in|of|new|delete|void|throw
 /**
  * The source with every comment, string, template-literal text and regex blanked
  * to spaces, newlines kept, so a match's offset still maps to its line and only
- * real code can match.
+ * real code can match. With `keepLiterals` only comments are blanked: strings,
+ * template text and regexes stay readable, for a caller that has to compare them.
  */
-export const codeOnly = (source) => {
+export const codeOnly = (source, { keepLiterals = false } = {}) => {
   const out = source.split("");
   const blank = (from, to) => {
     for (let index = from; index < to; index += 1) if (out[index] !== "\n") out[index] = " ";
   };
+  const blankLiteral = keepLiterals ? () => {} : blank;
   const templateDepth = [];
   let index = 0;
   while (index < source.length) {
@@ -88,7 +91,7 @@ export const codeOnly = (source) => {
       while (cursor < source.length && source[cursor] !== char && source[cursor] !== "\n") {
         cursor += source[cursor] === "\\" ? 2 : 1;
       }
-      blank(index + 1, cursor);
+      blankLiteral(index + 1, cursor);
       index = cursor + 1;
       continue;
     }
@@ -103,7 +106,7 @@ export const codeOnly = (source) => {
         if (source[cursor] === "$" && source[cursor + 1] === "{") break;
         cursor += 1;
       }
-      blank(index + 1, cursor);
+      blankLiteral(index + 1, cursor);
       if (source[cursor] === "$") {
         templateDepth.push(0);
         index = cursor + 2;
@@ -128,7 +131,7 @@ export const codeOnly = (source) => {
           else if (current === "/" && !inClass) break;
           cursor += 1;
         }
-        blank(index + 1, cursor);
+        blankLiteral(index + 1, cursor);
         index = cursor + 1;
         continue;
       }
