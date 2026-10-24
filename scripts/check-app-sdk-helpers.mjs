@@ -7,6 +7,11 @@
 //   - a `fetch("__airapp/runtime")` -> call `detectAirAppRuntime()`
 //   - the SDK's "Sent for review." sentence written out again -> `airAppWriteMessage`
 //
+// It also fails when a page loads a script that is not a module (`<script src>` without
+// `type="module"`) and that script has an `import` or `export`: a syntax error that
+// takes the whole script with it. Moving the i18n table onto the SDK's sentence did
+// exactly that to busa-invoice-sheet, and nothing but opening the page showed it.
+//
 // It reads every AirApp's own source under templates/*/content/ (not vendored
 // bundles, tests, or the app's dev scripts), and ignores comments. A copy that
 // has to stay, for a reason someone can read, says so on its line or the line
@@ -78,10 +83,53 @@ export const findPrivateCopies = (source) => {
   return findings.sort((a, b) => a.line - b.line);
 };
 
-export const checkAppSdkHelpers = ({ root = defaultRoot } = {}) =>
-  appSourceFiles(root).flatMap((file) =>
+/**
+ * Classic scripts of one page that use `import` / `export`. `readScript(src)` returns a
+ * script's text by its `src` (without the query), or null when it is not a local file.
+ */
+export const findClassicScriptImports = (html, readScript) => {
+  const findings = [];
+  for (const match of html.matchAll(/<script\b([^>]*)>/gi)) {
+    const attributes = match[1];
+    if (/\btype\s*=\s*["']?module/i.test(attributes)) continue;
+    const src = /\bsrc\s*=\s*["']([^"']+)["']/i.exec(attributes)?.[1];
+    if (!src || /^(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(src)) continue;
+    const source = readScript(src.split("?")[0]);
+    if (source == null) continue;
+    const found = /^[ \t]*(?:import\s+(?:[\w*${]|["'`])|export\s)/m.exec(codeOnly(source));
+    if (!found) continue;
+    const line = source.slice(0, found.index).split("\n").length;
+    findings.push({
+      src: src.split("?")[0],
+      rule: "classic-script-import",
+      line,
+      text: source.split("\n")[line - 1]?.trim() ?? "",
+      problem: `${src} is loaded without type="module", so this import/export is a syntax error: load it as a module, or drop the import`,
+    });
+  }
+  return findings;
+};
+
+const classicScriptFindings = (root) =>
+  fs.globSync("templates/*/content/*/app/index.html", { cwd: root }).flatMap((relative) => {
+    const dir = path.dirname(path.join(root, relative));
+    const html = fs.readFileSync(path.join(root, relative), "utf8");
+    const readScript = (src) => {
+      const file = path.resolve(dir, src);
+      return file.startsWith(dir) && fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null;
+    };
+    return findClassicScriptImports(html, readScript).map(({ src, ...finding }) => ({
+      file: path.relative(root, path.resolve(dir, src)),
+      ...finding,
+    }));
+  });
+
+export const checkAppSdkHelpers = ({ root = defaultRoot } = {}) => [
+  ...appSourceFiles(root).flatMap((file) =>
     findPrivateCopies(fs.readFileSync(file, "utf8")).map((finding) => ({ file: path.relative(root, file), ...finding })),
-  );
+  ),
+  ...classicScriptFindings(root),
+];
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const rootIndex = process.argv.indexOf("--root");
@@ -90,8 +138,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   for (const { file, line, rule, text, problem } of findings) console.error(`${file}:${line}: [${rule}] ${text}\n  ${problem}`);
   if (findings.length) {
     const apps = new Set(findings.map(({ file }) => file.split(path.sep)[1]));
-    console.error(`\n${findings.length} private cop${findings.length === 1 ? "y" : "ies"} of what busabase-sdk/airapp provides, in ${apps.size} template(s). See scripts/check-app-sdk-helpers.mjs.`);
+    console.error(`\n${findings.length} finding(s) in ${apps.size} template(s): private copies of what busabase-sdk/airapp provides, or a classic script that imports. See scripts/check-app-sdk-helpers.mjs.`);
     process.exit(1);
   }
-  console.log("AirApps use busabase-sdk/airapp for the runtime probe, queued writes and the review notice.");
+  console.log("AirApps use busabase-sdk/airapp for the runtime probe, queued writes and the review notice, and no classic script imports.");
 }

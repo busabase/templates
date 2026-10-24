@@ -206,6 +206,7 @@ node scripts/check-app-sdk-helpers.mjs
 - `index --check` 必须输出 `templates.json is up to date`。
 - `scripts/check-app-writes.mjs` 会在 AirApp 对用户自己的写入强制送审时报错（写死 `autoMerge: false`，或按运行环境推算这个值）。不要传 `autoMerge`，按 Busabase 返回的结果告诉用户是已保存还是已提交审核。如果某个写入确实要第二个人批准后才能对外发出，就在那一行用 `// allow-forced-review: <原因>` 写明原因。
 - `scripts/check-app-sdk-helpers.mjs` 会在 AirApp 又把 `busabase-sdk/airapp` 已经提供的东西写了一遍时报错：本地的 `isQueued`、`fetch("__airapp/runtime")`，或把 SDK 的 “Sent for review.” 那句话原样写出来。请从应用自己打包进来的 `busabase-airapp.js` 里引入 `isAirAppWriteQueued`、调用 `detectAirAppRuntime()`、用 `airAppWriteMessage`。某处副本确实要保留，就在那一行或上一行用 `// allow-private-copy: <原因>` 写明原因。
+页面用普通 `<script src>`（没有 `type="module"`）加载的文件里如果有 `import` 或 `export`，它也会报错：那是语法错误，页面打开后这个文件的内容整个丢失。
 
 ### 用 Git LFS 提交
 

@@ -607,6 +607,14 @@ export const adoptMessages = (source, { vendorSpecifier, sentences }) => {
   return { source: text, count, others };
 };
 
+/** Whether `html` loads a script whose path ends in `file` without `type="module"`. */
+export const loadedAsClassicScript = (html, file) =>
+  [...(html ?? "").matchAll(/<script\b([^>]*)>/gi)].some(
+    ([, attributes]) =>
+      new RegExp(`\\bsrc\\s*=\\s*["'][^"']*${escapeRegExp(file)}(?:\\?[^"']*)?["']`, "i").test(attributes) &&
+      !/\btype\s*=\s*["']?module/i.test(attributes),
+  );
+
 // ── one app ────────────────────────────────────────────────────────────────
 
 const VENDOR_BUNDLES = ["busabase-airapp.js", "busabase-sdk.js"];
@@ -710,6 +718,11 @@ export const adoptApp = async (dir, { dryRun = false, assumeSdk = false } = {}) 
   const messagesFile = path.join(dir, "app", "i18n", "messages.js");
   const messages = read(messagesFile);
   if (messages === null) result.pieces.notice = "absent";
+  else if (loadedAsClassicScript(read(path.join(dir, "app", "index.html")), "messages.js")) {
+    // An `import` in a classic script is a syntax error: the whole message table would be gone.
+    const copies = adoptMessages(messages, { vendorSpecifier: "", sentences });
+    result.pieces.notice = copies.count + copies.others ? { left: "i18n/messages.js is loaded by index.html as a classic script, which cannot import the SDK" } : "absent";
+  }
   else if (lacks("airAppWriteMessage").length) {
     const copies = adoptMessages(messages, { vendorSpecifier: "", sentences });
     result.pieces.notice = copies.count + copies.others ? { left: lacking(["airAppWriteMessage"]) } : "absent";
