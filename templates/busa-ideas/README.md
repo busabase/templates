@@ -33,6 +33,26 @@ blocking gaps. Handoff also checks required information and open questions,
 then asks for explicit confirmation; it never starts a build. Read
 [the review and upgrade guide](references/document-readiness.md).
 
+## Build A Workspace App From A Reviewed PRD
+
+The public build route uses `busabase` and `busabase-app-creator`, installable in
+an Agent environment with:
+
+```bash
+npx skills add busabase/skills --skill busabase --skill busabase-app-creator
+```
+
+Give the Agent the exact Ideas Space and Idea link. It checks the merged PRD,
+shows you which document version it will use, and asks you to confirm the
+handoff. The creator then proposes a separate app plan for your approval;
+reaching PRD or confirming handoff does not create or publish an app. The
+[English/Chinese handoff guide](references/build-handoff.md) includes a copyable
+prompt, retry behavior, and how to update an existing Ideas manual.
+
+Template **0.2.3** updates these instructions and the AirApp's Agent prompt.
+The AirApp runtime remains **0.2.2**; there is no new build button or runtime
+code upgrade in this release.
+
 ## App UI Screenshots
 
 <table>
