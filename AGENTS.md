@@ -131,7 +131,9 @@ The second command fails when an AirApp forces review on a person's own write
 AirApp writes is `busabase-app-creator`'s rule; this only keeps it from
 regressing here. The third fails on a private copy of what the SDK provides: a
 local `isQueued`, a `fetch("__airapp/runtime")`, or the SDK's "Sent for review."
-sentence written out again.
+sentence written out again. It also fails when a page loads a classic
+`<script src>` (no `type="module"`) whose file has an `import` or `export`: that is
+a syntax error, and the page opens without the file's contents.
 
 A template that declares itself one and does not qualify appears in the
 catalog's `rejected` list with its reasons — that list is the first place to

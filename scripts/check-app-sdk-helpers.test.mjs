@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { checkAppSdkHelpers, findPrivateCopies } from "./check-app-sdk-helpers.mjs";
+import { checkAppSdkHelpers, findClassicScriptImports, findPrivateCopies } from "./check-app-sdk-helpers.mjs";
 
 const rules = (source) => findPrivateCopies(source).map(({ rule, line }) => `${rule}:${line}`);
 
@@ -73,4 +73,43 @@ test("reads AirApp source only, not vendored bundles, tests or dev scripts", () 
     findings.map(({ file, rule }) => `${path.relative("templates/fixture/content/fixture-app", file)}:${rule}`),
     ["app/js/providers/busabase-provider.js:private-is-queued", "app/js/runtime.js:private-runtime-probe"],
   );
+});
+
+test("a classic script that imports is a finding; a module, a dynamic import or a remote script is not", () => {
+  const scripts = {
+    "./i18n/messages.js": 'import { airAppWriteMessage } from "../vendor/busabase-airapp.js";\nwindow.M = {};\n',
+    "./app.js": 'import { a } from "./a.js";\n',
+    "./plain.js": 'window.X = 1;\nconst load = () => import("./later.js");\n// import { fake } from "x";\n',
+    "./exports.js": "const a = 1;\nexport { a };\n",
+  };
+  const read = (src) => scripts[src] ?? null;
+  const html = [
+    '<script src="./i18n/messages.js?v=2"></script>',
+    '<script type="module" src="./app.js"></script>',
+    '<script src="./plain.js"></script>',
+    '<script src="https://cdn.example/lib.js"></script>',
+    '<script src="./missing.js"></script>',
+    "<script>inline()</script>",
+    '<script defer src="./exports.js"></script>',
+  ].join("\n");
+  const found = findClassicScriptImports(html, read);
+  assert.deepEqual(found.map(({ src, line }) => `${src}:${line}`), ["./i18n/messages.js:1", "./exports.js:2"]);
+  assert.match(found[0].problem, /load it as a module/);
+  assert.deepEqual(findClassicScriptImports('<script type=module src="./i18n/messages.js"></script>', read), []);
+});
+
+test("the repository check reads each app's index.html", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "check-app-sdk-helpers-classic-"));
+  const app = path.join(root, "templates", "fixture", "content", "fixture-app", "app");
+  fs.mkdirSync(path.join(app, "i18n"), { recursive: true });
+  fs.writeFileSync(path.join(app, "index.html"), '<script src="./i18n/messages.js"></script><script type="module" src="./app.js"></script>');
+  fs.writeFileSync(path.join(app, "i18n", "messages.js"), 'import { x } from "../vendor/x.js";\nwindow.M = {};\n');
+  fs.writeFileSync(path.join(app, "app.js"), "export const ok = true;\n");
+  const findings = checkAppSdkHelpers({ root });
+  assert.deepEqual(
+    findings.map(({ file, rule }) => `${file}:${rule}`),
+    [path.join("templates", "fixture", "content", "fixture-app", "app", "i18n", "messages.js") + ":classic-script-import"],
+  );
+  fs.writeFileSync(path.join(app, "index.html"), '<script type="module" src="./i18n/messages.js"></script>');
+  assert.deepEqual(checkAppSdkHelpers({ root }), []);
 });

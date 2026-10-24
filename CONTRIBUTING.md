@@ -248,6 +248,8 @@ node scripts/check-app-sdk-helpers.mjs
   Import `isAirAppWriteQueued`, call `detectAirAppRuntime()` and use `airAppWriteMessage` from the app's
   vendored `busabase-airapp.js`. If a copy has to stay, say why on that line, or the line above, with
   `// allow-private-copy: <reason>`.
+  It also fails when a page loads a classic `<script src>` (no `type="module"`) whose file has an
+  `import` or `export`: that is a syntax error, and the page opens without the file's contents.
 
 ### Commit with Git LFS
 

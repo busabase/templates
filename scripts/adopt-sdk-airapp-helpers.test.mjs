@@ -17,6 +17,7 @@ import {
   adoptUpsert,
   findFunction,
   isPlainProbe,
+  loadedAsClassicScript,
   loadVendoredSdk,
   parseArgs,
   withVendorImport,
@@ -559,6 +560,24 @@ export const messages = {
   });
   assert.equal(reworded.count, 0);
   assert.equal(reworded.others, 1);
+});
+
+test("a message table loaded as a classic script is never given an import", async () => {
+  assert.equal(loadedAsClassicScript('<script src="./i18n/messages.js"></script>', "messages.js"), true);
+  assert.equal(loadedAsClassicScript('<script src="./i18n/messages.js?v=3" defer></script>', "messages.js"), true);
+  assert.equal(loadedAsClassicScript('<script type="module" src="./i18n/messages.js"></script>', "messages.js"), false);
+  assert.equal(loadedAsClassicScript('<script src="./app.js" type=module></script>', "messages.js"), false);
+  assert.equal(loadedAsClassicScript('<script type="module" src="./app.js"></script>', "messages.js"), false);
+  assert.equal(loadedAsClassicScript(null, "messages.js"), false);
+
+  const dir = makeApp();
+  fs.writeFileSync(path.join(dir, "app/index.html"), '<script src="./i18n/messages.js"></script>\n<script type="module" src="./app.js"></script>\n');
+  const before = snapshot(dir);
+  const result = await adoptApp(dir);
+  assert.match(result.pieces.notice.left, /classic script/);
+  assert.equal(fs.readFileSync(path.join(dir, "app/i18n/messages.js"), "utf8"), before["app/i18n/messages.js"]);
+  // the rest of the app is still moved
+  assert.equal(result.pieces.readPage, "migrated");
 });
 
 // ── an app ─────────────────────────────────────────────────────────────────
