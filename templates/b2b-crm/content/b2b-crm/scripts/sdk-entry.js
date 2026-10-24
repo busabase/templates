@@ -1,2 +1,2 @@
 export * from "busabase-sdk";
-export { inspectProvisionedResources } from "busabase-sdk/airapp";
+export { createAirAppRecords, inspectProvisionedResources, isAirAppWriteQueued } from "busabase-sdk/airapp";

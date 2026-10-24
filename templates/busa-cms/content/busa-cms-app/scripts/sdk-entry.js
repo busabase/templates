@@ -1,2 +1,7 @@
 export * from "busabase-sdk";
-export { inspectProvisionedResources } from "busabase-sdk/airapp";
+export {
+  createAirAppRecords,
+  detectAirAppRuntime,
+  inspectProvisionedResources,
+  shouldUseLocalAirAppGateway,
+} from "busabase-sdk/airapp";
