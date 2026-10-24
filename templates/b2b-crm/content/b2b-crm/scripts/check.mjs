@@ -248,8 +248,10 @@ if (!browserSource.includes("records.changeRequest"))
 // leftover bridge prefix would work in exactly one of them.
 if (!browserSource.includes("window.location.origin"))
   throw new Error("Runtime client must target its own origin.");
-if (!browserSource.includes("dashboardSpaceHint"))
-  throw new Error("Template runtime must scope reads to its canonical Dashboard Space.");
+// The Dashboard URL segment is a route slug, not a Space id; sending it as the
+// Space header makes Cloud answer 403 and the app opens empty.
+if (/dashboardSpaceHint|x-busabase-space/.test(browserSource))
+  throw new Error("Browser runtime must not pick its own Space; the session decides.");
 if (browserSource.includes("__busabase_api__"))
   throw new Error("Obsolete /__busabase_api__ bridge prefix found.");
 if (/baseUrl\s*:\s*["'`]https?:\/\//.test(browserSource))

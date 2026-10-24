@@ -21,42 +21,14 @@ import { appConfig } from "./config.js";
  * AirApp's process is given `BUSABASE_AIRAPP_RUNTIME` and nothing else — no API
  * origin, no credential — so the only route to the data is the browser's.
  */
-const parentUrls = () => {
-  const values = [];
-  if (document.referrer) values.push(document.referrer);
-  try {
-    if (window.parent !== window) values.push(window.parent.location.href);
-  } catch {
-    // Cross-origin embeds cannot expose their parent URL; auth discovery handles them.
-  }
-  return values.flatMap((value) => {
-    try {
-      return [new URL(value)];
-    } catch {
-      return [];
-    }
-  });
-};
-
-const dashboardSpaceHint = () => {
-  for (const url of parentUrls()) {
-    const match = url.pathname.match(/^\/dashboard\/([^/]+)(?:\/|$)/);
-    if (!match) continue;
-    try {
-      return decodeURIComponent(match[1]);
-    } catch {
-      return match[1];
-    }
-  }
-  return "";
-};
-
+/**
+ * No Space header: inside Busabase the viewer's session already names the Space
+ * they are in, exactly as for every other template. The dashboard URL segment is a
+ * route slug, not a Space id, and Cloud rejects it as one (403), so it must never be
+ * sent as the Space header.
+ */
 export function createRuntimeClient() {
-  const spaceId = appConfig.spaceId || dashboardSpaceHint();
-  return createBusabaseClient({
-    baseUrl: window.location.origin,
-    ...(spaceId ? { spaceId } : {}),
-  });
+  return createBusabaseClient({ baseUrl: window.location.origin });
 }
 
 const resourceConfig = {
@@ -139,16 +111,28 @@ export async function resolveRuntimeResources(client) {
   };
 }
 
+/** The Space the session is actually scoped to, as the server reports it. */
+export const currentSpaceId = async () => {
+  try {
+    const response = await fetch("/api/v1/auth", { credentials: "include" });
+    if (!response.ok) return "";
+    const info = await response.json();
+    return info?.space?.id || info?.member?.spaceId || "";
+  } catch {
+    return "";
+  }
+};
+
 /**
  * What the consuming website needs. The Folder node id is the whole point of the
  * Connect tab: without it `createBusabaseCms({ folderId })` has nothing to adopt,
  * and the alternative — matching Bases by slug — breaks the moment somebody
  * renames one.
  */
-export const connectionFacts = () => ({
+export const connectionFacts = (spaceId = "") => ({
   folderId: appConfig.schema.folder.nodeId,
   folderSlug: appConfig.schema.folder.slug,
-  spaceId: appConfig.spaceId || dashboardSpaceHint(),
+  spaceId: appConfig.spaceId || spaceId,
   baseUrl: window.location.origin,
   profile: appConfig.cms.profile,
   sdkPackage: appConfig.cms.sdkPackage,

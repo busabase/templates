@@ -19,42 +19,14 @@ import { appConfig } from "./config.js";
  * That is why no credential ever appears in these files: the browser never
  * holds one.
  */
-const parentUrls = () => {
-  const values = [];
-  if (document.referrer) values.push(document.referrer);
-  try {
-    if (window.parent !== window) values.push(window.parent.location.href);
-  } catch {
-    // Cross-origin embeds cannot expose their parent URL; auth discovery handles them.
-  }
-  return values.flatMap((value) => {
-    try {
-      return [new URL(value)];
-    } catch {
-      return [];
-    }
-  });
-};
-
-const dashboardSpaceHint = () => {
-  for (const url of parentUrls()) {
-    const match = url.pathname.match(/^\/dashboard\/([^/]+)(?:\/|$)/);
-    if (!match) continue;
-    try {
-      return decodeURIComponent(match[1]);
-    } catch {
-      return match[1];
-    }
-  }
-  return "";
-};
-
+/**
+ * No Space header: inside Busabase the viewer's session already names the Space
+ * they are in, exactly as for every other template. The dashboard URL segment is a
+ * route slug, not a Space id, and Cloud rejects it as one (403), so it must never be
+ * sent as the Space header.
+ */
 export function createRuntimeClient() {
-  const spaceId = appConfig.spaceId || dashboardSpaceHint();
-  return createBusabaseClient({
-    baseUrl: window.location.origin,
-    ...(spaceId ? { spaceId } : {}),
-  });
+  return createBusabaseClient({ baseUrl: window.location.origin });
 }
 
 const resourceConfig = {

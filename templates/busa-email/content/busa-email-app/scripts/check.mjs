@@ -9,10 +9,10 @@ const baseUiText = await readFile(path.join(root, "app", "styles", "base-ui.css"
 const layersText = await readFile(path.join(root, "app", "styles", "layers.css"), "utf8");
 const setupText = await readFile(path.join(root, "app", "js", "setup.js"), "utf8");
 const localAuthText = await readFile(path.join(root, "server", "local-auth.js"), "utf8");
-const providerText = await readFile(path.join(root, "lib", "data-provider", "busabase-client.ts"), "utf8");
-const providerModelText = await readFile(path.join(root, "lib", "data-provider", "busabase-provider.ts"), "utf8");
+const providerText = await readFile(path.join(root, "lib", "data-provider", "busabase-client.js"), "utf8");
+const providerModelText = await readFile(path.join(root, "lib", "data-provider", "busabase-provider.js"), "utf8");
 const listText = await readFile(path.join(root, "app", "js", "list-detail.js"), "utf8");
-const serverText = await readFile(path.join(root, "server", "hono.ts"), "utf8");
+const serverText = await readFile(path.join(root, "server", "hono.js"), "utf8");
 
 if (packageJson.scripts.start !== "node server.js") throw new Error("AirApp start must be node server.js");
 if (!/^\d+\.\d+\.\d+$/.test(packageJson.dependencies["busabase-sdk"] ?? "")) throw new Error("busabase-sdk must be exact-pinned");

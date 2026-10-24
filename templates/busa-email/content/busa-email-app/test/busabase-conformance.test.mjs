@@ -23,12 +23,12 @@ test(
 
     // createBusabaseClient() talks to `runtimeOrigin()` (this server's own
     // request URL, same-origin design so the ambient AirApp session cookie
-    // works) and relies on the /api/v1/* proxy in server/local-auth.ts to reach
+    // works) and relies on the /api/v1/* proxy in server/local-auth.js to reach
     // BUSABASE_BASE_URL. That proxy issues a *real* network fetch back to this
     // process, so the app must be listening on a real socket — app.request()
     // in-process dispatch is not enough here.
     const { serve } = await import("@hono/node-server");
-    const { app } = await import("../server/hono.ts");
+    const { app } = await import("../server/hono.js");
     const server = await new Promise((resolve) => {
       const instance = serve({ fetch: app.fetch, hostname: "127.0.0.1", port: 0 }, (info) =>
         resolve({ instance, port: info.port }),
@@ -56,8 +56,8 @@ test(
       // trusted skill process uses after scanning IMAP — rather than
       // hand-crafting Base fields, so this stays correct if the field mapping
       // in email-records.ts changes shape.
-      const { createBusabaseProvider } = await import("../lib/data-provider/busabase-provider.ts");
-      const { normalizeBatch } = await import("../lib/data-provider/provider-utils.ts");
+      const { createBusabaseProvider } = await import("../lib/data-provider/busabase-provider.js");
+      const { normalizeBatch } = await import("../lib/data-provider/provider-utils.js");
       const provider = createBusabaseProvider();
       await provider.saveBatch(
         normalizeBatch({
@@ -109,7 +109,7 @@ test(
       // process owns mailbox side effects. Assert that invariant structurally:
       // no imap/smtp import reachable from the AirApp's HTTP entrypoint.
       const fs = await import("node:fs/promises");
-      const src = await fs.readFile(new URL("../server/hono.ts", import.meta.url), "utf8");
+      const src = await fs.readFile(new URL("../server/hono.js", import.meta.url), "utf8");
       assert.doesNotMatch(src, /imap|nodemailer|smtp/i);
     });
   },

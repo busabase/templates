@@ -1,16 +1,7 @@
 import { createBusabaseClient as createSdkClient, getRecordByField } from "busabase-sdk";
 import { inspectProvisionedResources, provisionDeclaredResources } from "busabase-sdk/airapp";
 import { appConfig } from "../../app/js/config.js";
-import { runtimeHeaders, runtimeOrigin } from "../runtime-context.ts";
-
-type BaseKey = "reviews" | "contacts" | "settings";
-type Fields = Record<string, unknown>;
-type RecordFilter = {
-  fieldSlug: string;
-  fieldType?: string;
-  operator: "contains" | "equals" | "is_empty" | "is_false" | "is_true" | "not_empty";
-  value?: unknown;
-};
+import { runtimeHeaders, runtimeOrigin } from "../runtime-context.js";
 
 // Folder + Bases are the shape every App-in-Skill declares, so their
 // discovery/ownership/repair logic lives in busabase-sdk/airapp now. Busa
@@ -25,22 +16,22 @@ const resourceConfig = {
   bases: appConfig.bases,
 };
 
-const ownership = (resourceKey: string) => ({
+const ownership = (resourceKey) => ({
   appId: appConfig.appId,
   resourceKey,
   schemaVersion: appConfig.schemaVersion,
 });
 
-const owns = (node: any, resourceKey: string) =>
+const owns = (node, resourceKey) =>
   node?.metadata?.appId === appConfig.appId && node?.metadata?.resourceKey === resourceKey;
 
-const toBusabaseFields = (fields: Fields) =>
+const toBusabaseFields = (fields) =>
   Object.fromEntries(Object.entries(fields).map(([key, value]) => [key.replaceAll("_", "-"), value]));
 
-const fromBusabaseFields = (fields: Fields = {}) =>
+const fromBusabaseFields = (fields = {}) =>
   Object.fromEntries(Object.entries(fields).map(([key, value]) => [key.replaceAll("-", "_"), value]));
 
-function recordFields(record: any) {
+function recordFields(record) {
   return fromBusabaseFields(record?.headCommit?.payload || record?.headCommit?.fields || record?.fields || {});
 }
 
@@ -49,7 +40,7 @@ function recordFields(record: any) {
 // write access the change lands now; without it the same change becomes a
 // ChangeRequest. `crId` is the id of a queued one, empty when the write landed,
 // and callers report which happened.
-function crId(result: any) {
+function crId(result) {
   return result?.materialized === false || result?.status === "in_review" ? String(result.id || "") : "";
 }
 
@@ -60,7 +51,7 @@ export function createBusabaseClient() {
     headers: runtimeHeaders,
   });
 
-  const base = (key: BaseKey) => {
+  const base = (key) => {
     const resource = appConfig.bases.find((candidate) => candidate.key === key);
     if (!resource?.baseId) throw new Error(`SETUP_REQUIRED: ${resource?.name || key}`);
     return resource;
@@ -70,10 +61,7 @@ export function createBusabaseClient() {
   // this app's own appConfig.folder/bases (read directly by base() above, and
   // reused as the config's own cache of the discovered Folder id) are synced
   // back explicitly -- the same contract the hand-rolled version kept.
-  function syncResolvedConfig(resources: {
-    folder: { nodeId: string } | null;
-    bases: { key: string; nodeId: string; baseId: string }[];
-  }) {
+  function syncResolvedConfig(resources) {
     if (resources.folder?.nodeId) appConfig.folder.nodeId = resources.folder.nodeId;
     for (const resolved of resources.bases) {
       const declaration = appConfig.bases.find((candidate) => candidate.key === resolved.key);
@@ -84,11 +72,11 @@ export function createBusabaseClient() {
     }
   }
 
-  async function locateDrive(folderNodeId: string) {
+  async function locateDrive(folderNodeId) {
     const detail = await sdk.nodes.get({ nodeId: folderNodeId, type: "folder" });
-    const children = (detail as any).children || [];
-    let drive = appConfig.drive.nodeId ? children.find((item: any) => item.id === appConfig.drive.nodeId) : null;
-    drive ||= children.find((item: any) => item.type === "drive" && item.slug === appConfig.drive.slug);
+    const children = detail.children || [];
+    let drive = appConfig.drive.nodeId ? children.find((item) => item.id === appConfig.drive.nodeId) : null;
+    drive ||= children.find((item) => item.type === "drive" && item.slug === appConfig.drive.slug);
     if (drive && !owns(drive, appConfig.drive.resourceKey)) {
       throw new Error("SETUP_CONFLICT: Busa Email Drive ownership mismatch");
     }
@@ -106,11 +94,11 @@ export function createBusabaseClient() {
   async function provisionResources() {
     const resources = await provisionDeclaredResources(sdk, resourceConfig);
     syncResolvedConfig(resources);
-    let drive = await locateDrive(resources.folder!.nodeId);
+    let drive = await locateDrive(resources.folder.nodeId);
     if (!drive) {
       const created = await sdk.fileTrees.create({
         type: "drive",
-        parentNodeId: resources.folder!.nodeId,
+        parentNodeId: resources.folder.nodeId,
         slug: appConfig.drive.slug,
         name: appConfig.drive.name,
         description: appConfig.drive.description,
@@ -120,12 +108,15 @@ export function createBusabaseClient() {
         autoMerge: true,
         mergeMode: "replace",
       });
-      const createdAny = created as any;
+      const createdAny = created;
       if (createdAny?.status && createdAny.status !== "merged") throw new Error(`SETUP_PENDING: ${createdAny.id}`);
       if (createdAny?.node?.id) {
-        await sdk.nodes.updateMetadata({ nodeId: createdAny.node.id, metadata: ownership(appConfig.drive.resourceKey) });
+        await sdk.nodes.updateMetadata({
+          nodeId: createdAny.node.id,
+          metadata: ownership(appConfig.drive.resourceKey),
+        });
       }
-      drive = await locateDrive(resources.folder!.nodeId);
+      drive = await locateDrive(resources.folder.nodeId);
     }
     if (!resources.folder || resources.missing.length || !drive) {
       throw new Error("SCHEMA_INCOMPLETE: Busa Email resources were not materialized");
@@ -135,8 +126,8 @@ export function createBusabaseClient() {
 
   async function verifyConnection() {
     const current = await inspectResources();
-    const byKey = new Map(current.bases.map((item: any) => [item.key, item]));
-    await Promise.all(current.bases.map((item: any) => sdk.bases.get({ baseId: item.baseId })));
+    const byKey = new Map(current.bases.map((item) => [item.key, item]));
+    await Promise.all(current.bases.map((item) => sdk.bases.get({ baseId: item.baseId })));
     return {
       folder_exists: Boolean(current.folder),
       base_exists: byKey.has("reviews"),
@@ -146,19 +137,11 @@ export function createBusabaseClient() {
     };
   }
 
-  async function getRecord(key: BaseKey, recordId: string) {
+  async function getRecord(key, recordId) {
     return getRecordByField(sdk, { baseId: base(key).baseId, fieldSlug: "record-id", valueText: recordId });
   }
 
-  async function readPage(
-    key: BaseKey,
-    options: {
-      cursor?: string;
-      filters?: RecordFilter[];
-      limit?: number;
-      sort?: { fieldSlug: string; fieldType?: string; direction: "asc" | "desc" };
-    } = {},
-  ) {
+  async function readPage(key, options = {}) {
     const declaration = base(key);
     const result = await sdk.records.list({
       baseId: declaration.baseId,
@@ -174,7 +157,7 @@ export function createBusabaseClient() {
     };
   }
 
-  async function countRecords(key: BaseKey, filters?: RecordFilter[]) {
+  async function countRecords(key, filters) {
     const declaration = base(key);
     try {
       const result = await sdk.records.count({
@@ -187,7 +170,7 @@ export function createBusabaseClient() {
     }
   }
 
-  async function upsert(key: BaseKey, recordId: string, fields: Fields, message: string) {
+  async function upsert(key, recordId, fields, message) {
     const declaration = base(key);
     const existing = await getRecord(key, recordId).catch(() => null);
     const normalized = toBusabaseFields({
@@ -218,12 +201,12 @@ export function createBusabaseClient() {
     return { result, change_request_id: crId(result) };
   }
 
-  async function readDriveFile(pathname: string) {
+  async function readDriveFile(pathname) {
     if (!appConfig.drive.nodeId) throw new Error("SETUP_REQUIRED: Email Files");
     return sdk.fileTrees.readFile({ nodeId: appConfig.drive.nodeId, type: "drive", filePath: pathname });
   }
 
-  async function writeDriveFile(pathname: string, content: string, mimeType = "text/plain") {
+  async function writeDriveFile(pathname, content, mimeType = "text/plain") {
     if (!appConfig.drive.nodeId) throw new Error("SETUP_REQUIRED: Email Files");
     const existing = await readDriveFile(pathname).catch(() => null);
     const result = await sdk.fileTrees.createChangeRequest({
@@ -268,20 +251,23 @@ export function createBusabaseClient() {
     provisionResources,
     inspectResources,
     verifyConnection,
-    getRecordFields: async (recordId: string) => recordFields(await getRecord("reviews", recordId)),
-    readRecordPage: (options?: Parameters<typeof readPage>[1]) => readPage("reviews", options),
-    countRecordFields: (filters?: RecordFilter[]) => countRecords("reviews", filters),
+    getRecordFields: async (recordId) => recordFields(await getRecord("reviews", recordId)),
+    // null when no row has this `record-id` (getRecordFields answers `{}` for that).
+    findRecordFields: async (recordId) => {
+      const record = await getRecord("reviews", recordId);
+      return record ? recordFields(record) : null;
+    },
+    readRecordPage: (options) => readPage("reviews", options),
+    countRecordFields: (filters) => countRecords("reviews", filters),
     listRecordFields: async () => (await readPage("reviews")).rows,
     listContactFields: async () => (await readPage("contacts")).rows,
     listSettingsFields: async () => (await readPage("settings")).rows,
-    getSettingsFields: async (recordId: string) => recordFields(await getRecord("settings", recordId)),
-    upsertRecord: (recordId: string, fields: Fields, message: string) => upsert("reviews", recordId, fields, message),
-    upsertContactRecord: (recordId: string, fields: Fields, message: string) =>
-      upsert("contacts", recordId, fields, message),
-    upsertSettingsRecord: (recordId: string, fields: Fields, message: string) =>
-      upsert("settings", recordId, fields, message),
+    getSettingsFields: async (recordId) => recordFields(await getRecord("settings", recordId)),
+    upsertRecord: (recordId, fields, message) => upsert("reviews", recordId, fields, message),
+    upsertContactRecord: (recordId, fields, message) => upsert("contacts", recordId, fields, message),
+    upsertSettingsRecord: (recordId, fields, message) => upsert("settings", recordId, fields, message),
     readDriveFile,
     writeDriveFile,
-    getSecret: async (name: string) => String(process.env[name] || ""),
+    getSecret: async (name) => String(process.env[name] || ""),
   };
 }
