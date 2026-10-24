@@ -227,6 +227,7 @@ npx busabase-cli@latest check ./templates/<name>
 npx busabase-cli@latest index . --repo busabase/templates -o templates.json
 npx busabase-cli@latest index . --repo busabase/templates -o templates.json --check
 node scripts/check-app-writes.mjs
+node scripts/check-app-sdk-helpers.mjs
 ```
 
 - `check` must report **0 errors** for every template you touched. It errors on a declared file
@@ -242,6 +243,11 @@ node scripts/check-app-writes.mjs
   (`autoMerge: false`, or a value worked out from where the app runs). Leave `autoMerge` unset and
   report the outcome Busabase returns. If a write truly needs a second person before something is
   sent, say why on that line with `// allow-forced-review: <reason>`.
+- `scripts/check-app-sdk-helpers.mjs` fails when an AirApp writes again what `busabase-sdk/airapp`
+  provides: a local `isQueued`, a `fetch("__airapp/runtime")`, or the SDK's "Sent for review." sentence.
+  Import `isAirAppWriteQueued`, call `detectAirAppRuntime()` and use `airAppWriteMessage` from the app's
+  vendored `busabase-airapp.js`. If a copy has to stay, say why on that line, or the line above, with
+  `// allow-private-copy: <reason>`.
 
 ### Commit with Git LFS
 
@@ -345,6 +351,27 @@ Then read the diff, run [Regenerate the catalog and check](#regenerate-the-catal
 every template, and install a few templates locally as in step 3. A passing `check` does not prove
 that an app still opens.
 
+### Moving an AirApp onto the SDK's helpers
+
+Since busabase-sdk 0.99.0 the SDK carries the AirApp plumbing the templates each used to copy: the
+runtime probe, the record reads and writes, the queued-write test and the review sentence. Once an app
+is on 0.99.0 or later, one command moves it off the copies it recognises:
+
+```bash
+node scripts/adopt-sdk-airapp-helpers.mjs --dry-run      # what would change, and what stays
+node scripts/adopt-sdk-airapp-helpers.mjs                # every app of this repository
+node scripts/adopt-sdk-airapp-helpers.mjs templates/busa-crm/content/busa-crm-app   # or one (paths and globs)
+node scripts/adopt-sdk-airapp-helpers.mjs --check        # exits 1 while an app still has a copy it recognises
+```
+
+It rewrites a piece only when it matches a known shape exactly (the `records.list` call and its
+array-or-page handling, the `records.get` not-found wrapper, find-then-create-or-update, `isQueued`,
+a `runtime.js` that is only the probe, the `savedForReview` sentence) and prints the rest as "left",
+with the reason. It never touches an app's business rules, row formats, field slugs, sort or filters,
+or the `pending` / `change_request_id` its UI reads. Run it twice and the second run changes nothing.
+Finish what it leaves by hand, run each app's own `check` and `test`, and keep the change in the same
+batch as the SDK update that made it possible.
+
 ## 4. Submitting
 
 ### Scope: one template, or one media batch, per pull request
@@ -355,6 +382,8 @@ that an app still opens.
 - Touch only the templates you are working on, plus the regenerated `templates.json`.
 - An SDK update is one batch too: what `scripts/update-app-sdk.mjs` changed in every app, plus the
   smallest fix for any app it broke, and nothing else.
+- Moving apps onto the SDK's helpers is a batch of its own: what `scripts/adopt-sdk-airapp-helpers.mjs`
+  changed, the apps finished by hand, and nothing else.
 
 ### Push and open the pull request
 

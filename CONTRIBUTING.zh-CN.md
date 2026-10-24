@@ -196,6 +196,7 @@ npx busabase-cli@latest check ./templates/<name>
 npx busabase-cli@latest index . --repo busabase/templates -o templates.json
 npx busabase-cli@latest index . --repo busabase/templates -o templates.json --check
 node scripts/check-app-writes.mjs
+node scripts/check-app-sdk-helpers.mjs
 ```
 
 - 你改动过的每个模板，`check` 都必须是 **0 个错误**。声明了但磁盘上不存在的文件会报错；语言代码拼错、英文列表里混入本地化文件会报警告。改动之前就存在的警告不归你修。
@@ -204,6 +205,7 @@ node scripts/check-app-writes.mjs
   很关键：0.98.0 之前的 CLI 会悄悄把 `locales` 从目录里丢掉。`AGENTS.md` 里的示例没写版本号，运行时加上 `@latest`。
 - `index --check` 必须输出 `templates.json is up to date`。
 - `scripts/check-app-writes.mjs` 会在 AirApp 对用户自己的写入强制送审时报错（写死 `autoMerge: false`，或按运行环境推算这个值）。不要传 `autoMerge`，按 Busabase 返回的结果告诉用户是已保存还是已提交审核。如果某个写入确实要第二个人批准后才能对外发出，就在那一行用 `// allow-forced-review: <原因>` 写明原因。
+- `scripts/check-app-sdk-helpers.mjs` 会在 AirApp 又把 `busabase-sdk/airapp` 已经提供的东西写了一遍时报错：本地的 `isQueued`、`fetch("__airapp/runtime")`，或把 SDK 的 “Sent for review.” 那句话原样写出来。请从应用自己打包进来的 `busabase-airapp.js` 里引入 `isAirAppWriteQueued`、调用 `detectAirAppRuntime()`、用 `airAppWriteMessage`。某处副本确实要保留，就在那一行或上一行用 `// allow-private-copy: <原因>` 写明原因。
 
 ### 用 Git LFS 提交
 
@@ -289,6 +291,23 @@ node scripts/update-app-sdk.mjs templates/busa-crm/content/busa-crm-app   # 或�
 之后先读一遍 diff，对每个模板跑一遍[重新生成目录并检查](#重新生成目录并检查)，再按第 3 步在本地装几个模板。
 `check` 通过不代表应用还能打开。
 
+### 把 AirApp 换成 SDK 的公共方法
+
+从 busabase-sdk 0.99.0 起，SDK 自带了各个模板以前各抄一份的 AirApp 公共代码：运行环境探测、记录的读写、判断写入是否排队，
+以及“已提交审核”那句话。应用升到 0.99.0 或更高之后，一条命令就能把它认得的副本换掉：
+
+```bash
+node scripts/adopt-sdk-airapp-helpers.mjs --dry-run      # 看会改什么、会留什么
+node scripts/adopt-sdk-airapp-helpers.mjs                # 本仓库所有应用
+node scripts/adopt-sdk-airapp-helpers.mjs templates/busa-crm/content/busa-crm-app   # 或只处理一个（支持路径和通配符）
+node scripts/adopt-sdk-airapp-helpers.mjs --check        # 还有认得的副本时以 1 退出
+```
+
+只有形状完全对得上才会改（`records.list` 调用及其“数组或分页”处理、`records.get` 的未找到包装、先查再建或改、`isQueued`、
+只剩探测的 `runtime.js`、`savedForReview` 那句话），其余的按“left”列出并写明原因。它从不碰应用自己的业务规则、行格式、字段 slug、
+排序和过滤，也不碰界面读取的 `pending` / `change_request_id`。连跑两遍，第二遍什么都不改。
+它留下的部分手工收尾，再跑每个应用自己的 `check` 和 `test`，并和让这一步成为可能的 SDK 更新放在同一批里。
+
 ## 4. 提交
 
 ### 范围：每个 PR 只放一个模板，或一批媒体
@@ -297,6 +316,7 @@ node scripts/update-app-sdk.mjs templates/busa-crm/content/busa-crm-app   # 或�
 - **一批媒体**指跨多个模板的同一类改动，比如“五个模板的中文视频”。不要把媒体和模板的文案、数据或代码改动混在一起。
 - 只动你正在处理的模板，加上重新生成的 `templates.json`。
 - 一次 SDK 更新也算一批：`scripts/update-app-sdk.mjs` 在各应用里改动的内容，加上为它弄坏的应用所做的最小修复，别的都不放。
+- 把应用换成 SDK 的公共方法也单独算一批：`scripts/adopt-sdk-airapp-helpers.mjs` 改动的内容，加上手工收尾的应用，别的都不放。
 
 ### 推送并提 PR
 
