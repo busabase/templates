@@ -1,19 +1,19 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { describeBusabaseAirAppRuntime } from "busabase-sdk/airapp-node";
-import { type Context, Hono } from "hono";
-import { createProvider } from "../lib/data-provider/index.ts";
-import { withRuntimeRequest } from "../lib/runtime-context.ts";
-import { updateDetail, updateItems } from "./decisions.ts";
-import { demoDecisionResponse, demoStatePayload, isDemoQuery } from "./demo.ts";
+import { Hono } from "hono";
+import { createProvider } from "../lib/data-provider/index.js";
+import { withRuntimeRequest } from "../lib/runtime-context.js";
+import { updateDetail, updateItems } from "./decisions.js";
+import { demoDecisionResponse, demoStatePayload, isDemoQuery } from "./demo.js";
 import { installLocalBusabaseAuth } from "./local-auth.js";
-import { lockPayload } from "./lock.ts";
-import { APP_DIR } from "./paths.ts";
-import { statePayload } from "./state.ts";
+import { lockPayload } from "./lock.js";
+import { APP_DIR } from "./paths.js";
+import { statePayload } from "./state.js";
 
 // The AirApp server forwards its ambient Busabase session to busabase-sdk.
 
-const CONTENT_TYPES: Record<string, string> = {
+const CONTENT_TYPES = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -30,14 +30,14 @@ const CONTENT_TYPES: Record<string, string> = {
   ".zip": "application/zip",
 };
 
-async function sendFile(c: Context, absPath: string, { store = false }: { store?: boolean } = {}) {
-  let body: Buffer;
+async function sendFile(c, absPath, { store = false } = {}) {
+  let body;
   try {
     body = await fs.readFile(absPath);
   } catch {
     return c.text("Not Found", 404);
   }
-  return c.body(body as unknown as ArrayBuffer, 200, {
+  return c.body(body, 200, {
     "Content-Type": CONTENT_TYPES[path.extname(absPath)] || "application/octet-stream",
     "Cache-Control": store ? "public, max-age=3600" : "no-store",
   });
@@ -46,7 +46,7 @@ async function sendFile(c: Context, absPath: string, { store = false }: { store?
 export const app = new Hono();
 installLocalBusabaseAuth(app, { appId: "busa-email" });
 app.use("*", async (c, next) => {
-  const headers: Record<string, string> = {};
+  const headers = {};
   for (const name of ["cookie", "authorization"]) {
     const value = c.req.header(name);
     if (value) headers[name] = value;
@@ -73,14 +73,14 @@ app.post("/api/decision", async (c) => {
   const query = c.req.query();
   const body = await c.req.json().catch(() => ({}));
   if (isDemoQuery(query)) return c.json(demoDecisionResponse(body));
-  return c.json((await updateItems(body)) as any);
+  return c.json(await updateItems(body));
 });
 
 app.post("/api/detail", async (c) => {
   const query = c.req.query();
   const body = await c.req.json().catch(() => ({}));
   if (isDemoQuery(query)) return c.json(demoDecisionResponse(body));
-  return c.json((await updateDetail(body)) as any);
+  return c.json(await updateDetail(body));
 });
 
 app.post("/api/reload", async (c) => {
@@ -130,9 +130,9 @@ app.get("/api/provider-file/*", async (c) => {
   const file = await provider.getFile(pathname).catch(() => null);
   const data = file?.data;
   if (typeof data !== "string") return c.text("Not Found", 404);
-  const meta = (file.meta && typeof file.meta === "object" ? file.meta : {}) as Record<string, unknown>;
+  const meta = file.meta && typeof file.meta === "object" ? file.meta : {};
   const buffer = Buffer.from(data, meta.encoding === "base64" ? "base64" : "utf8");
-  return c.body(buffer as unknown as ArrayBuffer, 200, {
+  return c.body(buffer, 200, {
     "Content-Type": String(meta.content_type || "application/octet-stream"),
     "Cache-Control": "no-store",
   });

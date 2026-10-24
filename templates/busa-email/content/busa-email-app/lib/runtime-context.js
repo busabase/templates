@@ -1,13 +1,8 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 
-interface RuntimeRequestContext {
-  origin: string;
-  headers: Record<string, string>;
-}
+const requests = new AsyncLocalStorage();
 
-const requests = new AsyncLocalStorage<RuntimeRequestContext>();
-
-export function withRuntimeRequest<T>(context: RuntimeRequestContext, operation: () => T): T {
+export function withRuntimeRequest(context, operation) {
   return requests.run(context, operation);
 }
 

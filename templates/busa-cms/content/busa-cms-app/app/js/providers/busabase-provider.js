@@ -1,4 +1,4 @@
-import { connectionFacts, createRuntimeClient, resolveRuntimeResources } from "../busabase-client.js";
+import { connectionFacts, createRuntimeClient, currentSpaceId, resolveRuntimeResources } from "../busabase-client.js";
 import { appConfig } from "../config.js";
 import { analyze, LIVE_STATUS } from "../content-model.js";
 import { diffSchema, schemaIsClean } from "../schema-health.js";
@@ -124,7 +124,7 @@ export const busabaseProvider = {
   async getState() {
     client = createRuntimeClient();
     const resources = await resolveRuntimeResources(client);
-    const connection = { ...connectionFacts(), folderId: resources.folderId };
+    const connection = { ...connectionFacts(await currentSpaceId()), folderId: resources.folderId };
 
     if (resources.basesFound < resources.basesExpected) {
       return {
