@@ -1,3 +1,7 @@
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
+
+const sdkQueuedNotice = (locale) => airAppWriteMessage({ status: "queued" }, { locale });
+
 // Inline message catalog (en/zh), matching the canonical i18n/messages.js
 // shape used across this batch of conversions. Ported verbatim (same copy)
 // from the retired app/i18n usage inside app/app.js — that runtime-inline
@@ -63,8 +67,7 @@ export const messages = {
     batchId: "Batch ID",
     decisionSaving: "Saving…",
     decisionSaved: "Saved",
-    savedForReview:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    savedForReview: sdkQueuedNotice("en"),
     decisionError: "Could not save decision",
     loading: "Loading",
     demoData: "Demo data",
@@ -168,7 +171,7 @@ export const messages = {
     batchId: "批次编号",
     decisionSaving: "保存中…",
     decisionSaved: "已保存",
-    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
+    savedForReview: sdkQueuedNotice("zh-CN"),
     decisionError: "无法保存决定",
     loading: "加载中",
     demoData: "演示数据",

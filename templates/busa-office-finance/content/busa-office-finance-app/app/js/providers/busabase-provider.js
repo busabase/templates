@@ -1,5 +1,5 @@
 import { resolveOwnedConfig } from "../binding.js";
-import { inspectProvisionedResources } from "../../vendor/busabase-airapp.js";
+import { inspectProvisionedResources, createAirAppRecords } from "../../vendor/busabase-airapp.js";
 import { appConfig } from "../config.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { normalize, readIndependentRegisters } from "../model.js";
@@ -12,10 +12,10 @@ const requireProcedure = (p) => {
 };
 async function page(base, cursor) {
   requireProcedure("records.list");
-  const data = await client.records.list({
+  const data = await createAirAppRecords(client).readPage({
     baseId: base.baseId,
     limit: base.readLimit,
-    ...(cursor ? { cursor } : {}),
+    cursor,
   });
   return {
     records: (data.records || []).map((r) => {

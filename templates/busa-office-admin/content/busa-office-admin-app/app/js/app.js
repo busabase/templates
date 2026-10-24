@@ -3,7 +3,7 @@ import { renderIcons } from '../vendor/icons.js';
 import { appConfig } from './config.js';
 import { messages } from './messages.js';
 import { getProvider } from './providers/index.js';
-import { getRuntime } from './runtime.js';
+import { detectAirAppRuntime } from '../vendor/busabase-airapp.js';
 import { needsAttention, safeDisplay, mergePage } from './office-model.js';
 
 // Where a record opens, per view. Chosen by what people do with the record:
@@ -323,7 +323,7 @@ async function load() {
   const generation = ++state.generation;
   $('loadingState').textContent = tr('loading'); $('errorState').hidden = true; $('retry').hidden = true;
   try {
-    state.runtime = await getRuntime();
+    state.runtime = await detectAirAppRuntime();
     if (!isDemo() && !state.runtime.determined) throw new Error('BRIDGE_UNAVAILABLE: Runtime could not be determined.');
     if (!(await gate.pass({ onReady: load }))) { $('loadingState').textContent = ''; return; }
     state.provider = await getProvider();

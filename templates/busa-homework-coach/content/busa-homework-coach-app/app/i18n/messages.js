@@ -1,3 +1,7 @@
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
+
+const sdkQueuedNotice = (locale) => airAppWriteMessage({ status: "queued" }, { locale });
+
 export const messages = {
   en: {
     overview: "Student desk",
@@ -23,8 +27,7 @@ export const messages = {
     readFailed: "This list could not be read.",
     demoNotice: "Demo mode — decisions are not saved.",
     saved: "Decision saved.",
-    savedForReview:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    savedForReview: sdkQueuedNotice("en"),
     noReviewForQuestion: "No review item for this question is loaded yet.",
     misconception: "Misconception",
     items: "Items",

@@ -1,5 +1,10 @@
-import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
-import { runtime } from "../runtime.js";
+import {
+  inspectProvisionedResources,
+  provisionDeclaredResources,
+  createAirAppRecords,
+  isAirAppWriteQueued,
+  detectAirAppRuntime,
+} from "../../vendor/busabase-airapp.js";
 import { reviewInboxUrl } from "../review-link.js";
 import { OPEN_REVIEW_STATUSES, questionReview, submitOrdinaryQuestion } from "../question-review.js";
 import { createRuntimeClient } from "../busabase-client.js";
@@ -11,6 +16,8 @@ import {
   REQUIRED_QUESTION_TEXT,
   REQUIRED_TO_LEAVE,
 } from "../ideas-model.js?v=0.2.1";
+
+const runtime = await detectAirAppRuntime();
 
 const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);
@@ -196,6 +203,12 @@ function base(key) {
   return declared;
 }
 
+// Record reads and writes go through the SDK's helpers, bound to this app's client.
+// A person's write leaves `autoMerge` unset, so Busabase decides from their own
+// permission: it lands now with write access and becomes a ChangeRequest without
+// it. The response says which happened; `isAirAppWriteQueued` reads it.
+const sdkRecords = () => createAirAppRecords(runtimeClient, { appId: appConfig.appId });
+
 // One page per call, cursor returned to the caller -- never several pages in
 // one function call. A capped loop here (however high the cap) still hides a
 // multi-page scan behind a single loading state instead of fetching a page
@@ -209,18 +222,17 @@ function base(key) {
 async function readPage(key, cursor) {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
   const declared = base(key);
-  const result = await runtimeClient.records.list({
+  const page = await sdkRecords().readPage({
     baseId: declared.baseId,
     limit: declared.readLimit,
-    ...(cursor ? { cursor } : {}),
+    cursor,
   });
-  const records = Array.isArray(result) ? result : result.records || [];
-  const rows = records.map((record) => ({
-    ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+  const rows = page.records.map((record) => ({
+    ...normalizeFields(record.fields),
     __recordId: record.id,
     __headCommitId: record.headCommitId || record.headCommit?.id,
   }));
-  return { rows, nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
+  return { rows, nextCursor: page.nextCursor };
 }
 
 async function countRecords(key, filters) {
@@ -239,44 +251,22 @@ async function countRecords(key, filters) {
 
 async function findRecord(key, idFieldSlug, idValue) {
   const declared = base(key);
-  try {
-    return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
-  } catch (error) {
-    if (error?.code === "NOT_FOUND" || error?.status === 404) return null;
-    throw error;
-  }
+  return sdkRecords().findRecord({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
 }
-
-// A person's write from this app leaves `autoMerge` unset, so Busabase decides
-// from that person's own permission: with write access the change lands now;
-// without it the same change becomes a ChangeRequest for someone who has it.
-// The response says which happened (`materialized: false` is the queued one),
-// and the caller reports it rather than assuming either.
-const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
 
 async function upsert(key, idFieldSlug, idValue, fields, message) {
   if (!allowedWrites.has("bases.createChangeRequest") || !allowedWrites.has("records.changeRequest")) {
     throw new Error("PROCEDURE_DENIED: records.changeRequest");
   }
   const declared = base(key);
-  const existing = await findRecord(key, idFieldSlug, idValue);
-  const normalized = toBusabaseFields(fields);
-  if (!existing) {
-    return runtimeClient.bases.createChangeRequest({
-      baseId: declared.baseId,
-      fields: normalized,
-      message,
-      submittedBy: appConfig.appId,
-    });
-  }
-  return runtimeClient.records.changeRequest({
-    recordId: existing.id,
-    operation: "update",
-    fields: normalized,
+  const { response } = await sdkRecords().upsert({
+    baseId: declared.baseId,
+    fieldSlug: idFieldSlug,
+    valueText: idValue,
+    fields: toBusabaseFields(fields),
     message,
-    author: appConfig.appId,
-    baseCommitId: existing.headCommitId,
   });
+  return response;
 }
 
 async function readSettingsRows() {
@@ -533,7 +523,7 @@ export const busabaseProvider = {
         }
         // Pending if either write was queued just now, or if an earlier
         // ChangeRequest for the same answer is still waiting for approval.
-        const queued = [questionResult, ideaResult].find(isQueued);
+        const queued = [questionResult, ideaResult].find(isAirAppWriteQueued);
         const pending = Boolean(queued || pendingQuestion || pendingIdea);
         if (pending) pendingAnswers.add(questionId);
         return { updated_at: now, pending, change_request_id: queued?.id || "" };
@@ -562,8 +552,8 @@ export const busabaseProvider = {
       );
       return {
         updated_at: now,
-        pending: isQueued(result),
-        change_request_id: isQueued(result) ? result?.id || "" : "",
+        pending: isAirAppWriteQueued(result),
+        change_request_id: isAirAppWriteQueued(result) ? result?.id || "" : "",
       };
     }
 
@@ -599,8 +589,8 @@ export const busabaseProvider = {
     return {
       updated_at: now,
       stage: idea.advance.target,
-      pending: isQueued(result),
-      change_request_id: isQueued(result) ? result?.id || "" : "",
+      pending: isAirAppWriteQueued(result),
+      change_request_id: isAirAppWriteQueued(result) ? result?.id || "" : "",
     };
   },
 

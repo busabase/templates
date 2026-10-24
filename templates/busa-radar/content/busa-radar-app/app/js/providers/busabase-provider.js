@@ -1,4 +1,9 @@
-import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
+import {
+  inspectProvisionedResources,
+  provisionDeclaredResources,
+  createAirAppRecords,
+  isAirAppWriteQueued,
+} from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js?v=0.1.0";
 import {
@@ -66,16 +71,21 @@ const recordToRow = (record) => ({
   __headCommitId: record.headCommitId || record.headCommit?.id,
 });
 
+// Record reads and writes go through the SDK's helpers, bound to this app's client.
+// A person's write leaves `autoMerge` unset, so Busabase decides from their own
+// permission: it lands now with write access and becomes a ChangeRequest without
+// it. The response says which happened; `isAirAppWriteQueued` reads it.
+const sdkRecords = () => createAirAppRecords(runtimeClient, { appId: appConfig.appId });
+
 async function readPage(key, cursor) {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
   const declared = base(key);
-  const result = await runtimeClient.records.list({
+  const page = await sdkRecords().readPage({
     baseId: declared.baseId,
     limit: declared.readLimit,
-    ...(cursor ? { cursor } : {}),
+    cursor,
   });
-  const records = Array.isArray(result) ? result : result.records || [];
-  return { rows: records.map(recordToRow), nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
+  return { rows: page.records.map(recordToRow), nextCursor: page.nextCursor };
 }
 
 async function readPageRows(key) {
@@ -156,44 +166,23 @@ const NORMALIZE_BY_KEY = {
 async function findRecord(key, idFieldSlug, idValue) {
   if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
-  try {
-    return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
-  } catch (error) {
-    if (error?.code === "NOT_FOUND" || error?.status === 404) return null;
-    throw error;
-  }
+  return sdkRecords().findRecord({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
 }
-
-// A person's write from this app leaves `autoMerge` unset, so Busabase decides
-// from that person's own permission: with write access the change lands now;
-// without it the same change becomes a ChangeRequest for someone who has it.
-// The response says which happened (`materialized: false` is the queued one),
-// and the caller reports it rather than assuming either.
-const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
 
 async function upsert(key, idFieldSlug, idValue, fields, message) {
   if (!allowedWrites.has("bases.createChangeRequest") || !allowedWrites.has("records.changeRequest")) {
     throw new Error("PROCEDURE_DENIED: records.changeRequest");
   }
   const declared = base(key);
-  const existing = await findRecord(key, idFieldSlug, idValue);
-  const normalized = toBusabaseFields(fields);
-  if (!existing) {
-    return runtimeClient.bases.createChangeRequest({
-      baseId: declared.baseId,
-      fields: normalized,
-      message,
-      submittedBy: appConfig.appId,
-    });
-  }
-  return runtimeClient.records.changeRequest({
-    recordId: existing.id,
-    operation: "update",
-    fields: normalized,
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
+  const { response } = await sdkRecords().upsert({
+    baseId: declared.baseId,
+    fieldSlug: idFieldSlug,
+    valueText: idValue,
+    fields: toBusabaseFields(fields),
     message,
-    author: appConfig.appId,
-    baseCommitId: existing.headCommitId,
   });
+  return response;
 }
 
 async function readSettingsRow() {
@@ -347,8 +336,8 @@ export const busabaseProvider = {
     return {
       ok: true,
       decision: { id, kind, action, comment, decided_at: now },
-      pending: isQueued(result),
-      change_request_id: isQueued(result) ? result?.id || "" : "",
+      pending: isAirAppWriteQueued(result),
+      change_request_id: isAirAppWriteQueued(result) ? result?.id || "" : "",
     };
   },
 
@@ -389,8 +378,8 @@ export const busabaseProvider = {
       return {
         ok: true,
         task: { kind: "research_followup", ref_id: questionId, note: text, status: "queued" },
-        pending: isQueued(result),
-        change_request_id: isQueued(result) ? result?.id || "" : "",
+        pending: isAirAppWriteQueued(result),
+        change_request_id: isAirAppWriteQueued(result) ? result?.id || "" : "",
       };
     } catch (error) {
       return { ok: false, status: 400, error: error instanceof Error ? error.message : String(error) };

@@ -8,13 +8,16 @@
 //
 // `shouldGate` is passed explicitly rather than letting the SDK infer it from a
 // status probe: where this app runs is a fact its host states
-// (BUSABASE_AIRAPP_RUNTIME, surfaced by ./runtime.js), never something to guess
+// (BUSABASE_AIRAPP_RUNTIME, surfaced by detectAirAppRuntime()), never something to guess
 // from the hostname. `shouldUseLocalGateway` drives the connect gate, and only
 // that: where the app runs never decides whether a write merges. Busabase
 // decides that from the person's own permission.
 import { createAirAppConnectGate } from "../vendor/busabase-airapp-gate.js";
 import { getProvider } from "./providers/index.js?v=0.2.1";
-import { shouldUseLocalGateway } from "./runtime.js";
+import { detectAirAppRuntime, shouldUseLocalAirAppGateway } from "../vendor/busabase-airapp.js";
+
+const runtime = await detectAirAppRuntime();
+const shouldUseLocalGateway = () => shouldUseLocalAirAppGateway(runtime);
 
 export { shouldUseLocalGateway };
 

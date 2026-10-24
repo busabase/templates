@@ -1,6 +1,6 @@
 import { appConfig } from "./config.js";
 import { messages } from "./messages.js";
-import { getRuntime } from "./runtime.js";
+import { detectAirAppRuntime } from "../vendor/busabase-airapp.js";
 import { getProvider, isDemo } from "./providers/index.js";
 import {
   attentionReason,
@@ -812,7 +812,7 @@ async function load() {
   }
 }
 previousRouteWasList = RECORD_VIEWS.includes(route.view) && !route.selectedId;
-const runtime = await getRuntime();
+const runtime = await detectAirAppRuntime();
 if (!isDemo() && runtime.runtime === "unknown") {
   root.innerHTML = '<div class="gate">' + t("unknown") + "</div>";
 } else {

@@ -1,3 +1,7 @@
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
+
+const sdkQueuedNotice = (locale) => airAppWriteMessage({ status: "queued" }, { locale });
+
 export const messages = {
   en: {
     // shell
@@ -86,8 +90,7 @@ export const messages = {
     reviewConflict: "This submission has a conflict. Resolve it in the Workspace Inbox before continuing.",
     reviewReadIncomplete: "There are more review requests than this page can verify. Check the Workspace Inbox before submitting.",
     submittedRefreshFailed: "Your change was submitted, but refreshing the page failed. Refresh to check its review status before trying again.",
-    savedForReview:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    savedForReview: sdkQueuedNotice("en"),
     requiredAnswerPending: "Answer and Idea update are awaiting review.",
     requiredAnswerPartialPending: "One related change is awaiting review. Save the same answer to finish submitting both changes.",
     requiredAnswerRejected: "The Question change was rejected while the Idea field was saved. Review the answer, then resubmit this Question.",
@@ -232,7 +235,7 @@ export const messages = {
     reviewConflict: "这条提交存在冲突，请先到空间收件箱处理。",
     reviewReadIncomplete: "待核对的审核请求较多，请先到空间收件箱检查，再继续提交。",
     submittedRefreshFailed: "修改已提交，但页面刷新失败。请先刷新并确认审核状态，再决定是否重试。",
-    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
+    savedForReview: sdkQueuedNotice("zh-CN"),
     requiredAnswerPending: "回答和灵感字段修改正在等待审核。",
     requiredAnswerPartialPending: "已有一项相关修改等待审核；保存同一回答可补交另一项。",
     requiredAnswerRejected: "灵感字段已保存，但问题修改被拒绝。请核对回答后重新提交此问题。",

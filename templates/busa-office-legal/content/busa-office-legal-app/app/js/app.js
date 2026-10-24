@@ -8,7 +8,7 @@ import {
 } from "../vendor/icons.js";
 import { copy } from "./messages.js";
 import { getProvider } from "./providers/index.js";
-import { getRuntime } from "./runtime.js";
+import { detectAirAppRuntime } from "../vendor/busabase-airapp.js";
 import { createAirAppConnectGate } from "../vendor/busabase-airapp-gate.js";
 import {
   attentionReason,
@@ -650,7 +650,7 @@ async function load() {
   $("error").hidden = true;
   showNotice("");
   try {
-    state.runtime = await getRuntime();
+    state.runtime = await detectAirAppRuntime();
     if (!isDemo() && state.runtime.runtime === "unknown")
       throw new Error("BRIDGE_UNAVAILABLE: runtime probe did not answer");
     if (!(await gate.pass({ onReady: load }))) return;

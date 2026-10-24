@@ -1,3 +1,7 @@
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
+
+const sdkQueuedNotice = (locale) => airAppWriteMessage({ status: "queued" }, { locale });
+
 export const messages = {
   en: {
     all: "All",
@@ -82,8 +86,7 @@ export const messages = {
     liveData: "Live Busabase data",
     demoReadOnly: "Demo mode is read-only — decisions are not saved.",
     decisionSaved: "Decision saved.",
-    savedForReview:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    savedForReview: sdkQueuedNotice("en"),
     recentActivity: "Recent decisions",
     noActivity: "No decisions yet.",
     noWarnings: "No open QA warnings.",
@@ -243,7 +246,7 @@ export const messages = {
     liveData: "Busabase 实时数据",
     demoReadOnly: "演示模式只读，决定不会保存。",
     decisionSaved: "已保存决定。",
-    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
+    savedForReview: sdkQueuedNotice("zh-CN"),
     recentActivity: "最近的决定",
     noActivity: "还没有决定记录。",
     noWarnings: "没有未处理的 QA 提醒。",

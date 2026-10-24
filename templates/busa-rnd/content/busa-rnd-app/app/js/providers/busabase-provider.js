@@ -1,4 +1,4 @@
-import { inspectProvisionedResources } from '../../vendor/busabase-airapp.js';
+import { inspectProvisionedResources, createAirAppRecords } from '../../vendor/busabase-airapp.js';
 import { appConfig } from '../config.js';
 import { createRuntimeClient } from '../busabase-client.js';
 import { isoDay, mergeById, normalizeRecord, resolveFilters } from '../model.js';
@@ -26,12 +26,12 @@ export function createLiveProvider(client = null, inspect = inspectProvisionedRe
   const baseOf = (key) => bases.find((base) => base.key === key);
   async function page(source, cursor) {
     const base = baseOf(source.base);
-    const result = await client.records.list({
+    const result = await createAirAppRecords(client).readPage({
       baseId: base.baseId,
       limit: Math.min(source.limit, base.readLimit),
-      ...(source.sort ? { sort: source.sort } : {}),
-      ...(source.valueFilters ? { valueFilters: resolveFilters(source.valueFilters, today()) } : {}),
-      ...(cursor ? { cursor } : {}),
+      sort: source.sort,
+      valueFilters: source.valueFilters ? resolveFilters(source.valueFilters, today()) : undefined,
+      cursor,
     });
     return { records: (result.records || []).map((row) => normalizeRecord(row, base.key)), nextCursor: result.nextCursor || null };
   }

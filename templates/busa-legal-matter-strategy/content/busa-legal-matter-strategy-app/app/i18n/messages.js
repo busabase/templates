@@ -1,3 +1,7 @@
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
+
+const sdkQueuedNotice = (locale) => airAppWriteMessage({ status: "queued" }, { locale });
+
 export const messages = {
   en: {
     appTitle: "Legal Matter Strategy",
@@ -60,8 +64,7 @@ export const messages = {
     selectStrategy: "Select a strategy pack from the queue to review it here.",
     demoNotice: "Demo mode is read-only — decisions are not saved.",
     saved: "Decision submitted.",
-    savedForReview:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    savedForReview: sdkQueuedNotice("en"),
     noMatches: "No records match this search.",
     sideReadFailed: "This table couldn't be read",
     strategy: "Strategy pack",
@@ -169,7 +172,7 @@ export const messages = {
     selectStrategy: "从左侧队列选择一个策略包，在此复核。",
     demoNotice: "演示模式为只读，决定不会保存。",
     saved: "决定已提交。",
-    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
+    savedForReview: sdkQueuedNotice("zh-CN"),
     noMatches: "没有符合搜索的记录。",
     sideReadFailed: "无法读取此表",
     strategy: "策略包",
