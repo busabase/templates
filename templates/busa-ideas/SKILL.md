@@ -1,6 +1,6 @@
 ---
 name: busa-ideas
-description: Busabase-backed App-in-Skill idea desk that works like a business consultant — it interrogates a product or business idea until it is sharp, then carries it through professional, visual BRD, MRD, and PRD documents. Use when the user invokes $busa-ideas or /busa-ideas, wants to capture or shape a product/business idea, asks for a BRD/MRD/PRD, says they have a product idea but cannot describe it clearly, or wants an idea shaped into a spec that $kelly-app-skill-creator can build into a real app.
+description: Busabase-backed App-in-Skill idea desk that works like a business consultant — it interrogates a product or business idea until it is sharp, then carries it through professional, visual BRD, MRD, and PRD documents. Use when the user invokes $busa-ideas or /busa-ideas, wants to capture or shape a product/business idea, asks for a BRD/MRD/PRD, says they have a product idea but cannot describe it clearly, or wants to hand a reviewed specification to the public busabase-app-creator skill for a Busabase workspace app.
 metadata:
   category: platform
   tags:
@@ -29,7 +29,8 @@ supports an explicitly requested local preview with OAuth connection bootstrap.
 It is an idea vault with a consultant attached. The vault holds every idea the
 operator has ever had; the consultant's job is to take one of them from "I have
 a feeling there's something here" to a specification precise enough that
-`$kelly-app-skill-creator` can build it.
+the public `$busabase-app-creator` skill can turn into a Busabase workspace app
+after the operator confirms the handoff and approves its build plan.
 
 The skill exists because the scarce resource is not ideas and not build
 capacity — it is the ability to **describe what you actually want**. Most people
@@ -196,12 +197,20 @@ partial reads and pending proposals cannot prove completion. The UI checks
 saved metadata, not semantic document quality, and asks the operator to
 confirm handoff explicitly.
 
-Offer the handoff explicitly; do not perform it silently. Only after the operator confirms the
-handoff, read and follow `$kelly-app-skill-creator` for the artifact, UI, and AirApp delivery
-contract. Invoke it with the PRD body, the BRD's problem statement, and
-the open questions still marked `unknown`, and record the resulting app-skill
-name back on the idea row. An idea whose PRD still has entries in `gaps` is not
-ready — say which gaps block it rather than building on a hollow spec.
+For the public build route, read [references/build-handoff.md](references/build-handoff.md).
+Install the public `busabase` and `busabase-app-creator` skills when absent. Bind the
+handoff to the exact selected Space, Idea, and reviewed canonical documents, including
+record ids and versions; carry the PRD, BRD problem, acceptance criteria, non-goals,
+and remaining non-blocking unknowns. Ask the operator to confirm that packet before
+handing it to `$busabase-app-creator`. Handoff does not approve the creator's blueprint.
+
+The creator owns Cloud/Desktop selection, source ownership, blueprint approval,
+implementation, and verification. A new workflow app gets its own resources; Ideas
+is not its business database or its source project. Maintaining an existing app
+requires its exact identity and authorized scope. Record the actual app/CR/source
+links and pending work in the Idea's existing `notes` or `agent-next-action` through
+a ChangeRequest, then read back; there is no app-skill-name field. On a retry,
+resume that recorded target or pending request rather than creating another app.
 
 ## Demo Mode
 

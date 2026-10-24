@@ -1351,7 +1351,7 @@
         "Open the idea vault and show me which ideas are still waiting on my answers.",
         "Take this idea all the way to a PRD, and ask me about anything that's missing first."
       ],
-      "version": "0.2.2",
+      "version": "0.2.3",
       "license": "MIT",
       "stats": {
         "folders": 0,

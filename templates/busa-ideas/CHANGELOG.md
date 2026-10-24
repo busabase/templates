@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.2.3 — 2026-10-24 — Public build handoff from a reviewed Idea
+
+Request: community `injwxy` reports that the advertised follow-up builder is
+private and leaves users without a usable public build route.
+
+- Replace the inaccessible required creator with installable public
+  `busabase` + `busabase-app-creator` in the skill and AirApp Agent prompt.
+- Add English/Chinese guidance and copyable prompts bound to exact canonical
+  Idea/document ids, versions, requirements and non-blocking unknowns. Pending
+  proposals remain separate from merged requirements.
+- Keep handoff confirmation separate from blueprint approval. The public
+  creator owns target choice, source ownership, modeling and verification.
+  New apps have separate source and workflow resources; existing maintenance
+  needs the exact target identity and authorized scope.
+- Record actual result links in existing notes/next-action fields; resume
+  known targets and requests instead of inventing a column or duplicate app.
+- Bump template/tooling metadata to 0.2.3. Runtime and cache remain 0.2.2,
+  schemaVersion remains 2. No UI, runtime behavior, schema, seed, SDK or
+  dependency changes. Update existing manuals/prompts without replacing code.
+
+Validation: all 50 existing Ideas app regressions pass. Strict template check
+reports zero errors/warnings; content sync, generated catalog and existing
+write/shared-helper guards pass. Fresh public `busabase` and
+`busabase-app-creator` installations succeed. A separate Agent reads only fresh
+installed skills and canonical synthetic records: it stops for incomplete
+requirements, binds a revised v2 packet after reconfirmation, and waits for
+separate blueprint approval. It then creates a separate local Decision Desk
+Folder/Base/View/Skill/AirApp and records actual links in the original Idea.
+A read-only retry resumes the same exact target without creating resources.
+
+The reviewing agent independently exercises the hosted app through Home,
+real PGlite/HTTP records, title/status filtering, detail/back context, 390px,
+dark mode and an aborted-transport error followed by real retry. All 21
+deployed files match source and all seven protected target Ideas nodes stay
+unchanged. Initial screenshot review found a hidden-button/loading display
+issue in the generated acceptance artifact; it was corrected and the browser
+story rerun before final evidence. That generated app is a test artifact, not
+part of this template diff. Public screenshots and detailed boundaries are in
+the PR. Instructions are executable and are not classified as nothing to verify.
+
+Acceptance environment: isolated published OSS0.99.0/PGlite hosts, public
+creator/SDK0.99.1, synthetic requirements/data only. The private host copy
+restores omitted declared Shiki3.23.0 dependencies; application/API source is
+unchanged. This does not validate production, every creator route, native
+Desktop or every possible generated application.
+Boundary: this supplies a public Busabase workspace-app route, not a one-click
+builder for every product type. Handoff does not approve implementation,
+external publishing or sending. Existing manuals/prompts need an explicit
+update; the public template does not change installed workspaces.
+
 ## 0.2.2 — 2026-10-24 — Distinguish PRD stage from reviewed handoff
 
 Request: community `fsyqhi` reports an unfinished PRD being shown as finalized.
