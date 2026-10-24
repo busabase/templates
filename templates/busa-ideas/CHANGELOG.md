@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.2.2 — 2026-10-24 — Distinguish PRD stage from reviewed handoff
+
+Request: community `fsyqhi` reports an unfinished PRD being shown as finalized.
+The PRD-rung shortcut returned complete without inspecting any document.
+
+- Keep stage progression separate from document readiness. PRD overview lists
+  missing body/status/gaps, required details, unanswered questions, duplicate
+  PRDs and incomplete reads; a ready record asks the human to read and confirm
+  handoff explicitly, never starts building.
+- Share the canonical document check across list/detail badges, document
+  metrics, and clarity: nonempty body, `已完善`, and no meaningful gaps.
+  Invalid legacy gaps remain visible; whitespace-only entries are omitted.
+  Inconsistent complete labels display as draft without rewriting data.
+- Add a PRD review/handoff overview panel and English/Chinese explanations.
+  Clarify professional review responsibility, proposals versus merged data,
+  and preserving existing installs during upgrades.
+- Add an explicit read-only recheck: exact Idea lookup, one filtered page per
+  Documents/Questions Base (50 each), and bounded existing review projections.
+  It refreshes only the selected Idea and its review cards, preserves drafts,
+  ignores late navigation responses, and permits retry after a failed read.
+- Keep schemaVersion 2 and existing SDK 0.99.0 helper adoption. No schema,
+  fields, mutation actions, generated SDK bundles, or seed records changed.
+
+Scoped recheck also recalculates loaded waiting/ready/parked counters while
+retaining the authoritative Idea total. Compact list badges keep the same
+readiness rule and fit Chinese/English390px cells; full detail guidance stays.
+
+Validation: all 50 app unit/regression tests pass, independently rerun by the
+reviewing agent. Six real browser stories against OSS0.99.0/PGlite cover the
+readiness matrix, owner Inbox review/merge, English/Chinese,390px and dark,
+global versus selected-Idea page boundaries, and a delayed real response after
+navigation. An additional targeted browser run verifies recheck updates the
+waiting counter and preserves the authoritative total. Real provider+HTTP
+regression preserves a half-merged required pair alongside an ordinary pending
+answer and clears only the merged side. Fresh package installation has no
+warnings or pending resources; deployed runtime files are read back against
+the reviewed source. Strict template, content sync, catalog index and existing
+write/shared-helper guards pass. Screenshots and validation details are attached
+to the PR.
+
+Acceptance environment: published OSS0.99.0 omits declared Shiki runtime files
+needed by its homepage. The private acceptance-host copy restores those declared
+Shiki3.23.0 dependencies without changing application/API source. No production
+deployment is claimed.
+
+Known boundary: metadata checks cannot evaluate arbitrary prose or prove
+semantic quality. Existing apps need a reviewed code update and restart.
+Reads stay bounded; this change never adds an automatic full scan.
+
+
 ## 0.2.1 — 2026-10-24 — Keep ordinary question submissions visible during review
 
 Request: fix the Ideas answer workflow reported in community post `x8xvmc`:

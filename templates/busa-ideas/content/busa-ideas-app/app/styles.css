@@ -927,22 +927,18 @@ dd {
   white-space: nowrap;
 }
 
-.attention-badge.attention-needs_answer {
+.attention-badge.attention-needs_answer,
+.attention-badge.attention-needs_document {
   border-color: color-mix(in srgb, var(--warning) 34%, var(--surface));
   background: color-mix(in srgb, var(--warning) var(--badge-wash), var(--surface));
   color: color-mix(in srgb, var(--warning) var(--badge-ink), var(--ink));
 }
 
-.attention-badge.attention-ready_for_agent {
+.attention-badge.attention-ready_for_agent,
+.attention-badge.attention-ready_for_handoff {
   border-color: var(--accent-line);
   background: var(--accent-soft);
   color: color-mix(in srgb, var(--accent) var(--badge-ink), var(--ink));
-}
-
-.attention-badge.attention-settled {
-  border-color: color-mix(in srgb, var(--positive) 30%, var(--surface));
-  background: color-mix(in srgb, var(--positive) var(--badge-wash), var(--surface));
-  color: color-mix(in srgb, var(--positive) var(--badge-ink), var(--ink));
 }
 
 .attention-badge.attention-parked {

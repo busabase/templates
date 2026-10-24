@@ -186,7 +186,15 @@ value to browser code, logs, demos, or screenshots.
 
 ## Handoff To Build
 
-When a PRD reaches `已完善`, the idea is ready to become software.
+PRD stage alone never means a document is final or ready to build. Read
+[references/document-readiness.md](references/document-readiness.md) before
+claiming readiness. The canonical PRD must exist, have a nonempty body, be
+`已完善` after the professional review protocol, and have no blocking `gaps`.
+All four required Idea fields must be present and its relevant questions
+answered or explicitly skipped. Verify the complete relevant record set;
+partial reads and pending proposals cannot prove completion. The UI checks
+saved metadata, not semantic document quality, and asks the operator to
+confirm handoff explicitly.
 
 Offer the handoff explicitly; do not perform it silently. Only after the operator confirms the
 handoff, read and follow `$kelly-app-skill-creator` for the artifact, UI, and AirApp delivery

@@ -5,7 +5,6 @@ import {
   DETAIL_MODES,
   date,
   els,
-  enumLabel,
   escapeHtml,
   filteredIdeas,
   ideaById,
@@ -24,9 +23,11 @@ import {
   viewLabel,
   warnings,
 } from "../app.js";
-import { DOC_KINDS, STAGES } from "./ideas-model.js?v=0.2.1";
-import { hydrateDocumentVisuals, renderMarkdownDocument } from "./markdown-renderer.js?v=0.2.1";
-import { getProvider } from "./providers/index.js?v=0.2.1";
+import { DOC_KINDS, STAGES, documentReadiness } from "./ideas-model.js?v=0.2.2";
+import { hydrateDocumentVisuals, renderMarkdownDocument } from "./markdown-renderer.js?v=0.2.2";
+import { getProvider } from "./providers/index.js?v=0.2.2";
+
+import { applyRecheckedIdea, recheckIdea } from "./recheck-idea.js?v=0.2.2";
 
 const DOC_TABS = ["overview", "questions", ...DOC_KINDS];
 
@@ -39,8 +40,10 @@ const tableHead = (columns) =>
 const rowOpen = (id) =>
   `<tr data-id="${escapeHtml(id)}"${id === state.route.selectedId ? ' class="ws-selected"' : ""}>`;
 
-function docStatusBadge(doc) {
-  return `<span class="badge ${doc.status === "已完善" ? "ok" : "draft"}">${escapeHtml(enumLabel(doc.status, "docStatus"))}</span>`;
+function docStatusBadge(doc, compact = false) {
+  const ready = documentReadiness(doc).ready;
+  const label = compact ? (ready ? "docCompleteShort" : "docDraftShort") : (ready ? "docReady" : "docDraft");
+  return `<span class="badge ${ready ? "ok" : "draft"}">${escapeHtml(t(label))}</span>`;
 }
 
 // ── Overview ───────────────────────────────────────────────────────────────
@@ -51,7 +54,7 @@ function metricsBand() {
   const loaded = ideas();
   const openQuestions = loaded.reduce((sum, idea) => sum + (idea.open_questions || 0), 0);
   const settledDocs = loaded.reduce(
-    (sum, idea) => sum + DOC_KINDS.filter((kind) => idea.documents[kind]?.status === "已完善").length,
+    (sum, idea) => sum + DOC_KINDS.filter((kind) => idea.documents[kind] && documentReadiness(idea.documents[kind]).ready).length,
     0,
   );
   const atPrd = loaded.filter((idea) => idea.stage === "prd").length;
@@ -73,6 +76,7 @@ export function renderOverview() {
   const all = ideas();
   const needsAnswer = all.filter((item) => item.attention === "needs_answer");
   const ready = all.filter((item) => item.attention === "ready_for_agent");
+  const documents = all.filter((item) => ["needs_document", "ready_for_handoff"].includes(item.attention));
   const parked = all.filter((item) => item.attention === "parked");
 
   const ideaLink = (idea, meta) => `
@@ -113,6 +117,10 @@ export function renderOverview() {
             )
             .join("") || `<div class="empty-inline">${t("nothingReady")}</div>`
         }
+      </div>
+      <div class="card overview-panel">
+        <h2>${t("panelDocuments")}</h2>
+        ${documents.map((idea) => ideaLink(idea, t(`attention_${idea.attention}`))).join("") || `<div class="empty-inline">${t("nothingDocuments")}</div>`}
       </div>
       <div class="card overview-panel">
         <h2>${t("panelParked")}</h2>
@@ -169,7 +177,7 @@ function documentsTable(kind, items) {
             const doc = idea.documents[kind];
             return `${rowOpen(idea.record_id)}
               ${cell(`<span class="strong">${escapeHtml(idea.title)}</span>`, idea.title)}
-              ${cell(docStatusBadge(doc))}
+              ${cell(docStatusBadge(doc, true))}
               ${cell(`v${doc.version}`, "", "ws-col-num")}
               ${cell(doc.gaps.length ? String(doc.gaps.length) : `<span class="muted">0</span>`, "", "ws-col-num")}
               ${cell(date(doc.updated_at))}
@@ -322,8 +330,17 @@ function overviewTab(idea) {
     `<div class="field"><dt>${label}</dt><dd>${value ? escapeHtml(value) : `<span class="muted">${t("notAnswered")}</span>`}</dd></div>`;
   const advance = idea.advance;
   let gate = "";
-  if (advance.reason === "complete") {
-    gate = `<div class="gate done">${t("gateComplete")}</div>`;
+  if (advance.reason === "last_stage") {
+    const readiness = idea.handoff;
+    const recheck = `<button type="button" class="btn quiet" data-recheck-idea="${escapeHtml(idea.record_id)}" ${state.recheckPending || state.decisionPending ? "disabled" : ""}>${t(state.recheckPending ? "recheckingIdea" : "recheckIdea")}</button>`;
+    const blockers = readiness.reasons.map((reason) => {
+      if (reason === "missing_fields") return t("handoffMissingFields").replace("{fields}", readiness.missingFields.map((field) => t(`field_${field}`)).join("、"));
+      if (reason === "open_questions") return t("openQuestionsCount").replace("{count}", String(readiness.openQuestions.length));
+      return t(`handoff_${reason}`);
+    });
+    gate = readiness.ready
+      ? `<div class="gate ready"><p>${t("gateHandoffReady")}</p><p class="muted">${t("handoffReviewBoundary")}</p>${recheck}</div>`
+      : `<div class="gate blocked"><p>${t("gatePrdDraft")}</p><ul>${blockers.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul><a data-tab href="${ideaUrl(idea.record_id, "prd")}">${t("readPrd")}</a><p class="muted">${t("handoffReviewBoundary")}</p>${recheck}</div>`;
   } else if (advance.reason === "parked") {
     gate = `<div class="gate parked">${t("gateParked")}</div>`;
   } else if (advance.canAdvance) {
@@ -371,6 +388,8 @@ function documentTab(idea, kind) {
         ${docStatusBadge(doc)}
         <span class="muted">v${doc.version} · ${date(doc.updated_at)}</span>
       </div>
+      ${!documentReadiness(doc).ready ? `<p class="muted">${t("docDraftHint")}</p>` : ""}
+      ${doc.status === "已完善" && !documentReadiness(doc).ready ? `<p role="status">${t("docStatusInconsistent")}</p>` : ""}
       ${gaps}
       <article class="doc-body">${renderMarkdownDocument(doc.body)}</article>
     </div>
@@ -426,6 +445,11 @@ export function bindDetailEvents() {
       setRoute();
       return;
     }
+    const recheckButton = event.target.closest("[data-recheck-idea]");
+    if (recheckButton) {
+      void refreshIdeaDetails(recheckButton.dataset.recheckIdea);
+      return;
+    }
     const answerButton = event.target.closest("[data-answer]");
     if (answerButton) {
       void submitAnswer(answerButton.dataset.answer);
@@ -439,6 +463,36 @@ export function bindDetailEvents() {
     const advanceButton = event.target.closest("[data-advance]");
     if (advanceButton) void applyAndReload({ action: "advance", idea_id: advanceButton.dataset.advance });
   });
+}
+
+async function refreshIdeaDetails(id) {
+  if (state.recheckPending || state.decisionPending) return;
+  const snapshot = state.snapshot;
+  const token = Symbol("idea-recheck");
+  state.recheckPending = token;
+  const isCurrent = () => state.recheckPending === token && state.snapshot === snapshot && state.route.selectedId === id;
+  render();
+  try {
+    const provider = await getProvider();
+    if (typeof provider.readIdeaDetails !== "function") return;
+    await recheckIdea({ load: () => provider.readIdeaDetails(id), isCurrent,
+      apply: ({ idea: updated, reviews, reviewReadIncomplete }) => {
+        const ids = new Set([...(snapshot.ideas.find((idea) => idea.record_id === id)?.questions || []), ...updated.questions].map((question) => question.record_id));
+        applyRecheckedIdea(snapshot, updated);
+        if (reviews) {
+          state.settings.pendingAnswers = [...(state.settings.pendingAnswers || []).filter((key) => !ids.has(key)), ...reviews.pendingAnswers];
+          for (const key of ["pendingDrafts", "questionReviews"]) {
+            state.settings[key] = { ...Object.fromEntries(Object.entries(state.settings[key] || {}).filter(([id]) => !ids.has(id))), ...reviews[key] };
+          }
+          state.settings.reviewReadIncomplete = reviewReadIncomplete;
+        }
+      } });
+  } catch (error) {
+    if (isCurrent()) state.notice = String(error?.message || error);
+  } finally {
+    if (state.recheckPending === token) state.recheckPending = null;
+    render();
+  }
 }
 
 async function submitAnswer(id) {

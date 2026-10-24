@@ -1351,14 +1351,14 @@
         "Open the idea vault and show me which ideas are still waiting on my answers.",
         "Take this idea all the way to a PRD, and ask me about anything that's missing first."
       ],
-      "version": "0.2.1",
+      "version": "0.2.2",
       "license": "MIT",
       "stats": {
         "folders": 0,
         "docs": 0,
         "bases": 4,
         "records": 35,
-        "files": 28,
+        "files": 29,
         "airapps": 1,
         "skill": true
       }
