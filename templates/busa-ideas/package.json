@@ -2,7 +2,7 @@
   "name": "busa-ideas",
   "private": true,
   "type": "module",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Busa Ideas Busabase Cloud skill — the consultant that turns a vague idea into a buildable PRD.",
   "scripts": {
     "app:check": "pnpm --dir content/busa-ideas-app check",

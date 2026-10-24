@@ -8,14 +8,14 @@ import {
 import { reviewInboxUrl } from "../review-link.js";
 import { OPEN_REVIEW_STATUSES, questionReview, submitOrdinaryQuestion } from "../question-review.js";
 import { createRuntimeClient } from "../busabase-client.js";
-import { appConfig } from "../config.js?v=0.2.1";
+import { appConfig } from "../config.js?v=0.2.2";
 import {
   buildSnapshot,
   parseRequiredQuestionId,
   requiredQuestionId,
   REQUIRED_QUESTION_TEXT,
   REQUIRED_TO_LEAVE,
-} from "../ideas-model.js?v=0.2.1";
+} from "../ideas-model.js?v=0.2.2";
 
 const runtime = await detectAirAppRuntime();
 
@@ -219,13 +219,14 @@ const sdkRecords = () => createAirAppRecords(runtimeClient, { appId: appConfig.a
 // their own list (at most three per idea), and settings is a handful of rows.
 // If either genuinely outgrows one page in practice, it needs the same pager
 // treatment ideas/questions already got, not a bigger cap.
-async function readPage(key, cursor) {
+async function readPage(key, cursor, valueFilters) {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
   const declared = base(key);
   const page = await sdkRecords().readPage({
     baseId: declared.baseId,
     limit: declared.readLimit,
     cursor,
+    ...(valueFilters ? { valueFilters } : {}),
   });
   const rows = page.records.map((record) => ({
     ...normalizeFields(record.fields),
@@ -308,6 +309,45 @@ function configSummary(operatorPayload, channelsPayload) {
   };
 }
 
+// Project review cards for exactly the canonical rows being displayed. Detail
+// rechecks and whole-page refreshes share this so pending UI cannot outlive merge.
+export function projectQuestionReviews({ ideasRows, questionRows, snapshot, reviewQuestions,
+  rejectedAnswers, questionRequests, rejectedRequests, pendingQuestionOperations, pendingIdeaOperations }) {
+  const projectedPending = new Set();
+  const ideaRecordIds = new Map(ideasRows.map((row) => [row.record_id, row.__recordId]));
+  const pendingDrafts = {};
+  const ordinaryReviews = {};
+  for (const question of questionRows.filter((item) => !item.target_field)) {
+    const reviews = questionReview(questionRequests, question.record_id, question.__recordId);
+    if (!reviews.length) {
+      const rejected = questionReview(rejectedRequests, question.record_id, question.__recordId)[0];
+      if (rejected && !["answered", "skipped"].includes(question.status)) {
+        ordinaryReviews[question.record_id] = rejected;
+        pendingDrafts[question.record_id] = rejected.answer;
+      }
+      continue;
+    }
+    ordinaryReviews[question.record_id] = reviews[0];
+    projectedPending.add(question.record_id);
+    pendingDrafts[question.record_id] = reviews[0].answer;
+  }
+  for (const question of reviewQuestions.filter((item) => item.recovery)) {
+    pendingDrafts[question.record_id] = rejectedAnswers.get(question.record_id);
+  }
+  for (const idea of snapshot.ideas) {
+    for (const question of idea.questions.filter((item) => item.target_field)) {
+      const questionAnswer = pendingQuestionAnswer(pendingQuestionOperations, question.record_id);
+      const ideaAnswer = pendingIdeaAnswer(pendingIdeaOperations, ideaRecordIds.get(idea.record_id), question.target_field);
+      if (questionAnswer || ideaAnswer) pendingDrafts[question.record_id] = questionAnswer || ideaAnswer;
+      if (questionAnswer && (ideaAnswer === questionAnswer || idea[question.target_field] === questionAnswer)) {
+        projectedPending.add(question.record_id);
+      }
+      if (ideaAnswer && question.answer === ideaAnswer) projectedPending.add(question.record_id);
+    }
+  }
+  return { pendingAnswers: [...projectedPending], pendingDrafts, questionReviews: ordinaryReviews };
+}
+
 export const busabaseProvider = {
   kind: "busabase",
 
@@ -325,7 +365,8 @@ export const busabaseProvider = {
       pendingChanges("ideas", false),
     ]);
     const pendingQuestionOperations = questionReviews.changeRequests.flatMap((request) => request.operations || []);
-    const rejectedQuestions = await readRejectedQuestionRequests(false);
+    const rejectedReviews = await readQuestionReviews(["rejected"], false);
+    const rejectedQuestions = rejectedReviews.changeRequests;
     const { questions: reviewQuestions, rejectedAnswers } = reviewBlockingQuestions(
       ideasPage.rows,
       questionsPage.rows,
@@ -335,40 +376,16 @@ export const busabaseProvider = {
     const snapshot = buildSnapshot({
       ideas: ideasPage.rows,
       documents: documentsPage.rows,
+      completeness: { documents: !documentsPage.nextCursor,
+        questions: !questionsPage.nextCursor && !questionReviews.nextCursor && !rejectedReviews.nextCursor },
       questions: [...questionsPage.rows, ...reviewQuestions],
     });
     pendingAnswers.clear();
-    const ideaRecordIds = new Map(ideasPage.rows.map((row) => [row.record_id, row.__recordId]));
-    const pendingDrafts = {};
-    const ordinaryReviews = {};
-    for (const question of questionsPage.rows.filter((item) => !item.target_field)) {
-      const reviews = questionReview(questionReviews.changeRequests, question.record_id, question.__recordId);
-      if (!reviews.length) {
-        const rejected = questionReview(rejectedQuestions, question.record_id, question.__recordId)[0];
-        if (rejected && !["answered", "skipped"].includes(question.status)) {
-          ordinaryReviews[question.record_id] = rejected;
-          pendingDrafts[question.record_id] = rejected.answer;
-        }
-        continue;
-      }
-      ordinaryReviews[question.record_id] = reviews[0];
-      pendingAnswers.add(question.record_id);
-      pendingDrafts[question.record_id] = reviews[0].answer;
-    }
-    for (const question of reviewQuestions.filter((item) => item.recovery)) {
-      pendingDrafts[question.record_id] = rejectedAnswers.get(question.record_id);
-    }
-    for (const idea of snapshot.ideas) {
-      for (const question of idea.questions.filter((item) => item.target_field)) {
-        const questionAnswer = pendingQuestionAnswer(pendingQuestionOperations, question.record_id);
-        const ideaAnswer = pendingIdeaAnswer(pendingIdeaOperations, ideaRecordIds.get(idea.record_id), question.target_field);
-        if (questionAnswer || ideaAnswer) pendingDrafts[question.record_id] = questionAnswer || ideaAnswer;
-        if (questionAnswer && (ideaAnswer === questionAnswer || idea[question.target_field] === questionAnswer)) {
-          pendingAnswers.add(question.record_id);
-        }
-        if (ideaAnswer && question.answer === ideaAnswer) pendingAnswers.add(question.record_id);
-      }
-    }
+    const projectedReviews = projectQuestionReviews({ ideasRows: ideasPage.rows,
+      questionRows: questionsPage.rows, snapshot, reviewQuestions, rejectedAnswers,
+      questionRequests: questionReviews.changeRequests, rejectedRequests: rejectedQuestions,
+      pendingQuestionOperations, pendingIdeaOperations });
+    for (const id of projectedReviews.pendingAnswers) pendingAnswers.add(id);
     // buildSnapshot only ever sees the first loaded page, so counts.total
     // undercounts once there is more than one page. Overwrite with the real
     // total from records.count; a null (permission denied, or the call failed)
@@ -388,8 +405,8 @@ export const busabaseProvider = {
       execution_report: null,
       snapshot,
       pendingAnswers: [...pendingAnswers],
-      pendingDrafts,
-      questionReviews: ordinaryReviews,
+      pendingDrafts: projectedReviews.pendingDrafts,
+      questionReviews: projectedReviews.questionReviews,
       reviewReadIncomplete: Boolean(questionReviews.nextCursor),
       reviewInboxUrl: await reviewInboxUrl({ hosted: runtime.hosted }),
       // Seeds app.js's page-cursor cache: the cursor needed to fetch page 2 of
@@ -397,6 +414,35 @@ export const busabaseProvider = {
       // above). Settings is read once; see the comment on readPage.
       pagination: { ideas: ideasPage.nextCursor, questions: questionsPage.nextCursor },
     };
+  },
+
+  // An explicit user recheck reads this Idea only, never walks a Base. The
+  // normal overview remains bounded and can say that its first page is partial.
+  async readIdeaDetails(ideaId) {
+    await ensureResources();
+    const scope = [{ fieldSlug: "idea-id", operator: "eq", value: ideaId }];
+    const [ideaRecord, documentsPage, questionsPage, activeReviews, rejectedReviews, ideaOperations] = await Promise.all([
+      findRecord("ideas", "record-id", ideaId),
+      readPage("documents", undefined, scope),
+      readPage("questions", undefined, scope),
+      readQuestionReviews(OPEN_REVIEW_STATUSES, false),
+      readQuestionReviews(["rejected"], false),
+      pendingChanges("ideas", false),
+    ]);
+    if (!ideaRecord) throw new Error("The Idea no longer exists. Refresh the list.");
+    const idea = { ...normalizeFields(ideaRecord.fields || ideaRecord.headCommit?.payload || {}), __recordId: ideaRecord.id };
+    const recovery = reviewBlockingQuestions([idea], questionsPage.rows,
+      activeReviews.changeRequests.flatMap((request) => request.operations || []), rejectedReviews.changeRequests);
+    const snapshot = buildSnapshot({ ideas: [idea], documents: documentsPage.rows,
+      questions: [...questionsPage.rows, ...recovery.questions],
+      completeness: { documents: !documentsPage.nextCursor,
+        questions: !questionsPage.nextCursor && !activeReviews.nextCursor && !rejectedReviews.nextCursor } });
+    const reviews = projectQuestionReviews({ ideasRows: [idea], questionRows: questionsPage.rows,
+      snapshot, reviewQuestions: recovery.questions, rejectedAnswers: recovery.rejectedAnswers,
+      questionRequests: activeReviews.changeRequests, rejectedRequests: rejectedReviews.changeRequests,
+      pendingQuestionOperations: activeReviews.changeRequests.flatMap((request) => request.operations || []),
+      pendingIdeaOperations: ideaOperations });
+    return { idea: snapshot.ideas[0], reviews, reviewReadIncomplete: Boolean(activeReviews.nextCursor) };
   },
 
   // Fetches exactly one page for a paginated Base and returns it for the

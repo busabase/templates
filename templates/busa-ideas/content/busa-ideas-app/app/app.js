@@ -1,9 +1,9 @@
 import { messages } from "./i18n/messages.js";
-import { appConfig } from "./js/config.js?v=0.2.1";
-import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.2.1";
-import { buildSnapshot, DOC_KINDS, NORMALIZE_ROW_BY_KEY } from "./js/ideas-model.js?v=0.2.1";
+import { appConfig } from "./js/config.js?v=0.2.2";
+import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.2.2";
+import { buildSnapshot, DOC_KINDS, NORMALIZE_ROW_BY_KEY } from "./js/ideas-model.js?v=0.2.2";
 import { bindDetailEvents, renderOverview, renderRecordView, renderSettings } from "./js/ideas-views.js";
-import { getProvider } from "./js/providers/index.js?v=0.2.1";
+import { getProvider } from "./js/providers/index.js?v=0.2.2";
 
 // Where a record opens, per view. Chosen by what people do with the record:
 //   ideas         → page:  an idea is a workplace — its questions to answer, its
@@ -21,7 +21,7 @@ export const DETAIL_MODES = {
   ...Object.fromEntries(DOC_KINDS.map((kind) => [kind, BASE_MODES.documents])),
 };
 const RECORD_VIEWS = Object.keys(DETAIL_MODES);
-export const ATTENTION_STATES = ["all", "needs_answer", "ready_for_agent", "settled", "parked"];
+export const ATTENTION_STATES = ["all", "needs_answer", "ready_for_agent", "needs_document", "ready_for_handoff", "parked"];
 
 export const state = {
   snapshot: null,
@@ -306,6 +306,7 @@ export async function goToPage(key, targetPage) {
       state.snapshot.ideas = buildSnapshot({
         ideas: rows,
         documents: state.snapshot.documents,
+        completeness: state.snapshot.completeness,
         questions: state.snapshot.questions,
       }).ideas;
     } else {

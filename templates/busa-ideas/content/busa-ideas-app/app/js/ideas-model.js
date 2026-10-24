@@ -59,6 +59,51 @@ function parseJsonList(value) {
   }
 }
 
+// Gaps are blocking omissions. Invalid legacy text must remain visible rather
+// than becoming an empty list and accidentally passing the handoff check.
+export function normalizeGaps(value) {
+  if (value === null || value === undefined) return [];
+  let entries = value;
+  if (typeof value === "string") {
+    if (!value.trim()) return [];
+    try {
+      const parsed = JSON.parse(value);
+      entries = Array.isArray(parsed) ? parsed : [value.trim()];
+    }
+    catch { entries = value.split(/[,，\n]/); }
+  }
+  if (!Array.isArray(entries)) entries = [entries];
+  return entries
+    .map((entry) => typeof entry === "string" ? entry.trim() : JSON.stringify(entry))
+    .filter(Boolean);
+}
+
+// This checks declared, canonical data, not the semantic quality of the prose.
+// The Agent/operator still owns the professional-document review protocol.
+export function documentReadiness(document) {
+  if (!document) return { ready: false, reasons: ["missing_document"] };
+  const reasons = [];
+  if (isBlank(document.body)) reasons.push("empty_body");
+  if (document.status !== "已完善") reasons.push("draft_status");
+  if (normalizeGaps(document.gaps).length) reasons.push("document_gaps");
+  return { ready: reasons.length === 0, reasons };
+}
+
+export function handoffReadiness(idea, questions = [], documents = [], completeness = {}) {
+  const prds = asArray(documents).filter((doc) => doc.idea_id === idea.record_id && doc.kind === "prd");
+  const document = prds[0] || null;
+  const missingFields = Object.keys(REQUIRED_QUESTION_TEXT).filter((field) => isBlank(idea[field]));
+  const openQuestions = asArray(questions).filter((q) => q.idea_id === idea.record_id && q.status === "open");
+  const reasons = [...documentReadiness(document).reasons];
+  if (prds.length > 1) reasons.push("duplicate_prd");
+  if (missingFields.length) reasons.push("missing_fields");
+  if (openQuestions.length) reasons.push("open_questions");
+  if (completeness.documents === false || completeness.questions === false) reasons.push("incomplete_reads");
+  if (idea.stage !== "prd") reasons.push("not_at_prd");
+  if (idea.status === STATUS_PARKED) reasons.push("parked");
+  return { ready: reasons.length === 0, reasons, missingFields, openQuestions, document };
+}
+
 function toNumber(value, fallback = 0) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -101,7 +146,7 @@ export function normalizeDocumentRow(row) {
     body: row.body || "",
     status: row.status || "",
     version: toNumber(row.version, 1),
-    gaps: parseJsonList(row.gaps),
+    gaps: normalizeGaps(row.gaps),
     updated_at: row.updated_at || "",
   };
 }
@@ -175,7 +220,7 @@ export function advanceCheck(idea, questions = []) {
     return { canAdvance: false, target: null, missingFields: [], openQuestions: [], reason: "parked" };
   }
   if (!target) {
-    return { canAdvance: false, target: null, missingFields: [], openQuestions: [], reason: "complete" };
+    return { canAdvance: false, target: null, missingFields: [], openQuestions: [], reason: "last_stage" };
   }
   const missingFields = missingForStage(idea, idea.stage);
   const openQuestions = asArray(questions).filter(
@@ -202,24 +247,26 @@ export function clarityFor(idea, questions = [], documents = []) {
   const mine = asArray(questions).filter((q) => q.idea_id === idea.record_id);
   const answered = mine.filter((q) => q.status !== "open").length;
   const questionScore = mine.length ? (answered / mine.length) * 20 : 0;
-  const settled = asArray(documents).filter((doc) => doc.idea_id === idea.record_id && doc.status === "已完善").length;
+  const settled = DOC_KINDS.filter((kind) => documentReadiness(
+    asArray(documents).find((doc) => doc.idea_id === idea.record_id && doc.kind === kind),
+  ).ready).length;
   const docScore = Math.min(settled / DOC_KINDS.length, 1) * 10;
   return Math.round(stageScore + fieldScore + questionScore + docScore);
 }
 
 // Task language for the human attention panel, per the UI contract: say what
 // the operator can do, not what state a row is in.
-export function attentionFor(idea, questions = []) {
+export function attentionFor(idea, questions = [], documents = [], completeness = {}) {
   if (idea.status === STATUS_PARKED) return "parked";
   const open = asArray(questions).filter((q) => q.idea_id === idea.record_id && q.status === "open");
   if (open.length) return "needs_answer";
   const check = advanceCheck(idea, questions);
   if (check.reason === "missing_fields") return "needs_answer";
   if (check.canAdvance) return "ready_for_agent";
-  return "settled";
+  return handoffReadiness(idea, questions, documents, completeness).ready ? "ready_for_handoff" : "needs_document";
 }
 
-export function buildSnapshot({ ideas = [], documents = [], questions = [] } = {}) {
+export function buildSnapshot({ ideas = [], documents = [], questions = [], completeness = {} } = {}) {
   const normalizedDocuments = asArray(documents).map(normalizeDocumentRow);
   const normalizedQuestions = asArray(questions).map(normalizeQuestionRow);
   const normalizedIdeas = asArray(ideas).map(normalizeIdeaRow);
@@ -239,11 +286,13 @@ export function buildSnapshot({ ideas = [], documents = [], questions = [] } = {
       questions: mineQuestions,
       documents: byKind,
       advance: check,
-      attention: attentionFor(idea, mineQuestions),
+      handoff: handoffReadiness(idea, mineQuestions, mineDocuments, completeness),
+      attention: attentionFor(idea, mineQuestions, mineDocuments, completeness),
     };
   });
 
   return {
+    completeness,
     ideas: enriched,
     documents: normalizedDocuments,
     questions: normalizedQuestions,

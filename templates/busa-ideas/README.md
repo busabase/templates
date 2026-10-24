@@ -25,6 +25,14 @@ carries it through BRD, MRD, and PRD.
   the check is re-derived server-side on every advance, not trusted from
   the UI.
 
+## PRD Review And Handoff
+
+Reaching PRD does not finalize its document. Version 0.2.2 derives document
+badges/counts from nonempty canonical content, completed status, and no
+blocking gaps. Handoff also checks required information and open questions,
+then asks for explicit confirmation; it never starts a build. Read
+[the review and upgrade guide](references/document-readiness.md).
+
 ## App UI Screenshots
 
 <table>
