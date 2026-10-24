@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@hono/node-server": "2.1.1",
-    "busabase-sdk": "0.98.0",
+    "busabase-sdk": "0.99.0",
     "hono": "4.13.4",
     "lucide": "1.39.0"
   },

@@ -12,8 +12,8 @@ importers:
         specifier: 2.1.2
         version: 2.1.2(hono@4.13.10)
       busabase-sdk:
-        specifier: 0.98.0
-        version: 0.98.0
+        specifier: 0.99.0
+        version: 0.99.0
       hono:
         specifier: 4.13.10
         version: 4.13.10
@@ -71,8 +71,8 @@ packages:
   '@types/node@24.19.0':
     resolution: {integrity: sha512-zY+5tKxXdhGh1PYI0ac+7juvEu4OI6vWtVVoj5i2m42jxAY1U+zHGt6QCyOFwykdP62sM3MJ9stoYYUw5aCWew==}
 
-  busabase-sdk@0.98.0:
-    resolution: {integrity: sha512-l6Z52cp3U2tcKSgPKKFs68cye1VLsR9m5XIgbf9y4VUrAOsYWgIILzSJWP3JZS/kaw7Dagqq6e4JSBXTJ72Xxw==}
+  busabase-sdk@0.99.0:
+    resolution: {integrity: sha512-UJoJ/eoCGdmry6yEOPj8JUgzwaH4MBOkC2Zpd7mrGUHXksu+CK3s+f0m1sgd6hn/OLTJwURfCdttddydL4kV+Q==}
     engines: {node: '>=24.18.0'}
 
   esbuild-wasm@0.28.1:
@@ -177,7 +177,7 @@ snapshots:
     dependencies:
       undici-types: 7.24.6
 
-  busabase-sdk@0.98.0:
+  busabase-sdk@0.99.0:
     dependencies:
       '@orpc/client': 1.15.4
       '@orpc/contract': 1.15.4
