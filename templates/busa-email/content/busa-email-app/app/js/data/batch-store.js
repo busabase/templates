@@ -1,5 +1,5 @@
-import { createProvider } from "../lib/data-provider/index.js";
-export { findItem, normalizeItem } from "../lib/data-provider/provider-utils.js";
+import { createProvider } from "./index.js";
+export { findItem, normalizeItem } from "./provider-utils.js";
 
 export async function ensureDirs() {
   // Busabase owns all durable state; no handoff directories are created.

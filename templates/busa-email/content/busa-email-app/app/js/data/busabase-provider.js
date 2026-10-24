@@ -1,7 +1,7 @@
-import { appConfig } from "../../app/js/config.js";
-import { isAirAppRequest } from "../runtime-context.js";
+import { appConfig } from "../config.js";
+import { canInspectSecrets, environmentValue } from "./connection.js";
 
-import { createBusabaseClient } from "./busabase-client.js";
+import { createEmailClient } from "../busabase-client.js";
 import { rowsFromContactsBatch } from "./email-contacts.js";
 import {
   batchFromEmailRecords,
@@ -51,7 +51,7 @@ function configSecretRefs(config) {
 
 export function createBusabaseProvider() {
   let clientPromise = null;
-  const client = async () => (clientPromise ||= Promise.resolve(createBusabaseClient()));
+  const client = async () => (clientPromise ||= Promise.resolve(createEmailClient()));
 
   async function readSettingsRows() {
     return (await client()).listSettingsFields();
@@ -64,9 +64,9 @@ export function createBusabaseProvider() {
     if (!Array.isArray(config.mailboxes)) config.mailboxes = [];
     if (!Array.isArray(config.identities)) config.identities = [];
     const refs = configSecretRefs(config);
-    // AirApp receives the authenticated Busabase request context, never Vault
-    // values. Only the trusted skill process can verify injected secrets.
-    const missing = isAirAppRequest() ? [] : refs.filter((name) => !process.env[name]);
+    // The page never sees Vault values. Only the trusted skill process can verify
+    // injected secrets.
+    const missing = canInspectSecrets() ? refs.filter((name) => !environmentValue(name)) : [];
     return {
       config,
       source: row ? "busabase:base/busa-email-settings-v3" : "",

@@ -1,5 +1,5 @@
-export { loadConfig, loadConfigWithMeta, loadDotenvFiles, onboardingStatus } from "../lib/data-provider/index.js";
-import { onboardingStatus } from "../lib/data-provider/index.js";
+export { loadConfig, loadConfigWithMeta, loadDotenvFiles, onboardingStatus } from "./index.js";
+import { onboardingStatus } from "./index.js";
 
 function asArray(value) {
   if (!value) return [];

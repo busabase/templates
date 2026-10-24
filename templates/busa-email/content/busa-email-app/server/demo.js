@@ -1,4 +1,4 @@
-import { isApprovedForExecution, isBlocked, isDone, isNeedsReview } from "./workflow.js";
+import { isApprovedForExecution, isBlocked, isDone, isNeedsReview } from "../app/js/data/workflow.js";
 
 const now = "2026-06-18T09:30:00.000Z";
 const scenarioUpdatedAt = {

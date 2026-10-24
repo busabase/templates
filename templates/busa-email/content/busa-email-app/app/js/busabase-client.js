@@ -1,7 +1,12 @@
-import { createBusabaseClient as createSdkClient, getRecordByField } from "busabase-sdk";
-import { inspectProvisionedResources, provisionDeclaredResources } from "busabase-sdk/airapp";
-import { appConfig } from "../../app/js/config.js";
-import { runtimeHeaders, runtimeOrigin } from "../runtime-context.js";
+import {
+  createBusabaseClient,
+  getRecordByField,
+  inspectProvisionedResources,
+  provisionDeclaredResources,
+  toAirAppWriteOutcome,
+} from "../vendor/busabase-sdk.js";
+import { appConfig } from "./config.js";
+import { busabaseBaseUrl, environmentValue } from "./data/connection.js";
 
 // Folder + Bases are the shape every App-in-Skill declares, so their
 // discovery/ownership/repair logic lives in busabase-sdk/airapp now. Busa
@@ -25,8 +30,16 @@ const ownership = (resourceKey) => ({
 const owns = (node, resourceKey) =>
   node?.metadata?.appId === appConfig.appId && node?.metadata?.resourceKey === resourceKey;
 
+// Busabase stores a `json` field as its text; an object sent as-is is rejected
+// ("must be text"), so structured values (execution report, scan state, config)
+// are serialized here. Readers already parse the string back.
 const toBusabaseFields = (fields) =>
-  Object.fromEntries(Object.entries(fields).map(([key, value]) => [key.replaceAll("_", "-"), value]));
+  Object.fromEntries(
+    Object.entries(fields).map(([key, value]) => [
+      key.replaceAll("_", "-"),
+      value !== null && typeof value === "object" ? JSON.stringify(value) : value,
+    ]),
+  );
 
 const fromBusabaseFields = (fields = {}) =>
   Object.fromEntries(Object.entries(fields).map(([key, value]) => [key.replaceAll("-", "_"), value]));
@@ -41,14 +54,17 @@ function recordFields(record) {
 // ChangeRequest. `crId` is the id of a queued one, empty when the write landed,
 // and callers report which happened.
 function crId(result) {
-  return result?.materialized === false || result?.status === "in_review" ? String(result.id || "") : "";
+  const outcome = toAirAppWriteOutcome(result);
+  return outcome.status === "queued" ? String(outcome.changeRequestId || result?.id || "") : "";
 }
 
-export function createBusabaseClient() {
-  const sdk = createSdkClient({
-    baseUrl: runtimeOrigin(),
+export function createEmailClient() {
+  // No Space header from the page: the viewer's session (hosted) or the local
+  // gateway's confirmed Space (standalone) already names it.
+  const baseUrl = busabaseBaseUrl();
+  const sdk = createBusabaseClient({
+    ...(baseUrl ? { baseUrl } : {}),
     ...(appConfig.spaceId ? { spaceId: appConfig.spaceId } : {}),
-    headers: runtimeHeaders,
   });
 
   const base = (key) => {
@@ -230,8 +246,8 @@ export function createBusabaseClient() {
   return {
     sdk,
     meta: {
-      baseUrl: runtimeOrigin(),
-      spaceId: appConfig.spaceId || process.env.BUSABASE_SPACE_ID || "",
+      baseUrl: baseUrl || environmentValue("BUSABASE_BASE_URL"),
+      spaceId: appConfig.spaceId || environmentValue("BUSABASE_SPACE_ID"),
       folderSlug: appConfig.folder.slug,
       driveSlug: appConfig.drive.slug,
       secretsNamespace: appConfig.vaultNamespace,
@@ -268,6 +284,6 @@ export function createBusabaseClient() {
     upsertSettingsRecord: (recordId, fields, message) => upsert("settings", recordId, fields, message),
     readDriveFile,
     writeDriveFile,
-    getSecret: async (name) => String(process.env[name] || ""),
+    getSecret: async (name) => environmentValue(name),
   };
 }

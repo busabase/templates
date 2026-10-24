@@ -1,4 +1,4 @@
-import { createProvider } from "../lib/data-provider/index.js";
+import { createProvider } from "./index.js";
 import { rejectIfProviderUnavailable } from "./provider-status.js";
 
 let writeQueue = Promise.resolve();

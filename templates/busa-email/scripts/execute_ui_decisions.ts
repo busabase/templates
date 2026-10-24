@@ -1,9 +1,15 @@
 #!/usr/bin/env node
 import { ImapFlow } from "imapflow";
 import nodemailer from "nodemailer";
-import { clearAgentLock, loadConfig, loadDotenv, utcNow, writeAgentLock } from "../app/lib/common.ts";
-import { createProvider } from "../app/lib/data-provider/index.ts";
-import type { Batch, Config, DecisionsPayload, Mailbox, ReviewItem } from "../app/lib/types.ts";
+import { clearAgentLock, loadConfig, loadDotenv, utcNow, writeAgentLock } from "../content/busa-email-app/lib/common.js";
+import { createProvider } from "../content/busa-email-app/app/js/data/index.js";
+
+// Shapes are documented in references/; these scripts only need names for them.
+type Batch = Record<string, any>;
+type Config = Record<string, any>;
+type DecisionsPayload = Record<string, any>;
+type Mailbox = Record<string, any>;
+type ReviewItem = Record<string, any>;
 
 interface ExecEntry {
   item: ReviewItem;

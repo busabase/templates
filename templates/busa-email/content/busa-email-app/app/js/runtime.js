@@ -16,50 +16,16 @@
  * reported an error the operator could not act on.
  */
 
-const UNKNOWN_RUNTIME = { runtime: "unknown", hosted: false, determined: false };
-
-const normalize = (body) => {
-  if (!body || typeof body !== "object" || typeof body.runtime !== "string") return UNKNOWN_RUNTIME;
-  return {
-    runtime: body.runtime,
-    // PRESENCE, never membership of a list of engine names. The server already
-    // answers this correctly; the list that used to sit here was a second,
-    // staler opinion — it still named `local-node`, retired two renames ago.
-    hosted: body.hosted === true,
-    determined: true,
-  };
-};
-
-/**
- * Relative path on purpose: under the Local Node engine the App is served from a
- * sub-path of busabase's origin, so a leading slash would resolve against that
- * origin's root. The content-type check matters too — a hosted origin's
- * catch-all route can answer 200 with an HTML shell, which `response.ok` alone
- * would read as a successful probe. The timeout keeps a hung probe from holding
- * the module graph open; it degrades to "unknown", which every caller below
- * treats as its own safe side.
- */
-const probe = async () => {
-  try {
-    // allow-private-copy: busa-email ships no busabase-airapp.js bundle, so detectAirAppRuntime() is not available to it; adopting it means a new vendor bundle.
-    const response = await fetch("__airapp/runtime", {
-      headers: { accept: "application/json" },
-      signal: AbortSignal.timeout(3000),
-    });
-    const type = response.headers.get("content-type") || "";
-    if (!response.ok || !type.includes("application/json")) return UNKNOWN_RUNTIME;
-    return normalize(await response.json());
-  } catch {
-    return UNKNOWN_RUNTIME;
-  }
-};
+import { detectAirAppRuntime, shouldUseLocalAirAppGateway } from "../vendor/busabase-sdk.js";
 
 // Top-level await: every importer's module body runs only after this resolves,
-// so the predicates below stay synchronous for their existing call sites.
-export const runtime = await probe();
+// so the predicate below stays synchronous for its existing call site. The SDK
+// probes relative `__airapp/runtime`, checks the content type, times out, and
+// degrades to "unknown" — which shows the gate, the safe side.
+export const runtime = await detectAirAppRuntime();
 
 /**
  * Whether the local `/auth/*` gateway applies. An unnecessary connect gate is
  * closed by the operator; a missing one strands them — so `unknown` shows it.
  */
-export const shouldUseLocalGateway = () => !runtime.hosted;
+export const shouldUseLocalGateway = () => shouldUseLocalAirAppGateway(runtime);

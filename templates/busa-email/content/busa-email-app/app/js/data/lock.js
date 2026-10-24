@@ -1,4 +1,4 @@
-import { createProvider } from "../lib/data-provider/index.js";
+import { createProvider } from "./index.js";
 
 export async function lockPayload() {
   return createProvider().getLock();
