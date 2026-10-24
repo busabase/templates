@@ -106,23 +106,14 @@ async function upsert(key, idFieldSlug, idValue, fields, message) {
     throw new Error("PROCEDURE_DENIED: records.changeRequest");
   }
   const declared = base(key);
-  const existing = await findRecord(key, idFieldSlug, idValue);
-  const normalized = toBusabaseFields(fields);
-  const result = existing
-    ? await runtimeClient.records.changeRequest({
-        recordId: existing.id,
-        operation: "update",
-        fields: normalized,
-        message,
-        author: appConfig.appId,
-        baseCommitId: existing.headCommitId,
-      })
-    : await runtimeClient.bases.createChangeRequest({
-        baseId: declared.baseId,
-        fields: normalized,
-        message,
-        submittedBy: appConfig.appId,
-      });
+  if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
+  const { response: result } = await sdkRecords().upsert({
+    baseId: declared.baseId,
+    fieldSlug: idFieldSlug,
+    valueText: idValue,
+    fields: toBusabaseFields(fields),
+    message,
+  });
   return { pending: isAirAppWriteQueued(result), change_request_id: isAirAppWriteQueued(result) ? result?.id || "" : "" };
 }
 

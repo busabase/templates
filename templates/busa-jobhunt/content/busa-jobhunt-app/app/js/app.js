@@ -15,7 +15,7 @@ import {
   statusLabel,
 } from "./jobhunt-model.js?v=0.4.0";
 import { getProvider } from "./providers/index.js?v=0.4.0";
-import { initRuntime, shouldUseLocalGateway } from "./runtime.js?v=0.4.0";
+import { airAppWriteMessage, detectAirAppRuntime, shouldUseLocalAirAppGateway } from "../vendor/busabase-airapp.js";
 
 const root = document.querySelector("#app");
 
@@ -723,7 +723,7 @@ const renderOnboarding = () => {
 // ── Writes ─────────────────────────────────────────────────────────────────
 const writeNotice = (result) => {
   if (result?.demo) return "演示模式：没有写入 Busabase，也没有真的发出邮件。";
-  if (result?.pending) return "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。";
+  if (result?.pending) return airAppWriteMessage({ status: "queued" }, { locale: "zh-CN" });
   return "";
 };
 
@@ -1093,7 +1093,7 @@ const load = async ({ keepRoute = false } = {}) => {
     // Resolved before anything asks where it runs. The local `/auth/*` gateway
     // exists only in a standalone run, so consult it only there — and decide
     // that from the runtime Busabase injected, never from the URL.
-    const standaloneLocalRuntime = shouldUseLocalGateway(await initRuntime());
+    const standaloneLocalRuntime = shouldUseLocalAirAppGateway(await detectAirAppRuntime());
     if (!demo && standaloneLocalRuntime) authStatus = await connectGateStatus();
     const provider = await getProvider();
     currentState = await provider.getReadinessState();

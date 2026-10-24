@@ -184,7 +184,7 @@ const assertions = [
     // `autoMerge` unset and reports whether Busabase merged or queued it.
     ok:
       !/\bautoMerge\s*[:=]|[{,]\s*autoMerge\s*[,}]/.test(providerSource) &&
-      providerSource.includes("materialized === false"),
+      /\bisAirAppWriteQueued\b/.test(providerSource),
     message: "Record writes must leave autoMerge unset and report whether Busabase queued them",
   },
   {

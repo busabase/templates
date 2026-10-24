@@ -211,13 +211,7 @@ export const busabaseProvider = {
     const lookups = { accounts: ["account-id"], positions: ["position-id", "symbol"] }[key] || [];
     const normalize = { accounts: normalizeAccountRow, positions: normalizePositionRow }[key];
     for (const fieldSlug of lookups) {
-      let record = null;
-      try {
-        record = await runtimeClient.records.get({ baseId: base(key).baseId, fieldSlug, valueText: String(id) });
-      } catch (error) {
-        if (error?.status === 404 || error?.code === "NOT_FOUND") continue;
-        throw error;
-      }
+      const record = await sdkRecords().findRecord({ baseId: base(key).baseId, fieldSlug, valueText: String(id) });
       if (!record) continue;
       const row = normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields);
       return normalize ? normalize(row) : row;

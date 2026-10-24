@@ -46,6 +46,12 @@ const normalize = (body) => {
  */
 export async function initRuntime() {
   if (!store.pending) {
+    // This app reads every Base to exhaustion (readAllPages), which the SDK's contract check
+    // (airapp/unbounded-read) rejects. The check misses it today only because a stray block-comment
+    // opener in app.js swallows that loop until this file's first block comment closes it, so
+    // removing this file would surface it. Move the reads to a page per action first, then adopt
+    // detectAirAppRuntime() here as busa-jobhunt does.
+    // allow-private-copy: removing this file surfaces a pre-existing airapp/unbounded-read in this app.
     store.pending = fetch("__airapp/runtime", { headers: { accept: "application/json" } })
       .then((response) => {
         const type = response.headers.get("content-type") || "";

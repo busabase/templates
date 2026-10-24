@@ -173,13 +173,7 @@ export const busabaseProvider = {
   async getRecord(key, value, fieldSlug = ID_FIELD_SLUG[key]) {
     if (!allowedReads.has("records.get") || !fieldSlug || !value) return null;
     await ensureResources();
-    let record;
-    try {
-      record = await runtimeClient.records.get({ baseId: base(key).baseId, fieldSlug, valueText: String(value) });
-    } catch (error) {
-      if (error?.code === "NOT_FOUND" || error?.status === 404) return null;
-      throw error;
-    }
+    const record = await sdkRecords().findRecord({ baseId: base(key).baseId, fieldSlug, valueText: String(value) });
     if (!record) return null;
     const normalize = NORMALIZE_ROW_BY_KEY[key];
     const row = recordToRow(record);

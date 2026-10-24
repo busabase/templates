@@ -62,7 +62,6 @@ const required = [
   "app/js/config.js",
   "app/js/jobhunt-model.js",
   "app/js/busabase-client.js",
-  "app/js/runtime.js",
   "app/js/providers/busabase-provider.js",
   "app/js/providers/demo-provider.js",
   "app/vendor/busabase-sdk.js",
@@ -145,7 +144,6 @@ const browserFiles = [
   "app/js/config.js",
   "app/js/jobhunt-model.js",
   "app/js/busabase-client.js",
-  "app/js/runtime.js",
   "app/js/providers/busabase-provider.js",
   "app/js/providers/demo-provider.js",
 ];
@@ -177,7 +175,7 @@ const assertions = [
     // AirApp is served from localhost on Desktop/OSS, and a standalone run is
     // routinely reached over a LAN IP or a signed dev tunnel.
     ok:
-      source.includes("shouldUseLocalGateway(await initRuntime())") &&
+      source.includes("shouldUseLocalAirAppGateway(await detectAirAppRuntime())") &&
       source.includes("if (!demo && standaloneLocalRuntime)"),
     message: "OAuth connection UI must be gated on the injected runtime, not the URL",
   },
@@ -194,7 +192,7 @@ const assertions = [
     // `autoMerge` unset and reports whether Busabase merged or queued it.
     ok:
       !/\bautoMerge\s*[:=]|[{,]\s*autoMerge\s*[,}]/.test(providerSource) &&
-      providerSource.includes("materialized === false"),
+      /\bisAirAppWriteQueued\b/.test(providerSource),
     message: "Record writes must leave autoMerge unset and report whether Busabase queued them",
   },
   {

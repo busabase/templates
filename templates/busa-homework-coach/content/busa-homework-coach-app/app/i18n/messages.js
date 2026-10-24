@@ -185,7 +185,7 @@ export const messages = {
     readFailed: "無法讀取這個列表。",
     demoNotice: "示範模式——決定不會被保存。",
     saved: "決定已保存。",
-    savedForReview: "已提交審核。你在這裡沒有寫權限，需要有寫權限的人批准後才會生效。",
+    savedForReview: sdkQueuedNotice("zh-TW"),
     noReviewForQuestion: "尚未載入這道題目的審核項目。",
     misconception: "誤解",
     items: "題目",

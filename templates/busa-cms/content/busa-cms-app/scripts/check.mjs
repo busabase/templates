@@ -39,6 +39,7 @@ const LOGIC_BASENAMES = new Set([
   "schema.js",
   "busabase-client.js",
   "runtime.js",
+  "setup.js", // where the SDK's runtime probe is asked
   "content-model.js",
 ]);
 const browserLogic = await joinFiles(
@@ -105,8 +106,9 @@ const assertions = [
     message: "Runtime must not be inferred from the hostname or from iframe nesting",
   },
   {
-    ok: browserLogic.includes("__airapp/runtime"),
-    message: "Browser code must probe the injected runtime at __airapp/runtime",
+    // `detectAirAppRuntime()` is the SDK's probe of that same relative path.
+    ok: browserLogic.includes("__airapp/runtime") || /\bdetectAirAppRuntime\s*\(/.test(browserLogic),
+    message: "Browser code must probe the injected runtime (detectAirAppRuntime(), or __airapp/runtime)",
   },
   {
     // Relative on purpose: a hosted app can be served from a sub-path of

@@ -159,7 +159,7 @@ export const busabaseProvider = {
     if (!allowedReads.has("records.list") || !companyKey) return [];
     const base = runtimeBases.get("leads");
     if (!runtimeClient || !base) return [];
-    const page = await runtimeClient.records.list({
+    const page = await createAirAppRecords(runtimeClient).readPage({
       baseId: base.baseId,
       limit: BUSABASE_RECORD_PAGE_SIZE,
       filters: [{ fieldSlug: "company-key", fieldType: "text", operator: "equals", value: companyKey }],
