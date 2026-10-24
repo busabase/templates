@@ -1,11 +1,12 @@
 import { createAirAppConnectGate } from '../vendor/busabase-airapp-gate.js';
+import { detectAirAppRuntime } from '../vendor/busabase-airapp.js';
 import { renderIcons } from '../vendor/icons.js';
 import { appConfig } from './config.js';
 import { markdownText } from './markdown.js';
 import { messages } from './messages.js';
 import { attentionItems, mergeById } from './model.js';
 import { getProvider } from './providers/index.js';
-import { connectionHintKey, getRuntime, runtimeLabel } from './runtime.js';
+import { connectionHintKey, runtimeLabel } from './runtime.js';
 import { baseByKey, boardHtml, createContext, detailHtml, esc, overviewHtml, tableHtml } from './screens.js';
 
 // Where a record opens, per view. Chosen by what people do with the record:
@@ -220,7 +221,7 @@ async function load() {
   const generation = ++state.generation;
   $('loadingState').textContent = tr('loading'); $('errorState').hidden = true; $('retry').hidden = true;
   try {
-    state.runtime = await getRuntime();
+    state.runtime = await detectAirAppRuntime();
     if (!isDemo() && !state.runtime.determined) throw new Error('BRIDGE_UNAVAILABLE: Runtime could not be determined.');
     if (!(await gate.pass({ onReady: load }))) { $('loadingState').textContent = ''; return; }
     state.provider = await getProvider();

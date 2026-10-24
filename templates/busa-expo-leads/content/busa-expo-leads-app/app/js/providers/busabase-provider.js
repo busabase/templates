@@ -1,4 +1,9 @@
-import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
+import {
+  inspectProvisionedResources,
+  provisionDeclaredResources,
+  createAirAppRecords,
+  isAirAppWriteQueued,
+} from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js?v=0.1.0";
 import { buildSnapshot, NORMALIZE_ROW_BY_KEY, statusForAction } from "../expo-leads-model.js?v=0.1.0";
@@ -62,13 +67,21 @@ const recordToRow = (record) => ({
   __headCommitId: record.headCommitId || record.headCommit?.id,
 });
 
+// Record reads and writes go through the SDK's helpers, bound to this app's client.
+// A person's write leaves `autoMerge` unset, so Busabase decides from their own
+// permission: it lands now with write access and becomes a ChangeRequest without
+// it. The response says which happened; `isAirAppWriteQueued` reads it.
+const sdkRecords = () => createAirAppRecords(runtimeClient, { appId: appConfig.appId });
+
 async function readPage(key) {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
   const declared = base(key);
-  const result = await runtimeClient.records.list({ baseId: declared.baseId, limit: declared.readLimit });
-  const records = Array.isArray(result) ? result : result.records || [];
-  hasMore.set(key, Boolean(!Array.isArray(result) && result.nextCursor));
-  return records.map(recordToRow);
+  const page = await sdkRecords().readPage({
+    baseId: declared.baseId,
+    limit: declared.readLimit,
+  });
+  hasMore.set(key, Boolean(page.nextCursor));
+  return page.records.map(recordToRow);
 }
 
 // A real, exact server-side total (records.count). Returns null -- never a
@@ -91,13 +104,6 @@ async function readSettingsRow() {
   const rows = await readPage("settings");
   return rows.find((row) => row.record_id === "config") || rows[0] || {};
 }
-
-// A person's write from this app leaves `autoMerge` unset, so Busabase decides
-// from that person's own permission: with write access the change lands now;
-// without it the same change becomes a ChangeRequest for someone who has it.
-// The response says which happened (`materialized: false` is the queued one),
-// and the caller reports it rather than assuming either.
-const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
 
 async function upsertFollowupDecision(followupRecordId, headCommitId, fields, message) {
   if (!allowedWrites.has("records.changeRequest")) {
@@ -190,8 +196,8 @@ export const busabaseProvider = {
       updated_at: now,
       followup_id: followupId,
       action,
-      pending: isQueued(result),
-      change_request_id: isQueued(result) ? result?.id || "" : "",
+      pending: isAirAppWriteQueued(result),
+      change_request_id: isAirAppWriteQueued(result) ? result?.id || "" : "",
     };
   },
 

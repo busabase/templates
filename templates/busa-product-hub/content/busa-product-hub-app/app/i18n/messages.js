@@ -1,3 +1,7 @@
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
+
+const sdkQueuedNotice = (locale) => airAppWriteMessage({ status: "queued" }, { locale });
+
 export const messages = {
   en: {
     activeProducts: "active products",
@@ -127,8 +131,7 @@ export const messages = {
     noReviewPending: "Nothing is waiting for a decision.",
     decisionSaved: "Decision recorded.",
     decisionSavedDemo: "Decision recorded (demo mode, not saved).",
-    savedForReview:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    savedForReview: sdkQueuedNotice("en"),
     pagination: "Pagination",
     prevPage: "Prev",
     nextPage: "Next",
@@ -363,7 +366,7 @@ export const messages = {
     noReviewPending: "没有等待决定的事项。",
     decisionSaved: "决策已记录。",
     decisionSavedDemo: "决策已记录（演示模式，不会保存）。",
-    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
+    savedForReview: sdkQueuedNotice("zh-CN"),
     pagination: "分页",
     prevPage: "上一页",
     nextPage: "下一页",

@@ -1,4 +1,8 @@
-import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
+import {
+  inspectProvisionedResources,
+  provisionDeclaredResources,
+  createAirAppRecords,
+} from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js?v=0.1.0";
 import {
@@ -56,25 +60,27 @@ function base(key) {
   return declared;
 }
 
+// Record reads go through the SDK's helper, bound to this app's client.
+const sdkRecords = () => createAirAppRecords(runtimeClient, { appId: appConfig.appId });
+
 // `filters` is pushed down to records.list, which treats it as a superset
 // hint — the client still narrows, so every caller passes rows through
 // `matches` before showing them.
 async function readPage(key, cursor, filters, limit) {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
   const declared = base(key);
-  const result = await runtimeClient.records.list({
+  const page = await sdkRecords().readPage({
     baseId: declared.baseId,
     limit: limit || declared.readLimit,
-    ...(cursor ? { cursor } : {}),
-    ...(filters?.length ? { filters } : {}),
+    cursor,
+    filters: filters?.length ? filters : undefined,
   });
-  const records = Array.isArray(result) ? result : result.records || [];
-  const rows = records.map((record) => ({
-    ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+  const rows = page.records.map((record) => ({
+    ...normalizeFields(record.fields),
     __recordId: record.id,
     __headCommitId: record.headCommitId || record.headCommit?.id,
   }));
-  return { rows, nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
+  return { rows, nextCursor: page.nextCursor };
 }
 
 const NORMALIZE = { videos: normalizeVideoRow, "video-shots": normalizeShotRow };

@@ -19,7 +19,10 @@ export function registerSetupHooks(overrides) {
 
 // The local gate applies when Busabase is NOT hosting this process — a fact the
 // host states through BUSABASE_AIRAPP_RUNTIME, not one the URL can reveal.
-import { shouldUseLocalGateway as isStandaloneLocalPreview } from "./runtime.js";
+import { detectAirAppRuntime, shouldUseLocalAirAppGateway } from "../vendor/busabase-sdk.js";
+
+const runtime = await detectAirAppRuntime();
+const isStandaloneLocalPreview = () => shouldUseLocalAirAppGateway(runtime);
 
 const APP_NAME = "Busa CMS";
 

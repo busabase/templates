@@ -1,6 +1,6 @@
 import { appConfig } from "./config.js";
 import { messages } from "./messages.js";
-import { getRuntime } from "./runtime.js";
+import { detectAirAppRuntime } from "../vendor/busabase-airapp.js";
 import { getProvider, isDemo } from "./providers/index.js";
 import {
   attentionReason,
@@ -775,7 +775,7 @@ document.addEventListener("keydown", (event) => {
   } else if (view.recordId && view.presentation !== "page") closeDetail();
 });
 view = parseHash();
-const runtime = await getRuntime();
+const runtime = await detectAirAppRuntime();
 if (!isDemo() && runtime.runtime === "unknown") {
   root.innerHTML = '<div class="gate">' + t("unknown") + "</div>";
 } else {

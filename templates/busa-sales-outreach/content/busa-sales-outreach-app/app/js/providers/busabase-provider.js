@@ -1,4 +1,9 @@
-import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
+import {
+  inspectProvisionedResources,
+  provisionDeclaredResources,
+  createAirAppRecords,
+  isAirAppWriteQueued,
+} from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js?v=0.3.0";
 
@@ -22,10 +27,10 @@ const normalizeRecords = (records, baseKey) =>
 
 const readPage = async (client, base, cursor) => {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
-  const page = await client.records.list({
+  const page = await createAirAppRecords(client).readPage({
     baseId: base.baseId,
     limit: BUSABASE_RECORD_PAGE_SIZE,
-    ...(cursor ? { cursor } : {}),
+    cursor,
   });
   return {
     records: normalizeRecords(page.records, base.key),
@@ -65,14 +70,8 @@ const requireBase = (key) => {
   return base;
 };
 
-// A person's write from this app leaves `autoMerge` unset, so Busabase decides
-// from that person's own permission: with write access the change lands now;
-// without it the same change becomes a ChangeRequest for someone who has it.
-// The response says which happened (`materialized: false` is the queued one),
-// and the caller reports it rather than assuming either.
-const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
 const writeOutcome = (result) => {
-  const pending = isQueued(result);
+  const pending = isAirAppWriteQueued(result);
   return { merged: !pending, pending, change_request_id: pending ? result?.id || "" : "" };
 };
 

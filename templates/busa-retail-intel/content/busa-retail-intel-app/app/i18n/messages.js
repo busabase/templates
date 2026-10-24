@@ -1,3 +1,7 @@
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
+
+const sdkQueuedNotice = (locale) => airAppWriteMessage({ status: "queued" }, { locale });
+
 // Inline message catalog (en/zh), matching the canonical i18n/messages.js
 // shape used across this batch of conversions. Ported verbatim (same copy)
 // from the retired app/i18n usage inside app/app.js — that runtime-inline
@@ -22,8 +26,7 @@ export const messages = {
     recordMissing: "Record not found",
     recordMissingDetail: "It may have been removed, or you may not have access to it.",
     noMatches: "No matches in the loaded rows",
-    decisionPending:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    decisionPending: sdkQueuedNotice("en"),
     signal: "Signal",
     action: "Action",
     draft: "Draft",
@@ -131,7 +134,7 @@ export const messages = {
     recordMissing: "找不到这条记录",
     recordMissingDetail: "它可能已被删除，或你没有访问权限。",
     noMatches: "已加载的记录中没有匹配项",
-    decisionPending: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
+    decisionPending: sdkQueuedNotice("zh-CN"),
     signal: "信号",
     action: "行动",
     draft: "草稿",

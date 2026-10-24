@@ -1,3 +1,7 @@
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
+
+const sdkQueuedNotice = (locale) => airAppWriteMessage({ status: "queued" }, { locale });
+
 export const messages = {
   en: {
     loading: "Loading",
@@ -30,8 +34,7 @@ export const messages = {
     ofAum: "of AUM",
     review: "Review",
     settingsReadFailed: "The Settings Base could not be read, so the default risk policy is in use.",
-    savedForReview:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    savedForReview: sdkQueuedNotice("en"),
     keyFacts: "Terms and progress",
     viewsHelp: "What each view shows",
     aumMeta: "{value} AUM",
@@ -136,7 +139,7 @@ export const messages = {
     ofAum: "占管理规模",
     review: "复核",
     settingsReadFailed: "无法读取设置表，当前使用默认风险策略。",
-    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
+    savedForReview: sdkQueuedNotice("zh-CN"),
     keyFacts: "条款与进度",
     viewsHelp: "各视图说明",
     aumMeta: "管理规模 {value}",

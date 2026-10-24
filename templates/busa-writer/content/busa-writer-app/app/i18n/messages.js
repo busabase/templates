@@ -1,3 +1,7 @@
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
+
+const sdkQueuedNotice = (locale) => airAppWriteMessage({ status: "queued" }, { locale });
+
 export const messages = {
   en: {
     all: "All",
@@ -52,8 +56,7 @@ export const messages = {
     reviewNote: "Review note",
     reviewNotePlaceholder: "Optional note for the agent or the record",
     saved: "Saved.",
-    savedForReview:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    savedForReview: sdkQueuedNotice("en"),
     search: "Search",
     selectDraft: "Select a draft to review it.",
     settings: "Help & Settings",
@@ -142,7 +145,7 @@ export const messages = {
     reviewNote: "审核备注",
     reviewNotePlaceholder: "给智能体或记录的备注（可选）",
     saved: "已保存。",
-    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
+    savedForReview: sdkQueuedNotice("zh-CN"),
     search: "搜索",
     selectDraft: "选择一条草稿进行审核。",
     settings: "帮助与设置",

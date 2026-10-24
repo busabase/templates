@@ -1,3 +1,7 @@
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
+
+const sdkQueuedNotice = (locale) => airAppWriteMessage({ status: "queued" }, { locale });
+
 // UI chrome strings for busa-pr-review, ported verbatim from the retired
 // app.js's inline I18N dict. Supports {param} interpolation via app.js's t().
 export const I18N = {
@@ -65,8 +69,7 @@ export const I18N = {
     patch_excerpt: "Patch excerpt",
     action: "Action",
     "decision.saved": "Decision saved",
-    savedForReview:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    savedForReview: sdkQueuedNotice("en"),
     "no.recommendation": "No recommendation loaded.",
     unknown: "unknown",
     normal: "normal",
@@ -202,7 +205,7 @@ export const I18N = {
     patch_excerpt: "Patch 片段",
     action: "动作",
     "decision.saved": "决定已保存",
-    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
+    savedForReview: sdkQueuedNotice("zh-CN"),
     "no.recommendation": "没有加载建议。",
     unknown: "未知",
     normal: "普通",

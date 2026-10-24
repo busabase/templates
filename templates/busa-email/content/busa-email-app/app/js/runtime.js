@@ -41,6 +41,7 @@ const normalize = (body) => {
  */
 const probe = async () => {
   try {
+    // allow-private-copy: busa-email ships no busabase-airapp.js bundle, so detectAirAppRuntime() is not available to it; adopting it means a new vendor bundle.
     const response = await fetch("__airapp/runtime", {
       headers: { accept: "application/json" },
       signal: AbortSignal.timeout(3000),

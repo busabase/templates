@@ -2,6 +2,7 @@ import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/con
 import { appConfig } from "./js/config.js?v=0.1.0";
 import { getProvider } from "./js/providers/index.js?v=0.1.0";
 import { renderRecordView, renderSettings, renderStudio } from "./js/studio-views.js";
+import { airAppWriteMessage } from "./vendor/busabase-airapp.js";
 const messages = {
   en: {
     attention: "Need attention",
@@ -70,8 +71,7 @@ const messages = {
     safety: "Safety boundary",
     demoNotice: "Demo mode: this is a read-only tour, nothing was saved.",
     saved: "Saved.",
-    savedForReview:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    savedForReview: airAppWriteMessage({ status: "queued" }, { locale: "en" }),
     search: "Search",
     empty: "No matching items.",
     loading: "Loading",
@@ -154,7 +154,7 @@ const messages = {
     safety: "安全边界",
     demoNotice: "Demo 模式：这是只读演示，没有保存任何内容。",
     saved: "已保存。",
-    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
+    savedForReview: airAppWriteMessage({ status: "queued" }, { locale: "zh-CN" }),
     search: "搜索",
     empty: "没有匹配项。",
     loading: "加载中",

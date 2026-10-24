@@ -1,3 +1,7 @@
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
+
+const sdkQueuedNotice = (locale) => airAppWriteMessage({ status: "queued" }, { locale });
+
 export const messages = {
   en: {
     overview: "Overview",
@@ -32,8 +36,7 @@ export const messages = {
     storesMany: "stores",
     perMonth: "/mo",
     saved: "Saved.",
-    savedForReview:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    savedForReview: sdkQueuedNotice("en"),
     demoReadOnly: "Demo mode is read-only. Connect Busabase to move stages or add notes.",
     categoryRiskRationale: "{category} is a {tier}-risk category for revenue-based financing.",
     tier: { low: "low", medium: "medium", higher: "higher", unclassified: "unclassified" },
@@ -169,7 +172,7 @@ export const messages = {
     storesMany: "家门店",
     perMonth: "/月",
     saved: "已保存。",
-    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
+    savedForReview: sdkQueuedNotice("zh-CN"),
     demoReadOnly: "演示模式为只读。连接 Busabase 后才能移动阶段或添加备注。",
     categoryRiskRationale: "{category}在营收分成融资中属于{tier}风险品类。",
     tier: { low: "低", medium: "中", higher: "较高", unclassified: "未分类" },

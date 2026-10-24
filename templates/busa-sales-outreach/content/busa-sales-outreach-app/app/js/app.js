@@ -2,6 +2,7 @@ import { appConfig } from "./config.js?v=0.4.0";
 import { closeConnectGate, connectGateStatus, passConnectGate, renderSetupRequired } from "./connect-gate.js?v=0.4.0";
 import { getProvider } from "./providers/index.js?v=0.4.0";
 import { initRuntime, shouldUseLocalGateway } from "./runtime.js?v=0.4.0";
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
 import {
   buildApprovalFields,
   buildProfileFields,
@@ -525,7 +526,7 @@ const renderOnboarding = () => {
 
 const writeNotice = (result) => {
   if (result?.demo) return "演示模式：没有写入 Busabase，也没有真的发出邮件。";
-  if (result?.pending) return "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。";
+  if (result?.pending) return airAppWriteMessage({ status: "queued" }, { locale: "zh-CN" });
   return "";
 };
 

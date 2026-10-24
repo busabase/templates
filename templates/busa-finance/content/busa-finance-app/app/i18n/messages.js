@@ -1,3 +1,7 @@
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
+
+const sdkQueuedNotice = (locale) => airAppWriteMessage({ status: "queued" }, { locale });
+
 export const messages = {
   en: {
     subtitle: "Model review desk",
@@ -45,8 +49,7 @@ export const messages = {
     review_note: "Review note",
     draft: "Draft",
     save_decision: "Save decision",
-    savedForReview:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    savedForReview: sdkQueuedNotice("en"),
     demo_notice: "Demo data",
     demo_read_only: "Demo mode is read-only — decisions are not saved.",
     no_checks: "No checks yet. Generate a snapshot first.",
@@ -153,7 +156,7 @@ export const messages = {
     review_note: "审阅备注",
     draft: "草稿",
     save_decision: "保存决定",
-    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
+    savedForReview: sdkQueuedNotice("zh-CN"),
     demo_notice: "演示数据",
     demo_read_only: "演示模式只读，决定不会保存。",
     no_checks: "还没有检查项。先生成模型快照。",

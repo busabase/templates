@@ -19673,7 +19673,7 @@ function date4(params) {
   return _coercedDate(ZodDate, params);
 }
 
-// node_modules/busabase-sdk/dist/template-CMJMkyse.js
+// node_modules/busabase-sdk/dist/template-Bnkq4diD.js
 async function hashBytes(bytes) {
   const subtle = globalThis.crypto?.subtle;
   if (!subtle) return void 0;
@@ -19756,10 +19756,16 @@ var TemplateSecretSchema = external_exports.object({
   description: external_exports.string().default(""),
   required: external_exports.boolean().default(true)
 });
+var TemplateVideoSchema = external_exports.object({
+  src: external_exports.string().min(1),
+  title: external_exports.string().optional()
+});
 var TemplateLocaleMediaSchema = external_exports.object({
   /** Replaces the default list WHOLE for this locale — never merged per index. */
   screenshots: external_exports.array(external_exports.string()).optional(),
-  video: external_exports.string().optional()
+  video: external_exports.string().optional(),
+  /** Replaces the default clips WHOLE for this locale; wins over `video` here. */
+  videos: external_exports.array(TemplateVideoSchema).optional()
 });
 var TemplateLocalesSchema = external_exports.record(external_exports.string(), TemplateLocaleMediaSchema);
 external_exports.object({
@@ -19782,8 +19788,18 @@ external_exports.object({
   */
   video: external_exports.string().optional(),
   /**
+  * Several demo clips, in the order they are shown (cover first, then these,
+  * then the screenshots), at most `TEMPLATE_VIDEO_LIMIT`.
+  *
+  * `video` stays the one-clip shorthand and is unchanged. When `videos` is
+  * declared it wins, and the catalog index still writes `video` as the first
+  * entry's path so servers deployed before this field existed keep showing one
+  * clip instead of none.
+  */
+  videos: external_exports.array(TemplateVideoSchema).optional(),
+  /**
   * Localized gallery media, the App Store / Google Play rule: a viewer whose
-  * locale has an entry sees that entry's `screenshots` / `video`; anything the
+  * locale has an entry sees that entry's `screenshots` / `video` / `videos`; anything the
   * entry leaves out, and every locale without an entry, falls back to the two
   * fields above. Those stay the English/default set — they are what every
   * deployed server and CLI already reads, so their meaning cannot change.
@@ -19865,6 +19881,229 @@ external_exports.object({
 });
 
 // node_modules/busabase-sdk/dist/airapp.js
+var AIRAPP_RUNTIME_PATH = "__airapp/runtime";
+var AIRAPP_RUNTIME_TIMEOUT_MS = 3e3;
+var AIRAPP_RUNTIME_UNKNOWN = Object.freeze({
+  runtime: "unknown",
+  hosted: false,
+  devProxy: false,
+  determined: false
+});
+function normalizeAirAppRuntime(body) {
+  if (!body || typeof body !== "object") return { ...AIRAPP_RUNTIME_UNKNOWN };
+  const report = body;
+  if (typeof report.runtime !== "string") return { ...AIRAPP_RUNTIME_UNKNOWN };
+  return {
+    runtime: report.runtime,
+    hosted: report.hosted === true,
+    devProxy: report.devProxy === true,
+    determined: true
+  };
+}
+var probe = async (doFetch, timeoutMs) => {
+  const controller = typeof AbortController === "function" ? new AbortController() : void 0;
+  const timer = controller ? globalThis.setTimeout(() => controller.abort(), timeoutMs) : void 0;
+  try {
+    const response = await doFetch(AIRAPP_RUNTIME_PATH, {
+      headers: { accept: "application/json" },
+      ...controller ? { signal: controller.signal } : {}
+    });
+    const type = response.headers.get("content-type") || "";
+    if (!response.ok || !type.includes("application/json")) return { ...AIRAPP_RUNTIME_UNKNOWN };
+    return normalizeAirAppRuntime(await response.json());
+  } catch {
+    return { ...AIRAPP_RUNTIME_UNKNOWN };
+  } finally {
+    if (timer !== void 0) globalThis.clearTimeout(timer);
+  }
+};
+var SLOT = /* @__PURE__ */ Symbol.for("busabase-sdk.airapp.runtime");
+var slot = () => {
+  const holder = globalThis;
+  let current = holder[SLOT];
+  if (!current) {
+    current = {};
+    holder[SLOT] = current;
+  }
+  return current;
+};
+function detectAirAppRuntime(options = {}) {
+  const timeoutMs = options.timeoutMs ?? 3e3;
+  if (options.fetch) return probe(options.fetch, timeoutMs);
+  const shared = slot();
+  if (!shared.pending) shared.pending = typeof globalThis.fetch === "function" ? probe(globalThis.fetch.bind(globalThis), timeoutMs) : Promise.resolve({ ...AIRAPP_RUNTIME_UNKNOWN });
+  return shared.pending;
+}
+var shouldUseLocalAirAppGateway = (runtime) => !runtime.hosted;
+var isChangeRequestShape = (response) => Array.isArray(response.operations) || "primaryOperation" in response;
+var recordIdsOf = (response, key) => (response.operations ?? []).map((operation) => operation?.[key]).filter((value) => typeof value === "string" && value !== "");
+var isAirAppWriteQueued = (response) => {
+  const value = response;
+  return value?.materialized === false || value?.status === "in_review";
+};
+function toAirAppWriteOutcome(response) {
+  const value = response ?? {};
+  const changeRequest = isChangeRequestShape(value);
+  if (isAirAppWriteQueued(value) || changeRequest && value.materialized !== true && value.status !== "merged") {
+    const targets = recordIdsOf(value, "targetRecordId");
+    const target = value.primaryOperation?.targetRecordId ?? (targets.length === 1 ? targets[0] : void 0);
+    return {
+      status: "queued",
+      ...target ? { recordId: target } : {},
+      ...value.id ? { changeRequestId: value.id } : {}
+    };
+  }
+  if (changeRequest) {
+    const merged = recordIdsOf(value, "mergedRecordId");
+    return {
+      status: "saved",
+      ...merged.length === 1 ? { recordId: merged[0] } : {},
+      ...merged.length ? { recordIds: merged } : {},
+      ...value.id ? { changeRequestId: value.id } : {}
+    };
+  }
+  return {
+    status: "saved",
+    ...value.id ? { recordId: value.id } : {},
+    ...value.changeRequestId ? { changeRequestId: value.changeRequestId } : {}
+  };
+}
+var AIRAPP_WRITE_MESSAGES = Object.freeze({
+  en: {
+    saved: "Saved.",
+    queued: "Sent for review. You don't have write access here, so this waits until someone who does approves it."
+  },
+  "zh-CN": {
+    saved: "\u5DF2\u4FDD\u5B58\u3002",
+    queued: "\u5DF2\u63D0\u4EA4\u5BA1\u6838\u3002\u4F60\u5728\u8FD9\u91CC\u6CA1\u6709\u5199\u6743\u9650\uFF0C\u9700\u8981\u6709\u5199\u6743\u9650\u7684\u4EBA\u6279\u51C6\u540E\u624D\u4F1A\u751F\u6548\u3002"
+  },
+  "zh-TW": {
+    saved: "\u5DF2\u5132\u5B58\u3002",
+    queued: "\u5DF2\u9001\u51FA\u5BE9\u6838\u3002\u4F60\u5728\u9019\u88E1\u6C92\u6709\u5BEB\u5165\u6B0A\u9650\uFF0C\u9700\u8981\u6709\u5BEB\u5165\u6B0A\u9650\u7684\u4EBA\u6838\u51C6\u5F8C\u624D\u6703\u751F\u6548\u3002"
+  },
+  ja: {
+    saved: "\u4FDD\u5B58\u3057\u307E\u3057\u305F\u3002",
+    queued: "\u30EC\u30D3\u30E5\u30FC\u306B\u9001\u4FE1\u3057\u307E\u3057\u305F\u3002\u3053\u3053\u3067\u306E\u66F8\u304D\u8FBC\u307F\u6A29\u9650\u304C\u306A\u3044\u305F\u3081\u3001\u66F8\u304D\u8FBC\u307F\u6A29\u9650\u306E\u3042\u308B\u4EBA\u304C\u627F\u8A8D\u3059\u308B\u307E\u3067\u53CD\u6620\u3055\u308C\u307E\u305B\u3093\u3002"
+  }
+});
+function resolveAirAppWriteLocale(locale) {
+  if (!locale) return "en";
+  if (AIRAPP_WRITE_MESSAGES[locale]) return locale;
+  const lower = locale.toLowerCase();
+  if (lower.startsWith("zh")) return /-(?:hant|tw|hk|mo)\b/.test(lower) ? "zh-TW" : "zh-CN";
+  const language = lower.split(/[-_]/)[0];
+  return AIRAPP_WRITE_MESSAGES[language] ? language : "en";
+}
+function airAppWriteMessage(outcome, options = {}) {
+  const browserLocale = typeof globalThis.navigator === "object" ? globalThis.navigator?.language : void 0;
+  const table = AIRAPP_WRITE_MESSAGES[resolveAirAppWriteLocale(options.locale ?? browserLocale)];
+  const key = outcome.status === "queued" ? "queued" : "saved";
+  return options.messages?.[key] ?? table[key];
+}
+function airAppRecordFields(record2) {
+  const value = record2;
+  const fields = value?.headCommit?.payload ?? value?.headCommit?.fields ?? value?.fields;
+  return fields && typeof fields === "object" && !Array.isArray(fields) ? fields : {};
+}
+var isNotFound$1 = (error62) => typeof error62 === "object" && error62 !== null && ("code" in error62 && error62.code === "NOT_FOUND" || "status" in error62 && error62.status === 404);
+var withFields = (record2) => ({
+  ...record2,
+  fields: airAppRecordFields(record2)
+});
+function createAirAppRecords(client, options = {}) {
+  const { appId } = options;
+  const readPage = async (input2) => {
+    const result = await client.records.list({
+      baseId: input2.baseId,
+      limit: input2.limit ?? 50,
+      ...input2.cursor ? { cursor: input2.cursor } : {},
+      ...input2.filters ? { filters: input2.filters } : {},
+      ...input2.valueFilters ? { valueFilters: input2.valueFilters } : {},
+      ...input2.sort ? { sort: input2.sort } : {}
+    });
+    if (Array.isArray(result)) return {
+      records: result.filter((record2) => record2?.baseId === input2.baseId).map(withFields),
+      nextCursor: null
+    };
+    const page = result;
+    return {
+      records: (page?.records ?? []).map(withFields),
+      nextCursor: page?.nextCursor || null
+    };
+  };
+  const findRecord = async ({ baseId, fieldSlug, valueText }) => {
+    if (!valueText) return null;
+    try {
+      return withFields(await client.records.get({
+        baseId,
+        fieldSlug,
+        valueText
+      }));
+    } catch (error62) {
+      if (isNotFound$1(error62)) return null;
+      throw error62;
+    }
+  };
+  const createRecord = async (input2) => {
+    const response = await client.bases.createChangeRequest({
+      baseId: input2.baseId,
+      fields: input2.fields,
+      ...input2.message !== void 0 ? { message: input2.message } : {},
+      ...appId ? { submittedBy: appId } : {},
+      ...input2.idempotencyKey ? { idempotencyKey: input2.idempotencyKey } : {}
+    });
+    return {
+      ...toAirAppWriteOutcome(response),
+      response
+    };
+  };
+  const updateRecord = async (input2) => {
+    const response = await client.records.changeRequest({
+      recordId: input2.recordId,
+      operation: "update",
+      fields: input2.fields,
+      ...input2.message !== void 0 ? { message: input2.message } : {},
+      ...appId ? { author: appId } : {},
+      ...input2.baseCommitId ? { baseCommitId: input2.baseCommitId } : {}
+    });
+    return {
+      ...toAirAppWriteOutcome(response),
+      response
+    };
+  };
+  const upsert = async (input2) => {
+    if (!input2.valueText) throw new Error(`upsert: valueText for ${input2.fieldSlug} is empty, so there is no record to match \u2014 pass the record's business id`);
+    const existing = await findRecord(input2);
+    if (existing) return {
+      ...await updateRecord({
+        recordId: existing.id,
+        baseCommitId: existing.headCommitId,
+        fields: input2.fields,
+        message: input2.message
+      }),
+      action: "update"
+    };
+    const fields = input2.fieldSlug in input2.fields ? input2.fields : {
+      ...input2.fields,
+      [input2.fieldSlug]: input2.valueText
+    };
+    return {
+      ...await createRecord({
+        baseId: input2.baseId,
+        fields,
+        message: input2.message
+      }),
+      action: "create"
+    };
+  };
+  return {
+    readPage,
+    findRecord,
+    createRecord,
+    updateRecord,
+    upsert
+  };
+}
 var AirAppSetupError = class extends Error {
   code;
   /** The human-readable half, without the `CODE: ` prefix. */
@@ -20250,13 +20489,26 @@ async function publishAirApp(client, config2, files) {
   };
 }
 export {
+  AIRAPP_RUNTIME_PATH,
+  AIRAPP_RUNTIME_TIMEOUT_MS,
+  AIRAPP_RUNTIME_UNKNOWN,
+  AIRAPP_WRITE_MESSAGES,
   AirAppSetupError,
+  airAppRecordFields,
+  airAppWriteMessage,
   buildAirAppFileOperations,
   buildProvisionOperations,
+  createAirAppRecords,
+  detectAirAppRuntime,
   inspectProvisionedResources,
+  isAirAppWriteQueued,
   isNotFound,
+  normalizeAirAppRuntime,
   provisionDeclaredResources,
   publishAirApp,
   resolveAirAppFileAssets,
-  resolveProvisionedFolder
+  resolveAirAppWriteLocale,
+  resolveProvisionedFolder,
+  shouldUseLocalAirAppGateway,
+  toAirAppWriteOutcome
 };

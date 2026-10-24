@@ -1,3 +1,7 @@
+import { airAppWriteMessage } from "../vendor/busabase-airapp.js";
+
+const sdkQueuedNotice = (locale) => airAppWriteMessage({ status: "queued" }, { locale });
+
 // UI chrome catalog for Busa MV. Domain content (song lyrics, shot prompts, cast
 // notes) is never translated here — only the app's own labels. Default mode is
 // "auto" (follows navigator.languages); users can pin zh/en in Help & Settings.
@@ -163,7 +167,7 @@ export const MESSAGES = {
     toast_img_generated: "画面任务已加入待执行队列",
     toast_vid_generated: "视频任务已加入待执行队列",
     toast_shot_deleted: "已删除分镜",
-    savedForReview: "已提交审核。你在这里没有写权限，需要有写权限的人批准后才会生效。",
+    savedForReview: sdkQueuedNotice("zh-CN"),
     // record views (overview + tables)
     nav_overview: "总览",
     overview_checklist: "制作进度",
@@ -360,8 +364,7 @@ export const MESSAGES = {
     toast_img_generated: "Image task queued for the agent",
     toast_vid_generated: "Video task queued for the agent",
     toast_shot_deleted: "Shot deleted",
-    savedForReview:
-      "Sent for review. You don't have write access here, so this waits until someone who does approves it.",
+    savedForReview: sdkQueuedNotice("en"),
     // record views (overview + tables)
     nav_overview: "Overview",
     overview_checklist: "Production checklist",

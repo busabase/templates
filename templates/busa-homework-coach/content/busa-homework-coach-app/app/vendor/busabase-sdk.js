@@ -19722,7 +19722,7 @@ function date4(params) {
   return _coercedDate(ZodDate, params);
 }
 
-// node_modules/busabase-sdk/dist/template-CMJMkyse.js
+// node_modules/busabase-sdk/dist/template-Bnkq4diD.js
 async function hashBytes(bytes) {
   const subtle = globalThis.crypto?.subtle;
   if (!subtle) return void 0;
@@ -19805,10 +19805,16 @@ var TemplateSecretSchema = external_exports.object({
   description: external_exports.string().default(""),
   required: external_exports.boolean().default(true)
 });
+var TemplateVideoSchema = external_exports.object({
+  src: external_exports.string().min(1),
+  title: external_exports.string().optional()
+});
 var TemplateLocaleMediaSchema = external_exports.object({
   /** Replaces the default list WHOLE for this locale — never merged per index. */
   screenshots: external_exports.array(external_exports.string()).optional(),
-  video: external_exports.string().optional()
+  video: external_exports.string().optional(),
+  /** Replaces the default clips WHOLE for this locale; wins over `video` here. */
+  videos: external_exports.array(TemplateVideoSchema).optional()
 });
 var TemplateLocalesSchema = external_exports.record(external_exports.string(), TemplateLocaleMediaSchema);
 external_exports.object({
@@ -19831,8 +19837,18 @@ external_exports.object({
   */
   video: external_exports.string().optional(),
   /**
+  * Several demo clips, in the order they are shown (cover first, then these,
+  * then the screenshots), at most `TEMPLATE_VIDEO_LIMIT`.
+  *
+  * `video` stays the one-clip shorthand and is unchanged. When `videos` is
+  * declared it wins, and the catalog index still writes `video` as the first
+  * entry's path so servers deployed before this field existed keep showing one
+  * clip instead of none.
+  */
+  videos: external_exports.array(TemplateVideoSchema).optional(),
+  /**
   * Localized gallery media, the App Store / Google Play rule: a viewer whose
-  * locale has an entry sees that entry's `screenshots` / `video`; anything the
+  * locale has an entry sees that entry's `screenshots` / `video` / `videos`; anything the
   * entry leaves out, and every locale without an entry, falls back to the two
   * fields above. Those stay the English/default set — they are what every
   * deployed server and CLI already reads, so their meaning cannot change.
@@ -22287,6 +22303,7 @@ var fieldOptionsSchema = external_exports.object({
     currency: external_exports.string().regex(/^[A-Z]{3}$/).optional()
   }).optional(),
   inverseFieldId: external_exports.string().optional(),
+  reverseOfFieldId: external_exports.string().optional().describe("Relation fields only. Makes this a read-only reverse column of the relation field with this id on the target Base, which must point back at this Base. Its value is computed from that field's links; edit the forward field instead."),
   lookup: external_exports.object({
     relationFieldSlug: external_exports.string().min(1).describe("Slug of a `relation` field on THIS Base \u2014 the hop to follow."),
     targetFieldSlug: external_exports.string().min(1).describe("Slug of the field on the related Base whose values are pulled over."),
@@ -23484,6 +23501,7 @@ var liveEventSchema = external_exports.object({
     "node.metadata_updated",
     "node.settings_updated"
   ]),
+  reason: external_exports.literal("acl").optional(),
   spaceId: external_exports.string(),
   actorId: external_exports.string(),
   changeRequestId: external_exports.string().nullable(),
@@ -24425,6 +24443,23 @@ var viewFilterSchema = external_exports.object({
   operator: viewFilterOperatorSchema,
   value: external_exports.unknown().optional()
 });
+var viewFilterConjunctionSchema = external_exports.enum(["and", "or"]);
+var deepestViewFilterGroupSchema = external_exports.object({
+  conjunction: viewFilterConjunctionSchema,
+  conditions: external_exports.array(viewFilterSchema).min(1).max(100)
+});
+var viewFilterGroupSchema = external_exports.object({
+  conjunction: viewFilterConjunctionSchema,
+  conditions: external_exports.array(external_exports.union([viewFilterSchema, deepestViewFilterGroupSchema])).min(1).max(100)
+});
+var viewFilterConditionSchema = external_exports.union([viewFilterSchema, viewFilterGroupSchema]);
+var viewFiltersSchema = external_exports.array(viewFilterConditionSchema).max(100).superRefine((conditions, ctx) => {
+  const count = (items) => items.reduce((total, item) => total + ("conditions" in item ? count(item.conditions) : 1), 0);
+  if (count(conditions) > 100) ctx.addIssue({
+    code: "custom",
+    message: "A view supports at most 100 filter conditions."
+  });
+});
 var viewSortSchema = external_exports.object({
   direction: external_exports.enum(["asc", "desc"]),
   fieldSlug: external_exports.string(),
@@ -24445,7 +24480,8 @@ var galleryCardSizeSchema = external_exports.enum([
   "large"
 ]);
 var viewConfigSchema = external_exports.object({
-  filters: external_exports.array(viewFilterSchema).default([]),
+  filters: viewFiltersSchema.default([]),
+  filterConjunction: viewFilterConjunctionSchema.optional(),
   sorts: external_exports.array(viewSortSchema).default([]),
   visibleFieldSlugs: external_exports.array(external_exports.string()).nullable().optional(),
   fieldWidths: external_exports.record(external_exports.string().min(1), external_exports.number().int().min(92).max(640)).optional(),
@@ -24493,7 +24529,7 @@ var viewConfigPatchSchema = viewConfigSchema.omit({
   filters: true,
   sorts: true
 }).extend({
-  filters: external_exports.array(viewFilterSchema).optional(),
+  filters: viewFiltersSchema.optional(),
   sorts: external_exports.array(viewSortSchema).optional()
 });
 var updateViewInputSchema = external_exports.object({
@@ -24534,6 +24570,38 @@ var viewChangeRequestInputSchema = external_exports.discriminatedUnion("operatio
     viewId: external_exports.string().min(1)
   })
 ]);
+var lookupComputedSchema = external_exports.object({
+  status: external_exports.enum([
+    "ready",
+    "unlinked",
+    "empty",
+    "invalid",
+    "inaccessible"
+  ]),
+  reason: external_exports.enum([
+    "missing_configuration",
+    "missing_relation",
+    "missing_source_configuration",
+    "missing_target_field",
+    "unsupported_source",
+    "unsupported_rollup",
+    "source_base_mismatch",
+    "source_record_archived"
+  ]).optional(),
+  value: external_exports.unknown(),
+  targetField: baseFieldSchema.optional(),
+  sourceBaseId: external_exports.string().optional(),
+  sourceBaseSlug: external_exports.string().optional(),
+  sources: external_exports.array(external_exports.object({
+    recordId: external_exports.string(),
+    title: external_exports.string(),
+    value: external_exports.unknown(),
+    headCommitId: external_exports.string()
+  })).max(25).default([]),
+  sourcesTruncated: external_exports.boolean().optional(),
+  dependencyVersion: external_exports.string(),
+  dependencyReadAt: external_exports.number().finite().nonnegative().optional()
+});
 var recordSchema = external_exports.object({
   id: external_exports.string(),
   baseId: external_exports.string(),
@@ -24544,6 +24612,7 @@ var recordSchema = external_exports.object({
   createdBy: external_exports.string(),
   createdByUser: userRefSchema.nullable().optional().default(null),
   fieldUsers: external_exports.record(external_exports.string(), userRefSchema).optional().default({}),
+  computedFields: external_exports.record(external_exports.string(), lookupComputedSchema).optional(),
   archivedAt: external_exports.string().nullable(),
   createdAt: external_exports.string(),
   updatedAt: external_exports.string(),
@@ -25064,8 +25133,11 @@ var recordContract = {
     path: "/records/{recordId}/links",
     tags: ["Records"],
     summary: "List record links",
-    successDescription: "Active outbound links from a canonical record."
-  }).input(external_exports.object({ recordId: external_exports.string() })).output(external_exports.array(recordLinkSchema))
+    successDescription: "Active links of a canonical record: outbound (this record's relation fields) by default, or inbound (other records whose relation fields link here)."
+  }).input(external_exports.object({
+    recordId: external_exports.string(),
+    direction: external_exports.enum(["outbound", "inbound"]).optional().describe("`outbound` (default): links stored on this record. `inbound`: links from other live records that point at this record \u2014 the reverse side of a relation, i.e. 'who links here'.")
+  })).output(external_exports.array(recordLinkSchema))
 };
 var viewContract = { changeRequest: oc.route({
   method: "POST",
@@ -25692,7 +25764,14 @@ var TemplateCardVOSchema = external_exports.object({
   */
   video: external_exports.string().optional(),
   /**
-  * Per-locale screenshots/clip, absolute URLs like the two fields above,
+  * Every default clip, absolute URLs, in display order. `video` is always the
+  * first of these (kept for clients built before this field existed — the
+  * mobile app ships separately from the server). Render through
+  * `pickTemplateMedia(card, locale)`, never from this directly.
+  */
+  videos: external_exports.array(TemplateVideoSchema).optional(),
+  /**
+  * Per-locale screenshots/clips, absolute URLs like the fields above,
   * keyed by locale. Absent when the template declares none — and on every
   * card an older catalog produced. Never read it directly: render through
   * `pickTemplateMedia(card, locale)` (`domains/templates/media`), which owns

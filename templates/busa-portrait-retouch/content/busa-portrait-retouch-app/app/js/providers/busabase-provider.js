@@ -1,4 +1,9 @@
-import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
+import {
+  inspectProvisionedResources,
+  provisionDeclaredResources,
+  createAirAppRecords,
+  isAirAppWriteQueued,
+} from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js?v=0.1.0";
 import {
@@ -20,13 +25,6 @@ let bases = new Map();
 let setupError = "";
 let pendingOnboardingCr = null;
 
-// A person's write from this app leaves `autoMerge` unset, so Busabase decides
-// from that person's own permission: with write access the change lands now;
-// without it the same change becomes a ChangeRequest for someone who has it.
-// The response says which happened (`materialized: false` is the queued one),
-// and the caller reports it rather than assuming either.
-const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
-
 async function ensureResources() {
   client ||= createRuntimeClient();
   const resources = await inspectProvisionedResources(client, appConfig);
@@ -45,13 +43,12 @@ const rowFromRecord = (record) => ({
 // One page per call. Reading another page is the user's "Load more" click.
 async function page(key, cursor) {
   const base = bases.get(key);
-  const result = await client.records.list({
+  const recordsPage = await createAirAppRecords(client).readPage({
     baseId: base.baseId,
     limit: base.readLimit,
-    ...(cursor ? { cursor } : {}),
+    cursor,
   });
-  const records = Array.isArray(result) ? result : result.records || [];
-  return { rows: records.map(rowFromRecord), nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
+  return { rows: recordsPage.records.map(rowFromRecord), nextCursor: recordsPage.nextCursor };
 }
 
 async function rows(key) {
@@ -100,12 +97,7 @@ async function mapBounded(items, limit, fn) {
 
 async function findRecord(key, fieldSlug, valueText) {
   const base = bases.get(key);
-  try {
-    return await client.records.get({ baseId: base.baseId, fieldSlug, valueText });
-  } catch (error) {
-    if (error?.code === "NOT_FOUND" || error?.status === 404) return null;
-    throw error;
-  }
+  return createAirAppRecords(client).findRecord({ baseId: base.baseId, fieldSlug, valueText });
 }
 
 async function resolveAssetUrl(assetId) {
@@ -246,7 +238,7 @@ export const busabaseProvider = {
       author: appConfig.appId,
       baseCommitId: record.headCommitId || record.headCommit?.id,
     });
-    const pending = isQueued(changeRequest);
+    const pending = isAirAppWriteQueued(changeRequest);
     return {
       ok: true,
       pending,
@@ -293,7 +285,7 @@ export const busabaseProvider = {
         });
     // Only a queued write leaves anything to wait for; a merged one is already
     // the settings record the next getState() reads.
-    const pending = isQueued(changeRequest);
+    const pending = isAirAppWriteQueued(changeRequest);
     pendingOnboardingCr = pending ? changeRequest : null;
     return {
       ok: true,

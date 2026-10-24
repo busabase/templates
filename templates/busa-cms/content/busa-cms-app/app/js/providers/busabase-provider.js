@@ -2,6 +2,7 @@ import { connectionFacts, createRuntimeClient, resolveRuntimeResources } from ".
 import { appConfig } from "../config.js";
 import { analyze, LIVE_STATUS } from "../content-model.js";
 import { diffSchema, schemaIsClean } from "../schema-health.js";
+import { createAirAppRecords } from "../../vendor/busabase-sdk.js";
 
 /**
  * The real workspace, read over `/api/v1` on this app's own origin.
@@ -48,10 +49,10 @@ const listRecords = async (base, cursor) => {
   requireRead("records.listPaged");
   // The blueprint capability is records.listPaged; the SDK names the same
   // cursor-paged operation records.list.
-  const page = await client.records.list({
+  const page = await createAirAppRecords(client).readPage({
     baseId: base.baseId,
     limit: base.readLimit,
-    ...(cursor ? { cursor } : {}),
+    cursor,
   });
   return { records: (page.records || []).map(toRaw), nextCursor: page.nextCursor || null };
 };

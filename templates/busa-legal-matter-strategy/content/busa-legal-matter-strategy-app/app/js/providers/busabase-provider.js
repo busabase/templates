@@ -1,4 +1,9 @@
-import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
+import {
+  inspectProvisionedResources,
+  provisionDeclaredResources,
+  createAirAppRecords,
+  isAirAppWriteQueued,
+} from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js?v=0.1.0";
 import {
@@ -60,21 +65,26 @@ function base(key) {
   return declared;
 }
 
+// Record reads and writes go through the SDK's helpers, bound to this app's client.
+// A person's write leaves `autoMerge` unset, so Busabase decides from their own
+// permission: it lands now with write access and becomes a ChangeRequest without
+// it. The response says which happened; `isAirAppWriteQueued` reads it.
+const sdkRecords = () => createAirAppRecords(runtimeClient, { appId: appConfig.appId });
+
 async function readPage(key, cursor) {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
   const declared = base(key);
-  const result = await runtimeClient.records.list({
+  const page = await sdkRecords().readPage({
     baseId: declared.baseId,
     limit: declared.readLimit,
-    ...(cursor ? { cursor } : {}),
+    cursor,
   });
-  const records = Array.isArray(result) ? result : result.records || [];
-  const rows = records.map((record) => ({
-    ...normalizeFields(record.headCommit?.payload || record.headCommit?.fields || record.fields),
+  const rows = page.records.map((record) => ({
+    ...normalizeFields(record.fields),
     __recordId: record.id,
     __headCommitId: record.headCommitId || record.headCommit?.id,
   }));
-  return { rows, nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
+  return { rows, nextCursor: page.nextCursor };
 }
 
 async function countRecords(key, filters) {
@@ -93,12 +103,7 @@ const countStatus = (status) =>
 async function findRecord(key, idFieldSlug, idValue) {
   if (!allowedReads.has("records.get")) throw new Error("PROCEDURE_DENIED: records.get");
   const declared = base(key);
-  try {
-    return await runtimeClient.records.get({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
-  } catch (error) {
-    if (error?.code === "NOT_FOUND" || error?.status === 404) return null;
-    throw error;
-  }
+  return sdkRecords().findRecord({ baseId: declared.baseId, fieldSlug: idFieldSlug, valueText: idValue });
 }
 
 async function readSettingsRow() {
@@ -159,13 +164,6 @@ function baseItemFields(row) {
     updated_at: row.updated_at || "",
   };
 }
-
-// A person's write from this app leaves `autoMerge` unset, so Busabase decides
-// from that person's own permission: with write access the change lands now;
-// without it the same change becomes a ChangeRequest for someone who has it.
-// The response says which happened (`materialized: false` is the queued one),
-// and the caller reports it rather than assuming either.
-const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
 
 export const busabaseProvider = {
   kind: "busabase",
@@ -285,7 +283,7 @@ export const busabaseProvider = {
       author: appConfig.appId,
       baseCommitId: existing.headCommitId,
     });
-    const pending = isQueued(result);
+    const pending = isAirAppWriteQueued(result);
     return { ok: true, pending, change_request_id: pending ? result?.id || "" : "" };
   },
 

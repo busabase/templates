@@ -1,4 +1,4 @@
-import { inspectProvisionedResources } from "../../vendor/busabase-airapp.js";
+import { inspectProvisionedResources, createAirAppRecords } from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js";
 import { resolveOwnedConfig } from "../resource-binding.js";
@@ -19,10 +19,10 @@ export function normalizeRecords(rows, key) {
 }
 async function readPage(base, cursor) {
   requireRead("records.list");
-  const page = await client.records.list({
+  const page = await createAirAppRecords(client).readPage({
     baseId: base.baseId,
     limit: Number(base.readLimit),
-    ...(cursor ? { cursor } : {}),
+    cursor,
     sort: { fieldSlug: "due", fieldType: "date", direction: "asc" },
   });
   return {

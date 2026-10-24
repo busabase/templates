@@ -1,4 +1,8 @@
-import { inspectProvisionedResources, provisionDeclaredResources } from "../../vendor/busabase-airapp.js";
+import {
+  inspectProvisionedResources,
+  provisionDeclaredResources,
+  createAirAppRecords,
+} from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
 import { appConfig } from "../config.js?v=0.1.0";
 import { NORMALIZERS, decideFix } from "../shelf-model.js?v=0.1.0";
@@ -52,19 +56,21 @@ const toRow = (key, record) =>
 
 const errorText = (error) => (error instanceof Error ? error.message : String(error));
 
+// Record reads go through the SDK's helper, bound to this app's client.
+const sdkRecords = () => createAirAppRecords(runtimeClient, { appId: appConfig.appId });
+
 // One bounded page per call (the Base's readLimit, ≤ 50). Callers never loop
 // on nextCursor; the UI fetches the next page only on an explicit Load more.
 async function readPage(key, cursor) {
   if (!allowedReads.has("records.list")) throw new Error("PROCEDURE_DENIED: records.list");
   const declared = base(key);
-  const result = await runtimeClient.records.list({
+  const page = await sdkRecords().readPage({
     baseId: declared.baseId,
     limit: declared.readLimit,
-    ...(cursor ? { cursor } : {}),
+    cursor,
   });
-  const records = Array.isArray(result) ? result : result.records || [];
-  const rows = records.map((record) => toRow(key, record));
-  return { rows, nextCursor: Array.isArray(result) ? null : result.nextCursor || null };
+  const rows = page.records.map((record) => toRow(key, record));
+  return { rows, nextCursor: page.nextCursor };
 }
 
 // Exact server-side total for the "x of y loaded" labels; null hides it.

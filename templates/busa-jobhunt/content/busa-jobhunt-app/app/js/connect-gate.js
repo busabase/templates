@@ -9,14 +9,14 @@
 // part of the gate.
 import { createAirAppConnectGate } from "../vendor/busabase-airapp-gate.js";
 import { getProvider } from "./providers/index.js?v=0.4.0";
-import { initRuntime, shouldUseLocalGateway } from "./runtime.js?v=0.4.0";
+import { detectAirAppRuntime, shouldUseLocalAirAppGateway } from "../vendor/busabase-airapp.js";
 
 const isDemo = () => new URLSearchParams(window.location.search).has("demo");
 
 const gate = createAirAppConnectGate({
   appName: "Busa JobHunt",
   demoHref: "?demo=1#/to-send",
-  shouldGate: async () => !isDemo() && shouldUseLocalGateway(await initRuntime()),
+  shouldGate: async () => !isDemo() && shouldUseLocalAirAppGateway(await detectAirAppRuntime()),
   onProvision: async () => (await getProvider()).provisionResources(),
 });
 

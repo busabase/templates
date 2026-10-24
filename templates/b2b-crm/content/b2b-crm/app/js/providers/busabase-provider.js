@@ -1,5 +1,6 @@
 import { createRuntimeClient, resolveRuntimeResources } from "../busabase-client.js";
 import { appConfig } from "../config.js";
+import { createAirAppRecords, isAirAppWriteQueued } from "../../vendor/busabase-sdk.js";
 
 const allowedReads = new Set(appConfig.permissions.read_procedures);
 const allowedWrites = new Set(appConfig.permissions.change_request_procedures);
@@ -25,12 +26,12 @@ const readPage = async (client, base, options = {}) => {
   requireRead("records.listPaged");
   // The blueprint capability is records.listPaged; SDK 0.19 names the same
   // cursor-paged operation records.list.
-  const page = await client.records.list({
+  const page = await createAirAppRecords(client).readPage({
     baseId: base.baseId,
     limit: base.readLimit,
-    ...(options.cursor ? { cursor: options.cursor } : {}),
-    ...(options.filters?.length ? { filters: options.filters } : {}),
-    ...(options.sort ? { sort: options.sort } : {}),
+    cursor: options.cursor,
+    filters: options.filters?.length ? options.filters : undefined,
+    sort: options.sort,
   });
   return {
     records: normalizeRecords(page.records, base.key),
@@ -139,13 +140,7 @@ const readChangeRequests = async (client) => {
 let runtimeClient;
 let runtimeBases = new Map();
 
-// A person's write from this app leaves `autoMerge` unset, so Busabase decides
-// from that person's own permission: with write access the change lands now;
-// without it the same change becomes a ChangeRequest for someone who has it.
-// The response says which happened (`materialized: false` is the queued one),
-// and the caller reports it rather than assuming either.
-const isQueued = (result) => result?.materialized === false || result?.status === "in_review";
-const writeOutcome = (result) => ({ ...result, pending: isQueued(result) });
+const writeOutcome = (result) => ({ ...result, pending: isAirAppWriteQueued(result) });
 
 export const busabaseProvider = {
   name: "busabase",

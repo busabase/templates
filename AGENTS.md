@@ -83,6 +83,15 @@ node scripts/update-app-sdk.mjs [--version x.y.z] [<path-or-glob>...]
 An app's own check may require the SDK to be exact-pinned, but not pinned to one
 particular version: that fails on every update.
 
+**The plumbing every AirApp used to copy now comes from the SDK** (`busabase-sdk/airapp`, vendored
+as `app/vendor/busabase-airapp.js`): the runtime probe (`detectAirAppRuntime`), the record reads and
+writes (`createAirAppRecords`: `readPage`, `findRecord`, `upsert`), the "did it land or is it waiting"
+test (`isAirAppWriteQueued`) and the "sent for review" sentence (`airAppWriteMessage`). Use them; do
+not write them again in an app. `node scripts/check-app-sdk-helpers.mjs` fails on a private copy.
+`node scripts/adopt-sdk-airapp-helpers.mjs [--dry-run] [<path-or-glob>...]` moves an app off the copies
+it recognises and says what it leaves. An app keeps its own `toBusabaseFields`, row formats, sort and
+filter choices, and the `pending` / `change_request_id` its UI reads.
+
 ## Things that are load-bearing and easy to get wrong
 
 - **`SKILL.md` must opt in**: `metadata.busabase.template: true`. It is never
@@ -114,12 +123,15 @@ Open a pull request. Before you do:
 ```bash
 npx busabase-cli index . --repo busabase/templates -o templates.json --check
 node scripts/check-app-writes.mjs
+node scripts/check-app-sdk-helpers.mjs
 ```
 
 The second command fails when an AirApp forces review on a person's own write
 (`autoMerge: false`, or a value worked out from where the app runs). How an
 AirApp writes is `busabase-app-creator`'s rule; this only keeps it from
-regressing here.
+regressing here. The third fails on a private copy of what the SDK provides: a
+local `isQueued`, a `fetch("__airapp/runtime")`, or the SDK's "Sent for review."
+sentence written out again.
 
 A template that declares itself one and does not qualify appears in the
 catalog's `rejected` list with its reasons — that list is the first place to
