@@ -72,6 +72,10 @@ function fmt(t) {
 }
 
 async function main() {
+  if (process.argv.includes("--help") || process.argv.includes("-h")) {
+    console.log("Usage: node scripts/export_story_bible.mjs [project.json]");
+    return;
+  }
   const explicitPath = process.argv[2];
   const project = explicitPath
     ? JSON.parse(await fs.readFile(path.resolve(explicitPath), "utf8"))

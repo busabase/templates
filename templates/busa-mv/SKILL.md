@@ -50,11 +50,11 @@ An MV here is **pure picture — no voiceover, no dialogue, no on-screen lyrics*
 
 The app has exactly four areas: **概括 (Concept)**, **Song**, **角色 (Cast)**, **分镜 (Storyboard)**. Keep it that simple — don't reintroduce song sections, timeline tiling, or large per-shot production sheets.
 
-Default to the AirApp for ongoing creative work — give the user the clickable AirApp URL, or run `pnpm --dir content/busa-mv-app dev` for a local preview. Use chat-only mode only when the user explicitly asks for "chat only", "no UI", "纯聊天", or similar.
+Default to the installed AirApp for ongoing creative work — give the user its clickable URL. A local preview (`pnpm --dir content/busa-mv-app dev`) requires the full `busabase/templates` checkout; `content/` is installed as separate resources and is not inside the Skill node. Use chat-only mode only when the user explicitly asks for "chat only", "no UI", "纯聊天", or similar.
 
 ## Default Flow
 
-1. Open the AirApp (or `pnpm --dir content/busa-mv-app dev` for local preview, which asks you to connect Busabase and select a Space — never an API key).
+1. Open the installed AirApp. For a local preview from the full template checkout, `pnpm --dir content/busa-mv-app dev` asks you to connect Busabase and select a Space — never an API key.
 2. On first run the workspace is empty; provision it from the app's setup screen, then seed the bundled starter (a 静夜思 sample MV) with `node scripts/create_sample_project.mjs --apply`, or start from scratch.
 3. Use the app, following the sidebar **下一步 (next step)**:
    - **概括 (Concept)**: one-line summary of what the MV is and its tonality, a one-line visual `look`, and aspect ratio. That's it.
@@ -116,14 +116,26 @@ is no destructive record delete in the write surface.
 
 ## Useful Commands
 
+Run these from the downloaded Skill directory. Its runtime files and dependency
+manifest travel under `scripts/`; install the dependency there before running:
+
 ```bash
-pnpm --dir skills/busa-mv/content/busa-mv-app dev
-node skills/busa-mv/scripts/create_sample_project.mjs --apply
-node skills/busa-mv/scripts/validate_shot_readiness.mjs
-node skills/busa-mv/scripts/export_story_bible.mjs
-node skills/busa-mv/scripts/execute_generation_requests.mjs --apply
-node skills/busa-mv/scripts/generate_song_draft.mjs --apply
+npm install --prefix scripts --ignore-scripts
+node scripts/create_sample_project.mjs
+node scripts/validate_shot_readiness.mjs
+node scripts/export_story_bible.mjs
+node scripts/execute_generation_requests.mjs
+node scripts/generate_song_draft.mjs
 ```
+
+The sample seed and generation commands default to dry runs; add `--apply`
+only after the user authorizes the specific operation and target Space.
+`setup.mjs`, `publish_airapp.mjs`, `sync-content.mjs`, and
+`sync-skill-runtime.mjs` are source-maintenance commands for a full template
+checkout, not required to use an installed AirApp or its runtime Skill.
+The bundled config, model, and starter project are generated from the
+AirApp source and sample data; regenerate them with
+`node scripts/sync-skill-runtime.mjs`, then check with `--check`.
 
 Run `validate_shot_readiness.mjs` (optionally `--strict`) before an image/video generation pass. Every trusted script here connects with its own credentials (`BUSABASE_BASE_URL` / `BUSABASE_API_KEY` / `BUSABASE_SPACE_ID`), never the AirApp's ambient session, and defaults to a dry run wherever it writes or generates.
 

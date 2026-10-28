@@ -15,9 +15,15 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createBusabaseClient } from "busabase-sdk";
 import { publishAirApp } from "busabase-sdk/airapp";
-import { appConfig } from "../content/busa-mv-app/app/js/config.js";
+import { appConfig } from "./lib/config.js";
+import { requireRepositorySource } from "./lib/repository-source.mjs";
 
 const appRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "content", "busa-mv-app");
+if (process.argv.includes("--help") || process.argv.includes("-h")) {
+  console.log("Usage: node scripts/publish_airapp.mjs\nRequires the full template checkout; installed users open the AirApp in Busabase.");
+  process.exit(0);
+}
+requireRepositorySource(path.join(appRoot, "../.."));
 
 function fail(message) {
   console.error(message);

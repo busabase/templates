@@ -42,6 +42,10 @@ async function loadFromBusabase() {
 
 async function main() {
   const args = process.argv.slice(2);
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log("Usage: node scripts/validate_shot_readiness.mjs [project.json] [--strict]");
+    return;
+  }
   const strict = args.includes("--strict");
   const positional = args.filter((a) => !a.startsWith("--"));
   const source = positional[0] ? path.resolve(positional[0]) : null;

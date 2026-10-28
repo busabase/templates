@@ -11,10 +11,12 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { requireRepositorySource } from "./lib/repository-source.mjs";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const check = process.argv.includes("--check");
 
+requireRepositorySource(root);
 const { appConfig } = await import(path.join(root, "content/busa-mv-app/app/js/config.js"));
 
 const stale = [];

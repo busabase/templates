@@ -31,7 +31,24 @@ Busa MV is a Busabase-backed App-in-Skill workbench for turning an existing MP3 
   </tr>
 </table>
 
-## Running Locally
+## Running the installed Skill
+
+The template installs the AirApp and its Skill as separate nodes. To run the
+trusted scripts from a downloaded Skill directory, first install its bundled
+runtime dependency:
+
+```bash
+npm install --prefix scripts --ignore-scripts
+node scripts/create_sample_project.mjs
+node scripts/execute_generation_requests.mjs --help
+```
+
+The seed command above is a local dry run: it prints the bundled starter and
+writes nothing to Busabase. Commands that read or write the workspace need the
+trusted operator's own Busabase credentials and an explicitly selected Space;
+adding `--apply` to a write command performs the operation.
+
+## Running Locally (full template checkout required)
 
 ```bash
 pnpm --dir content/busa-mv-app install
@@ -41,6 +58,28 @@ pnpm --dir content/busa-mv-app dev
 
 Open the printed URL. A standalone local preview asks you to connect
 Busabase (Cloud or a custom server) and select a Space — never an API key.
+
+The installed Skill does not contain `content/`: use the AirApp node installed
+beside it for the workbench. Local preview, `scripts/setup.mjs`,
+`scripts/publish_airapp.mjs`, and source synchronization require this full
+`busabase/templates` checkout. They report that requirement when invoked from
+an installed Skill.
+
+## Maintaining the runtime bundle
+
+The AirApp's config/model and `assets/starter-project.json` remain canonical.
+After changing them or the root dependency manifest, regenerate and check the
+small bundle carried under `scripts/`:
+
+```bash
+node scripts/sync-skill-runtime.mjs
+npm run check:bundle
+npm run test:installed
+```
+
+The last command extracts only the files carried by the root Skill, installs
+its pinned SDK from npm with lifecycle scripts disabled, and exercises the
+real command processes without credentials, paid generation, or Space writes.
 
 ## Demo Mode
 

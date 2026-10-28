@@ -10,7 +10,9 @@
     "seed:dry-run": "node scripts/create_sample_project.mjs",
     "seed": "node scripts/create_sample_project.mjs --apply",
     "validate": "node scripts/validate_shot_readiness.mjs",
-    "export": "node scripts/export_story_bible.mjs"
+    "export": "node scripts/export_story_bible.mjs",
+    "check:bundle": "node scripts/sync-skill-runtime.mjs --check",
+    "test:installed": "node --test test/installed-skill.test.mjs"
   },
   "dependencies": {
     "busabase-sdk": "0.30.1"
