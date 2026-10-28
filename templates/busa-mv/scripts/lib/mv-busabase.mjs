@@ -4,18 +4,18 @@
 // (BUSABASE_BASE_URL / BUSABASE_API_KEY / BUSABASE_SPACE_ID) — never the
 // AirApp's ambient session. Mirrors busa-crm's scripts/execute_decisions.mjs
 // pattern: import appConfig + inspectProvisionedResources straight from
-// content/busa-mv-app/app/js/ (pure ESM, no `window` global, safe in Node), construct the
+// the generated scripts/lib/ bundle (pure ESM, safe in Node), construct the
 // client via busabase-sdk's own createBusabaseClient.
 //
 // Unlike busa-insure-data's trusted scripts (whose vendored SDK snapshot
 // predated a usable `assets` client and so hand-rolled raw fetch), this
 // module uses `client.assets.{createUploadUrl,confirm,download}` directly —
-// see content/busa-mv-app/app/js/config.js's header comment for how that was verified.
+// see config.js's header comment for how that was verified.
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createBusabaseClient } from "busabase-sdk";
 import { inspectProvisionedResources } from "busabase-sdk/airapp";
-import { appConfig } from "../../content/busa-mv-app/app/js/config.js";
+import { appConfig } from "./config.js";
 
 export function clientFromEnv() {
   const baseUrl = process.env.BUSABASE_BASE_URL;

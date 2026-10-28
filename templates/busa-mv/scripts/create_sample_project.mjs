@@ -10,12 +10,12 @@ import { fileURLToPath } from "node:url";
 import { connect, upsert } from "./lib/mv-busabase.mjs";
 
 const SKILL_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const STARTER_PATH = path.join(SKILL_DIR, "assets", "starter-project.json");
+const STARTER_PATH = path.join(SKILL_DIR, "scripts", "data", "starter-project.json");
 
 function help() {
   console.log(`Usage: node scripts/create_sample_project.mjs [--apply]
 
-Seeds the Busabase workspace with the bundled starter MV (assets/starter-project.json):
+Seeds the Busabase workspace with the bundled starter MV (scripts/data/starter-project.json):
 one project row, its characters, and its shots. Without --apply this only
 prints what would be written.`);
 }
