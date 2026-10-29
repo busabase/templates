@@ -953,7 +953,7 @@
         "docs": 0,
         "bases": 3,
         "records": 7,
-        "files": 47,
+        "files": 51,
         "airapps": 1,
         "skill": true
       }
@@ -1544,6 +1544,11 @@
         "assets/screenshots/to-send.webp"
       ],
       "video": "assets/recordings/busa-jobhunt.mp4",
+      "locales": {
+        "zh-CN": {
+          "video": "assets/recordings/busa-jobhunt-workflow-trial-zh-CN.mp4"
+        }
+      },
       "agentPrompts": [
         "Summarize my job-search profile and flag what needs my attention.",
         "Find new target companies that fit my profile and draft a tailored email for each."

@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["comms", "risk:gated-write", "surface:busabase", "surface:smtp"],
+  "tags": [
+    "comms",
+    "risk:gated-write",
+    "surface:busabase",
+    "surface:smtp"
+  ],
   "template": {
     "category": "comms",
     "schemaVersion": 4,
     "airapp": "busa-jobhunt-app",
-    "tags": ["comms", "risk:gated-write", "surface:busabase", "surface:smtp"],
+    "tags": [
+      "comms",
+      "risk:gated-write",
+      "surface:busabase",
+      "surface:smtp"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/blocked.webp",
@@ -56,6 +66,11 @@
         "description": "SMTP app password / authorization code. Never an account password",
         "required": true
       }
-    ]
+    ],
+    "locales": {
+      "zh-CN": {
+        "video": "assets/recordings/busa-jobhunt-workflow-trial-zh-CN.mp4"
+      }
+    }
   }
 }
