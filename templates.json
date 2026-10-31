@@ -2029,17 +2029,6 @@
         "assets/screenshots/experience.webp",
         "assets/screenshots/icp-doc.webp"
       ],
-      "video": "assets/recordings/busa-linkedin-desk.mp4",
-      "videos": [
-        {
-          "src": "assets/recordings/busa-linkedin-desk.mp4",
-          "title": "Full walkthrough (45s)"
-        },
-        {
-          "src": "assets/recordings/busa-linkedin-desk-approval-desk.mp4",
-          "title": "Approval desk tour (15s)"
-        }
-      ],
       "agentPrompts": [
         "Run today's LinkedIn triage: log new messages, draft replies for the interested ones, and show me what is waiting for my approval.",
         "Show me this week's candidate experience rows with their evidence, and draft what should be promoted into the desk's skill."
