@@ -31,6 +31,11 @@ body {
   border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px;
   font-size: 12px; color: var(--muted); background: var(--card); white-space: nowrap;
 }
+.topbar-side { display: inline-flex; align-items: center; gap: 8px; }
+.locale-select {
+  border: 1px solid var(--line); border-radius: 999px; padding: 3px 8px;
+  font-size: 12px; color: var(--muted); background: var(--card);
+}
 
 .state-message { padding: 10px 2px; color: var(--muted); }
 .state-message.error { color: var(--danger); }
@@ -53,7 +58,6 @@ body {
 }
 .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
 .card-head h2 { font-size: 15.5px; margin: 0; }
-.card-head .zh, h2 .zh { color: var(--muted); font-weight: 400; font-size: 13px; margin-left: 4px; }
 .count { color: var(--muted); font-size: 13px; }
 .empty { color: var(--muted); margin: 6px 0 2px; }
 .subhead { font-size: 13px; color: var(--muted); margin: 14px 0 6px; font-weight: 600; }

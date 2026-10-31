@@ -2023,17 +2023,53 @@
       "screenshots": [
         "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp",
+        "assets/screenshots/approvals.webp",
         "assets/screenshots/approval-detail.webp",
         "assets/screenshots/triage.webp",
         "assets/screenshots/contacts.webp",
-        "assets/screenshots/experience.webp",
-        "assets/screenshots/icp-doc.webp"
+        "assets/screenshots/experience.webp"
       ],
+      "video": "assets/recordings/busa-linkedin-desk.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-linkedin-desk.mp4",
+          "title": "Full walkthrough"
+        },
+        {
+          "src": "assets/recordings/busa-linkedin-desk-approval-desk.mp4",
+          "title": "Approval desk tour"
+        }
+      ],
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/approvals-zh-CN.webp",
+            "assets/screenshots/approval-detail-zh-CN.webp",
+            "assets/screenshots/triage-zh-CN.webp",
+            "assets/screenshots/contacts-zh-CN.webp",
+            "assets/screenshots/experience-zh-CN.webp",
+            "assets/screenshots/icp-doc-zh-CN.webp"
+          ],
+          "video": "assets/recordings/busa-linkedin-desk-zh-CN.mp4",
+          "videos": [
+            {
+              "src": "assets/recordings/busa-linkedin-desk-zh-CN.mp4",
+              "title": "完整演示"
+            },
+            {
+              "src": "assets/recordings/busa-linkedin-desk-approval-desk-zh-CN.mp4",
+              "title": "待审批台导览"
+            }
+          ]
+        }
+      },
       "agentPrompts": [
         "Run today's LinkedIn triage: log new messages, draft replies for the interested ones, and show me what is waiting for my approval.",
         "Show me this week's candidate experience rows with their evidence, and draft what should be promoted into the desk's skill."
       ],
-      "version": "0.2.0",
+      "version": "0.3.0",
       "license": "MIT",
       "stats": {
         "folders": 0,
