@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa LinkedIn Desk"
+  short_description: "LinkedIn outreach desk: agent-triaged DMs, approved replies, logged conversations, compounding experience"
+  default_prompt: "Use $busa-linkedin-desk to run today's LinkedIn triage and show me the replies waiting for my approval."
