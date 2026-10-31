@@ -1,0 +1,101 @@
+:root {
+  --bg: #f6f7f5;
+  --card: #ffffff;
+  --line: #e2e5e0;
+  --ink: #1c2420;
+  --muted: #68736c;
+  --accent: #176b5b;
+  --warn: #b45309;
+  --danger: #b3261e;
+  --chip: #eef3f1;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.55 -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.shell { max-width: 1080px; margin: 0 auto; padding: 20px 16px 40px; }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 6px 2px 16px;
+}
+.brand strong { display: block; font-size: 19px; letter-spacing: 0.01em; }
+.brand span { color: var(--muted); font-size: 12.5px; }
+.badge {
+  border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px;
+  font-size: 12px; color: var(--muted); background: var(--card); white-space: nowrap;
+}
+
+.state-message { padding: 10px 2px; color: var(--muted); }
+.state-message.error { color: var(--danger); }
+
+.metrics {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; margin-bottom: 10px;
+}
+@media (max-width: 560px) { .metrics { grid-template-columns: 1fr; } }
+.metric { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.metric strong { display: block; font-size: 24px; line-height: 1.15; }
+.metric span { color: var(--muted); font-size: 12.5px; }
+.metric.alert strong { color: var(--danger); }
+
+.page-note { color: var(--muted); font-size: 12.5px; margin: 2px 2px 10px; }
+
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin-bottom: 12px;
+}
+.card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.card-head h2 { font-size: 15.5px; margin: 0; }
+.card-head .zh, h2 .zh { color: var(--muted); font-weight: 400; font-size: 13px; margin-left: 4px; }
+.count { color: var(--muted); font-size: 13px; }
+.empty { color: var(--muted); margin: 6px 0 2px; }
+.subhead { font-size: 13px; color: var(--muted); margin: 14px 0 6px; font-weight: 600; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid .card { margin-bottom: 12px; }
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+
+.queue-item { border-top: 1px solid var(--line); padding: 10px 0; }
+.queue-item:first-of-type { border-top: none; }
+.queue-main { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.queue-title { font-weight: 600; cursor: pointer; background: none; border: none; padding: 0; font: inherit; color: inherit; text-align: left; }
+.queue-title:hover { color: var(--accent); }
+.meta { color: var(--muted); font-size: 12.5px; }
+.pill { border-radius: 999px; padding: 1px 8px; font-size: 12px; background: var(--chip); color: var(--accent); }
+.pill.high { background: #fdeceb; color: var(--danger); }
+.pill.medium { background: #fdf3e3; color: var(--warn); }
+.detail { margin: 8px 0 2px; padding: 10px 12px; background: var(--bg); border-radius: 8px; }
+.detail h4 { margin: 8px 0 4px; font-size: 12.5px; color: var(--muted); }
+.detail h4:first-child { margin-top: 0; }
+.detail p { margin: 0; white-space: pre-wrap; }
+
+.stat-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.stat-rows .metric { border: none; background: var(--bg); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { background: var(--chip); border-radius: 999px; padding: 2px 10px; font-size: 12.5px; }
+
+.row-item { border-top: 1px solid var(--line); padding: 8px 0; }
+.row-item:first-of-type { border-top: none; }
+.row-item .when { color: var(--muted); font-size: 12.5px; }
+.row-item .overdue { color: var(--danger); }
+blockquote.quote { margin: 6px 0 0; padding: 6px 10px; border-left: 3px solid var(--line); color: var(--muted); }
+
+.report {
+  background: var(--bg); border-radius: 8px; padding: 12px; margin: 0;
+  font: 12.5px/1.65 ui-monospace, "SF Mono", Consolas, monospace;
+  white-space: pre-wrap; word-break: break-word; max-height: 320px; overflow: auto;
+}
+.copy-button {
+  border: 1px solid var(--line); background: var(--card); border-radius: 8px;
+  padding: 4px 12px; font: inherit; font-size: 12.5px; cursor: pointer;
+}
+.copy-button:hover { border-color: var(--accent); color: var(--accent); }
+
+.foot { color: var(--muted); font-size: 12.5px; padding: 4px 2px; }

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Busa LinkedIn Desk</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <strong id="brandName">Busa LinkedIn Desk</strong>
+          <span id="brandSub">Daily report &amp; approval console · 日报 / 待审批台</span>
+        </div>
+        <span class="badge" title="This console never writes">Read-only · 只读</span>
+      </header>
+
+      <div class="state-message" id="loadingState" role="status"></div>
+      <div class="state-message error" id="errorState" role="alert" hidden></div>
+
+      <main id="overviewPage" hidden>
+        <section class="metrics" id="metrics" aria-label="Desk summary"></section>
+        <p class="page-note" id="pageNote" hidden></p>
+
+        <section class="card" aria-labelledby="approvalsTitle">
+          <header class="card-head">
+            <h2 id="approvalsTitle">Awaiting your approval <span class="zh">待审批</span></h2>
+            <span class="count" id="approvalsCount"></span>
+          </header>
+          <div id="approvalsList"></div>
+          <p class="empty" id="approvalsEmpty" hidden></p>
+        </section>
+
+        <div class="grid">
+          <section class="card" aria-labelledby="todayTitle">
+            <header class="card-head">
+              <h2 id="todayTitle">Today's triage <span class="zh">今日分诊</span></h2>
+            </header>
+            <div class="stat-rows" id="todayStats"></div>
+            <div class="chips" id="intentMix"></div>
+          </section>
+
+          <section class="card" aria-labelledby="reportTitle">
+            <header class="card-head">
+              <h2 id="reportTitle">Daily report <span class="zh">日报</span></h2>
+              <button class="copy-button" id="copyReport" type="button">Copy report</button>
+            </header>
+            <pre class="report" id="reportText"></pre>
+          </section>
+        </div>
+
+        <div class="grid">
+          <section class="card" aria-labelledby="dueTitle">
+            <header class="card-head">
+              <h2 id="dueTitle">Due &amp; stalled <span class="zh">到期与停滞</span></h2>
+            </header>
+            <h3 class="subhead">Actions 操作</h3>
+            <div id="dueList"></div>
+            <h3 class="subhead">Quiet threads 停滞线程</h3>
+            <div id="stalledList"></div>
+            <p class="empty" id="stalledEmpty" hidden></p>
+          </section>
+
+          <section class="card" aria-labelledby="expTitle">
+            <header class="card-head">
+              <h2 id="expTitle">Candidate experience <span class="zh">经验候选</span></h2>
+              <span class="count" id="expCount"></span>
+            </header>
+            <div id="expList"></div>
+            <p class="empty" id="expEmpty" hidden></p>
+          </section>
+        </div>
+
+        <footer class="foot" id="readOnlyNote"></footer>
+      </main>
+    </div>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
