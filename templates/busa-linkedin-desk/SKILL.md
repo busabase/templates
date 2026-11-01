@@ -102,8 +102,8 @@ Six Bases, one Doc and one AirApp under one application Folder
 (`busa-linkedin-desk`), declared under `content/`. Exact field shapes live in
 `references/linkedin-desk-schema.md`.
 
-- `busa-linkedin-desk-app` （日报 / 待审批台， AirApp): the desk's read-only
-  console — the pending-approval queue with each draft and its source
+- `busa-linkedin-desk-app` (Daily report & approval console / 日报待审批台,
+  AirApp): the desk's read-only console — the pending-approval queue with each draft and its source
   message, today's triage counts and intent mix, due and overdue Actions,
   threads quiet for over seven days, candidate Experience rows, and the
   copyable daily report. It only reads: it never sends, approves, or writes.
@@ -111,29 +111,29 @@ Six Bases, one Doc and one AirApp under one application Folder
   sections or from the same queries against the Bases is equivalent — the
   approval itself still happens in chat, with the human.
 
-- `companies` （公司）: the minimal anchor for contacts — name, LinkedIn
+- `companies` (Companies / 公司): the minimal anchor for contacts — name, LinkedIn
   company page, industry, website, notes. When Busa CRM is installed
   alongside, its Companies and Deals stay canonical for pipeline; this
   desk deliberately ships no Deals base.
-- `contacts` （联系人）: people, identified by **LinkedIn profile URL —
+- `contacts` (Contacts / 联系人): people, identified by **LinkedIn profile URL —
   never by name alone**. Role, company relation, verification state,
   tier (a human's call; the agent may only suggest), owner, source.
-- `messages` （消息表）: one row per message, in or out. **Message ID is
+- `messages` (Messages / 消息表): one row per message, in or out. **Message ID is
   the deduplication key**; when a channel gives no ID, compose one from
   thread ID + send time. Thread ID, contact relation, direction, channel,
   time, body excerpt, intent, urgency, processing status, linked reply.
-- `replies` （回复表）: one row per proposed reply. Draft body and version,
+- `replies` (Replies / 回复表): one row per proposed reply. Draft body and version,
   approval status, approver, **the approval notes verbatim** (they are the
   raw material of Experience), the exact sent body, sent time, sent
   message ID, and the follow-up outcome.
-- `actions` （处理表）: everything a conversation creates that is not a
+- `actions` (Actions / 处理表): everything a conversation creates that is not a
   reply — follow-ups, escalations, meetings, materials, CRM-field
   proposals, new-deal hand-offs. One row per task: type, source message
   or reply, owner, due date, status, written outcome, evidence link.
   **CRM field changes are proposed here, never applied directly** —
   stage and amount changes go through a ChangeRequest that shows the old
   value, the candidate value, and the source.
-- `experience` （经验表）: one row per lesson — the sentence, its type,
+- `experience` (Experience / 经验表): one row per lesson — the sentence, its type,
   its source reply or action, the approver's exact words, where it
   applies, its counter-examples and limits, and its status: candidate →
   adopted → promoted into this skill → retired (retire, never delete:
@@ -144,9 +144,13 @@ Six Bases, one Doc and one AirApp under one application Folder
   Experience row conflicts with it, the Doc wins and the conflict is
   raised at the weekly review.
 
-Queue views ship with the Bases: Messages → 待分诊 (pending triage),
-Replies → 待审批 (pending approval), Actions → 待办 (open), Experience →
-候选经验 / 已采纳 (candidates / adopted), Contacts → 待核验 (unverified).
+Queue views ship with the Bases: Messages → Pending triage / 待分诊,
+Replies → Pending approval / 待审批, Actions → Open / 待办, Experience →
+Candidates / 候选经验 and Adopted / 已采纳, Contacts → Unverified / 待核验.
+
+Installed names are slash-bilingual (`English / 中文`, the shape the
+installed Bases show); the console renders one language at a time —
+English by default, 简体中文 with `?lang=zh-CN` or its header switcher.
 
 ## Workflows
 
