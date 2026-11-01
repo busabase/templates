@@ -58,6 +58,7 @@ export function diffSchema(live) {
     return {
       key: expected.role,
       name: expected.name,
+      localizedName: expected.localizedName,
       slug: actual?.slug ?? "",
       fieldCount: expected.fields.length,
       tone: problems.some((problem) => problem.tone === "danger")

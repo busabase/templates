@@ -1,6 +1,6 @@
 {
-  "name": "Posts / 文章",
-  "description": "Publishable Markdown posts / 可发布的 Markdown 文章",
+  "name": "Posts",
+  "description": "Publishable Markdown posts",
   "position": 2,
   "fields": [
     {
@@ -49,23 +49,23 @@
         "choices": [
           {
             "id": "en",
-            "name": "English / 英文"
+            "name": "English"
           },
           {
             "id": "zh-CN",
-            "name": "Simplified Chinese / 简体中文"
+            "name": "Simplified Chinese"
           },
           {
             "id": "zh-TW",
-            "name": "Traditional Chinese / 繁體中文"
+            "name": "Traditional Chinese"
           },
           {
             "id": "ja",
-            "name": "Japanese / 日文"
+            "name": "Japanese"
           },
           {
             "id": "pt",
-            "name": "Portuguese / 葡萄牙文"
+            "name": "Portuguese"
           }
         ]
       }
@@ -83,19 +83,19 @@
         "choices": [
           {
             "id": "draft",
-            "name": "Draft / 草稿"
+            "name": "Draft"
           },
           {
             "id": "in-review",
-            "name": "In review / 审核中"
+            "name": "In review"
           },
           {
             "id": "published",
-            "name": "Published / 已发布"
+            "name": "Published"
           },
           {
             "id": "archived",
-            "name": "Archived / 已归档"
+            "name": "Archived"
           }
         ]
       }
@@ -281,7 +281,7 @@
   "views": [
     {
       "slug": "published-posts",
-      "name": "Published / 已发布",
+      "name": "Published",
       "type": "table",
       "config": {
         "filters": [
@@ -310,7 +310,7 @@
     },
     {
       "slug": "all-posts",
-      "name": "All Posts / 全部文章",
+      "name": "All Posts",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [
@@ -331,7 +331,7 @@
     },
     {
       "slug": "post-seo",
-      "name": "SEO review / SEO 检查",
+      "name": "SEO review",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

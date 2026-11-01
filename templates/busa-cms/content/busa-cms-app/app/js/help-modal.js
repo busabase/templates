@@ -1,5 +1,5 @@
 import { toast } from "./api.js";
-import { copyToClipboard, escapeHtml } from "./format.js";
+import { copyToClipboard, escapeHtml, localizedName } from "./format.js";
 import { t } from "./i18n.js";
 import { syncRoute } from "./router.js";
 import { $, store } from "./store.js";
@@ -137,7 +137,7 @@ function renderResourcesTab() {
           (base) => `
         <div class="health health--${base.tone}">
           <div class="health-head">
-            <span class="health-name">${escapeHtml(base.name)}</span>
+            <span class="health-name">${escapeHtml(localizedName(base.localizedName) || base.name)}</span>
             <span class="badge ${base.tone === "ok" ? "positive" : ""}">${escapeHtml(
               base.tone === "ok"
                 ? t("resources.fields_match", { count: base.fieldCount })

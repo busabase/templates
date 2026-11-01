@@ -527,7 +527,7 @@
         "Move the pricing page back to draft until finance confirms the numbers.",
         "Give me the snippet for wiring my Next.js site to this Folder."
       ],
-      "version": "0.1.0",
+      "version": "0.2.0",
       "license": "MIT",
       "stats": {
         "folders": 0,

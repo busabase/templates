@@ -88,7 +88,8 @@ const views = {
   categories: [
     {
       key: "all-categories",
-      name: "All Categories / 全部分类",
+      name: "All Categories",
+      localizedName: { en: "All Categories", "zh-CN": "全部分类" },
       type: "table",
       config: {
         visibleFieldSlugs: ["name", "slug", "locale", "description", "updated-at"],
@@ -100,7 +101,8 @@ const views = {
   tags: [
     {
       key: "all-tags",
-      name: "All Tags / 全部标签",
+      name: "All Tags",
+      localizedName: { en: "All Tags", "zh-CN": "全部标签" },
       type: "table",
       config: {
         visibleFieldSlugs: ["name", "slug", "locale", "description", "updated-at"],
@@ -114,7 +116,8 @@ const views = {
       // Filtered on `status`, because that is the only state the SDK reads:
       // anything not "published" is invisible to the live site.
       key: "published-posts",
-      name: "Published / 已发布",
+      name: "Published",
+      localizedName: { en: "Published", "zh-CN": "已发布" },
       type: "table",
       config: {
         filters: [{ fieldSlug: "status", operator: "equals", value: "published" }],
@@ -125,7 +128,8 @@ const views = {
     },
     {
       key: "all-posts",
-      name: "All Posts / 全部文章",
+      name: "All Posts",
+      localizedName: { en: "All Posts", "zh-CN": "全部文章" },
       type: "table",
       config: {
         visibleFieldSlugs: ["title", "path", "status", "locale", "author", "published-at"],
@@ -135,7 +139,8 @@ const views = {
     },
     {
       key: "post-seo",
-      name: "SEO review / SEO 检查",
+      name: "SEO review",
+      localizedName: { en: "SEO review", "zh-CN": "SEO 检查" },
       type: "table",
       config: {
         visibleFieldSlugs: ["title", "path", "seo-title", "seo-description", "canonical-url", "cover-image"],
@@ -147,7 +152,8 @@ const views = {
   pages: [
     {
       key: "site-map",
-      name: "Site pages / 站点页面",
+      name: "Site pages",
+      localizedName: { en: "Site pages", "zh-CN": "站点页面" },
       type: "table",
       config: {
         visibleFieldSlugs: ["title", "path", "template", "locale", "status", "updated-at"],
@@ -157,7 +163,8 @@ const views = {
     },
     {
       key: "published-pages",
-      name: "Published / 已发布",
+      name: "Published",
+      localizedName: { en: "Published", "zh-CN": "已发布" },
       type: "table",
       config: {
         filters: [{ fieldSlug: "status", operator: "equals", value: "published" }],
