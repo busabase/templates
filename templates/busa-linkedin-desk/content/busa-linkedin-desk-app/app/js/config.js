@@ -20,386 +20,634 @@ export const appConfig = {
     {
       "key": "companies",
       "slug": "busa-linkedin-desk-companies",
-      "name": "公司",
+      "name": "Companies / 公司",
       "readLimit": 50,
       "fields": [
         {
           "slug": "name",
-          "name": "名称",
+          "name": "Name / 名称",
+          "localizedName": {
+            "en": "Name",
+            "zh-CN": "名称"
+          },
           "type": "text",
           "required": true
         },
         {
           "slug": "linkedin-url",
-          "name": "LinkedIn 公司页",
+          "name": "LinkedIn company page / LinkedIn 公司页",
+          "localizedName": {
+            "en": "LinkedIn company page",
+            "zh-CN": "LinkedIn 公司页"
+          },
           "type": "url",
           "required": false
         },
         {
           "slug": "industry",
-          "name": "行业",
+          "name": "Industry / 行业",
+          "localizedName": {
+            "en": "Industry",
+            "zh-CN": "行业"
+          },
           "type": "text",
           "required": false
         },
         {
           "slug": "website",
-          "name": "网站",
+          "name": "Website / 网站",
+          "localizedName": {
+            "en": "Website",
+            "zh-CN": "网站"
+          },
           "type": "url",
           "required": false
         },
         {
           "slug": "notes",
-          "name": "备注",
+          "name": "Notes / 备注",
+          "localizedName": {
+            "en": "Notes",
+            "zh-CN": "备注"
+          },
           "type": "longtext",
           "required": false
         }
-      ]
+      ],
+      "localizedName": {
+        "en": "Companies",
+        "zh-CN": "公司"
+      }
     },
     {
       "key": "contacts",
       "slug": "busa-linkedin-desk-contacts",
-      "name": "联系人",
+      "name": "Contacts / 联系人",
       "readLimit": 50,
       "fields": [
         {
           "slug": "name",
-          "name": "姓名",
+          "name": "Name / 姓名",
+          "localizedName": {
+            "en": "Name",
+            "zh-CN": "姓名"
+          },
           "type": "text",
           "required": true
         },
         {
           "slug": "role",
-          "name": "职务",
+          "name": "Role / 职务",
+          "localizedName": {
+            "en": "Role",
+            "zh-CN": "职务"
+          },
           "type": "text",
           "required": false
         },
         {
           "slug": "company",
-          "name": "公司",
+          "name": "Company / 公司",
+          "localizedName": {
+            "en": "Company",
+            "zh-CN": "公司"
+          },
           "type": "relation",
           "required": false
         },
         {
           "slug": "linkedin-url",
-          "name": "LinkedIn 主页",
+          "name": "LinkedIn profile / LinkedIn 主页",
+          "localizedName": {
+            "en": "LinkedIn profile",
+            "zh-CN": "LinkedIn 主页"
+          },
           "type": "url",
           "required": true
         },
         {
           "slug": "verification",
-          "name": "身份核验",
+          "name": "Verification / 身份核验",
+          "localizedName": {
+            "en": "Verification",
+            "zh-CN": "身份核验"
+          },
           "type": "select",
           "required": false
         },
         {
           "slug": "tier",
-          "name": "意向等级",
+          "name": "Tier / 意向等级",
+          "localizedName": {
+            "en": "Tier",
+            "zh-CN": "意向等级"
+          },
           "type": "select",
           "required": false
         },
         {
           "slug": "owner",
-          "name": "负责人",
+          "name": "Owner / 负责人",
+          "localizedName": {
+            "en": "Owner",
+            "zh-CN": "负责人"
+          },
           "type": "member",
           "required": false
         },
         {
           "slug": "source",
-          "name": "来源",
+          "name": "Source / 来源",
+          "localizedName": {
+            "en": "Source",
+            "zh-CN": "来源"
+          },
           "type": "select",
           "required": false
         }
-      ]
+      ],
+      "localizedName": {
+        "en": "Contacts",
+        "zh-CN": "联系人"
+      }
     },
     {
       "key": "messages",
       "slug": "busa-linkedin-desk-messages",
-      "name": "消息表",
+      "name": "Messages / 消息表",
       "readLimit": 50,
       "fields": [
         {
           "slug": "title",
-          "name": "标题",
+          "name": "Title / 标题",
+          "localizedName": {
+            "en": "Title",
+            "zh-CN": "标题"
+          },
           "type": "text",
           "required": true
         },
         {
           "slug": "thread-id",
-          "name": "线程 ID",
+          "name": "Thread ID / 线程 ID",
+          "localizedName": {
+            "en": "Thread ID",
+            "zh-CN": "线程 ID"
+          },
           "type": "text",
           "required": true
         },
         {
           "slug": "message-id",
-          "name": "消息 ID",
+          "name": "Message ID / 消息 ID",
+          "localizedName": {
+            "en": "Message ID",
+            "zh-CN": "消息 ID"
+          },
           "type": "text",
           "required": true
         },
         {
           "slug": "contact",
-          "name": "联系人",
+          "name": "Contact / 联系人",
+          "localizedName": {
+            "en": "Contact",
+            "zh-CN": "联系人"
+          },
           "type": "relation",
           "required": false
         },
         {
           "slug": "direction",
-          "name": "方向",
+          "name": "Direction / 方向",
+          "localizedName": {
+            "en": "Direction",
+            "zh-CN": "方向"
+          },
           "type": "select",
           "required": false
         },
         {
           "slug": "channel",
-          "name": "渠道",
+          "name": "Channel / 渠道",
+          "localizedName": {
+            "en": "Channel",
+            "zh-CN": "渠道"
+          },
           "type": "select",
           "required": false
         },
         {
           "slug": "sent-at",
-          "name": "时间",
+          "name": "Time / 时间",
+          "localizedName": {
+            "en": "Time",
+            "zh-CN": "时间"
+          },
           "type": "date",
           "required": false
         },
         {
           "slug": "body",
-          "name": "原文",
+          "name": "Body / 原文",
+          "localizedName": {
+            "en": "Body",
+            "zh-CN": "原文"
+          },
           "type": "longtext",
           "required": false
         },
         {
           "slug": "intent",
-          "name": "意图",
+          "name": "Intent / 意图",
+          "localizedName": {
+            "en": "Intent",
+            "zh-CN": "意图"
+          },
           "type": "select",
           "required": false
         },
         {
           "slug": "urgency",
-          "name": "紧急度",
+          "name": "Urgency / 紧急度",
+          "localizedName": {
+            "en": "Urgency",
+            "zh-CN": "紧急度"
+          },
           "type": "select",
           "required": false
         },
         {
           "slug": "status",
-          "name": "处理状态",
+          "name": "Status / 处理状态",
+          "localizedName": {
+            "en": "Status",
+            "zh-CN": "处理状态"
+          },
           "type": "select",
           "required": false
         },
         {
           "slug": "reply",
-          "name": "关联回复",
+          "name": "Linked reply / 关联回复",
+          "localizedName": {
+            "en": "Linked reply",
+            "zh-CN": "关联回复"
+          },
           "type": "relation",
           "required": false
         }
-      ]
+      ],
+      "localizedName": {
+        "en": "Messages",
+        "zh-CN": "消息表"
+      }
     },
     {
       "key": "replies",
       "slug": "busa-linkedin-desk-replies",
-      "name": "回复表",
+      "name": "Replies / 回复表",
       "readLimit": 50,
       "fields": [
         {
           "slug": "title",
-          "name": "标题",
+          "name": "Title / 标题",
+          "localizedName": {
+            "en": "Title",
+            "zh-CN": "标题"
+          },
           "type": "text",
           "required": true
         },
         {
           "slug": "message",
-          "name": "针对消息",
+          "name": "Source message / 针对消息",
+          "localizedName": {
+            "en": "Source message",
+            "zh-CN": "针对消息"
+          },
           "type": "relation",
           "required": false
         },
         {
           "slug": "contact",
-          "name": "联系人",
+          "name": "Contact / 联系人",
+          "localizedName": {
+            "en": "Contact",
+            "zh-CN": "联系人"
+          },
           "type": "relation",
           "required": false
         },
         {
           "slug": "draft",
-          "name": "草稿正文",
+          "name": "Draft / 草稿正文",
+          "localizedName": {
+            "en": "Draft",
+            "zh-CN": "草稿正文"
+          },
           "type": "longtext",
           "required": false
         },
         {
           "slug": "version",
-          "name": "版本",
+          "name": "Version / 版本",
+          "localizedName": {
+            "en": "Version",
+            "zh-CN": "版本"
+          },
           "type": "number",
           "required": false
         },
         {
           "slug": "approval-status",
-          "name": "审批状态",
+          "name": "Approval status / 审批状态",
+          "localizedName": {
+            "en": "Approval status",
+            "zh-CN": "审批状态"
+          },
           "type": "select",
           "required": false
         },
         {
           "slug": "approver",
-          "name": "审批人",
+          "name": "Approver / 审批人",
+          "localizedName": {
+            "en": "Approver",
+            "zh-CN": "审批人"
+          },
           "type": "member",
           "required": false
         },
         {
           "slug": "approval-notes",
-          "name": "审批意见",
+          "name": "Approval notes / 审批意见",
+          "localizedName": {
+            "en": "Approval notes",
+            "zh-CN": "审批意见"
+          },
           "type": "longtext",
           "required": false
         },
         {
           "slug": "sent-body",
-          "name": "发送正文",
+          "name": "Sent body / 发送正文",
+          "localizedName": {
+            "en": "Sent body",
+            "zh-CN": "发送正文"
+          },
           "type": "longtext",
           "required": false
         },
         {
           "slug": "sent-at",
-          "name": "发送时间",
+          "name": "Sent at / 发送时间",
+          "localizedName": {
+            "en": "Sent at",
+            "zh-CN": "发送时间"
+          },
           "type": "date",
           "required": false
         },
         {
           "slug": "sent-message-id",
-          "name": "发送消息 ID",
+          "name": "Sent message ID / 发送消息 ID",
+          "localizedName": {
+            "en": "Sent message ID",
+            "zh-CN": "发送消息 ID"
+          },
           "type": "text",
           "required": false
         },
         {
           "slug": "outcome",
-          "name": "后续结果",
+          "name": "Outcome / 后续结果",
+          "localizedName": {
+            "en": "Outcome",
+            "zh-CN": "后续结果"
+          },
           "type": "select",
           "required": false
         }
-      ]
+      ],
+      "localizedName": {
+        "en": "Replies",
+        "zh-CN": "回复表"
+      }
     },
     {
       "key": "actions",
       "slug": "busa-linkedin-desk-actions",
-      "name": "处理表",
+      "name": "Actions / 处理表",
       "readLimit": 50,
       "fields": [
         {
           "slug": "title",
-          "name": "标题",
+          "name": "Title / 标题",
+          "localizedName": {
+            "en": "Title",
+            "zh-CN": "标题"
+          },
           "type": "text",
           "required": true
         },
         {
           "slug": "type",
-          "name": "类型",
+          "name": "Type / 类型",
+          "localizedName": {
+            "en": "Type",
+            "zh-CN": "类型"
+          },
           "type": "select",
           "required": false
         },
         {
           "slug": "source-message",
-          "name": "来源消息",
+          "name": "Source message / 来源消息",
+          "localizedName": {
+            "en": "Source message",
+            "zh-CN": "来源消息"
+          },
           "type": "relation",
           "required": false
         },
         {
           "slug": "source-reply",
-          "name": "来源回复",
+          "name": "Source reply / 来源回复",
+          "localizedName": {
+            "en": "Source reply",
+            "zh-CN": "来源回复"
+          },
           "type": "relation",
           "required": false
         },
         {
           "slug": "owner",
-          "name": "负责人",
+          "name": "Owner / 负责人",
+          "localizedName": {
+            "en": "Owner",
+            "zh-CN": "负责人"
+          },
           "type": "member",
           "required": false
         },
         {
           "slug": "due-date",
-          "name": "到期日",
+          "name": "Due date / 到期日",
+          "localizedName": {
+            "en": "Due date",
+            "zh-CN": "到期日"
+          },
           "type": "date",
           "required": false
         },
         {
           "slug": "status",
-          "name": "状态",
+          "name": "Status / 状态",
+          "localizedName": {
+            "en": "Status",
+            "zh-CN": "状态"
+          },
           "type": "select",
           "required": false
         },
         {
           "slug": "result",
-          "name": "完成结果",
+          "name": "Result / 完成结果",
+          "localizedName": {
+            "en": "Result",
+            "zh-CN": "完成结果"
+          },
           "type": "longtext",
           "required": false
         },
         {
           "slug": "evidence-url",
-          "name": "证据链接",
+          "name": "Evidence link / 证据链接",
+          "localizedName": {
+            "en": "Evidence link",
+            "zh-CN": "证据链接"
+          },
           "type": "url",
           "required": false
         }
-      ]
+      ],
+      "localizedName": {
+        "en": "Actions",
+        "zh-CN": "处理表"
+      }
     },
     {
       "key": "experience",
       "slug": "busa-linkedin-desk-experience",
-      "name": "经验表",
+      "name": "Experience / 经验表",
       "readLimit": 50,
       "fields": [
         {
           "slug": "title",
-          "name": "标题",
+          "name": "Title / 标题",
+          "localizedName": {
+            "en": "Title",
+            "zh-CN": "标题"
+          },
           "type": "text",
           "required": true
         },
         {
           "slug": "type",
-          "name": "类型",
+          "name": "Type / 类型",
+          "localizedName": {
+            "en": "Type",
+            "zh-CN": "类型"
+          },
           "type": "select",
           "required": false
         },
         {
           "slug": "source-reply",
-          "name": "来源回复",
+          "name": "Source reply / 来源回复",
+          "localizedName": {
+            "en": "Source reply",
+            "zh-CN": "来源回复"
+          },
           "type": "relation",
           "required": false
         },
         {
           "slug": "source-action",
-          "name": "来源处理",
+          "name": "Source action / 来源处理",
+          "localizedName": {
+            "en": "Source action",
+            "zh-CN": "来源处理"
+          },
           "type": "relation",
           "required": false
         },
         {
           "slug": "approval-quote",
-          "name": "审批原话",
+          "name": "Approval quote / 审批原话",
+          "localizedName": {
+            "en": "Approval quote",
+            "zh-CN": "审批原话"
+          },
           "type": "longtext",
           "required": false
         },
         {
           "slug": "scope",
-          "name": "适用范围",
+          "name": "Scope / 适用范围",
+          "localizedName": {
+            "en": "Scope",
+            "zh-CN": "适用范围"
+          },
           "type": "text",
           "required": false
         },
         {
           "slug": "limits",
-          "name": "反例与边界",
+          "name": "Limits / 反例与边界",
+          "localizedName": {
+            "en": "Limits",
+            "zh-CN": "反例与边界"
+          },
           "type": "longtext",
           "required": false
         },
         {
           "slug": "status",
-          "name": "状态",
+          "name": "Status / 状态",
+          "localizedName": {
+            "en": "Status",
+            "zh-CN": "状态"
+          },
           "type": "select",
           "required": false
         },
         {
           "slug": "promoted-to",
-          "name": "晋升去向",
+          "name": "Promoted to / 晋升去向",
+          "localizedName": {
+            "en": "Promoted to",
+            "zh-CN": "晋升去向"
+          },
           "type": "url",
           "required": false
         },
         {
           "slug": "last-verified",
-          "name": "最近验证",
+          "name": "Last verified / 最近验证",
+          "localizedName": {
+            "en": "Last verified",
+            "zh-CN": "最近验证"
+          },
           "type": "date",
           "required": false
         }
-      ]
+      ],
+      "localizedName": {
+        "en": "Experience",
+        "zh-CN": "经验表"
+      }
     }
   ],
   "schema": {
@@ -412,62 +660,98 @@ export const appConfig = {
       {
         "key": "companies",
         "slug": "busa-linkedin-desk-companies",
-        "name": "公司",
+        "name": "Companies / 公司",
         "readLimit": 50,
         "fields": [
           {
             "slug": "name",
-            "name": "名称",
+            "name": "Name / 名称",
+            "localizedName": {
+              "en": "Name",
+              "zh-CN": "名称"
+            },
             "type": "text",
             "required": true
           },
           {
             "slug": "linkedin-url",
-            "name": "LinkedIn 公司页",
+            "name": "LinkedIn company page / LinkedIn 公司页",
+            "localizedName": {
+              "en": "LinkedIn company page",
+              "zh-CN": "LinkedIn 公司页"
+            },
             "type": "url",
             "required": false
           },
           {
             "slug": "industry",
-            "name": "行业",
+            "name": "Industry / 行业",
+            "localizedName": {
+              "en": "Industry",
+              "zh-CN": "行业"
+            },
             "type": "text",
             "required": false
           },
           {
             "slug": "website",
-            "name": "网站",
+            "name": "Website / 网站",
+            "localizedName": {
+              "en": "Website",
+              "zh-CN": "网站"
+            },
             "type": "url",
             "required": false
           },
           {
             "slug": "notes",
-            "name": "备注",
+            "name": "Notes / 备注",
+            "localizedName": {
+              "en": "Notes",
+              "zh-CN": "备注"
+            },
             "type": "longtext",
             "required": false
           }
-        ]
+        ],
+        "localizedName": {
+          "en": "Companies",
+          "zh-CN": "公司"
+        }
       },
       {
         "key": "contacts",
         "slug": "busa-linkedin-desk-contacts",
-        "name": "联系人",
+        "name": "Contacts / 联系人",
         "readLimit": 50,
         "fields": [
           {
             "slug": "name",
-            "name": "姓名",
+            "name": "Name / 姓名",
+            "localizedName": {
+              "en": "Name",
+              "zh-CN": "姓名"
+            },
             "type": "text",
             "required": true
           },
           {
             "slug": "role",
-            "name": "职务",
+            "name": "Role / 职务",
+            "localizedName": {
+              "en": "Role",
+              "zh-CN": "职务"
+            },
             "type": "text",
             "required": false
           },
           {
             "slug": "company",
-            "name": "公司",
+            "name": "Company / 公司",
+            "localizedName": {
+              "en": "Company",
+              "zh-CN": "公司"
+            },
             "type": "relation",
             "required": false,
             "options": {
@@ -476,63 +760,103 @@ export const appConfig = {
           },
           {
             "slug": "linkedin-url",
-            "name": "LinkedIn 主页",
+            "name": "LinkedIn profile / LinkedIn 主页",
+            "localizedName": {
+              "en": "LinkedIn profile",
+              "zh-CN": "LinkedIn 主页"
+            },
             "type": "url",
             "required": true
           },
           {
             "slug": "verification",
-            "name": "身份核验",
+            "name": "Verification / 身份核验",
+            "localizedName": {
+              "en": "Verification",
+              "zh-CN": "身份核验"
+            },
             "type": "select",
             "required": false
           },
           {
             "slug": "tier",
-            "name": "意向等级",
+            "name": "Tier / 意向等级",
+            "localizedName": {
+              "en": "Tier",
+              "zh-CN": "意向等级"
+            },
             "type": "select",
             "required": false
           },
           {
             "slug": "owner",
-            "name": "负责人",
+            "name": "Owner / 负责人",
+            "localizedName": {
+              "en": "Owner",
+              "zh-CN": "负责人"
+            },
             "type": "member",
             "required": false
           },
           {
             "slug": "source",
-            "name": "来源",
+            "name": "Source / 来源",
+            "localizedName": {
+              "en": "Source",
+              "zh-CN": "来源"
+            },
             "type": "select",
             "required": false
           }
-        ]
+        ],
+        "localizedName": {
+          "en": "Contacts",
+          "zh-CN": "联系人"
+        }
       },
       {
         "key": "messages",
         "slug": "busa-linkedin-desk-messages",
-        "name": "消息表",
+        "name": "Messages / 消息表",
         "readLimit": 50,
         "fields": [
           {
             "slug": "title",
-            "name": "标题",
+            "name": "Title / 标题",
+            "localizedName": {
+              "en": "Title",
+              "zh-CN": "标题"
+            },
             "type": "text",
             "required": true
           },
           {
             "slug": "thread-id",
-            "name": "线程 ID",
+            "name": "Thread ID / 线程 ID",
+            "localizedName": {
+              "en": "Thread ID",
+              "zh-CN": "线程 ID"
+            },
             "type": "text",
             "required": true
           },
           {
             "slug": "message-id",
-            "name": "消息 ID",
+            "name": "Message ID / 消息 ID",
+            "localizedName": {
+              "en": "Message ID",
+              "zh-CN": "消息 ID"
+            },
             "type": "text",
             "required": true
           },
           {
             "slug": "contact",
-            "name": "联系人",
+            "name": "Contact / 联系人",
+            "localizedName": {
+              "en": "Contact",
+              "zh-CN": "联系人"
+            },
             "type": "relation",
             "required": false,
             "options": {
@@ -541,72 +865,116 @@ export const appConfig = {
           },
           {
             "slug": "direction",
-            "name": "方向",
+            "name": "Direction / 方向",
+            "localizedName": {
+              "en": "Direction",
+              "zh-CN": "方向"
+            },
             "type": "select",
             "required": false
           },
           {
             "slug": "channel",
-            "name": "渠道",
+            "name": "Channel / 渠道",
+            "localizedName": {
+              "en": "Channel",
+              "zh-CN": "渠道"
+            },
             "type": "select",
             "required": false
           },
           {
             "slug": "sent-at",
-            "name": "时间",
+            "name": "Time / 时间",
+            "localizedName": {
+              "en": "Time",
+              "zh-CN": "时间"
+            },
             "type": "date",
             "required": false
           },
           {
             "slug": "body",
-            "name": "原文",
+            "name": "Body / 原文",
+            "localizedName": {
+              "en": "Body",
+              "zh-CN": "原文"
+            },
             "type": "longtext",
             "required": false
           },
           {
             "slug": "intent",
-            "name": "意图",
+            "name": "Intent / 意图",
+            "localizedName": {
+              "en": "Intent",
+              "zh-CN": "意图"
+            },
             "type": "select",
             "required": false
           },
           {
             "slug": "urgency",
-            "name": "紧急度",
+            "name": "Urgency / 紧急度",
+            "localizedName": {
+              "en": "Urgency",
+              "zh-CN": "紧急度"
+            },
             "type": "select",
             "required": false
           },
           {
             "slug": "status",
-            "name": "处理状态",
+            "name": "Status / 处理状态",
+            "localizedName": {
+              "en": "Status",
+              "zh-CN": "处理状态"
+            },
             "type": "select",
             "required": false
           },
           {
             "slug": "reply",
-            "name": "关联回复",
+            "name": "Linked reply / 关联回复",
+            "localizedName": {
+              "en": "Linked reply",
+              "zh-CN": "关联回复"
+            },
             "type": "relation",
             "required": false,
             "options": {
               "targetBaseSlug": "busa-linkedin-desk-replies"
             }
           }
-        ]
+        ],
+        "localizedName": {
+          "en": "Messages",
+          "zh-CN": "消息表"
+        }
       },
       {
         "key": "replies",
         "slug": "busa-linkedin-desk-replies",
-        "name": "回复表",
+        "name": "Replies / 回复表",
         "readLimit": 50,
         "fields": [
           {
             "slug": "title",
-            "name": "标题",
+            "name": "Title / 标题",
+            "localizedName": {
+              "en": "Title",
+              "zh-CN": "标题"
+            },
             "type": "text",
             "required": true
           },
           {
             "slug": "message",
-            "name": "针对消息",
+            "name": "Source message / 针对消息",
+            "localizedName": {
+              "en": "Source message",
+              "zh-CN": "针对消息"
+            },
             "type": "relation",
             "required": false,
             "options": {
@@ -615,7 +983,11 @@ export const appConfig = {
           },
           {
             "slug": "contact",
-            "name": "联系人",
+            "name": "Contact / 联系人",
+            "localizedName": {
+              "en": "Contact",
+              "zh-CN": "联系人"
+            },
             "type": "relation",
             "required": false,
             "options": {
@@ -624,81 +996,133 @@ export const appConfig = {
           },
           {
             "slug": "draft",
-            "name": "草稿正文",
+            "name": "Draft / 草稿正文",
+            "localizedName": {
+              "en": "Draft",
+              "zh-CN": "草稿正文"
+            },
             "type": "longtext",
             "required": false
           },
           {
             "slug": "version",
-            "name": "版本",
+            "name": "Version / 版本",
+            "localizedName": {
+              "en": "Version",
+              "zh-CN": "版本"
+            },
             "type": "number",
             "required": false
           },
           {
             "slug": "approval-status",
-            "name": "审批状态",
+            "name": "Approval status / 审批状态",
+            "localizedName": {
+              "en": "Approval status",
+              "zh-CN": "审批状态"
+            },
             "type": "select",
             "required": false
           },
           {
             "slug": "approver",
-            "name": "审批人",
+            "name": "Approver / 审批人",
+            "localizedName": {
+              "en": "Approver",
+              "zh-CN": "审批人"
+            },
             "type": "member",
             "required": false
           },
           {
             "slug": "approval-notes",
-            "name": "审批意见",
+            "name": "Approval notes / 审批意见",
+            "localizedName": {
+              "en": "Approval notes",
+              "zh-CN": "审批意见"
+            },
             "type": "longtext",
             "required": false
           },
           {
             "slug": "sent-body",
-            "name": "发送正文",
+            "name": "Sent body / 发送正文",
+            "localizedName": {
+              "en": "Sent body",
+              "zh-CN": "发送正文"
+            },
             "type": "longtext",
             "required": false
           },
           {
             "slug": "sent-at",
-            "name": "发送时间",
+            "name": "Sent at / 发送时间",
+            "localizedName": {
+              "en": "Sent at",
+              "zh-CN": "发送时间"
+            },
             "type": "date",
             "required": false
           },
           {
             "slug": "sent-message-id",
-            "name": "发送消息 ID",
+            "name": "Sent message ID / 发送消息 ID",
+            "localizedName": {
+              "en": "Sent message ID",
+              "zh-CN": "发送消息 ID"
+            },
             "type": "text",
             "required": false
           },
           {
             "slug": "outcome",
-            "name": "后续结果",
+            "name": "Outcome / 后续结果",
+            "localizedName": {
+              "en": "Outcome",
+              "zh-CN": "后续结果"
+            },
             "type": "select",
             "required": false
           }
-        ]
+        ],
+        "localizedName": {
+          "en": "Replies",
+          "zh-CN": "回复表"
+        }
       },
       {
         "key": "actions",
         "slug": "busa-linkedin-desk-actions",
-        "name": "处理表",
+        "name": "Actions / 处理表",
         "readLimit": 50,
         "fields": [
           {
             "slug": "title",
-            "name": "标题",
+            "name": "Title / 标题",
+            "localizedName": {
+              "en": "Title",
+              "zh-CN": "标题"
+            },
             "type": "text",
             "required": true
           },
           {
             "slug": "type",
-            "name": "类型",
+            "name": "Type / 类型",
+            "localizedName": {
+              "en": "Type",
+              "zh-CN": "类型"
+            },
             "type": "select",
             "required": false
           },
           {
             "slug": "source-message",
-            "name": "来源消息",
+            "name": "Source message / 来源消息",
+            "localizedName": {
+              "en": "Source message",
+              "zh-CN": "来源消息"
+            },
             "type": "relation",
             "required": false,
             "options": {
@@ -707,7 +1131,11 @@ export const appConfig = {
           },
           {
             "slug": "source-reply",
-            "name": "来源回复",
+            "name": "Source reply / 来源回复",
+            "localizedName": {
+              "en": "Source reply",
+              "zh-CN": "来源回复"
+            },
             "type": "relation",
             "required": false,
             "options": {
@@ -716,57 +1144,93 @@ export const appConfig = {
           },
           {
             "slug": "owner",
-            "name": "负责人",
+            "name": "Owner / 负责人",
+            "localizedName": {
+              "en": "Owner",
+              "zh-CN": "负责人"
+            },
             "type": "member",
             "required": false
           },
           {
             "slug": "due-date",
-            "name": "到期日",
+            "name": "Due date / 到期日",
+            "localizedName": {
+              "en": "Due date",
+              "zh-CN": "到期日"
+            },
             "type": "date",
             "required": false
           },
           {
             "slug": "status",
-            "name": "状态",
+            "name": "Status / 状态",
+            "localizedName": {
+              "en": "Status",
+              "zh-CN": "状态"
+            },
             "type": "select",
             "required": false
           },
           {
             "slug": "result",
-            "name": "完成结果",
+            "name": "Result / 完成结果",
+            "localizedName": {
+              "en": "Result",
+              "zh-CN": "完成结果"
+            },
             "type": "longtext",
             "required": false
           },
           {
             "slug": "evidence-url",
-            "name": "证据链接",
+            "name": "Evidence link / 证据链接",
+            "localizedName": {
+              "en": "Evidence link",
+              "zh-CN": "证据链接"
+            },
             "type": "url",
             "required": false
           }
-        ]
+        ],
+        "localizedName": {
+          "en": "Actions",
+          "zh-CN": "处理表"
+        }
       },
       {
         "key": "experience",
         "slug": "busa-linkedin-desk-experience",
-        "name": "经验表",
+        "name": "Experience / 经验表",
         "readLimit": 50,
         "fields": [
           {
             "slug": "title",
-            "name": "标题",
+            "name": "Title / 标题",
+            "localizedName": {
+              "en": "Title",
+              "zh-CN": "标题"
+            },
             "type": "text",
             "required": true
           },
           {
             "slug": "type",
-            "name": "类型",
+            "name": "Type / 类型",
+            "localizedName": {
+              "en": "Type",
+              "zh-CN": "类型"
+            },
             "type": "select",
             "required": false
           },
           {
             "slug": "source-reply",
-            "name": "来源回复",
+            "name": "Source reply / 来源回复",
+            "localizedName": {
+              "en": "Source reply",
+              "zh-CN": "来源回复"
+            },
             "type": "relation",
             "required": false,
             "options": {
@@ -775,7 +1239,11 @@ export const appConfig = {
           },
           {
             "slug": "source-action",
-            "name": "来源处理",
+            "name": "Source action / 来源处理",
+            "localizedName": {
+              "en": "Source action",
+              "zh-CN": "来源处理"
+            },
             "type": "relation",
             "required": false,
             "options": {
@@ -784,41 +1252,69 @@ export const appConfig = {
           },
           {
             "slug": "approval-quote",
-            "name": "审批原话",
+            "name": "Approval quote / 审批原话",
+            "localizedName": {
+              "en": "Approval quote",
+              "zh-CN": "审批原话"
+            },
             "type": "longtext",
             "required": false
           },
           {
             "slug": "scope",
-            "name": "适用范围",
+            "name": "Scope / 适用范围",
+            "localizedName": {
+              "en": "Scope",
+              "zh-CN": "适用范围"
+            },
             "type": "text",
             "required": false
           },
           {
             "slug": "limits",
-            "name": "反例与边界",
+            "name": "Limits / 反例与边界",
+            "localizedName": {
+              "en": "Limits",
+              "zh-CN": "反例与边界"
+            },
             "type": "longtext",
             "required": false
           },
           {
             "slug": "status",
-            "name": "状态",
+            "name": "Status / 状态",
+            "localizedName": {
+              "en": "Status",
+              "zh-CN": "状态"
+            },
             "type": "select",
             "required": false
           },
           {
             "slug": "promoted-to",
-            "name": "晋升去向",
+            "name": "Promoted to / 晋升去向",
+            "localizedName": {
+              "en": "Promoted to",
+              "zh-CN": "晋升去向"
+            },
             "type": "url",
             "required": false
           },
           {
             "slug": "last-verified",
-            "name": "最近验证",
+            "name": "Last verified / 最近验证",
+            "localizedName": {
+              "en": "Last verified",
+              "zh-CN": "最近验证"
+            },
             "type": "date",
             "required": false
           }
-        ]
+        ],
+        "localizedName": {
+          "en": "Experience",
+          "zh-CN": "经验表"
+        }
       }
     ]
   },
@@ -907,9 +1403,153 @@ export const appConfig = {
         "source-reply": [
           "demo-reply-alex-1"
         ],
-        "approval-quote": "开头用他自己的原话，这点很好",
+        "approval-quote": "Opening with his own words — that part is spot on",
         "status": "candidate"
       }
     }
-  ]
+  ],
+  "demoRecordsByLocale": {
+    "en": [
+      {
+        "id": "demo-company-north-peak",
+        "baseKey": "companies",
+        "fields": {
+          "title": "North Peak Robotics",
+          "linkedin-url": "https://www.linkedin.com/company/north-peak-robotics"
+        }
+      },
+      {
+        "id": "demo-contact-alex-rivera",
+        "baseKey": "contacts",
+        "fields": {
+          "title": "Alex Rivera",
+          "name": "Alex Rivera",
+          "linkedin-url": "https://www.linkedin.com/in/alex-rivera-demo",
+          "company": [
+            "demo-company-north-peak"
+          ]
+        }
+      },
+      {
+        "id": "demo-message-alex-1",
+        "baseKey": "messages",
+        "fields": {
+          "title": "Re: your post on spreadsheet CRM",
+          "thread-id": "thread-demo-alex",
+          "message-id": "msg-demo-alex-1",
+          "contact": [
+            "demo-contact-alex-rivera"
+          ],
+          "direction": "in",
+          "channel": "linkedin",
+          "sent-at": "__TODAY_0912__",
+          "body": "Saw your post — we are literally tracking follow-ups in a spreadsheet and things keep slipping. How does BusaCRM handle that?",
+          "intent": "interested",
+          "urgency": "high",
+          "status": "triaged"
+        }
+      },
+      {
+        "id": "demo-reply-alex-1",
+        "baseKey": "replies",
+        "fields": {
+          "title": "Reply to Alex Rivera — spreadsheet pain",
+          "message": [
+            "demo-message-alex-1"
+          ],
+          "contact": [
+            "demo-contact-alex-rivera"
+          ],
+          "draft": "Hi Alex — the spreadsheet pain is exactly what BusaCRM removes: every follow-up becomes a record with an owner and a due date, so nothing lives in someone's head. Happy to show you a two-week trial workspace set up the way your team already works?",
+          "version": 1,
+          "approval-status": "pending"
+        }
+      },
+      {
+        "id": "demo-experience-1",
+        "baseKey": "experience",
+        "fields": {
+          "title": "Name the prospect's own words back in the first line",
+          "statement": "Open with the prospect's own phrasing of their pain before naming the product; it earned a same-day reply twice.",
+          "type": "script",
+          "source-reply": [
+            "demo-reply-alex-1"
+          ],
+          "approval-quote": "Opening with his own words — that part is spot on",
+          "status": "candidate"
+        }
+      }
+    ],
+    "zh-CN": [
+      {
+        "id": "demo-company-north-peak",
+        "baseKey": "companies",
+        "fields": {
+          "title": "North Peak Robotics",
+          "linkedin-url": "https://www.linkedin.com/company/north-peak-robotics"
+        }
+      },
+      {
+        "id": "demo-contact-alex-rivera",
+        "baseKey": "contacts",
+        "fields": {
+          "title": "Alex Rivera",
+          "name": "Alex Rivera",
+          "linkedin-url": "https://www.linkedin.com/in/alex-rivera-demo",
+          "company": [
+            "demo-company-north-peak"
+          ]
+        }
+      },
+      {
+        "id": "demo-message-alex-1",
+        "baseKey": "messages",
+        "fields": {
+          "title": "回复：你那篇电子表格管客户的帖子",
+          "thread-id": "thread-demo-alex",
+          "message-id": "msg-demo-alex-1",
+          "contact": [
+            "demo-contact-alex-rivera"
+          ],
+          "direction": "in",
+          "channel": "linkedin",
+          "sent-at": "__TODAY_0912__",
+          "body": "看到你的帖子了——我们真的在用电子表格跟进客户，老是漏事。BusaCRM 是怎么解决这个的？",
+          "intent": "interested",
+          "urgency": "high",
+          "status": "triaged"
+        }
+      },
+      {
+        "id": "demo-reply-alex-1",
+        "baseKey": "replies",
+        "fields": {
+          "title": "回复 Alex Rivera——电子表格的痛点",
+          "message": [
+            "demo-message-alex-1"
+          ],
+          "contact": [
+            "demo-contact-alex-rivera"
+          ],
+          "draft": "你好 Alex——电子表格的痛点正是 BusaCRM 要去掉的：每次跟进都变成一条有负责人、有到期日的记录，不再只装在某个人脑子里。给你开一个按你们团队现有方式搭好的两周试用台，看看？",
+          "version": 1,
+          "approval-status": "pending"
+        }
+      },
+      {
+        "id": "demo-experience-1",
+        "baseKey": "experience",
+        "fields": {
+          "title": "第一句先复述对方自己的原话",
+          "statement": "先用对方描述痛点的原话开口，再提产品；这一招两次都换来了当天回复。",
+          "type": "script",
+          "source-reply": [
+            "demo-reply-alex-1"
+          ],
+          "approval-quote": "开头用他自己的原话，这点很好",
+          "status": "candidate"
+        }
+      }
+    ]
+  }
 };

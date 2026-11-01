@@ -1,1 +1,103 @@
-{"app":{"kind":"airapp","name":"Busa LinkedIn Desk","purpose":"The desk's daily report and approval console （日报 / 待审批台）: one read-only page where the operator sees what the agent has queued — drafts awaiting approval, today's triage, work going stale, and lessons awaiting adoption — in the same shape the desk's daily report uses.","slug":"busa-linkedin-desk-app"},"binding":{"mode":"runtime","note":"Shipped inside the Busa LinkedIn Desk template package, so no Space, node or Base id exists at authoring time. At runtime the app resolves the resources the package installed via the SDK's inspectProvisionedResources, keyed by the folder slug, the per-Base slugs and the AirApp resourceKey declared in app/js/config.js. It never provisions, repairs or writes: a missing resource is reported as setup-required."},"rules":["Read-only: the app requests only nodes.list, nodes.get, records.list, records.get and records.count; it declares no setup or write procedures and no Change Request procedures.","Approvals happen in agent chat; changes reach the Bases through Change Requests proposed there — never from this console.","Bounded reads: one page per Base per load at the configured readLimit (50); when a page has a next cursor the console says it is showing the first page, and headline counts come from records.count, not from the loaded page.","No credentials, no absolute Busabase URLs, no hostname-based runtime detection: the runtime is probed through the SDK helper against the relative __airapp/runtime path."],"surfaces":[{"id":"approval-queue","reads":"replies where approval-status = pending, joined to their source message and contact","shows":"contact, source-message summary, urgency, waiting time (source message sent-at, falling back to the draft's created time); expanding a row shows the full draft and the source message body","title":"Awaiting your approval 待审批"},{"id":"today-triage","reads":"messages with direction = in and sent-at today; messages with status = pending-triage","shows":"new-message count, intent distribution, awaiting-triage count","title":"Today's triage 今日分诊"},{"id":"stalled","reads":"actions with status in (open, in-progress) and due-date up to today; the newest message per thread-id","shows":"overdue and due-today actions; threads quiet for over 7 days whose status is not no-action, with quiet days and whether the last move was ours or theirs","title":"Due & stalled 到期与停滞"},{"id":"experience-candidates","reads":"experience where status = candidate","shows":"lesson title, type, the approver's verbatim quote, and the source reply or action it was distilled from","title":"Candidate experience 经验候选"},{"id":"daily-report","reads":"the four surfaces above","shows":"one copyable plain-text report in the desk's daily-report shape: what arrived, what waits on a human, what is stuck, what was learned","title":"Daily report 日报"}],"workspace":{"bases":[{"key":"companies","read_limit":50,"slug":"busa-linkedin-desk-companies"},{"key":"contacts","read_limit":50,"slug":"busa-linkedin-desk-contacts"},{"key":"messages","read_limit":50,"slug":"busa-linkedin-desk-messages"},{"key":"replies","read_limit":50,"slug":"busa-linkedin-desk-replies"},{"key":"actions","read_limit":50,"slug":"busa-linkedin-desk-actions"},{"key":"experience","read_limit":50,"slug":"busa-linkedin-desk-experience"}],"folder":{"name":"Busa LinkedIn Desk","slug":"busa-linkedin-desk"}}}
+{
+  "app": {
+    "kind": "airapp",
+    "name": "Busa LinkedIn Desk",
+    "purpose": "The desk's daily report and approval console (Daily report & approval console / 日报待审批台): one read-only page where the operator sees what the agent has queued — drafts awaiting approval, today's triage, work going stale, and lessons awaiting adoption — in the same shape the desk's daily report uses.",
+    "slug": "busa-linkedin-desk-app"
+  },
+  "binding": {
+    "mode": "runtime",
+    "note": "Shipped inside the Busa LinkedIn Desk template package, so no Space, node or Base id exists at authoring time. At runtime the app resolves the resources the package installed via the SDK's inspectProvisionedResources, keyed by the folder slug, the per-Base slugs and the AirApp resourceKey declared in app/js/config.js. It never provisions, repairs or writes: a missing resource is reported as setup-required."
+  },
+  "rules": [
+    "Read-only: the app requests only nodes.list, nodes.get, records.list, records.get and records.count; it declares no setup or write procedures and no Change Request procedures.",
+    "Approvals happen in agent chat; changes reach the Bases through Change Requests proposed there — never from this console.",
+    "Bounded reads: one page per Base per load at the configured readLimit (50); when a page has a next cursor the console says it is showing the first page, and headline counts come from records.count, not from the loaded page.",
+    "No credentials, no absolute Busabase URLs, no hostname-based runtime detection: the runtime is probed through the SDK helper against the relative __airapp/runtime path."
+  ],
+  "surfaces": [
+    {
+      "id": "approval-queue",
+      "reads": "replies where approval-status = pending, joined to their source message and contact",
+      "shows": "contact, source-message summary, urgency, waiting time (source message sent-at, falling back to the draft's created time); expanding a row shows the full draft and the source message body",
+      "title": {
+        "en": "Awaiting your approval",
+        "zh-CN": "待审批"
+      }
+    },
+    {
+      "id": "today-triage",
+      "reads": "messages with direction = in and sent-at today; messages with status = pending-triage",
+      "shows": "new-message count, intent distribution, awaiting-triage count",
+      "title": {
+        "en": "Today's triage",
+        "zh-CN": "今日分诊"
+      }
+    },
+    {
+      "id": "stalled",
+      "reads": "actions with status in (open, in-progress) and due-date up to today; the newest message per thread-id",
+      "shows": "overdue and due-today actions; threads quiet for over 7 days whose status is not no-action, with quiet days and whether the last move was ours or theirs",
+      "title": {
+        "en": "Due & stalled",
+        "zh-CN": "到期与停滞"
+      }
+    },
+    {
+      "id": "experience-candidates",
+      "reads": "experience where status = candidate",
+      "shows": "lesson title, type, the approver's verbatim quote, and the source reply or action it was distilled from",
+      "title": {
+        "en": "Candidate experience",
+        "zh-CN": "经验候选"
+      }
+    },
+    {
+      "id": "daily-report",
+      "reads": "the four surfaces above",
+      "shows": "one copyable plain-text report in the desk's daily-report shape: what arrived, what waits on a human, what is stuck, what was learned",
+      "title": {
+        "en": "Daily report",
+        "zh-CN": "日报"
+      }
+    }
+  ],
+  "workspace": {
+    "bases": [
+      {
+        "key": "companies",
+        "read_limit": 50,
+        "slug": "busa-linkedin-desk-companies"
+      },
+      {
+        "key": "contacts",
+        "read_limit": 50,
+        "slug": "busa-linkedin-desk-contacts"
+      },
+      {
+        "key": "messages",
+        "read_limit": 50,
+        "slug": "busa-linkedin-desk-messages"
+      },
+      {
+        "key": "replies",
+        "read_limit": 50,
+        "slug": "busa-linkedin-desk-replies"
+      },
+      {
+        "key": "actions",
+        "read_limit": 50,
+        "slug": "busa-linkedin-desk-actions"
+      },
+      {
+        "key": "experience",
+        "read_limit": 50,
+        "slug": "busa-linkedin-desk-experience"
+      }
+    ],
+    "folder": {
+      "name": "Busa LinkedIn Desk",
+      "slug": "busa-linkedin-desk"
+    }
+  }
+}

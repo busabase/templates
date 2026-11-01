@@ -1,10 +1,17 @@
 import { appConfig } from "../config.js";
 
 // Standalone preview (`?demo=1`): the package's own fictional sample journey,
-// held in appConfig.demoRecords and never written anywhere. Relative-date
+// held in appConfig.demoRecordsByLocale and never written anywhere. The
+// journey ships as one full set per language, selected by `?lang=`, so a
+// preview never mixes the desk's two working languages. Relative-date
 // placeholders are resolved against the viewer's clock so the console always
 // shows a plausible "today" — a hard-coded demo date would read as stale the
 // week after it was written.
+
+const demoRecordsForLocale = () => {
+  const lang = new URLSearchParams(window.location.search).get("lang");
+  return appConfig.demoRecordsByLocale?.[lang] ?? appConfig.demoRecords;
+};
 
 const resolveDates = (value) => {
   if (typeof value !== "string") return value;
@@ -35,7 +42,7 @@ const resolveRecord = (record) => ({
 export const demoProvider = {
   name: "demo",
   async getState() {
-    const records = appConfig.demoRecords.map(resolveRecord);
+    const records = demoRecordsForLocale().map(resolveRecord);
     return {
       provider: { ok: true, name: "demo", mode: "deterministic_local_demo", readOnly: true },
       bases: appConfig.bases,
@@ -56,7 +63,7 @@ export const demoProvider = {
     };
   },
   async getRecord(baseKey, recordId) {
-    const record = appConfig.demoRecords.map(resolveRecord).find(
+    const record = demoRecordsForLocale().map(resolveRecord).find(
       (item) => item.baseKey === baseKey && item.id === recordId,
     );
     if (!record) throw new Error("RECORD_NOT_FOUND");

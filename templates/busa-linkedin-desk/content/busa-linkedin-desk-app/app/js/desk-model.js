@@ -8,34 +8,70 @@
 
 export const STALE_DAYS = 7; // the desk's standing rule: a thread quiet longer than this needs a nudge
 
-export const INTENT_LABELS = {
-  interested: "Interested 有意向",
-  objection: "Objection 异议",
-  referral: "Referral 转介",
-  "not-now": "Not now 现在不要",
-  "wrong-person": "Wrong person 找错人",
-  rejected: "Rejected 拒绝",
-  question: "Question 咨询",
-  other: "Other 其它",
+// Enum labels per locale. Each value is exactly the corresponding choice's
+// localized name in `content/<base>/base.json` — the consistency script
+// asserts the two never drift, so the console calls a choice by the same
+// words the installed Base shows.
+export const LABELS = {
+  en: {
+    intent: {
+      interested: "Interested",
+      objection: "Objection",
+      referral: "Referral",
+      "not-now": "Not now",
+      "wrong-person": "Wrong person",
+      rejected: "Rejected",
+      question: "Question",
+      other: "Other",
+    },
+    experienceType: {
+      script: "What works",
+      objection: "Objection handling",
+      "triage-rule": "Triage rule",
+      cadence: "Cadence",
+      forbidden: "Red line",
+    },
+    actionType: {
+      "follow-up": "Follow-up",
+      escalate: "Escalate",
+      meeting: "Meeting",
+      "send-material": "Send material",
+      "update-crm": "Update CRM field",
+      "new-deal": "New deal",
+      other: "Other",
+    },
+  },
+  "zh-CN": {
+    intent: {
+      interested: "有意向",
+      objection: "异议",
+      referral: "转介",
+      "not-now": "现在不要",
+      "wrong-person": "找错人",
+      rejected: "拒绝",
+      question: "咨询",
+      other: "其它",
+    },
+    experienceType: {
+      script: "有效话术",
+      objection: "异议处理",
+      "triage-rule": "分诊规则",
+      cadence: "节奏经验",
+      forbidden: "禁区教训",
+    },
+    actionType: {
+      "follow-up": "跟进",
+      escalate: "升级人工",
+      meeting: "约会议",
+      "send-material": "发送资料",
+      "update-crm": "更新 CRM 字段",
+      "new-deal": "新建商机",
+      other: "其它",
+    },
+  },
 };
 
-export const EXPERIENCE_TYPE_LABELS = {
-  script: "What works 有效话术",
-  objection: "Objection handling 异议处理",
-  "triage-rule": "Triage rule 分诊规则",
-  cadence: "Cadence 节奏经验",
-  forbidden: "Red line 禁区教训",
-};
-
-export const ACTION_TYPE_LABELS = {
-  "follow-up": "Follow-up 跟进",
-  escalate: "Escalate 升级人工",
-  meeting: "Meeting 约会议",
-  "send-material": "Send material 发送资料",
-  "update-crm": "Update CRM 更新 CRM 字段",
-  "new-deal": "New deal 新建商机",
-  other: "Other 其它",
-};
+export const labelsFor = (locale) => LABELS[locale] ?? LABELS.en;
 
 const URGENCY_RANK = { high: 0, medium: 1, low: 2 };
 const OPEN_ACTION_STATUSES = new Set(["open", "in-progress"]);
@@ -179,24 +215,27 @@ export function buildDeskView(records, now = new Date()) {
 
 // The copyable daily report, in the shape the desk's own daily-report prompt
 // and the companion article use: what arrived, what waits on a human, what
-// is stuck, what was learned. Plain text, one fact per line.
-export function buildReportText(view, now = new Date()) {
+// is stuck, what was learned. Plain text, one fact per line, in the active
+// locale — every word comes from `t` (messages.js) and `labels`.
+export function buildReportText(view, now, t, labels) {
   const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const intents = Object.entries(view.today.intentCounts)
-    .map(([intent, n]) => `${INTENT_LABELS[intent] ?? intent} ${n}`)
+    .map(([intent, n]) => `${labels.intent[intent] ?? intent} ${n}`)
     .join(" · ");
   const lines = [
-    `Busa LinkedIn Desk — daily report ${date}`,
-    `New messages today: ${view.today.newInbound}${intents ? ` (${intents})` : ""} · awaiting triage: ${view.today.awaitingTriage}`,
-    `Awaiting approval: ${view.approvals.length}`,
+    `Busa LinkedIn Desk — ${t.reportHeading} ${date}`,
+    t.reportNew(view.today.newInbound, intents, view.today.awaitingTriage),
+    t.reportApprovals(view.approvals.length),
     ...view.approvals.slice(0, 5).map(
-      (a) => `  - ${a.title}${a.contactName ? ` (${a.contactName})` : ""} — waiting ${formatWait(a.waitingMs)}`,
+      (a) => `  - ${a.title}${a.contactName ? ` (${a.contactName})` : ""} — ${t.reportWaiting(formatWait(a.waitingMs))}`,
     ),
-    `Due or overdue actions: ${view.dueActions.length}`,
-    ...view.dueActions.slice(0, 5).map((d) => `  - ${d.title}${d.overdue ? " (overdue)" : " (due today)"}`),
-    `Threads quiet for over ${STALE_DAYS} days: ${view.stalled.length}`,
-    ...view.stalled.slice(0, 5).map((s) => `  - ${s.title}${s.contactName ? ` (${s.contactName})` : ""} — quiet ${s.quietDays}d`),
-    `Candidate experience awaiting review: ${view.candidates.length}`,
+    t.reportDue(view.dueActions.length),
+    ...view.dueActions.slice(0, 5).map((d) => `  - ${d.title}${d.overdue ? t.reportOverdueSuffix : t.reportDueTodaySuffix}`),
+    t.reportQuiet(STALE_DAYS, view.stalled.length),
+    ...view.stalled.slice(0, 5).map(
+      (s) => `  - ${s.title}${s.contactName ? ` (${s.contactName})` : ""} — ${t.quietDays(s.quietDays)}`,
+    ),
+    t.reportCandidates(view.candidates.length),
   ];
   return lines.join("\n");
 }
