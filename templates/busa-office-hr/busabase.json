@@ -9,7 +9,7 @@
     "en": "Employee records, labor contracts, salary proposals and monthly payroll reviews.",
     "zh-CN": "管理员工档案、劳动合同、薪酬变动和月度工资复核。"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "tags": [
     "office",

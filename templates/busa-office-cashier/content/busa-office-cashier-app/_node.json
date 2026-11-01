@@ -1,7 +1,7 @@
 {
   "type": "airapp",
-  "name": "Cashier Desk / 出纳管理",
-  "description": "Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money. / 管理银行走查、付款依据、收付流水和对账异常，不执行资金转账。",
+  "name": "Cashier Desk",
+  "description": "Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money.",
   "agentPrompts": [
     {
       "key": "scenario-0",

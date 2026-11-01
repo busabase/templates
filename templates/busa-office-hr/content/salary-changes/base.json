@@ -1,11 +1,11 @@
 {
-  "name": "Salary changes / 薪酬变动",
-  "description": "Keep proposed, approved and rejected compensation decisions separate. / 分别留存拟议、批准与拒绝的薪酬决定。",
+  "name": "Salary changes",
+  "description": "Keep proposed, approved and rejected compensation decisions separate.",
   "position": 2,
   "fields": [
     {
       "slug": "title",
-      "name": "Proposal / 薪酬提案",
+      "name": "Proposal",
       "type": "text",
       "required": true,
       "position": 0,
@@ -13,7 +13,7 @@
     },
     {
       "slug": "employee-code",
-      "name": "Employee reference / 员工业务编号",
+      "name": "Employee reference",
       "type": "text",
       "required": false,
       "position": 1,
@@ -21,7 +21,7 @@
     },
     {
       "slug": "owner",
-      "name": "Decision owner / 审批负责人",
+      "name": "Decision owner",
       "type": "text",
       "required": false,
       "position": 2,
@@ -29,7 +29,7 @@
     },
     {
       "slug": "effective",
-      "name": "Proposed effective date / 拟生效日期",
+      "name": "Proposed effective date",
       "type": "date",
       "required": false,
       "position": 3,
@@ -37,7 +37,7 @@
     },
     {
       "slug": "proposed-salary",
-      "name": "Proposed monthly salary (CNY) / 拟议月薪（元）",
+      "name": "Proposed monthly salary (CNY)",
       "type": "number",
       "required": false,
       "position": 4,
@@ -45,7 +45,7 @@
     },
     {
       "slug": "status",
-      "name": "Decision status / 决定状态",
+      "name": "Decision status",
       "type": "select",
       "required": false,
       "position": 5,
@@ -53,26 +53,26 @@
         "choices": [
           {
             "id": "proposed",
-            "name": "Proposed / 待批准"
+            "name": "Proposed"
           },
           {
             "id": "approved",
-            "name": "Approved, not applied / 已批待核对"
+            "name": "Approved, not applied"
           },
           {
             "id": "applied",
-            "name": "Applied / 已应用"
+            "name": "Applied"
           },
           {
             "id": "rejected",
-            "name": "Rejected / 已拒绝"
+            "name": "Rejected"
           }
         ]
       }
     },
     {
       "slug": "approval-ref",
-      "name": "Approval evidence reference / 审批证据编号",
+      "name": "Approval evidence reference",
       "type": "text",
       "required": false,
       "position": 6,
@@ -80,7 +80,7 @@
     },
     {
       "slug": "notes",
-      "name": "Decision notes / 决定说明",
+      "name": "Decision notes",
       "type": "longtext",
       "required": false,
       "position": 7,
@@ -90,8 +90,8 @@
   "views": [
     {
       "slug": "all",
-      "name": "Salary changes / 薪酬变动",
-      "description": "Keep proposed, approved and rejected compensation decisions separate. / 分别留存拟议、批准与拒绝的薪酬决定。",
+      "name": "Salary changes",
+      "description": "Keep proposed, approved and rejected compensation decisions separate.",
       "type": "table",
       "config": {
         "filters": [],
@@ -112,8 +112,8 @@
     },
     {
       "slug": "review",
-      "name": "Priority queue / 优先处理",
-      "description": "Focus on the proposed state / 聚焦 待批准状态",
+      "name": "Priority queue",
+      "description": "Focus on the proposed state",
       "type": "table",
       "config": {
         "filters": [

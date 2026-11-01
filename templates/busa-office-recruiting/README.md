@@ -1,4 +1,4 @@
-# Recruiting Desk / 招聘管理
+# Recruiting Desk
 
 ## English
 
@@ -16,7 +16,7 @@ Run npm run check from this template folder and busabase-cli check . . See the r
 
 ### Language coverage
 
-The UI, review dialog, accessible control labels, catalog prompts, native resource and field names, specific node prompts, manual and sample narratives include English and Simplified Chinese. Native string-only metadata and example prose display both languages together. Machine values, business codes, currencies, dates and fictional personal names retain their original values. The manual provides the same workflow and restrictions in both languages.
+The UI, review dialog, accessible control labels, catalog prompts, specific node prompts, manual and sample narratives include English and Simplified Chinese. Native names and descriptions are plain English; example prose displays both languages together. Machine values, business codes, currencies, dates and fictional personal names retain their original values. The manual provides the same workflow and restrictions in both languages.
 
 ## 简体中文
 
@@ -34,4 +34,4 @@ The UI, review dialog, accessible control labels, catalog prompts, native resour
 
 ### 语言覆盖
 
-界面、复核对话框、无障碍控件标签、模板卡片提示词、原生资源及字段名称、具体节点提示词、业务手册与示例叙述均包含 English / 简体中文。只接受字符串的原生元数据和示例叙述同时显示中英文。机器值、业务编号、币种、日期和虚构人物姓名保留原值。业务手册的两种语言提供相同流程和限制。
+界面、复核对话框、无障碍控件标签、模板卡片提示词、具体节点提示词、业务手册与示例叙述均包含 English / 简体中文。原生名称与描述为纯英文；示例叙述同时显示中英文。机器值、业务编号、币种、日期和虚构人物姓名保留原值。业务手册的两种语言提供相同流程和限制。

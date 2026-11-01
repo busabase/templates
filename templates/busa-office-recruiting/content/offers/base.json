@@ -1,6 +1,6 @@
 {
-  "name": "Offer review / 录用复核",
-  "description": "Compensation proposals, review status and acceptance evidence / 薪酬草案、复核状态及候选人接受凭证",
+  "name": "Offer review",
+  "description": "Compensation proposals, review status and acceptance evidence",
   "position": 3,
   "agentPrompts": [
     {
@@ -31,7 +31,7 @@
   "fields": [
     {
       "slug": "name",
-      "name": "Name / 名称",
+      "name": "Name",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Offer code / 录用编号",
+      "name": "Offer code",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "candidate",
-      "name": "Candidate code / 候选人编号",
+      "name": "Candidate code",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Approver / 复核人",
+      "name": "Approver",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "amount",
-      "name": "Monthly salary / 月薪",
+      "name": "Monthly salary",
       "type": "number",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "currency",
-      "name": "Currency / 币种",
+      "name": "Currency",
       "type": "text",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "status",
-      "name": "Review state / 复核状态",
+      "name": "Review state",
       "type": "text",
       "required": false,
       "position": 6,
@@ -87,7 +87,7 @@
     },
     {
       "slug": "due",
-      "name": "Decision due / 复核期限",
+      "name": "Decision due",
       "type": "date",
       "required": false,
       "position": 7,
@@ -95,7 +95,7 @@
     },
     {
       "slug": "notes",
-      "name": "Conditions / 录用条件",
+      "name": "Conditions",
       "type": "longtext",
       "required": false,
       "position": 8,
@@ -105,7 +105,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Offer review working table / 录用复核工作表",
+      "name": "Offer review working table",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

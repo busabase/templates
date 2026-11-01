@@ -1,11 +1,11 @@
 {
-  "name": "Verification tasks / 核验待办",
-  "description": "Assign evidence checks and renewal follow-up with accountable owners. / 落实证据核验与续期跟进责任。",
+  "name": "Verification tasks",
+  "description": "Assign evidence checks and renewal follow-up with accountable owners.",
   "position": 3,
   "fields": [
     {
       "slug": "title",
-      "name": "Task / 待办事项",
+      "name": "Task",
       "type": "text",
       "required": true,
       "position": 0,
@@ -13,7 +13,7 @@
     },
     {
       "slug": "source-ref",
-      "name": "Evidence reference / 证据业务编号",
+      "name": "Evidence reference",
       "type": "text",
       "required": false,
       "position": 1,
@@ -21,7 +21,7 @@
     },
     {
       "slug": "owner",
-      "name": "Owner / 负责人",
+      "name": "Owner",
       "type": "text",
       "required": false,
       "position": 2,
@@ -29,7 +29,7 @@
     },
     {
       "slug": "due",
-      "name": "Due on / 截止日期",
+      "name": "Due on",
       "type": "date",
       "required": false,
       "position": 3,
@@ -37,7 +37,7 @@
     },
     {
       "slug": "status",
-      "name": "Task status / 待办状态",
+      "name": "Task status",
       "type": "select",
       "required": false,
       "position": 4,
@@ -45,22 +45,22 @@
         "choices": [
           {
             "id": "open",
-            "name": "Open / 待处理"
+            "name": "Open"
           },
           {
             "id": "blocked",
-            "name": "Blocked / 受阻"
+            "name": "Blocked"
           },
           {
             "id": "completed",
-            "name": "Completed / 已完成"
+            "name": "Completed"
           }
         ]
       }
     },
     {
       "slug": "notes",
-      "name": "Next step / 下一步",
+      "name": "Next step",
       "type": "longtext",
       "required": false,
       "position": 5,
@@ -70,8 +70,8 @@
   "views": [
     {
       "slug": "all",
-      "name": "Verification tasks / 核验待办",
-      "description": "Assign evidence checks and renewal follow-up with accountable owners. / 落实证据核验与续期跟进责任。",
+      "name": "Verification tasks",
+      "description": "Assign evidence checks and renewal follow-up with accountable owners.",
       "type": "table",
       "config": {
         "filters": [],
@@ -92,8 +92,8 @@
     },
     {
       "slug": "review",
-      "name": "Priority queue / 优先处理",
-      "description": "Focus on the open state / 聚焦 待处理状态",
+      "name": "Priority queue",
+      "description": "Focus on the open state",
       "type": "table",
       "config": {
         "filters": [

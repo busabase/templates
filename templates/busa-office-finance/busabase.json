@@ -9,7 +9,7 @@
     "en": "Expense evidence, invoice requests, monthly actuals and filing deadlines in one review desk.",
     "zh-CN": "集中复核报销依据、开票申请、月度实际报告和申报期限。"
   },
-  "version": "1.0.0",
+  "version": "1.1.0",
   "license": "MIT",
   "template": {
     "category": "finance",

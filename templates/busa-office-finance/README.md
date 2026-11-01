@@ -1,4 +1,4 @@
-# Office Finance / 财务管理
+# Office Finance
 
 ## English
 
@@ -12,7 +12,7 @@ Local verification: `cd content/busa-office-finance-app && pnpm install && pnpm 
 
 Schemas and samples: `app/js/config.js` and `app/js/samples.js` are canonical. Run `node scripts/sync-content.mjs` after edits; check parity with `--check`.
 
-Language coverage: the app interface, catalog prompts, node prompts, complete operating manual and package metadata support English and Simplified Chinese. Native tables, fields, views and select labels use bilingual strings; narrative seed titles and notes carry both languages. Proper names, reference codes, currency codes, statuses and relations retain stable values. English and Chinese recordings are under `assets/recordings/`.
+Language coverage: the app interface, catalog prompts, node prompts, complete operating manual and package metadata support English and Simplified Chinese. Installed names for tables, fields, views and select labels are plain English; the app renders base and field names per viewer language from the `nameI18n` entries in its config, while narrative seed titles and notes carry both languages. Proper names, reference codes, currency codes, statuses and relations retain stable values. English and Chinese recordings are under `assets/recordings/`.
 
 ## 简体中文
 
@@ -26,4 +26,4 @@ Language coverage: the app interface, catalog prompts, node prompts, complete op
 
 数据结构与示例以 `app/js/config.js` 和 `app/js/samples.js` 为准。编辑后运行 `node scripts/sync-content.mjs`，使用 `--check` 检查生成文件是否一致。
 
-语言覆盖：界面、模板卡片提示词、节点提示词、完整操作手册和模板元数据支持英语与简体中文。原生表、字段、视图及选择项标签采用中英并列文本；示例标题和叙述备注包含两种语言。专有名称、引用编号、币种代码、状态和关联值保持稳定。中英文录屏位于 `assets/recordings/`。
+语言覆盖：界面、模板卡片提示词、节点提示词、完整操作手册和模板元数据支持英语与简体中文。原生表、字段、视图及选择项的安装名均为纯英文；应用按查看者语言从配置中的 `nameI18n` 渲染表与字段名，示例标题和叙述备注包含两种语言。专有名称、引用编号、币种代码、状态和关联值保持稳定。中英文录屏位于 `assets/recordings/`。

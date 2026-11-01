@@ -1,6 +1,6 @@
-# Verification Record / 验证记录
+# Verification Record
 
-Date / 日期: 2026-09-29
+Date: 2026-09-29
 
 ## English
 

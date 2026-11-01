@@ -1,6 +1,6 @@
 {
-  "name": "Case timeline / 案件进展",
-  "description": "Chronological factual case progress with source references / 按时间顺序记录案件事实进展及来源引用",
+  "name": "Case timeline",
+  "description": "Chronological factual case progress with source references",
   "position": 3,
   "agentPrompts": [
     {
@@ -31,7 +31,7 @@
   "fields": [
     {
       "slug": "name",
-      "name": "Name / 名称",
+      "name": "Name",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Update code / 进展编号",
+      "name": "Update code",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "case",
-      "name": "Case code / 案件编号",
+      "name": "Case code",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Author / 记录人",
+      "name": "Author",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "status",
-      "name": "Evidence state / 证据状态",
+      "name": "Evidence state",
       "type": "text",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "due",
-      "name": "Occurred on / 发生日期",
+      "name": "Occurred on",
       "type": "date",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "source",
-      "name": "Source reference / 来源编号",
+      "name": "Source reference",
       "type": "text",
       "required": false,
       "position": 6,
@@ -87,7 +87,7 @@
     },
     {
       "slug": "notes",
-      "name": "Factual update / 事实记录",
+      "name": "Factual update",
       "type": "longtext",
       "required": false,
       "position": 7,
@@ -97,7 +97,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Case timeline working table / 案件进展工作表",
+      "name": "Case timeline working table",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

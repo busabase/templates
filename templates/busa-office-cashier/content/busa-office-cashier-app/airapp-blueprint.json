@@ -13,8 +13,8 @@
   "workspace": {
     "folder": {
       "slug": "busa-office-cashier",
-      "name": "Cashier Desk / 出纳管理",
-      "description": "Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money. / 管理银行走查、付款依据、收付流水和对账异常，不执行资金转账。"
+      "name": "Cashier Desk",
+      "description": "Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money."
     },
     "bases": [
       {
@@ -24,7 +24,7 @@
         "fields": [
           {
             "slug": "title",
-            "name": "Title / 事项",
+            "name": "Title",
             "nameI18n": {
               "en": "Title",
               "zh-CN": "事项"
@@ -36,7 +36,7 @@
           },
           {
             "slug": "entity",
-            "name": "Entity / 主体",
+            "name": "Entity",
             "nameI18n": {
               "en": "Entity",
               "zh-CN": "主体"
@@ -48,7 +48,7 @@
           },
           {
             "slug": "owner",
-            "name": "Owner / 负责人",
+            "name": "Owner",
             "nameI18n": {
               "en": "Owner",
               "zh-CN": "负责人"
@@ -60,7 +60,7 @@
           },
           {
             "slug": "status",
-            "name": "Status / 状态",
+            "name": "Status",
             "nameI18n": {
               "en": "Status",
               "zh-CN": "状态"
@@ -72,22 +72,22 @@
               "choices": [
                 {
                   "id": "active",
-                  "name": "Active / 正常"
+                  "name": "Active"
                 },
                 {
                   "id": "restricted",
-                  "name": "Restricted / 受限"
+                  "name": "Restricted"
                 },
                 {
                   "id": "closed",
-                  "name": "Closed / 已关闭"
+                  "name": "Closed"
                 }
               ]
             }
           },
           {
             "slug": "bank",
-            "name": "Bank / 银行",
+            "name": "Bank",
             "nameI18n": {
               "en": "Bank",
               "zh-CN": "银行"
@@ -99,7 +99,7 @@
           },
           {
             "slug": "accountHint",
-            "name": "Account suffix / 账户尾号",
+            "name": "Account suffix",
             "nameI18n": {
               "en": "Account suffix",
               "zh-CN": "账户尾号"
@@ -111,7 +111,7 @@
           },
           {
             "slug": "currency",
-            "name": "Currency / 币种",
+            "name": "Currency",
             "nameI18n": {
               "en": "Currency",
               "zh-CN": "币种"
@@ -123,7 +123,7 @@
           },
           {
             "slug": "balance",
-            "name": "Book balance / 账面余额",
+            "name": "Book balance",
             "nameI18n": {
               "en": "Book balance",
               "zh-CN": "账面余额"
@@ -135,7 +135,7 @@
           },
           {
             "slug": "checkedAt",
-            "name": "Checked at / 核查时间",
+            "name": "Checked at",
             "nameI18n": {
               "en": "Checked at",
               "zh-CN": "核查时间"
@@ -147,7 +147,7 @@
           },
           {
             "slug": "notes",
-            "name": "Notes / 备注",
+            "name": "Notes",
             "nameI18n": {
               "en": "Notes",
               "zh-CN": "备注"
@@ -161,7 +161,7 @@
         "views": [
           {
             "slug": "register",
-            "name": "Bank accounts / 银行账户",
+            "name": "Bank accounts",
             "type": "table",
             "position": 0,
             "config": {
@@ -187,7 +187,7 @@
           },
           {
             "slug": "attention",
-            "name": "Needs review / 待复核",
+            "name": "Needs review",
             "type": "table",
             "position": 1,
             "config": {
@@ -216,7 +216,7 @@
         "fields": [
           {
             "slug": "title",
-            "name": "Title / 事项",
+            "name": "Title",
             "nameI18n": {
               "en": "Title",
               "zh-CN": "事项"
@@ -228,7 +228,7 @@
           },
           {
             "slug": "entity",
-            "name": "Entity / 主体",
+            "name": "Entity",
             "nameI18n": {
               "en": "Entity",
               "zh-CN": "主体"
@@ -240,7 +240,7 @@
           },
           {
             "slug": "owner",
-            "name": "Owner / 负责人",
+            "name": "Owner",
             "nameI18n": {
               "en": "Owner",
               "zh-CN": "负责人"
@@ -252,7 +252,7 @@
           },
           {
             "slug": "status",
-            "name": "Status / 状态",
+            "name": "Status",
             "nameI18n": {
               "en": "Status",
               "zh-CN": "状态"
@@ -264,22 +264,22 @@
               "choices": [
                 {
                   "id": "pending",
-                  "name": "Pending review / 待审核"
+                  "name": "Pending review"
                 },
                 {
                   "id": "matched",
-                  "name": "Matched / 已匹配"
+                  "name": "Matched"
                 },
                 {
                   "id": "exception",
-                  "name": "Exception / 存在差异"
+                  "name": "Exception"
                 }
               ]
             }
           },
           {
             "slug": "account",
-            "name": "Bank account / 银行账户",
+            "name": "Bank account",
             "nameI18n": {
               "en": "Bank account",
               "zh-CN": "银行账户"
@@ -293,7 +293,7 @@
           },
           {
             "slug": "currency",
-            "name": "Currency / 币种",
+            "name": "Currency",
             "nameI18n": {
               "en": "Currency",
               "zh-CN": "币种"
@@ -305,7 +305,7 @@
           },
           {
             "slug": "balance",
-            "name": "Book balance / 账面余额",
+            "name": "Book balance",
             "nameI18n": {
               "en": "Book balance",
               "zh-CN": "账面余额"
@@ -317,7 +317,7 @@
           },
           {
             "slug": "bankBalance",
-            "name": "Bank balance / 银行余额",
+            "name": "Bank balance",
             "nameI18n": {
               "en": "Bank balance",
               "zh-CN": "银行余额"
@@ -329,7 +329,7 @@
           },
           {
             "slug": "checkedAt",
-            "name": "Checked at / 核查时间",
+            "name": "Checked at",
             "nameI18n": {
               "en": "Checked at",
               "zh-CN": "核查时间"
@@ -341,7 +341,7 @@
           },
           {
             "slug": "evidence",
-            "name": "Evidence reference / 凭证引用",
+            "name": "Evidence reference",
             "nameI18n": {
               "en": "Evidence reference",
               "zh-CN": "凭证引用"
@@ -353,7 +353,7 @@
           },
           {
             "slug": "reason",
-            "name": "Attention reason / 需关注原因",
+            "name": "Attention reason",
             "nameI18n": {
               "en": "Attention reason",
               "zh-CN": "需关注原因"
@@ -365,7 +365,7 @@
           },
           {
             "slug": "notes",
-            "name": "Notes / 备注",
+            "name": "Notes",
             "nameI18n": {
               "en": "Notes",
               "zh-CN": "备注"
@@ -379,7 +379,7 @@
         "views": [
           {
             "slug": "register",
-            "name": "Daily balance checks / 每日余额走查",
+            "name": "Daily balance checks",
             "type": "table",
             "position": 0,
             "config": {
@@ -407,7 +407,7 @@
           },
           {
             "slug": "attention",
-            "name": "Needs review / 待复核",
+            "name": "Needs review",
             "type": "table",
             "position": 1,
             "config": {
@@ -436,7 +436,7 @@
         "fields": [
           {
             "slug": "title",
-            "name": "Title / 事项",
+            "name": "Title",
             "nameI18n": {
               "en": "Title",
               "zh-CN": "事项"
@@ -448,7 +448,7 @@
           },
           {
             "slug": "entity",
-            "name": "Entity / 主体",
+            "name": "Entity",
             "nameI18n": {
               "en": "Entity",
               "zh-CN": "主体"
@@ -460,7 +460,7 @@
           },
           {
             "slug": "owner",
-            "name": "Owner / 负责人",
+            "name": "Owner",
             "nameI18n": {
               "en": "Owner",
               "zh-CN": "负责人"
@@ -472,7 +472,7 @@
           },
           {
             "slug": "status",
-            "name": "Status / 状态",
+            "name": "Status",
             "nameI18n": {
               "en": "Status",
               "zh-CN": "状态"
@@ -484,30 +484,30 @@
               "choices": [
                 {
                   "id": "draft",
-                  "name": "Draft / 草稿"
+                  "name": "Draft"
                 },
                 {
                   "id": "pending",
-                  "name": "Pending review / 待审核"
+                  "name": "Pending review"
                 },
                 {
                   "id": "approved",
-                  "name": "Approved / 已批准"
+                  "name": "Approved"
                 },
                 {
                   "id": "paid",
-                  "name": "Paid / 已付款"
+                  "name": "Paid"
                 },
                 {
                   "id": "blocked",
-                  "name": "Blocked / 已阻塞"
+                  "name": "Blocked"
                 }
               ]
             }
           },
           {
             "slug": "account",
-            "name": "Bank account / 银行账户",
+            "name": "Bank account",
             "nameI18n": {
               "en": "Bank account",
               "zh-CN": "银行账户"
@@ -521,7 +521,7 @@
           },
           {
             "slug": "amount",
-            "name": "Amount / 金额",
+            "name": "Amount",
             "nameI18n": {
               "en": "Amount",
               "zh-CN": "金额"
@@ -533,7 +533,7 @@
           },
           {
             "slug": "currency",
-            "name": "Currency / 币种",
+            "name": "Currency",
             "nameI18n": {
               "en": "Currency",
               "zh-CN": "币种"
@@ -545,7 +545,7 @@
           },
           {
             "slug": "due",
-            "name": "Due date / 到期日",
+            "name": "Due date",
             "nameI18n": {
               "en": "Due date",
               "zh-CN": "到期日"
@@ -557,7 +557,7 @@
           },
           {
             "slug": "approval",
-            "name": "Approval reference / 审批依据",
+            "name": "Approval reference",
             "nameI18n": {
               "en": "Approval reference",
               "zh-CN": "审批依据"
@@ -569,7 +569,7 @@
           },
           {
             "slug": "receipt",
-            "name": "Receipt reference / 回单引用",
+            "name": "Receipt reference",
             "nameI18n": {
               "en": "Receipt reference",
               "zh-CN": "回单引用"
@@ -581,7 +581,7 @@
           },
           {
             "slug": "paidAt",
-            "name": "Paid date / 付款日期",
+            "name": "Paid date",
             "nameI18n": {
               "en": "Paid date",
               "zh-CN": "付款日期"
@@ -593,7 +593,7 @@
           },
           {
             "slug": "invoice",
-            "name": "Invoice reference / 发票引用",
+            "name": "Invoice reference",
             "nameI18n": {
               "en": "Invoice reference",
               "zh-CN": "发票引用"
@@ -605,7 +605,7 @@
           },
           {
             "slug": "notes",
-            "name": "Notes / 备注",
+            "name": "Notes",
             "nameI18n": {
               "en": "Notes",
               "zh-CN": "备注"
@@ -619,7 +619,7 @@
         "views": [
           {
             "slug": "register",
-            "name": "Payment requests / 付款申请",
+            "name": "Payment requests",
             "type": "table",
             "position": 0,
             "config": {
@@ -648,7 +648,7 @@
           },
           {
             "slug": "attention",
-            "name": "Needs review / 待复核",
+            "name": "Needs review",
             "type": "table",
             "position": 1,
             "config": {
@@ -677,7 +677,7 @@
         "fields": [
           {
             "slug": "title",
-            "name": "Title / 事项",
+            "name": "Title",
             "nameI18n": {
               "en": "Title",
               "zh-CN": "事项"
@@ -689,7 +689,7 @@
           },
           {
             "slug": "entity",
-            "name": "Entity / 主体",
+            "name": "Entity",
             "nameI18n": {
               "en": "Entity",
               "zh-CN": "主体"
@@ -701,7 +701,7 @@
           },
           {
             "slug": "owner",
-            "name": "Owner / 负责人",
+            "name": "Owner",
             "nameI18n": {
               "en": "Owner",
               "zh-CN": "负责人"
@@ -713,7 +713,7 @@
           },
           {
             "slug": "status",
-            "name": "Status / 状态",
+            "name": "Status",
             "nameI18n": {
               "en": "Status",
               "zh-CN": "状态"
@@ -725,22 +725,22 @@
               "choices": [
                 {
                   "id": "unmatched",
-                  "name": "Unmatched / 未匹配"
+                  "name": "Unmatched"
                 },
                 {
                   "id": "reconciled",
-                  "name": "Reconciled / 已对账"
+                  "name": "Reconciled"
                 },
                 {
                   "id": "exception",
-                  "name": "Exception / 存在差异"
+                  "name": "Exception"
                 }
               ]
             }
           },
           {
             "slug": "account",
-            "name": "Bank account / 银行账户",
+            "name": "Bank account",
             "nameI18n": {
               "en": "Bank account",
               "zh-CN": "银行账户"
@@ -754,7 +754,7 @@
           },
           {
             "slug": "payment",
-            "name": "Payment request / 付款申请",
+            "name": "Payment request",
             "nameI18n": {
               "en": "Payment request",
               "zh-CN": "付款申请"
@@ -768,7 +768,7 @@
           },
           {
             "slug": "amount",
-            "name": "Amount / 金额",
+            "name": "Amount",
             "nameI18n": {
               "en": "Amount",
               "zh-CN": "金额"
@@ -780,7 +780,7 @@
           },
           {
             "slug": "currency",
-            "name": "Currency / 币种",
+            "name": "Currency",
             "nameI18n": {
               "en": "Currency",
               "zh-CN": "币种"
@@ -792,7 +792,7 @@
           },
           {
             "slug": "direction",
-            "name": "Direction / 收付方向",
+            "name": "Direction",
             "nameI18n": {
               "en": "Direction",
               "zh-CN": "收付方向"
@@ -804,18 +804,18 @@
               "choices": [
                 {
                   "id": "in",
-                  "name": "Incoming / 收入"
+                  "name": "Incoming"
                 },
                 {
                   "id": "out",
-                  "name": "Outgoing / 支出"
+                  "name": "Outgoing"
                 }
               ]
             }
           },
           {
             "slug": "due",
-            "name": "Due date / 到期日",
+            "name": "Due date",
             "nameI18n": {
               "en": "Due date",
               "zh-CN": "到期日"
@@ -827,7 +827,7 @@
           },
           {
             "slug": "receipt",
-            "name": "Receipt reference / 回单引用",
+            "name": "Receipt reference",
             "nameI18n": {
               "en": "Receipt reference",
               "zh-CN": "回单引用"
@@ -839,7 +839,7 @@
           },
           {
             "slug": "invoice",
-            "name": "Invoice reference / 发票引用",
+            "name": "Invoice reference",
             "nameI18n": {
               "en": "Invoice reference",
               "zh-CN": "发票引用"
@@ -851,7 +851,7 @@
           },
           {
             "slug": "reason",
-            "name": "Attention reason / 需关注原因",
+            "name": "Attention reason",
             "nameI18n": {
               "en": "Attention reason",
               "zh-CN": "需关注原因"
@@ -863,7 +863,7 @@
           },
           {
             "slug": "notes",
-            "name": "Notes / 备注",
+            "name": "Notes",
             "nameI18n": {
               "en": "Notes",
               "zh-CN": "备注"
@@ -877,7 +877,7 @@
         "views": [
           {
             "slug": "register",
-            "name": "Cash ledger / 收付流水",
+            "name": "Cash ledger",
             "type": "table",
             "position": 0,
             "config": {
@@ -907,7 +907,7 @@
           },
           {
             "slug": "attention",
-            "name": "Needs review / 待复核",
+            "name": "Needs review",
             "type": "table",
             "position": 1,
             "config": {
@@ -957,7 +957,7 @@
   "onboarding": {
     "version": 1,
     "fields": [],
-    "rationale": "No integrations or external credentials are required; the installed records are the operational state. / 无需外部集成或登录凭据；安装后的记录就是业务状态来源。"
+    "rationale": "No integrations or external credentials are required; the installed records are the operational state."
   },
   "vault_requirements": [],
   "integrations": []

@@ -1,6 +1,6 @@
 ---
 name: busa-office-finance
-description: Expense evidence, invoice requests, monthly actuals and filing deadlines in one review desk. Use when reviewing Expenses & reimbursements, Invoice requests, Monthly actual reports, Filing calendar. / 集中复核费用与报销、开票申请、月度实际报告和申报日历；处理原始凭证、审批依据、报告复核或申报材料时使用。
+description: Expense evidence, invoice requests, monthly actuals and filing deadlines in one review desk. Use when reviewing Expenses & reimbursements, Invoice requests, Monthly actual reports, Filing calendar.
 metadata:
   category: finance
   tags:
@@ -16,7 +16,7 @@ metadata:
     risk: gated-write
 ---
 
-# Office Finance / 财务管理
+# Office Finance
 
 ## English
 
@@ -118,7 +118,7 @@ Do not transfer money, access bank credentials, issue tax invoices, submit tax f
 
 ### 资源与字段
 
-#### expenses / 费用与报销
+#### expenses / Expenses & reimbursements
 
 复核待审核和已阻塞的报销申请；在提出审批建议前，列出缺失凭证与重复申请。
 
@@ -137,7 +137,7 @@ Do not transfer money, access bank credentials, issue tax invoices, submit tax f
 
 状态：`draft`（草稿）、`pending`（待审核）、`approved`（已批准）、`paid`（已付款）、`blocked`（已阻塞）。这些是独立记录的事实，不代表自动推进的流程。
 
-#### invoices / 开票申请
+#### invoices / Invoice requests
 
 根据已提供的客户和合同资料核对开票申请；标记缺失的税务信息，不编造信息。
 
@@ -155,7 +155,7 @@ Do not transfer money, access bank credentials, issue tax invoices, submit tax f
 
 状态：`draft`（草稿）、`pending`（待审核）、`approved`（已批准）、`issued`（已开票）、`blocked`（已阻塞）。这些是独立记录的事实，不代表自动推进的流程。
 
-#### reports / 月度实际报告
+#### reports / Monthly actual reports
 
 将月度实际报告与原始依据核对，找出不完整的资料并解释差异，不将报告描述为经审计的报表。
 
@@ -174,7 +174,7 @@ Do not transfer money, access bank credentials, issue tax invoices, submit tax f
 
 状态：`draft`（草稿）、`review`（待复核）、`accepted`（已接受）、`blocked`（已阻塞）。这些是独立记录的事实，不代表自动推进的流程。
 
-#### filings / 申报日历
+#### filings / Filing calendar
 
 列出已计划和未完成申报事项的截止日期、负责人及缺失依据；日期仅作为操作人员录入的提醒，不构成法律建议。
 

@@ -1,7 +1,7 @@
 {
   "type": "airapp",
-  "name": "Office Finance / 财务管理",
-  "description": "Expense evidence, invoice requests, monthly actuals and filing deadlines in one review desk. / 集中复核报销依据、开票申请、月度实际报告和申报期限。",
+  "name": "Office Finance",
+  "description": "Expense evidence, invoice requests, monthly actuals and filing deadlines in one review desk.",
   "agentPrompts": [
     {
       "key": "scenario-0",

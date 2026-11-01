@@ -1,6 +1,6 @@
 {
-  "name": "Cases / 法务案件",
-  "description": "Disputes, case owners, stages and next legal actions / 争议、案件负责人、案件阶段及下一步法务行动",
+  "name": "Cases",
+  "description": "Disputes, case owners, stages and next legal actions",
   "position": 0,
   "agentPrompts": [
     {
@@ -31,7 +31,7 @@
   "fields": [
     {
       "slug": "name",
-      "name": "Name / 名称",
+      "name": "Name",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Case code / 案件编号",
+      "name": "Case code",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "counterparty",
-      "name": "Counterparty / 对方主体",
+      "name": "Counterparty",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Case owner / 案件负责人",
+      "name": "Case owner",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "status",
-      "name": "Case stage / 案件阶段",
+      "name": "Case stage",
       "type": "text",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "due",
-      "name": "Next hearing / 下次庭审",
+      "name": "Next hearing",
       "type": "date",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "next",
-      "name": "Next action / 下一步",
+      "name": "Next action",
       "type": "text",
       "required": false,
       "position": 6,
@@ -87,7 +87,7 @@
     },
     {
       "slug": "notes",
-      "name": "Dispute summary / 争议摘要",
+      "name": "Dispute summary",
       "type": "longtext",
       "required": false,
       "position": 7,
@@ -97,7 +97,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Cases working table / 法务案件工作表",
+      "name": "Cases working table",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

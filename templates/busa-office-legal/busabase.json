@@ -9,7 +9,7 @@
     "en": "Case progress, preservation deadlines, settlement evidence, and legal follow-up.",
     "zh-CN": "案件进度、保全期限、回款成本与法务待办。"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "tags": [
     "office",

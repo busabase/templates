@@ -1,4 +1,4 @@
-# Administration Desk / 行政管理工作台
+# Administration Desk
 
 ## English
 

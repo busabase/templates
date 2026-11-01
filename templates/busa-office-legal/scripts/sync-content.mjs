@@ -13,32 +13,32 @@ const emit = async (p, c) => {
 const json = (x) => JSON.stringify(x, null, 2) + "\n";
 await emit("content/_folder.json", json({
   ...appConfig.folder,
-  name: `${appConfig.appName} / ${appConfig.appNameZh}`,
-  description: `${appConfig.description} / ${appConfig.descriptionZh}`,
+  name: appConfig.appName,
+  description: appConfig.description,
 }));
 await emit(`content/${appConfig.airApp.slug}/_node.json`, json({
   type: "airapp",
-  name: `${appConfig.appName} / ${appConfig.appNameZh}`,
-  description: `${appConfig.description} / ${appConfig.descriptionZh}`,
+  name: appConfig.appName,
+  description: appConfig.description,
   agentPrompts: appConfig.folder.agentPrompts,
 }));
 for (const [i, b] of appConfig.bases.entries()) {
   await emit(
     "content/" + b.key + "/base.json",
     json({
-      name: `${b.name} / ${b.labelZh}`,
-      description: `${b.description} / ${b.descriptionZh}`,
+      name: b.name,
+      description: b.description,
       position: i,
       agentPrompts: b.agentPrompts,
       fields: b.fields.map((f, p) => ({
         slug: f.slug,
-        name: `${f.name} / ${f.labelZh}`,
+        name: f.name,
         type: f.type,
         required: f.required,
         position: p,
         options: f.options,
       })),
-      views: b.views.map((v) => ({ ...v, name: `${v.name} / ${b.labelZh}工作表` })),
+      views: b.views.map((v) => ({ ...v, name: v.name })),
     }),
   );
   await emit(

@@ -9,7 +9,7 @@
     "en": "Hiring positions, candidate pipelines, interviews, and reviewed offers.",
     "zh-CN": "职位需求、候选人进度、面试反馈与录用复核。"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "tags": [
     "office",

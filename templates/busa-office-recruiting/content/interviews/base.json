@@ -1,6 +1,6 @@
 {
-  "name": "Interviews / 面试安排",
-  "description": "Interview scheduling and structured feedback evidence / 面试安排及结构化反馈证据",
+  "name": "Interviews",
+  "description": "Interview scheduling and structured feedback evidence",
   "position": 2,
   "agentPrompts": [
     {
@@ -31,7 +31,7 @@
   "fields": [
     {
       "slug": "name",
-      "name": "Name / 名称",
+      "name": "Name",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Interview code / 面试编号",
+      "name": "Interview code",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "candidate",
-      "name": "Candidate code / 候选人编号",
+      "name": "Candidate code",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Interviewer / 面试官",
+      "name": "Interviewer",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "status",
-      "name": "Feedback state / 反馈状态",
+      "name": "Feedback state",
       "type": "text",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "due",
-      "name": "Interview date / 面试日期",
+      "name": "Interview date",
       "type": "date",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "notes",
-      "name": "Structured feedback / 结构化反馈",
+      "name": "Structured feedback",
       "type": "longtext",
       "required": false,
       "position": 6,
@@ -89,7 +89,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Interviews working table / 面试安排工作表",
+      "name": "Interviews working table",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

@@ -1,11 +1,11 @@
 {
-  "name": "Employees / 员工花名册",
-  "description": "Maintain the authoritative employee roster and confirmed salary inputs. / 维护员工主台账与已确认工资输入。",
+  "name": "Employees",
+  "description": "Maintain the authoritative employee roster and confirmed salary inputs.",
   "position": 0,
   "fields": [
     {
       "slug": "title",
-      "name": "Employee / 员工姓名",
+      "name": "Employee",
       "type": "text",
       "required": true,
       "position": 0,
@@ -13,7 +13,7 @@
     },
     {
       "slug": "employee-code",
-      "name": "Employee reference / 员工业务编号",
+      "name": "Employee reference",
       "type": "text",
       "required": false,
       "position": 1,
@@ -21,7 +21,7 @@
     },
     {
       "slug": "department",
-      "name": "Department / 部门",
+      "name": "Department",
       "type": "text",
       "required": false,
       "position": 2,
@@ -29,7 +29,7 @@
     },
     {
       "slug": "owner",
-      "name": "HR owner / 人事负责人",
+      "name": "HR owner",
       "type": "text",
       "required": false,
       "position": 3,
@@ -37,7 +37,7 @@
     },
     {
       "slug": "joined",
-      "name": "Joined on / 入职日期",
+      "name": "Joined on",
       "type": "date",
       "required": false,
       "position": 4,
@@ -45,7 +45,7 @@
     },
     {
       "slug": "confirmed-salary",
-      "name": "Confirmed monthly salary (CNY) / 已确认月薪（元）",
+      "name": "Confirmed monthly salary (CNY)",
       "type": "number",
       "required": false,
       "position": 5,
@@ -53,7 +53,7 @@
     },
     {
       "slug": "status",
-      "name": "Record status / 档案状态",
+      "name": "Record status",
       "type": "select",
       "required": false,
       "position": 6,
@@ -61,22 +61,22 @@
         "choices": [
           {
             "id": "active",
-            "name": "Active / 在职"
+            "name": "Active"
           },
           {
             "id": "incomplete",
-            "name": "Inputs missing / 资料待补"
+            "name": "Inputs missing"
           },
           {
             "id": "leave",
-            "name": "On leave / 休假中"
+            "name": "On leave"
           }
         ]
       }
     },
     {
       "slug": "notes",
-      "name": "Confirmation notes / 确认说明",
+      "name": "Confirmation notes",
       "type": "longtext",
       "required": false,
       "position": 7,
@@ -86,8 +86,8 @@
   "views": [
     {
       "slug": "all",
-      "name": "Employees / 员工花名册",
-      "description": "Maintain the authoritative employee roster and confirmed salary inputs. / 维护员工主台账与已确认工资输入。",
+      "name": "Employees",
+      "description": "Maintain the authoritative employee roster and confirmed salary inputs.",
       "type": "table",
       "config": {
         "filters": [],
@@ -108,8 +108,8 @@
     },
     {
       "slug": "review",
-      "name": "Priority queue / 优先处理",
-      "description": "Focus on the incomplete state / 聚焦 资料待补状态",
+      "name": "Priority queue",
+      "description": "Focus on the incomplete state",
       "type": "table",
       "config": {
         "filters": [

@@ -9,7 +9,7 @@
     "en": "Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money.",
     "zh-CN": "管理银行走查、付款依据、收付流水和对账异常。"
   },
-  "version": "1.0.0",
+  "version": "1.1.0",
   "license": "MIT",
   "template": {
     "category": "finance",

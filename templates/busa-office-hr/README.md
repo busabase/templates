@@ -1,4 +1,4 @@
-# People & Payroll Desk / 人事薪酬工作台
+# People & Payroll Desk
 
 ## English
 
