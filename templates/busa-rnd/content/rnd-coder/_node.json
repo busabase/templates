@@ -1,7 +1,7 @@
 {
   "type": "skill",
   "name": "rnd-coder",
-  "description": "Coding loop for the R&D desk: connect a repository, pick up a task, write back through PR and merge, log the changelog. / 研发执行手册：接入仓库、领任务、开发到合并全程回写、写变更记录。",
+  "description": "Coding loop for the R&D desk: connect a repository, pick up a task, write back through PR and merge, log the changelog.",
   "position": 7,
   "agentPrompts": [
     {

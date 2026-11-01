@@ -3158,7 +3158,7 @@
         "Connect this code repository to the R&D desk, so every coding agent working here updates its task and logs a changelog row when it merges.",
         "Package last week's merged changes into deliveries I can accept, with acceptance steps written from each task's criteria."
       ],
-      "version": "0.1.0",
+      "version": "0.2.0",
       "license": "MIT",
       "stats": {
         "folders": 0,

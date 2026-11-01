@@ -1,6 +1,6 @@
 ---
 name: rnd-pmo
-description: Portfolio-and-reporting playbook for the busa-rnd desk — register products and projects, keep project health honest, and write the weekly R&D report and release notes from the records. Use when the user asks for the weekly report (周报), a status update on a product or project, which projects are at risk, release notes for a version, or to register a product or start a project. / 项目与周报手册：登记产品和项目、维护项目健康度、根据记录生成研发周报和版本说明。
+description: Portfolio-and-reporting playbook for the busa-rnd desk — register products and projects, keep project health honest, and write the weekly R&D report and release notes from the records. Use when the user asks for the weekly report (周报), a status update on a product or project, which projects are at risk, release notes for a version, or to register a product or start a project.
 ---
 
 # rnd-pmo — products, projects and the weekly report

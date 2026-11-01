@@ -1,6 +1,6 @@
 {
-  "name": "Changelog / 变更记录",
-  "description": "One row per merged change, in one plain sentence, written by whoever merged it. / 每次合并一条，用一句人话写清楚，由合并的人或 Agent 当场写。",
+  "name": "Changelog",
+  "description": "One row per merged change, in one plain sentence, written by whoever merged it.",
   "position": 3,
   "agentPrompts": [
     {
@@ -43,7 +43,7 @@
   "fields": [
     {
       "slug": "title",
-      "name": "Change / 变更摘要",
+      "name": "Change",
       "type": "text",
       "required": true,
       "position": 0,
@@ -51,7 +51,7 @@
     },
     {
       "slug": "kind",
-      "name": "Kind / 类型",
+      "name": "Kind",
       "type": "select",
       "required": false,
       "position": 1,
@@ -59,32 +59,32 @@
         "choices": [
           {
             "id": "feature",
-            "name": "Feature / 新功能",
+            "name": "Feature",
             "color": "cyan"
           },
           {
             "id": "fix",
-            "name": "Fix / 修复",
+            "name": "Fix",
             "color": "rose"
           },
           {
             "id": "improvement",
-            "name": "Improvement / 优化",
+            "name": "Improvement",
             "color": "emerald"
           },
           {
             "id": "refactor",
-            "name": "Refactor / 重构",
+            "name": "Refactor",
             "color": "slate"
           },
           {
             "id": "docs",
-            "name": "Docs / 文档",
+            "name": "Docs",
             "color": "slate"
           },
           {
             "id": "chore",
-            "name": "Chore / 杂项",
+            "name": "Chore",
             "color": "slate"
           }
         ]
@@ -92,7 +92,7 @@
     },
     {
       "slug": "product",
-      "name": "Product / 所属产品",
+      "name": "Product",
       "type": "relation",
       "required": false,
       "position": 2,
@@ -103,7 +103,7 @@
     },
     {
       "slug": "task",
-      "name": "Task / 关联任务",
+      "name": "Task",
       "type": "relation",
       "required": false,
       "position": 3,
@@ -114,7 +114,7 @@
     },
     {
       "slug": "merged-on",
-      "name": "Merged on / 合并日期",
+      "name": "Merged on",
       "type": "date",
       "required": false,
       "position": 4,
@@ -122,7 +122,7 @@
     },
     {
       "slug": "version",
-      "name": "Version / 版本",
+      "name": "Version",
       "type": "text",
       "required": false,
       "position": 5,
@@ -130,7 +130,7 @@
     },
     {
       "slug": "pr-url",
-      "name": "Pull request or commit / PR 或提交",
+      "name": "Pull request or commit",
       "type": "url",
       "required": false,
       "position": 6,
@@ -138,7 +138,7 @@
     },
     {
       "slug": "repo",
-      "name": "Repository / 仓库",
+      "name": "Repository",
       "type": "text",
       "required": false,
       "position": 7,
@@ -146,7 +146,7 @@
     },
     {
       "slug": "author",
-      "name": "Author / 作者",
+      "name": "Author",
       "type": "text",
       "required": false,
       "position": 8,
@@ -154,7 +154,7 @@
     },
     {
       "slug": "verification",
-      "name": "How it was verified / 验证情况",
+      "name": "How it was verified",
       "type": "longtext",
       "required": false,
       "position": 9,
@@ -162,7 +162,7 @@
     },
     {
       "slug": "details",
-      "name": "Details / 详情",
+      "name": "Details",
       "type": "longtext",
       "required": false,
       "position": 10,
@@ -172,8 +172,8 @@
   "views": [
     {
       "slug": "latest",
-      "name": "Latest first / 最新在前",
-      "description": "Merged changes, newest first / 已合并的变更，最新在前",
+      "name": "Latest first",
+      "description": "Merged changes, newest first",
       "type": "table",
       "config": {
         "filters": [],

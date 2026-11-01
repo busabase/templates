@@ -1,6 +1,6 @@
 ---
 name: busa-rnd
-description: Lightweight R&D desk that coding agents keep current — products, projects, tasks, a plain-language changelog, delivery acceptance and a weekly R&D report. Use when the user asks to log or groom tasks, pick up work in a repository connected to this desk, record a merged change, package work for acceptance, update project health, or write the weekly report; read this first, then the role skill for the job (rnd-prd, rnd-coder, rnd-pmo). / 轻量研发管理台：产品、项目、任务、变更记录、交付验收和研发周报，由 coding agent 随手维护。
+description: Lightweight R&D desk that coding agents keep current — products, projects, tasks, a plain-language changelog, delivery acceptance and a weekly R&D report. Use when the user asks to log or groom tasks, pick up work in a repository connected to this desk, record a merged change, package work for acceptance, update project health, or write the weekly report; read this first, then the role skill for the job (rnd-prd, rnd-coder, rnd-pmo).
 metadata:
   category: platform
   tags:
@@ -20,7 +20,7 @@ metadata:
     risk: gated-write
 ---
 
-# R&D Projects / 研发项目管理
+# R&D Projects
 
 A small desk for a team that lets coding agents do most of the bookkeeping. People raise needs and
 make decisions; agents turn needs into tasks, write back as they code, package finished work for

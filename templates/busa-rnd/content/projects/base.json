@@ -1,6 +1,6 @@
 {
-  "name": "Projects / 项目",
-  "description": "Work with a goal and a target date, inside one product. / 某个产品里有目标、有目标日期的一段工作。",
+  "name": "Projects",
+  "description": "Work with a goal and a target date, inside one product.",
   "position": 1,
   "agentPrompts": [
     {
@@ -43,7 +43,7 @@
   "fields": [
     {
       "slug": "title",
-      "name": "Project / 项目",
+      "name": "Project",
       "type": "text",
       "required": true,
       "position": 0,
@@ -51,7 +51,7 @@
     },
     {
       "slug": "product",
-      "name": "Product / 所属产品",
+      "name": "Product",
       "type": "relation",
       "required": false,
       "position": 1,
@@ -62,7 +62,7 @@
     },
     {
       "slug": "status",
-      "name": "Status / 状态",
+      "name": "Status",
       "type": "select",
       "required": false,
       "position": 2,
@@ -70,27 +70,27 @@
         "choices": [
           {
             "id": "planned",
-            "name": "Planned / 规划中",
+            "name": "Planned",
             "color": "cyan"
           },
           {
             "id": "in-progress",
-            "name": "In progress / 进行中",
+            "name": "In progress",
             "color": "amber"
           },
           {
             "id": "paused",
-            "name": "Paused / 已暂停",
+            "name": "Paused",
             "color": "slate"
           },
           {
             "id": "done",
-            "name": "Done / 已完成",
+            "name": "Done",
             "color": "emerald"
           },
           {
             "id": "canceled",
-            "name": "Canceled / 已取消",
+            "name": "Canceled",
             "color": "slate"
           }
         ]
@@ -98,7 +98,7 @@
     },
     {
       "slug": "health",
-      "name": "Health / 健康度",
+      "name": "Health",
       "type": "select",
       "required": false,
       "position": 3,
@@ -106,17 +106,17 @@
         "choices": [
           {
             "id": "on-track",
-            "name": "On track / 正常",
+            "name": "On track",
             "color": "emerald"
           },
           {
             "id": "at-risk",
-            "name": "At risk / 有风险",
+            "name": "At risk",
             "color": "amber"
           },
           {
             "id": "off-track",
-            "name": "Off track / 已延误",
+            "name": "Off track",
             "color": "rose"
           }
         ]
@@ -124,7 +124,7 @@
     },
     {
       "slug": "owner",
-      "name": "Owner / 负责人",
+      "name": "Owner",
       "type": "text",
       "required": false,
       "position": 4,
@@ -132,7 +132,7 @@
     },
     {
       "slug": "start-date",
-      "name": "Start date / 开始日期",
+      "name": "Start date",
       "type": "date",
       "required": false,
       "position": 5,
@@ -140,7 +140,7 @@
     },
     {
       "slug": "target-date",
-      "name": "Target date / 目标日期",
+      "name": "Target date",
       "type": "date",
       "required": false,
       "position": 6,
@@ -148,7 +148,7 @@
     },
     {
       "slug": "goal",
-      "name": "Goal and scope / 目标与范围",
+      "name": "Goal and scope",
       "type": "longtext",
       "required": false,
       "position": 7,
@@ -156,7 +156,7 @@
     },
     {
       "slug": "latest-update",
-      "name": "Latest update / 最新进展",
+      "name": "Latest update",
       "type": "longtext",
       "required": false,
       "position": 8,
@@ -164,7 +164,7 @@
     },
     {
       "slug": "updated-on",
-      "name": "Update written on / 进展更新于",
+      "name": "Update written on",
       "type": "date",
       "required": false,
       "position": 9,
@@ -174,8 +174,8 @@
   "views": [
     {
       "slug": "all",
-      "name": "All projects / 全部项目",
-      "description": "Projects by target date / 按目标日期排列",
+      "name": "All projects",
+      "description": "Projects by target date",
       "type": "table",
       "config": {
         "filters": [],
@@ -197,8 +197,8 @@
     },
     {
       "slug": "at-risk",
-      "name": "At risk / 有风险",
-      "description": "Projects marked at risk / 标记为有风险的项目",
+      "name": "At risk",
+      "description": "Projects marked at risk",
       "type": "table",
       "config": {
         "filters": [
@@ -226,8 +226,8 @@
     },
     {
       "slug": "off-track",
-      "name": "Off track / 已延误",
-      "description": "Projects that will miss their date / 会错过目标日期的项目",
+      "name": "Off track",
+      "description": "Projects that will miss their date",
       "type": "table",
       "config": {
         "filters": [

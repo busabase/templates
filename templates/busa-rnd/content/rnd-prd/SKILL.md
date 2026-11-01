@@ -1,6 +1,6 @@
 ---
 name: rnd-prd
-description: Needs-and-acceptance playbook for the busa-rnd desk — turn notes, feedback and requests into tasks with testable acceptance criteria, groom the backlog, package merged work into deliveries a person can accept by what users can now do, and record the acceptance result. Use when the user pastes meeting notes or customer feedback, asks to groom or prioritise the backlog, wants last week's work packaged for acceptance, or reports an acceptance decision. / 需求与验收手册：拆需求、写验收标准、整理需求池，把合并的改动按功能整理成待验收的交付，并记录验收结论。
+description: Needs-and-acceptance playbook for the busa-rnd desk — turn notes, feedback and requests into tasks with testable acceptance criteria, groom the backlog, package merged work into deliveries a person can accept by what users can now do, and record the acceptance result. Use when the user pastes meeting notes or customer feedback, asks to groom or prioritise the backlog, wants last week's work packaged for acceptance, or reports an acceptance decision.
 ---
 
 # rnd-prd — needs in, deliveries out

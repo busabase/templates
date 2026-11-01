@@ -1,7 +1,7 @@
 {
   "type": "skill",
   "name": "rnd-pmo",
-  "description": "Products, projects and the weekly R&D report: project health rules, report format, release notes, weekly schedule. / 产品、项目和研发周报：健康度规则、周报格式、版本说明、每周定时。",
+  "description": "Products, projects and the weekly R&D report: project health rules, report format, release notes, weekly schedule.",
   "position": 9,
   "agentPrompts": [
     {
