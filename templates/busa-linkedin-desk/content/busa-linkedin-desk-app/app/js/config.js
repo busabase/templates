@@ -20,12 +20,12 @@ export const appConfig = {
     {
       "key": "companies",
       "slug": "busa-linkedin-desk-companies",
-      "name": "Companies / 公司",
+      "name": "Companies",
       "readLimit": 50,
       "fields": [
         {
           "slug": "name",
-          "name": "Name / 名称",
+          "name": "Name",
           "localizedName": {
             "en": "Name",
             "zh-CN": "名称"
@@ -35,7 +35,7 @@ export const appConfig = {
         },
         {
           "slug": "linkedin-url",
-          "name": "LinkedIn company page / LinkedIn 公司页",
+          "name": "LinkedIn company page",
           "localizedName": {
             "en": "LinkedIn company page",
             "zh-CN": "LinkedIn 公司页"
@@ -45,7 +45,7 @@ export const appConfig = {
         },
         {
           "slug": "industry",
-          "name": "Industry / 行业",
+          "name": "Industry",
           "localizedName": {
             "en": "Industry",
             "zh-CN": "行业"
@@ -55,7 +55,7 @@ export const appConfig = {
         },
         {
           "slug": "website",
-          "name": "Website / 网站",
+          "name": "Website",
           "localizedName": {
             "en": "Website",
             "zh-CN": "网站"
@@ -65,7 +65,7 @@ export const appConfig = {
         },
         {
           "slug": "notes",
-          "name": "Notes / 备注",
+          "name": "Notes",
           "localizedName": {
             "en": "Notes",
             "zh-CN": "备注"
@@ -82,12 +82,12 @@ export const appConfig = {
     {
       "key": "contacts",
       "slug": "busa-linkedin-desk-contacts",
-      "name": "Contacts / 联系人",
+      "name": "Contacts",
       "readLimit": 50,
       "fields": [
         {
           "slug": "name",
-          "name": "Name / 姓名",
+          "name": "Name",
           "localizedName": {
             "en": "Name",
             "zh-CN": "姓名"
@@ -97,7 +97,7 @@ export const appConfig = {
         },
         {
           "slug": "role",
-          "name": "Role / 职务",
+          "name": "Role",
           "localizedName": {
             "en": "Role",
             "zh-CN": "职务"
@@ -107,7 +107,7 @@ export const appConfig = {
         },
         {
           "slug": "company",
-          "name": "Company / 公司",
+          "name": "Company",
           "localizedName": {
             "en": "Company",
             "zh-CN": "公司"
@@ -117,7 +117,7 @@ export const appConfig = {
         },
         {
           "slug": "linkedin-url",
-          "name": "LinkedIn profile / LinkedIn 主页",
+          "name": "LinkedIn profile",
           "localizedName": {
             "en": "LinkedIn profile",
             "zh-CN": "LinkedIn 主页"
@@ -127,7 +127,7 @@ export const appConfig = {
         },
         {
           "slug": "verification",
-          "name": "Verification / 身份核验",
+          "name": "Verification",
           "localizedName": {
             "en": "Verification",
             "zh-CN": "身份核验"
@@ -137,7 +137,7 @@ export const appConfig = {
         },
         {
           "slug": "tier",
-          "name": "Tier / 意向等级",
+          "name": "Tier",
           "localizedName": {
             "en": "Tier",
             "zh-CN": "意向等级"
@@ -147,7 +147,7 @@ export const appConfig = {
         },
         {
           "slug": "owner",
-          "name": "Owner / 负责人",
+          "name": "Owner",
           "localizedName": {
             "en": "Owner",
             "zh-CN": "负责人"
@@ -157,7 +157,7 @@ export const appConfig = {
         },
         {
           "slug": "source",
-          "name": "Source / 来源",
+          "name": "Source",
           "localizedName": {
             "en": "Source",
             "zh-CN": "来源"
@@ -174,12 +174,12 @@ export const appConfig = {
     {
       "key": "messages",
       "slug": "busa-linkedin-desk-messages",
-      "name": "Messages / 消息表",
+      "name": "Messages",
       "readLimit": 50,
       "fields": [
         {
           "slug": "title",
-          "name": "Title / 标题",
+          "name": "Title",
           "localizedName": {
             "en": "Title",
             "zh-CN": "标题"
@@ -189,7 +189,7 @@ export const appConfig = {
         },
         {
           "slug": "thread-id",
-          "name": "Thread ID / 线程 ID",
+          "name": "Thread ID",
           "localizedName": {
             "en": "Thread ID",
             "zh-CN": "线程 ID"
@@ -199,7 +199,7 @@ export const appConfig = {
         },
         {
           "slug": "message-id",
-          "name": "Message ID / 消息 ID",
+          "name": "Message ID",
           "localizedName": {
             "en": "Message ID",
             "zh-CN": "消息 ID"
@@ -209,7 +209,7 @@ export const appConfig = {
         },
         {
           "slug": "contact",
-          "name": "Contact / 联系人",
+          "name": "Contact",
           "localizedName": {
             "en": "Contact",
             "zh-CN": "联系人"
@@ -219,7 +219,7 @@ export const appConfig = {
         },
         {
           "slug": "direction",
-          "name": "Direction / 方向",
+          "name": "Direction",
           "localizedName": {
             "en": "Direction",
             "zh-CN": "方向"
@@ -229,7 +229,7 @@ export const appConfig = {
         },
         {
           "slug": "channel",
-          "name": "Channel / 渠道",
+          "name": "Channel",
           "localizedName": {
             "en": "Channel",
             "zh-CN": "渠道"
@@ -239,7 +239,7 @@ export const appConfig = {
         },
         {
           "slug": "sent-at",
-          "name": "Time / 时间",
+          "name": "Time",
           "localizedName": {
             "en": "Time",
             "zh-CN": "时间"
@@ -249,7 +249,7 @@ export const appConfig = {
         },
         {
           "slug": "body",
-          "name": "Body / 原文",
+          "name": "Body",
           "localizedName": {
             "en": "Body",
             "zh-CN": "原文"
@@ -259,7 +259,7 @@ export const appConfig = {
         },
         {
           "slug": "intent",
-          "name": "Intent / 意图",
+          "name": "Intent",
           "localizedName": {
             "en": "Intent",
             "zh-CN": "意图"
@@ -269,7 +269,7 @@ export const appConfig = {
         },
         {
           "slug": "urgency",
-          "name": "Urgency / 紧急度",
+          "name": "Urgency",
           "localizedName": {
             "en": "Urgency",
             "zh-CN": "紧急度"
@@ -279,7 +279,7 @@ export const appConfig = {
         },
         {
           "slug": "status",
-          "name": "Status / 处理状态",
+          "name": "Status",
           "localizedName": {
             "en": "Status",
             "zh-CN": "处理状态"
@@ -289,7 +289,7 @@ export const appConfig = {
         },
         {
           "slug": "reply",
-          "name": "Linked reply / 关联回复",
+          "name": "Linked reply",
           "localizedName": {
             "en": "Linked reply",
             "zh-CN": "关联回复"
@@ -306,12 +306,12 @@ export const appConfig = {
     {
       "key": "replies",
       "slug": "busa-linkedin-desk-replies",
-      "name": "Replies / 回复表",
+      "name": "Replies",
       "readLimit": 50,
       "fields": [
         {
           "slug": "title",
-          "name": "Title / 标题",
+          "name": "Title",
           "localizedName": {
             "en": "Title",
             "zh-CN": "标题"
@@ -321,7 +321,7 @@ export const appConfig = {
         },
         {
           "slug": "message",
-          "name": "Source message / 针对消息",
+          "name": "Source message",
           "localizedName": {
             "en": "Source message",
             "zh-CN": "针对消息"
@@ -331,7 +331,7 @@ export const appConfig = {
         },
         {
           "slug": "contact",
-          "name": "Contact / 联系人",
+          "name": "Contact",
           "localizedName": {
             "en": "Contact",
             "zh-CN": "联系人"
@@ -341,7 +341,7 @@ export const appConfig = {
         },
         {
           "slug": "draft",
-          "name": "Draft / 草稿正文",
+          "name": "Draft",
           "localizedName": {
             "en": "Draft",
             "zh-CN": "草稿正文"
@@ -351,7 +351,7 @@ export const appConfig = {
         },
         {
           "slug": "version",
-          "name": "Version / 版本",
+          "name": "Version",
           "localizedName": {
             "en": "Version",
             "zh-CN": "版本"
@@ -361,7 +361,7 @@ export const appConfig = {
         },
         {
           "slug": "approval-status",
-          "name": "Approval status / 审批状态",
+          "name": "Approval status",
           "localizedName": {
             "en": "Approval status",
             "zh-CN": "审批状态"
@@ -371,7 +371,7 @@ export const appConfig = {
         },
         {
           "slug": "approver",
-          "name": "Approver / 审批人",
+          "name": "Approver",
           "localizedName": {
             "en": "Approver",
             "zh-CN": "审批人"
@@ -381,7 +381,7 @@ export const appConfig = {
         },
         {
           "slug": "approval-notes",
-          "name": "Approval notes / 审批意见",
+          "name": "Approval notes",
           "localizedName": {
             "en": "Approval notes",
             "zh-CN": "审批意见"
@@ -391,7 +391,7 @@ export const appConfig = {
         },
         {
           "slug": "sent-body",
-          "name": "Sent body / 发送正文",
+          "name": "Sent body",
           "localizedName": {
             "en": "Sent body",
             "zh-CN": "发送正文"
@@ -401,7 +401,7 @@ export const appConfig = {
         },
         {
           "slug": "sent-at",
-          "name": "Sent at / 发送时间",
+          "name": "Sent at",
           "localizedName": {
             "en": "Sent at",
             "zh-CN": "发送时间"
@@ -411,7 +411,7 @@ export const appConfig = {
         },
         {
           "slug": "sent-message-id",
-          "name": "Sent message ID / 发送消息 ID",
+          "name": "Sent message ID",
           "localizedName": {
             "en": "Sent message ID",
             "zh-CN": "发送消息 ID"
@@ -421,7 +421,7 @@ export const appConfig = {
         },
         {
           "slug": "outcome",
-          "name": "Outcome / 后续结果",
+          "name": "Outcome",
           "localizedName": {
             "en": "Outcome",
             "zh-CN": "后续结果"
@@ -438,12 +438,12 @@ export const appConfig = {
     {
       "key": "actions",
       "slug": "busa-linkedin-desk-actions",
-      "name": "Actions / 处理表",
+      "name": "Actions",
       "readLimit": 50,
       "fields": [
         {
           "slug": "title",
-          "name": "Title / 标题",
+          "name": "Title",
           "localizedName": {
             "en": "Title",
             "zh-CN": "标题"
@@ -453,7 +453,7 @@ export const appConfig = {
         },
         {
           "slug": "type",
-          "name": "Type / 类型",
+          "name": "Type",
           "localizedName": {
             "en": "Type",
             "zh-CN": "类型"
@@ -463,7 +463,7 @@ export const appConfig = {
         },
         {
           "slug": "source-message",
-          "name": "Source message / 来源消息",
+          "name": "Source message",
           "localizedName": {
             "en": "Source message",
             "zh-CN": "来源消息"
@@ -473,7 +473,7 @@ export const appConfig = {
         },
         {
           "slug": "source-reply",
-          "name": "Source reply / 来源回复",
+          "name": "Source reply",
           "localizedName": {
             "en": "Source reply",
             "zh-CN": "来源回复"
@@ -483,7 +483,7 @@ export const appConfig = {
         },
         {
           "slug": "owner",
-          "name": "Owner / 负责人",
+          "name": "Owner",
           "localizedName": {
             "en": "Owner",
             "zh-CN": "负责人"
@@ -493,7 +493,7 @@ export const appConfig = {
         },
         {
           "slug": "due-date",
-          "name": "Due date / 到期日",
+          "name": "Due date",
           "localizedName": {
             "en": "Due date",
             "zh-CN": "到期日"
@@ -503,7 +503,7 @@ export const appConfig = {
         },
         {
           "slug": "status",
-          "name": "Status / 状态",
+          "name": "Status",
           "localizedName": {
             "en": "Status",
             "zh-CN": "状态"
@@ -513,7 +513,7 @@ export const appConfig = {
         },
         {
           "slug": "result",
-          "name": "Result / 完成结果",
+          "name": "Result",
           "localizedName": {
             "en": "Result",
             "zh-CN": "完成结果"
@@ -523,7 +523,7 @@ export const appConfig = {
         },
         {
           "slug": "evidence-url",
-          "name": "Evidence link / 证据链接",
+          "name": "Evidence link",
           "localizedName": {
             "en": "Evidence link",
             "zh-CN": "证据链接"
@@ -540,12 +540,12 @@ export const appConfig = {
     {
       "key": "experience",
       "slug": "busa-linkedin-desk-experience",
-      "name": "Experience / 经验表",
+      "name": "Experience",
       "readLimit": 50,
       "fields": [
         {
           "slug": "title",
-          "name": "Title / 标题",
+          "name": "Title",
           "localizedName": {
             "en": "Title",
             "zh-CN": "标题"
@@ -555,7 +555,7 @@ export const appConfig = {
         },
         {
           "slug": "type",
-          "name": "Type / 类型",
+          "name": "Type",
           "localizedName": {
             "en": "Type",
             "zh-CN": "类型"
@@ -565,7 +565,7 @@ export const appConfig = {
         },
         {
           "slug": "source-reply",
-          "name": "Source reply / 来源回复",
+          "name": "Source reply",
           "localizedName": {
             "en": "Source reply",
             "zh-CN": "来源回复"
@@ -575,7 +575,7 @@ export const appConfig = {
         },
         {
           "slug": "source-action",
-          "name": "Source action / 来源处理",
+          "name": "Source action",
           "localizedName": {
             "en": "Source action",
             "zh-CN": "来源处理"
@@ -585,7 +585,7 @@ export const appConfig = {
         },
         {
           "slug": "approval-quote",
-          "name": "Approval quote / 审批原话",
+          "name": "Approval quote",
           "localizedName": {
             "en": "Approval quote",
             "zh-CN": "审批原话"
@@ -595,7 +595,7 @@ export const appConfig = {
         },
         {
           "slug": "scope",
-          "name": "Scope / 适用范围",
+          "name": "Scope",
           "localizedName": {
             "en": "Scope",
             "zh-CN": "适用范围"
@@ -605,7 +605,7 @@ export const appConfig = {
         },
         {
           "slug": "limits",
-          "name": "Limits / 反例与边界",
+          "name": "Limits",
           "localizedName": {
             "en": "Limits",
             "zh-CN": "反例与边界"
@@ -615,7 +615,7 @@ export const appConfig = {
         },
         {
           "slug": "status",
-          "name": "Status / 状态",
+          "name": "Status",
           "localizedName": {
             "en": "Status",
             "zh-CN": "状态"
@@ -625,7 +625,7 @@ export const appConfig = {
         },
         {
           "slug": "promoted-to",
-          "name": "Promoted to / 晋升去向",
+          "name": "Promoted to",
           "localizedName": {
             "en": "Promoted to",
             "zh-CN": "晋升去向"
@@ -635,7 +635,7 @@ export const appConfig = {
         },
         {
           "slug": "last-verified",
-          "name": "Last verified / 最近验证",
+          "name": "Last verified",
           "localizedName": {
             "en": "Last verified",
             "zh-CN": "最近验证"
@@ -660,12 +660,12 @@ export const appConfig = {
       {
         "key": "companies",
         "slug": "busa-linkedin-desk-companies",
-        "name": "Companies / 公司",
+        "name": "Companies",
         "readLimit": 50,
         "fields": [
           {
             "slug": "name",
-            "name": "Name / 名称",
+            "name": "Name",
             "localizedName": {
               "en": "Name",
               "zh-CN": "名称"
@@ -675,7 +675,7 @@ export const appConfig = {
           },
           {
             "slug": "linkedin-url",
-            "name": "LinkedIn company page / LinkedIn 公司页",
+            "name": "LinkedIn company page",
             "localizedName": {
               "en": "LinkedIn company page",
               "zh-CN": "LinkedIn 公司页"
@@ -685,7 +685,7 @@ export const appConfig = {
           },
           {
             "slug": "industry",
-            "name": "Industry / 行业",
+            "name": "Industry",
             "localizedName": {
               "en": "Industry",
               "zh-CN": "行业"
@@ -695,7 +695,7 @@ export const appConfig = {
           },
           {
             "slug": "website",
-            "name": "Website / 网站",
+            "name": "Website",
             "localizedName": {
               "en": "Website",
               "zh-CN": "网站"
@@ -705,7 +705,7 @@ export const appConfig = {
           },
           {
             "slug": "notes",
-            "name": "Notes / 备注",
+            "name": "Notes",
             "localizedName": {
               "en": "Notes",
               "zh-CN": "备注"
@@ -722,12 +722,12 @@ export const appConfig = {
       {
         "key": "contacts",
         "slug": "busa-linkedin-desk-contacts",
-        "name": "Contacts / 联系人",
+        "name": "Contacts",
         "readLimit": 50,
         "fields": [
           {
             "slug": "name",
-            "name": "Name / 姓名",
+            "name": "Name",
             "localizedName": {
               "en": "Name",
               "zh-CN": "姓名"
@@ -737,7 +737,7 @@ export const appConfig = {
           },
           {
             "slug": "role",
-            "name": "Role / 职务",
+            "name": "Role",
             "localizedName": {
               "en": "Role",
               "zh-CN": "职务"
@@ -747,7 +747,7 @@ export const appConfig = {
           },
           {
             "slug": "company",
-            "name": "Company / 公司",
+            "name": "Company",
             "localizedName": {
               "en": "Company",
               "zh-CN": "公司"
@@ -760,7 +760,7 @@ export const appConfig = {
           },
           {
             "slug": "linkedin-url",
-            "name": "LinkedIn profile / LinkedIn 主页",
+            "name": "LinkedIn profile",
             "localizedName": {
               "en": "LinkedIn profile",
               "zh-CN": "LinkedIn 主页"
@@ -770,7 +770,7 @@ export const appConfig = {
           },
           {
             "slug": "verification",
-            "name": "Verification / 身份核验",
+            "name": "Verification",
             "localizedName": {
               "en": "Verification",
               "zh-CN": "身份核验"
@@ -780,7 +780,7 @@ export const appConfig = {
           },
           {
             "slug": "tier",
-            "name": "Tier / 意向等级",
+            "name": "Tier",
             "localizedName": {
               "en": "Tier",
               "zh-CN": "意向等级"
@@ -790,7 +790,7 @@ export const appConfig = {
           },
           {
             "slug": "owner",
-            "name": "Owner / 负责人",
+            "name": "Owner",
             "localizedName": {
               "en": "Owner",
               "zh-CN": "负责人"
@@ -800,7 +800,7 @@ export const appConfig = {
           },
           {
             "slug": "source",
-            "name": "Source / 来源",
+            "name": "Source",
             "localizedName": {
               "en": "Source",
               "zh-CN": "来源"
@@ -817,12 +817,12 @@ export const appConfig = {
       {
         "key": "messages",
         "slug": "busa-linkedin-desk-messages",
-        "name": "Messages / 消息表",
+        "name": "Messages",
         "readLimit": 50,
         "fields": [
           {
             "slug": "title",
-            "name": "Title / 标题",
+            "name": "Title",
             "localizedName": {
               "en": "Title",
               "zh-CN": "标题"
@@ -832,7 +832,7 @@ export const appConfig = {
           },
           {
             "slug": "thread-id",
-            "name": "Thread ID / 线程 ID",
+            "name": "Thread ID",
             "localizedName": {
               "en": "Thread ID",
               "zh-CN": "线程 ID"
@@ -842,7 +842,7 @@ export const appConfig = {
           },
           {
             "slug": "message-id",
-            "name": "Message ID / 消息 ID",
+            "name": "Message ID",
             "localizedName": {
               "en": "Message ID",
               "zh-CN": "消息 ID"
@@ -852,7 +852,7 @@ export const appConfig = {
           },
           {
             "slug": "contact",
-            "name": "Contact / 联系人",
+            "name": "Contact",
             "localizedName": {
               "en": "Contact",
               "zh-CN": "联系人"
@@ -865,7 +865,7 @@ export const appConfig = {
           },
           {
             "slug": "direction",
-            "name": "Direction / 方向",
+            "name": "Direction",
             "localizedName": {
               "en": "Direction",
               "zh-CN": "方向"
@@ -875,7 +875,7 @@ export const appConfig = {
           },
           {
             "slug": "channel",
-            "name": "Channel / 渠道",
+            "name": "Channel",
             "localizedName": {
               "en": "Channel",
               "zh-CN": "渠道"
@@ -885,7 +885,7 @@ export const appConfig = {
           },
           {
             "slug": "sent-at",
-            "name": "Time / 时间",
+            "name": "Time",
             "localizedName": {
               "en": "Time",
               "zh-CN": "时间"
@@ -895,7 +895,7 @@ export const appConfig = {
           },
           {
             "slug": "body",
-            "name": "Body / 原文",
+            "name": "Body",
             "localizedName": {
               "en": "Body",
               "zh-CN": "原文"
@@ -905,7 +905,7 @@ export const appConfig = {
           },
           {
             "slug": "intent",
-            "name": "Intent / 意图",
+            "name": "Intent",
             "localizedName": {
               "en": "Intent",
               "zh-CN": "意图"
@@ -915,7 +915,7 @@ export const appConfig = {
           },
           {
             "slug": "urgency",
-            "name": "Urgency / 紧急度",
+            "name": "Urgency",
             "localizedName": {
               "en": "Urgency",
               "zh-CN": "紧急度"
@@ -925,7 +925,7 @@ export const appConfig = {
           },
           {
             "slug": "status",
-            "name": "Status / 处理状态",
+            "name": "Status",
             "localizedName": {
               "en": "Status",
               "zh-CN": "处理状态"
@@ -935,7 +935,7 @@ export const appConfig = {
           },
           {
             "slug": "reply",
-            "name": "Linked reply / 关联回复",
+            "name": "Linked reply",
             "localizedName": {
               "en": "Linked reply",
               "zh-CN": "关联回复"
@@ -955,12 +955,12 @@ export const appConfig = {
       {
         "key": "replies",
         "slug": "busa-linkedin-desk-replies",
-        "name": "Replies / 回复表",
+        "name": "Replies",
         "readLimit": 50,
         "fields": [
           {
             "slug": "title",
-            "name": "Title / 标题",
+            "name": "Title",
             "localizedName": {
               "en": "Title",
               "zh-CN": "标题"
@@ -970,7 +970,7 @@ export const appConfig = {
           },
           {
             "slug": "message",
-            "name": "Source message / 针对消息",
+            "name": "Source message",
             "localizedName": {
               "en": "Source message",
               "zh-CN": "针对消息"
@@ -983,7 +983,7 @@ export const appConfig = {
           },
           {
             "slug": "contact",
-            "name": "Contact / 联系人",
+            "name": "Contact",
             "localizedName": {
               "en": "Contact",
               "zh-CN": "联系人"
@@ -996,7 +996,7 @@ export const appConfig = {
           },
           {
             "slug": "draft",
-            "name": "Draft / 草稿正文",
+            "name": "Draft",
             "localizedName": {
               "en": "Draft",
               "zh-CN": "草稿正文"
@@ -1006,7 +1006,7 @@ export const appConfig = {
           },
           {
             "slug": "version",
-            "name": "Version / 版本",
+            "name": "Version",
             "localizedName": {
               "en": "Version",
               "zh-CN": "版本"
@@ -1016,7 +1016,7 @@ export const appConfig = {
           },
           {
             "slug": "approval-status",
-            "name": "Approval status / 审批状态",
+            "name": "Approval status",
             "localizedName": {
               "en": "Approval status",
               "zh-CN": "审批状态"
@@ -1026,7 +1026,7 @@ export const appConfig = {
           },
           {
             "slug": "approver",
-            "name": "Approver / 审批人",
+            "name": "Approver",
             "localizedName": {
               "en": "Approver",
               "zh-CN": "审批人"
@@ -1036,7 +1036,7 @@ export const appConfig = {
           },
           {
             "slug": "approval-notes",
-            "name": "Approval notes / 审批意见",
+            "name": "Approval notes",
             "localizedName": {
               "en": "Approval notes",
               "zh-CN": "审批意见"
@@ -1046,7 +1046,7 @@ export const appConfig = {
           },
           {
             "slug": "sent-body",
-            "name": "Sent body / 发送正文",
+            "name": "Sent body",
             "localizedName": {
               "en": "Sent body",
               "zh-CN": "发送正文"
@@ -1056,7 +1056,7 @@ export const appConfig = {
           },
           {
             "slug": "sent-at",
-            "name": "Sent at / 发送时间",
+            "name": "Sent at",
             "localizedName": {
               "en": "Sent at",
               "zh-CN": "发送时间"
@@ -1066,7 +1066,7 @@ export const appConfig = {
           },
           {
             "slug": "sent-message-id",
-            "name": "Sent message ID / 发送消息 ID",
+            "name": "Sent message ID",
             "localizedName": {
               "en": "Sent message ID",
               "zh-CN": "发送消息 ID"
@@ -1076,7 +1076,7 @@ export const appConfig = {
           },
           {
             "slug": "outcome",
-            "name": "Outcome / 后续结果",
+            "name": "Outcome",
             "localizedName": {
               "en": "Outcome",
               "zh-CN": "后续结果"
@@ -1093,12 +1093,12 @@ export const appConfig = {
       {
         "key": "actions",
         "slug": "busa-linkedin-desk-actions",
-        "name": "Actions / 处理表",
+        "name": "Actions",
         "readLimit": 50,
         "fields": [
           {
             "slug": "title",
-            "name": "Title / 标题",
+            "name": "Title",
             "localizedName": {
               "en": "Title",
               "zh-CN": "标题"
@@ -1108,7 +1108,7 @@ export const appConfig = {
           },
           {
             "slug": "type",
-            "name": "Type / 类型",
+            "name": "Type",
             "localizedName": {
               "en": "Type",
               "zh-CN": "类型"
@@ -1118,7 +1118,7 @@ export const appConfig = {
           },
           {
             "slug": "source-message",
-            "name": "Source message / 来源消息",
+            "name": "Source message",
             "localizedName": {
               "en": "Source message",
               "zh-CN": "来源消息"
@@ -1131,7 +1131,7 @@ export const appConfig = {
           },
           {
             "slug": "source-reply",
-            "name": "Source reply / 来源回复",
+            "name": "Source reply",
             "localizedName": {
               "en": "Source reply",
               "zh-CN": "来源回复"
@@ -1144,7 +1144,7 @@ export const appConfig = {
           },
           {
             "slug": "owner",
-            "name": "Owner / 负责人",
+            "name": "Owner",
             "localizedName": {
               "en": "Owner",
               "zh-CN": "负责人"
@@ -1154,7 +1154,7 @@ export const appConfig = {
           },
           {
             "slug": "due-date",
-            "name": "Due date / 到期日",
+            "name": "Due date",
             "localizedName": {
               "en": "Due date",
               "zh-CN": "到期日"
@@ -1164,7 +1164,7 @@ export const appConfig = {
           },
           {
             "slug": "status",
-            "name": "Status / 状态",
+            "name": "Status",
             "localizedName": {
               "en": "Status",
               "zh-CN": "状态"
@@ -1174,7 +1174,7 @@ export const appConfig = {
           },
           {
             "slug": "result",
-            "name": "Result / 完成结果",
+            "name": "Result",
             "localizedName": {
               "en": "Result",
               "zh-CN": "完成结果"
@@ -1184,7 +1184,7 @@ export const appConfig = {
           },
           {
             "slug": "evidence-url",
-            "name": "Evidence link / 证据链接",
+            "name": "Evidence link",
             "localizedName": {
               "en": "Evidence link",
               "zh-CN": "证据链接"
@@ -1201,12 +1201,12 @@ export const appConfig = {
       {
         "key": "experience",
         "slug": "busa-linkedin-desk-experience",
-        "name": "Experience / 经验表",
+        "name": "Experience",
         "readLimit": 50,
         "fields": [
           {
             "slug": "title",
-            "name": "Title / 标题",
+            "name": "Title",
             "localizedName": {
               "en": "Title",
               "zh-CN": "标题"
@@ -1216,7 +1216,7 @@ export const appConfig = {
           },
           {
             "slug": "type",
-            "name": "Type / 类型",
+            "name": "Type",
             "localizedName": {
               "en": "Type",
               "zh-CN": "类型"
@@ -1226,7 +1226,7 @@ export const appConfig = {
           },
           {
             "slug": "source-reply",
-            "name": "Source reply / 来源回复",
+            "name": "Source reply",
             "localizedName": {
               "en": "Source reply",
               "zh-CN": "来源回复"
@@ -1239,7 +1239,7 @@ export const appConfig = {
           },
           {
             "slug": "source-action",
-            "name": "Source action / 来源处理",
+            "name": "Source action",
             "localizedName": {
               "en": "Source action",
               "zh-CN": "来源处理"
@@ -1252,7 +1252,7 @@ export const appConfig = {
           },
           {
             "slug": "approval-quote",
-            "name": "Approval quote / 审批原话",
+            "name": "Approval quote",
             "localizedName": {
               "en": "Approval quote",
               "zh-CN": "审批原话"
@@ -1262,7 +1262,7 @@ export const appConfig = {
           },
           {
             "slug": "scope",
-            "name": "Scope / 适用范围",
+            "name": "Scope",
             "localizedName": {
               "en": "Scope",
               "zh-CN": "适用范围"
@@ -1272,7 +1272,7 @@ export const appConfig = {
           },
           {
             "slug": "limits",
-            "name": "Limits / 反例与边界",
+            "name": "Limits",
             "localizedName": {
               "en": "Limits",
               "zh-CN": "反例与边界"
@@ -1282,7 +1282,7 @@ export const appConfig = {
           },
           {
             "slug": "status",
-            "name": "Status / 状态",
+            "name": "Status",
             "localizedName": {
               "en": "Status",
               "zh-CN": "状态"
@@ -1292,7 +1292,7 @@ export const appConfig = {
           },
           {
             "slug": "promoted-to",
-            "name": "Promoted to / 晋升去向",
+            "name": "Promoted to",
             "localizedName": {
               "en": "Promoted to",
               "zh-CN": "晋升去向"
@@ -1302,7 +1302,7 @@ export const appConfig = {
           },
           {
             "slug": "last-verified",
-            "name": "Last verified / 最近验证",
+            "name": "Last verified",
             "localizedName": {
               "en": "Last verified",
               "zh-CN": "最近验证"

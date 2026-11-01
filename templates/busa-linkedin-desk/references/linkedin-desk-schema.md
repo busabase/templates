@@ -16,10 +16,12 @@ Conventions:
   Experience base.
 - Member fields (`owner`, `approver`) are left empty in seed records;
   they name real workspace members after install.
-- Installed names (Base, field, view, choice) are slash-bilingual
-  `English / 中文`; below, each choice's display name is given in that
-  form. The AirApp config carries the same names split as
-  `localizedName: {en, "zh-CN"}` and renders one language at a time.
+- Installed names (Base, field, view, choice) are plain English;
+  below, each choice's display name is given in that form. The AirApp
+  config additionally carries each name split as
+  `localizedName: {en, "zh-CN"}` and renders the half for the active
+  language, so the console can still present the Chinese names while
+  the installed nodes stay single-language.
 
 ## Companies (`companies`)
 
@@ -42,12 +44,12 @@ and Deals stay canonical for pipeline. This desk ships no Deals base.
 | `role` | text | as shown on the profile; changes are traceable |
 | `company` | relation → `companies` | single |
 | `linkedin-url` | url | required — the identity key |
-| `verification` | select | `unverified` (Unverified / 未核验), `verified` (Verified / 已核验) |
+| `verification` | select | `unverified` (Unverified), `verified` (Verified) |
 | `tier` | select | `a` / `b` / `c` — a human's call; the agent may only suggest |
 | `owner` | member | who owns this relationship |
-| `source` | select | `manual` (Manual / 手工), `import` (Import / 导入), `conversation` (Conversation match / 对话匹配) |
+| `source` | select | `manual` (Manual), `import` (Import), `conversation` (Conversation match) |
 
-Views: `unverified` (Unverified / 待核验) — verification equals `unverified`.
+Views: `unverified` (Unverified) — verification equals `unverified`.
 
 ## Messages (`messages`)
 
@@ -57,16 +59,16 @@ Views: `unverified` (Unverified / 待核验) — verification equals `unverified
 | `thread-id` | text | required; one per conversation thread |
 | `message-id` | text | required — **deduplication key** |
 | `contact` | relation → `contacts` | single; matched by profile URL |
-| `direction` | select | `in` (Received / 收到), `out` (Sent / 发出) |
+| `direction` | select | `in` (Received), `out` (Sent) |
 | `channel` | select | `linkedin` / `whatsapp` / `email` / `wechat` / `other` |
 | `sent-at` | date (with time) | when the message actually happened |
 | `body` | longtext | necessary excerpt only; long sensitive originals stay a controlled reference |
-| `intent` | select | `interested` (Interested / 有意向), `objection` (Objection / 异议), `referral` (Referral / 转介), `not-now` (Not now / 现在不要), `wrong-person` (Wrong person / 找错人), `rejected` (Rejected / 拒绝), `question` (Question / 咨询), `other` (Other / 其它) |
+| `intent` | select | `interested` (Interested), `objection` (Objection), `referral` (Referral), `not-now` (Not now), `wrong-person` (Wrong person), `rejected` (Rejected), `question` (Question), `other` (Other) |
 | `urgency` | select | `high` / `medium` / `low` |
-| `status` | select | `pending-triage` (Pending triage / 待分诊), `triaged` (Triaged / 已分诊), `drafted` (Drafted / 已起草), `handled` (Handled / 已处理), `no-action` (No action / 无需处理) |
+| `status` | select | `pending-triage` (Pending triage), `triaged` (Triaged), `drafted` (Drafted), `handled` (Handled), `no-action` (No action) |
 | `reply` | relation → `replies` | single; the reply this message produced |
 
-Views: `pending-triage` (Pending triage / 待分诊) — status equals `pending-triage`, sorted
+Views: `pending-triage` (Pending triage) — status equals `pending-triage`, sorted
 by `sent-at` ascending.
 
 ## Replies (`replies`)
@@ -78,27 +80,27 @@ by `sent-at` ascending.
 | `contact` | relation → `contacts` | single |
 | `draft` | longtext | the agent's drafted version |
 | `version` | number | increments per revision |
-| `approval-status` | select | `draft` (Draft / 草稿), `pending` (Pending / 待审批), `approved` (Approved / 已批准), `approved-edited` (Approved with edits / 已改后批准), `rejected` (Rejected / 已驳回), `sent` (Sent / 已发送) |
+| `approval-status` | select | `draft` (Draft), `pending` (Pending), `approved` (Approved), `approved-edited` (Approved with edits), `rejected` (Rejected), `sent` (Sent) |
 | `approver` | member | who gave the verdict |
 | `approval-notes` | longtext | **verbatim** — the raw material of Experience |
 | `sent-body` | longtext | the exact text sent; its diff against `draft` is the standard |
 | `sent-at` | date (with time) | |
 | `sent-message-id` | text | written back on send; also logged as an `out` row in Messages |
-| `outcome` | select | `replied` (Replied / 已回复), `no-reply` (No reply / 无回复), `continued` (Continued / 继续对话), `meeting-booked` (Meeting booked / 已约会议), `declined` (Declined / 被拒绝) |
+| `outcome` | select | `replied` (Replied), `no-reply` (No reply), `continued` (Continued), `meeting-booked` (Meeting booked), `declined` (Declined) |
 
-Views: `pending-approval` (Pending approval / 待审批) — approval-status equals `pending`.
+Views: `pending-approval` (Pending approval) — approval-status equals `pending`.
 
 ## Actions (`actions`)
 
 | Field slug | Type | Notes |
 | --- | --- | --- |
 | `title` | text | required, record label |
-| `type` | select | `follow-up` (Follow-up / 跟进), `escalate` (Escalate / 升级人工), `meeting` (Meeting / 约会议), `send-material` (Send material / 发送资料), `update-crm` (Update CRM field / 更新 CRM 字段), `new-deal` (New deal / 新建商机), `other` (Other / 其它) |
+| `type` | select | `follow-up` (Follow-up), `escalate` (Escalate), `meeting` (Meeting), `send-material` (Send material), `update-crm` (Update CRM field), `new-deal` (New deal), `other` (Other) |
 | `source-message` | relation → `messages` | single; use this or `source-reply` |
 | `source-reply` | relation → `replies` | single; use this or `source-message` |
 | `owner` | member | |
 | `due-date` | date | required in practice for `follow-up` |
-| `status` | select | `open` (Open / 待办), `in-progress` (In progress / 进行中), `done` (Done / 已完成), `cancelled` (Cancelled / 已取消) |
+| `status` | select | `open` (Open), `in-progress` (In progress), `done` (Done), `cancelled` (Cancelled) |
 | `result` | longtext | what actually happened — closing is a written outcome, not a status flip |
 | `evidence-url` | url | send receipt, meeting link, document link |
 
@@ -106,7 +108,7 @@ Views: `pending-approval` (Pending approval / 待审批) — approval-status equ
 a ChangeRequest showing old value, candidate value and source — never
 written directly.
 
-Views: `open` (Open / 待办) — status equals `open`, sorted by `due-date`
+Views: `open` (Open) — status equals `open`, sorted by `due-date`
 ascending.
 
 ## Experience (`experience`)
@@ -114,18 +116,18 @@ ascending.
 | Field slug | Type | Notes |
 | --- | --- | --- |
 | `title` | text | required — the lesson in one sentence |
-| `type` | select | `script` (What works / 有效话术), `objection` (Objection handling / 异议处理), `triage-rule` (Triage rule / 分诊规则), `cadence` (Cadence / 节奏经验), `forbidden` (Red line / 禁区教训) |
+| `type` | select | `script` (What works), `objection` (Objection handling), `triage-rule` (Triage rule), `cadence` (Cadence), `forbidden` (Red line) |
 | `source-reply` | relation → `replies` | single; use this or `source-action` |
 | `source-action` | relation → `actions` | single; use this or `source-reply` |
 | `approval-quote` | longtext | the approver's exact words, unedited |
 | `scope` | text | which audience / industry / situation this holds for |
 | `limits` | longtext | counter-examples — when it does not apply |
-| `status` | select | `candidate` (Candidate / 候选), `adopted` (Adopted / 已采纳), `promoted` (Promoted to skill / 已晋升 Skill), `retired` (Retired / 已废止) |
+| `status` | select | `candidate` (Candidate), `adopted` (Adopted), `promoted` (Promoted to skill), `retired` (Retired) |
 | `promoted-to` | url | where the lesson landed when promoted (Skill or Doc link) |
 | `last-verified` | date | when this lesson last held in a real round |
 
-Views: `candidates` (Candidates / 候选经验) — status equals `candidate`;
-`adopted` (Adopted / 已采纳) — status equals `adopted`.
+Views: `candidates` (Candidates) — status equals `candidate`;
+`adopted` (Adopted) — status equals `adopted`.
 
 ## Doc: ICP and Voice (`icp-and-voice`)
 

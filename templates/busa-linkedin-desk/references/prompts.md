@@ -18,7 +18,7 @@ your setup and the verdicts you give per draft.
 
 > 新建文件夹「LinkedIn 销售台」。公司与商机复用 Busa CRM 模板的
 > Companies / Deals。按我的设计建联系人、消息、回复、处理、经验五张表，
-> 再加 Doc「ICP 与话术口径」和 Skill「LinkedIn 外联作业」。先给我看结构，
+> 再加 Doc「ICP and Voice」和 Skill「LinkedIn outreach operations」。先给我看结构，
 > 不要填入任何示例客户。
 
 (Installing this template does P0 for you; the prompt is for building the
@@ -62,5 +62,5 @@ same desk by hand in an existing Space. 模板安装即完成 P0；这条提示�
 > outreach operations" Skill as a diff. Promote nothing until I confirm.
 
 > 汇总本周的回复表与处理表。列出候选经验及其证据——消息、我的审批意见、
-> 后续结果。对你建议采纳的，给出写入「LinkedIn 外联作业」Skill 的确切
+> 后续结果。对你建议采纳的，给出写入「LinkedIn outreach operations」Skill 的确切
 > 改动 diff。在我确认前不要晋升任何一条。

@@ -1,5 +1,5 @@
 ---
-name: ICP 与话术口径
+name: ICP and Voice
 description: 人的标准：目标客户、可说与不可说、价格与承诺红线、升级规则。Agent 每次起草前必读；与经验冲突时以本文为准。
 position: 6
 agentPrompts:

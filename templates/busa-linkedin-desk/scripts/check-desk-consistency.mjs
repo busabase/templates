@@ -5,7 +5,7 @@
 // files mirror parts of it for runtime use and must never disagree:
 //   - the AirApp config (content/busa-linkedin-desk-app/app/js/config.js)
 //     mirrors slug/name/type/required per field, plus a `localizedName`
-//     split of every slash-bilingual name;
+//     carrying the Chinese rendering of every (plain-English) name;
 //   - the AirApp read model (…/app/js/desk-model.js) addresses enum choices
 //     by id (intent / approval-status / status / type / direction) and
 //     labels them with the choices' localized names.
@@ -118,52 +118,56 @@ for (const [baseKey, fieldSlug, ids] of enumChecks) {
   }
 }
 
-// Localization completeness. Installed names are slash-bilingual
-// (`English / 中文`, the busa-rnd shape): the English half carries no CJK,
-// the Chinese half carries CJK — or the name is a language-neutral token
-// identical in both (a letter tier, a brand name). The app config must
-// additionally split every base and field name into a `localizedName`
-// whose two halves match base.json exactly, and the read model's labels
-// must be those same localized names, so the console and the installed
-// Base can never call one choice by two different words.
+// Localization completeness. Installed names are plain English — no CJK,
+// no slash-bilingual remnant. The Chinese rendering of a name lives only
+// in the app config's `localizedName`: its `en` half must be the base.json
+// name verbatim, its `zh-CN` half the corresponding Chinese name (CJK,
+// or the name itself when it is a language-neutral token). The read
+// model's English labels are the choice names themselves; its zh-CN
+// labels are the Chinese names, so the console and the installed Base
+// can never call one choice by two different English words.
 const CJK = /[一-鿿]/;
-const splitName = (name, where) => {
-  const parts = String(name).split(" / ");
-  if (parts.length !== 2) {
-    fail(`${where}: name "${name}" is not slash-bilingual ("English / 中文")`);
-    return null;
-  }
-  const [en, zh] = parts;
-  if (CJK.test(en)) fail(`${where}: English half of "${name}" contains CJK`);
-  if (!CJK.test(zh) && zh !== en) fail(`${where}: Chinese half of "${name}" has no CJK and is not the neutral token itself`);
-  return { en, "zh-CN": zh };
+const pureEnglish = (name, where) => {
+  if (CJK.test(name)) fail(`${where}: name "${name}" contains CJK — installed names are plain English`);
+  if (String(name).includes(" / ")) fail(`${where}: name "${name}" still has a slash-bilingual separator`);
 };
+const noCjkText = (text, where) => {
+  if (text && CJK.test(text)) fail(`${where}: text contains CJK — installed descriptions are plain English`);
+};
+const validZh = (zh, en) => typeof zh === "string" && zh.length > 0 && (CJK.test(zh) || zh === en);
 
 for (const baseConfig of appConfig.bases) {
   const base = await readJson(path.join(root, "content", baseConfig.key, "base.json"));
-  splitName(base.name, `base ${baseConfig.key}`);
+  pureEnglish(base.name, `base ${baseConfig.key}`);
+  noCjkText(base.description, `base ${baseConfig.key} description`);
   for (const f of base.fields) {
-    splitName(f.name, `base ${baseConfig.key}.${f.slug}`);
+    pureEnglish(f.name, `base ${baseConfig.key}.${f.slug}`);
     for (const c of f.options?.choices ?? []) {
-      splitName(c.name, `base ${baseConfig.key}.${f.slug} choice "${c.id}"`);
+      pureEnglish(c.name, `base ${baseConfig.key}.${f.slug} choice "${c.id}"`);
     }
   }
-  for (const v of base.views ?? []) splitName(v.name, `base ${baseConfig.key} view "${v.slug}"`);
+  for (const v of base.views ?? []) {
+    pureEnglish(v.name, `base ${baseConfig.key} view "${v.slug}"`);
+    noCjkText(v.description, `base ${baseConfig.key} view "${v.slug}" description`);
+  }
 }
 
-const sameLoc = (a, b) => a && b && a.en === b.en && a["zh-CN"] === b["zh-CN"];
+const checkLoc = (loc, enName, where) => {
+  if (!loc || loc.en !== enName) {
+    fail(`${where}: localizedName.en "${loc?.en}" is not base.json's name "${enName}" verbatim`);
+  }
+  if (!validZh(loc?.["zh-CN"], enName)) {
+    fail(`${where}: localizedName["zh-CN"] "${loc?.["zh-CN"]}" is not the corresponding Chinese name`);
+  }
+};
 for (const [setLabel, baseSet] of [["config.bases", appConfig.bases], ["config.schema.bases", appConfig.schema?.bases ?? []]]) {
   for (const baseConfig of baseSet) {
     const base = await readJson(path.join(root, "content", baseConfig.key, "base.json"));
-    if (!sameLoc(baseConfig.localizedName, splitName(base.name, ""))) {
-      fail(`${setLabel} ${baseConfig.key}: localizedName does not match the two halves of base.json's name "${base.name}"`);
-    }
+    checkLoc(baseConfig.localizedName, base.name, `${setLabel} ${baseConfig.key}`);
     const declared = new Map(base.fields.map((f) => [f.slug, f]));
     for (const field of baseConfig.fields) {
       const d = declared.get(field.slug);
-      if (d && !sameLoc(field.localizedName, splitName(d.name, ""))) {
-        fail(`${setLabel} ${baseConfig.key}.${field.slug}: localizedName does not match base.json's name "${d.name}"`);
-      }
+      if (d) checkLoc(field.localizedName, d.name, `${setLabel} ${baseConfig.key}.${field.slug}`);
     }
   }
 }
@@ -177,12 +181,11 @@ for (const [baseKey, fieldSlug, labels, group] of labelChecks) {
   const base = await readJson(path.join(root, "content", baseKey, "base.json"));
   const field = base.fields.find((f) => f.slug === fieldSlug);
   for (const choice of field?.options?.choices ?? []) {
-    const halves = splitName(choice.name, "");
-    if (labels.en[group][choice.id] !== halves.en) {
-      fail(`desk-model LABELS.en.${group}["${choice.id}"] is "${labels.en[group][choice.id]}", base.json says "${halves.en}"`);
+    if (labels.en[group][choice.id] !== choice.name) {
+      fail(`desk-model LABELS.en.${group}["${choice.id}"] is "${labels.en[group][choice.id]}", base.json says "${choice.name}"`);
     }
-    if (labels["zh-CN"][group][choice.id] !== halves["zh-CN"]) {
-      fail(`desk-model LABELS["zh-CN"].${group}["${choice.id}"] is "${labels["zh-CN"][group][choice.id]}", base.json says "${halves["zh-CN"]}"`);
+    if (!validZh(labels["zh-CN"][group][choice.id], choice.name)) {
+      fail(`desk-model LABELS["zh-CN"].${group}["${choice.id}"] is "${labels["zh-CN"][group][choice.id]}", not the choice's Chinese name`);
     }
   }
 }
