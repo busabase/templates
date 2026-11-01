@@ -1,6 +1,6 @@
 {
-  "name": "Products / 产品",
-  "description": "Every product the team builds: who owns it and which repositories carry it. / 团队在做的每个产品：谁负责、由哪些代码仓库承载。",
+  "name": "Products",
+  "description": "Every product the team builds: who owns it and which repositories carry it.",
   "position": 0,
   "agentPrompts": [
     {
@@ -31,7 +31,7 @@
   "fields": [
     {
       "slug": "title",
-      "name": "Product / 产品",
+      "name": "Product",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "product-key",
-      "name": "Product key / 产品标识",
+      "name": "Product key",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "status",
-      "name": "Status / 状态",
+      "name": "Status",
       "type": "select",
       "required": false,
       "position": 2,
@@ -55,22 +55,22 @@
         "choices": [
           {
             "id": "active",
-            "name": "Active / 在研",
+            "name": "Active",
             "color": "emerald"
           },
           {
             "id": "maintenance",
-            "name": "Maintenance / 维护中",
+            "name": "Maintenance",
             "color": "slate"
           },
           {
             "id": "planned",
-            "name": "Planned / 规划中",
+            "name": "Planned",
             "color": "cyan"
           },
           {
             "id": "retired",
-            "name": "Retired / 已下线",
+            "name": "Retired",
             "color": "slate"
           }
         ]
@@ -78,7 +78,7 @@
     },
     {
       "slug": "owner",
-      "name": "Owner / 负责人",
+      "name": "Owner",
       "type": "text",
       "required": false,
       "position": 3,
@@ -86,7 +86,7 @@
     },
     {
       "slug": "repos",
-      "name": "Repositories / 代码仓库",
+      "name": "Repositories",
       "type": "longtext",
       "required": false,
       "position": 4,
@@ -94,7 +94,7 @@
     },
     {
       "slug": "try-at",
-      "name": "Where to try / 验收环境",
+      "name": "Where to try",
       "type": "longtext",
       "required": false,
       "position": 5,
@@ -102,7 +102,7 @@
     },
     {
       "slug": "description",
-      "name": "About / 产品简介",
+      "name": "About",
       "type": "longtext",
       "required": false,
       "position": 6,
@@ -112,8 +112,8 @@
   "views": [
     {
       "slug": "all",
-      "name": "All products / 全部产品",
-      "description": "Every product and its owner / 每个产品及负责人",
+      "name": "All products",
+      "description": "Every product and its owner",
       "type": "table",
       "config": {
         "filters": [],

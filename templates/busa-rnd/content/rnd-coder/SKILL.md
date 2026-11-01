@@ -1,6 +1,6 @@
 ---
 name: rnd-coder
-description: Coding-agent playbook for the busa-rnd desk — connect a repository, pick up a task, keep it current through branch, pull request and merge, and write a one-sentence changelog row with how it was verified. Use when you work in a repository whose AGENTS.md or CLAUDE.md points at this desk, or when asked to pick up, start or finish a task, log a merged change, or backfill merges nobody logged. / 研发执行手册：接入代码仓库、领任务、开发到合并全程回写任务，并写一句话变更记录。
+description: Coding-agent playbook for the busa-rnd desk — connect a repository, pick up a task, keep it current through branch, pull request and merge, and write a one-sentence changelog row with how it was verified. Use when you work in a repository whose AGENTS.md or CLAUDE.md points at this desk, or when asked to pick up, start or finish a task, log a merged change, or backfill merges nobody logged.
 ---
 
 # rnd-coder — write back while you code

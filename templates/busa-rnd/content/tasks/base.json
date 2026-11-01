@@ -1,6 +1,6 @@
 {
-  "name": "Tasks / 任务",
-  "description": "Every need, bug and improvement, from first request to done. / 每一个需求、缺陷和优化，从提出到完成。",
+  "name": "Tasks",
+  "description": "Every need, bug and improvement, from first request to done.",
   "position": 2,
   "agentPrompts": [
     {
@@ -55,7 +55,7 @@
   "fields": [
     {
       "slug": "title",
-      "name": "Task / 任务",
+      "name": "Task",
       "type": "text",
       "required": true,
       "position": 0,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "product",
-      "name": "Product / 所属产品",
+      "name": "Product",
       "type": "relation",
       "required": false,
       "position": 1,
@@ -74,7 +74,7 @@
     },
     {
       "slug": "project",
-      "name": "Project / 所属项目",
+      "name": "Project",
       "type": "relation",
       "required": false,
       "position": 2,
@@ -85,7 +85,7 @@
     },
     {
       "slug": "type",
-      "name": "Type / 类型",
+      "name": "Type",
       "type": "select",
       "required": false,
       "position": 3,
@@ -93,22 +93,22 @@
         "choices": [
           {
             "id": "feature",
-            "name": "Feature / 需求",
+            "name": "Feature",
             "color": "cyan"
           },
           {
             "id": "bug",
-            "name": "Bug / 缺陷",
+            "name": "Bug",
             "color": "rose"
           },
           {
             "id": "improvement",
-            "name": "Improvement / 优化",
+            "name": "Improvement",
             "color": "slate"
           },
           {
             "id": "chore",
-            "name": "Chore / 杂项",
+            "name": "Chore",
             "color": "slate"
           }
         ]
@@ -116,7 +116,7 @@
     },
     {
       "slug": "status",
-      "name": "Status / 状态",
+      "name": "Status",
       "type": "select",
       "required": false,
       "position": 4,
@@ -124,32 +124,32 @@
         "choices": [
           {
             "id": "backlog",
-            "name": "Backlog / 待规划",
+            "name": "Backlog",
             "color": "slate"
           },
           {
             "id": "todo",
-            "name": "To do / 待开始",
+            "name": "To do",
             "color": "cyan"
           },
           {
             "id": "in-progress",
-            "name": "In progress / 进行中",
+            "name": "In progress",
             "color": "amber"
           },
           {
             "id": "in-review",
-            "name": "In review / 评审中",
+            "name": "In review",
             "color": "amber"
           },
           {
             "id": "done",
-            "name": "Done / 已完成",
+            "name": "Done",
             "color": "emerald"
           },
           {
             "id": "canceled",
-            "name": "Canceled / 已取消",
+            "name": "Canceled",
             "color": "slate"
           }
         ]
@@ -157,7 +157,7 @@
     },
     {
       "slug": "priority",
-      "name": "Priority / 优先级",
+      "name": "Priority",
       "type": "select",
       "required": false,
       "position": 5,
@@ -165,22 +165,22 @@
         "choices": [
           {
             "id": "urgent",
-            "name": "Urgent / 紧急",
+            "name": "Urgent",
             "color": "rose"
           },
           {
             "id": "high",
-            "name": "High / 高",
+            "name": "High",
             "color": "amber"
           },
           {
             "id": "medium",
-            "name": "Medium / 中",
+            "name": "Medium",
             "color": "slate"
           },
           {
             "id": "low",
-            "name": "Low / 低",
+            "name": "Low",
             "color": "slate"
           }
         ]
@@ -188,7 +188,7 @@
     },
     {
       "slug": "assignee",
-      "name": "Assignee / 负责人",
+      "name": "Assignee",
       "type": "text",
       "required": false,
       "position": 6,
@@ -196,7 +196,7 @@
     },
     {
       "slug": "requester",
-      "name": "Requested by / 提出人",
+      "name": "Requested by",
       "type": "text",
       "required": false,
       "position": 7,
@@ -204,7 +204,7 @@
     },
     {
       "slug": "due-date",
-      "name": "Due date / 截止日期",
+      "name": "Due date",
       "type": "date",
       "required": false,
       "position": 8,
@@ -212,7 +212,7 @@
     },
     {
       "slug": "acceptance",
-      "name": "Acceptance criteria / 验收标准",
+      "name": "Acceptance criteria",
       "type": "longtext",
       "required": false,
       "position": 9,
@@ -220,7 +220,7 @@
     },
     {
       "slug": "details",
-      "name": "Details / 详情",
+      "name": "Details",
       "type": "longtext",
       "required": false,
       "position": 10,
@@ -228,7 +228,7 @@
     },
     {
       "slug": "pr-url",
-      "name": "Pull request / PR 链接",
+      "name": "Pull request",
       "type": "url",
       "required": false,
       "position": 11,
@@ -236,7 +236,7 @@
     },
     {
       "slug": "completed-on",
-      "name": "Completed on / 完成日期",
+      "name": "Completed on",
       "type": "date",
       "required": false,
       "position": 12,
@@ -246,8 +246,8 @@
   "views": [
     {
       "slug": "open",
-      "name": "Open tasks / 未完成任务",
-      "description": "Everything not done or canceled, by due date / 未完成、未取消的任务，按截止日期",
+      "name": "Open tasks",
+      "description": "Everything not done or canceled, by due date",
       "type": "table",
       "config": {
         "filters": [],
@@ -269,8 +269,8 @@
     },
     {
       "slug": "backlog",
-      "name": "Backlog / 需求池",
-      "description": "Needs nobody has scheduled yet / 还没排期的需求",
+      "name": "Backlog",
+      "description": "Needs nobody has scheduled yet",
       "type": "table",
       "config": {
         "filters": [
@@ -292,8 +292,8 @@
     },
     {
       "slug": "in-review",
-      "name": "In review / 评审中",
-      "description": "Waiting on a pull-request review / 等待 PR 评审",
+      "name": "In review",
+      "description": "Waiting on a pull-request review",
       "type": "table",
       "config": {
         "filters": [

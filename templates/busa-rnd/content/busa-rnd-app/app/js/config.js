@@ -4,17 +4,16 @@
 // views and node prompts here and re-run the script — never the generated files.
 
 const loc = (en, zh) => ({ en, 'zh-CN': zh });
-const both = (value) => `${value.en} / ${value['zh-CN']}`;
 
-// A field as the app reads it: `name` is what the installed Base shows (both
-// languages, because one Space is often read in both), `localizedName` is
-// what this UI shows in the viewer's language.
+// A field as the app reads it: `name` is what the installed Base shows
+// (English, one language), `localizedName` is what this UI shows in the
+// viewer's language.
 const field = (slug, en, zh, type, options = {}, required = false) => ({
-  slug, name: `${en} / ${zh}`, localizedName: loc(en, zh), type, required, options,
+  slug, name: en, localizedName: loc(en, zh), type, required, options,
 });
 // Choice ids are the stable values agents write; names are for people.
 const choices = (...items) => ({
-  choices: items.map(([id, en, zh, tone = 'neutral']) => ({ id, name: `${en} / ${zh}`, localizedName: loc(en, zh), tone })),
+  choices: items.map(([id, en, zh, tone = 'neutral']) => ({ id, name: en, localizedName: loc(en, zh), tone })),
 });
 const relation = (targetBaseSlug, multiple = false) => ({ targetBaseSlug, multiple });
 
@@ -44,9 +43,9 @@ const bases = [
   {
     key: 'products',
     slug: slug('products'),
-    name: 'Products / 产品',
+    name: 'Products',
     localizedName: loc('Products', '产品'),
-    description: 'Every product the team builds: who owns it and which repositories carry it. / 团队在做的每个产品：谁负责、由哪些代码仓库承载。',
+    description: 'Every product the team builds: who owns it and which repositories carry it.',
     localizedDescription: loc('Every product the team builds: who owns it and which repositories carry it.', '团队在做的每个产品：谁负责、由哪些代码仓库承载。'),
     readLimit: 50,
     primary: 'title',
@@ -66,7 +65,7 @@ const bases = [
       field('description', 'About', '产品简介', 'longtext'),
     ],
     views: [
-      { slug: 'all', name: 'All products / 全部产品', description: 'Every product and its owner / 每个产品及负责人', type: 'table', config: { filters: [], sorts: [], visibleFieldSlugs: ['title', 'product-key', 'status', 'owner', 'repos', 'try-at'] } },
+      { slug: 'all', name: 'All products', description: 'Every product and its owner', type: 'table', config: { filters: [], sorts: [], visibleFieldSlugs: ['title', 'product-key', 'status', 'owner', 'repos', 'try-at'] } },
     ],
     agentPrompts: [
       prompt('register-product', loc('Register a new product and its repositories', '登记一个新产品和它的代码仓库'),
@@ -78,9 +77,9 @@ const bases = [
   {
     key: 'projects',
     slug: slug('projects'),
-    name: 'Projects / 项目',
+    name: 'Projects',
     localizedName: loc('Projects', '项目'),
-    description: 'Work with a goal and a target date, inside one product. / 某个产品里有目标、有目标日期的一段工作。',
+    description: 'Work with a goal and a target date, inside one product.',
     localizedDescription: loc('Work with a goal and a target date, inside one product.', '某个产品里有目标、有目标日期的一段工作。'),
     readLimit: 50,
     primary: 'title',
@@ -108,9 +107,9 @@ const bases = [
       field('updated-on', 'Update written on', '进展更新于', 'date'),
     ],
     views: [
-      { slug: 'all', name: 'All projects / 全部项目', description: 'Projects by target date / 按目标日期排列', type: 'table', config: { filters: [], sorts: [{ fieldSlug: 'target-date', direction: 'asc' }], visibleFieldSlugs: ['title', 'product', 'status', 'health', 'owner', 'target-date'] } },
-      { slug: 'at-risk', name: 'At risk / 有风险', description: 'Projects marked at risk / 标记为有风险的项目', type: 'table', config: { filters: [{ fieldSlug: 'health', operator: 'equals', value: 'at-risk' }], sorts: [{ fieldSlug: 'target-date', direction: 'asc' }], visibleFieldSlugs: ['title', 'product', 'health', 'owner', 'target-date', 'latest-update'] } },
-      { slug: 'off-track', name: 'Off track / 已延误', description: 'Projects that will miss their date / 会错过目标日期的项目', type: 'table', config: { filters: [{ fieldSlug: 'health', operator: 'equals', value: 'off-track' }], sorts: [{ fieldSlug: 'target-date', direction: 'asc' }], visibleFieldSlugs: ['title', 'product', 'health', 'owner', 'target-date', 'latest-update'] } },
+      { slug: 'all', name: 'All projects', description: 'Projects by target date', type: 'table', config: { filters: [], sorts: [{ fieldSlug: 'target-date', direction: 'asc' }], visibleFieldSlugs: ['title', 'product', 'status', 'health', 'owner', 'target-date'] } },
+      { slug: 'at-risk', name: 'At risk', description: 'Projects marked at risk', type: 'table', config: { filters: [{ fieldSlug: 'health', operator: 'equals', value: 'at-risk' }], sorts: [{ fieldSlug: 'target-date', direction: 'asc' }], visibleFieldSlugs: ['title', 'product', 'health', 'owner', 'target-date', 'latest-update'] } },
+      { slug: 'off-track', name: 'Off track', description: 'Projects that will miss their date', type: 'table', config: { filters: [{ fieldSlug: 'health', operator: 'equals', value: 'off-track' }], sorts: [{ fieldSlug: 'target-date', direction: 'asc' }], visibleFieldSlugs: ['title', 'product', 'health', 'owner', 'target-date', 'latest-update'] } },
     ],
     agentPrompts: [
       prompt('start-project', loc('Start a new project', '新建一个项目'),
@@ -124,9 +123,9 @@ const bases = [
   {
     key: 'tasks',
     slug: slug('tasks'),
-    name: 'Tasks / 任务',
+    name: 'Tasks',
     localizedName: loc('Tasks', '任务'),
-    description: 'Every need, bug and improvement, from first request to done. / 每一个需求、缺陷和优化，从提出到完成。',
+    description: 'Every need, bug and improvement, from first request to done.',
     localizedDescription: loc('Every need, bug and improvement, from first request to done.', '每一个需求、缺陷和优化，从提出到完成。'),
     readLimit: 50,
     primary: 'title',
@@ -157,9 +156,9 @@ const bases = [
       field('completed-on', 'Completed on', '完成日期', 'date'),
     ],
     views: [
-      { slug: 'open', name: 'Open tasks / 未完成任务', description: 'Everything not done or canceled, by due date / 未完成、未取消的任务，按截止日期', type: 'table', config: { filters: [], sorts: [{ fieldSlug: 'due-date', direction: 'asc' }], visibleFieldSlugs: ['title', 'product', 'status', 'priority', 'assignee', 'due-date'] } },
-      { slug: 'backlog', name: 'Backlog / 需求池', description: 'Needs nobody has scheduled yet / 还没排期的需求', type: 'table', config: { filters: [{ fieldSlug: 'status', operator: 'equals', value: 'backlog' }], sorts: [], visibleFieldSlugs: ['title', 'product', 'type', 'priority', 'requester'] } },
-      { slug: 'in-review', name: 'In review / 评审中', description: 'Waiting on a pull-request review / 等待 PR 评审', type: 'table', config: { filters: [{ fieldSlug: 'status', operator: 'equals', value: 'in-review' }], sorts: [{ fieldSlug: 'due-date', direction: 'asc' }], visibleFieldSlugs: ['title', 'product', 'assignee', 'pr-url', 'due-date'] } },
+      { slug: 'open', name: 'Open tasks', description: 'Everything not done or canceled, by due date', type: 'table', config: { filters: [], sorts: [{ fieldSlug: 'due-date', direction: 'asc' }], visibleFieldSlugs: ['title', 'product', 'status', 'priority', 'assignee', 'due-date'] } },
+      { slug: 'backlog', name: 'Backlog', description: 'Needs nobody has scheduled yet', type: 'table', config: { filters: [{ fieldSlug: 'status', operator: 'equals', value: 'backlog' }], sorts: [], visibleFieldSlugs: ['title', 'product', 'type', 'priority', 'requester'] } },
+      { slug: 'in-review', name: 'In review', description: 'Waiting on a pull-request review', type: 'table', config: { filters: [{ fieldSlug: 'status', operator: 'equals', value: 'in-review' }], sorts: [{ fieldSlug: 'due-date', direction: 'asc' }], visibleFieldSlugs: ['title', 'product', 'assignee', 'pr-url', 'due-date'] } },
     ],
     agentPrompts: [
       prompt('intake', loc('Turn notes into tasks', '把会议纪要拆成任务'),
@@ -175,9 +174,9 @@ const bases = [
   {
     key: 'changelog',
     slug: slug('changelog'),
-    name: 'Changelog / 变更记录',
+    name: 'Changelog',
     localizedName: loc('Changelog', '变更记录'),
-    description: 'One row per merged change, in one plain sentence, written by whoever merged it. / 每次合并一条，用一句人话写清楚，由合并的人或 Agent 当场写。',
+    description: 'One row per merged change, in one plain sentence, written by whoever merged it.',
     localizedDescription: loc('One row per merged change, in one plain sentence, written by whoever merged it.', '每次合并一条，用一句人话写清楚，由合并的人或 Agent 当场写。'),
     readLimit: 50,
     primary: 'title',
@@ -203,7 +202,7 @@ const bases = [
       field('details', 'Details', '详情', 'longtext'),
     ],
     views: [
-      { slug: 'latest', name: 'Latest first / 最新在前', description: 'Merged changes, newest first / 已合并的变更，最新在前', type: 'table', config: { filters: [], sorts: [{ fieldSlug: 'merged-on', direction: 'desc' }], visibleFieldSlugs: ['title', 'kind', 'product', 'merged-on', 'version', 'author'] } },
+      { slug: 'latest', name: 'Latest first', description: 'Merged changes, newest first', type: 'table', config: { filters: [], sorts: [{ fieldSlug: 'merged-on', direction: 'desc' }], visibleFieldSlugs: ['title', 'kind', 'product', 'merged-on', 'version', 'author'] } },
     ],
     agentPrompts: [
       prompt('log-change', loc('Log a change I just merged', '记一条刚合并的变更'),
@@ -217,9 +216,9 @@ const bases = [
   {
     key: 'deliveries',
     slug: slug('deliveries'),
-    name: 'Deliveries / 交付验收',
+    name: 'Deliveries',
     localizedName: loc('Deliveries', '交付验收'),
-    description: 'What users can now do, packaged from tasks and changes for a person to accept. / 用户现在能做到的事：由任务和变更整理而成，交给人来验收。',
+    description: 'What users can now do, packaged from tasks and changes for a person to accept.',
     localizedDescription: loc('What users can now do, packaged from tasks and changes for a person to accept.', '用户现在能做到的事：由任务和变更整理而成，交给人来验收。'),
     readLimit: 50,
     primary: 'title',
@@ -244,8 +243,8 @@ const bases = [
       field('feedback', 'Acceptance notes', '验收意见', 'longtext'),
     ],
     views: [
-      { slug: 'ready', name: 'Ready for acceptance / 待验收', description: 'Waiting for a person to accept / 等人验收', type: 'table', config: { filters: [{ fieldSlug: 'status', operator: 'equals', value: 'ready' }], sorts: [{ fieldSlug: 'submitted-on', direction: 'asc' }], visibleFieldSlugs: ['title', 'product', 'status', 'acceptor', 'submitted-on'] } },
-      { slug: 'all', name: 'All deliveries / 全部交付', description: 'Every delivery, newest submission first / 全部交付，最近提交在前', type: 'table', config: { filters: [], sorts: [{ fieldSlug: 'submitted-on', direction: 'desc' }], visibleFieldSlugs: ['title', 'product', 'status', 'acceptor', 'submitted-on', 'decided-on'] } },
+      { slug: 'ready', name: 'Ready for acceptance', description: 'Waiting for a person to accept', type: 'table', config: { filters: [{ fieldSlug: 'status', operator: 'equals', value: 'ready' }], sorts: [{ fieldSlug: 'submitted-on', direction: 'asc' }], visibleFieldSlugs: ['title', 'product', 'status', 'acceptor', 'submitted-on'] } },
+      { slug: 'all', name: 'All deliveries', description: 'Every delivery, newest submission first', type: 'table', config: { filters: [], sorts: [{ fieldSlug: 'submitted-on', direction: 'desc' }], visibleFieldSlugs: ['title', 'product', 'status', 'acceptor', 'submitted-on', 'decided-on'] } },
     ],
     agentPrompts: [
       prompt('package-deliveries', loc("Package last week's changes for acceptance", '把上周的改动整理成待验收的交付'),
@@ -261,9 +260,9 @@ const bases = [
   {
     key: 'reports',
     slug: slug('reports'),
-    name: 'Reports / 周报与产出',
+    name: 'Reports',
     localizedName: loc('Reports', '周报与产出'),
-    description: 'Weekly reports and release notes, written by an agent from the records and finalised by a person. / 周报和版本说明：由 Agent 根据记录生成，由人定稿。',
+    description: 'Weekly reports and release notes, written by an agent from the records and finalised by a person.',
     localizedDescription: loc('Weekly reports and release notes, written by an agent from the records and finalised by a person.', '周报和版本说明：由 Agent 根据记录生成，由人定稿。'),
     readLimit: 20,
     primary: 'title',
@@ -286,7 +285,7 @@ const bases = [
       field('body', 'Report', '正文', 'markdown'),
     ],
     views: [
-      { slug: 'latest', name: 'Latest first / 最新在前', description: 'Reports by period, newest first / 按周期排列，最新在前', type: 'table', config: { filters: [], sorts: [{ fieldSlug: 'period-end', direction: 'desc' }], visibleFieldSlugs: ['title', 'kind', 'status', 'period-start', 'period-end', 'summary'] } },
+      { slug: 'latest', name: 'Latest first', description: 'Reports by period, newest first', type: 'table', config: { filters: [], sorts: [{ fieldSlug: 'period-end', direction: 'desc' }], visibleFieldSlugs: ['title', 'kind', 'status', 'period-start', 'period-end', 'summary'] } },
     ],
     agentPrompts: [
       prompt('weekly-report', loc("Write last week's weekly report", '生成上周研发周报'),
@@ -329,8 +328,8 @@ export const appConfig = {
   locale: 'en',
   brand: { accent: '#2f5bd3' },
   asOf: '2026-10-21',
-  folder: { name: both(loc('R&D Projects', '研发项目管理')), slug: APP, description: 'Products, projects, tasks, changelog, acceptance and the weekly report. / 产品、项目、任务、变更记录、交付验收和周报。' },
-  airApp: { name: both(loc('R&D Projects', '研发项目管理')), slug: `${APP}-app`, resourceKey: `${APP}-app` },
+  folder: { name: 'R&D Projects', slug: APP, description: 'Products, projects, tasks, changelog, acceptance and the weekly report.' },
+  airApp: { name: 'R&D Projects', slug: `${APP}-app`, resourceKey: `${APP}-app` },
   bases,
   folderPrompts,
   // What each screen reads. Every source is ONE bounded page with server-side
@@ -347,7 +346,7 @@ export const appConfig = {
     { key: 'reports', base: 'reports', limit: 20, sort: { fieldSlug: 'period-end', fieldType: 'date', direction: 'desc' } },
   ],
   permissions: { readProcedures: ['nodes.list', 'nodes.get', 'bases.get', 'records.list', 'records.count'], setupProcedures: [], change_request_procedures: [] },
-  onboarding: { version: 0, fields: [], rationale: 'No integration or setup required; the installed Bases are the workflow. / 无需集成或额外设置，安装后的表就是流程。' },
+  onboarding: { version: 0, fields: [], rationale: 'No integration or setup required; the installed Bases are the workflow.' },
   ui: {
     summary: loc('What shipped, what is stuck, what is next', '交付了什么、卡在哪里、下一步做什么'),
     detail_modes: { products: 'drawer', projects: 'drawer', tasks: 'drawer', changelog: 'drawer', deliveries: 'split', reports: 'split' },

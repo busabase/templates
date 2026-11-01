@@ -1,6 +1,6 @@
 {
-  "name": "Deliveries / 交付验收",
-  "description": "What users can now do, packaged from tasks and changes for a person to accept. / 用户现在能做到的事：由任务和变更整理而成，交给人来验收。",
+  "name": "Deliveries",
+  "description": "What users can now do, packaged from tasks and changes for a person to accept.",
   "position": 4,
   "agentPrompts": [
     {
@@ -55,7 +55,7 @@
   "fields": [
     {
       "slug": "title",
-      "name": "Delivery / 交付内容",
+      "name": "Delivery",
       "type": "text",
       "required": true,
       "position": 0,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "product",
-      "name": "Product / 所属产品",
+      "name": "Product",
       "type": "relation",
       "required": false,
       "position": 1,
@@ -74,7 +74,7 @@
     },
     {
       "slug": "project",
-      "name": "Project / 所属项目",
+      "name": "Project",
       "type": "relation",
       "required": false,
       "position": 2,
@@ -85,7 +85,7 @@
     },
     {
       "slug": "status",
-      "name": "Status / 状态",
+      "name": "Status",
       "type": "select",
       "required": false,
       "position": 3,
@@ -93,22 +93,22 @@
         "choices": [
           {
             "id": "preparing",
-            "name": "Preparing / 整理中",
+            "name": "Preparing",
             "color": "slate"
           },
           {
             "id": "ready",
-            "name": "Ready for acceptance / 待验收",
+            "name": "Ready for acceptance",
             "color": "amber"
           },
           {
             "id": "accepted",
-            "name": "Accepted / 验收通过",
+            "name": "Accepted",
             "color": "emerald"
           },
           {
             "id": "changes-requested",
-            "name": "Changes requested / 需修改",
+            "name": "Changes requested",
             "color": "rose"
           }
         ]
@@ -116,7 +116,7 @@
     },
     {
       "slug": "tasks",
-      "name": "Tasks / 包含任务",
+      "name": "Tasks",
       "type": "relation",
       "required": false,
       "position": 4,
@@ -127,7 +127,7 @@
     },
     {
       "slug": "changes",
-      "name": "Changes / 包含变更",
+      "name": "Changes",
       "type": "relation",
       "required": false,
       "position": 5,
@@ -138,7 +138,7 @@
     },
     {
       "slug": "how-to-verify",
-      "name": "Acceptance steps / 验收步骤",
+      "name": "Acceptance steps",
       "type": "markdown",
       "required": false,
       "position": 6,
@@ -146,7 +146,7 @@
     },
     {
       "slug": "evidence",
-      "name": "Evidence / 验收证据",
+      "name": "Evidence",
       "type": "markdown",
       "required": false,
       "position": 7,
@@ -154,7 +154,7 @@
     },
     {
       "slug": "submitted-on",
-      "name": "Submitted on / 提交验收日期",
+      "name": "Submitted on",
       "type": "date",
       "required": false,
       "position": 8,
@@ -162,7 +162,7 @@
     },
     {
       "slug": "acceptor",
-      "name": "Acceptor / 验收人",
+      "name": "Acceptor",
       "type": "text",
       "required": false,
       "position": 9,
@@ -170,7 +170,7 @@
     },
     {
       "slug": "decided-on",
-      "name": "Decided on / 验收日期",
+      "name": "Decided on",
       "type": "date",
       "required": false,
       "position": 10,
@@ -178,7 +178,7 @@
     },
     {
       "slug": "feedback",
-      "name": "Acceptance notes / 验收意见",
+      "name": "Acceptance notes",
       "type": "longtext",
       "required": false,
       "position": 11,
@@ -188,8 +188,8 @@
   "views": [
     {
       "slug": "ready",
-      "name": "Ready for acceptance / 待验收",
-      "description": "Waiting for a person to accept / 等人验收",
+      "name": "Ready for acceptance",
+      "description": "Waiting for a person to accept",
       "type": "table",
       "config": {
         "filters": [
@@ -216,8 +216,8 @@
     },
     {
       "slug": "all",
-      "name": "All deliveries / 全部交付",
-      "description": "Every delivery, newest submission first / 全部交付，最近提交在前",
+      "name": "All deliveries",
+      "description": "Every delivery, newest submission first",
       "type": "table",
       "config": {
         "filters": [],

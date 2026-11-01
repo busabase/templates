@@ -1,6 +1,6 @@
 {
-  "name": "R&D Projects / 研发项目管理",
-  "description": "Products, projects, tasks, changelog, acceptance and the weekly report. / 产品、项目、任务、变更记录、交付验收和周报。",
+  "name": "R&D Projects",
+  "description": "Products, projects, tasks, changelog, acceptance and the weekly report.",
   "agentPrompts": [
     {
       "key": "weekly-report",

@@ -1,7 +1,7 @@
 {
   "type": "skill",
   "name": "rnd-prd",
-  "description": "Needs and acceptance for the R&D desk: tasks with testable criteria, backlog grooming, deliveries packaged for acceptance. / 需求与验收手册：带验收标准的任务、需求池整理、按功能整理待验收的交付。",
+  "description": "Needs and acceptance for the R&D desk: tasks with testable criteria, backlog grooming, deliveries packaged for acceptance.",
   "position": 8,
   "agentPrompts": [
     {

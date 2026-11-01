@@ -9,7 +9,7 @@
     "en": "Products, projects, tasks, changelog and delivery acceptance that coding agents keep current, closed every week by an agent-written R&D report.",
     "zh-CN": "产品、项目、任务、变更记录和交付验收由 coding agent 随手维护，每周由 Agent 写一份研发周报闭环。"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "tags": [
     "engineering",

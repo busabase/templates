@@ -1,4 +1,4 @@
-# R&D Projects / 研发项目管理
+# R&D Projects
 
 ## English
 

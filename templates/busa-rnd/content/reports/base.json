@@ -1,6 +1,6 @@
 {
-  "name": "Reports / 周报与产出",
-  "description": "Weekly reports and release notes, written by an agent from the records and finalised by a person. / 周报和版本说明：由 Agent 根据记录生成，由人定稿。",
+  "name": "Reports",
+  "description": "Weekly reports and release notes, written by an agent from the records and finalised by a person.",
   "position": 5,
   "agentPrompts": [
     {
@@ -43,7 +43,7 @@
   "fields": [
     {
       "slug": "title",
-      "name": "Report / 报告",
+      "name": "Report",
       "type": "text",
       "required": true,
       "position": 0,
@@ -51,7 +51,7 @@
     },
     {
       "slug": "kind",
-      "name": "Kind / 类型",
+      "name": "Kind",
       "type": "select",
       "required": false,
       "position": 1,
@@ -59,17 +59,17 @@
         "choices": [
           {
             "id": "weekly",
-            "name": "Weekly report / 周报",
+            "name": "Weekly report",
             "color": "cyan"
           },
           {
             "id": "release",
-            "name": "Release notes / 版本说明",
+            "name": "Release notes",
             "color": "slate"
           },
           {
             "id": "other",
-            "name": "Other / 其他",
+            "name": "Other",
             "color": "slate"
           }
         ]
@@ -77,7 +77,7 @@
     },
     {
       "slug": "status",
-      "name": "Status / 状态",
+      "name": "Status",
       "type": "select",
       "required": false,
       "position": 2,
@@ -85,12 +85,12 @@
         "choices": [
           {
             "id": "draft",
-            "name": "Draft / 草稿",
+            "name": "Draft",
             "color": "amber"
           },
           {
             "id": "final",
-            "name": "Final / 已定稿",
+            "name": "Final",
             "color": "emerald"
           }
         ]
@@ -98,7 +98,7 @@
     },
     {
       "slug": "period-start",
-      "name": "Period start / 周期开始",
+      "name": "Period start",
       "type": "date",
       "required": false,
       "position": 3,
@@ -106,7 +106,7 @@
     },
     {
       "slug": "period-end",
-      "name": "Period end / 周期结束",
+      "name": "Period end",
       "type": "date",
       "required": false,
       "position": 4,
@@ -114,7 +114,7 @@
     },
     {
       "slug": "product",
-      "name": "Product / 所属产品",
+      "name": "Product",
       "type": "relation",
       "required": false,
       "position": 5,
@@ -125,7 +125,7 @@
     },
     {
       "slug": "summary",
-      "name": "One-line summary / 一句话结论",
+      "name": "One-line summary",
       "type": "text",
       "required": false,
       "position": 6,
@@ -133,7 +133,7 @@
     },
     {
       "slug": "body",
-      "name": "Report / 正文",
+      "name": "Report",
       "type": "markdown",
       "required": false,
       "position": 7,
@@ -143,8 +143,8 @@
   "views": [
     {
       "slug": "latest",
-      "name": "Latest first / 最新在前",
-      "description": "Reports by period, newest first / 按周期排列，最新在前",
+      "name": "Latest first",
+      "description": "Reports by period, newest first",
       "type": "table",
       "config": {
         "filters": [],
