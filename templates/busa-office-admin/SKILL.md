@@ -1,6 +1,6 @@
 ---
 name: busa-office-admin
-description: Operate an administration desk for certificates, office supplier contracts, original-document provenance and verification tasks. Use when tracking renewals, checking document evidence or assigning administrative follow-ups. / 管理证照、办公供应商合同、原件来源和核验待办；用于跟踪续期、核对文件证据或分派行政跟进事项。
+description: Operate an administration desk for certificates, office supplier contracts, original-document provenance and verification tasks. Use when tracking renewals, checking document evidence or assigning administrative follow-ups.
 metadata:
   category: ops
   tags:
@@ -18,7 +18,7 @@ metadata:
     risk: read-only
 ---
 
-# Administration Desk / 行政管理工作台
+# Administration Desk
 
 ## English
 

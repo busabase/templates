@@ -21,12 +21,12 @@ export const appConfig = {
   },
   "asOf": "2026-09-29",
   "folder": {
-    "name": "Administration Desk / 行政管理工作台",
+    "name": "Administration Desk",
     "slug": "busa-office-admin",
-    "description": "Certificates, contracts, source documents and verification tasks in one administration desk. / 统一管理证照、合同、原件来源和待核验事项。"
+    "description": "Certificates, contracts, source documents and verification tasks in one administration desk."
   },
   "airApp": {
-    "name": "Administration Desk / 行政管理工作台",
+    "name": "Administration Desk",
     "slug": "busa-office-admin-app",
     "resourceKey": "busa-office-admin-app"
   },
@@ -220,8 +220,8 @@ export const appConfig = {
       "views": [
         {
           "slug": "all",
-          "name": "Certificates / 证照台账",
-          "description": "Track company certificates and verified expiry dates. / 跟踪公司证照与已核实的有效期。",
+          "name": "Certificates",
+          "description": "Track company certificates and verified expiry dates.",
           "type": "table",
           "config": {
             "filters": [],
@@ -242,8 +242,8 @@ export const appConfig = {
         },
         {
           "slug": "review",
-          "name": "Priority queue / 优先处理",
-          "description": "Focus on the expiring state / 聚焦 待续期状态",
+          "name": "Priority queue",
+          "description": "Focus on the expiring state",
           "type": "table",
           "config": {
             "filters": [
@@ -458,8 +458,8 @@ export const appConfig = {
       "views": [
         {
           "slug": "all",
-          "name": "Administrative contracts / 行政合同",
-          "description": "Track office supplier agreements, signatures and renewal responsibilities. / 跟踪办公供应商合同、签署与续期责任。",
+          "name": "Administrative contracts",
+          "description": "Track office supplier agreements, signatures and renewal responsibilities.",
           "type": "table",
           "config": {
             "filters": [],
@@ -480,8 +480,8 @@ export const appConfig = {
         },
         {
           "slug": "review",
-          "name": "Priority queue / 优先处理",
-          "description": "Focus on the renewal state / 聚焦 待续约状态",
+          "name": "Priority queue",
+          "description": "Focus on the renewal state",
           "type": "table",
           "config": {
             "filters": [
@@ -676,8 +676,8 @@ export const appConfig = {
       "views": [
         {
           "slug": "all",
-          "name": "Source archive / 原件来源台账",
-          "description": "Record original-document provenance without exposing private document content. / 记录原件来源，避免在公开模板泄露文件内容。",
+          "name": "Source archive",
+          "description": "Record original-document provenance without exposing private document content.",
           "type": "table",
           "config": {
             "filters": [],
@@ -698,8 +698,8 @@ export const appConfig = {
         },
         {
           "slug": "review",
-          "name": "Priority queue / 优先处理",
-          "description": "Focus on the copy-only state / 聚焦 仅复印件状态",
+          "name": "Priority queue",
+          "description": "Focus on the copy-only state",
           "type": "table",
           "config": {
             "filters": [
@@ -882,8 +882,8 @@ export const appConfig = {
       "views": [
         {
           "slug": "all",
-          "name": "Verification tasks / 核验待办",
-          "description": "Assign evidence checks and renewal follow-up with accountable owners. / 落实证据核验与续期跟进责任。",
+          "name": "Verification tasks",
+          "description": "Assign evidence checks and renewal follow-up with accountable owners.",
           "type": "table",
           "config": {
             "filters": [],
@@ -904,8 +904,8 @@ export const appConfig = {
         },
         {
           "slug": "review",
-          "name": "Priority queue / 优先处理",
-          "description": "Focus on the open state / 聚焦 待处理状态",
+          "name": "Priority queue",
+          "description": "Focus on the open state",
           "type": "table",
           "config": {
             "filters": [
@@ -1124,8 +1124,8 @@ export const appConfig = {
         "views": [
           {
             "slug": "all",
-            "name": "Certificates / 证照台账",
-            "description": "Track company certificates and verified expiry dates. / 跟踪公司证照与已核实的有效期。",
+            "name": "Certificates",
+            "description": "Track company certificates and verified expiry dates.",
             "type": "table",
             "config": {
               "filters": [],
@@ -1146,8 +1146,8 @@ export const appConfig = {
           },
           {
             "slug": "review",
-            "name": "Priority queue / 优先处理",
-            "description": "Focus on the expiring state / 聚焦 待续期状态",
+            "name": "Priority queue",
+            "description": "Focus on the expiring state",
             "type": "table",
             "config": {
               "filters": [
@@ -1362,8 +1362,8 @@ export const appConfig = {
         "views": [
           {
             "slug": "all",
-            "name": "Administrative contracts / 行政合同",
-            "description": "Track office supplier agreements, signatures and renewal responsibilities. / 跟踪办公供应商合同、签署与续期责任。",
+            "name": "Administrative contracts",
+            "description": "Track office supplier agreements, signatures and renewal responsibilities.",
             "type": "table",
             "config": {
               "filters": [],
@@ -1384,8 +1384,8 @@ export const appConfig = {
           },
           {
             "slug": "review",
-            "name": "Priority queue / 优先处理",
-            "description": "Focus on the renewal state / 聚焦 待续约状态",
+            "name": "Priority queue",
+            "description": "Focus on the renewal state",
             "type": "table",
             "config": {
               "filters": [
@@ -1580,8 +1580,8 @@ export const appConfig = {
         "views": [
           {
             "slug": "all",
-            "name": "Source archive / 原件来源台账",
-            "description": "Record original-document provenance without exposing private document content. / 记录原件来源，避免在公开模板泄露文件内容。",
+            "name": "Source archive",
+            "description": "Record original-document provenance without exposing private document content.",
             "type": "table",
             "config": {
               "filters": [],
@@ -1602,8 +1602,8 @@ export const appConfig = {
           },
           {
             "slug": "review",
-            "name": "Priority queue / 优先处理",
-            "description": "Focus on the copy-only state / 聚焦 仅复印件状态",
+            "name": "Priority queue",
+            "description": "Focus on the copy-only state",
             "type": "table",
             "config": {
               "filters": [
@@ -1786,8 +1786,8 @@ export const appConfig = {
         "views": [
           {
             "slug": "all",
-            "name": "Verification tasks / 核验待办",
-            "description": "Assign evidence checks and renewal follow-up with accountable owners. / 落实证据核验与续期跟进责任。",
+            "name": "Verification tasks",
+            "description": "Assign evidence checks and renewal follow-up with accountable owners.",
             "type": "table",
             "config": {
               "filters": [],
@@ -1808,8 +1808,8 @@ export const appConfig = {
           },
           {
             "slug": "review",
-            "name": "Priority queue / 优先处理",
-            "description": "Focus on the open state / 聚焦 待处理状态",
+            "name": "Priority queue",
+            "description": "Focus on the open state",
             "type": "table",
             "config": {
               "filters": [
@@ -1853,7 +1853,7 @@ export const appConfig = {
   "onboarding": {
     "version": 0,
     "fields": [],
-    "rationale": "No integration or setup required; installed Bases are the workflow. / 无需集成或额外设置；业务流程使用安装后的台账。"
+    "rationale": "No integration or setup required; installed Bases are the workflow."
   },
   "ui": {
     "summary": {

@@ -1,11 +1,11 @@
 {
-  "name": "Certificates / 证照台账",
-  "description": "Track company certificates and verified expiry dates. / 跟踪公司证照与已核实的有效期。",
+  "name": "Certificates",
+  "description": "Track company certificates and verified expiry dates.",
   "position": 0,
   "fields": [
     {
       "slug": "title",
-      "name": "Certificate / 证照名称",
+      "name": "Certificate",
       "type": "text",
       "required": true,
       "position": 0,
@@ -13,7 +13,7 @@
     },
     {
       "slug": "entity",
-      "name": "Legal entity / 公司主体",
+      "name": "Legal entity",
       "type": "text",
       "required": false,
       "position": 1,
@@ -21,7 +21,7 @@
     },
     {
       "slug": "owner",
-      "name": "Owner / 负责人",
+      "name": "Owner",
       "type": "text",
       "required": false,
       "position": 2,
@@ -29,7 +29,7 @@
     },
     {
       "slug": "issued",
-      "name": "Issued on / 签发日期",
+      "name": "Issued on",
       "type": "date",
       "required": false,
       "position": 3,
@@ -37,7 +37,7 @@
     },
     {
       "slug": "expires",
-      "name": "Expires on / 到期日期",
+      "name": "Expires on",
       "type": "date",
       "required": false,
       "position": 4,
@@ -45,7 +45,7 @@
     },
     {
       "slug": "status",
-      "name": "Verification status / 核验状态",
+      "name": "Verification status",
       "type": "select",
       "required": false,
       "position": 5,
@@ -53,26 +53,26 @@
         "choices": [
           {
             "id": "verified",
-            "name": "Verified / 已核验"
+            "name": "Verified"
           },
           {
             "id": "expiring",
-            "name": "Renewal due / 待续期"
+            "name": "Renewal due"
           },
           {
             "id": "unverified",
-            "name": "Unverified / 未核验"
+            "name": "Unverified"
           },
           {
             "id": "conflict",
-            "name": "Evidence conflict / 证据冲突"
+            "name": "Evidence conflict"
           }
         ]
       }
     },
     {
       "slug": "source-ref",
-      "name": "Source reference / 原件业务编号",
+      "name": "Source reference",
       "type": "text",
       "required": false,
       "position": 6,
@@ -80,7 +80,7 @@
     },
     {
       "slug": "notes",
-      "name": "Evidence notes / 核验说明",
+      "name": "Evidence notes",
       "type": "longtext",
       "required": false,
       "position": 7,
@@ -90,8 +90,8 @@
   "views": [
     {
       "slug": "all",
-      "name": "Certificates / 证照台账",
-      "description": "Track company certificates and verified expiry dates. / 跟踪公司证照与已核实的有效期。",
+      "name": "Certificates",
+      "description": "Track company certificates and verified expiry dates.",
       "type": "table",
       "config": {
         "filters": [],
@@ -112,8 +112,8 @@
     },
     {
       "slug": "review",
-      "name": "Priority queue / 优先处理",
-      "description": "Focus on the expiring state / 聚焦 待续期状态",
+      "name": "Priority queue",
+      "description": "Focus on the expiring state",
       "type": "table",
       "config": {
         "filters": [

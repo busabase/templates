@@ -12,8 +12,8 @@
   "workspace": {
     "folder": {
       "slug": "busa-office-finance",
-      "name": "Office Finance / 财务管理",
-      "description": "Expense evidence, invoice requests, monthly actuals and filing deadlines in one review desk. / 集中复核报销依据、开票申请、月度实际报告和申报期限。"
+      "name": "Office Finance",
+      "description": "Expense evidence, invoice requests, monthly actuals and filing deadlines in one review desk."
     },
     "bases": [
       {
@@ -23,7 +23,7 @@
         "fields": [
           {
             "slug": "title",
-            "name": "Title / 事项",
+            "name": "Title",
             "nameI18n": {
               "en": "Title",
               "zh-CN": "事项"
@@ -35,7 +35,7 @@
           },
           {
             "slug": "entity",
-            "name": "Entity / 主体",
+            "name": "Entity",
             "nameI18n": {
               "en": "Entity",
               "zh-CN": "主体"
@@ -47,7 +47,7 @@
           },
           {
             "slug": "owner",
-            "name": "Owner / 负责人",
+            "name": "Owner",
             "nameI18n": {
               "en": "Owner",
               "zh-CN": "负责人"
@@ -59,7 +59,7 @@
           },
           {
             "slug": "status",
-            "name": "Status / 状态",
+            "name": "Status",
             "nameI18n": {
               "en": "Status",
               "zh-CN": "状态"
@@ -71,30 +71,30 @@
               "choices": [
                 {
                   "id": "draft",
-                  "name": "Draft / 草稿"
+                  "name": "Draft"
                 },
                 {
                   "id": "pending",
-                  "name": "Pending review / 待审核"
+                  "name": "Pending review"
                 },
                 {
                   "id": "approved",
-                  "name": "Approved / 已批准"
+                  "name": "Approved"
                 },
                 {
                   "id": "paid",
-                  "name": "Paid / 已付款"
+                  "name": "Paid"
                 },
                 {
                   "id": "blocked",
-                  "name": "Blocked / 已阻塞"
+                  "name": "Blocked"
                 }
               ]
             }
           },
           {
             "slug": "amount",
-            "name": "Amount / 金额",
+            "name": "Amount",
             "nameI18n": {
               "en": "Amount",
               "zh-CN": "金额"
@@ -106,7 +106,7 @@
           },
           {
             "slug": "currency",
-            "name": "Currency / 币种",
+            "name": "Currency",
             "nameI18n": {
               "en": "Currency",
               "zh-CN": "币种"
@@ -118,7 +118,7 @@
           },
           {
             "slug": "due",
-            "name": "Due date / 到期日",
+            "name": "Due date",
             "nameI18n": {
               "en": "Due date",
               "zh-CN": "到期日"
@@ -130,7 +130,7 @@
           },
           {
             "slug": "evidence",
-            "name": "Evidence reference / 凭证引用",
+            "name": "Evidence reference",
             "nameI18n": {
               "en": "Evidence reference",
               "zh-CN": "凭证引用"
@@ -142,7 +142,7 @@
           },
           {
             "slug": "approval",
-            "name": "Approval reference / 审批依据",
+            "name": "Approval reference",
             "nameI18n": {
               "en": "Approval reference",
               "zh-CN": "审批依据"
@@ -154,7 +154,7 @@
           },
           {
             "slug": "paidAt",
-            "name": "Paid date / 付款日期",
+            "name": "Paid date",
             "nameI18n": {
               "en": "Paid date",
               "zh-CN": "付款日期"
@@ -166,7 +166,7 @@
           },
           {
             "slug": "notes",
-            "name": "Notes / 备注",
+            "name": "Notes",
             "nameI18n": {
               "en": "Notes",
               "zh-CN": "备注"
@@ -178,7 +178,7 @@
           },
           {
             "slug": "receipt",
-            "name": "Payment receipt reference / 付款回单引用",
+            "name": "Payment receipt reference",
             "nameI18n": {
               "en": "Payment receipt reference",
               "zh-CN": "付款回单引用"
@@ -192,7 +192,7 @@
         "views": [
           {
             "slug": "register",
-            "name": "Expenses & reimbursements / 费用与报销",
+            "name": "Expenses & reimbursements",
             "type": "table",
             "position": 0,
             "config": {
@@ -219,7 +219,7 @@
           },
           {
             "slug": "attention",
-            "name": "Needs review / 待复核",
+            "name": "Needs review",
             "type": "table",
             "position": 1,
             "config": {
@@ -248,7 +248,7 @@
         "fields": [
           {
             "slug": "title",
-            "name": "Title / 事项",
+            "name": "Title",
             "nameI18n": {
               "en": "Title",
               "zh-CN": "事项"
@@ -260,7 +260,7 @@
           },
           {
             "slug": "entity",
-            "name": "Entity / 主体",
+            "name": "Entity",
             "nameI18n": {
               "en": "Entity",
               "zh-CN": "主体"
@@ -272,7 +272,7 @@
           },
           {
             "slug": "owner",
-            "name": "Owner / 负责人",
+            "name": "Owner",
             "nameI18n": {
               "en": "Owner",
               "zh-CN": "负责人"
@@ -284,7 +284,7 @@
           },
           {
             "slug": "status",
-            "name": "Status / 状态",
+            "name": "Status",
             "nameI18n": {
               "en": "Status",
               "zh-CN": "状态"
@@ -296,30 +296,30 @@
               "choices": [
                 {
                   "id": "draft",
-                  "name": "Draft / 草稿"
+                  "name": "Draft"
                 },
                 {
                   "id": "pending",
-                  "name": "Pending review / 待审核"
+                  "name": "Pending review"
                 },
                 {
                   "id": "approved",
-                  "name": "Approved / 已批准"
+                  "name": "Approved"
                 },
                 {
                   "id": "issued",
-                  "name": "Issued / 已开票"
+                  "name": "Issued"
                 },
                 {
                   "id": "blocked",
-                  "name": "Blocked / 已阻塞"
+                  "name": "Blocked"
                 }
               ]
             }
           },
           {
             "slug": "amount",
-            "name": "Amount / 金额",
+            "name": "Amount",
             "nameI18n": {
               "en": "Amount",
               "zh-CN": "金额"
@@ -331,7 +331,7 @@
           },
           {
             "slug": "currency",
-            "name": "Currency / 币种",
+            "name": "Currency",
             "nameI18n": {
               "en": "Currency",
               "zh-CN": "币种"
@@ -343,7 +343,7 @@
           },
           {
             "slug": "due",
-            "name": "Due date / 到期日",
+            "name": "Due date",
             "nameI18n": {
               "en": "Due date",
               "zh-CN": "到期日"
@@ -355,7 +355,7 @@
           },
           {
             "slug": "evidence",
-            "name": "Evidence reference / 凭证引用",
+            "name": "Evidence reference",
             "nameI18n": {
               "en": "Evidence reference",
               "zh-CN": "凭证引用"
@@ -367,7 +367,7 @@
           },
           {
             "slug": "approval",
-            "name": "Approval reference / 审批依据",
+            "name": "Approval reference",
             "nameI18n": {
               "en": "Approval reference",
               "zh-CN": "审批依据"
@@ -379,7 +379,7 @@
           },
           {
             "slug": "invoice",
-            "name": "Invoice reference / 发票引用",
+            "name": "Invoice reference",
             "nameI18n": {
               "en": "Invoice reference",
               "zh-CN": "发票引用"
@@ -391,7 +391,7 @@
           },
           {
             "slug": "notes",
-            "name": "Notes / 备注",
+            "name": "Notes",
             "nameI18n": {
               "en": "Notes",
               "zh-CN": "备注"
@@ -405,7 +405,7 @@
         "views": [
           {
             "slug": "register",
-            "name": "Invoice requests / 开票申请",
+            "name": "Invoice requests",
             "type": "table",
             "position": 0,
             "config": {
@@ -432,7 +432,7 @@
           },
           {
             "slug": "attention",
-            "name": "Needs review / 待复核",
+            "name": "Needs review",
             "type": "table",
             "position": 1,
             "config": {
@@ -461,7 +461,7 @@
         "fields": [
           {
             "slug": "title",
-            "name": "Title / 事项",
+            "name": "Title",
             "nameI18n": {
               "en": "Title",
               "zh-CN": "事项"
@@ -473,7 +473,7 @@
           },
           {
             "slug": "entity",
-            "name": "Entity / 主体",
+            "name": "Entity",
             "nameI18n": {
               "en": "Entity",
               "zh-CN": "主体"
@@ -485,7 +485,7 @@
           },
           {
             "slug": "owner",
-            "name": "Owner / 负责人",
+            "name": "Owner",
             "nameI18n": {
               "en": "Owner",
               "zh-CN": "负责人"
@@ -497,7 +497,7 @@
           },
           {
             "slug": "status",
-            "name": "Status / 状态",
+            "name": "Status",
             "nameI18n": {
               "en": "Status",
               "zh-CN": "状态"
@@ -509,26 +509,26 @@
               "choices": [
                 {
                   "id": "draft",
-                  "name": "Draft / 草稿"
+                  "name": "Draft"
                 },
                 {
                   "id": "review",
-                  "name": "In review / 待复核"
+                  "name": "In review"
                 },
                 {
                   "id": "accepted",
-                  "name": "Accepted / 已接受"
+                  "name": "Accepted"
                 },
                 {
                   "id": "blocked",
-                  "name": "Blocked / 已阻塞"
+                  "name": "Blocked"
                 }
               ]
             }
           },
           {
             "slug": "period",
-            "name": "Period / 期间",
+            "name": "Period",
             "nameI18n": {
               "en": "Period",
               "zh-CN": "期间"
@@ -540,7 +540,7 @@
           },
           {
             "slug": "currency",
-            "name": "Currency / 币种",
+            "name": "Currency",
             "nameI18n": {
               "en": "Currency",
               "zh-CN": "币种"
@@ -552,7 +552,7 @@
           },
           {
             "slug": "revenue",
-            "name": "Revenue actual / 实际收入",
+            "name": "Revenue actual",
             "nameI18n": {
               "en": "Revenue actual",
               "zh-CN": "实际收入"
@@ -564,7 +564,7 @@
           },
           {
             "slug": "cost",
-            "name": "Cost actual / 实际成本",
+            "name": "Cost actual",
             "nameI18n": {
               "en": "Cost actual",
               "zh-CN": "实际成本"
@@ -576,7 +576,7 @@
           },
           {
             "slug": "due",
-            "name": "Due date / 到期日",
+            "name": "Due date",
             "nameI18n": {
               "en": "Due date",
               "zh-CN": "到期日"
@@ -588,7 +588,7 @@
           },
           {
             "slug": "reviewer",
-            "name": "Reviewer / 复核人",
+            "name": "Reviewer",
             "nameI18n": {
               "en": "Reviewer",
               "zh-CN": "复核人"
@@ -600,7 +600,7 @@
           },
           {
             "slug": "evidence",
-            "name": "Evidence reference / 凭证引用",
+            "name": "Evidence reference",
             "nameI18n": {
               "en": "Evidence reference",
               "zh-CN": "凭证引用"
@@ -612,7 +612,7 @@
           },
           {
             "slug": "notes",
-            "name": "Notes / 备注",
+            "name": "Notes",
             "nameI18n": {
               "en": "Notes",
               "zh-CN": "备注"
@@ -626,7 +626,7 @@
         "views": [
           {
             "slug": "register",
-            "name": "Monthly actual reports / 月度实际报告",
+            "name": "Monthly actual reports",
             "type": "table",
             "position": 0,
             "config": {
@@ -654,7 +654,7 @@
           },
           {
             "slug": "attention",
-            "name": "Needs review / 待复核",
+            "name": "Needs review",
             "type": "table",
             "position": 1,
             "config": {
@@ -683,7 +683,7 @@
         "fields": [
           {
             "slug": "title",
-            "name": "Title / 事项",
+            "name": "Title",
             "nameI18n": {
               "en": "Title",
               "zh-CN": "事项"
@@ -695,7 +695,7 @@
           },
           {
             "slug": "entity",
-            "name": "Entity / 主体",
+            "name": "Entity",
             "nameI18n": {
               "en": "Entity",
               "zh-CN": "主体"
@@ -707,7 +707,7 @@
           },
           {
             "slug": "owner",
-            "name": "Owner / 负责人",
+            "name": "Owner",
             "nameI18n": {
               "en": "Owner",
               "zh-CN": "负责人"
@@ -719,7 +719,7 @@
           },
           {
             "slug": "status",
-            "name": "Status / 状态",
+            "name": "Status",
             "nameI18n": {
               "en": "Status",
               "zh-CN": "状态"
@@ -731,30 +731,30 @@
               "choices": [
                 {
                   "id": "planned",
-                  "name": "Planned / 已计划"
+                  "name": "Planned"
                 },
                 {
                   "id": "preparing",
-                  "name": "Preparing / 准备中"
+                  "name": "Preparing"
                 },
                 {
                   "id": "review",
-                  "name": "In review / 待复核"
+                  "name": "In review"
                 },
                 {
                   "id": "filed",
-                  "name": "Filed / 已申报"
+                  "name": "Filed"
                 },
                 {
                   "id": "blocked",
-                  "name": "Blocked / 已阻塞"
+                  "name": "Blocked"
                 }
               ]
             }
           },
           {
             "slug": "period",
-            "name": "Period / 期间",
+            "name": "Period",
             "nameI18n": {
               "en": "Period",
               "zh-CN": "期间"
@@ -766,7 +766,7 @@
           },
           {
             "slug": "due",
-            "name": "Due date / 到期日",
+            "name": "Due date",
             "nameI18n": {
               "en": "Due date",
               "zh-CN": "到期日"
@@ -778,7 +778,7 @@
           },
           {
             "slug": "evidence",
-            "name": "Evidence reference / 凭证引用",
+            "name": "Evidence reference",
             "nameI18n": {
               "en": "Evidence reference",
               "zh-CN": "凭证引用"
@@ -790,7 +790,7 @@
           },
           {
             "slug": "reviewer",
-            "name": "Reviewer / 复核人",
+            "name": "Reviewer",
             "nameI18n": {
               "en": "Reviewer",
               "zh-CN": "复核人"
@@ -802,7 +802,7 @@
           },
           {
             "slug": "notes",
-            "name": "Notes / 备注",
+            "name": "Notes",
             "nameI18n": {
               "en": "Notes",
               "zh-CN": "备注"
@@ -816,7 +816,7 @@
         "views": [
           {
             "slug": "register",
-            "name": "Filing calendar / 申报日历",
+            "name": "Filing calendar",
             "type": "table",
             "position": 0,
             "config": {
@@ -841,7 +841,7 @@
           },
           {
             "slug": "attention",
-            "name": "Needs review / 待复核",
+            "name": "Needs review",
             "type": "table",
             "position": 1,
             "config": {
@@ -870,7 +870,7 @@
   "onboarding": {
     "version": 1,
     "fields": [],
-    "rationale": "No integrations or external credentials are required; the installed records are the operational state. / 无需外部集成或登录凭据；安装后的记录就是业务状态来源。"
+    "rationale": "No integrations or external credentials are required; the installed records are the operational state."
   },
   "vault_requirements": [],
   "integrations": []

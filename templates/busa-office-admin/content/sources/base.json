@@ -1,11 +1,11 @@
 {
-  "name": "Source archive / 原件来源台账",
-  "description": "Record original-document provenance without exposing private document content. / 记录原件来源，避免在公开模板泄露文件内容。",
+  "name": "Source archive",
+  "description": "Record original-document provenance without exposing private document content.",
   "position": 2,
   "fields": [
     {
       "slug": "title",
-      "name": "Document / 原件名称",
+      "name": "Document",
       "type": "text",
       "required": true,
       "position": 0,
@@ -13,7 +13,7 @@
     },
     {
       "slug": "source-ref",
-      "name": "Business reference / 业务编号",
+      "name": "Business reference",
       "type": "text",
       "required": false,
       "position": 1,
@@ -21,7 +21,7 @@
     },
     {
       "slug": "custodian",
-      "name": "Custodian / 保管人",
+      "name": "Custodian",
       "type": "text",
       "required": false,
       "position": 2,
@@ -29,7 +29,7 @@
     },
     {
       "slug": "received",
-      "name": "Received on / 收件日期",
+      "name": "Received on",
       "type": "date",
       "required": false,
       "position": 3,
@@ -37,7 +37,7 @@
     },
     {
       "slug": "location",
-      "name": "Archive location / 归档位置",
+      "name": "Archive location",
       "type": "text",
       "required": false,
       "position": 4,
@@ -45,7 +45,7 @@
     },
     {
       "slug": "status",
-      "name": "Evidence status / 证据状态",
+      "name": "Evidence status",
       "type": "select",
       "required": false,
       "position": 5,
@@ -53,22 +53,22 @@
         "choices": [
           {
             "id": "original",
-            "name": "Original checked / 已核对原件"
+            "name": "Original checked"
           },
           {
             "id": "copy-only",
-            "name": "Copy only / 仅复印件"
+            "name": "Copy only"
           },
           {
             "id": "conflict",
-            "name": "Versions conflict / 版本冲突"
+            "name": "Versions conflict"
           }
         ]
       }
     },
     {
       "slug": "notes",
-      "name": "Provenance notes / 来源说明",
+      "name": "Provenance notes",
       "type": "longtext",
       "required": false,
       "position": 6,
@@ -78,8 +78,8 @@
   "views": [
     {
       "slug": "all",
-      "name": "Source archive / 原件来源台账",
-      "description": "Record original-document provenance without exposing private document content. / 记录原件来源，避免在公开模板泄露文件内容。",
+      "name": "Source archive",
+      "description": "Record original-document provenance without exposing private document content.",
       "type": "table",
       "config": {
         "filters": [],
@@ -100,8 +100,8 @@
     },
     {
       "slug": "review",
-      "name": "Priority queue / 优先处理",
-      "description": "Focus on the copy-only state / 聚焦 仅复印件状态",
+      "name": "Priority queue",
+      "description": "Focus on the copy-only state",
       "type": "table",
       "config": {
         "filters": [

@@ -1,6 +1,6 @@
 {
-  "name": "Legal follow-up / 法务待办",
-  "description": "Accountable counsel and business owner follow-up actions / 负责律师与业务负责人的跟进行动",
+  "name": "Legal follow-up",
+  "description": "Accountable counsel and business owner follow-up actions",
   "position": 4,
   "agentPrompts": [
     {
@@ -31,7 +31,7 @@
   "fields": [
     {
       "slug": "name",
-      "name": "Name / 名称",
+      "name": "Name",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Task code / 待办编号",
+      "name": "Task code",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "case",
-      "name": "Case code / 案件编号",
+      "name": "Case code",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Responsible owner / 负责人",
+      "name": "Responsible owner",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "status",
-      "name": "Task state / 待办状态",
+      "name": "Task state",
       "type": "text",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "due",
-      "name": "Action due / 行动期限",
+      "name": "Action due",
       "type": "date",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "next",
-      "name": "Required action / 所需行动",
+      "name": "Required action",
       "type": "text",
       "required": false,
       "position": 6,
@@ -87,7 +87,7 @@
     },
     {
       "slug": "notes",
-      "name": "Review context / 复核背景",
+      "name": "Review context",
       "type": "longtext",
       "required": false,
       "position": 7,
@@ -97,7 +97,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Legal follow-up working table / 法务待办工作表",
+      "name": "Legal follow-up working table",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

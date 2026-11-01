@@ -1,6 +1,6 @@
 ---
 name: busa-office-cashier
-description: Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money. Use when reviewing Bank accounts, Daily balance checks, Payment requests, Cash ledger. / 管理银行账户、每日余额走查、付款申请和收付流水；复核付款凭证、账户核查时效或对账异常时使用，不执行资金转账。
+description: Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money. Use when reviewing Bank accounts, Daily balance checks, Payment requests, Cash ledger.
 metadata:
   category: finance
   tags:
@@ -16,7 +16,7 @@ metadata:
     risk: gated-write
 ---
 
-# Cashier Desk / 出纳管理
+# Cashier Desk
 
 ## English
 
@@ -123,7 +123,7 @@ Do not transfer money, access bank credentials, issue tax invoices, submit tax f
 
 ### 资源与字段
 
-#### accounts / 银行账户
+#### accounts / Bank accounts
 
 列出正常银行账户及最近核查时间，标记过期余额和受限账户；不将账面余额视为银行实时数据。
 
@@ -140,7 +140,7 @@ Do not transfer money, access bank credentials, issue tax invoices, submit tax f
 
 状态：`active`（正常）、`restricted`（受限）、`closed`（已关闭）。这些是独立记录的事实，不代表自动推进的流程。
 
-#### checks / 每日余额走查
+#### checks / Daily balance checks
 
 将每日走查记录与账面余额及银行依据核对，列出差异和过期核查；不编造调整记录。
 
@@ -159,7 +159,7 @@ Do not transfer money, access bank credentials, issue tax invoices, submit tax f
 
 状态：`pending`（待审核）、`matched`（已匹配）、`exception`（存在差异）。这些是独立记录的事实，不代表自动推进的流程。
 
-#### payments / 付款申请
+#### payments / Payment requests
 
 复核待审核、已批准和已阻塞的付款申请，区分审批与实际付款，并标记缺失的发票或银行回单引用。
 
@@ -179,7 +179,7 @@ Do not transfer money, access bank credentials, issue tax invoices, submit tax f
 
 状态：`draft`（草稿）、`pending`（待审核）、`approved`（已批准）、`paid`（已付款）、`blocked`（已阻塞）。这些是独立记录的事实，不代表自动推进的流程。
 
-#### ledger / 收付流水
+#### ledger / Cash ledger
 
 列出未匹配及存在差异的收付流水及其银行回单、发票依据；区分已付款申请与已对账流水。
 

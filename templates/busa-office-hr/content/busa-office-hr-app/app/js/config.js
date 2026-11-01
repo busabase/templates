@@ -21,12 +21,12 @@ export const appConfig = {
   },
   "asOf": "2026-09-29",
   "folder": {
-    "name": "People & Payroll Desk / 人事薪酬工作台",
+    "name": "People & Payroll Desk",
     "slug": "busa-office-hr",
-    "description": "Employee records, labor contracts, salary proposals and monthly payroll reviews. / 管理员工档案、劳动合同、薪酬变动和月度工资复核。"
+    "description": "Employee records, labor contracts, salary proposals and monthly payroll reviews."
   },
   "airApp": {
-    "name": "People & Payroll Desk / 人事薪酬工作台",
+    "name": "People & Payroll Desk",
     "slug": "busa-office-hr-app",
     "resourceKey": "busa-office-hr-app"
   },
@@ -210,8 +210,8 @@ export const appConfig = {
       "views": [
         {
           "slug": "all",
-          "name": "Employees / 员工花名册",
-          "description": "Maintain the authoritative employee roster and confirmed salary inputs. / 维护员工主台账与已确认工资输入。",
+          "name": "Employees",
+          "description": "Maintain the authoritative employee roster and confirmed salary inputs.",
           "type": "table",
           "config": {
             "filters": [],
@@ -232,8 +232,8 @@ export const appConfig = {
         },
         {
           "slug": "review",
-          "name": "Priority queue / 优先处理",
-          "description": "Focus on the incomplete state / 聚焦 资料待补状态",
+          "name": "Priority queue",
+          "description": "Focus on the incomplete state",
           "type": "table",
           "config": {
             "filters": [
@@ -428,8 +428,8 @@ export const appConfig = {
       "views": [
         {
           "slug": "all",
-          "name": "Labor contracts / 劳动合同",
-          "description": "Track employee contract dates, originals and renewal responsibility. / 跟踪劳动合同日期、原件与续签责任。",
+          "name": "Labor contracts",
+          "description": "Track employee contract dates, originals and renewal responsibility.",
           "type": "table",
           "config": {
             "filters": [],
@@ -450,8 +450,8 @@ export const appConfig = {
         },
         {
           "slug": "review",
-          "name": "Priority queue / 优先处理",
-          "description": "Focus on the renewal state / 聚焦 待续签状态",
+          "name": "Priority queue",
+          "description": "Focus on the renewal state",
           "type": "table",
           "config": {
             "filters": [
@@ -666,8 +666,8 @@ export const appConfig = {
       "views": [
         {
           "slug": "all",
-          "name": "Salary changes / 薪酬变动",
-          "description": "Keep proposed, approved and rejected compensation decisions separate. / 分别留存拟议、批准与拒绝的薪酬决定。",
+          "name": "Salary changes",
+          "description": "Keep proposed, approved and rejected compensation decisions separate.",
           "type": "table",
           "config": {
             "filters": [],
@@ -688,8 +688,8 @@ export const appConfig = {
         },
         {
           "slug": "review",
-          "name": "Priority queue / 优先处理",
-          "description": "Focus on the proposed state / 聚焦 待批准状态",
+          "name": "Priority queue",
+          "description": "Focus on the proposed state",
           "type": "table",
           "config": {
             "filters": [
@@ -943,8 +943,8 @@ export const appConfig = {
       "views": [
         {
           "slug": "all",
-          "name": "Monthly payroll / 月度工资",
-          "description": "Review payroll inputs and separately confirmed amounts before any payment. / 付款前逐项复核工资输入与已确认金额。",
+          "name": "Monthly payroll",
+          "description": "Review payroll inputs and separately confirmed amounts before any payment.",
           "type": "table",
           "config": {
             "filters": [],
@@ -965,8 +965,8 @@ export const appConfig = {
         },
         {
           "slug": "review",
-          "name": "Priority queue / 优先处理",
-          "description": "Focus on the draft state / 聚焦 草稿状态",
+          "name": "Priority queue",
+          "description": "Focus on the draft state",
           "type": "table",
           "config": {
             "filters": [
@@ -1175,8 +1175,8 @@ export const appConfig = {
         "views": [
           {
             "slug": "all",
-            "name": "Employees / 员工花名册",
-            "description": "Maintain the authoritative employee roster and confirmed salary inputs. / 维护员工主台账与已确认工资输入。",
+            "name": "Employees",
+            "description": "Maintain the authoritative employee roster and confirmed salary inputs.",
             "type": "table",
             "config": {
               "filters": [],
@@ -1197,8 +1197,8 @@ export const appConfig = {
           },
           {
             "slug": "review",
-            "name": "Priority queue / 优先处理",
-            "description": "Focus on the incomplete state / 聚焦 资料待补状态",
+            "name": "Priority queue",
+            "description": "Focus on the incomplete state",
             "type": "table",
             "config": {
               "filters": [
@@ -1393,8 +1393,8 @@ export const appConfig = {
         "views": [
           {
             "slug": "all",
-            "name": "Labor contracts / 劳动合同",
-            "description": "Track employee contract dates, originals and renewal responsibility. / 跟踪劳动合同日期、原件与续签责任。",
+            "name": "Labor contracts",
+            "description": "Track employee contract dates, originals and renewal responsibility.",
             "type": "table",
             "config": {
               "filters": [],
@@ -1415,8 +1415,8 @@ export const appConfig = {
           },
           {
             "slug": "review",
-            "name": "Priority queue / 优先处理",
-            "description": "Focus on the renewal state / 聚焦 待续签状态",
+            "name": "Priority queue",
+            "description": "Focus on the renewal state",
             "type": "table",
             "config": {
               "filters": [
@@ -1631,8 +1631,8 @@ export const appConfig = {
         "views": [
           {
             "slug": "all",
-            "name": "Salary changes / 薪酬变动",
-            "description": "Keep proposed, approved and rejected compensation decisions separate. / 分别留存拟议、批准与拒绝的薪酬决定。",
+            "name": "Salary changes",
+            "description": "Keep proposed, approved and rejected compensation decisions separate.",
             "type": "table",
             "config": {
               "filters": [],
@@ -1653,8 +1653,8 @@ export const appConfig = {
           },
           {
             "slug": "review",
-            "name": "Priority queue / 优先处理",
-            "description": "Focus on the proposed state / 聚焦 待批准状态",
+            "name": "Priority queue",
+            "description": "Focus on the proposed state",
             "type": "table",
             "config": {
               "filters": [
@@ -1908,8 +1908,8 @@ export const appConfig = {
         "views": [
           {
             "slug": "all",
-            "name": "Monthly payroll / 月度工资",
-            "description": "Review payroll inputs and separately confirmed amounts before any payment. / 付款前逐项复核工资输入与已确认金额。",
+            "name": "Monthly payroll",
+            "description": "Review payroll inputs and separately confirmed amounts before any payment.",
             "type": "table",
             "config": {
               "filters": [],
@@ -1930,8 +1930,8 @@ export const appConfig = {
           },
           {
             "slug": "review",
-            "name": "Priority queue / 优先处理",
-            "description": "Focus on the draft state / 聚焦 草稿状态",
+            "name": "Priority queue",
+            "description": "Focus on the draft state",
             "type": "table",
             "config": {
               "filters": [
@@ -1974,7 +1974,7 @@ export const appConfig = {
   "onboarding": {
     "version": 0,
     "fields": [],
-    "rationale": "No integration or setup required; installed Bases are the workflow. / 无需集成或额外设置；业务流程使用安装后的台账。"
+    "rationale": "No integration or setup required; installed Bases are the workflow."
   },
   "ui": {
     "summary": {

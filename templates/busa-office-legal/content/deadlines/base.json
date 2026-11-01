@@ -1,6 +1,6 @@
 {
-  "name": "Preservation & deadlines / 保全与期限",
-  "description": "Preservation and legal due dates with source authority / 保全与法务期限及其依据来源",
+  "name": "Preservation & deadlines",
+  "description": "Preservation and legal due dates with source authority",
   "position": 1,
   "agentPrompts": [
     {
@@ -31,7 +31,7 @@
   "fields": [
     {
       "slug": "name",
-      "name": "Name / 名称",
+      "name": "Name",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Deadline code / 期限编号",
+      "name": "Deadline code",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "case",
-      "name": "Case code / 案件编号",
+      "name": "Case code",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Responsible counsel / 负责律师",
+      "name": "Responsible counsel",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "status",
-      "name": "Verification state / 核验状态",
+      "name": "Verification state",
       "type": "text",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "due",
-      "name": "Verified due date / 已核验期限",
+      "name": "Verified due date",
       "type": "date",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "source",
-      "name": "Deadline authority / 期限依据",
+      "name": "Deadline authority",
       "type": "text",
       "required": false,
       "position": 6,
@@ -87,7 +87,7 @@
     },
     {
       "slug": "notes",
-      "name": "Preservation notes / 保全备注",
+      "name": "Preservation notes",
       "type": "longtext",
       "required": false,
       "position": 7,
@@ -97,7 +97,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Preservation & deadlines working table / 保全与期限工作表",
+      "name": "Preservation & deadlines working table",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

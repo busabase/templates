@@ -2396,7 +2396,7 @@
         "Find certificates and administrative contracts expiring within 60 days and draft an owner-by-owner renewal plan.",
         "Compare original-document dates with archive summaries and prepare verification tasks without resolving conflicting evidence by guesswork."
       ],
-      "version": "0.1.0",
+      "version": "0.2.0",
       "license": "MIT",
       "stats": {
         "folders": 0,
@@ -2449,7 +2449,7 @@
         "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments.",
         "Review pending, approved and blocked payments, separating approval from actual payment and flagging missing invoice or bank receipt references."
       ],
-      "version": "1.0.0",
+      "version": "1.1.0",
       "license": "MIT",
       "stats": {
         "folders": 0,
@@ -2502,7 +2502,7 @@
         "Check invoice requests against supplied customer and contract details; flag missing tax information without inventing it.",
         "Compare monthly actual reports against their evidence, identify incomplete sources and explain variances without presenting this as an audited statement."
       ],
-      "version": "1.0.0",
+      "version": "1.1.0",
       "license": "MIT",
       "stats": {
         "folders": 0,
@@ -2556,7 +2556,7 @@
         "Compare salary proposals with confirmed employee salaries and prepare a payroll-review checklist without applying unapproved changes.",
         "Find labor contracts expiring within 60 days and assign renewal follow-ups to their HR owners."
       ],
-      "version": "0.1.0",
+      "version": "0.2.0",
       "license": "MIT",
       "stats": {
         "folders": 0,
@@ -2612,7 +2612,7 @@
         "Check active cases and preservation deadlines and identify missing legal evidence.",
         "Reconcile case recovery and legal costs by currency, then prepare a summary by case."
       ],
-      "version": "0.1.0",
+      "version": "0.2.0",
       "license": "MIT",
       "stats": {
         "folders": 0,
@@ -2668,7 +2668,7 @@
         "Find applicants whose next step is overdue and prepare a hiring follow-up plan.",
         "Check interview feedback and draft offer proposals for human review."
       ],
-      "version": "0.1.0",
+      "version": "0.2.0",
       "license": "MIT",
       "stats": {
         "folders": 0,

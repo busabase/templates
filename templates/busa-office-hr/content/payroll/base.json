@@ -1,11 +1,11 @@
 {
-  "name": "Monthly payroll / 月度工资",
-  "description": "Review payroll inputs and separately confirmed amounts before any payment. / 付款前逐项复核工资输入与已确认金额。",
+  "name": "Monthly payroll",
+  "description": "Review payroll inputs and separately confirmed amounts before any payment.",
   "position": 3,
   "fields": [
     {
       "slug": "title",
-      "name": "Payroll item / 工资项目",
+      "name": "Payroll item",
       "type": "text",
       "required": true,
       "position": 0,
@@ -13,7 +13,7 @@
     },
     {
       "slug": "employee-code",
-      "name": "Employee reference / 员工业务编号",
+      "name": "Employee reference",
       "type": "text",
       "required": false,
       "position": 1,
@@ -21,7 +21,7 @@
     },
     {
       "slug": "period",
-      "name": "Payroll month / 工资月份",
+      "name": "Payroll month",
       "type": "text",
       "required": false,
       "position": 2,
@@ -29,7 +29,7 @@
     },
     {
       "slug": "owner",
-      "name": "Payroll reviewer / 工资复核人",
+      "name": "Payroll reviewer",
       "type": "text",
       "required": false,
       "position": 3,
@@ -37,7 +37,7 @@
     },
     {
       "slug": "due",
-      "name": "Review due on / 复核截止",
+      "name": "Review due on",
       "type": "date",
       "required": false,
       "position": 4,
@@ -45,7 +45,7 @@
     },
     {
       "slug": "gross-pay",
-      "name": "Confirmed gross pay (CNY) / 已确认应发（元）",
+      "name": "Confirmed gross pay (CNY)",
       "type": "number",
       "required": false,
       "position": 5,
@@ -53,7 +53,7 @@
     },
     {
       "slug": "deductions",
-      "name": "Confirmed deductions (CNY) / 已确认扣款（元）",
+      "name": "Confirmed deductions (CNY)",
       "type": "number",
       "required": false,
       "position": 6,
@@ -61,7 +61,7 @@
     },
     {
       "slug": "status",
-      "name": "Payroll status / 工资状态",
+      "name": "Payroll status",
       "type": "select",
       "required": false,
       "position": 7,
@@ -69,38 +69,38 @@
         "choices": [
           {
             "id": "draft",
-            "name": "Draft / 草稿"
+            "name": "Draft"
           },
           {
             "id": "in-review",
-            "name": "In review / 审批中"
+            "name": "In review"
           },
           {
             "id": "approved",
-            "name": "Approved, unpaid / 已批未付"
+            "name": "Approved, unpaid"
           },
           {
             "id": "paid",
-            "name": "Paid / 已付款"
+            "name": "Paid"
           },
           {
             "id": "rejected",
-            "name": "Rejected / 已拒绝"
+            "name": "Rejected"
           },
           {
             "id": "missing-input",
-            "name": "Inputs missing / 输入待补"
+            "name": "Inputs missing"
           },
           {
             "id": "review",
-            "name": "Attendance review / 出勤待核"
+            "name": "Attendance review"
           }
         ]
       }
     },
     {
       "slug": "notes",
-      "name": "Review notes / 复核说明",
+      "name": "Review notes",
       "type": "longtext",
       "required": false,
       "position": 8,
@@ -110,8 +110,8 @@
   "views": [
     {
       "slug": "all",
-      "name": "Monthly payroll / 月度工资",
-      "description": "Review payroll inputs and separately confirmed amounts before any payment. / 付款前逐项复核工资输入与已确认金额。",
+      "name": "Monthly payroll",
+      "description": "Review payroll inputs and separately confirmed amounts before any payment.",
       "type": "table",
       "config": {
         "filters": [],
@@ -132,8 +132,8 @@
     },
     {
       "slug": "review",
-      "name": "Priority queue / 优先处理",
-      "description": "Focus on the draft state / 聚焦 草稿状态",
+      "name": "Priority queue",
+      "description": "Focus on the draft state",
       "type": "table",
       "config": {
         "filters": [

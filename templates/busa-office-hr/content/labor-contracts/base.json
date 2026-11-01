@@ -1,11 +1,11 @@
 {
-  "name": "Labor contracts / 劳动合同",
-  "description": "Track employee contract dates, originals and renewal responsibility. / 跟踪劳动合同日期、原件与续签责任。",
+  "name": "Labor contracts",
+  "description": "Track employee contract dates, originals and renewal responsibility.",
   "position": 1,
   "fields": [
     {
       "slug": "title",
-      "name": "Contract / 合同名称",
+      "name": "Contract",
       "type": "text",
       "required": true,
       "position": 0,
@@ -13,7 +13,7 @@
     },
     {
       "slug": "employee-code",
-      "name": "Employee reference / 员工业务编号",
+      "name": "Employee reference",
       "type": "text",
       "required": false,
       "position": 1,
@@ -21,7 +21,7 @@
     },
     {
       "slug": "owner",
-      "name": "HR owner / 人事负责人",
+      "name": "HR owner",
       "type": "text",
       "required": false,
       "position": 2,
@@ -29,7 +29,7 @@
     },
     {
       "slug": "starts",
-      "name": "Starts on / 生效日期",
+      "name": "Starts on",
       "type": "date",
       "required": false,
       "position": 3,
@@ -37,7 +37,7 @@
     },
     {
       "slug": "expires",
-      "name": "Ends on / 到期日期",
+      "name": "Ends on",
       "type": "date",
       "required": false,
       "position": 4,
@@ -45,7 +45,7 @@
     },
     {
       "slug": "status",
-      "name": "Contract status / 合同状态",
+      "name": "Contract status",
       "type": "select",
       "required": false,
       "position": 5,
@@ -53,22 +53,22 @@
         "choices": [
           {
             "id": "signed",
-            "name": "Signed / 已签署"
+            "name": "Signed"
           },
           {
             "id": "renewal",
-            "name": "Renewal due / 待续签"
+            "name": "Renewal due"
           },
           {
             "id": "unsigned",
-            "name": "Signature pending / 待签署"
+            "name": "Signature pending"
           }
         ]
       }
     },
     {
       "slug": "notes",
-      "name": "Original and renewal notes / 原件与续签说明",
+      "name": "Original and renewal notes",
       "type": "longtext",
       "required": false,
       "position": 6,
@@ -78,8 +78,8 @@
   "views": [
     {
       "slug": "all",
-      "name": "Labor contracts / 劳动合同",
-      "description": "Track employee contract dates, originals and renewal responsibility. / 跟踪劳动合同日期、原件与续签责任。",
+      "name": "Labor contracts",
+      "description": "Track employee contract dates, originals and renewal responsibility.",
       "type": "table",
       "config": {
         "filters": [],
@@ -100,8 +100,8 @@
     },
     {
       "slug": "review",
-      "name": "Priority queue / 优先处理",
-      "description": "Focus on the renewal state / 聚焦 待续签状态",
+      "name": "Priority queue",
+      "description": "Focus on the renewal state",
       "type": "table",
       "config": {
         "filters": [

@@ -1,6 +1,6 @@
 {
-  "name": "Applicants / 候选人",
-  "description": "Candidate stage, next action and role assessment evidence / 候选人阶段、下一步行动及岗位评估证据",
+  "name": "Applicants",
+  "description": "Candidate stage, next action and role assessment evidence",
   "position": 1,
   "agentPrompts": [
     {
@@ -31,7 +31,7 @@
   "fields": [
     {
       "slug": "name",
-      "name": "Name / 名称",
+      "name": "Name",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Candidate code / 候选人编号",
+      "name": "Candidate code",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "position",
-      "name": "Position code / 职位编号",
+      "name": "Position code",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Recruiter / 招聘专员",
+      "name": "Recruiter",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "status",
-      "name": "Hiring stage / 招聘阶段",
+      "name": "Hiring stage",
       "type": "text",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "due",
-      "name": "Next step date / 下一步日期",
+      "name": "Next step date",
       "type": "date",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "next",
-      "name": "Next step / 下一步",
+      "name": "Next step",
       "type": "text",
       "required": false,
       "position": 6,
@@ -87,7 +87,7 @@
     },
     {
       "slug": "notes",
-      "name": "Evidence and notes / 证据与备注",
+      "name": "Evidence and notes",
       "type": "longtext",
       "required": false,
       "position": 7,
@@ -97,7 +97,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Applicants working table / 候选人工作表",
+      "name": "Applicants working table",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

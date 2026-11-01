@@ -1,6 +1,6 @@
 {
-  "name": "Recoveries & costs / 回款与成本",
-  "description": "Case recoveries and costs with currency and verification evidence / 案件回款与成本、币种及核验凭证",
+  "name": "Recoveries & costs",
+  "description": "Case recoveries and costs with currency and verification evidence",
   "position": 2,
   "agentPrompts": [
     {
@@ -31,7 +31,7 @@
   "fields": [
     {
       "slug": "name",
-      "name": "Name / 名称",
+      "name": "Name",
       "type": "text",
       "required": true,
       "position": 0,
@@ -39,7 +39,7 @@
     },
     {
       "slug": "code",
-      "name": "Entry code / 流水编号",
+      "name": "Entry code",
       "type": "text",
       "required": false,
       "position": 1,
@@ -47,7 +47,7 @@
     },
     {
       "slug": "case",
-      "name": "Case code / 案件编号",
+      "name": "Case code",
       "type": "text",
       "required": false,
       "position": 2,
@@ -55,7 +55,7 @@
     },
     {
       "slug": "owner",
-      "name": "Finance reviewer / 财务复核人",
+      "name": "Finance reviewer",
       "type": "text",
       "required": false,
       "position": 3,
@@ -63,7 +63,7 @@
     },
     {
       "slug": "kind",
-      "name": "Entry type / 流水类别",
+      "name": "Entry type",
       "type": "text",
       "required": false,
       "position": 4,
@@ -71,7 +71,7 @@
     },
     {
       "slug": "amount",
-      "name": "Amount / 金额",
+      "name": "Amount",
       "type": "number",
       "required": false,
       "position": 5,
@@ -79,7 +79,7 @@
     },
     {
       "slug": "currency",
-      "name": "Currency / 币种",
+      "name": "Currency",
       "type": "text",
       "required": false,
       "position": 6,
@@ -87,7 +87,7 @@
     },
     {
       "slug": "status",
-      "name": "Evidence state / 凭证状态",
+      "name": "Evidence state",
       "type": "text",
       "required": false,
       "position": 7,
@@ -95,7 +95,7 @@
     },
     {
       "slug": "due",
-      "name": "Posting date / 记账日期",
+      "name": "Posting date",
       "type": "date",
       "required": false,
       "position": 8,
@@ -103,7 +103,7 @@
     },
     {
       "slug": "source",
-      "name": "Evidence reference / 凭证编号",
+      "name": "Evidence reference",
       "type": "text",
       "required": false,
       "position": 9,
@@ -111,7 +111,7 @@
     },
     {
       "slug": "notes",
-      "name": "Reconciliation notes / 对账说明",
+      "name": "Reconciliation notes",
       "type": "longtext",
       "required": false,
       "position": 10,
@@ -121,7 +121,7 @@
   "views": [
     {
       "key": "working",
-      "name": "Recoveries & costs working table / 回款与成本工作表",
+      "name": "Recoveries & costs working table",
       "type": "table",
       "config": {
         "visibleFieldSlugs": [

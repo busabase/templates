@@ -11,27 +11,27 @@ export const appConfig = {
   schemaVersion: 1,
   folder: {
     slug: "busa-office-cashier",
-    name: "Cashier Desk / 出纳管理",
+    name: "Cashier Desk",
     description:
-      "Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money. / 管理银行走查、付款依据、收付流水和对账异常，不执行资金转账。",
+      "Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money.",
   },
   airApp: {
     slug: "busa-office-cashier-app",
     resourceKey: "busa-office-cashier-app",
-    name: "Cashier Desk / 出纳管理",
+    name: "Cashier Desk",
   },
   bases: [
     {
       key: "accounts",
       resourceKey: "accounts",
       slug: "busa-office-cashier-accounts",
-      name: "Bank accounts / 银行账户",
+      name: "Bank accounts",
       nameI18n: {
         en: "Bank accounts",
         "zh-CN": "银行账户",
       },
       description:
-        "List active bank accounts and their last checked date; flag stale balances and restricted accounts without treating book balances as live bank data. / 列出正常银行账户及最近核查时间，标记过期余额和受限账户；不将账面余额视为银行实时数据。",
+        "List active bank accounts and their last checked date; flag stale balances and restricted accounts without treating book balances as live bank data.",
       readLimit: 50,
       agentPrompts: [
         {
@@ -64,7 +64,7 @@ export const appConfig = {
       fields: [
         {
           slug: "title",
-          name: "Title / 事项",
+          name: "Title",
           nameI18n: {
             en: "Title",
             "zh-CN": "事项",
@@ -76,7 +76,7 @@ export const appConfig = {
         },
         {
           slug: "entity",
-          name: "Entity / 主体",
+          name: "Entity",
           nameI18n: {
             en: "Entity",
             "zh-CN": "主体",
@@ -88,7 +88,7 @@ export const appConfig = {
         },
         {
           slug: "owner",
-          name: "Owner / 负责人",
+          name: "Owner",
           nameI18n: {
             en: "Owner",
             "zh-CN": "负责人",
@@ -100,7 +100,7 @@ export const appConfig = {
         },
         {
           slug: "status",
-          name: "Status / 状态",
+          name: "Status",
           nameI18n: {
             en: "Status",
             "zh-CN": "状态",
@@ -112,22 +112,22 @@ export const appConfig = {
             choices: [
               {
                 id: "active",
-                name: "Active / 正常",
+                name: "Active",
               },
               {
                 id: "restricted",
-                name: "Restricted / 受限",
+                name: "Restricted",
               },
               {
                 id: "closed",
-                name: "Closed / 已关闭",
+                name: "Closed",
               },
             ],
           },
         },
         {
           slug: "bank",
-          name: "Bank / 银行",
+          name: "Bank",
           nameI18n: {
             en: "Bank",
             "zh-CN": "银行",
@@ -139,7 +139,7 @@ export const appConfig = {
         },
         {
           slug: "accountHint",
-          name: "Account suffix / 账户尾号",
+          name: "Account suffix",
           nameI18n: {
             en: "Account suffix",
             "zh-CN": "账户尾号",
@@ -151,7 +151,7 @@ export const appConfig = {
         },
         {
           slug: "currency",
-          name: "Currency / 币种",
+          name: "Currency",
           nameI18n: {
             en: "Currency",
             "zh-CN": "币种",
@@ -163,7 +163,7 @@ export const appConfig = {
         },
         {
           slug: "balance",
-          name: "Book balance / 账面余额",
+          name: "Book balance",
           nameI18n: {
             en: "Book balance",
             "zh-CN": "账面余额",
@@ -175,7 +175,7 @@ export const appConfig = {
         },
         {
           slug: "checkedAt",
-          name: "Checked at / 核查时间",
+          name: "Checked at",
           nameI18n: {
             en: "Checked at",
             "zh-CN": "核查时间",
@@ -187,7 +187,7 @@ export const appConfig = {
         },
         {
           slug: "notes",
-          name: "Notes / 备注",
+          name: "Notes",
           nameI18n: {
             en: "Notes",
             "zh-CN": "备注",
@@ -201,7 +201,7 @@ export const appConfig = {
       views: [
         {
           slug: "register",
-          name: "Bank accounts / 银行账户",
+          name: "Bank accounts",
           type: "table",
           position: 0,
           config: {
@@ -227,7 +227,7 @@ export const appConfig = {
         },
         {
           slug: "attention",
-          name: "Needs review / 待复核",
+          name: "Needs review",
           type: "table",
           position: 1,
           config: {
@@ -249,13 +249,13 @@ export const appConfig = {
       key: "checks",
       resourceKey: "checks",
       slug: "busa-office-cashier-checks",
-      name: "Daily balance checks / 每日余额走查",
+      name: "Daily balance checks",
       nameI18n: {
         en: "Daily balance checks",
         "zh-CN": "每日余额走查",
       },
       description:
-        "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments. / 将每日走查记录与账面余额及银行依据核对，列出差异和过期核查；不编造调整记录。",
+        "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments.",
       readLimit: 50,
       agentPrompts: [
         {
@@ -288,7 +288,7 @@ export const appConfig = {
       fields: [
         {
           slug: "title",
-          name: "Title / 事项",
+          name: "Title",
           nameI18n: {
             en: "Title",
             "zh-CN": "事项",
@@ -300,7 +300,7 @@ export const appConfig = {
         },
         {
           slug: "entity",
-          name: "Entity / 主体",
+          name: "Entity",
           nameI18n: {
             en: "Entity",
             "zh-CN": "主体",
@@ -312,7 +312,7 @@ export const appConfig = {
         },
         {
           slug: "owner",
-          name: "Owner / 负责人",
+          name: "Owner",
           nameI18n: {
             en: "Owner",
             "zh-CN": "负责人",
@@ -324,7 +324,7 @@ export const appConfig = {
         },
         {
           slug: "status",
-          name: "Status / 状态",
+          name: "Status",
           nameI18n: {
             en: "Status",
             "zh-CN": "状态",
@@ -336,22 +336,22 @@ export const appConfig = {
             choices: [
               {
                 id: "pending",
-                name: "Pending review / 待审核",
+                name: "Pending review",
               },
               {
                 id: "matched",
-                name: "Matched / 已匹配",
+                name: "Matched",
               },
               {
                 id: "exception",
-                name: "Exception / 存在差异",
+                name: "Exception",
               },
             ],
           },
         },
         {
           slug: "account",
-          name: "Bank account / 银行账户",
+          name: "Bank account",
           nameI18n: {
             en: "Bank account",
             "zh-CN": "银行账户",
@@ -365,7 +365,7 @@ export const appConfig = {
         },
         {
           slug: "currency",
-          name: "Currency / 币种",
+          name: "Currency",
           nameI18n: {
             en: "Currency",
             "zh-CN": "币种",
@@ -377,7 +377,7 @@ export const appConfig = {
         },
         {
           slug: "balance",
-          name: "Book balance / 账面余额",
+          name: "Book balance",
           nameI18n: {
             en: "Book balance",
             "zh-CN": "账面余额",
@@ -389,7 +389,7 @@ export const appConfig = {
         },
         {
           slug: "bankBalance",
-          name: "Bank balance / 银行余额",
+          name: "Bank balance",
           nameI18n: {
             en: "Bank balance",
             "zh-CN": "银行余额",
@@ -401,7 +401,7 @@ export const appConfig = {
         },
         {
           slug: "checkedAt",
-          name: "Checked at / 核查时间",
+          name: "Checked at",
           nameI18n: {
             en: "Checked at",
             "zh-CN": "核查时间",
@@ -413,7 +413,7 @@ export const appConfig = {
         },
         {
           slug: "evidence",
-          name: "Evidence reference / 凭证引用",
+          name: "Evidence reference",
           nameI18n: {
             en: "Evidence reference",
             "zh-CN": "凭证引用",
@@ -425,7 +425,7 @@ export const appConfig = {
         },
         {
           slug: "reason",
-          name: "Attention reason / 需关注原因",
+          name: "Attention reason",
           nameI18n: {
             en: "Attention reason",
             "zh-CN": "需关注原因",
@@ -437,7 +437,7 @@ export const appConfig = {
         },
         {
           slug: "notes",
-          name: "Notes / 备注",
+          name: "Notes",
           nameI18n: {
             en: "Notes",
             "zh-CN": "备注",
@@ -451,7 +451,7 @@ export const appConfig = {
       views: [
         {
           slug: "register",
-          name: "Daily balance checks / 每日余额走查",
+          name: "Daily balance checks",
           type: "table",
           position: 0,
           config: {
@@ -479,7 +479,7 @@ export const appConfig = {
         },
         {
           slug: "attention",
-          name: "Needs review / 待复核",
+          name: "Needs review",
           type: "table",
           position: 1,
           config: {
@@ -501,13 +501,13 @@ export const appConfig = {
       key: "payments",
       resourceKey: "payments",
       slug: "busa-office-cashier-payments",
-      name: "Payment requests / 付款申请",
+      name: "Payment requests",
       nameI18n: {
         en: "Payment requests",
         "zh-CN": "付款申请",
       },
       description:
-        "Review pending, approved and blocked payments, separating approval from actual payment and flagging missing invoice or bank receipt references. / 复核待审核、已批准和已阻塞的付款申请，区分审批与实际付款，并标记缺失的发票或银行回单引用。",
+        "Review pending, approved and blocked payments, separating approval from actual payment and flagging missing invoice or bank receipt references.",
       readLimit: 50,
       agentPrompts: [
         {
@@ -540,7 +540,7 @@ export const appConfig = {
       fields: [
         {
           slug: "title",
-          name: "Title / 事项",
+          name: "Title",
           nameI18n: {
             en: "Title",
             "zh-CN": "事项",
@@ -552,7 +552,7 @@ export const appConfig = {
         },
         {
           slug: "entity",
-          name: "Entity / 主体",
+          name: "Entity",
           nameI18n: {
             en: "Entity",
             "zh-CN": "主体",
@@ -564,7 +564,7 @@ export const appConfig = {
         },
         {
           slug: "owner",
-          name: "Owner / 负责人",
+          name: "Owner",
           nameI18n: {
             en: "Owner",
             "zh-CN": "负责人",
@@ -576,7 +576,7 @@ export const appConfig = {
         },
         {
           slug: "status",
-          name: "Status / 状态",
+          name: "Status",
           nameI18n: {
             en: "Status",
             "zh-CN": "状态",
@@ -588,30 +588,30 @@ export const appConfig = {
             choices: [
               {
                 id: "draft",
-                name: "Draft / 草稿",
+                name: "Draft",
               },
               {
                 id: "pending",
-                name: "Pending review / 待审核",
+                name: "Pending review",
               },
               {
                 id: "approved",
-                name: "Approved / 已批准",
+                name: "Approved",
               },
               {
                 id: "paid",
-                name: "Paid / 已付款",
+                name: "Paid",
               },
               {
                 id: "blocked",
-                name: "Blocked / 已阻塞",
+                name: "Blocked",
               },
             ],
           },
         },
         {
           slug: "account",
-          name: "Bank account / 银行账户",
+          name: "Bank account",
           nameI18n: {
             en: "Bank account",
             "zh-CN": "银行账户",
@@ -625,7 +625,7 @@ export const appConfig = {
         },
         {
           slug: "amount",
-          name: "Amount / 金额",
+          name: "Amount",
           nameI18n: {
             en: "Amount",
             "zh-CN": "金额",
@@ -637,7 +637,7 @@ export const appConfig = {
         },
         {
           slug: "currency",
-          name: "Currency / 币种",
+          name: "Currency",
           nameI18n: {
             en: "Currency",
             "zh-CN": "币种",
@@ -649,7 +649,7 @@ export const appConfig = {
         },
         {
           slug: "due",
-          name: "Due date / 到期日",
+          name: "Due date",
           nameI18n: {
             en: "Due date",
             "zh-CN": "到期日",
@@ -661,7 +661,7 @@ export const appConfig = {
         },
         {
           slug: "approval",
-          name: "Approval reference / 审批依据",
+          name: "Approval reference",
           nameI18n: {
             en: "Approval reference",
             "zh-CN": "审批依据",
@@ -673,7 +673,7 @@ export const appConfig = {
         },
         {
           slug: "receipt",
-          name: "Receipt reference / 回单引用",
+          name: "Receipt reference",
           nameI18n: {
             en: "Receipt reference",
             "zh-CN": "回单引用",
@@ -685,7 +685,7 @@ export const appConfig = {
         },
         {
           slug: "paidAt",
-          name: "Paid date / 付款日期",
+          name: "Paid date",
           nameI18n: {
             en: "Paid date",
             "zh-CN": "付款日期",
@@ -697,7 +697,7 @@ export const appConfig = {
         },
         {
           slug: "invoice",
-          name: "Invoice reference / 发票引用",
+          name: "Invoice reference",
           nameI18n: {
             en: "Invoice reference",
             "zh-CN": "发票引用",
@@ -709,7 +709,7 @@ export const appConfig = {
         },
         {
           slug: "notes",
-          name: "Notes / 备注",
+          name: "Notes",
           nameI18n: {
             en: "Notes",
             "zh-CN": "备注",
@@ -723,7 +723,7 @@ export const appConfig = {
       views: [
         {
           slug: "register",
-          name: "Payment requests / 付款申请",
+          name: "Payment requests",
           type: "table",
           position: 0,
           config: {
@@ -752,7 +752,7 @@ export const appConfig = {
         },
         {
           slug: "attention",
-          name: "Needs review / 待复核",
+          name: "Needs review",
           type: "table",
           position: 1,
           config: {
@@ -774,13 +774,13 @@ export const appConfig = {
       key: "ledger",
       resourceKey: "ledger",
       slug: "busa-office-cashier-ledger",
-      name: "Cash ledger / 收付流水",
+      name: "Cash ledger",
       nameI18n: {
         en: "Cash ledger",
         "zh-CN": "收付流水",
       },
       description:
-        "List unmatched and exception cash movements with bank receipt and invoice evidence; distinguish a paid request from a reconciled ledger entry. / 列出未匹配及存在差异的收付流水及其银行回单、发票依据；区分已付款申请与已对账流水。",
+        "List unmatched and exception cash movements with bank receipt and invoice evidence; distinguish a paid request from a reconciled ledger entry.",
       readLimit: 50,
       agentPrompts: [
         {
@@ -813,7 +813,7 @@ export const appConfig = {
       fields: [
         {
           slug: "title",
-          name: "Title / 事项",
+          name: "Title",
           nameI18n: {
             en: "Title",
             "zh-CN": "事项",
@@ -825,7 +825,7 @@ export const appConfig = {
         },
         {
           slug: "entity",
-          name: "Entity / 主体",
+          name: "Entity",
           nameI18n: {
             en: "Entity",
             "zh-CN": "主体",
@@ -837,7 +837,7 @@ export const appConfig = {
         },
         {
           slug: "owner",
-          name: "Owner / 负责人",
+          name: "Owner",
           nameI18n: {
             en: "Owner",
             "zh-CN": "负责人",
@@ -849,7 +849,7 @@ export const appConfig = {
         },
         {
           slug: "status",
-          name: "Status / 状态",
+          name: "Status",
           nameI18n: {
             en: "Status",
             "zh-CN": "状态",
@@ -861,22 +861,22 @@ export const appConfig = {
             choices: [
               {
                 id: "unmatched",
-                name: "Unmatched / 未匹配",
+                name: "Unmatched",
               },
               {
                 id: "reconciled",
-                name: "Reconciled / 已对账",
+                name: "Reconciled",
               },
               {
                 id: "exception",
-                name: "Exception / 存在差异",
+                name: "Exception",
               },
             ],
           },
         },
         {
           slug: "account",
-          name: "Bank account / 银行账户",
+          name: "Bank account",
           nameI18n: {
             en: "Bank account",
             "zh-CN": "银行账户",
@@ -890,7 +890,7 @@ export const appConfig = {
         },
         {
           slug: "payment",
-          name: "Payment request / 付款申请",
+          name: "Payment request",
           nameI18n: {
             en: "Payment request",
             "zh-CN": "付款申请",
@@ -904,7 +904,7 @@ export const appConfig = {
         },
         {
           slug: "amount",
-          name: "Amount / 金额",
+          name: "Amount",
           nameI18n: {
             en: "Amount",
             "zh-CN": "金额",
@@ -916,7 +916,7 @@ export const appConfig = {
         },
         {
           slug: "currency",
-          name: "Currency / 币种",
+          name: "Currency",
           nameI18n: {
             en: "Currency",
             "zh-CN": "币种",
@@ -928,7 +928,7 @@ export const appConfig = {
         },
         {
           slug: "direction",
-          name: "Direction / 收付方向",
+          name: "Direction",
           nameI18n: {
             en: "Direction",
             "zh-CN": "收付方向",
@@ -940,18 +940,18 @@ export const appConfig = {
             choices: [
               {
                 id: "in",
-                name: "Incoming / 收入",
+                name: "Incoming",
               },
               {
                 id: "out",
-                name: "Outgoing / 支出",
+                name: "Outgoing",
               },
             ],
           },
         },
         {
           slug: "due",
-          name: "Due date / 到期日",
+          name: "Due date",
           nameI18n: {
             en: "Due date",
             "zh-CN": "到期日",
@@ -963,7 +963,7 @@ export const appConfig = {
         },
         {
           slug: "receipt",
-          name: "Receipt reference / 回单引用",
+          name: "Receipt reference",
           nameI18n: {
             en: "Receipt reference",
             "zh-CN": "回单引用",
@@ -975,7 +975,7 @@ export const appConfig = {
         },
         {
           slug: "invoice",
-          name: "Invoice reference / 发票引用",
+          name: "Invoice reference",
           nameI18n: {
             en: "Invoice reference",
             "zh-CN": "发票引用",
@@ -987,7 +987,7 @@ export const appConfig = {
         },
         {
           slug: "reason",
-          name: "Attention reason / 需关注原因",
+          name: "Attention reason",
           nameI18n: {
             en: "Attention reason",
             "zh-CN": "需关注原因",
@@ -999,7 +999,7 @@ export const appConfig = {
         },
         {
           slug: "notes",
-          name: "Notes / 备注",
+          name: "Notes",
           nameI18n: {
             en: "Notes",
             "zh-CN": "备注",
@@ -1013,7 +1013,7 @@ export const appConfig = {
       views: [
         {
           slug: "register",
-          name: "Cash ledger / 收付流水",
+          name: "Cash ledger",
           type: "table",
           position: 0,
           config: {
@@ -1043,7 +1043,7 @@ export const appConfig = {
         },
         {
           slug: "attention",
-          name: "Needs review / 待复核",
+          name: "Needs review",
           type: "table",
           position: 1,
           config: {

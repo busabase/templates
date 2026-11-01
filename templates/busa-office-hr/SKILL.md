@@ -1,6 +1,6 @@
 ---
 name: busa-office-hr
-description: Operate an HR and payroll review desk for employee records, labor contract renewals, salary proposals and monthly payroll inputs. Use when checking payroll readiness, missing employee data or contract renewal responsibilities. / 管理员工档案、劳动合同续签、薪酬提案和月度工资输入；用于检查工资准备情况、缺失员工资料和合同续签责任。
+description: Operate an HR and payroll review desk for employee records, labor contract renewals, salary proposals and monthly payroll inputs. Use when checking payroll readiness, missing employee data or contract renewal responsibilities.
 metadata:
   category: hr
   tags:
@@ -19,7 +19,7 @@ metadata:
     risk: read-only
 ---
 
-# People & Payroll Desk / 人事薪酬工作台
+# People & Payroll Desk
 
 ## English
 

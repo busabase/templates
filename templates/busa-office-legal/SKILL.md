@@ -1,6 +1,6 @@
 ---
 name: busa-office-legal
-description: Case progress, preservation deadlines, settlement evidence, and legal follow-up. Use for legal case progress, preservation, court deadlines, settlements and counsel tasks. 案件进度、保全期限、和解凭证及法务跟进；用于案件进展、保全、法院期限、和解及律师待办。
+description: Case progress, preservation deadlines, settlement evidence, and legal follow-up. Use for legal case progress, preservation, court deadlines, settlements and counsel tasks.
 metadata:
   category: legal
   tags: [risk:gated-write]
@@ -16,7 +16,7 @@ metadata:
     risk: gated-write
 ---
 
-# Legal Case Desk / 法务管理
+# Legal Case Desk
 
 ## English
 
@@ -34,7 +34,7 @@ Read the Busabase connection skill first. Work only inside the installed folder;
 
 ### Bases and field rules
 
-#### Cases / 法务案件
+#### Cases
 
 - `name`: Name (text). Required.
 - `code`: Case code (text).
@@ -47,7 +47,7 @@ Read the Busabase connection skill first. Work only inside the installed folder;
 
 Use the saved working table for native record editing. Dates use YYYY-MM-DD or null when unverified. Codes are stable business identifiers, not workspace IDs. Owner must name the accountable person; notes must cite source evidence and distinguish observed facts from recommendations.
 
-#### Preservation & deadlines / 保全与期限
+#### Preservation & deadlines
 
 - `name`: Name (text). Required.
 - `code`: Deadline code (text).
@@ -60,7 +60,7 @@ Use the saved working table for native record editing. Dates use YYYY-MM-DD or n
 
 Use the saved working table for native record editing. Dates use YYYY-MM-DD or null when unverified. Codes are stable business identifiers, not workspace IDs. Owner must name the accountable person; notes must cite source evidence and distinguish observed facts from recommendations.
 
-#### Recoveries & costs / 回款与成本
+#### Recoveries & costs
 
 - `name`: Name (text). Required.
 - `code`: Entry code (text).
@@ -76,7 +76,7 @@ Use the saved working table for native record editing. Dates use YYYY-MM-DD or n
 
 Use the saved working table for native record editing. Dates use YYYY-MM-DD or null when unverified. Codes are stable business identifiers, not workspace IDs. Owner must name the accountable person; notes must cite source evidence and distinguish observed facts from recommendations.
 
-#### Case timeline / 案件进展
+#### Case timeline
 
 - `name`: Name (text). Required.
 - `code`: Update code (text).
@@ -89,7 +89,7 @@ Use the saved working table for native record editing. Dates use YYYY-MM-DD or n
 
 Use the saved working table for native record editing. Dates use YYYY-MM-DD or null when unverified. Codes are stable business identifiers, not workspace IDs. Owner must name the accountable person; notes must cite source evidence and distinguish observed facts from recommendations.
 
-#### Legal follow-up / 法务待办
+#### Legal follow-up
 
 - `name`: Name (text). Required.
 - `code`: Task code (text).
@@ -115,7 +115,7 @@ The overview's three numbers (active cases, deadlines awaiting verification, rec
 
 ### Example data and language
 
-All installed seed rows and screenshots are fictional. Replace them via reviewed changes before operating real legal work. Example codes cannot substitute for actual source documents. The AirApp switches between English and Simplified Chinese; native names, descriptions and example narratives retain both languages. Keep business codes, field slugs, machine statuses, currencies and dates stable when translating copy. Example personal and company names remain unchanged.
+All installed seed rows and screenshots are fictional. Replace them via reviewed changes before operating real legal work. Example codes cannot substitute for actual source documents. The AirApp switches between English and Simplified Chinese; installed names and descriptions are plain English (the AirApp config keeps a Chinese label for each and renders one language at a time), while example narratives retain both languages. Keep business codes, field slugs, machine statuses, currencies and dates stable when translating copy. Example personal and company names remain unchanged.
 
 ## 简体中文
 
@@ -133,7 +133,7 @@ All installed seed rows and screenshots are fictional. Replace them via reviewed
 
 ### 数据表与字段规则
 
-#### 法务案件 / Cases
+#### Cases
 
 | 字段 | 含义 | 类型与要求 |
 | --- | --- | --- |
@@ -146,7 +146,7 @@ All installed seed rows and screenshots are fictional. Replace them via reviewed
 | `next` | 下一步行动 | 文本 |
 | `notes` | 争议摘要 | 长文本 |
 
-#### 保全与期限 / Preservation & deadlines
+#### Preservation & deadlines
 
 | 字段 | 含义 | 类型与要求 |
 | --- | --- | --- |
@@ -159,7 +159,7 @@ All installed seed rows and screenshots are fictional. Replace them via reviewed
 | `source` | 期限依据 | 文本 |
 | `notes` | 保全备注 | 长文本 |
 
-#### 回款与成本 / Recoveries & costs
+#### Recoveries & costs
 
 | 字段 | 含义 | 类型与要求 |
 | --- | --- | --- |
@@ -175,7 +175,7 @@ All installed seed rows and screenshots are fictional. Replace them via reviewed
 | `source` | 凭证编号 | 文本 |
 | `notes` | 对账说明 | 长文本 |
 
-#### 案件进展 / Case timeline
+#### Case timeline
 
 | 字段 | 含义 | 类型与要求 |
 | --- | --- | --- |
@@ -188,7 +188,7 @@ All installed seed rows and screenshots are fictional. Replace them via reviewed
 | `source` | 来源编号 | 文本 |
 | `notes` | 事实记录 | 长文本 |
 
-#### 法务待办 / Legal follow-up
+#### Legal follow-up
 
 | 字段 | 含义 | 类型与要求 |
 | --- | --- | --- |
@@ -217,4 +217,4 @@ All installed seed rows and screenshots are fictional. Replace them via reviewed
 
 ### 示例数据与语言
 
-所有安装的示例记录及截图均为虚构。开展真实法务工作前，须通过可复核的变更替换这些记录。示例编号不能替代真实来源文件。AirApp 可切换 English / 简体中文；原生名称、描述及示例叙述同时保留中英文。翻译文案时保持业务编号、字段 slug、机器状态值、币种及日期不变，示例人物及公司名称也保持不变。
+所有安装的示例记录及截图均为虚构。开展真实法务工作前，须通过可复核的变更替换这些记录。示例编号不能替代真实来源文件。AirApp 可切换 English / 简体中文；安装后的名称与描述为纯英文（AirApp 配置为每个名称保留中文标签，按语言单语渲染），示例叙述同时保留中英文。翻译文案时保持业务编号、字段 slug、机器状态值、币种及日期不变，示例人物及公司名称也保持不变。

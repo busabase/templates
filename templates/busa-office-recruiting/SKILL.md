@@ -1,6 +1,6 @@
 ---
 name: busa-office-recruiting
-description: Hiring positions, candidate pipelines, interviews, and reviewed offers. Use for hiring positions, candidate assessment, structured interviews and offer review. 职位需求、候选人进度、面试反馈与录用复核；用于招聘职位、候选人评估、结构化面试及录用复核。
+description: Hiring positions, candidate pipelines, interviews, and reviewed offers. Use for hiring positions, candidate assessment, structured interviews and offer review.
 metadata:
   category: hr
   tags: [risk:gated-write]
@@ -15,7 +15,7 @@ metadata:
     risk: gated-write
 ---
 
-# Recruiting Desk / 招聘管理
+# Recruiting Desk
 
 ## English
 
@@ -33,7 +33,7 @@ Read the Busabase connection skill first. Work only inside the installed folder;
 
 ### Bases and field rules
 
-#### Positions / 招聘职位
+#### Positions
 
 - `name`: Name (text). Required.
 - `code`: Position code (text).
@@ -46,7 +46,7 @@ Read the Busabase connection skill first. Work only inside the installed folder;
 
 Use the saved working table for native record editing. Dates use YYYY-MM-DD or null when unverified. Codes are stable business identifiers, not workspace IDs. Owner must name the accountable person; notes must cite source evidence and distinguish observed facts from recommendations.
 
-#### Applicants / 候选人
+#### Applicants
 
 - `name`: Name (text). Required.
 - `code`: Candidate code (text).
@@ -59,7 +59,7 @@ Use the saved working table for native record editing. Dates use YYYY-MM-DD or n
 
 Use the saved working table for native record editing. Dates use YYYY-MM-DD or null when unverified. Codes are stable business identifiers, not workspace IDs. Owner must name the accountable person; notes must cite source evidence and distinguish observed facts from recommendations.
 
-#### Interviews / 面试安排
+#### Interviews
 
 - `name`: Name (text). Required.
 - `code`: Interview code (text).
@@ -71,7 +71,7 @@ Use the saved working table for native record editing. Dates use YYYY-MM-DD or n
 
 Use the saved working table for native record editing. Dates use YYYY-MM-DD or null when unverified. Codes are stable business identifiers, not workspace IDs. Owner must name the accountable person; notes must cite source evidence and distinguish observed facts from recommendations.
 
-#### Offer review / 录用复核
+#### Offer review
 
 - `name`: Name (text). Required.
 - `code`: Offer code (text).
@@ -96,7 +96,7 @@ Overview and attention derive only from loaded rows and display that scope. Atte
 
 ### Example data and language
 
-All installed seed rows and screenshots are fictional. Replace them via reviewed changes before operating real hiring work. Example codes cannot substitute for actual source documents. The AirApp switches between English and Simplified Chinese; native names, descriptions and example narratives retain both languages. Keep business codes, field slugs, machine statuses, currencies and dates stable when translating copy. Example personal names remain unchanged.
+All installed seed rows and screenshots are fictional. Replace them via reviewed changes before operating real hiring work. Example codes cannot substitute for actual source documents. The AirApp switches between English and Simplified Chinese; installed names and descriptions are plain English (the AirApp config keeps a Chinese label for each and renders one language at a time), while example narratives retain both languages. Keep business codes, field slugs, machine statuses, currencies and dates stable when translating copy. Example personal names remain unchanged.
 
 ## 简体中文
 
@@ -114,7 +114,7 @@ All installed seed rows and screenshots are fictional. Replace them via reviewed
 
 ### 数据表与字段规则
 
-#### 招聘职位 / Positions
+#### Positions
 
 | 字段 | 含义 | 类型与要求 |
 | --- | --- | --- |
@@ -127,7 +127,7 @@ All installed seed rows and screenshots are fictional. Replace them via reviewed
 | `due` | 目标到岗日 | 日期 |
 | `notes` | 任职要求 | 长文本 |
 
-#### 候选人 / Applicants
+#### Applicants
 
 | 字段 | 含义 | 类型与要求 |
 | --- | --- | --- |
@@ -140,7 +140,7 @@ All installed seed rows and screenshots are fictional. Replace them via reviewed
 | `next` | 下一步 | 文本 |
 | `notes` | 证据与备注 | 长文本 |
 
-#### 面试安排 / Interviews
+#### Interviews
 
 | 字段 | 含义 | 类型与要求 |
 | --- | --- | --- |
@@ -152,7 +152,7 @@ All installed seed rows and screenshots are fictional. Replace them via reviewed
 | `due` | 面试日期 | 日期 |
 | `notes` | 结构化反馈 | 长文本 |
 
-#### 录用复核 / Offer review
+#### Offer review
 
 | 字段 | 含义 | 类型与要求 |
 | --- | --- | --- |
@@ -182,4 +182,4 @@ All installed seed rows and screenshots are fictional. Replace them via reviewed
 
 ### 示例数据与语言
 
-所有安装的示例记录及截图均为虚构。开展真实招聘工作前，须通过可复核的变更替换这些记录。示例编号不能替代真实来源文件。AirApp 可切换 English / 简体中文；原生名称、描述及示例叙述同时保留中英文。翻译文案时保持业务编号、字段 slug、机器状态值、币种及日期不变，示例人物姓名也保持不变。
+所有安装的示例记录及截图均为虚构。开展真实招聘工作前，须通过可复核的变更替换这些记录。示例编号不能替代真实来源文件。AirApp 可切换 English / 简体中文；安装后的名称与描述为纯英文（AirApp 配置为每个名称保留中文标签，按语言单语渲染），示例叙述同时保留中英文。翻译文案时保持业务编号、字段 slug、机器状态值、币种及日期不变，示例人物姓名也保持不变。
