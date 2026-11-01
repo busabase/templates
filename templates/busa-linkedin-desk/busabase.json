@@ -40,7 +40,7 @@
     "video": "assets/recordings/busa-linkedin-desk.mp4",
     "videos": [
       {
-        "title": "Full walkthrough",
+        "title": "Full tour",
         "src": "assets/recordings/busa-linkedin-desk.mp4"
       },
       {
@@ -63,7 +63,7 @@
         "video": "assets/recordings/busa-linkedin-desk-zh-CN.mp4",
         "videos": [
           {
-            "title": "完整演示",
+            "title": "完整导览",
             "src": "assets/recordings/busa-linkedin-desk-zh-CN.mp4"
           },
           {
@@ -74,5 +74,5 @@
       }
     }
   },
-  "version": "0.3.0"
+  "version": "0.3.1"
 }

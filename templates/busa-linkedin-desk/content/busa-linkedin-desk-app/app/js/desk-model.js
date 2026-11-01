@@ -8,10 +8,11 @@
 
 export const STALE_DAYS = 7; // the desk's standing rule: a thread quiet longer than this needs a nudge
 
-// Enum labels per locale. Each value is exactly the corresponding choice's
-// localized name in `content/<base>/base.json` — the consistency script
-// asserts the two never drift, so the console calls a choice by the same
-// words the installed Base shows.
+// Enum labels per locale. The English values are exactly the choice
+// names declared in `content/<base>/base.json` (installed names are
+// plain English); the zh-CN values are the choices' Chinese names. The
+// consistency script asserts the two never drift, so the console calls a
+// choice by the same words the installed Base shows.
 export const LABELS = {
   en: {
     intent: {

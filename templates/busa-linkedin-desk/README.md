@@ -9,22 +9,22 @@ accurate the more it is used.
 
 ## What It Holds
 
-- **Contacts / 联系人** — people, identified by LinkedIn profile URL, never by
+- **Contacts** — people, identified by LinkedIn profile URL, never by
   name alone; unmatched senders wait as unverified candidates.
-- **Messages / 消息表** — one row per message, in or out, deduplicated by
-  message ID, classified by intent and urgency. The Pending triage / 待分诊 view
+- **Messages** — one row per message, in or out, deduplicated by
+  message ID, classified by intent and urgency. The Pending triage view
   is the triage queue.
-- **Replies / 回复表** — one row per proposed reply: the draft, the human
+- **Replies** — one row per proposed reply: the draft, the human
   verdict with its exact words, and the text that actually went out. The
-  Pending approval / 待审批 view is the approval queue.
-- **Actions / 处理表** — follow-ups, escalations, meetings, materials and
+  Pending approval view is the approval queue.
+- **Actions** — follow-ups, escalations, meetings, materials and
   CRM-field proposals, each with an owner, a due date and a written outcome.
-- **Experience / 经验表** — one row per lesson distilled from approval
+- **Experience** — one row per lesson distilled from approval
   notes. Adopted lessons are the standards the agent reads before drafting;
   proven ones are promoted into the skill by ChangeRequest.
-- **ICP 与话术口径 (Doc)** — the human's standards: ICP, what may and may not
+- **ICP and Voice (Doc)** — the human's standards: ICP, what may and may not
   be said, and the price / commitment / date red lines.
-- **Companies / 公司** — a minimal anchor for contacts. If you also run
+- **Companies** — a minimal anchor for contacts. If you also run
   Busa CRM, its Companies and Deals stay canonical for pipeline; this desk
   ships no Deals base on purpose.
 
@@ -33,7 +33,7 @@ accurate the more it is used.
 The desk is driven from the agent chat and the Bases' queue views,
 following the loop **Chat · Review · Act · Log · Learn**. Since v0.2.0 it
 also ships a read-only AirApp console, the **Daily Report & Approval
-Console / 日报待审批台** — it renders in English or 简体中文 (header
+Console** — it renders in English or 简体中文 (header
 switcher, or `?lang=zh-CN`): the pending-approval queue with each draft and its
 source message, today's triage counts and intent mix, due/overdue actions,
 threads quiet for over seven days, candidate experience rows, and the
