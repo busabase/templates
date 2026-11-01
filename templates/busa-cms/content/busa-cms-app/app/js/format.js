@@ -21,11 +21,26 @@ export function formatDate(value) {
 }
 
 /**
- * Choice names arrive as "English / 中文" — one string carrying both, which is
- * what the SDK provisions. A badge has room for one, so pick the half that
- * matches the UI language instead of truncating.
+ * A localized name record ({ en, "zh-CN" }) → the one name that matches the UI
+ * language. Installed display names are the English name alone; the Chinese
+ * name lives in `localizedName`, which is what this UI renders per language.
+ */
+export function localizedName(value) {
+  if (value && typeof value === "object") {
+    return store.uiLanguage === "zh-CN" ? (value["zh-CN"] ?? value.en ?? "") : (value.en ?? "");
+  }
+  return String(value ?? "");
+}
+
+/**
+ * Choice labels arrive as localizedName records from `CHOICES` in schema.js.
+ * A badge has room for one language, so pick the matching one instead of
+ * truncating. Plain strings still occur in names provisioned by older
+ * installs, where one string carried both languages as "English / 中文" —
+ * pick the matching half of those too.
  */
 export function localizedChoice(name) {
+  if (name && typeof name === "object") return localizedName(name);
   const parts = String(name ?? "").split(" / ");
   if (parts.length < 2) return parts[0] ?? "";
   return store.uiLanguage === "zh-CN" ? parts[1] : parts[0];

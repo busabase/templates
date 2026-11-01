@@ -7,6 +7,15 @@
  * Node project served from a Busabase node: it cannot resolve an npm package
  * that only the website using this content has installed.
  *
+ * One deliberate divergence: display names. The SDK provisions paired
+ * "English / 中文" Base and choice names; this template installs the English
+ * name alone and keeps the Chinese name in `localizedName` (fields already
+ * carry theirs as the { en, "zh-CN" } name record), which the app renders per
+ * viewer language. Slugs, choice ids, field types, required flags and order
+ * still mirror the SDK exactly — `check-sdk-contract.mjs` therefore reports
+ * the name/description differences by design, and they are the known,
+ * intended exception until the SDK makes the same split.
+ *
  * That makes drift the real risk, so it is checked rather than trusted:
  * `node scripts/check-sdk-contract.mjs` (run from the template root) resolves the
  * published `busabase-cms-sdk` and asserts every Base, field, type, required flag,
@@ -25,7 +34,7 @@
 const i18n = (en, zhCN) => ({ en, "zh-CN": zhCN });
 
 const choices = (values) => ({
-  choices: values.map(([id, en, zhCN]) => ({ id, name: `${en} / ${zhCN}` })),
+  choices: values.map(([id, en, zhCN]) => ({ id, name: en, localizedName: i18n(en, zhCN) })),
 });
 
 export const LOCALE_OPTIONS = choices([
@@ -132,26 +141,34 @@ const pageFields = () => [
 export const CMS_BASES = [
   {
     role: "categories",
-    name: "Categories / 分类",
-    description: "Reusable content categories / 可复用的内容分类",
+    name: "Categories",
+    localizedName: i18n("Categories", "分类"),
+    description: "Reusable content categories",
+    localizedDescription: i18n("Reusable content categories", "可复用的内容分类"),
     fields: taxonomyFields(),
   },
   {
     role: "tags",
-    name: "Tags / 标签",
-    description: "Reusable content tags / 可复用的内容标签",
+    name: "Tags",
+    localizedName: i18n("Tags", "标签"),
+    description: "Reusable content tags",
+    localizedDescription: i18n("Reusable content tags", "可复用的内容标签"),
     fields: taxonomyFields(),
   },
   {
     role: "posts",
-    name: "Posts / 文章",
-    description: "Publishable Markdown posts / 可发布的 Markdown 文章",
+    name: "Posts",
+    localizedName: i18n("Posts", "文章"),
+    description: "Publishable Markdown posts",
+    localizedDescription: i18n("Publishable Markdown posts", "可发布的 Markdown 文章"),
     fields: postFields(),
   },
   {
     role: "pages",
-    name: "Pages / 页面",
-    description: "Publishable HTML pages / 可发布的 HTML 页面",
+    name: "Pages",
+    localizedName: i18n("Pages", "页面"),
+    description: "Publishable HTML pages",
+    localizedDescription: i18n("Publishable HTML pages", "可发布的 HTML 页面"),
     fields: pageFields(),
   },
 ];
@@ -161,14 +178,17 @@ export const CMS_SCHEMA_VERSION = 1;
 export const CMS_SCHEMA_PROFILE = "standard";
 
 /**
- * Choice id → its "English / 中文" name, for the labels the UI shows. Derived from
- * the field definitions above so a choice can never be renamed in one place only.
+ * Choice id → its localized name ({ en, "zh-CN" }), for the labels the UI shows.
+ * The installed choice `name` is the English name alone; the Chinese name lives
+ * in `localizedName`, which is what the UI renders per viewer language. Derived
+ * from the field definitions above so a choice can never be renamed in one
+ * place only.
  */
 const namedChoices = (role, slug) =>
   Object.fromEntries(
     (CMS_BASES.find((base) => base.role === role)
       ?.fields.find((field) => field.slug === slug)
-      ?.options?.choices ?? []).map((choice) => [choice.id, choice.name]),
+      ?.options?.choices ?? []).map((choice) => [choice.id, choice.localizedName]),
   );
 
 export const CHOICES = {

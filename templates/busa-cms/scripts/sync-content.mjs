@@ -93,7 +93,15 @@ for (const base of appConfig.schema.bases) {
         type: field.type,
         required: Boolean(field.required),
         position: index,
-        options: field.options ?? {},
+        // A choice's installed `name` is the English name alone; its Chinese
+        // name stays in the app-side `localizedName`, which the package does
+        // not carry — the same split as the Bases' own names above.
+        options: field.options?.choices
+          ? {
+              ...field.options,
+              choices: field.options.choices.map(({ id, name }) => ({ id, name })),
+            }
+          : (field.options ?? {}),
       })),
       views: (base.views ?? []).map((view) => ({
         slug: view.key,
