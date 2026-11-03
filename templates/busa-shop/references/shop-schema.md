@@ -46,7 +46,7 @@ waits as a ChangeRequest and the buyer is still thanked.
 | `listed-tag` | text | Optional tag filter |
 | `products-base` | text | Optional: Products table id or slug |
 | `site-url` | url | Live address, for the daily check |
-| `required-certificates` | text | Daily check: `CE, ASTM F963, CPC` |
+| `required-certificates` | text | Daily check: certificate types, `EN 71, ASTM F963, CPSIA / CPC` |
 | `expiry-warning-days` | number | Daily check: default 90 |
 | `check-rules` | longtext | Daily check: standing rules from feedback |
 
@@ -94,5 +94,20 @@ same order id for the retry).
 | Base | Read | Fields used |
 | --- | --- | --- |
 | Products | first 100 by `ref` | `product-id`, `name`, `subtitle`, `sku`, `category`, `lifecycle`, `status`, `tags`, `image`, `gallery`, `pricing` (`current_price`, `currency`), `inventory` (`available`), `content` (`description`, `bullets`, `attributes`), `updated-at` |
-| Certificates | first 100 | `product`, `cert-type`, `cert-number` (standard before ` · `), `expiry-date` |
+| Certificates | first 100 | `product`, `cert-type` (shown as is; `Other` is not shown), `expiry-date` |
 | Product Hub AirApp | one file per image request | only for image paths under `assets/` |
+
+## Written to busa-product-hub by `scripts/import-catalog.mjs`
+
+Run by an agent or a person, never by the website. Products are matched by
+`product-id`; certificates by product + `cert-type` + `cert-number`.
+
+| Base | Fields it may write |
+| --- | --- |
+| Products | `product-id`, `sku`, `name`, `subtitle`, `category`, `lifecycle`, `status`, `vendor`, `image`, `gallery`, `tags`; inside the JSON blocks only the keys the list fills (`pricing`: `currency`, `current_price`, `target_price`, `landed_cost`, `gross_margin_pct`; `inventory`: `available`; `content`: `description`, `bullets`, `attributes.*`, `images_ready`, `image_files`); `ref`, `created-at` on create; `updated-at` when something changed |
+| Certificates | `product`, `cert-type`, `cert-number`, `issuer`, `issued-date`, `expiry-date`, `source-note` |
+
+Other keys in the JSON blocks, other fields (`owner`, `compliance`, the
+certificate `file`, …) and every value the list leaves empty are kept as
+stored. `content.image_files` remembers each uploaded photo's file name,
+SHA-256 and URL, which is how a second run knows not to upload it again.

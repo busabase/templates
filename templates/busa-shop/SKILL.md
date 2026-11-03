@@ -1,6 +1,6 @@
 ---
 name: busa-shop
-description: Storefront website (Busabase Website engine) for a small cross-border seller, built on the busa-product-hub product list. It shows active products with price, photos and valid safety certificates, takes order requests into an Orders table (no payment), reads its store name, currency and contact from a Settings table, and comes with a daily shop check that writes a Reports row and improves from the owner's feedback. Use when the user invokes $busa-shop or /busa-shop, or asks to open an online shop / 独立站 / storefront for their products, put a product list on a public website, handle new website orders or order requests, check the shop, run the daily shop check, find missing photos, prices or expiring certificates (EN 71, ASTM F963, CPC, CE, UKCA) before a buyer sees them, or apply feedback on the last shop report.
+description: Storefront website (Busabase Website engine) for a small cross-border seller, built on the busa-product-hub product list. It shows active products with price, photos and valid safety certificates, takes order requests into an Orders table (no payment), reads its store name, currency and contact from a Settings table, and comes with a daily shop check that writes a Reports row and improves from the owner's feedback. Use when the user invokes $busa-shop or /busa-shop, or asks to open an online shop / 独立站 / storefront for their products, import a product list or toy list (CSV, photos, certificates) into the product hub, put a product list on a public website, handle new website orders or order requests, check the shop, run the daily shop check, find missing photos, prices or expiring certificates (EN 71, ASTM F963, CPC, CE, UKCA) before a buyer sees them, or apply feedback on the last shop report.
 metadata:
   category: ecommerce
   tags:
@@ -34,8 +34,9 @@ that by email.
 
 1. `$busabase` for connecting, finding nodes, reading and writing records.
 2. The `busa-product-hub` skill (installed with that template) for anything
-   that changes products, stock or certificates. This skill never writes to
-   the product hub's tables itself.
+   that changes products, stock or certificates. The one exception is
+   importing a product list: this skill's `scripts/import-catalog.mjs` writes
+   Products and Certificates into the product hub (see "Open the shop").
 3. `$busabase-app-creator` before changing the website's code.
 
 If `busa-product-hub` is not installed in this workspace, stop and tell the
@@ -97,7 +98,7 @@ Views: **New orders** (status new, oldest first), **Confirmed, not shipped**,
 | Only list products with this tag | website | Optional: list only products whose `tags` contain this word |
 | Products table | website | Optional: the id or slug of the Products table to sell from (see "How the website finds its tables") |
 | Live site address | daily check | The public address shown after Go live |
-| Required certificates | daily check | Comma-separated, e.g. `CE, ASTM F963, CPC` |
+| Required certificates | daily check | Comma-separated certificate types, e.g. `EN 71, ASTM F963, CPSIA / CPC` |
 | Certificate expiry warning (days) | daily check | Warn this many days before a certificate expires |
 | Standing check rules | daily check | Rules added from the owner's feedback, one per line, newest last |
 
@@ -125,17 +126,12 @@ Products (`busa-product-hub-products`), first 100 rows by `ref`:
 - `image`, `gallery` (see "Product images")
 
 Certificates (`busa-product-hub-certificates`): `product`, `cert-type`,
-`cert-number`, `expiry-date`. A product page lists only certificates that have
-**not expired**, as label + "valid until", never the number. The product hub's
-Certificate type offers CE / FCC / RoHS / UN38.3 / UKCA / Other, so record a toy
-standard by writing it before a middle dot in the certificate number:
-
-| Certificate | cert-type | cert-number | Shown as |
-| --- | --- | --- | --- |
-| EU toy safety | CE | `EN 71-1/-2/-3 · TT-EN71-25-0101` | CE (EN 71-1/-2/-3) |
-| US toy safety | Other | `ASTM F963-23 · TT-ASTM-25-0101` | ASTM F963-23 |
-| US children's product certificate | Other | `CPC (CPSIA) · TT-CPC-25-0101` | CPC (CPSIA) |
-| UK | UKCA | `EN 71-1/-2/-3 · TT-UKCA-25-0101` | UKCA (EN 71-1/-2/-3) |
+`expiry-date`. A product page lists only certificates that have **not
+expired**, as their type + "valid until", never the certificate number. The
+types are the product hub's options (0.3.0 and later): CE, FCC, RoHS, UN38.3,
+UKCA, and for toys **EN 71** (EU), **ASTM F963** (US) and **CPSIA / CPC** (US
+Children's Product Certificate). A certificate of type `Other` is not shown,
+because it names nothing a buyer can check: record it under its real type.
 
 ## The listing rule
 
@@ -199,22 +195,36 @@ Fix the table and the page clears within a minute.
 2. **Retire the product hub's three sample products** (Aurora Desk Lamp, Bento
    Lunchbox, Expandable Spice Rack): following the busa-product-hub skill, set
    their `lifecycle` to `archive`. Otherwise a lamp appears in the toy shop.
-3. **Import the product list** (the course uses the fictional toy factory in
-   this template's `assets/demo/`, at
-   https://github.com/busabase/templates/tree/main/templates/busa-shop/assets/demo):
-   1. Upload each photo and note its public address:
-      `npx --yes busabase-cli@latest assets upload --file images/walking-robot.svg --context record-field --output json`
-      (the `url` it prints). Collect them into `image-urls.json`:
-      `{ "walking-robot.svg": "https://…", … }`.
-   2. Build the import file:
-      `node scripts/catalog-to-ingest.mjs toy-catalog.csv --certificates toy-certificates.csv --image-urls image-urls.json -o toy-catalog.ingest.json`.
-      It never invents a value: an empty price stays empty. Read its notes.
-   3. Import with the product hub's own importer, following the
-      busa-product-hub skill: `node scripts/ingest_products.mjs toy-catalog.ingest.json --apply`,
-      **twice**. Its first run creates the products; it links certificates
-      only to products that existed when it started, so the second run adds
-      the certificates.
-   4. Read the Products table back and confirm the count and a few prices.
+3. **Import the product list** with this skill's `scripts/import-catalog.mjs`,
+   one command. Put it in a directory with the product list CSV, the
+   certificates CSV and the photos (`images/`), then:
+
+   ```bash
+   npm i busabase-sdk
+   BUSABASE_BASE_URL=… BUSABASE_API_KEY=… BUSABASE_SPACE_ID=… \
+     node import-catalog.mjs toy-catalog.csv --certificates toy-certificates.csv --images images/
+   ```
+
+   Run it with `--dry-run` first and show the owner the summary. It finds the
+   product hub's tables itself, uploads the photos, upserts every product by
+   `product-id`, links the certificates in the same run, and prints what it
+   created, updated, left unchanged and skipped, with reasons. Running it
+   again changes nothing; after editing the CSV it changes only what
+   changed. An empty cell never clears a stored value, and nothing is
+   invented: a product without a price is imported without one (the shop then
+   hides it). The course's toy list is the fictional factory in this
+   template's `assets/demo/`
+   (https://github.com/busabase/templates/tree/main/templates/busa-shop/assets/demo);
+   the student hands those files to you. Columns: `product_id`, `name`,
+   `price`, `currency` (required), then `sku`, `subtitle`, `category`,
+   `lifecycle`, `status`, `landed_cost`, `stock_available`, `age_grade`,
+   `materials`, `batteries`, `dimensions`, `weight`, `carton_qty`, `moq`,
+   `lead_time_days`, `hs_code`, `country_of_origin`, `warranty`, `returns`,
+   `image_file` and `gallery_files` (file names in `images/` or https URLs,
+   `|`-separated), `tags`, `description`, `bullets` (`|`-separated), `vendor`.
+   Certificates: `product_id`, `cert_type` (a type the product hub offers),
+   `cert_number`, `issuer`, `issued_date`, `expiry_date` (YYYY-MM-DD).
+   Afterwards read the Products table back and confirm the count and a few prices.
 4. **Check Settings** with the owner: store name, tagline, currency equal to
    the products' currency, a real contact email, language, ships-to
    countries, about text, shipping note, demo notice (off for a real shop).
@@ -295,7 +305,7 @@ product hub. Apply the listing rule. Report, one line each:
 | `missing-price` | lifecycle and status would list it, but `pricing.current_price` is missing or not above 0 |
 | `hidden-product` | lifecycle is `active`/`launch` but it is hidden for another reason (status, currency, tag, id). Products in `test`/`archive` are hidden on purpose: do not report them |
 | `missing-image` | listed, but no image the website can show |
-| `certificate-missing` | listed, and no certificate row at all for one of Required certificates (match the shown label, case-insensitive: `CE` matches type CE, `ASTM F963` matches "ASTM F963-23", `CPC` matches "CPC (CPSIA)") |
+| `certificate-missing` | listed, and no certificate row at all whose type is one of Required certificates (compare types case-insensitively) |
 | `certificate-expired` | listed, with a certificate whose expiry date is past or empty |
 | `certificate-expiring` | listed, with a certificate expiring within the warning days; say how many days |
 
@@ -324,7 +334,7 @@ One Reports row per day (if today's exists, update it instead):
 `open`, a `summary` of two to four plain sentences (how many products are on
 the site, the most important problems, orders waiting), `issue-types`,
 `issue-count`, `issues` as lines like
-`- [certificate-expiring] Wooden Train Set (tt-wooden-train): CE (EN 71-1/-2/-3) expires on 2026-12-01, in 26 days.`,
+`- [certificate-expiring] Wooden Train Set (tt-wooden-train): EN 71 expires on 2026-12-01, in 26 days.`,
 `orders-waiting`, `site-check`, `applied-feedback`, `checked-at` = now.
 
 Then tell the owner the three things that matter most, and that they can
@@ -353,9 +363,10 @@ write feedback into Owner feedback on this report for the next run.
 
 ## Helpers in `scripts/`
 
-- `catalog-to-ingest.mjs`: CSV product list (+ certificates CSV, + image URL
-  map) → the busa-product-hub import payload. Reads files, writes JSON, never
-  calls Busabase.
+- `import-catalog.mjs`: imports a product list CSV, its photos and a
+  certificates CSV into the installed busa-product-hub. Needs only Node and
+  `busabase-sdk`; copy it into an empty directory and run it. `--dry-run`
+  writes and uploads nothing.
 - `probe-site.mjs`: the live-site half of the daily check. Reads the public
   site only.
 

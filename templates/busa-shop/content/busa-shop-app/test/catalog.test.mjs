@@ -173,23 +173,29 @@ describe("image references", () => {
 });
 
 describe("certificates", () => {
-  it("labels by type, keeping the standard written before the middle dot", () => {
-    assert.equal(certificateLabel("CE", "EN 71-1/-2/-3 · TT-1"), "CE (EN 71-1/-2/-3)");
-    assert.equal(certificateLabel("Other", "ASTM F963-23 · TT-2"), "ASTM F963-23");
-    assert.equal(certificateLabel("UKCA", "UK-123"), "UKCA");
-    assert.equal(certificateLabel("Other", "X-1"), "Other");
+  it("labels a certificate by its type, and never shows Other or an empty type", () => {
+    assert.equal(certificateLabel("EN 71"), "EN 71");
+    assert.equal(certificateLabel("CPSIA / CPC"), "CPSIA / CPC");
+    assert.equal(certificateLabel(" UKCA "), "UKCA");
+    assert.equal(certificateLabel("Other"), "");
+    assert.equal(certificateLabel(""), "");
   });
 
   it("shows only certificates that have not expired, never the number", () => {
     const product = normalizeProduct(record({}, "rec_toy"));
     const now = Date.parse("2026-11-05T00:00:00Z");
     const certs = [
-      { product: ["rec_toy"], "cert-type": "CE", "cert-number": "EN 71-1/-2/-3 · A", "expiry-date": "2027-03-01" },
-      { product: ["rec_toy"], "cert-type": "Other", "cert-number": "ASTM F963-23 · B", "expiry-date": "2026-09-30" },
+      { product: ["rec_toy"], "cert-type": "EN 71", "cert-number": "A", "expiry-date": "2027-03-01" },
+      { product: ["rec_toy"], "cert-type": "ASTM F963", "cert-number": "B", "expiry-date": "2026-09-30" },
       { product: "rec_toy", "cert-type": "UKCA", "cert-number": "C", "expiry-date": "" },
-      { product: ["rec_other"], "cert-type": "FCC", "cert-number": "D", "expiry-date": "2028-01-01" },
+      { product: ["rec_toy"], "cert-type": "Other", "cert-number": "D", "expiry-date": "2028-01-01" },
+      { product: ["rec_other"], "cert-type": "FCC", "cert-number": "E", "expiry-date": "2028-01-01" },
+      { product: [{ id: "rec_toy" }], "cert-type": "CPSIA / CPC", "cert-number": "F", "expiry-date": "2027-01-01" },
     ].map((fields) => normalizeCertificate({ fields }));
-    assert.deepEqual(validCertificatesFor(product, certs, now), [{ label: "CE (EN 71-1/-2/-3)", expires: "2027-03-01" }]);
+    assert.deepEqual(validCertificatesFor(product, certs, now), [
+      { label: "CPSIA / CPC", expires: "2027-01-01" },
+      { label: "EN 71", expires: "2027-03-01" },
+    ]);
   });
 });
 

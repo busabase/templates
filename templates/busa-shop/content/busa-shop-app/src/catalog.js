@@ -181,20 +181,17 @@ export const imageSrc = (product, image, index) =>
 
 // ---- Certificates (busa-product-hub's Certificates table) ----
 //
-// The Certificate type select there offers CE/FCC/RoHS/UN38.3/UKCA/Other, so a
-// toy standard is recorded by convention as "<standard> · <certificate no.>" in
-// the certificate number, e.g. type CE + "EN 71-1/-2/-3 · TT-EN71-25-0101", or
-// type Other + "ASTM F963-23 · TT-ASTM-25-0101". The shop shows only the label
-// and the expiry date, never the number, and only for certificates that have
-// not expired. An expired or undated certificate is not shown at all: showing
-// it would be a claim the paperwork no longer supports.
+// busa-product-hub (0.3.0+) records each certificate under its own type: CE,
+// FCC, RoHS, UN38.3, UKCA, and for toys EN 71, ASTM F963, CPSIA / CPC. A
+// product page shows the type and the expiry date, never the certificate
+// number, and only for certificates that have not expired. An expired or
+// undated certificate is not shown at all, since showing it would claim more
+// than the paperwork supports. Nor is type "Other": it names nothing a buyer
+// could check.
 
-export const certificateLabel = (type, number) => {
-  const kind = text(type) || "Other";
-  const parts = text(number).split("·");
-  const standard = parts.length > 1 ? parts[0].trim() : "";
-  if (kind === "Other") return standard || "Other";
-  return standard ? `${kind} (${standard})` : kind;
+export const certificateLabel = (type) => {
+  const label = text(type);
+  return label && label !== "Other" ? label : "";
 };
 
 const relationIds = (value) => {
@@ -209,7 +206,7 @@ export const normalizeCertificate = (record) => {
   const fields = record?.fields ?? {};
   return {
     productRefs: relationIds(fields.product),
-    label: certificateLabel(fields["cert-type"], fields["cert-number"]),
+    label: certificateLabel(fields["cert-type"]),
     expiryDate: text(fields["expiry-date"]),
   };
 };
@@ -218,7 +215,7 @@ export const validCertificatesFor = (product, certificates, nowMs) => {
   const keys = new Set([product.recordId, product.id].filter(Boolean));
   const seen = new Map();
   for (const certificate of certificates) {
-    if (!certificate.productRefs.some((ref) => keys.has(ref))) continue;
+    if (!certificate.label || !certificate.productRefs.some((ref) => keys.has(ref))) continue;
     const expiry = Date.parse(certificate.expiryDate);
     if (!Number.isFinite(expiry) || expiry <= nowMs) continue;
     const previous = seen.get(certificate.label);

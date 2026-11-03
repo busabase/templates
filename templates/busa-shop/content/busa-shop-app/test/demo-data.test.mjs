@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { after, before, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-import { HUB_CERT_TYPES, parseCsv, rowsToPayload } from "../../../scripts/catalog-to-ingest.mjs";
+import { certificateTypeId, parseCsv, planCertificates, planProducts, productFields } from "../../../scripts/import-catalog.mjs";
 import { probeSite } from "../../../scripts/probe-site.mjs";
 import worker from "../vendor/worker.js";
 import { serveWorker } from "../scripts/preview.mjs";
@@ -75,38 +75,49 @@ describe("sample rows match their Bases", () => {
 });
 
 describe("the toy list", () => {
-  it("converts to busa-product-hub's ingest payload without inventing anything", async () => {
-    const { payload, warnings } = rowsToPayload({
-      catalogRows: parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8")),
-      certificateRows: parseCsv(await readFile(`${DEMO_DIR}toy-certificates.csv`, "utf8")),
-      imageUrl: (file) => `https://cdn.example/${file}`,
-    });
-    assert.equal(payload.products.length, 12);
-    assert.equal(payload.certificates.length, 38);
-    assert.ok(payload.certificates.every((cert) => HUB_CERT_TYPES.has(cert.cert_type)));
-    const xylophone = payload.products.find((product) => product.product_id === "tt-xylophone");
-    assert.equal(xylophone.pricing.current_price, undefined, "an empty price stays empty");
-    const robot = payload.products.find((product) => product.product_id === "tt-walking-robot");
-    assert.deepEqual(robot.gallery, ["https://cdn.example/walking-robot.svg", "https://cdn.example/walking-robot-box.svg"]);
-    assert.equal(robot.pricing.gross_margin_pct, 59.2);
-    assert.equal(robot.content.attributes.moq, 48);
-    assert.equal(payload.certificates.find((cert) => cert.cert_number.startsWith("ASTM F963-23 · TT-ASTM-25-0101")).cert_type, "Other");
-    assert.deepEqual(
-      warnings.filter((warning) => /no image|no price/.test(warning)),
-      ["tt-xylophone: no price (the shop will not list it)", "tt-chef-kitchen: no image", "tt-rainbow-kite: no image"],
+  const hubCertificateChoices = async () => {
+    const base = await readJson(`${contentDir}../../busa-product-hub/content/certificates/base.json`);
+    return base.fields.find((field) => field.slug === "cert-type").options.choices;
+  };
+
+  it("plans 12 products and 39 certificates, every type an option of busa-product-hub's Certificates table", async () => {
+    const { products, skipped, notes } = planProducts(parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8")));
+    const { certificates } = planCertificates(
+      parseCsv(await readFile(`${DEMO_DIR}toy-certificates.csv`, "utf8")),
+      new Set(products.map((product) => product.productId)),
     );
-    for (const product of payload.products) assert.ok(product.vendor.includes("(fictional)"));
+    assert.equal(products.length, 12);
+    assert.deepEqual(skipped, []);
+    assert.equal(certificates.length, 39);
+    const choices = await hubCertificateChoices();
+    for (const cert of certificates) assert.equal(certificateTypeId(choices, cert.type), cert.type, `${cert.productId} ${cert.type}`);
+    assert.ok(certificates.every((cert) => !cert.number.includes("·")), "no standard-prefix convention left");
+    assert.deepEqual(
+      [...new Set(certificates.map((cert) => cert.type))].sort(),
+      ["ASTM F963", "CE", "CPSIA / CPC", "EN 71", "FCC", "UKCA", "UN38.3"],
+    );
+    assert.deepEqual(notes.filter((note) => /no photo|no price/.test(note)), [
+      "tt-xylophone: no price in the list, so the shop will not list it",
+      "tt-chef-kitchen: no photo in the list",
+      "tt-rainbow-kite: no photo in the list",
+    ]);
+    for (const product of products) assert.ok(product.text.vendor.includes("(fictional)"));
+  });
+
+  it("builds product rows without inventing anything", async () => {
+    const { products } = planProducts(parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8")));
+    const xylophone = productFields(products.find((product) => product.productId === "tt-xylophone"));
+    assert.equal(JSON.parse(xylophone.pricing).current_price, undefined, "an empty price stays empty");
+    const robotPlan = products.find((product) => product.productId === "tt-walking-robot");
+    const robot = productFields(robotPlan, {}, robotPlan.imageRefs.map((file) => ({ file, sha256: "", url: `https://cdn.example/${file}` })));
+    assert.deepEqual(JSON.parse(robot.gallery), ["https://cdn.example/walking-robot.svg", "https://cdn.example/walking-robot-box.svg"]);
+    assert.equal(JSON.parse(robot.pricing).gross_margin_pct, 59.2);
+    assert.equal(JSON.parse(robot.content).attributes.moq, 48);
+    assert.deepEqual(JSON.parse(robot.inventory), { available: 180 }, "only what the list says: no invented on-hand figure");
   });
 
   it("parses quoted CSV fields with commas, quotes and newlines", () => {
-    assert.deepEqual(parseCsv('a,b\n"x, y","say ""hi""\nthere"\n'), [{ a: "x, y", b: 'say "hi"\nthere' }]);
-  });
-
-  it("refuses an unknown product in the certificates file", () => {
-    assert.throws(
-      () => rowsToPayload({ catalogRows: [{ product_id: "a", currency: "USD" }], certificateRows: [{ product_id: "b", cert_number: "1" }] }),
-      /unknown product_id "b"/,
-    );
+    assert.deepEqual(parseCsv('a,b\n"x, y","say ""hi""\nthere"\n'), [{ __line: 2, a: "x, y", b: 'say "hi"\nthere' }]);
   });
 });
 

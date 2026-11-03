@@ -3,6 +3,11 @@
   "description": "Public storefront website for a small cross-border seller. The website shows the products of the Busa Product Hub template (it keeps no copy of its own), takes order requests into Orders, reads what it shows from Settings, and the daily shop check writes its findings into Reports. Install Busa Product Hub first.",
   "agentPrompts": [
     {
+      "key": "import-catalog",
+      "label": "Import a product list into the product hub",
+      "body": "Read the `busa-shop` skill in this folder and follow \"Import the product list\" in \"Open the shop\": run `scripts/import-catalog.mjs` with the CSV files and photos I give you, with `--dry-run` first, show me the summary, then run it for real. Never invent a value the list does not contain."
+    },
+    {
       "key": "open-shop",
       "label": "Open my shop",
       "body": "Read the `busa-shop` skill in this folder and follow \"Open the shop\": check the product list it will sell from, the settings, and the members-only preview, and tell me exactly what I still have to do before I click Go live."

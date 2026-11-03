@@ -27833,12 +27833,9 @@ var imagesFor = (product, busabaseOrigin) => {
   return images;
 };
 var imageSrc = (product, image, index) => image.kind === "direct" ? image.url : `/images/${encodeURIComponent(product.id)}/${index}`;
-var certificateLabel = (type, number4) => {
-  const kind = text(type) || "Other";
-  const parts = text(number4).split("\xB7");
-  const standard = parts.length > 1 ? parts[0].trim() : "";
-  if (kind === "Other") return standard || "Other";
-  return standard ? `${kind} (${standard})` : kind;
+var certificateLabel = (type) => {
+  const label2 = text(type);
+  return label2 && label2 !== "Other" ? label2 : "";
 };
 var relationIds = (value2) => {
   if (typeof value2 === "string") return value2 ? [value2] : [];
@@ -27849,7 +27846,7 @@ var normalizeCertificate = (record2) => {
   const fields = record2?.fields ?? {};
   return {
     productRefs: relationIds(fields.product),
-    label: certificateLabel(fields["cert-type"], fields["cert-number"]),
+    label: certificateLabel(fields["cert-type"]),
     expiryDate: text(fields["expiry-date"])
   };
 };
@@ -27857,7 +27854,7 @@ var validCertificatesFor = (product, certificates, nowMs) => {
   const keys = new Set([product.recordId, product.id].filter(Boolean));
   const seen = /* @__PURE__ */ new Map();
   for (const certificate of certificates) {
-    if (!certificate.productRefs.some((ref) => keys.has(ref))) continue;
+    if (!certificate.label || !certificate.productRefs.some((ref) => keys.has(ref))) continue;
     const expiry = Date.parse(certificate.expiryDate);
     if (!Number.isFinite(expiry) || expiry <= nowMs) continue;
     const previous = seen.get(certificate.label);

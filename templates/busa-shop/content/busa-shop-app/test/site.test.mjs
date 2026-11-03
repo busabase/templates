@@ -126,9 +126,9 @@ describe("pages", () => {
     assert.equal(jsonLd.offers.price, "12.00");
     assert.equal(jsonLd.offers.priceCurrency, "USD");
     assert.equal(jsonLd.offers.availability, "https://schema.org/InStock");
-    assert.match(text, /CE \(EN 71-1\/-2\/-3\)/);
-    assert.match(text, /CPC \(CPSIA\)/);
-    assert.doesNotMatch(text, /ASTM F963-23/, "the expired ASTM report is not claimed");
+    assert.match(text, /<strong>EN 71<\/strong> <span class="muted">valid until 2027-01-20/);
+    assert.match(text, /<strong>CPSIA \/ CPC<\/strong>/);
+    assert.doesNotMatch(text, /ASTM F963/, "the expired ASTM report is not claimed");
     assert.doesNotMatch(text, /TT-EN71|TT-CPC/, "certificate numbers stay private");
     assert.match(text, /Age<\/dt><dd>3\+/);
     assert.doesNotMatch(text, /9503\.00|MOQ|landed/i, "trade-only fields stay off the public page");

@@ -22,8 +22,9 @@ access, because the order form saves orders.
 ## Demo data
 
 Everything is fictional and labelled as such: the toy factory "Tumbleberry
-Toys", its 12 toys and 38 certificates in [`assets/demo/`](assets/demo) (the
-CSV the course imports into the product hub, with original SVG
+Toys", its 12 toys and 39 certificates in [`assets/demo/`](assets/demo) (the
+CSVs the course imports into the product hub with
+[`scripts/import-catalog.mjs`](scripts/import-catalog.mjs), with original SVG
 illustrations; two toys have no photo, one has no price, some certificates
 are missing, expired or expiring on purpose), three sample orders and one
 sample report.

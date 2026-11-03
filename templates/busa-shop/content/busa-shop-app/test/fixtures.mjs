@@ -1,9 +1,9 @@
 // Workspace state for tests and the local preview, built from the template's
-// own demo files: the toy list in assets/demo (as busa-product-hub stores it
-// after import) and the Settings row this template installs.
+// own demo files: the toy list in assets/demo, as scripts/import-catalog.mjs
+// writes it into busa-product-hub, and the Settings row this template installs.
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { parseCsv, rowsToPayload } from "../../../scripts/catalog-to-ingest.mjs";
+import { parseCsv, planCertificates, planProducts, productFields } from "../../../scripts/import-catalog.mjs";
 
 const templateRoot = fileURLToPath(new URL("../../../", import.meta.url));
 export const DEMO_DIR = `${templateRoot}assets/demo/`;
@@ -17,7 +17,7 @@ const readNdjson = async (path) =>
 export const sampleSettingsFields = async () =>
   (await readNdjson(`${templateRoot}content/settings/records.ndjson`))[0].fields;
 
-/** busa-product-hub's productToFields, in Busabase's kebab-case slugs. */
+/** A product row the way busa-product-hub stores one (its own sample lamp uses this). */
 const productRecordFields = (product, ref) => ({
   "product-id": product.product_id,
   ref,
@@ -106,11 +106,11 @@ export const NODES = {
  * own sample lamp, archived as SKILL.md tells the owner to do.
  */
 export const demoState = async ({ imageUrl }) => {
-  const { payload } = rowsToPayload({
-    catalogRows: parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8")),
-    certificateRows: parseCsv(await readFile(`${DEMO_DIR}toy-certificates.csv`, "utf8")),
-    imageUrl,
-  });
+  const planned = planProducts(parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8"))).products;
+  const certificates = planCertificates(
+    parseCsv(await readFile(`${DEMO_DIR}toy-certificates.csv`, "utf8")),
+    new Set(planned.map((product) => product.productId)),
+  ).certificates;
   const productRecords = [
     {
       id: "rec_hub_lamp",
@@ -135,21 +135,30 @@ export const demoState = async ({ imageUrl }) => {
         1,
       ),
     },
-    ...payload.products.map((product, index) => ({
-      id: `rec_${product.product_id}`,
-      fields: productRecordFields(product, index + 2),
+    ...planned.map((product, index) => ({
+      id: `rec_${product.productId}`,
+      fields: {
+        ...productFields(
+          product,
+          {},
+          product.imageRefs.length ? product.imageRefs.map((file) => ({ file, sha256: "", url: imageUrl(file) })) : null,
+        ),
+        ref: index + 2,
+        "created-at": "2026-11-01T08:00:00.000Z",
+        "updated-at": "2026-11-02T08:00:00.000Z",
+      },
     })),
   ];
-  const certificateRecords = payload.certificates.map((certificate, index) => ({
+  const certificateRecords = certificates.map((certificate, index) => ({
     id: `rec_cert_${index + 1}`,
     fields: {
-      product: [`rec_${certificate.product_id}`],
-      "cert-type": certificate.cert_type,
+      product: [`rec_${certificate.productId}`],
+      "cert-type": certificate.type,
       issuer: certificate.issuer,
-      "cert-number": certificate.cert_number,
-      "issued-date": certificate.issued_date,
-      "expiry-date": certificate.expiry_date,
-      "source-note": certificate.source_note,
+      "cert-number": certificate.number,
+      "issued-date": certificate.issued,
+      "expiry-date": certificate.expiry,
+      "source-note": `toy-certificates.csv line ${certificate.line}`,
     },
   }));
   return {
@@ -163,9 +172,8 @@ export const demoState = async ({ imageUrl }) => {
     },
     files: {},
     assets: Object.fromEntries(
-      payload.products
-        .flatMap((product) => product.gallery)
-        .map((url) => url.split("/").at(-1))
+      planned
+        .flatMap((product) => product.imageRefs)
         .map((file) => [file, { type: "image/svg+xml", path: `${DEMO_DIR}images/${file}` }]),
     ),
   };
