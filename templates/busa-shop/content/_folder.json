@@ -1,0 +1,21 @@
+{
+  "name": "Busa Shop",
+  "description": "Public storefront website for a small cross-border seller. The website shows the products of the Busa Product Hub template (it keeps no copy of its own), takes order requests into Orders, reads what it shows from Settings, and the daily shop check writes its findings into Reports. Install Busa Product Hub first.",
+  "agentPrompts": [
+    {
+      "key": "open-shop",
+      "label": "Open my shop",
+      "body": "Read the `busa-shop` skill in this folder and follow \"Open the shop\": check the product list it will sell from, the settings, and the members-only preview, and tell me exactly what I still have to do before I click Go live."
+    },
+    {
+      "key": "daily-check",
+      "label": "Run today's shop check",
+      "body": "Read the `busa-shop` skill in this folder and follow its \"Daily shop check\": apply my feedback on the previous report first, then check products, certificates, orders and the live site, and write one new report."
+    },
+    {
+      "key": "new-orders",
+      "label": "Handle new orders",
+      "body": "Read the `busa-shop` skill in this folder and follow \"Handle a new order\" for every order that is still new. Draft the replies for me; do not email anyone and do not mark anything paid or shipped."
+    }
+  ]
+}

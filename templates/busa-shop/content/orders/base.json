@@ -1,0 +1,261 @@
+{
+  "name": "Orders",
+  "description": "Order requests from the shop website, one row per order. The website writes a new row with status `new` and never changes it afterwards; staff move it through confirmed → paid → shipped (or cancelled). Internal note and reply draft are staff-only: the website never reads or writes them.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "handle-new-orders",
+      "label": "Handle today's new orders",
+      "body": "Read the `busa-shop` skill in this folder and follow its \"Handle a new order\" procedure for every order with status `new`: check the items against the product list and stock, write a reply draft for me to send, and tell me what each order needs. Do not email the customer and do not change an order to paid or shipped yourself."
+    },
+    {
+      "key": "orders-waiting",
+      "label": "Which orders are waiting on me?",
+      "body": "Read the `busa-shop` skill in this folder, then list orders that are still `new` or `confirmed`, oldest first, with how long each has been waiting and what the next step is.",
+      "intent": "read-only"
+    },
+    {
+      "key": "mark-order-status",
+      "label": "Move an order to its next status",
+      "body": "Read the `busa-shop` skill in this folder, then change the status of the order I name to the status I give (confirmed, paid, shipped or cancelled) and add a dated line to its internal note saying who asked for the change. Only do this when I tell you the step really happened."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Order",
+      "type": "text",
+      "required": false,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "order-id",
+      "name": "Order ID",
+      "type": "text",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "new",
+            "name": "New"
+          },
+          {
+            "id": "confirmed",
+            "name": "Confirmed"
+          },
+          {
+            "id": "paid",
+            "name": "Paid"
+          },
+          {
+            "id": "shipped",
+            "name": "Shipped"
+          },
+          {
+            "id": "cancelled",
+            "name": "Cancelled"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "customer-name",
+      "name": "Customer name",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "email",
+      "name": "Email",
+      "type": "email",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "phone",
+      "name": "Phone",
+      "type": "phone",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "country",
+      "name": "Country",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "items-summary",
+      "name": "Items",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "items",
+      "name": "Items (JSON)",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "total",
+      "name": "Total",
+      "type": "number",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "currency",
+      "name": "Currency",
+      "type": "text",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "customer-note",
+      "name": "Customer note",
+      "type": "longtext",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "internal-note",
+      "name": "Internal note (staff only)",
+      "type": "longtext",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "reply-draft",
+      "name": "Reply draft (staff only)",
+      "type": "longtext",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "created-at",
+      "name": "Created at",
+      "type": "date",
+      "required": false,
+      "position": 14,
+      "options": {
+        "date": {
+          "includeTime": true
+        }
+      }
+    },
+    {
+      "slug": "source",
+      "name": "Source",
+      "type": "text",
+      "required": false,
+      "position": 15,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "new-orders",
+      "name": "New orders",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "new"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "created-at",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "items-summary",
+          "total",
+          "currency",
+          "country",
+          "email",
+          "created-at"
+        ]
+      }
+    },
+    {
+      "slug": "in-progress",
+      "name": "Confirmed, not shipped",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "confirmed"
+          },
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "paid"
+          }
+        ],
+        "filterConjunction": "or",
+        "sorts": [
+          {
+            "fieldSlug": "created-at",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "items-summary",
+          "total",
+          "currency",
+          "internal-note",
+          "created-at"
+        ]
+      }
+    },
+    {
+      "slug": "all-orders",
+      "name": "All orders",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "created-at",
+            "direction": "desc"
+          }
+        ]
+      }
+    }
+  ]
+}
