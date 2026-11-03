@@ -34,12 +34,17 @@ const json = (value) => `${JSON.stringify(value, null, 2)}\n`;
 
 let position = 0;
 for (const base of appConfig.bases) {
+  const relativePath = `content/${base.key}/base.json`;
+  // Node prompts are written on the package side (they are not part of what the
+  // app provisions), so carry them over instead of dropping them on every sync.
+  const existing = JSON.parse(await readFile(path.join(root, relativePath), "utf8").catch(() => "{}"));
   await emit(
-    `content/${base.key}/base.json`,
+    relativePath,
     json({
       name: base.name,
       description: base.description ?? "",
       position: position++,
+      ...(existing.agentPrompts ? { agentPrompts: existing.agentPrompts } : {}),
       fields: (base.fields ?? []).map((field, index) => ({
         slug: field.slug,
         name: field.name,

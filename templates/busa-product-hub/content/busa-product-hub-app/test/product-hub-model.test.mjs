@@ -33,6 +33,7 @@ import {
   sortCertificatesByUrgency,
   statusForVerdict,
 } from "../app/js/product-hub-model.js";
+import { appConfig } from "../app/js/config.js";
 
 test("parseJsonValue: parses valid JSON, falls back on empty/invalid input", () => {
   assert.deepEqual(parseJsonValue("[1,2,3]", []), [1, 2, 3]);
@@ -792,4 +793,27 @@ test("buildSnapshot + sortCertificatesByUrgency: live rows stay joinable to thei
     (item) => item.id === "certificates",
   );
   assert.equal(check.ok, false);
+});
+
+test("certificate types: the toy-safety types are declared options and flow through like any other type", () => {
+  const certificates = appConfig.bases.find((base) => base.key === "certificates");
+  const typeField = certificates.fields.find((field) => field.slug === "cert-type");
+  assert.deepEqual(
+    typeField.options.choices.map((choice) => choice.id),
+    ["CE", "FCC", "RoHS", "UN38.3", "UKCA", "EN 71", "ASTM F963", "CPSIA / CPC", "Other"],
+  );
+  for (const choice of typeField.options.choices) assert.equal(choice.id, choice.name, "option id = label, as for the original types");
+  for (const cert_type of ["EN 71", "ASTM F963", "CPSIA / CPC"]) {
+    const item = { certificate_id: "rec-c9", product_id: "rec-p1", cert_type, issuer: "Lab", cert_number: "N-1", issued_date: "2025-01-01", expiry_date: "2026-01-01", file: null, source_note: "report.pdf p.1" };
+    const roundTripped = normalizeCertificateRow({ ...certificateToFields(item), __recordId: "rec-c9" });
+    assert.equal(roundTripped.cert_type, cert_type);
+  }
+  const lapsed = checkOf(
+    agentReadinessFor(readyProduct(), {
+      certificates: [{ product_id: "p1", cert_type: "CPSIA / CPC", expiry_date: "2026-05-01" }],
+      now: READY_NOW,
+    }),
+    "certificates",
+  );
+  assert.equal(lapsed.detail, "expired: CPSIA / CPC");
 });

@@ -19,7 +19,8 @@ all behind an approval-gated review queue.
   stockout-risk flags.
 - Channels: Amazon/Shopify/TikTok Shop/eBay listing status, content score,
   price, and channel issue notes.
-- Certificates: every certificate (CE/FCC/RoHS/UN38.3/UKCA/Other), sorted
+- Certificates: every certificate (CE/FCC/RoHS/UN38.3/UKCA, toy safety EN 71 /
+  ASTM F963 / CPSIA / CPC, or Other), sorted
   soonest-expiry-first, each linking back to its product. Status
   (valid/expiring soon/expired) is always computed from the expiry date —
   never stored.

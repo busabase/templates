@@ -147,7 +147,7 @@ export const appConfig = {
       name: "Certificates",
       slug: "busa-product-hub-certificates",
       description:
-        "One row per product certificate (CE/FCC/RoHS/UN38.3/UKCA/Other): issuer, certificate number, issued/expiry dates, the certificate file itself, and a source note. There is no stored status field -- expiring_soon/expired/valid is always derived client-side from expiry-date vs now, the same derived-not-stored pattern as this app's own SLA/status badges (see product-hub-model.js's certStatusFor).",
+        "One row per product certificate (CE/FCC/RoHS/UN38.3/UKCA, toy safety EN 71/ASTM F963/CPSIA / CPC, or Other): issuer, certificate number, issued/expiry dates, the certificate file itself, and a source note. There is no stored status field -- expiring_soon/expired/valid is always derived client-side from expiry-date vs now, the same derived-not-stored pattern as this app's own SLA/status badges (see product-hub-model.js's certStatusFor).",
       readLimit: 50,
       fields: [
         {
@@ -169,6 +169,11 @@ export const appConfig = {
               { id: "RoHS", name: "RoHS" },
               { id: "UN38.3", name: "UN38.3" },
               { id: "UKCA", name: "UKCA" },
+              // Toy safety (0.3.0): EU EN 71, US ASTM F963, and the US
+              // Children's Product Certificate under CPSIA.
+              { id: "EN 71", name: "EN 71" },
+              { id: "ASTM F963", name: "ASTM F963" },
+              { id: "CPSIA / CPC", name: "CPSIA / CPC" },
               { id: "Other", name: "Other" },
             ],
           },

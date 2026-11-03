@@ -179,7 +179,7 @@ to whenever a record was last written.
 | Field slug | App key | Type | Notes |
 | --- | --- | --- | --- |
 | `product` | `product` (relation payload), `product_id` (normalized) | relation → `products` | single |
-| `cert-type` | `cert_type` | select | `CE\|FCC\|RoHS\|UN38.3\|UKCA\|Other` |
+| `cert-type` | `cert_type` | select | `CE\|FCC\|RoHS\|UN38.3\|UKCA\|EN 71\|ASTM F963\|CPSIA / CPC\|Other` (option id = label; the three toy-safety types since 0.3.0) |
 | `issuer` | `issuer` | text | testing lab / certification body |
 | `cert-number` | `cert_number` | text | |
 | `issued-date` | `issued_date` | text | ISO date |
