@@ -6,7 +6,25 @@
 //
 // Prints one JSON object: whether the home page, /api/status, /sitemap.xml and
 // robots.txt answer, how long the home page took, how many products the site
-// says it lists, and whether one product image loads. It only reads.
+// says it lists, and whether every photo on every listed product page loads
+// (`images.failed` names each one that does not). It only reads.
+
+const MAX_PRODUCT_PAGES = 100; // the shop lists at most 100 products
+const PARALLEL = 6;
+
+const imageSources = (html) =>
+  [...html.matchAll(/<img\b[^>]*\ssrc="([^"]+)"/g)]
+    .map((match) => match[1].replaceAll("&amp;", "&"))
+    .filter((src) => !src.startsWith("/static/"));
+
+/** Run `task` over `items`, `limit` at a time. */
+const inBatches = async (items, limit, task) => {
+  const results = [];
+  for (let index = 0; index < items.length; index += limit) {
+    results.push(...(await Promise.all(items.slice(index, index + limit).map(task))));
+  }
+  return results;
+};
 
 export const probeSite = async (siteUrl, { fetchImpl = fetch, now = () => Date.now(), timeoutMs = 15_000 } = {}) => {
   const origin = new URL(siteUrl).origin;
@@ -33,12 +51,25 @@ export const probeSite = async (siteUrl, { fetchImpl = fetch, now = () => Date.n
     statusJson = null;
   }
   const productUrls = [...sitemap.body.matchAll(/<loc>([^<]+\/products\/[^<]+)<\/loc>/g)].map((match) => match[1]);
-  const firstImage = /<img[^>]+src="([^"]+)"/.exec(home.body)?.[1] ?? "";
-  let image = null;
-  if (firstImage && !firstImage.startsWith("/static/")) {
-    const result = await get(firstImage.replaceAll("&amp;", "&"));
-    image = { url: new URL(firstImage.replaceAll("&amp;", "&"), origin).href, status: result.status, type: result.type };
+
+  // Every photo on every listed product page, each URL fetched once.
+  const pages = await inBatches(productUrls.slice(0, MAX_PRODUCT_PAGES), PARALLEL, async (url) => ({
+    product: decodeURIComponent(new URL(url).pathname.split("/").pop() ?? ""),
+    page: await get(new URL(url).pathname),
+  }));
+  const photos = new Map();
+  for (const { product, page } of pages) {
+    for (const src of imageSources(page.body)) {
+      const url = new URL(src, origin).href;
+      if (!photos.has(url)) photos.set(url, product);
+    }
   }
+  const checked = await inBatches([...photos], PARALLEL, async ([url, product]) => {
+    const result = await get(url);
+    return { product, url, status: result.status, type: result.type, ...(result.error ? { error: result.error } : {}) };
+  });
+  const failed = checked.filter((photo) => photo.status !== 200 || !photo.type.toLowerCase().startsWith("image/"));
+  const pageErrors = pages.filter(({ page }) => page.status !== 200).map(({ product, page }) => ({ product, status: page.status }));
 
   return {
     site: origin,
@@ -56,7 +87,8 @@ export const probeSite = async (siteUrl, { fetchImpl = fetch, now = () => Date.n
     status: { status: status.status, ...(statusJson ?? {}) },
     sitemap: { status: sitemap.status, productUrls: productUrls.length },
     robots: { status: robots.status },
-    image,
+    productPages: { checked: pages.length, failed: pageErrors },
+    images: { checked: checked.length, failed },
   };
 };
 

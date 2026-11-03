@@ -55,17 +55,18 @@ waits as a ChangeRequest and the buyer is still thanked.
 | Slug | Type | Notes |
 | --- | --- | --- |
 | `title` | text | `Daily shop check · 2026-11-05` |
-| `report-date` | date, required | One report per date |
-| `status` | select, required | `open`, `acknowledged` (set by the next check after applying feedback) |
+| `report-date` | date, required | Normally one real report per date (see SKILL.md, step 0); newest = latest date, then latest `checked-at` |
+| `status` | select, required | `open`, `acknowledged`: set by the check that applied this report's feedback; an acknowledged report is never applied or written again |
 | `summary` | longtext | Two to four plain sentences |
-| `issue-types` | multiselect | `missing-image`, `missing-price`, `hidden-product`, `certificate-missing`, `certificate-expiring`, `certificate-expired`, `site-unreachable`, `site-mismatch`, `orders-waiting` |
-| `issue-count` | number | |
-| `issues` | longtext | `- [type] Product (id): what, and the date` |
+| `issue-types` | multiselect | `missing-price`, `hidden-product`, `missing-image`, `out-of-stock`, `certificate-missing`, `certificate-expired`, `certificate-expiring`, `orders-waiting`, `demo-leftovers`, `site-unreachable`, `site-mismatch`, `image-unreachable`, `other`: every type used in Issues |
+| `issue-count` | number | Lines in Issues, waiting orders included |
+| `issues` | longtext | One line per finding: `- [type] Product (id): what, and the date`; one per product for `certificate-missing`, naming every missing type |
 | `orders-waiting` | number | |
 | `site-check` | longtext | Summary of `scripts/probe-site.mjs`, or why it was not run |
 | `owner-feedback` | longtext | Written by the owner |
 | `applied-feedback` | longtext | What this run did with the previous report's feedback |
 | `checked-at` | date (with time) | |
+| `sample` | checkbox | Ticked only on the template's sample report; never updated in place, its feedback applied like any other |
 
 ## Website routes (`content/busa-shop-app/src/handler.js`)
 

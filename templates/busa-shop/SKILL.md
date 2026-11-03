@@ -108,9 +108,14 @@ live site within about a minute, with no redeploy.
 ### Reports
 
 `title`, `report-date`, `status` (`open` / `acknowledged`), `summary`,
-`issue-types`, `issue-count`, `issues` (one line per issue), `orders-waiting`,
+`issue-types`, `issue-count`, `issues` (one line per finding), `orders-waiting`,
 `site-check`, `owner-feedback` (the owner writes here), `applied-feedback`
-(what the next check did with that feedback), `checked-at`.
+(what the check did with feedback that was due), `checked-at`, `sample` (ticked
+only on the one sample report the template installs). Issue types:
+`missing-price`, `hidden-product`, `missing-image`, `out-of-stock`,
+`certificate-missing`, `certificate-expired`, `certificate-expiring`,
+`orders-waiting`, `demo-leftovers`, `site-unreachable`, `site-mismatch`,
+`image-unreachable`, `other`.
 
 ## What the website reads from busa-product-hub
 
@@ -273,16 +278,37 @@ lower the stock in the product hub (orders do not change stock).
 
 ## Daily shop check
 
-Observe → decide → act → write back. One run writes one Reports row.
+Observe → decide → act → write back. One run applies the owner's open
+feedback, checks everything below, and writes its findings into one Reports
+row.
 
-### 1. Read the owner's feedback first
+### 0. The reports you will meet, and the rules for them
+
+- **The sample report.** The template installs one report with
+  **Sample report** ticked (title "… (sample report, fictional)"). Its date is
+  fixed in the template (2026-11-03), so on some installs it carries today's
+  date. It is never "today's report": never update it in place, and never
+  count it as a real check. Its Owner feedback is applied like any other
+  (step 1), which is how the course shows the loop on day one.
+- **Feedback is applied exactly once.** A report's feedback is due when its
+  status is `open` and Owner feedback is not empty, whatever its date and
+  whether or not it is the sample. After you apply it, that report becomes
+  `acknowledged`. An `acknowledged` report is finished: never apply its
+  feedback again and never write to it again.
+- **Order.** "Newest" means latest `report-date`, and for the same date, latest
+  `checked-at`.
+- **Where today's findings go** (step 6): if a real (not sample) report dated
+  today exists, is still `open`, and has empty Owner feedback, this is a
+  same-day re-run: update that report in place. In every other case create a
+  new report for today. That includes the case where today's real report was
+  just acknowledged in step 1, which leaves two real reports for one date;
+  `checked-at` orders them.
+
+### 1. Apply the owner's feedback first
 
 Read Settings (Required certificates, Certificate expiry warning, Standing
-check rules, Live site address) and the most recent Reports row by
-`report-date`.
-
-If that report is `open` and Owner feedback is not empty, apply it before
-checking anything:
+check rules, Live site address) and every report whose feedback is due (rule
+above), oldest first. Before checking anything, apply each one:
 
 - A change to a number or list the check uses → change it in Settings
   (e.g. "warn me 45 days ahead" → Certificate expiry warning = 45).
@@ -291,51 +317,82 @@ checking anything:
 - Something you are not allowed to do here (change product data, email a
   customer, take payment) → do not do it; say so.
 
-Write what you did, item by item, into the **new** report's Applied feedback,
-then set the previous report's status to `acknowledged`. Do not edit the
+Note what you did, item by item, for today's report's Applied feedback (step
+6), then set each of those reports' status to `acknowledged`. Do not edit the
 owner's words. Rules already in Standing check rules apply on every run.
 
 ### 2. Check products and certificates
 
-Read the Products (first 100 by `ref`) and Certificates tables of the
-product hub. Apply the listing rule. Report, one line each:
+Read the Products (first 100 by `ref`) and Certificates tables of the product
+hub and apply the listing rule. Every finding is one line in Issues, tagged
+with its type:
 
-| Type | Report it when |
-| --- | --- |
-| `missing-price` | lifecycle and status would list it, but `pricing.current_price` is missing or not above 0 |
-| `hidden-product` | lifecycle is `active`/`launch` but it is hidden for another reason (status, currency, tag, id). Products in `test`/`archive` are hidden on purpose: do not report them |
-| `missing-image` | listed, but no image the website can show |
-| `certificate-missing` | listed, and no certificate row at all whose type is one of Required certificates (compare types case-insensitively) |
-| `certificate-expired` | listed, with a certificate whose expiry date is past or empty |
-| `certificate-expiring` | listed, with a certificate expiring within the warning days; say how many days |
+| Type | Report it when | Lines |
+| --- | --- | --- |
+| `missing-price` | lifecycle and status would list it, but `pricing.current_price` is missing or not above 0 | one per product |
+| `hidden-product` | lifecycle is `active`/`launch` but it is hidden for another reason (status, currency, tag, id). Products in `test`/`archive` are hidden on purpose: do not report them | one per product |
+| `missing-image` | listed, but no image the website can show | one per product |
+| `out-of-stock` | listed, and `inventory.available` is 0 or less. Report it only when a Standing check rule asks for it (the sample feedback does) | one per product |
+| `certificate-missing` | listed, checked **separately for each type** in Required certificates: the product has no certificate row of that type at all (compare types case-insensitively). One missing type is enough | one per product, naming every missing type |
+| `certificate-expired` | listed, with a certificate whose expiry date is past or empty | one per certificate |
+| `certificate-expiring` | listed, with a certificate expiring within the warning days; say how many days | one per certificate |
 
-Then apply every Standing check rule.
+An expired certificate of a required type counts as `certificate-expired`,
+not `certificate-missing`. Then apply every Standing check rule; a finding
+with no type of its own is `other`.
 
 ### 3. Check orders
 
 `orders-waiting`: every order still `new`, and every `confirmed` order older
-than 7 days (waiting for payment). Count them into Orders waiting.
+than 7 days (waiting for payment). Each one is one line in Issues (order id,
+customer, total, since when) and counts toward the issue count; their number
+also goes into Orders waiting.
 
-### 4. Check the live site
+### 4. Check for demo leftovers
+
+Only when Settings › Live site address is set, so the shop is public. One
+`demo-leftovers` line for each of these that is still true:
+
+- Settings › Show the demo-store notice is ticked;
+- Settings › Contact email is empty or a placeholder (ends in `.example`, or
+  is at `example.com`, `example.net` or `example.org`);
+- Settings › About the store still says the shop is fictional demo data;
+- Orders still holds the sample orders (title ends "(fictional demo)", or
+  Internal note starts "Fictional demo data").
+
+The course's own live demo shop will show these on purpose. A real shop
+should not.
+
+### 5. Check the live site
 
 If Live site address is set: `node scripts/probe-site.mjs <address>` (from this
-skill's files). It opens the site as a stranger and prints the home page
-status and time, `/api/status`, the sitemap's product count, robots.txt and
-one image. Report `site-unreachable` if the home page does not answer 200, and
-`site-mismatch` if `/api/status` is not `ready` or its product count differs
-from the number you found listed (the site may lag the tables by a minute;
-re-probe once before reporting). Put a short summary in Live site check. If
-the address is empty, say "not checked" and why.
+skill's files). It opens the site as a stranger: the home page (status, time),
+`/api/status`, the sitemap, robots.txt, and **every photo on every listed
+product page**. Report:
 
-### 5. Write the report
+- `site-unreachable` if the home page does not answer 200;
+- `site-mismatch` if `/api/status` is not `ready` or its product count differs
+  from the number you found listed (the site may lag the tables by a minute;
+  re-probe once before reporting);
+- `image-unreachable`, one line per photo the probe lists under
+  `images.failed` (product, URL, what came back).
 
-One Reports row per day (if today's exists, update it instead):
+Put a short summary in Live site check. If the address is empty, write "not
+checked: no live site address in Settings" and skip steps 4 and 5.
+
+### 6. Write the report
+
+Fill the report chosen by the rule in step 0:
 `title` = `Daily shop check · YYYY-MM-DD`, `report-date` = today, `status` =
-`open`, a `summary` of two to four plain sentences (how many products are on
-the site, the most important problems, orders waiting), `issue-types`,
-`issue-count`, `issues` as lines like
+`open`, Sample report unticked, a `summary` of two to four plain sentences
+(how many products are on the site, the most important problems, orders
+waiting), `issues` with one line per finding, like
 `- [certificate-expiring] Wooden Train Set (tt-wooden-train): EN 71 expires on 2026-12-01, in 26 days.`,
-`orders-waiting`, `site-check`, `applied-feedback`, `checked-at` = now.
+`issue-types` = every type that appears in Issues, `issue-count` = the
+number of lines in Issues (waiting orders included), `orders-waiting`,
+`site-check`, `applied-feedback` (what step 1 did, or "none due"), and
+`checked-at` = now. When updating a same-day report in place, replace the
+findings and `checked-at`, and add to Applied feedback rather than replace it.
 
 Then tell the owner the three things that matter most, and that they can
 write feedback into Owner feedback on this report for the next run.

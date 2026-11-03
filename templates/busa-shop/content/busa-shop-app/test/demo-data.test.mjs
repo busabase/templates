@@ -66,6 +66,41 @@ describe("sample rows match their Bases", () => {
     }
   });
 
+  it("the sample report is marked as the sample and agrees with itself", async () => {
+    const base = await readJson(`${contentDir}reports/base.json`);
+    const choices = new Set(base.fields.find((field) => field.slug === "issue-types").options.choices.map((choice) => choice.id));
+    const [sample, ...others] = await readRows(`${contentDir}reports/records.ndjson`);
+    assert.equal(others.length, 0);
+    assert.equal(sample.fields.sample, true);
+    assert.match(sample.fields.title, /\(sample report, fictional\)$/);
+    const lines = sample.fields.issues.split("\n");
+    assert.equal(sample.fields["issue-count"], lines.length, "issue-count = lines in Issues, waiting orders included");
+    const used = new Set(lines.map((line) => /^- \[([a-z-]+)\] /.exec(line)?.[1]));
+    assert.ok(!used.has(undefined), "every line starts with - [type]");
+    assert.deepEqual([...used].sort(), [...sample.fields["issue-types"]].sort());
+    for (const type of used) assert.ok(choices.has(type), type);
+    assert.equal(sample.fields["orders-waiting"], lines.filter((line) => line.startsWith("- [orders-waiting]")).length);
+    assert.equal(sample.fields.status, "open");
+    assert.ok(sample.fields["owner-feedback"].includes("out of stock"));
+  });
+
+  it("every issue type SKILL.md tells the check to report is an option of Reports › Issue types, and nothing else", async () => {
+    const skill = await readFile(`${contentDir}../SKILL.md`, "utf8");
+    const check = skill.slice(skill.indexOf("## Daily shop check"), skill.indexOf("## Honest limits"));
+    const named = new Set([
+      ...[...check.matchAll(/^\| `([a-z-]+)` \|/gm)].map((match) => match[1]),
+      ...[...check.matchAll(/^`([a-z-]+)`: /gm)].map((match) => match[1]),
+      ...[...check.matchAll(/^- `([a-z-]+)`(?: if|,)/gm)].map((match) => match[1]),
+      ...[...check.matchAll(/`([a-z-]+)` line/g)].map((match) => match[1]),
+      ...[...check.matchAll(/is `(other)`/g)].map((match) => match[1]),
+    ]);
+    const base = await readJson(`${contentDir}reports/base.json`);
+    const choices = base.fields.find((field) => field.slug === "issue-types").options.choices.map((choice) => choice.id);
+    assert.deepEqual([...named].sort(), [...choices].sort());
+    const listed = /Issue types:\n([^]*?)\.\n/.exec(skill.slice(skill.indexOf("### Reports")))[1].match(/`([a-z-]+)`/g).map((item) => item.slice(1, -1));
+    assert.deepEqual(listed.sort(), [...choices].sort(), "the Reports section lists the same types");
+  });
+
   it("the website writes only fields the Orders Base has", async () => {
     const base = await readJson(`${contentDir}orders/base.json`);
     const slugs = new Set(base.fields.map((field) => field.slug));
@@ -145,7 +180,26 @@ describe("probe-site.mjs against the running site", () => {
     assert.equal(result.status.products, 10);
     assert.equal(result.sitemap.productUrls, 10);
     assert.equal(result.robots.status, 200);
-    assert.deepEqual([result.image.status, result.image.type], [200, "image/svg+xml"]);
+    // Every photo of every listed product: 8 listed products have photos, the robot two.
+    assert.deepEqual(result.productPages, { checked: 10, failed: [] });
+    assert.equal(result.images.checked, 9);
+    assert.deepEqual(result.images.failed, []);
+  });
+
+  it("names each listed product photo that does not load", async () => {
+    const asset = api.state.assets["walking-robot-box.svg"];
+    delete api.state.assets["walking-robot-box.svg"];
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      const result = await probeSite(site);
+      assert.equal(result.images.checked, 9);
+      assert.deepEqual(
+        result.images.failed.map((photo) => [photo.product, photo.status, photo.url.endsWith("/images/tt-walking-robot/1")]),
+        [["tt-walking-robot", 404, true]],
+      );
+    } finally {
+      api.state.assets["walking-robot-box.svg"] = asset;
+    }
   });
 
   it("serves the static files from public/", async () => {
