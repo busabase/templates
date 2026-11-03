@@ -34,7 +34,7 @@
       "assets/screenshots/detail.webp",
       "assets/screenshots/overview.webp"
     ],
-    "video": "assets/recordings/busa-picks-intro.mp4",
+    "video": "assets/recordings/busa-picks.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -52,16 +52,6 @@
     ],
     "requires": {
       "airapp": true
-    },
-    "videos": [
-      {
-        "src": "assets/recordings/busa-picks-intro.mp4",
-        "title": "Scenario introduction (English)"
-      },
-      {
-        "src": "assets/recordings/busa-picks.mp4",
-        "title": "Existing template demo"
-      }
-    ]
+    }
   }
 }

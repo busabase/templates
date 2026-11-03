@@ -409,17 +409,7 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/stories.webp"
       ],
-      "video": "assets/recordings/busa-brand-intro.mp4",
-      "videos": [
-        {
-          "src": "assets/recordings/busa-brand-intro.mp4",
-          "title": "Scenario introduction (English)"
-        },
-        {
-          "src": "assets/recordings/busa-brand.mp4",
-          "title": "Existing template demo"
-        }
-      ],
+      "video": "assets/recordings/busa-brand.mp4",
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -3245,17 +3235,7 @@
         "assets/screenshots/detail.webp",
         "assets/screenshots/overview.webp"
       ],
-      "video": "assets/recordings/busa-picks-intro.mp4",
-      "videos": [
-        {
-          "src": "assets/recordings/busa-picks-intro.mp4",
-          "title": "Scenario introduction (English)"
-        },
-        {
-          "src": "assets/recordings/busa-picks.mp4",
-          "title": "Existing template demo"
-        }
-      ],
+      "video": "assets/recordings/busa-picks.mp4",
       "locales": {
         "zh-CN": {
           "screenshots": [
