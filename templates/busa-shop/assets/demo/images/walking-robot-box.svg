@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Walking Robot Buddy, gift box">
+<title>Walking Robot Buddy, gift box (original illustration, fictional demo product)</title>
+<rect width="800" height="800" fill="#fde9e1"/>
+<circle cx="640" cy="150" r="90" fill="#ffffff" opacity="0.35"/>
+<circle cx="140" cy="640" r="60" fill="#ffffff" opacity="0.25"/>
+<ellipse cx="400" cy="690" rx="250" ry="34" fill="#000000" opacity="0.08"/>
+<g stroke="#2b3437" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+
+<path d="M220 300 L400 230 L580 300 L580 620 L400 690 L220 620 Z" fill="#ffd166"/>
+<path d="M220 300 L400 370 L580 300" fill="none"/>
+<line x1="400" y1="370" x2="400" y2="690"/>
+<path d="M230 310 L390 372 L390 672 L230 612 Z" fill="#f6b93b" stroke="none"/>
+<rect x="430" y="420" width="120" height="150" rx="20" fill="#9fd3e6"/>
+<circle cx="465" cy="470" r="13" fill="#fff6c9"/><circle cx="515" cy="470" r="13" fill="#fff6c9"/>
+<rect x="455" y="510" width="70" height="30" rx="8" fill="#5fb3d0"/>
+<path d="M250 420 L360 462" /><path d="M250 470 L340 504"/>
+
+</g>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Rainbow Stacking Blocks">
+<title>Rainbow Stacking Blocks (original illustration, fictional demo product)</title>
+<rect width="800" height="800" fill="#fff4d6"/>
+<circle cx="640" cy="150" r="90" fill="#ffffff" opacity="0.35"/>
+<circle cx="140" cy="640" r="60" fill="#ffffff" opacity="0.25"/>
+<ellipse cx="400" cy="690" rx="250" ry="34" fill="#000000" opacity="0.08"/>
+<g stroke="#2b3437" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+
+<rect x="190" y="520" width="140" height="140" rx="14" fill="#e4572e"/>
+<rect x="330" y="520" width="140" height="140" rx="14" fill="#ffd166"/>
+<rect x="470" y="520" width="140" height="140" rx="14" fill="#2f9e6e"/>
+<rect x="260" y="380" width="140" height="140" rx="14" fill="#5fb3d0"/>
+<rect x="400" y="380" width="140" height="140" rx="14" fill="#9b6ad6"/>
+<rect x="330" y="240" width="140" height="140" rx="14" fill="#f78fb3"/>
+<path d="M360 300 L440 300 M400 260 L400 340" stroke="#ffffff" stroke-width="12"/>
+<circle cx="330" cy="450" r="26" fill="none" stroke="#ffffff" stroke-width="12"/>
+<path d="M440 420 L500 480 M500 420 L440 480" stroke="#ffffff" stroke-width="12"/>
+
+</g>
+</svg>

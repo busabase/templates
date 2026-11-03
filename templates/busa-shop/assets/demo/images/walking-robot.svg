@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Walking Robot Buddy">
+<title>Walking Robot Buddy (original illustration, fictional demo product)</title>
+<rect width="800" height="800" fill="#dff1f7"/>
+<circle cx="640" cy="150" r="90" fill="#ffffff" opacity="0.35"/>
+<circle cx="140" cy="640" r="60" fill="#ffffff" opacity="0.25"/>
+<ellipse cx="400" cy="690" rx="250" ry="34" fill="#000000" opacity="0.08"/>
+<g stroke="#2b3437" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+
+<line x1="400" y1="150" x2="400" y2="205" />
+<circle cx="400" cy="140" r="18" fill="#e4572e"/>
+<rect x="280" y="205" width="240" height="170" rx="40" fill="#9fd3e6"/>
+<circle cx="345" cy="285" r="30" fill="#fff6c9"/><circle cx="455" cy="285" r="30" fill="#fff6c9"/>
+<circle cx="345" cy="285" r="11" fill="#2b3437"/><circle cx="455" cy="285" r="11" fill="#2b3437"/>
+<path d="M360 340 Q400 362 440 340" fill="none"/>
+<rect x="300" y="390" width="200" height="190" rx="30" fill="#5fb3d0"/>
+<rect x="355" y="430" width="90" height="60" rx="12" fill="#ffd166"/>
+<circle cx="375" cy="460" r="9" fill="#e4572e"/><circle cx="425" cy="460" r="9" fill="#2f7d5b"/>
+<rect x="225" y="410" width="60" height="130" rx="28" fill="#9fd3e6"/>
+<rect x="515" y="410" width="60" height="130" rx="28" fill="#9fd3e6"/>
+<rect x="320" y="580" width="60" height="95" rx="18" fill="#9fd3e6"/>
+<rect x="420" y="580" width="60" height="95" rx="18" fill="#9fd3e6"/>
+
+</g>
+</svg>

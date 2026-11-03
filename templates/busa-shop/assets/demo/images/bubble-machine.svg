@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Bubble Machine">
+<title>Bubble Machine (original illustration, fictional demo product)</title>
+<rect width="800" height="800" fill="#e6f0ff"/>
+<circle cx="640" cy="150" r="90" fill="#ffffff" opacity="0.35"/>
+<circle cx="140" cy="640" r="60" fill="#ffffff" opacity="0.25"/>
+<ellipse cx="400" cy="690" rx="250" ry="34" fill="#000000" opacity="0.08"/>
+<g stroke="#2b3437" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+
+<circle cx="520" cy="220" r="52" fill="#ffffff" fill-opacity="0.6"/><circle cx="610" cy="300" r="34" fill="#ffffff" fill-opacity="0.6"/>
+<circle cx="450" cy="150" r="28" fill="#ffffff" fill-opacity="0.6"/><circle cx="660" cy="190" r="42" fill="#ffffff" fill-opacity="0.6"/>
+<circle cx="380" cy="230" r="22" fill="#ffffff" fill-opacity="0.6"/><circle cx="560" cy="120" r="20" fill="#ffffff" fill-opacity="0.6"/>
+<rect x="190" y="400" width="340" height="230" rx="40" fill="#f78fb3"/>
+<rect x="230" y="330" width="230" height="90" rx="30" fill="#5fb3d0"/>
+<circle cx="510" cy="420" r="58" fill="#ffd166"/><circle cx="510" cy="420" r="26" fill="#fff6c9"/>
+<rect x="240" y="470" width="140" height="40" rx="14" fill="#ffffff"/>
+<circle cx="290" cy="580" r="14" fill="#e4572e"/><circle cx="340" cy="580" r="14" fill="#2f9e6e"/>
+
+</g>
+</svg>
