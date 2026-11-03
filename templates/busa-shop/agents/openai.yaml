@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Shop"
+  short_description: "Storefront website over Busa Product Hub, with order requests and a self-improving daily shop check"
+  default_prompt: "Use $busa-shop to open my shop and tell me what I still have to do before I click Go live."
