@@ -1,0 +1,22 @@
+{
+  "name": "busa-shop-site",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Busa Shop website: a Busabase site app (Cloudflare Worker) that shows the Busa Product Hub catalog and takes order requests. vendor/worker.js is the deployed bundle of src/ (with busabase-sdk inside).",
+  "engines": {
+    "node": ">=24.18.0"
+  },
+  "scripts": {
+    "build": "esbuild src/worker.js --bundle --format=esm --platform=neutral --outfile=vendor/worker.js",
+    "check": "node scripts/check.mjs",
+    "dev": "node scripts/preview.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "busabase-sdk": "1.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

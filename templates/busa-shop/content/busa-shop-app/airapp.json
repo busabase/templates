@@ -1,0 +1,8 @@
+{
+  "requiredEngine": "site",
+  "site": {
+    "entry": "vendor/worker.js",
+    "assets": "public",
+    "access": "write"
+  }
+}
