@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["comms", "risk:gated-write", "surface:busabase", "surface:smtp"],
+  "tags": [
+    "comms",
+    "risk:gated-write",
+    "surface:busabase",
+    "surface:smtp"
+  ],
   "template": {
     "category": "comms",
     "schemaVersion": 4,
     "airapp": "busa-jobhunt-app",
-    "tags": ["comms", "risk:gated-write", "surface:busabase", "surface:smtp"],
+    "tags": [
+      "comms",
+      "risk:gated-write",
+      "surface:busabase",
+      "surface:smtp"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/blocked.webp",
@@ -26,7 +36,7 @@
       "assets/screenshots/sent.webp",
       "assets/screenshots/to-send.webp"
     ],
-    "video": "assets/recordings/busa-jobhunt.mp4",
+    "video": "assets/recordings/busa-jobhunt-intro.mp4",
     "agentPrompts": [
       "Summarize my job-search profile and flag what needs my attention.",
       "Find new target companies that fit my profile and draft a tailored email for each."
@@ -55,6 +65,16 @@
         "key": "SMTP_PASS",
         "description": "SMTP app password / authorization code. Never an account password",
         "required": true
+      }
+    ],
+    "videos": [
+      {
+        "src": "assets/recordings/busa-jobhunt-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-jobhunt.mp4",
+        "title": "Existing template demo"
       }
     ]
   }
