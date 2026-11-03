@@ -11,12 +11,26 @@
   },
   "version": "0.2.0",
   "license": "MIT",
-  "tags": ["cms", "blog", "website", "content", "nextjs", "seo"],
+  "tags": [
+    "cms",
+    "blog",
+    "website",
+    "content",
+    "nextjs",
+    "seo"
+  ],
   "template": {
     "category": "content",
     "schemaVersion": 1,
     "airapp": "busa-cms-app",
-    "tags": ["cms", "blog", "pages", "posts", "nextjs", "busabase-cms-sdk"],
+    "tags": [
+      "cms",
+      "blog",
+      "pages",
+      "posts",
+      "nextjs",
+      "busabase-cms-sdk"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/posts.webp",
@@ -24,7 +38,7 @@
       "assets/screenshots/editor.webp",
       "assets/screenshots/connect.webp"
     ],
-    "video": "assets/recordings/busa-cms.mp4",
+    "video": "assets/recordings/busa-cms-intro.mp4",
     "agentPrompts": [
       "Write a post announcing this week's release and publish it.",
       "Which pages are published without an SEO description?",
@@ -32,6 +46,18 @@
       "Give me the snippet for wiring my Next.js site to this Folder."
     ],
     "secrets": [],
-    "requires": { "airapp": true }
+    "requires": {
+      "airapp": true
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-cms-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-cms.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

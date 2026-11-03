@@ -35,7 +35,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/renewals.webp"
     ],
-    "video": "assets/recordings/busa-clm.mp4",
+    "video": "assets/recordings/busa-clm-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -54,6 +54,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-clm-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-clm.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

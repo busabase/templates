@@ -31,7 +31,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/workbook.webp"
     ],
-    "video": "assets/recordings/busa-finance.mp4",
+    "video": "assets/recordings/busa-finance-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -48,6 +48,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-finance-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-finance.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

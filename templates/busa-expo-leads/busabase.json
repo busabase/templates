@@ -35,7 +35,7 @@
       "assets/screenshots/leads.webp",
       "assets/screenshots/followups.webp"
     ],
-    "video": "assets/recordings/busa-expo-leads.mp4",
+    "video": "assets/recordings/busa-expo-leads-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -52,6 +52,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-expo-leads-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-expo-leads.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

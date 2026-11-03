@@ -11,18 +11,39 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["followups", "reminder"],
+  "tags": [
+    "followups",
+    "reminder"
+  ],
   "template": {
     "category": "productivity",
     "schemaVersion": 1,
     "airapp": "busa-followups-app",
-    "tags": ["followups", "reminder"],
+    "tags": [
+      "followups",
+      "reminder"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/today.webp"
     ],
-    "video": "assets/recordings/busa-followups.mp4",
-    "agentPrompts": ["Log a follow-up: who to follow up with, and what about.", "Who do I need to follow up with today, and about what?"],
-    "requires": { "airapp": true }
+    "video": "assets/recordings/busa-followups-intro.mp4",
+    "agentPrompts": [
+      "Log a follow-up: who to follow up with, and what about.",
+      "Who do I need to follow up with today, and about what?"
+    ],
+    "requires": {
+      "airapp": true
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-followups-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-followups.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

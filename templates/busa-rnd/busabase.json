@@ -38,7 +38,7 @@
       "assets/screenshots/acceptance.webp",
       "assets/screenshots/weekly-report.webp"
     ],
-    "video": "assets/recordings/busa-rnd.mp4",
+    "video": "assets/recordings/busa-rnd-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -48,7 +48,17 @@
           "assets/screenshots/acceptance-zh-CN.webp",
           "assets/screenshots/weekly-report-zh-CN.webp"
         ],
-        "video": "assets/recordings/busa-rnd-zh-CN.mp4"
+        "video": "assets/recordings/busa-rnd-intro.mp4",
+        "videos": [
+          {
+            "src": "assets/recordings/busa-rnd-intro.mp4",
+            "title": "Scenario introduction (English)"
+          },
+          {
+            "src": "assets/recordings/busa-rnd-zh-CN.mp4",
+            "title": "Existing zh-CN demo"
+          }
+        ]
       }
     },
     "agentPrompts": [
@@ -59,6 +69,16 @@
     "secrets": [],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-rnd-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-rnd.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

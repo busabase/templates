@@ -34,7 +34,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/signals.webp"
     ],
-    "video": "assets/recordings/busa-retail-intel.mp4",
+    "video": "assets/recordings/busa-retail-intel-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -52,6 +52,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-retail-intel-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-retail-intel.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

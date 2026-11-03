@@ -34,7 +34,7 @@
       "assets/screenshots/campaigns.webp",
       "assets/screenshots/overview.webp"
     ],
-    "video": "assets/recordings/busa-ads.mp4",
+    "video": "assets/recordings/busa-ads-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -52,6 +52,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-ads-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-ads.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

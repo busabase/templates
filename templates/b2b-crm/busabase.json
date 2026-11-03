@@ -11,12 +11,26 @@
   },
   "version": "0.3.0",
   "license": "MIT",
-  "tags": ["sales", "accounts", "contacts", "activities", "deals", "pipeline"],
+  "tags": [
+    "sales",
+    "accounts",
+    "contacts",
+    "activities",
+    "deals",
+    "pipeline"
+  ],
   "template": {
     "category": "crm",
     "schemaVersion": 2,
     "airapp": "b2b-crm",
-    "tags": ["sales", "accounts", "contacts", "activities", "deals", "pipeline"],
+    "tags": [
+      "sales",
+      "accounts",
+      "contacts",
+      "activities",
+      "deals",
+      "pipeline"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp",
@@ -32,6 +46,15 @@
       "Add this opportunity to the pipeline and show me deals by stage."
     ],
     "secrets": [],
-    "requires": { "airapp": true }
+    "requires": {
+      "airapp": true
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/b2b-crm-intro.mp4",
+        "title": "Scenario introduction (English)"
+      }
+    ],
+    "video": "assets/recordings/b2b-crm-intro.mp4"
   }
 }
