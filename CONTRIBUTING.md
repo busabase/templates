@@ -125,19 +125,43 @@ A file on disk does nothing until `busabase.json` declares it, under `template`:
 
 **Video**
 
-| | Bar |
+A gallery can carry two kinds of video, and they have different bars.
+
+A **scenario introduction** is the preferred way to present a template: a narrated film that
+introduces the scenario, then shows the real product in use, with an Agent doing the work. The
+narration, the demonstration and the Agent are the point — keep the master as supplied, with its
+audio, and do not re-encode it down to the demo-clip bar below.
+
+| | Bar — scenario introduction |
+| --- | --- |
+| Container, codec | MP4, H.264 video with AAC audio |
+| Picture | 1920×1080 (16:9) or 1440×900 (16:10) |
+| Pixel format | `yuv420p`, limited (`tv`) range. Not `yuvj420p`. |
+| Frame rate | 30 fps |
+| Audio | Narration expected; keep the audio track. |
+| Length | 40–60 s, as a guideline rather than a hard limit. |
+| File size | Under 30 MB. The 66 introductions added in #57 run 12.80–25.34 MB each. |
+| Streaming | `+faststart`, so playback starts before the download ends. |
+| Placement | First in the gallery's video list, right after the cover. |
+
+The figures and outcomes an introduction shows are demo/sample data. The film itself has to show
+the real product and a real Agent run — not a mock-up or a rendered page.
+
+A **demo clip** is a short, silent loop of a single flow. Demo clips keep the original bar:
+
+| | Bar — demo clip |
 | --- | --- |
 | Container, codec | MP4, H.264 |
 | Picture | 1440×900 (16:10). The player is a 16:10 box, so 16:9 footage gets black bars. |
 | Pixel format | `yuv420p`, limited (`tv`) range. Not `yuvj420p`. |
 | Frame rate | 30 fps |
-| Audio | None. The player starts muted; on-screen text has to carry the meaning. If the master has a voice-over, dropping it loses what it said, so tell the person who made it. |
-| Length | 40–60 s for a scenario film, as a guideline rather than a hard limit. The existing short loops are 8–33 s. |
+| Audio | None. The player starts muted; on-screen text has to carry the meaning. |
+| Length | The existing short loops are 8–33 s. |
 | File size | Under 8 MB. The busa-rnd films are about 3.5 MB. |
 | Streaming | `+faststart`, so playback starts before the download ends. |
 
-Edit and export at 16:10 (1440×900 or 2880×1800) if you can. This command turns any master into a
-file that meets the bar; a true 16:9 picture gets black bars top and bottom. The example writes the
+For a demo clip, edit and export at 16:10 (1440×900 or 2880×1800) if you can. This command turns any master into a
+file that meets the demo-clip bar; a true 16:9 picture gets black bars top and bottom. The example writes the
 Chinese cut; name the English one `<name>.mp4`. Over 8 MB? Raise `-crf` to 23–26 rather than
 lowering the resolution.
 
