@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["sales-crm", "risk:gated-write", "surface:busabase", "surface:smtp"],
+  "tags": [
+    "sales-crm",
+    "risk:gated-write",
+    "surface:busabase",
+    "surface:smtp"
+  ],
   "template": {
     "category": "sales-crm",
     "schemaVersion": 1,
     "airapp": "busa-sales-outreach-app",
-    "tags": ["sales-crm", "risk:gated-write", "surface:busabase", "surface:smtp"],
+    "tags": [
+      "sales-crm",
+      "risk:gated-write",
+      "surface:busabase",
+      "surface:smtp"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/blocked.webp",
@@ -24,7 +34,7 @@
       "assets/screenshots/sent.webp",
       "assets/screenshots/to-send.webp"
     ],
-    "video": "assets/recordings/busa-sales-outreach.mp4",
+    "video": "assets/recordings/busa-sales-outreach-intro.mp4",
     "agentPrompts": [
       "Summarize my product and ICP and flag what needs my attention.",
       "Find new target accounts that match my ICP and draft a first-touch email for each."
@@ -53,6 +63,16 @@
         "key": "SMTP_PASS",
         "description": "SMTP app password or authorization code",
         "required": true
+      }
+    ],
+    "videos": [
+      {
+        "src": "assets/recordings/busa-sales-outreach-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-sales-outreach.mp4",
+        "title": "Existing template demo"
       }
     ]
   }

@@ -35,7 +35,7 @@
       "assets/screenshots/slides.webp",
       "assets/screenshots/style.webp"
     ],
-    "video": "assets/recordings/busa-ppt-factory.mp4",
+    "video": "assets/recordings/busa-ppt-factory-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -56,6 +56,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-ppt-factory-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-ppt-factory.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

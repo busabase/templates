@@ -26,7 +26,7 @@
     "category": "hr",
     "schemaVersion": 1,
     "airapp": "busa-office-recruiting-app",
-    "video": "assets/recordings/busa-office-recruiting.mp4",
+    "video": "assets/recordings/busa-office-recruiting-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -35,7 +35,17 @@
           "assets/screenshots/core-zh-CN.webp",
           "assets/screenshots/attention-zh-CN.webp"
         ],
-        "video": "assets/recordings/busa-office-recruiting-zh-CN.mp4"
+        "video": "assets/recordings/busa-office-recruiting-intro.mp4",
+        "videos": [
+          {
+            "src": "assets/recordings/busa-office-recruiting-intro.mp4",
+            "title": "Scenario introduction (English)"
+          },
+          {
+            "src": "assets/recordings/busa-office-recruiting-zh-CN.mp4",
+            "title": "Existing zh-CN demo"
+          }
+        ]
       }
     },
     "screenshots": [
@@ -51,6 +61,16 @@
     "secrets": [],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-office-recruiting-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-office-recruiting.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

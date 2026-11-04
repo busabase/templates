@@ -34,7 +34,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/positions.webp"
     ],
-    "video": "assets/recordings/busa-invest-webull.mp4",
+    "video": "assets/recordings/busa-invest-webull-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -52,6 +52,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-invest-webull-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-invest-webull.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

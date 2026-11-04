@@ -21,7 +21,7 @@
     "category": "ops",
     "schemaVersion": 1,
     "airapp": "busa-office-hr-app",
-    "video": "assets/recordings/busa-office-hr.mp4",
+    "video": "assets/recordings/busa-office-hr-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -30,7 +30,17 @@
           "assets/screenshots/payroll-zh-CN.webp",
           "assets/screenshots/attention-zh-CN.webp"
         ],
-        "video": "assets/recordings/busa-office-hr-zh-CN.mp4"
+        "video": "assets/recordings/busa-office-hr-intro.mp4",
+        "videos": [
+          {
+            "src": "assets/recordings/busa-office-hr-intro.mp4",
+            "title": "Scenario introduction (English)"
+          },
+          {
+            "src": "assets/recordings/busa-office-hr-zh-CN.mp4",
+            "title": "Existing zh-CN demo"
+          }
+        ]
       }
     },
     "tags": [
@@ -51,6 +61,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-office-hr-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-office-hr.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

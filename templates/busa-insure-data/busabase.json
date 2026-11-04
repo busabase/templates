@@ -11,12 +11,22 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["industry-intel", "risk:read-only", "industry:insurance", "surface:busabase"],
+  "tags": [
+    "industry-intel",
+    "risk:read-only",
+    "industry:insurance",
+    "surface:busabase"
+  ],
   "template": {
     "category": "industry-intel",
     "schemaVersion": 1,
     "airapp": "busa-insure-data-app",
-    "tags": ["industry-intel", "risk:read-only", "industry:insurance", "surface:busabase"],
+    "tags": [
+      "industry-intel",
+      "risk:read-only",
+      "industry:insurance",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/files.webp",
@@ -24,13 +34,23 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/qa.webp"
     ],
-    "video": "assets/recordings/busa-insure-data.mp4",
+    "video": "assets/recordings/busa-insure-data-intro.mp4",
     "agentPrompts": [
       "Summarize the latest featured information and flag what needs my attention.",
       "Which insurance files are missing metadata or PDF text, and which QA pairs lack a source?"
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-insure-data-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-insure-data.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

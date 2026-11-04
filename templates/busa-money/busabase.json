@@ -41,7 +41,7 @@
       "assets/screenshots/ledger.webp",
       "assets/screenshots/overview.webp"
     ],
-    "video": "assets/recordings/busa-money.mp4",
+    "video": "assets/recordings/busa-money-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -60,6 +60,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-money-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-money.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

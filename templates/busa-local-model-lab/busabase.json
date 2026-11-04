@@ -32,7 +32,7 @@
       "assets/screenshots/evaluations.webp",
       "assets/screenshots/registry.webp"
     ],
-    "video": "assets/recordings/busa-local-model-lab.mp4",
+    "video": "assets/recordings/busa-local-model-lab-intro.mp4",
     "agentPrompts": [
       "Open Busa Local Model Lab and show me which training examples are ready to export.",
       "Prepare a reproducible local QLoRA run from the curated Busabase dataset.",
@@ -40,6 +40,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-local-model-lab-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-local-model-lab.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

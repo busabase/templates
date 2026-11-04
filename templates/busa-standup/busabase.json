@@ -33,7 +33,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/reminders.webp"
     ],
-    "video": "assets/recordings/busa-standup.mp4",
+    "video": "assets/recordings/busa-standup-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -52,6 +52,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-standup-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-standup.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

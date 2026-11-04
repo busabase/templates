@@ -34,7 +34,7 @@
       "assets/screenshots/review.webp",
       "assets/screenshots/student.webp"
     ],
-    "video": "assets/recordings/busa-homework-coach.mp4",
+    "video": "assets/recordings/busa-homework-coach-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -52,6 +52,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-homework-coach-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-homework-coach.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

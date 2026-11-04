@@ -37,8 +37,12 @@
       "risk:gated-write",
       "surface:busabase"
     ],
-    "video": "assets/recordings/busa-linkedin-desk.mp4",
+    "video": "assets/recordings/busa-linkedin-desk-intro.mp4",
     "videos": [
+      {
+        "src": "assets/recordings/busa-linkedin-desk-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
       {
         "title": "Full tour",
         "src": "assets/recordings/busa-linkedin-desk.mp4"
@@ -60,8 +64,12 @@
           "assets/screenshots/experience-zh-CN.webp",
           "assets/screenshots/icp-doc-zh-CN.webp"
         ],
-        "video": "assets/recordings/busa-linkedin-desk-zh-CN.mp4",
+        "video": "assets/recordings/busa-linkedin-desk-intro.mp4",
         "videos": [
+          {
+            "src": "assets/recordings/busa-linkedin-desk-intro.mp4",
+            "title": "Scenario introduction (English)"
+          },
           {
             "title": "完整导览",
             "src": "assets/recordings/busa-linkedin-desk-zh-CN.mp4"

@@ -37,7 +37,7 @@
       "assets/screenshots/shorts.webp",
       "assets/screenshots/timeline.webp"
     ],
-    "video": "assets/recordings/busa-social.mp4",
+    "video": "assets/recordings/busa-social-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -60,6 +60,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-social-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-social.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

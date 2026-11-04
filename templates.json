@@ -31,6 +31,13 @@
         "assets/screenshots/deal-detail.webp",
         "assets/screenshots/add-deal-review.webp"
       ],
+      "video": "assets/recordings/b2b-crm-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/b2b-crm-intro.mp4",
+          "title": "Scenario introduction (English)"
+        }
+      ],
       "agentPrompts": [
         "Add a new company and its primary contact from these notes.",
         "Show me the accounts with follow-ups due and summarize the latest activity.",
@@ -75,7 +82,17 @@
         "assets/screenshots/campaigns.webp",
         "assets/screenshots/overview.webp"
       ],
-      "video": "assets/recordings/busa-ads.mp4",
+      "video": "assets/recordings/busa-ads-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-ads-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-ads.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -131,7 +148,17 @@
         "assets/screenshots/guardrails.webp",
         "assets/screenshots/settings.webp"
       ],
-      "video": "assets/recordings/busa-agent-orders.mp4",
+      "video": "assets/recordings/busa-agent-orders-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-agent-orders-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-agent-orders.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -190,7 +217,17 @@
         "assets/screenshots/competitors.webp",
         "assets/screenshots/settings.webp"
       ],
-      "video": "assets/recordings/busa-agent-shelf.mp4",
+      "video": "assets/recordings/busa-agent-shelf-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-agent-shelf-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-agent-shelf.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -246,7 +283,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/signals.webp"
       ],
-      "video": "assets/recordings/busa-ai-newsroom.mp4",
+      "video": "assets/recordings/busa-ai-newsroom-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-ai-newsroom-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-ai-newsroom.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -299,7 +346,17 @@
         "assets/screenshots/orders.webp",
         "assets/screenshots/overview.webp"
       ],
-      "video": "assets/recordings/busa-audit.mp4",
+      "video": "assets/recordings/busa-audit-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-audit-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-audit.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -352,7 +409,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/stories.webp"
       ],
-      "video": "assets/recordings/busa-brand.mp4",
+      "video": "assets/recordings/busa-brand-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-brand-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-brand.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -405,7 +472,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/performance.webp"
       ],
-      "video": "assets/recordings/busa-campaigns.mp4",
+      "video": "assets/recordings/busa-campaigns-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-campaigns-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-campaigns.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -460,7 +537,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/renewals.webp"
       ],
-      "video": "assets/recordings/busa-clm.mp4",
+      "video": "assets/recordings/busa-clm-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-clm-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-clm.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -520,7 +607,17 @@
         "assets/screenshots/editor.webp",
         "assets/screenshots/connect.webp"
       ],
-      "video": "assets/recordings/busa-cms.mp4",
+      "video": "assets/recordings/busa-cms-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-cms-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-cms.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "agentPrompts": [
         "Write a post announcing this week's release and publish it.",
         "Which pages are published without an SEO description?",
@@ -564,7 +661,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/roi.webp"
       ],
-      "video": "assets/recordings/busa-creators.mp4",
+      "video": "assets/recordings/busa-creators-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-creators-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-creators.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -617,7 +724,17 @@
         "assets/screenshots/followups.webp",
         "assets/screenshots/overview.webp"
       ],
-      "video": "assets/recordings/busa-crm.mp4",
+      "video": "assets/recordings/busa-crm-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-crm-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-crm.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -668,6 +785,13 @@
         "assets/screenshots/video-shots.webp",
         "assets/screenshots/videos.webp"
       ],
+      "video": "assets/recordings/busa-demo-video-factory-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-demo-video-factory-intro.mp4",
+          "title": "Scenario introduction (English)"
+        }
+      ],
       "agentPrompts": [
         "Summarize the videos in production and flag which claims still need verification.",
         "Show me which shots are still left to record for each video."
@@ -711,7 +835,17 @@
         "assets/screenshots/services.webp",
         "assets/screenshots/spend.webp"
       ],
-      "video": "assets/recordings/busa-devops.mp4",
+      "video": "assets/recordings/busa-devops-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-devops-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-devops.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -765,7 +899,17 @@
         "assets/screenshots/studio.webp",
         "assets/screenshots/vendors.webp"
       ],
-      "video": "assets/recordings/busa-digital-human.mp4",
+      "video": "assets/recordings/busa-digital-human-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-digital-human-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-digital-human.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -820,7 +964,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/relationships.webp"
       ],
-      "video": "assets/recordings/busa-drama.mp4",
+      "video": "assets/recordings/busa-drama-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-drama-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-drama.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -874,7 +1028,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/signals.webp"
       ],
-      "video": "assets/recordings/busa-ecommerce-intel.mp4",
+      "video": "assets/recordings/busa-ecommerce-intel-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-ecommerce-intel-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-ecommerce-intel.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -930,6 +1094,13 @@
         "assets/screenshots/needs-review.webp",
         "assets/screenshots/blocked-security.webp"
       ],
+      "video": "assets/recordings/busa-email-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-email-intro.mp4",
+          "title": "Scenario introduction (English)"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -984,7 +1155,17 @@
         "assets/screenshots/leads.webp",
         "assets/screenshots/followups.webp"
       ],
-      "video": "assets/recordings/busa-expo-leads.mp4",
+      "video": "assets/recordings/busa-expo-leads-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-expo-leads-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-expo-leads.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1037,7 +1218,17 @@
         "assets/screenshots/ledger.webp",
         "assets/screenshots/overview.webp"
       ],
-      "video": "assets/recordings/busa-family-fund.mp4",
+      "video": "assets/recordings/busa-family-fund-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-family-fund-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-family-fund.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1092,7 +1283,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/performance.webp"
       ],
-      "video": "assets/recordings/busa-family-office.mp4",
+      "video": "assets/recordings/busa-family-office-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-family-office-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-family-office.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1146,7 +1347,17 @@
         "assets/screenshots/requests.webp",
         "assets/screenshots/roadmap.webp"
       ],
-      "video": "assets/recordings/busa-feedback.mp4",
+      "video": "assets/recordings/busa-feedback-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-feedback-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-feedback.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1198,7 +1409,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/workbook.webp"
       ],
-      "video": "assets/recordings/busa-finance.mp4",
+      "video": "assets/recordings/busa-finance-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-finance-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-finance.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1246,7 +1467,17 @@
         "assets/screenshots/cover.webp",
         "assets/screenshots/today.webp"
       ],
-      "video": "assets/recordings/busa-followups.mp4",
+      "video": "assets/recordings/busa-followups-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-followups-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-followups.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "agentPrompts": [
         "Log a follow-up: who to follow up with, and what about.",
         "Who do I need to follow up with today, and about what?"
@@ -1289,7 +1520,17 @@
         "assets/screenshots/review.webp",
         "assets/screenshots/student.webp"
       ],
-      "video": "assets/recordings/busa-homework-coach.mp4",
+      "video": "assets/recordings/busa-homework-coach-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-homework-coach-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-homework-coach.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1345,7 +1586,17 @@
         "assets/screenshots/questions.webp",
         "assets/screenshots/documents.webp"
       ],
-      "video": "assets/recordings/busa-ideas.mp4",
+      "video": "assets/recordings/busa-ideas-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-ideas-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-ideas.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "agentPrompts": [
         "I have an idea but can't quite put it into words. Help me think it through.",
         "Open the idea vault and show me which ideas are still waiting on my answers.",
@@ -1389,7 +1640,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/qa.webp"
       ],
-      "video": "assets/recordings/busa-insure-data.mp4",
+      "video": "assets/recordings/busa-insure-data-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-insure-data-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-insure-data.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "agentPrompts": [
         "Summarize the latest featured information and flag what needs my attention.",
         "Which insurance files are missing metadata or PDF text, and which QA pairs lack a source?"
@@ -1432,7 +1693,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/positions.webp"
       ],
-      "video": "assets/recordings/busa-invest-webull.mp4",
+      "video": "assets/recordings/busa-invest-webull-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-invest-webull-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-invest-webull.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1486,7 +1757,17 @@
         "assets/screenshots/overview-mobile.webp",
         "assets/screenshots/overview.webp"
       ],
-      "video": "assets/recordings/busa-invoice-sheet.mp4",
+      "video": "assets/recordings/busa-invoice-sheet-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-invoice-sheet-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-invoice-sheet.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1543,7 +1824,17 @@
         "assets/screenshots/sent.webp",
         "assets/screenshots/to-send.webp"
       ],
-      "video": "assets/recordings/busa-jobhunt.mp4",
+      "video": "assets/recordings/busa-jobhunt-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-jobhunt-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-jobhunt.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "agentPrompts": [
         "Summarize my job-search profile and flag what needs my attention.",
         "Find new target companies that fit my profile and draft a tailored email for each."
@@ -1585,7 +1876,17 @@
         "assets/screenshots/launchday.webp",
         "assets/screenshots/overview.webp"
       ],
-      "video": "assets/recordings/busa-launch.mp4",
+      "video": "assets/recordings/busa-launch-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-launch-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-launch.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1637,7 +1938,17 @@
         "assets/screenshots/lead-detail.webp",
         "assets/screenshots/overview.webp"
       ],
-      "video": "assets/recordings/busa-lead-funnel.mp4",
+      "video": "assets/recordings/busa-lead-funnel-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-lead-funnel-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-lead-funnel.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1692,7 +2003,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/workbench.webp"
       ],
-      "video": "assets/recordings/busa-legal-casebase-ingest.mp4",
+      "video": "assets/recordings/busa-legal-casebase-ingest-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-legal-casebase-ingest-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-legal-casebase-ingest.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1750,7 +2071,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/playbook.webp"
       ],
-      "video": "assets/recordings/busa-legal-contracts.mp4",
+      "video": "assets/recordings/busa-legal-contracts-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-legal-contracts-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-legal-contracts.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1807,7 +2138,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/workbench.webp"
       ],
-      "video": "assets/recordings/busa-legal-firm-radar.mp4",
+      "video": "assets/recordings/busa-legal-firm-radar-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-legal-firm-radar-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-legal-firm-radar.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1863,7 +2204,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/workbench.webp"
       ],
-      "video": "assets/recordings/busa-legal-matter-strategy.mp4",
+      "video": "assets/recordings/busa-legal-matter-strategy-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-legal-matter-strategy-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-legal-matter-strategy.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1919,7 +2270,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/workbench.webp"
       ],
-      "video": "assets/recordings/busa-legal-precedent-desk.mp4",
+      "video": "assets/recordings/busa-legal-precedent-desk-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-legal-precedent-desk-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-legal-precedent-desk.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -1974,7 +2335,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/plans.webp"
       ],
-      "video": "assets/recordings/busa-lesson.mp4",
+      "video": "assets/recordings/busa-lesson-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-lesson-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-lesson.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2029,8 +2400,12 @@
         "assets/screenshots/contacts.webp",
         "assets/screenshots/experience.webp"
       ],
-      "video": "assets/recordings/busa-linkedin-desk.mp4",
+      "video": "assets/recordings/busa-linkedin-desk-intro.mp4",
       "videos": [
+        {
+          "src": "assets/recordings/busa-linkedin-desk-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
         {
           "src": "assets/recordings/busa-linkedin-desk.mp4",
           "title": "Full tour"
@@ -2052,8 +2427,12 @@
             "assets/screenshots/experience-zh-CN.webp",
             "assets/screenshots/icp-doc-zh-CN.webp"
           ],
-          "video": "assets/recordings/busa-linkedin-desk-zh-CN.mp4",
+          "video": "assets/recordings/busa-linkedin-desk-intro.mp4",
           "videos": [
+            {
+              "src": "assets/recordings/busa-linkedin-desk-intro.mp4",
+              "title": "Scenario introduction (English)"
+            },
             {
               "src": "assets/recordings/busa-linkedin-desk-zh-CN.mp4",
               "title": "完整导览"
@@ -2109,7 +2488,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/products.webp"
       ],
-      "video": "assets/recordings/busa-listing.mp4",
+      "video": "assets/recordings/busa-listing-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-listing-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-listing.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2164,7 +2553,17 @@
         "assets/screenshots/evaluations.webp",
         "assets/screenshots/registry.webp"
       ],
-      "video": "assets/recordings/busa-local-model-lab.mp4",
+      "video": "assets/recordings/busa-local-model-lab-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-local-model-lab-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-local-model-lab.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "agentPrompts": [
         "Open Busa Local Model Lab and show me which training examples are ready to export.",
         "Prepare a reproducible local QLoRA run from the curated Busabase dataset.",
@@ -2212,7 +2611,17 @@
         "assets/screenshots/outbox.webp",
         "assets/screenshots/overview.webp"
       ],
-      "video": "assets/recordings/busa-messenger.mp4",
+      "video": "assets/recordings/busa-messenger-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-messenger-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-messenger.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2271,7 +2680,17 @@
         "assets/screenshots/ledger.webp",
         "assets/screenshots/overview.webp"
       ],
-      "video": "assets/recordings/busa-money.mp4",
+      "video": "assets/recordings/busa-money-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-money-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-money.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2326,7 +2745,17 @@
         "assets/screenshots/song.webp",
         "assets/screenshots/storyboard.webp"
       ],
-      "video": "assets/recordings/busa-mv.mp4",
+      "video": "assets/recordings/busa-mv-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-mv-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-mv.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2380,7 +2809,17 @@
         "assets/screenshots/certificates.webp",
         "assets/screenshots/attention.webp"
       ],
-      "video": "assets/recordings/busa-office-admin.mp4",
+      "video": "assets/recordings/busa-office-admin-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-office-admin-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-office-admin.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2389,7 +2828,17 @@
             "assets/screenshots/certificates-zh-CN.webp",
             "assets/screenshots/attention-zh-CN.webp"
           ],
-          "video": "assets/recordings/busa-office-admin-zh-CN.mp4"
+          "video": "assets/recordings/busa-office-admin-intro.mp4",
+          "videos": [
+            {
+              "src": "assets/recordings/busa-office-admin-intro.mp4",
+              "title": "Scenario introduction (English)"
+            },
+            {
+              "src": "assets/recordings/busa-office-admin-zh-CN.mp4",
+              "title": "Existing zh-CN demo"
+            }
+          ]
         }
       },
       "agentPrompts": [
@@ -2432,7 +2881,17 @@
         "assets/screenshots/core.webp",
         "assets/screenshots/attention.webp"
       ],
-      "video": "assets/recordings/busa-office-cashier.mp4",
+      "video": "assets/recordings/busa-office-cashier-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-office-cashier-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-office-cashier.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2441,7 +2900,17 @@
             "assets/screenshots/core-zh-CN.webp",
             "assets/screenshots/attention-zh-CN.webp"
           ],
-          "video": "assets/recordings/busa-office-cashier-zh-CN.mp4"
+          "video": "assets/recordings/busa-office-cashier-intro.mp4",
+          "videos": [
+            {
+              "src": "assets/recordings/busa-office-cashier-intro.mp4",
+              "title": "Scenario introduction (English)"
+            },
+            {
+              "src": "assets/recordings/busa-office-cashier-zh-CN.mp4",
+              "title": "Existing zh-CN demo"
+            }
+          ]
         }
       },
       "agentPrompts": [
@@ -2485,7 +2954,17 @@
         "assets/screenshots/core.webp",
         "assets/screenshots/attention.webp"
       ],
-      "video": "assets/recordings/busa-office-finance.mp4",
+      "video": "assets/recordings/busa-office-finance-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-office-finance-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-office-finance.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2494,7 +2973,17 @@
             "assets/screenshots/core-zh-CN.webp",
             "assets/screenshots/attention-zh-CN.webp"
           ],
-          "video": "assets/recordings/busa-office-finance-zh-CN.mp4"
+          "video": "assets/recordings/busa-office-finance-intro.mp4",
+          "videos": [
+            {
+              "src": "assets/recordings/busa-office-finance-intro.mp4",
+              "title": "Scenario introduction (English)"
+            },
+            {
+              "src": "assets/recordings/busa-office-finance-zh-CN.mp4",
+              "title": "Existing zh-CN demo"
+            }
+          ]
         }
       },
       "agentPrompts": [
@@ -2540,7 +3029,17 @@
         "assets/screenshots/payroll.webp",
         "assets/screenshots/attention.webp"
       ],
-      "video": "assets/recordings/busa-office-hr.mp4",
+      "video": "assets/recordings/busa-office-hr-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-office-hr-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-office-hr.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2549,7 +3048,17 @@
             "assets/screenshots/payroll-zh-CN.webp",
             "assets/screenshots/attention-zh-CN.webp"
           ],
-          "video": "assets/recordings/busa-office-hr-zh-CN.mp4"
+          "video": "assets/recordings/busa-office-hr-intro.mp4",
+          "videos": [
+            {
+              "src": "assets/recordings/busa-office-hr-intro.mp4",
+              "title": "Scenario introduction (English)"
+            },
+            {
+              "src": "assets/recordings/busa-office-hr-zh-CN.mp4",
+              "title": "Existing zh-CN demo"
+            }
+          ]
         }
       },
       "agentPrompts": [
@@ -2596,7 +3105,17 @@
         "assets/screenshots/core.webp",
         "assets/screenshots/attention.webp"
       ],
-      "video": "assets/recordings/busa-office-legal.mp4",
+      "video": "assets/recordings/busa-office-legal-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-office-legal-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-office-legal.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2605,7 +3124,17 @@
             "assets/screenshots/core-zh-CN.webp",
             "assets/screenshots/attention-zh-CN.webp"
           ],
-          "video": "assets/recordings/busa-office-legal-zh-CN.mp4"
+          "video": "assets/recordings/busa-office-legal-intro.mp4",
+          "videos": [
+            {
+              "src": "assets/recordings/busa-office-legal-intro.mp4",
+              "title": "Scenario introduction (English)"
+            },
+            {
+              "src": "assets/recordings/busa-office-legal-zh-CN.mp4",
+              "title": "Existing zh-CN demo"
+            }
+          ]
         }
       },
       "agentPrompts": [
@@ -2652,7 +3181,17 @@
         "assets/screenshots/core.webp",
         "assets/screenshots/attention.webp"
       ],
-      "video": "assets/recordings/busa-office-recruiting.mp4",
+      "video": "assets/recordings/busa-office-recruiting-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-office-recruiting-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-office-recruiting.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2661,7 +3200,17 @@
             "assets/screenshots/core-zh-CN.webp",
             "assets/screenshots/attention-zh-CN.webp"
           ],
-          "video": "assets/recordings/busa-office-recruiting-zh-CN.mp4"
+          "video": "assets/recordings/busa-office-recruiting-intro.mp4",
+          "videos": [
+            {
+              "src": "assets/recordings/busa-office-recruiting-intro.mp4",
+              "title": "Scenario introduction (English)"
+            },
+            {
+              "src": "assets/recordings/busa-office-recruiting-zh-CN.mp4",
+              "title": "Existing zh-CN demo"
+            }
+          ]
         }
       },
       "agentPrompts": [
@@ -2706,7 +3255,17 @@
         "assets/screenshots/detail.webp",
         "assets/screenshots/overview.webp"
       ],
-      "video": "assets/recordings/busa-picks.mp4",
+      "video": "assets/recordings/busa-picks-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-picks-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-picks.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2758,7 +3317,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/watchlist.webp"
       ],
-      "video": "assets/recordings/busa-portfolio-health.mp4",
+      "video": "assets/recordings/busa-portfolio-health-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-portfolio-health-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-portfolio-health.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2808,7 +3377,17 @@
         "assets/screenshots/cover.webp",
         "assets/screenshots/overview.webp"
       ],
-      "video": "assets/recordings/busa-portrait-retouch.mp4",
+      "video": "assets/recordings/busa-portrait-retouch-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-portrait-retouch-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-portrait-retouch.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "agentPrompts": [
         "Summarize the retouch batches and flag what needs my attention.",
         "Retouch this portrait naturally and show me the candidates next to the original."
@@ -2853,7 +3432,17 @@
         "assets/screenshots/slides.webp",
         "assets/screenshots/style.webp"
       ],
-      "video": "assets/recordings/busa-ppt-factory.mp4",
+      "video": "assets/recordings/busa-ppt-factory-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-ppt-factory-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-ppt-factory.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2912,7 +3501,17 @@
         "assets/screenshots/ready.webp",
         "assets/screenshots/tested.webp"
       ],
-      "video": "assets/recordings/busa-pr-review.mp4",
+      "video": "assets/recordings/busa-pr-review-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-pr-review-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-pr-review.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -2970,7 +3569,17 @@
         "assets/screenshots/inventory.webp",
         "assets/screenshots/channels.webp"
       ],
-      "video": "assets/recordings/busa-product-hub.mp4",
+      "video": "assets/recordings/busa-product-hub-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-product-hub-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-product-hub.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -3027,7 +3636,17 @@
         "assets/screenshots/trends.webp",
         "assets/screenshots/watchlist.webp"
       ],
-      "video": "assets/recordings/busa-radar.mp4",
+      "video": "assets/recordings/busa-radar-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-radar-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-radar.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -3082,7 +3701,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/signals.webp"
       ],
-      "video": "assets/recordings/busa-retail-intel.mp4",
+      "video": "assets/recordings/busa-retail-intel-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-retail-intel-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-retail-intel.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -3140,7 +3769,17 @@
         "assets/screenshots/acceptance.webp",
         "assets/screenshots/weekly-report.webp"
       ],
-      "video": "assets/recordings/busa-rnd.mp4",
+      "video": "assets/recordings/busa-rnd-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-rnd-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-rnd.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -3150,7 +3789,17 @@
             "assets/screenshots/acceptance-zh-CN.webp",
             "assets/screenshots/weekly-report-zh-CN.webp"
           ],
-          "video": "assets/recordings/busa-rnd-zh-CN.mp4"
+          "video": "assets/recordings/busa-rnd-intro.mp4",
+          "videos": [
+            {
+              "src": "assets/recordings/busa-rnd-intro.mp4",
+              "title": "Scenario introduction (English)"
+            },
+            {
+              "src": "assets/recordings/busa-rnd-zh-CN.mp4",
+              "title": "Existing zh-CN demo"
+            }
+          ]
         }
       },
       "agentPrompts": [
@@ -3196,7 +3845,17 @@
         "assets/screenshots/sent.webp",
         "assets/screenshots/to-send.webp"
       ],
-      "video": "assets/recordings/busa-sales-outreach.mp4",
+      "video": "assets/recordings/busa-sales-outreach-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-sales-outreach-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-sales-outreach.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "agentPrompts": [
         "Summarize my product and ICP and flag what needs my attention.",
         "Find new target accounts that match my ICP and draft a first-touch email for each."
@@ -3243,7 +3902,17 @@
         "assets/screenshots/queries.webp",
         "assets/screenshots/sites.webp"
       ],
-      "video": "assets/recordings/busa-seo.mp4",
+      "video": "assets/recordings/busa-seo-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-seo-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-seo.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -3305,7 +3974,17 @@
         "assets/screenshots/shorts.webp",
         "assets/screenshots/timeline.webp"
       ],
-      "video": "assets/recordings/busa-social.mp4",
+      "video": "assets/recordings/busa-social-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-social-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-social.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -3364,7 +4043,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/reminders.webp"
       ],
-      "video": "assets/recordings/busa-standup.mp4",
+      "video": "assets/recordings/busa-standup-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-standup-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-standup.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -3421,7 +4110,17 @@
         "assets/screenshots/sla.webp",
         "assets/screenshots/tickets.webp"
       ],
-      "video": "assets/recordings/busa-support.mp4",
+      "video": "assets/recordings/busa-support-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-support-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-support.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -3476,7 +4175,17 @@
         "assets/screenshots/intake.webp",
         "assets/screenshots/overview.webp"
       ],
-      "video": "assets/recordings/busa-tickets.mp4",
+      "video": "assets/recordings/busa-tickets-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-tickets-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-tickets.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -3529,7 +4238,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/topics.webp"
       ],
-      "video": "assets/recordings/busa-writer.mp4",
+      "video": "assets/recordings/busa-writer-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-writer-intro.mp4",
+          "title": "Scenario introduction (English)"
+        },
+        {
+          "src": "assets/recordings/busa-writer.mp4",
+          "title": "Existing template demo"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [

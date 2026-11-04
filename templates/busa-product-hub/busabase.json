@@ -36,7 +36,7 @@
       "assets/screenshots/inventory.webp",
       "assets/screenshots/channels.webp"
     ],
-    "video": "assets/recordings/busa-product-hub.mp4",
+    "video": "assets/recordings/busa-product-hub-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -57,6 +57,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-product-hub-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-product-hub.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

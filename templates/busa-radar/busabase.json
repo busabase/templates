@@ -33,7 +33,7 @@
       "assets/screenshots/trends.webp",
       "assets/screenshots/watchlist.webp"
     ],
-    "video": "assets/recordings/busa-radar.mp4",
+    "video": "assets/recordings/busa-radar-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -52,6 +52,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-radar-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-radar.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

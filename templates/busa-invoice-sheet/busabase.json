@@ -33,7 +33,7 @@
       "assets/screenshots/overview-mobile.webp",
       "assets/screenshots/overview.webp"
     ],
-    "video": "assets/recordings/busa-invoice-sheet.mp4",
+    "video": "assets/recordings/busa-invoice-sheet-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -52,6 +52,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-invoice-sheet-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-invoice-sheet.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

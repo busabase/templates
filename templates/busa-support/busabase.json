@@ -38,7 +38,7 @@
       "assets/screenshots/sla.webp",
       "assets/screenshots/tickets.webp"
     ],
-    "video": "assets/recordings/busa-support.mp4",
+    "video": "assets/recordings/busa-support-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -56,6 +56,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-support-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-support.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

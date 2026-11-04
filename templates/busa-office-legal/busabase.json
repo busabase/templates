@@ -27,7 +27,7 @@
     "category": "legal",
     "schemaVersion": 1,
     "airapp": "busa-office-legal-app",
-    "video": "assets/recordings/busa-office-legal.mp4",
+    "video": "assets/recordings/busa-office-legal-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -36,7 +36,17 @@
           "assets/screenshots/core-zh-CN.webp",
           "assets/screenshots/attention-zh-CN.webp"
         ],
-        "video": "assets/recordings/busa-office-legal-zh-CN.mp4"
+        "video": "assets/recordings/busa-office-legal-intro.mp4",
+        "videos": [
+          {
+            "src": "assets/recordings/busa-office-legal-intro.mp4",
+            "title": "Scenario introduction (English)"
+          },
+          {
+            "src": "assets/recordings/busa-office-legal-zh-CN.mp4",
+            "title": "Existing zh-CN demo"
+          }
+        ]
       }
     },
     "screenshots": [
@@ -52,6 +62,16 @@
     "secrets": [],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-office-legal-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-office-legal.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

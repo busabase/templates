@@ -11,23 +11,43 @@
   },
   "version": "0.1.0",
   "license": "MIT",
-  "tags": ["production", "risk:local-write", "industry:beauty", "surface:busabase"],
+  "tags": [
+    "production",
+    "risk:local-write",
+    "industry:beauty",
+    "surface:busabase"
+  ],
   "template": {
     "category": "production",
     "schemaVersion": 1,
     "airapp": "busa-portrait-retouch-app",
-    "tags": ["production", "risk:local-write", "industry:beauty", "surface:busabase"],
+    "tags": [
+      "production",
+      "risk:local-write",
+      "industry:beauty",
+      "surface:busabase"
+    ],
     "screenshots": [
       "assets/screenshots/cover.webp",
       "assets/screenshots/overview.webp"
     ],
-    "video": "assets/recordings/busa-portrait-retouch.mp4",
+    "video": "assets/recordings/busa-portrait-retouch-intro.mp4",
     "agentPrompts": [
       "Summarize the retouch batches and flag what needs my attention.",
       "Retouch this portrait naturally and show me the candidates next to the original."
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-portrait-retouch-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-portrait-retouch.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }

@@ -32,7 +32,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/stories.webp"
     ],
-    "video": "assets/recordings/busa-brand.mp4",
+    "video": "assets/recordings/busa-brand-intro.mp4",
     "locales": {
       "zh-CN": {
         "screenshots": [
@@ -50,6 +50,16 @@
     ],
     "requires": {
       "airapp": true
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-brand-intro.mp4",
+        "title": "Scenario introduction (English)"
+      },
+      {
+        "src": "assets/recordings/busa-brand.mp4",
+        "title": "Existing template demo"
+      }
+    ]
   }
 }
