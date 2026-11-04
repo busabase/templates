@@ -163,3 +163,11 @@ test('people are listed once even when an agent adds their role in brackets', ()
   const entry = projectsSeen([...rows, extra], week).find((item) => item.dealId === deal('澄观数据').id);
   assert.deepEqual(entry.people.sort(), ['何嘉', '周可']);
 });
+
+test('the prompt names the root Busabase host for any busabase.com origin, and a private host as is', async () => {
+  const { defaultServerAddress } = await import('../app/js/model.js');
+  assert.equal(defaultServerAddress('https://busabase-demos-gxdzi.busabase.com'), 'https://busabase.com');
+  assert.equal(defaultServerAddress('https://busabase.com'), 'https://busabase.com');
+  assert.equal(defaultServerAddress('https://busabase.example.cn:8443'), 'https://busabase.example.cn:8443');
+  assert.equal(defaultServerAddress('http://localhost:4387'), 'http://localhost:4387');
+});

@@ -4,7 +4,7 @@ import { renderIcons } from '../vendor/icons.js';
 import { appConfig } from './config.js';
 import { markdownText } from './markdown.js';
 import { connectionPrompt, messages } from './messages.js';
-import { followupsDue, hasSyntheticData, mergeById, weekFromLabel, weekRange } from './model.js';
+import { defaultServerAddress, followupsDue, hasSyntheticData, mergeById, weekFromLabel, weekRange } from './model.js';
 import { getProvider } from './providers/index.js';
 import { connectionHintKey, runtimeLabel } from './runtime.js';
 import { baseByKey, boardHtml, connectHtml, createContext, detailHtml, esc, overviewHtml, tableHtml } from './screens.js';
@@ -251,7 +251,7 @@ async function load() {
     const payload = await state.provider.getState();
     if (generation !== state.generation) return;
     state.payload = payload;
-    state.baseUrl ||= payload.baseUrl || location.origin;
+    state.baseUrl ||= payload.baseUrl || defaultServerAddress(location.origin);
     render();
   } catch (error) {
     if (generation !== state.generation) return;

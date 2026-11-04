@@ -172,6 +172,19 @@ export function dealTimeline(records, dealId) {
     .filter((group) => group.meetings.length);
 }
 
+/**
+ * The address to put in the agent prompt. Busabase Cloud also serves spaces on
+ * `<space>.busabase.com`; the CLI is documented against the root host, so any
+ * busabase.com origin becomes https://busabase.com. A private deployment keeps
+ * its own origin (and the person can still edit the field).
+ */
+export function defaultServerAddress(origin) {
+  try {
+    const url = new URL(origin);
+    return /(^|\.)busabase\.com$/i.test(url.host) ? 'https://busabase.com' : url.origin;
+  } catch { return 'https://busabase.com'; }
+}
+
 /** True when the loaded projects are the template's invented sample. */
 export const hasSyntheticData = (records) => records.some((row) => row.baseKey === 'deals' && /合成|synthetic/i.test(String(row.fields.source || '')));
 
