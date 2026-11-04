@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Dino Explorer Figures">
+<title>Dino Explorer Figures (original illustration, fictional demo product)</title>
+<rect width="800" height="800" fill="#eaf5e0"/>
+<circle cx="640" cy="150" r="90" fill="#ffffff" opacity="0.35"/>
+<circle cx="140" cy="640" r="60" fill="#ffffff" opacity="0.25"/>
+<ellipse cx="400" cy="690" rx="250" ry="34" fill="#000000" opacity="0.08"/>
+<g stroke="#2b3437" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+
+<path d="M150 560 Q150 430 260 420 Q300 300 380 300 Q430 300 440 350 L470 340 Q500 336 500 362 L470 380 Q470 470 520 520 L600 520 Q640 520 650 560 Z" fill="#2f9e6e"/>
+<path d="M300 340 L320 300 L340 336 M350 312 L372 276 L388 318" fill="#ffd166"/>
+<circle cx="460" cy="356" r="7" fill="#2b3437"/>
+<rect x="250" y="540" width="44" height="90" rx="14" fill="#2f9e6e"/><rect x="420" y="540" width="44" height="90" rx="14" fill="#2f9e6e"/>
+<path d="M560 600 Q560 520 610 500 L640 470 Q660 450 680 470 L660 510 Q690 560 680 600 Z" fill="#9b6ad6"/>
+<circle cx="655" cy="474" r="5" fill="#2b3437"/>
+<path d="M120 640 Q140 590 180 590 Q205 560 230 590 L230 640 Z" fill="#f78f3b"/>
+
+</g>
+</svg>

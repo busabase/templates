@@ -1,0 +1,8 @@
+# Files that belong in the repository but not in the installed AirApp node.
+# The site deploys only `vendor/worker.js` (site.entry) and `public/` (site.assets);
+# src/ stays in the node so the next agent can change and rebuild it.
+# Never exclude package.json or the entry it declares.
+test/
+node_modules/
+package-lock.json
+.gitignore

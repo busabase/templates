@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Cuddle Bear Plush">
+<title>Cuddle Bear Plush (original illustration, fictional demo product)</title>
+<rect width="800" height="800" fill="#f3e9dc"/>
+<circle cx="640" cy="150" r="90" fill="#ffffff" opacity="0.35"/>
+<circle cx="140" cy="640" r="60" fill="#ffffff" opacity="0.25"/>
+<ellipse cx="400" cy="690" rx="250" ry="34" fill="#000000" opacity="0.08"/>
+<g stroke="#2b3437" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+
+<circle cx="285" cy="215" r="58" fill="#c98b5b"/><circle cx="515" cy="215" r="58" fill="#c98b5b"/>
+<circle cx="285" cy="215" r="26" fill="#f2c9a5" stroke="none"/><circle cx="515" cy="215" r="26" fill="#f2c9a5" stroke="none"/>
+<ellipse cx="400" cy="520" rx="160" ry="150" fill="#c98b5b"/>
+<ellipse cx="400" cy="545" rx="90" ry="85" fill="#f2c9a5"/>
+<circle cx="400" cy="300" r="140" fill="#c98b5b"/>
+<ellipse cx="400" cy="345" rx="62" ry="48" fill="#f2c9a5"/>
+<circle cx="350" cy="280" r="12" fill="#2b3437"/><circle cx="450" cy="280" r="12" fill="#2b3437"/>
+<ellipse cx="400" cy="330" rx="20" ry="14" fill="#2b3437"/>
+<path d="M378 362 Q400 380 422 362" fill="none"/>
+<ellipse cx="250" cy="470" rx="45" ry="70" fill="#c98b5b" transform="rotate(25 250 470)"/>
+<ellipse cx="550" cy="470" rx="45" ry="70" fill="#c98b5b" transform="rotate(-25 550 470)"/>
+<ellipse cx="320" cy="655" rx="62" ry="40" fill="#c98b5b"/><ellipse cx="480" cy="655" rx="62" ry="40" fill="#c98b5b"/>
+<path d="M360 420 Q400 400 440 420 L425 450 L375 450 Z" fill="#e4572e"/>
+
+</g>
+</svg>

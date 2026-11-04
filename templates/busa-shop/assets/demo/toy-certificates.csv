@@ -1,0 +1,40 @@
+product_id,cert_type,cert_number,issuer,issued_date,expiry_date
+tt-walking-robot,EN 71,TT-EN71-25-0101,Northbridge Test Labs (fictional),2025-04-10,2027-04-10
+tt-walking-robot,ASTM F963,TT-ASTM-25-0101,Northbridge Test Labs (fictional),2025-04-12,2027-04-12
+tt-walking-robot,CPSIA / CPC,TT-CPC-25-0101,Tumbleberry Toy Works (fictional),2025-04-15,2027-04-15
+tt-walking-robot,UKCA,TT-UKCA-25-0101,Pearl River Testing Centre (fictional),2025-05-02,2027-05-02
+tt-rainbow-blocks,EN 71,TT-EN71-25-0102,Northbridge Test Labs (fictional),2025-06-01,2027-06-01
+tt-rainbow-blocks,ASTM F963,TT-ASTM-25-0102,Northbridge Test Labs (fictional),2025-06-03,2027-06-03
+tt-rainbow-blocks,CPSIA / CPC,TT-CPC-25-0102,Tumbleberry Toy Works (fictional),2025-06-05,2027-06-05
+tt-rc-racer,EN 71,TT-EN71-25-0103,Pearl River Testing Centre (fictional),2025-08-20,2027-08-20
+tt-rc-racer,CE,TT-CE-25-0103,Pearl River Testing Centre (fictional),2025-08-21,2027-08-21
+tt-rc-racer,FCC,TT-FCC-25-0103,Pearl River Testing Centre (fictional),2025-08-22,2027-08-22
+tt-rc-racer,UN38.3,TT-UN383-24-0103,Pearl River Testing Centre (fictional),2024-12-15,2026-12-15
+tt-rc-racer,ASTM F963,TT-ASTM-25-0103,Northbridge Test Labs (fictional),2025-08-25,2027-08-25
+tt-rc-racer,CPSIA / CPC,TT-CPC-25-0103,Tumbleberry Toy Works (fictional),2025-08-26,2027-08-26
+tt-cuddle-bear,EN 71,TT-EN71-25-0104,Northbridge Test Labs (fictional),2025-03-01,2027-03-01
+tt-cuddle-bear,ASTM F963,TT-ASTM-25-0104,Northbridge Test Labs (fictional),2025-03-03,2027-03-03
+tt-cuddle-bear,CPSIA / CPC,TT-CPC-25-0104,Tumbleberry Toy Works (fictional),2025-03-04,2027-03-04
+tt-cuddle-bear,UKCA,TT-UKCA-25-0104,Pearl River Testing Centre (fictional),2025-03-10,2027-03-10
+tt-ocean-puzzle,EN 71,TT-EN71-25-0105,Northbridge Test Labs (fictional),2025-01-20,2027-01-20
+tt-ocean-puzzle,ASTM F963,TT-ASTM-24-0105,Northbridge Test Labs (fictional),2024-09-30,2026-09-30
+tt-ocean-puzzle,CPSIA / CPC,TT-CPC-25-0105,Tumbleberry Toy Works (fictional),2025-02-12,2027-02-12
+tt-wooden-train,EN 71,TT-EN71-24-0106,Northbridge Test Labs (fictional),2024-12-01,2026-12-01
+tt-wooden-train,ASTM F963,TT-ASTM-25-0106,Northbridge Test Labs (fictional),2025-07-01,2027-07-01
+tt-wooden-train,CPSIA / CPC,TT-CPC-25-0106,Tumbleberry Toy Works (fictional),2025-07-02,2027-07-02
+tt-wooden-train,UKCA,TT-UKCA-25-0106,Pearl River Testing Centre (fictional),2025-07-10,2027-07-10
+tt-xylophone,EN 71,TT-EN71-25-0107,Northbridge Test Labs (fictional),2025-05-05,2027-05-05
+tt-xylophone,ASTM F963,TT-ASTM-25-0107,Northbridge Test Labs (fictional),2025-05-06,2027-05-06
+tt-xylophone,CPSIA / CPC,TT-CPC-25-0107,Tumbleberry Toy Works (fictional),2025-05-07,2027-05-07
+tt-chef-kitchen,EN 71,TT-EN71-25-0108,Northbridge Test Labs (fictional),2025-09-01,2027-09-01
+tt-chef-kitchen,ASTM F963,TT-ASTM-25-0108,Northbridge Test Labs (fictional),2025-09-03,2027-09-03
+tt-dino-figures,EN 71,TT-EN71-26-0109,Northbridge Test Labs (fictional),2026-01-15,2028-01-15
+tt-dino-figures,ASTM F963,TT-ASTM-26-0109,Northbridge Test Labs (fictional),2026-01-16,2028-01-16
+tt-dino-figures,CPSIA / CPC,TT-CPC-26-0109,Tumbleberry Toy Works (fictional),2026-01-18,2028-01-18
+tt-rainbow-kite,EN 71,TT-EN71-25-0110,Pearl River Testing Centre (fictional),2025-10-01,2027-10-01
+tt-bubble-machine,EN 71,TT-EN71-25-0111,Northbridge Test Labs (fictional),2025-05-20,2027-05-20
+tt-bubble-machine,ASTM F963,TT-ASTM-25-0111,Northbridge Test Labs (fictional),2025-05-21,2027-05-21
+tt-bubble-machine,CPSIA / CPC,TT-CPC-25-0111,Tumbleberry Toy Works (fictional),2025-05-22,2027-05-22
+tt-bubble-machine,UKCA,TT-UKCA-24-0111,Pearl River Testing Centre (fictional),2024-10-20,2026-10-20
+tt-magnetic-tiles,EN 71,TT-EN71-26-0112,Northbridge Test Labs (fictional),2026-08-01,2028-08-01
+tt-magnetic-tiles,ASTM F963,TT-ASTM-26-0112,Northbridge Test Labs (fictional),2026-08-03,2028-08-03

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="RC Mini Racer">
+<title>RC Mini Racer (original illustration, fictional demo product)</title>
+<rect width="800" height="800" fill="#e8f4ec"/>
+<circle cx="640" cy="150" r="90" fill="#ffffff" opacity="0.35"/>
+<circle cx="140" cy="640" r="60" fill="#ffffff" opacity="0.25"/>
+<ellipse cx="400" cy="690" rx="250" ry="34" fill="#000000" opacity="0.08"/>
+<g stroke="#2b3437" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+
+<line x1="560" y1="330" x2="610" y2="200"/>
+<circle cx="612" cy="196" r="12" fill="#e4572e"/>
+<path d="M170 520 L220 420 Q240 380 290 375 L470 370 Q520 372 560 420 L630 460 Q660 475 660 510 L660 540 L170 540 Z" fill="#e4572e"/>
+<path d="M300 385 L330 450 L470 450 L455 385 Z" fill="#cfe9f5"/>
+<path d="M490 390 L520 450 L580 450 Q560 405 520 390 Z" fill="#cfe9f5"/>
+<rect x="190" y="470" width="80" height="22" rx="8" fill="#ffd166"/>
+<circle cx="285" cy="560" r="62" fill="#2b3437"/><circle cx="285" cy="560" r="24" fill="#d9dee0"/>
+<circle cx="545" cy="560" r="62" fill="#2b3437"/><circle cx="545" cy="560" r="24" fill="#d9dee0"/>
+
+</g>
+</svg>

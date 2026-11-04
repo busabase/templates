@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Magnetic Building Tiles">
+<title>Magnetic Building Tiles (original illustration, fictional demo product)</title>
+<rect width="800" height="800" fill="#f3f0ff"/>
+<circle cx="640" cy="150" r="90" fill="#ffffff" opacity="0.35"/>
+<circle cx="140" cy="640" r="60" fill="#ffffff" opacity="0.25"/>
+<ellipse cx="400" cy="690" rx="250" ry="34" fill="#000000" opacity="0.08"/>
+<g stroke="#2b3437" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+
+<rect x="170" y="430" width="160" height="160" rx="10" fill="#5fb3d0" fill-opacity="0.75"/>
+<rect x="330" y="430" width="160" height="160" rx="10" fill="#ffd166" fill-opacity="0.8"/>
+<rect x="490" y="430" width="160" height="160" rx="10" fill="#e4572e" fill-opacity="0.7"/>
+<path d="M170 430 L250 290 L330 430 Z" fill="#2f9e6e" fill-opacity="0.75"/>
+<path d="M330 430 L410 290 L490 430 Z" fill="#9b6ad6" fill-opacity="0.75"/>
+<path d="M490 430 L570 290 L650 430 Z" fill="#f78fb3" fill-opacity="0.8"/>
+<path d="M250 290 L410 290 L330 160 Z" fill="#ffd166" fill-opacity="0.8"/>
+<path d="M410 290 L570 290 L490 160 Z" fill="#5fb3d0" fill-opacity="0.75"/>
+<rect x="215" y="475" width="70" height="70" rx="8" fill="none" stroke-width="6" opacity="0.5"/>
+<rect x="375" y="475" width="70" height="70" rx="8" fill="none" stroke-width="6" opacity="0.5"/>
+<rect x="535" y="475" width="70" height="70" rx="8" fill="none" stroke-width="6" opacity="0.5"/>
+
+</g>
+</svg>

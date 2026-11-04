@@ -1,0 +1,243 @@
+{
+  "name": "Reports",
+  "description": "One row per daily shop check: what the agent found in Products, Certificates, Orders and on the live site, and the owner's feedback. The next check applies feedback on every open report, marks it acknowledged, and records what it changed in Applied feedback. The one row with Sample report ticked is the template's example.",
+  "position": 2,
+  "agentPrompts": [
+    {
+      "key": "run-daily-check",
+      "label": "Run today's shop check",
+      "body": "Read the `busa-shop` skill in this folder and follow its \"Daily shop check\" procedure: first apply my open feedback (on the sample report too) and mark those reports acknowledged, then check products, certificates, orders, demo leftovers and the live site, and write today's report. Do not fix product data yourself; list what needs fixing."
+    },
+    {
+      "key": "summarize-open-reports",
+      "label": "What did the shop checks find?",
+      "body": "Read the `busa-shop` skill in this folder, then summarize the open reports, newest first: the issues found, which are new since the report before, and whether my feedback has been applied.",
+      "intent": "read-only"
+    },
+    {
+      "key": "give-feedback",
+      "label": "Record my feedback on the latest report",
+      "body": "Read the `busa-shop` skill in this folder, then write the feedback I give you into Owner feedback on the latest report, word for word. Do not apply it now; the next daily check applies it."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Report",
+      "type": "text",
+      "required": false,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "report-date",
+      "name": "Date",
+      "type": "date",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "open",
+            "name": "Open"
+          },
+          {
+            "id": "acknowledged",
+            "name": "Acknowledged"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "summary",
+      "name": "Summary",
+      "type": "longtext",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "issue-types",
+      "name": "Issue types",
+      "type": "multiselect",
+      "required": false,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "missing-price",
+            "name": "Missing price"
+          },
+          {
+            "id": "hidden-product",
+            "name": "Product not listed"
+          },
+          {
+            "id": "missing-image",
+            "name": "Missing image"
+          },
+          {
+            "id": "out-of-stock",
+            "name": "Out of stock"
+          },
+          {
+            "id": "certificate-missing",
+            "name": "Certificate missing"
+          },
+          {
+            "id": "certificate-expired",
+            "name": "Certificate expired"
+          },
+          {
+            "id": "certificate-expiring",
+            "name": "Certificate expiring"
+          },
+          {
+            "id": "orders-waiting",
+            "name": "Orders waiting"
+          },
+          {
+            "id": "demo-leftovers",
+            "name": "Demo leftovers on the live site"
+          },
+          {
+            "id": "site-unreachable",
+            "name": "Site unreachable"
+          },
+          {
+            "id": "site-mismatch",
+            "name": "Site differs from data"
+          },
+          {
+            "id": "image-unreachable",
+            "name": "Photo does not load"
+          },
+          {
+            "id": "other",
+            "name": "Other (standing rule)"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "issue-count",
+      "name": "Issue count",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "issues",
+      "name": "Issues found",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "orders-waiting",
+      "name": "Orders waiting",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "site-check",
+      "name": "Live site check",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "owner-feedback",
+      "name": "Owner feedback",
+      "type": "longtext",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "applied-feedback",
+      "name": "Applied feedback",
+      "type": "longtext",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "checked-at",
+      "name": "Checked at",
+      "type": "date",
+      "required": false,
+      "position": 11,
+      "options": {
+        "date": {
+          "includeTime": true
+        }
+      }
+    },
+    {
+      "slug": "sample",
+      "name": "Sample report",
+      "type": "checkbox",
+      "required": false,
+      "position": 12,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "open-reports",
+      "name": "Open reports",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "open"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "report-date",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "report-date",
+          "issue-count",
+          "issue-types",
+          "orders-waiting",
+          "owner-feedback"
+        ]
+      }
+    },
+    {
+      "slug": "all-reports",
+      "name": "All reports",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "report-date",
+            "direction": "desc"
+          }
+        ]
+      }
+    }
+  ]
+}

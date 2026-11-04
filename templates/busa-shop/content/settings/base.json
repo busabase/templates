@@ -1,0 +1,165 @@
+{
+  "name": "Settings",
+  "description": "One row: what the shop website shows (store name, tagline, currency, contact, language, ship-to countries) and what the daily shop check uses (required certificates, expiry warning, standing check rules). The website reads it on every refresh, so a change here shows on the live site within about a minute, without a redeploy.",
+  "position": 1,
+  "agentPrompts": [
+    {
+      "key": "show-settings",
+      "label": "What does my shop show right now?",
+      "body": "Read the `busa-shop` skill in this folder, then tell me the store name, tagline, currency, contact email, language and ship-to countries on record, whether the demo notice is still on, and which Products table the shop is reading.",
+      "intent": "read-only"
+    },
+    {
+      "key": "update-store-info",
+      "label": "Change the store name, tagline or contact",
+      "body": "Read the `busa-shop` skill in this folder, then update the store name, tagline, contact email, about text or shipping note I give you on the one Settings row. Tell me it shows on the live site within about a minute, with no redeploy."
+    },
+    {
+      "key": "prepare-go-live",
+      "label": "Get the shop ready to go live",
+      "body": "Read the `busa-shop` skill in this folder and follow \"Open the shop\": check the Products table it reads, the currency, contact email, ship-to countries and demo notice, and tell me exactly what I still have to do before I click Go live."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "store-name",
+      "name": "Store name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "tagline",
+      "name": "Tagline",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "currency",
+      "name": "Currency",
+      "type": "text",
+      "required": true,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "contact-email",
+      "name": "Contact email",
+      "type": "email",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "language",
+      "name": "Language",
+      "type": "select",
+      "required": false,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "en",
+            "name": "English"
+          },
+          {
+            "id": "de",
+            "name": "Deutsch"
+          },
+          {
+            "id": "fr",
+            "name": "Français"
+          },
+          {
+            "id": "es",
+            "name": "Español"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "ships-to",
+      "name": "Ships to (country codes)",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "about",
+      "name": "About the store",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "shipping-note",
+      "name": "Shipping note",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "demo-notice",
+      "name": "Show the demo-store notice",
+      "type": "checkbox",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "listed-tag",
+      "name": "Only list products with this tag",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "products-base",
+      "name": "Products table (id or slug, optional)",
+      "type": "text",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "site-url",
+      "name": "Live site address",
+      "type": "url",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "required-certificates",
+      "name": "Required certificates",
+      "type": "text",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "expiry-warning-days",
+      "name": "Certificate expiry warning (days)",
+      "type": "number",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "check-rules",
+      "name": "Standing check rules",
+      "type": "longtext",
+      "required": false,
+      "position": 14,
+      "options": {}
+    }
+  ],
+  "views": []
+}

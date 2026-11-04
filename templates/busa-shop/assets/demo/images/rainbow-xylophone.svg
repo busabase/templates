@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Rainbow Xylophone">
+<title>Rainbow Xylophone (original illustration, fictional demo product)</title>
+<rect width="800" height="800" fill="#fdf0f6"/>
+<circle cx="640" cy="150" r="90" fill="#ffffff" opacity="0.35"/>
+<circle cx="140" cy="640" r="60" fill="#ffffff" opacity="0.25"/>
+<ellipse cx="400" cy="690" rx="250" ry="34" fill="#000000" opacity="0.08"/>
+<g stroke="#2b3437" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+
+<path d="M170 300 L630 360 L630 560 L170 620 Z" fill="#c98b5b"/>
+<rect x="195" y="285" width="44" height="350" rx="14" fill="#e4572e"/>
+<rect x="250" y="295" width="44" height="330" rx="14" fill="#f78f3b"/>
+<rect x="305" y="305" width="44" height="310" rx="14" fill="#ffd166"/>
+<rect x="360" y="315" width="44" height="290" rx="14" fill="#2f9e6e"/>
+<rect x="415" y="325" width="44" height="270" rx="14" fill="#5fb3d0"/>
+<rect x="470" y="335" width="44" height="250" rx="14" fill="#3d6fd6"/>
+<rect x="525" y="345" width="44" height="230" rx="14" fill="#9b6ad6"/>
+<rect x="580" y="355" width="40" height="210" rx="14" fill="#f78fb3"/>
+<line x1="470" y1="180" x2="600" y2="270"/><circle cx="460" cy="172" r="26" fill="#ffd166"/>
+<line x1="330" y1="170" x2="420" y2="270"/><circle cx="320" cy="158" r="26" fill="#e4572e"/>
+
+</g>
+</svg>

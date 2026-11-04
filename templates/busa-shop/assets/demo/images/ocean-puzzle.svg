@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Ocean Floor Puzzle">
+<title>Ocean Floor Puzzle (original illustration, fictional demo product)</title>
+<rect width="800" height="800" fill="#dbeefe"/>
+<circle cx="640" cy="150" r="90" fill="#ffffff" opacity="0.35"/>
+<circle cx="140" cy="640" r="60" fill="#ffffff" opacity="0.25"/>
+<ellipse cx="400" cy="690" rx="250" ry="34" fill="#000000" opacity="0.08"/>
+<g stroke="#2b3437" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+
+<rect x="150" y="190" width="500" height="420" rx="18" fill="#5fb3d0"/>
+<path d="M150 470 Q260 430 360 470 T650 470 L650 610 L150 610 Z" fill="#f6d28b" stroke="none"/>
+<path d="M150 470 Q260 430 360 470 T650 470" fill="none"/>
+<path d="M260 300 Q300 260 350 300 Q300 340 260 300 Z" fill="#ffd166"/><path d="M350 300 L380 280 L380 320 Z" fill="#ffd166"/>
+<circle cx="285" cy="296" r="6" fill="#2b3437"/>
+<path d="M470 360 Q510 330 560 360 Q510 390 470 360 Z" fill="#f78fb3"/><path d="M560 360 L585 342 L585 378 Z" fill="#f78fb3"/>
+<path d="M250 600 L250 520 M235 545 L250 520 L265 545" stroke="#2f9e6e"/>
+<path d="M560 600 Q540 540 575 500" fill="none" stroke="#2f9e6e"/>
+<path d="M317 190 L317 610 M483 190 L483 610 M150 400 L650 400" stroke="#2b3437" stroke-width="5" stroke-dasharray="1 0" opacity="0.55"/>
+<circle cx="317" cy="300" r="20" fill="#5fb3d0" stroke-width="5"/><circle cx="483" cy="500" r="20" fill="#f6d28b" stroke-width="5"/>
+<circle cx="400" cy="400" r="20" fill="#5fb3d0" stroke-width="5"/>
+
+</g>
+</svg>
