@@ -763,6 +763,62 @@
       }
     },
     {
+      "subdir": "templates/busa-dealflow",
+      "name": "busa-dealflow",
+      "displayName": {
+        "en": "Investment Deal Flow",
+        "zh-CN": "投资 Deal Flow"
+      },
+      "description": {
+        "en": "One shared space for an investment team: a single record per company, every meeting, filed document and post-investment update linked to it, follow-ups with owners, and a weekly leadership digest — kept current by each person's own agent.",
+        "zh-CN": "投资团队的共享空间：一家公司一条项目记录，所有会议、资料和投后进展都关联到它，待跟进有负责人，管理层每周一份周报——由每个人自己的智能体随手维护。"
+      },
+      "category": "operations",
+      "risk": "gated-write",
+      "tags": [
+        "venture-capital",
+        "deal-flow",
+        "meeting-notes",
+        "weekly-report",
+        "risk:gated-write",
+        "follow-ups",
+        "weekly-digest",
+        "agent-neutral"
+      ],
+      "screenshots": [
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/project.webp",
+        "assets/screenshots/followups.webp",
+        "assets/screenshots/connect.webp"
+      ],
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/project-zh-CN.webp",
+            "assets/screenshots/followups-zh-CN.webp",
+            "assets/screenshots/connect-zh-CN.webp"
+          ]
+        }
+      },
+      "agentPrompts": [
+        "Turn this meeting transcript into minutes, key findings and follow-ups, and link it to the right project.",
+        "What did the team see this week, what did we find, and what needs following up?",
+        "Write this week's team digest for leadership."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 5,
+        "records": 29,
+        "files": 31,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-demo-video-factory",
       "name": "busa-demo-video-factory",
       "displayName": {

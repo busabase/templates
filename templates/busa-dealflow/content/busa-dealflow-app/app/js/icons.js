@@ -1,0 +1,2 @@
+import { createIcons, Menu, PanelLeftClose, RefreshCw, X, LayoutDashboard, BriefcaseBusiness, MessagesSquare, ListChecks, FileText, LockKeyhole, PlugZap, ChevronLeft, ChevronRight, Copy, Check, ExternalLink } from 'lucide';
+export function renderIcons() { createIcons({ icons: { Menu, PanelLeftClose, RefreshCw, X, LayoutDashboard, BriefcaseBusiness, MessagesSquare, ListChecks, FileText, LockKeyhole, PlugZap, ChevronLeft, ChevronRight, Copy, Check, ExternalLink } }); }

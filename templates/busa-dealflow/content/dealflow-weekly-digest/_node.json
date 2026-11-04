@@ -1,0 +1,44 @@
+{
+  "type": "skill",
+  "name": "dealflow-weekly-digest",
+  "description": "Write the weekly leadership digest: projects seen, key findings, stage changes and follow-ups to chase.",
+  "position": 7,
+  "agentPrompts": [
+    {
+      "key": "run",
+      "label": {
+        "en": "Write this week's team digest",
+        "zh-CN": "写本周投资团队周报"
+      },
+      "body": {
+        "en": "Read `busa-dealflow`, then follow this skill to write this week's digest as a draft and send me a five-line summary with the link.",
+        "zh-CN": "先读 `busa-dealflow`，再按本技能为本周写一份周报草稿，回复我五行摘要和链接。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "last-week",
+      "label": {
+        "en": "Write last week's digest",
+        "zh-CN": "补写上周周报"
+      },
+      "body": {
+        "en": "Read `busa-dealflow`, then follow this skill for last Monday to Sunday. If a draft for that week exists, update it instead of adding another.",
+        "zh-CN": "先读 `busa-dealflow`，再按本技能为上周一到周日写周报；那一周已有草稿就更新它，不要再建一条。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "check",
+      "label": {
+        "en": "Check a digest against its records",
+        "zh-CN": "核对一份周报和原始记录"
+      },
+      "body": {
+        "en": "For the digest I name, check every line against the meeting and follow-up records it cites and list anything that does not match. Do not change anything.",
+        "zh-CN": "核对我说的那份周报：逐行对照它引用的会议和待跟进记录，列出对不上的地方。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ]
+}

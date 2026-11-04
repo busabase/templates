@@ -1,0 +1,56 @@
+{
+  "type": "skill",
+  "name": "dealflow-meeting-notes",
+  "description": "Turn a meeting transcript into minutes, key findings and follow-ups linked to the right project.",
+  "position": 6,
+  "agentPrompts": [
+    {
+      "key": "run",
+      "label": {
+        "en": "Turn this transcript into minutes",
+        "zh-CN": "把这份转写整理成纪要"
+      },
+      "body": {
+        "en": "Follow this skill (after reading `busa-dealflow`) on the transcript or notes I give you: find the project without creating a duplicate, write the meeting record and its follow-ups, update the project, and send me the links.",
+        "zh-CN": "先读 `busa-dealflow`，再按本技能处理我给你的转写或笔记：找到对应项目（不要重复建），写入会议记录和待跟进，更新项目，最后把链接发给我。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "try-sample",
+      "label": {
+        "en": "Try the flow on the sample transcript",
+        "zh-CN": "用示例转写试跑一遍"
+      },
+      "body": {
+        "en": "Read `busa-dealflow`, then run this skill on `examples/sample-transcript-yunshan.md` from this skill's files (it is invented sample data). Show me what you would write before writing it.",
+        "zh-CN": "先读 `busa-dealflow`，再用本技能文件里的 `examples/sample-transcript-yunshan.md`（虚构示例）试跑一遍。写入前先把要写的内容给我看。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "review",
+      "label": {
+        "en": "Check a meeting record against the playbook",
+        "zh-CN": "按手册检查一条会议记录"
+      },
+      "body": {
+        "en": "Check the meeting record I name against this skill's checklist: project link, title format, findings, follow-up owners and dates, no financial figures. List what to fix; do not change anything.",
+        "zh-CN": "按本技能的检查清单检查我说的那条会议记录：项目关联、标题格式、关键发现、待跟进的负责人和日期、有没有财务数字。列出要改的地方，不要修改任何记录。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "add-rule",
+      "label": {
+        "en": "Add a new team rule to this playbook",
+        "zh-CN": "把一条新规矩写进这份手册"
+      },
+      "body": {
+        "en": "Fold the rule I describe into this skill's SKILL.md where it belongs, keeping the rest unchanged, and show me the diff before proposing it.",
+        "zh-CN": "把我描述的新规矩写进本技能 SKILL.md 合适的位置，其他内容不动，提交前先给我看改动。"
+      },
+      "intent": "change"
+    }
+  ]
+}

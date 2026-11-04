@@ -1,0 +1,130 @@
+{
+  "name": "IC notes (leadership only)",
+  "description": "Investment-committee conclusions and partners' views. Restrict this table to leadership after install; nothing here is mirrored into the shared tables.",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "record-ic",
+      "label": {
+        "en": "Record an IC decision",
+        "zh-CN": "记录一次投决会结论"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder and follow it. Record the IC decision I describe for its project: the conclusion, the partners' view, and the conditions in words. Keep figures and fund economics out of it, and do not copy any of it into the shared tables.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，按它的规则做。为对应项目记录我描述的投决会结论：结论、合伙人意见、条件要点用文字写。不要写金额和基金收益，也不要把内容复制到共享表。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "ic-history",
+      "label": {
+        "en": "Show the IC history of one project",
+        "zh-CN": "看一个项目的投决历史"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder and follow it. List every IC decision for the project I name, oldest first, with the conditions and whether the follow-ups that came out of them are done. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，按它的规则做。按时间顺序列出我说的项目的每次投决结论和条件，并核对由此产生的待跟进是否完成。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Title",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "deal",
+      "name": "Project",
+      "type": "relation",
+      "required": true,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "deals",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "decided-on",
+      "name": "IC date",
+      "type": "date",
+      "required": true,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "decision",
+      "name": "Decision",
+      "type": "select",
+      "required": true,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "approved",
+            "name": "Approved",
+            "color": "emerald"
+          },
+          {
+            "id": "conditional",
+            "name": "Approved with conditions",
+            "color": "amber"
+          },
+          {
+            "id": "deferred",
+            "name": "Deferred",
+            "color": "slate"
+          },
+          {
+            "id": "declined",
+            "name": "Declined",
+            "color": "rose"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "partners-view",
+      "name": "Partners' view",
+      "type": "markdown",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "conditions",
+      "name": "Conditions",
+      "type": "markdown",
+      "required": false,
+      "position": 5,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest",
+      "name": "Latest first",
+      "description": "IC decisions, newest first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "decided-on",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "deal",
+          "decided-on",
+          "decision"
+        ]
+      }
+    }
+  ]
+}

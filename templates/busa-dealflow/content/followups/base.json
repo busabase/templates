@@ -1,0 +1,189 @@
+{
+  "name": "Follow-ups",
+  "description": "What someone promised to do next, with an owner and a date, linked to its project and the meeting it came from.",
+  "position": 2,
+  "agentPrompts": [
+    {
+      "key": "my-followups",
+      "label": {
+        "en": "What do I still owe this week?",
+        "zh-CN": "我这周还欠哪些跟进"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder and follow it. List the open follow-ups whose owner is me, overdue first, then due this week, with the project and the meeting each came from. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，按它的规则做。列出负责人是我的未完成待跟进：先列逾期的，再列本周到期的，带上项目和来源会议。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "close-followup",
+      "label": {
+        "en": "Mark a follow-up done and note the outcome",
+        "zh-CN": "把一条跟进标记完成并写结果"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder and follow it. Mark the follow-up I describe as done today and write its outcome in Notes. If the outcome changes the project's next step, update the project too.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，按它的规则做。把我说的这条跟进标记为今天完成，在备注里写结果。如果结果改变了项目的下一步，同时更新项目。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "chase-overdue",
+      "label": {
+        "en": "Draft reminders for overdue follow-ups",
+        "zh-CN": "给逾期的跟进起草提醒"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder and follow it. For every overdue follow-up, draft a one-line reminder to its owner naming the project and what was promised. Reply in chat; do not send anything or change records.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，按它的规则做。为每条逾期的待跟进给负责人起草一句提醒，写明项目和当时答应的事。直接回复在对话里，不要发送，也不要改记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Follow-up",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "deal",
+      "name": "Project",
+      "type": "relation",
+      "required": true,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "deals",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "meeting",
+      "name": "From meeting",
+      "type": "relation",
+      "required": false,
+      "position": 2,
+      "options": {
+        "targetBaseSlug": "meetings",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "owner",
+      "name": "Owner",
+      "type": "text",
+      "required": true,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "due-on",
+      "name": "Due",
+      "type": "date",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 5,
+      "options": {
+        "choices": [
+          {
+            "id": "open",
+            "name": "Open",
+            "color": "cyan"
+          },
+          {
+            "id": "in-progress",
+            "name": "In progress",
+            "color": "amber"
+          },
+          {
+            "id": "done",
+            "name": "Done",
+            "color": "emerald"
+          },
+          {
+            "id": "dropped",
+            "name": "Dropped",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "priority",
+      "name": "Priority",
+      "type": "select",
+      "required": false,
+      "position": 6,
+      "options": {
+        "choices": [
+          {
+            "id": "high",
+            "name": "High",
+            "color": "rose"
+          },
+          {
+            "id": "normal",
+            "name": "Normal",
+            "color": "slate"
+          },
+          {
+            "id": "low",
+            "name": "Low",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "done-on",
+      "name": "Done on",
+      "type": "date",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Notes",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "open",
+      "name": "Open, by due date",
+      "description": "Everything not done yet, soonest first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "due-on",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "deal",
+          "owner",
+          "due-on",
+          "status",
+          "priority"
+        ]
+      }
+    }
+  ]
+}

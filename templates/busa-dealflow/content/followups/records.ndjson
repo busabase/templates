@@ -1,0 +1,10 @@
+{"key":"fu-yunshan-visits","fields":{"title":"约两家工厂客户做现场访谈","deal":"deal-yunshan","meeting":"mtg-yunshan-2","owner":"林晓","due-on":"2026-11-07","status":"open","priority":"high"}}
+{"key":"fu-yunshan-list","fields":{"title":"拿到近两季度的交付项目清单","deal":"deal-yunshan","meeting":"mtg-yunshan-2","owner":"林晓","due-on":"2026-11-03","status":"open","priority":"normal"}}
+{"key":"fu-chengguan-nda","fields":{"title":"发 NDA 和资料清单","deal":"deal-chengguan","meeting":"mtg-chengguan-1","owner":"周可","due-on":"2026-11-06","status":"open","priority":"normal"}}
+{"key":"fu-lanzhou-terms","fields":{"title":"整理条件清单发给创始人","deal":"deal-lanzhou","meeting":"mtg-lanzhou-ic","owner":"陈思远","due-on":"2026-11-08","status":"in-progress","priority":"high"}}
+{"key":"fu-lanzhou-legal","fields":{"title":"启动法务尽调","deal":"deal-lanzhou","meeting":"mtg-lanzhou-ic","owner":"陈思远","due-on":"2026-11-12","status":"open","priority":"normal"}}
+{"key":"fu-xingce-channels","fields":{"title":"引荐两家渠道伙伴","deal":"deal-xingce","meeting":"mtg-xingce-nov","owner":"王立衡","due-on":"2026-11-15","status":"open","priority":"normal"}}
+{"key":"fu-xingce-roadmap","fields":{"title":"跟进 CTO 的技术路线图里程碑","deal":"deal-xingce","meeting":"mtg-xingce-q3","owner":"何嘉","due-on":"2026-10-31","status":"open","priority":"normal"}}
+{"key":"fu-beichen-screen","fields":{"title":"初筛 BP，决定是否约首次会议","deal":"deal-beichen","meeting":"mtg-beichen-bp","owner":"何嘉","due-on":"2026-11-06","status":"open","priority":"low"}}
+{"key":"fu-qimu-decline","fields":{"title":"给栖木发婉拒邮件","deal":"deal-qimu","meeting":"mtg-qimu-2","owner":"何嘉","due-on":"2026-10-31","status":"done","priority":"normal","done-on":"2026-10-31","notes":"已发，约定半年后回访。"}}
+{"key":"fu-xingce-board-date","fields":{"title":"确认下次董事会日期","deal":"deal-xingce","meeting":"mtg-xingce-q3","owner":"王立衡","due-on":"2026-11-03","status":"done","priority":"normal","done-on":"2026-11-03","notes":"定在 12 月第二周。"}}

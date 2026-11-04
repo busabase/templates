@@ -1,0 +1,281 @@
+{
+  "name": "Projects",
+  "description": "One record per company — the single entry every meeting, file, follow-up and post-investment update links to.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "project-brief",
+      "label": {
+        "en": "Brief me on one project before a meeting",
+        "zh-CN": "开会前给我一个项目简报"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder and follow it. For the project I name, summarise every meeting so far in date order, the key findings and open questions, the open follow-ups with owners, and the next step. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，按它的规则做。针对我说的项目，按时间顺序汇总历次会议、关键发现和疑问、未完成的待跟进（含负责人）以及下一步。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "add-project",
+      "label": {
+        "en": "Add a new project without creating a duplicate",
+        "zh-CN": "登记一个新项目（先查重）"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder and follow it. Register the company I describe. Search existing projects by name, legal name and aliases first; if it already exists, tell me and update that record instead of creating a second one.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，按它的规则做。登记我描述的公司。先按项目名、公司全称和别名查重；已经存在就告诉我，并更新原记录，不要再建一条。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "move-stage",
+      "label": {
+        "en": "Move a project to its next stage",
+        "zh-CN": "推进项目阶段"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder and follow it. Move the project I name to the stage I give, and note in the project which meeting or decision justified the move. Refuse if no meeting supports it.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，按它的规则做。把我说的项目推进到我给的阶段，并在项目里写明是哪次会议或决定支持这次推进。没有会议依据就不要改。"
+      },
+      "intent": "change"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Project",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "company",
+      "name": "Company legal name",
+      "type": "text",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "aliases",
+      "name": "Also known as",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "stage",
+      "name": "Stage",
+      "type": "select",
+      "required": true,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "sourcing",
+            "name": "Sourcing",
+            "color": "slate"
+          },
+          {
+            "id": "first-meeting",
+            "name": "First meeting",
+            "color": "cyan"
+          },
+          {
+            "id": "diligence",
+            "name": "Due diligence",
+            "color": "amber"
+          },
+          {
+            "id": "ic",
+            "name": "Investment committee",
+            "color": "amber"
+          },
+          {
+            "id": "portfolio",
+            "name": "Portfolio",
+            "color": "emerald"
+          },
+          {
+            "id": "on-hold",
+            "name": "On hold",
+            "color": "slate"
+          },
+          {
+            "id": "passed",
+            "name": "Passed",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "sector",
+      "name": "Sector",
+      "type": "select",
+      "required": false,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "ai-infra",
+            "name": "AI infrastructure",
+            "color": "cyan"
+          },
+          {
+            "id": "enterprise",
+            "name": "Enterprise software",
+            "color": "cyan"
+          },
+          {
+            "id": "robotics",
+            "name": "Robotics & manufacturing",
+            "color": "cyan"
+          },
+          {
+            "id": "healthcare",
+            "name": "Healthcare",
+            "color": "cyan"
+          },
+          {
+            "id": "consumer",
+            "name": "Consumer",
+            "color": "cyan"
+          },
+          {
+            "id": "other",
+            "name": "Other",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "round",
+      "name": "Round",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Deal lead",
+      "type": "text",
+      "required": true,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "team",
+      "name": "Team",
+      "type": "select",
+      "required": false,
+      "position": 7,
+      "options": {
+        "choices": [
+          {
+            "id": "tech",
+            "name": "Technology",
+            "color": "slate"
+          },
+          {
+            "id": "healthcare",
+            "name": "Healthcare",
+            "color": "slate"
+          },
+          {
+            "id": "consumer",
+            "name": "Consumer",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "one-liner",
+      "name": "One-liner",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "latest-finding",
+      "name": "Latest finding",
+      "type": "longtext",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "next-step",
+      "name": "Next step",
+      "type": "text",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "next-step-due",
+      "name": "Next step due",
+      "type": "date",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "last-meeting-on",
+      "name": "Last meeting",
+      "type": "date",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "source",
+      "name": "Source",
+      "type": "text",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "website",
+      "name": "Website",
+      "type": "url",
+      "required": false,
+      "position": 14,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "pipeline",
+      "name": "Pipeline",
+      "description": "Every project, most recently met first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "last-meeting-on",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "name",
+          "stage",
+          "sector",
+          "round",
+          "owner",
+          "last-meeting-on",
+          "next-step",
+          "next-step-due"
+        ]
+      }
+    }
+  ]
+}
