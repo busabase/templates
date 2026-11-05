@@ -5,7 +5,9 @@ export const appConfig = {
   locale: "auto",
   readOnly: false,
   spaceId: "",
-  schemaVersion: 1,
+  // 2 (0.4.0): Products gained plain Price and Currency columns. A table made by
+  // an earlier install is upgraded by appending them (see the field list).
+  schemaVersion: 2,
   // Where a record opens, per view (see app.js DETAIL_MODES for the why).
   ui: {
     detail_modes: {
@@ -52,6 +54,13 @@ export const appConfig = {
         { slug: "compliance", name: "Compliance (JSON object)", type: "longtext", required: false },
         { slug: "created-at", name: "Created at", type: "text", required: false },
         { slug: "updated-at", name: "Updated at", type: "text", required: false },
+        // 0.4.0: the selling price is a plain number cell, so a person changes it
+        // in the table instead of editing the Pricing JSON. It is the only place
+        // the selling price lives; the other pricing figures stay in `pricing`.
+        // Appended last on purpose: an installed table is upgraded by adding the
+        // fields after the ones it already has, in this order.
+        { slug: "price", name: "Price", type: "number", required: false },
+        { slug: "currency", name: "Currency", type: "text", required: false },
       ],
     },
     {
@@ -195,7 +204,7 @@ export const appConfig = {
   ],
   permissions: {
     readProcedures: ["nodes.list", "nodes.get", "bases.get", "records.list", "records.get", "records.count"],
-    setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata"],
+    setupProcedures: ["nodes.createChangeRequest", "nodes.updateMetadata", "bases.fieldChangeRequest"],
     // The browser only ever decides on a review item (records.changeRequest);
     // it never creates a product/channel/inventory/certificate row -- those
     // enter Busabase through the operator's own workflow (directly, through

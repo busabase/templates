@@ -1,7 +1,7 @@
 import { messages } from "./i18n/messages.js";
-import { appConfig } from "./js/config.js?v=0.1.0";
-import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.1.0";
-import { createPagination } from "./js/pagination.js?v=0.1.0";
+import { appConfig } from "./js/config.js?v=0.4.0";
+import { closeConnectGate, passConnectGate, renderSetupRequired } from "./js/connect-gate.js?v=0.4.0";
+import { createPagination } from "./js/pagination.js?v=0.4.0";
 import {
   agentReadinessFor,
   certificatesFor,
@@ -12,10 +12,11 @@ import {
   inventoryFor,
   productForCertificate,
   reviewFor,
+  sellingPriceOf,
   sortCertificatesByUrgency,
   statusForVerdict,
-} from "./js/product-hub-model.js?v=0.1.0";
-import { getProvider } from "./js/providers/index.js?v=0.1.0";
+} from "./js/product-hub-model.js?v=0.4.0";
+import { getProvider } from "./js/providers/index.js?v=0.4.0";
 
 // Where a record opens, per view. Chosen by what people do with the record:
 //   products     → page:   a product is a workplace — gallery, pricing, stock,
@@ -493,7 +494,7 @@ function readinessFor(product) {
 
 function readinessDetail(check, product) {
   const data = check.data || {};
-  const currency = product.pricing?.currency || baseCurrency();
+  const currency = sellingPriceOf(product).currency || baseCurrency();
   const separator = activeLang() === "zh" ? "、" : ", ";
   const values = {
     count: typeof data.count === "number" ? Number(data.count).toLocaleString() : "",
@@ -909,7 +910,8 @@ function productDetail(product) {
   const channelRows = channelsFor(channels(), product.product_id);
   const reviewRows = reviewFor(reviewItems(), product.product_id);
   const certRows = certificatesFor(certificates(), product);
-  const currency = baseCurrency();
+  const selling = sellingPriceOf(product);
+  const currency = selling.currency || baseCurrency();
   const pairs = (items) =>
     `<div class="data-grid">${items.map(([label, value]) => `<div><span>${esc(label)}</span><strong>${value}</strong></div>`).join("")}</div>`;
   return `
@@ -945,9 +947,9 @@ function productDetail(product) {
       <article class="card detail-card">
         <h2>${t("price")}</h2>
         ${pairs([
-          [t("currentPrice"), money2(product.pricing?.current_price, currency)],
-          [t("targetPrice"), money2(product.pricing?.target_price, currency)],
-          [t("landedCost"), money2(product.pricing?.landed_cost, currency)],
+          [t("currentPrice"), selling.price === null ? "—" : moneyIn(selling.price, currency)],
+          [t("targetPrice"), moneyIn(product.pricing?.target_price, currency)],
+          [t("landedCost"), moneyIn(product.pricing?.landed_cost, currency)],
           [t("grossMargin"), pct(product.pricing?.gross_margin_pct)],
         ])}
       </article>
@@ -995,7 +997,7 @@ function productDetail(product) {
                   (item) => `<tr>
                     <td><a href="${recordUrl(item.channel_id, "channels")}">${esc(enumLabel(item.platform, "platform"))}</a></td>
                     <td>${badge(item.status)}</td>
-                    <td class="num">${money2(item.price, currency)}</td>
+                    <td class="num">${moneyIn(item.price, currency)}</td>
                     <td>${scoreCell(item.content_score)}</td>
                     <td>${item.issue ? esc(item.issue) : `<span class="muted">${t("noIssue")}</span>`}</td>
                   </tr>`,

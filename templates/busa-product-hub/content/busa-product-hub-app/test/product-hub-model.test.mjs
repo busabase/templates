@@ -30,8 +30,10 @@ import {
   reviewExecution,
   reviewFor,
   reviewToFields,
+  sellingPriceOf,
   sortCertificatesByUrgency,
   statusForVerdict,
+  withoutSellingPrice,
 } from "../app/js/product-hub-model.js";
 import { appConfig } from "../app/js/config.js";
 
@@ -64,10 +66,62 @@ test("productToFields/normalizeProductRow round trip preserves every field, incl
     compliance: { score: 86, status: "warn", notes: ["EU energy-label image missing."] },
     created_at: "2026-06-20T02:00:00.000Z",
     updated_at: "2026-07-07T07:52:00.000Z",
+    price: 38.99,
+    currency: "USD",
   };
   const fields = productToFields(product);
+  assert.equal(fields.price, 38.99);
+  assert.equal(fields.currency, "USD");
   const roundTripped = normalizeProductRow(fields);
   assert.deepEqual(roundTripped, product);
+});
+
+// ---- Selling price: the Price/Currency columns since 0.4.0, the Pricing JSON before ----
+
+test("Products declares Price and Currency after every 0.3.0 field, so an installed table upgrades by appending", () => {
+  const products = appConfig.bases.find((base) => base.key === "products");
+  const v030 = [
+    "product-id", "ref", "sku", "name", "subtitle", "category", "lifecycle", "status", "owner", "vendor",
+    "launch-date", "image", "gallery", "tags", "pricing", "inventory", "content", "compliance", "created-at", "updated-at",
+  ];
+  assert.deepEqual(products.fields.slice(0, v030.length).map((field) => field.slug), v030);
+  assert.deepEqual(
+    products.fields.slice(v030.length).map(({ slug, type, required }) => ({ slug, type, required })),
+    [
+      { slug: "price", type: "number", required: false },
+      { slug: "currency", type: "text", required: false },
+    ],
+  );
+  assert.equal(appConfig.schemaVersion, 2, "a changed resource shape bumps schemaVersion");
+  assert.ok(appConfig.permissions.setupProcedures.includes("bases.fieldChangeRequest"), "the upgrade adds fields");
+});
+
+test("sellingPriceOf: the Price column wins; the Pricing JSON is used only while the column is empty", () => {
+  const legacy = JSON.stringify({ current_price: 19, currency: "EUR", landed_cost: 7 });
+  assert.deepEqual(sellingPriceOf({ price: 24, currency: "usd", pricing: legacy }), { price: 24, currency: "USD", source: "column" });
+  assert.deepEqual(sellingPriceOf({ price: null, currency: "", pricing: legacy }), { price: 19, currency: "EUR", source: "pricing" });
+  assert.deepEqual(sellingPriceOf({ price: "", pricing: { price: 12, currency: "USD" } }), { price: 12, currency: "USD", source: "pricing" });
+  // Each column falls back on its own: a price typed in, the currency still in the JSON.
+  assert.deepEqual(sellingPriceOf({ price: "22.5", pricing: legacy }), { price: 22.5, currency: "EUR", source: "column" });
+  // 0 in the column is a price of 0, not an empty cell: no fallback.
+  assert.equal(sellingPriceOf({ price: 0, pricing: legacy }).price, 0);
+  assert.deepEqual(sellingPriceOf({}), { price: null, currency: "", source: "" });
+});
+
+test("productToFields moves a JSON price into the columns and out of Pricing, so there is one price", () => {
+  const fields = productToFields({ product_id: "p1", pricing: { current_price: 19, currency: "EUR", target_price: 21, landed_cost: 7 } });
+  assert.equal(fields.price, 19);
+  assert.equal(fields.currency, "EUR");
+  assert.deepEqual(JSON.parse(fields.pricing), { target_price: 21, landed_cost: 7 });
+  assert.equal(productToFields({ product_id: "p1" }).price, "", "no price: an empty cell, never 0");
+  assert.deepEqual(withoutSellingPrice('{"price":1,"current_price":2,"currency":"USD","cogs":3}'), { cogs: 3 });
+});
+
+test("productToFields for a table made before 0.4.0 keeps the price in Pricing and writes no Price column", () => {
+  const fields = productToFields({ product_id: "p1", price: 24, currency: "USD", pricing: { landed_cost: 9.8 } }, { priceColumn: false });
+  assert.equal("price" in fields, false);
+  assert.equal("currency" in fields, false);
+  assert.deepEqual(JSON.parse(fields.pricing), { landed_cost: 9.8, currency: "USD", current_price: 24 });
 });
 
 test("channelToFields/normalizeChannelRow round trip preserves buybox tri-state (true/false/null)", () => {
@@ -509,7 +563,9 @@ test("reviewExecution: status reflects apply vs dry-run", () => {
 const READY_NOW = "2026-07-07T09:00:00.000Z";
 const readyProduct = (overrides = {}) => ({
   product_id: "p1",
-  pricing: { price: 29.99, currency: "USD" },
+  price: 29.99,
+  currency: "USD",
+  pricing: { landed_cost: 12 },
   inventory: { available: 510 },
   content: {
     images_ready: true,
@@ -530,24 +586,31 @@ test("agentReadinessFor: a fully described product scores 7/7, checks in a fixed
   assert.ok(result.checks.every((check) => typeof check.detail === "string" && check.detail));
 });
 
-test("agentReadinessFor price: passes with price + currency, accepts the demo's current_price shape", () => {
-  assert.equal(checkOf(agentReadinessFor(readyProduct(), { now: READY_NOW }), "price").ok, true);
-  const demoShape = readyProduct({ pricing: { current_price: 38.99, currency: "USD" } });
-  const check = checkOf(agentReadinessFor(demoShape, { now: READY_NOW }), "price");
+test("agentReadinessFor price: passes with the Price and Currency columns", () => {
+  const check = checkOf(agentReadinessFor(readyProduct(), { now: READY_NOW }), "price");
+  assert.equal(check.ok, true);
+  assert.equal(check.detail, "USD 29.99");
+});
+
+test("agentReadinessFor price: a table made before 0.4.0 still passes from the Pricing JSON", () => {
+  const legacy = readyProduct({ price: null, currency: "", pricing: { current_price: 38.99, currency: "USD" } });
+  const check = checkOf(agentReadinessFor(legacy, { now: READY_NOW }), "price");
   assert.equal(check.ok, true);
   assert.equal(check.detail, "USD 38.99");
+  const priceKey = readyProduct({ price: null, currency: "", pricing: { price: 10, currency: "USD" } });
+  assert.equal(checkOf(agentReadinessFor(priceKey, { now: READY_NOW }), "price").ok, true);
 });
 
 test("agentReadinessFor price: fails without a currency, without a price, or with a zero price", () => {
-  const noCurrency = checkOf(agentReadinessFor(readyProduct({ pricing: { price: 10 } }), { now: READY_NOW }), "price");
+  const noCurrency = checkOf(agentReadinessFor(readyProduct({ currency: "" }), { now: READY_NOW }), "price");
   assert.equal(noCurrency.ok, false);
   assert.equal(noCurrency.reason, "missing_currency");
-  const noPrice = checkOf(agentReadinessFor(readyProduct({ pricing: { currency: "USD" } }), { now: READY_NOW }), "price");
+  const noPrice = checkOf(agentReadinessFor(readyProduct({ price: null }), { now: READY_NOW }), "price");
   assert.equal(noPrice.ok, false);
   assert.equal(noPrice.reason, "missing_price");
-  const zero = checkOf(agentReadinessFor(readyProduct({ pricing: { price: 0, currency: "USD" } }), { now: READY_NOW }), "price");
-  assert.equal(zero.ok, false);
-  const neither = checkOf(agentReadinessFor(readyProduct({ pricing: {} }), { now: READY_NOW }), "price");
+  const zero = checkOf(agentReadinessFor(readyProduct({ price: 0, pricing: { current_price: 20 } }), { now: READY_NOW }), "price");
+  assert.equal(zero.ok, false, "0 in the column is the price; the JSON does not override it");
+  const neither = checkOf(agentReadinessFor(readyProduct({ price: null, currency: "", pricing: {} }), { now: READY_NOW }), "price");
   assert.equal(neither.reason, "missing_price_currency");
 });
 

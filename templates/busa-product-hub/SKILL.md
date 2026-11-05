@@ -102,7 +102,7 @@ Six Bases under one application Folder (`busa-product-hub`), declared in
 `content/busa-product-hub-app/app/js/config.js` and the generated template
 sidecars under `content/`:
 
-- `products`: catalog/SKU master data — lifecycle, status, owner, vendor, image/gallery, tags, and JSON-encoded pricing/inventory-rollup/content-readiness/compliance blocks.
+- `products`: catalog/SKU master data — lifecycle, status, owner, vendor, image/gallery, tags, the selling price as two plain columns (**Price**, a number, and **Currency**, three letters such as `USD`), and JSON-encoded pricing details (cost, target, MAP, margins)/inventory-rollup/content-readiness/compliance blocks. See "The selling price" below.
 - `channels`: one row per product × marketplace channel (Amazon/Shopify/TikTok Shop/eBay) — listing id, status, price, buybox, content score, and channel issue note.
 - `inventory`: one row per product × warehouse — on-hand/available/reserved/inbound units, inbound ETA, days of cover, and stock-risk status.
 - `review`: the approval-gated review queue — channel publish approvals, price-change review, quality holds, lifecycle/archive decisions, and `spec_claim` items (see below), with the human decision on the same row.
@@ -116,6 +116,35 @@ client-side from the stored rows on every read
 (`content/busa-product-hub-app/app/js/product-hub-model.js`'s
 `buildSnapshot`/`assembleSnapshot`), so the desk is always fresh regardless
 of when a browser session loads it.
+
+### The selling price
+
+Since 0.4.0 a product's selling price is the **Price** column (`price`, a
+number) and its **Currency** column (`currency`). They are ordinary cells: a
+person changes a price by editing Price in the Products table, with no JSON to
+touch. They are the only place the selling price lives. Never write
+`current_price`, `price` or `currency` into the Pricing JSON, which keeps
+only the other figures (`cogs`, `landed_cost`, `target_price`, `map_price`,
+`gross_margin_pct`, `breakeven_acos`). `gross_margin_pct` is stored, not
+computed: it is not updated when someone changes Price, so recompute it when
+you change a price or the landed cost.
+
+A workspace that installed this template before 0.4.0 has no Price or
+Currency column; its prices are still `pricing.current_price` and
+`pricing.currency`. Everything that reads a price (this app's Agent readiness
+and product page, busa-shop's website and importer) reads the column and falls
+back to the Pricing JSON while the column is empty, so nothing breaks before
+the upgrade. When that workspace's Busa Product Hub app is updated to 0.4.0
+and opened, it appends the two columns (a field change; without permission to
+change fields it waits for a Space admin). `scripts/ingest_products.mjs` then moves each product's
+JSON price into the columns the next time it writes that product. Until then,
+change a price where it is stored now: in the JSON on an old table, in the
+column on a new one.
+
+Changing a price is still approval-gated for an agent (Boundary above): carry
+out an approved `price_change` review item by writing the new Price, never a
+second price in the JSON. The owner editing the cell themselves is their own
+decision and needs no review item.
 
 ### The `spec_claim` review type
 
@@ -139,7 +168,7 @@ stored** — `agentReadinessFor()` in `product-hub-model.js` recomputes it from
 the loaded rows every time, so there is no field to write and nothing to
 backfill. The seven checks:
 
-1. `price` — `pricing.current_price` (or `price`) and `pricing.currency` are both present.
+1. `price` — the Price column is above 0 and Currency is filled (on a table made before 0.4.0, while those columns are empty: `pricing.current_price` and `pricing.currency`).
 2. `availability` — an available/on-hand quantity is known, from the product's `inventory` rollup or its inventory rows.
 3. `channel-price` — every `live`/`active` channel row with a price shows the same price (±0.01). No priced live channels passes.
 4. `attributes` — `content.attributes.weight`, `.dimensions`, `.warranty`, and `.returns` are all non-empty.

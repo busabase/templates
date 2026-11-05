@@ -5,7 +5,7 @@ import {
   isAirAppWriteQueued,
 } from "../../vendor/busabase-airapp.js";
 import { createRuntimeClient } from "../busabase-client.js";
-import { appConfig } from "../config.js?v=0.1.0";
+import { appConfig } from "../config.js?v=0.4.0";
 import {
   DECISION_ACTIONS,
   buildConfigSummary,
@@ -17,7 +17,7 @@ import {
   normalizeReviewRow,
   reviewToFields,
   statusForVerdict,
-} from "../product-hub-model.js?v=0.1.0";
+} from "../product-hub-model.js?v=0.4.0";
 
 const allowedReads = new Set(appConfig.permissions.readProcedures);
 const allowedSetup = new Set(appConfig.permissions.setupProcedures);

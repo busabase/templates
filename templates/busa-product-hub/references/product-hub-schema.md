@@ -56,12 +56,23 @@ only ever writes a review decision onto a review item's own record.
 | `image` | `image` | text | hero image URL, e.g. `/assets/product-images/aurora-lamp.png` |
 | `gallery` | `gallery` | longtext | JSON array of image URLs |
 | `tags` | `tags` | longtext | JSON array of tag strings |
-| `pricing` | `pricing` | longtext | JSON object: `cogs`, `landed_cost`, `target_price`, `current_price`, `map_price`, `gross_margin_pct`, `breakeven_acos` |
+| `pricing` | `pricing` | longtext | JSON object: `cogs`, `landed_cost`, `target_price`, `map_price`, `gross_margin_pct`, `breakeven_acos`. Not the selling price: that is `price` + `currency` since 0.4.0. Tables made before 0.4.0 keep it here as `current_price` + `currency` |
 | `inventory` | `inventory` | longtext | JSON object rollup: `on_hand`, `available`, `reserved`, `inbound`, `days_cover`, `reorder_point`, `reorder_qty` |
 | `content` | `content` | longtext | JSON object: `hero_images_ready`, `hero_images_required`, `video_ready`, `listing_source`, `copy_status` |
 | `compliance` | `compliance` | longtext | JSON object: `score`, `status`, `notes` (array) |
 | `created-at` | `created_at` | text | ISO timestamp |
 | `updated-at` | `updated_at` | text | ISO timestamp |
+| `price` | `price` | number | the selling price, edited as a plain cell (0.4.0). Empty = no price |
+| `currency` | `currency` | text | ISO 4217 code of `price` and the Pricing figures, e.g. `USD` (0.4.0) |
+
+`price` and `currency` are the last two fields on purpose: a Products table
+made before 0.4.0 (schemaVersion 1) is upgraded by appending them, which the
+0.4.0 AirApp does the first time it opens there (`bases.fieldChangeRequest`; a
+Space admin approves it if the person cannot change fields). Readers use the column and fall back
+to `pricing.current_price` / `pricing.currency` only while the column is
+empty (`sellingPriceOf()` in `product-hub-model.js`); writers
+(`productToFields()`) put the price in the columns and take it out of the
+JSON, so a product never carries two prices that can disagree.
 
 ## Channels (`busa-product-hub-channels`)
 
@@ -198,6 +209,7 @@ staleness overlay to compute.
 
 - Keep `product_id`, `channel_id`, `inventory_id`, and `item_id` stable across re-syncs.
 - Treat external marketplace publishing, price changes, SKU archival, and quality holds as approval-required.
+- The selling price lives in `price` / `currency` only. Never write `current_price`, `price` or `currency` into `pricing`.
 - Product images ship as static files under `content/busa-product-hub-app/app/assets/product-images/` (served by `server.js`), referenced by relative URL from `products.image`/`gallery` — never depend on external image URLs.
 - Never invent a certificate, expiry date, or test report. A missing certificate is a gap to flag (or a `spec_claim` review item), never a value to guess.
 - Do not commit real seller exports, credentials, `.env*`, or `exports/`.
