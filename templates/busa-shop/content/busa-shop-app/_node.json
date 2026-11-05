@@ -1,18 +1,18 @@
 {
   "type": "airapp",
   "name": "Shop Website",
-  "description": "The public storefront (Website engine, write access): home page with the product grid, product pages, an order request form that creates one Orders row per request, sitemap.xml, robots.txt and schema.org Product data. It reads products from Busa Product Hub and its texts from this folder's Settings. Edit src/, rebuild vendor/worker.js (the deployed bundle), then Run and Go live again.",
+  "description": "The public storefront (Website engine, write access): home page with the product grid, product pages, an order request form that creates one Orders row per request, sitemap.xml, robots.txt and schema.org Product data. It reads products from Busa Product Hub and its texts from this folder's Settings. Edit src/, rebuild vendor/worker.js (the deployed bundle), then Restart and Go live again.",
   "agentPrompts": [
     {
       "key": "preview-site",
       "label": "Check the members-only preview",
       "intent": "read-only",
-      "body": "Read the `busa-shop` skill in this folder, then open the preview address of this website (after I click Run) and tell me what a visitor sees: the products listed, anything hidden and why, and whether the order form works. Do not place an order unless I ask."
+      "body": "Read the `busa-shop` skill in this folder, then open the preview address of this website (opening this node starts the preview) and tell me what a visitor sees: the products listed, anything hidden and why, and whether the order form works. Do not place an order unless I ask."
     },
     {
       "key": "change-site-text",
       "label": "Change what the website says",
-      "body": "Read the `busa-shop` skill in this folder. If what I want to change is the store name, tagline, about text, shipping note, contact email, language or ship-to countries, change it in Settings instead (no redeploy). Only if it needs a code change, edit src/, rebuild vendor/worker.js with the command in src/worker.js, run the tests, and tell me I must click Run and Go live again."
+      "body": "Read the `busa-shop` skill in this folder. If what I want to change is the store name, tagline, about text, shipping note, contact email, language or ship-to countries, change it in Settings instead (no redeploy). Only if it needs a code change, edit src/, rebuild vendor/worker.js with the command in src/worker.js, run the tests, and tell me I must click Restart and Go live again."
     },
     {
       "key": "explain-go-live",

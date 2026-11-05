@@ -15,9 +15,19 @@ busabase-cli install ./templates/busa-product-hub
 busabase-cli install ./templates/busa-shop
 ```
 
-Then click **Run** on *Shop Website* for the members-only preview and **Go
-live** to publish it. Go live creates an API key in your name with `write`
-access, because the order form saves orders.
+Then open *Shop Website*: opening it starts the members-only preview (the
+header shows **Running** and **Not live**; a **Run** button appears only on a
+node that has never run). Click **Go live** to publish it; the address and
+the **Public** switch are under **More actions → Settings**. Go live creates
+an API key in your name with `write` access, listed as `Site: Shop Website`,
+because the order form saves orders; the preview has its own,
+`Site preview: Shop Website`. On Busabase Cloud the Website engine needs Plus
+or higher: a Free space shows "Upgrade to Plus to run this app".
+
+The shop's prices are busa-product-hub's **Price** and **Currency** columns
+(0.4.0 and later): change a price by editing that cell, and the site shows it
+within about a minute. A product hub installed before 0.4.0 keeps prices in
+its Pricing JSON, and the site reads them there.
 
 ## Demo data
 
