@@ -52,6 +52,12 @@
           "assets/screenshots/project-zh-CN.webp",
           "assets/screenshots/followups-zh-CN.webp",
           "assets/screenshots/connect-zh-CN.webp"
+        ],
+        "videos": [
+          {
+            "src": "assets/recordings/busa-dealflow-intro-zh-CN.mp4",
+            "title": "场景介绍：从会议记录到管理层周报"
+          }
         ]
       }
     }
