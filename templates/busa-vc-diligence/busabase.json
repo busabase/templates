@@ -22,6 +22,7 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/target-detail.webp"
     ],
+    "video": "assets/recordings/busa-vc-diligence.mp4",
     "requires": {
       "airapp": true
     },

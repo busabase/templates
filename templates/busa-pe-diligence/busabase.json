@@ -23,6 +23,7 @@
       "assets/screenshots/target-detail.webp",
       "assets/screenshots/findings-wall.webp"
     ],
+    "video": "assets/recordings/busa-pe-diligence.mp4",
     "requires": {
       "airapp": true
     },
