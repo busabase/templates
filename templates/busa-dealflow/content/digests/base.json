@@ -1,0 +1,135 @@
+{
+  "name": "Weekly digests",
+  "description": "One digest per week for leadership: which projects the team saw, what was found, and what needs following up.",
+  "position": 3,
+  "agentPrompts": [
+    {
+      "key": "weekly-digest",
+      "label": {
+        "en": "Write this week's team digest",
+        "zh-CN": "写本周投资团队周报"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder, then the `dealflow-weekly-digest` skill, and follow them. Write the digest for Monday to Sunday of this week: the projects the team saw, the key findings, stage changes, and the follow-ups that are overdue or due next week. Every line must trace to a meeting or follow-up record.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，再读 `dealflow-weekly-digest` Skill，按它们的流程做。为本周一到周日写一份周报：团队看了哪些项目、关键发现、阶段变化、逾期和下周到期的待跟进。每一条都要能对应到会议或待跟进记录。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "one-minute",
+      "label": {
+        "en": "Give me the one-minute version",
+        "zh-CN": "给我一分钟版本"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder, then the `dealflow-weekly-digest` skill, and follow them. From the latest digest, give me five lines: the headline, the two most important findings, the follow-up most at risk, and the one decision leadership needs to make. Reply in chat; do not change the digest.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，再读 `dealflow-weekly-digest` Skill，按它们的流程做。基于最新一份周报，给我五行：一句话结论、最重要的两个发现、最可能延误的一条跟进、需要管理层拍板的一件事。直接回复在对话里，不要改周报。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Title",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "period-start",
+      "name": "From",
+      "type": "date",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "period-end",
+      "name": "To",
+      "type": "date",
+      "required": true,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "draft",
+            "name": "Draft",
+            "color": "cyan"
+          },
+          {
+            "id": "final",
+            "name": "Final",
+            "color": "emerald"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "projects-seen",
+      "name": "Projects seen",
+      "type": "number",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "meetings-held",
+      "name": "Meetings",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "body",
+      "name": "Digest",
+      "type": "markdown",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "for-leadership",
+      "name": "For leadership",
+      "type": "markdown",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest",
+      "name": "Latest first",
+      "description": "Digests by week, newest first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "period-end",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "period-start",
+          "period-end",
+          "projects-seen",
+          "meetings-held"
+        ]
+      }
+    }
+  ]
+}

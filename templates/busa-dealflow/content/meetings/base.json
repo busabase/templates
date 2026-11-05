@@ -1,0 +1,229 @@
+{
+  "name": "Meetings & files",
+  "description": "Every meeting, call, diligence interview, IC meeting, board meeting and filed document — each linked to exactly one project.",
+  "position": 1,
+  "agentPrompts": [
+    {
+      "key": "log-meeting",
+      "label": {
+        "en": "Turn a meeting transcript into minutes",
+        "zh-CN": "把会议转写整理成纪要"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder, then the `dealflow-meeting-notes` skill, and follow them. Turn the transcript or notes I give you into one meeting record: minutes, key findings, open questions, and follow-ups with owners and dates. Link it to the right existing project; only create a project after checking it does not exist.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，再读 `dealflow-meeting-notes` Skill，按它们的流程做。把我给你的会议转写或笔记整理成一条会议记录：纪要、关键发现、疑问与风险，以及带负责人和日期的待跟进。关联到正确的已有项目；确认不存在之后才新建项目。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "file-document",
+      "label": {
+        "en": "File a document under its project",
+        "zh-CN": "把一份资料归档到项目下"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder, then the `dealflow-meeting-notes` skill, and follow them. File the document I attach (BP, board pack, diligence report) as a \"Filed document\" record under its project, with a three-line summary of what it says and what is new compared with earlier meetings.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，再读 `dealflow-meeting-notes` Skill，按它们的流程做。把我附上的资料（BP、董事会材料、尽调报告）作为「资料归档」记录挂到对应项目下，写三行摘要：讲了什么、和之前的会议比有什么新信息。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "what-we-heard",
+      "label": {
+        "en": "What did we hear about a topic across meetings?",
+        "zh-CN": "跨会议查一个话题我们听到了什么"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder and follow it. Search the minutes and key findings for the topic I give and list what each meeting said about it, newest first, with the project and date. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，按它的规则做。在纪要和关键发现里查我给的话题，按时间倒序列出每次会议对它的说法，带上项目和日期。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Title",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "deal",
+      "name": "Project",
+      "type": "relation",
+      "required": true,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "deals",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "held-on",
+      "name": "Date",
+      "type": "date",
+      "required": true,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "kind",
+      "name": "Type",
+      "type": "select",
+      "required": true,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "intro",
+            "name": "First meeting",
+            "color": "cyan"
+          },
+          {
+            "id": "follow-up",
+            "name": "Follow-up meeting",
+            "color": "slate"
+          },
+          {
+            "id": "diligence",
+            "name": "Diligence interview",
+            "color": "amber"
+          },
+          {
+            "id": "ic",
+            "name": "IC meeting",
+            "color": "amber"
+          },
+          {
+            "id": "board",
+            "name": "Post-investment review",
+            "color": "emerald"
+          },
+          {
+            "id": "document",
+            "name": "Filed document",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "phase",
+      "name": "Phase",
+      "type": "select",
+      "required": true,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "pre",
+            "name": "Pre-investment",
+            "color": "cyan"
+          },
+          {
+            "id": "during",
+            "name": "In process",
+            "color": "amber"
+          },
+          {
+            "id": "post",
+            "name": "Post-investment",
+            "color": "emerald"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "attendees",
+      "name": "Attendees",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "recorded-by",
+      "name": "Recorded by",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "logged-via",
+      "name": "Logged via",
+      "type": "text",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "summary",
+      "name": "Minutes",
+      "type": "markdown",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "highlights",
+      "name": "Key findings",
+      "type": "markdown",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "questions",
+      "name": "Open questions & risks",
+      "type": "markdown",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "transcript",
+      "name": "Transcript",
+      "type": "longtext",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "files",
+      "name": "Files",
+      "type": "attachment",
+      "required": false,
+      "position": 12,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest",
+      "name": "Latest first",
+      "description": "Meetings and files, newest first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "held-on",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "deal",
+          "held-on",
+          "kind",
+          "phase",
+          "recorded-by",
+          "logged-via"
+        ]
+      }
+    }
+  ]
+}

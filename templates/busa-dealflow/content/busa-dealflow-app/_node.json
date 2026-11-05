@@ -1,0 +1,56 @@
+{
+  "type": "airapp",
+  "name": "Deal Flow",
+  "description": "Projects, meetings, follow-ups and the weekly leadership digest for an investment team.",
+  "position": 5,
+  "agentPrompts": [
+    {
+      "key": "log-meeting",
+      "label": {
+        "en": "Turn a meeting transcript into minutes",
+        "zh-CN": "把会议转写整理成纪要"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder, then the `dealflow-meeting-notes` skill, and follow them. Turn the transcript or notes I give you into one meeting record with minutes, key findings, open questions and follow-ups, linked to the right existing project. Update the project's latest finding, next step and last-meeting date. Tell me what you wrote, with links.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，再读 `dealflow-meeting-notes` Skill，按它们的流程做。把我给的会议转写或笔记整理成一条会议记录：纪要、关键发现、疑问与风险、待跟进，关联到正确的已有项目，并更新项目的最新关键发现、下一步和最近会议日期。完成后告诉我写了什么，附链接。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "this-week",
+      "label": {
+        "en": "What did the team see this week?",
+        "zh-CN": "本周团队看了哪些项目"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder and follow it. For this week (Monday to today), list the projects the team met or filed documents for, who met them, the key findings, and the follow-ups that are overdue or due within seven days. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，按它的规则做。针对本周（周一到今天），列出团队开过会或归档过资料的项目、谁参加的、关键发现，以及逾期或七天内到期的待跟进。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "weekly-digest",
+      "label": {
+        "en": "Write this week's team digest",
+        "zh-CN": "写本周投资团队周报"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder, then the `dealflow-weekly-digest` skill, and follow them. Write the digest for this week into Weekly digests as a draft: projects seen, key findings, stage changes, and follow-ups that need chasing, every line traceable to a record.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，再读 `dealflow-weekly-digest` Skill，按它们的流程做。在「管理层周报」里为本周写一份周报草稿：看过的项目、关键发现、阶段变化、需要催的待跟进，每一条都能对应到记录。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "project-brief",
+      "label": {
+        "en": "Brief me on one project",
+        "zh-CN": "给我一个项目的完整简报"
+      },
+      "body": {
+        "en": "Read the `busa-dealflow` skill in this folder and follow it. For the project I name, summarise every meeting in date order across pre-investment, in-process and post-investment, the open follow-ups, and the next step. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-dealflow` Skill，按它的规则做。针对我说的项目，按投前、投中、投后的时间顺序汇总历次会议，列出未完成的待跟进和下一步。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ]
+}
