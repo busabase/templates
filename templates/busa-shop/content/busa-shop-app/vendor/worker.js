@@ -27738,6 +27738,8 @@ var asObject = (value2) => {
   const parsed = parseJson(value2, {});
   return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
 };
+var isBlank = (value2) => value2 === null || value2 === void 0 || typeof value2 === "string" && !value2.trim();
+var columnOr = (column, legacy) => isBlank(column) ? legacy : column;
 var asStringList = (value2) => {
   const parsed = parseJson(value2, []);
   if (!Array.isArray(parsed)) return [];
@@ -27778,6 +27780,7 @@ var normalizeProduct = (record2) => {
   for (const ref of [text(fields.image), ...asStringList(fields.gallery)]) {
     if (ref && !imageRefs.includes(ref)) imageRefs.push(ref);
   }
+  const pricing = asObject(fields.pricing);
   return {
     recordId: typeof record2?.id === "string" ? record2.id : "",
     id: text(fields["product-id"]),
@@ -27790,7 +27793,10 @@ var normalizeProduct = (record2) => {
     status: lower(fields.status),
     vendor: text(fields.vendor),
     tags: asStringList(fields.tags),
-    pricing: asObject(fields.pricing),
+    // The selling price as stored: the column, or the JSON while the column is empty.
+    priceValue: columnOr(fields.price, pricing.current_price),
+    currencyValue: columnOr(fields.currency, pricing.currency),
+    pricing,
     inventory: asObject(fields.inventory),
     content: asObject(fields.content),
     imageRefs,
@@ -27803,9 +27809,9 @@ var listingFor = (product, settings) => {
   if (!LISTED_STATUSES.has(product.status)) reasons.push("status");
   if (!product.name) reasons.push("name");
   if (!PRODUCT_ID_PATTERN.test(product.id)) reasons.push("product-id");
-  const price = finiteNumber(product.pricing.current_price);
+  const price = finiteNumber(product.priceValue);
   if (price === null || price <= 0) reasons.push("price");
-  const currency = text(product.pricing.currency).toUpperCase();
+  const currency = text(product.currencyValue).toUpperCase();
   if (!currency) reasons.push("currency");
   else if (currency !== settings.currency) reasons.push("currency-mismatch");
   if (settings.listedTag && !product.tags.some((tag) => tag.toLowerCase() === settings.listedTag.toLowerCase())) {

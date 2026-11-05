@@ -362,7 +362,7 @@ export const unavailablePage = ({ settings } = {}) => {
 // ---- The owner-facing setup page ----
 //
 // Shown instead of the shop when the workspace is not ready, so the person who
-// just clicked Run or Go live sees what to fix rather than a blank or a crash.
+// just opened the app or clicked Go live sees what to fix rather than a blank or a crash.
 // A visitor who lands here sees an honest "not open yet". English only: it is
 // written for the owner, and the store language may be what is missing.
 

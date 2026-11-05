@@ -4,8 +4,14 @@
 //
 // The shop never stores products. It reads the Products table of the
 // busa-product-hub template (see src/resources.js), whose fields are plain
-// text plus JSON-in-longtext blocks (`pricing`, `inventory`, `content`,
-// `compliance`). Those blocks are parsed here and nowhere else.
+// text and numbers plus JSON-in-longtext blocks (`pricing`, `inventory`,
+// `content`, `compliance`). Those blocks are parsed here and nowhere else.
+//
+// The selling price is the Products table's `price` (number) and `currency`
+// (text) columns since busa-product-hub 0.4.0, so the owner changes a price by
+// editing a cell. A table made by an earlier install has no such columns and
+// keeps the price in `pricing.current_price` / `pricing.currency`; each value
+// is read from its column and, only while that column is empty, from the JSON.
 
 export const PRODUCT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/;
 export const CURRENCY_PATTERN = /^[A-Z]{3}$/;
@@ -14,8 +20,8 @@ export const CURRENCY_PATTERN = /^[A-Z]{3}$/;
 //   1. lifecycle is `active` or `launch`  (busa-product-hub: launch|active|test|archive)
 //   2. status is `active`, `approved` or `live`
 //   3. it has a name and a URL-safe product id
-//   4. pricing.current_price is a number above 0
-//   5. pricing.currency equals the store currency in Settings
+//   4. the price is a number above 0: the `price` column, or pricing.current_price while it is empty
+//   5. the currency equals the store currency in Settings: `currency`, or pricing.currency while it is empty
 //   6. Settings › "Only list products with this tag" is empty, or the product has that tag
 // Anything else is hidden, and `listingFor` says why, so the daily check can
 // report it. Stock does not hide a product: 0 available shows "Out of stock"
@@ -60,6 +66,11 @@ const asObject = (value) => {
   const parsed = parseJson(value, {});
   return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
 };
+
+const isBlank = (value) => value === null || value === undefined || (typeof value === "string" && !value.trim());
+
+/** A column's value, or the same fact in the JSON of a table made before that column existed. */
+const columnOr = (column, legacy) => (isBlank(column) ? legacy : column);
 
 const asStringList = (value) => {
   const parsed = parseJson(value, []);
@@ -115,6 +126,7 @@ export const normalizeProduct = (record) => {
   for (const ref of [text(fields.image), ...asStringList(fields.gallery)]) {
     if (ref && !imageRefs.includes(ref)) imageRefs.push(ref);
   }
+  const pricing = asObject(fields.pricing);
   return {
     recordId: typeof record?.id === "string" ? record.id : "",
     id: text(fields["product-id"]),
@@ -127,7 +139,10 @@ export const normalizeProduct = (record) => {
     status: lower(fields.status),
     vendor: text(fields.vendor),
     tags: asStringList(fields.tags),
-    pricing: asObject(fields.pricing),
+    // The selling price as stored: the column, or the JSON while the column is empty.
+    priceValue: columnOr(fields.price, pricing.current_price),
+    currencyValue: columnOr(fields.currency, pricing.currency),
+    pricing,
     inventory: asObject(fields.inventory),
     content: asObject(fields.content),
     imageRefs,
@@ -142,9 +157,9 @@ export const listingFor = (product, settings) => {
   if (!LISTED_STATUSES.has(product.status)) reasons.push("status");
   if (!product.name) reasons.push("name");
   if (!PRODUCT_ID_PATTERN.test(product.id)) reasons.push("product-id");
-  const price = finiteNumber(product.pricing.current_price);
+  const price = finiteNumber(product.priceValue);
   if (price === null || price <= 0) reasons.push("price");
-  const currency = text(product.pricing.currency).toUpperCase();
+  const currency = text(product.currencyValue).toUpperCase();
   if (!currency) reasons.push("currency");
   else if (currency !== settings.currency) reasons.push("currency-mismatch");
   if (settings.listedTag && !product.tags.some((tag) => tag.toLowerCase() === settings.listedTag.toLowerCase())) {

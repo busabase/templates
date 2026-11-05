@@ -39,6 +39,7 @@ const productRecordFields = (product, ref) => ({
   compliance: JSON.stringify(product.compliance),
   "created-at": "2026-11-01T08:00:00.000Z",
   "updated-at": "2026-11-02T08:00:00.000Z",
+  ...(product.price === undefined ? {} : { price: product.price, currency: product.currency }),
 });
 
 export const NODES = {
@@ -103,9 +104,10 @@ export const NODES = {
 /**
  * The demo workspace after the lesson's import: the 12 toys (images uploaded
  * as assets on the Busabase server, so they need the key) plus busa-product-hub's
- * own sample lamp, archived as SKILL.md tells the owner to do.
+ * own sample lamp, archived as SKILL.md tells the owner to do. `priceColumn:
+ * false` is a product hub installed before 0.4.0: prices in the Pricing JSON.
  */
-export const demoState = async ({ imageUrl }) => {
+export const demoState = async ({ imageUrl, priceColumn = true }) => {
   const planned = planProducts(parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8"))).products;
   const certificates = planCertificates(
     parseCsv(await readFile(`${DEMO_DIR}toy-certificates.csv`, "utf8")),
@@ -127,7 +129,9 @@ export const demoState = async ({ imageUrl }) => {
           image: "./assets/product-images/aurora-lamp.png",
           gallery: ["./assets/product-images/aurora-lamp.png"],
           tags: ["lighting"],
-          pricing: { currency: "USD", current_price: 79 },
+          price: 79,
+          currency: "USD",
+          pricing: { landed_cost: 28 },
           inventory: { available: 210 },
           content: {},
           compliance: {},
@@ -142,6 +146,7 @@ export const demoState = async ({ imageUrl }) => {
           product,
           {},
           product.imageRefs.length ? product.imageRefs.map((file) => ({ file, sha256: "", url: imageUrl(file) })) : null,
+          { priceColumn },
         ),
         ref: index + 2,
         "created-at": "2026-11-01T08:00:00.000Z",
