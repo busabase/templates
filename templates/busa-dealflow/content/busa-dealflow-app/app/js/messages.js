@@ -114,8 +114,8 @@ export function connectionPrompt(locale, { baseUrl, folderName, space = null }) 
 When you are connected, tell me in one sentence which space you reached and which tables of "${folderName}" you can see.`;
 }
 
-/** Example sentences shown under the prompt. */
+/** Example sentences shown under the prompt; `{project}` is the most recently met project. */
 export const trySayExamples = {
-  en: ['Turn this meeting transcript into minutes and link it to the project.', 'Where are we with Yunshan? What is still open?', 'What did the team see this week?', 'Mark “order list” as done — they sent it today.'],
-  'zh-CN': ['把这份会议转写整理成纪要，关联到对应项目。', '云杉智造最近聊到哪了？还有哪些没跟进？', '本周团队看了哪些项目？', '把「交付清单」那条跟进标记完成，对方今天发过来了。'],
+  en: ['Turn this meeting transcript into minutes and link it to the project.', 'Where are we with {project}? What is still open?', 'What did the team see this week?', 'Mark the delivery-list follow-up as done — they sent it today.'],
+  'zh-CN': ['把这份会议转写整理成纪要，关联到对应项目。', '{project} 最近聊到哪了？还有哪些没跟进？', '本周团队看了哪些项目？', '把「交付清单」那条跟进标记完成，对方今天发过来了。'],
 };

@@ -1,6 +1,6 @@
 ---
 name: dealflow-meeting-notes
-description: Turn a meeting transcript, call notes or a filed document into one structured meeting record in the Deal Flow desk — minutes, key findings, open questions and follow-ups — linked to the right existing project without creating a duplicate, then update the project's latest finding, next step and last-meeting date. Use when someone hands over a recording transcript, 会议转写, 会议纪要, 访谈记录, BP or board pack and says 整理 / 归档 / log this meeting. Read busa-dealflow first.
+description: Turn a meeting transcript, call notes or a filed document into one structured meeting record in the Deal Flow desk — minutes, key findings, open questions and follow-ups — linked to the right existing project without creating a duplicate, then update the project's latest finding, next step and last-meeting date. Use when someone hands over a recording transcript, 会议转写, 会议纪要, 访谈记录, a pitch deck or board pack and says log / file / 整理 this meeting. Read busa-dealflow first.
 metadata:
   category: operations
   tags:
@@ -8,66 +8,78 @@ metadata:
     - workflow:deal-flow
 ---
 
-# 会议转写 → 纪要 → 待跟进
+# Transcript → minutes → follow-ups
 
-先读同文件夹的 `busa-dealflow`（表、字段和必须遵守的规则）。这里只讲整理一次会议的步骤。
+Read `busa-dealflow` in the same folder first (tables, fields and the rules). This skill covers
+turning one meeting into records. Write in the language of the transcript and the team.
 
-## 输入
+## Input
 
-- 一份会议转写或笔记（可能有识别错误、口头简称、粤语或中英混杂）。
-- 或一份资料（BP、董事会材料、尽调报告）——这时 `kind` 用 `document`。
-- 用户可能顺口说了「这是今天和云杉的会」，以用户说的为准。
+- A meeting transcript or notes (expect recognition errors, nicknames, mixed languages).
+- Or a document (pitch deck, board pack, diligence report) — then `kind` is `document`.
+- The person may say "this is today's call with Spruce"; what they say wins.
 
-`examples/sample-transcript-yunshan.md` 是一份虚构的示例转写，可以用来试跑整个流程。
+`examples/sample-transcript-spruce.md` (English) and `examples/sample-transcript-spruce-zh-CN.md`
+(Chinese) are invented transcripts for trying the whole flow on the sample data.
 
-## 步骤
+## Steps
 
-1. **认出是哪家公司。** 从转写里找公司名、简称、创始人名字。在 `deals` 里按 `name`、`company`、`aliases`
-   查，再用 `grep` 搜简称。
-   - 找到唯一一家 → 用它。
-   - 找到多家或拿不准 → 停下来问用户是哪一家。
-   - 一家都没有 → 告诉用户「项目表里没有这家公司」，确认后再按 `busa-dealflow` 的字段新建（`stage` 一般是
-     `first-meeting`），**不要**未经确认就建。
-2. **判断类型和阶段。** `kind`：第一次见 → `intro`；之后的会 → `follow-up`；访谈客户/专家/管理层核实信息 →
-   `diligence`；投委会 → `ic`；已投项目的例会 → `board`；只是收到资料 → `document`。`phase` 跟着项目阶段走：
-   线索/初步接触/尽调 → `pre`，投决 → `during`，已投 → `post`。
-3. **写会议记录**（一次会议一条，`bases create-change-request` 写进 `meetings`）：
-   - `title`：`YYYY-MM-DD · 项目名 · 类型中文`。
-   - `summary` 纪要：4–8 条事实，谁说了什么、数字是对方口述还是已核实，写清楚。
-   - `highlights` 关键发现：2–4 条，**每条一行、能单独读懂**，管理层在本周总览里逐条看。写「新」信息——和上次会议比，哪些疑问解决了、哪些变化了。
-   - `questions` 疑问与风险：还没核实的、对方提到的风险。
-   - `recorded-by` 写交转写的人；`logged-via` 写你自己是哪个智能体；`attendees` 我方在前、分号后写对方。
-   - `transcript`：放原文（超过约 2 万字就放摘录，并提醒用户把原件作为附件上传）。
-   - 不写金额、估值、收入利润等财务数字——即使转写里有。写成「对方介绍了经营情况，材料已归档」。
-4. **拆待跟进**（`bases create-bulk-change-request` 一次写进 `followups`）：只收**有人答应要做**的事。每条要有
-   `owner`（对方答应的事，`owner` 写我方跟进人，并在标题里写清楚，如「催云杉提供两家客户联系人」）、`due-on`
-   （按会上说的日期换算成 YYYY-MM-DD；没说日期就不填）、`deal`、`meeting`（第 3 步那条记录的 id）、`status: open`。
-   先看同一项目下有没有内容相同、还没完成的跟进，有就更新它而不是重复建。
-5. **更新项目**（`records change-request --operation update`）：`latest-finding` 换成本次最重要的一条发现，
-   `next-step` / `next-step-due` 换成最近的一条跟进，`last-meeting-on` 写会议日期；转写里出现了新的简称就补进
-   `aliases`。**阶段只有会上明确做了决定才改**（例如合伙人会上同意进入尽调），并在纪要里写明。
-6. **回报用户**：一句话说清写了什么（1 条会议、N 条待跟进、项目更新了哪些字段），附上会议记录和项目的链接；如果任何一步返回 `in_review`，说明在等谁审。
+1. **Identify the company.** Pull the company name, short names and founder names from the
+   transcript. Search `deals` by `name`, `company` and `aliases`, then `grep` for short names.
+   - Exactly one match → use it.
+   - Several, or unsure → stop and ask which one.
+   - None → tell the person "there is no project for this company"; create one (usually stage
+     `first-meeting`) only after they confirm.
+2. **Pick type and phase.** `kind`: first time we met → `intro`; later meetings → `follow-up`;
+   checking facts with customers, experts or management → `diligence`; investment committee → `ic`;
+   a portfolio company's review → `board`; only received material → `document`. `phase` follows the
+   project stage: sourcing / first meeting / diligence → `pre`, IC → `during`, portfolio → `post`.
+3. **Write the meeting record** (one per meeting, `bases create-change-request` into `meetings`):
+   - `title`: `YYYY-MM-DD · Project · Type`.
+   - `summary`: 4–8 facts — who said what, and whether a number is their claim or verified.
+   - `highlights`: 2–4 findings, **one per line, each readable on its own**; leadership reads them in
+     the weekly view. Write what is *new* compared with earlier meetings: which questions closed,
+     what changed.
+   - `questions`: what is still unverified and the risks they raised.
+   - `recorded-by` is the person who handed it over; `logged-via` is you (the agent); `attendees` our
+     side first, a semicolon, then theirs.
+   - `transcript`: the original text (an excerpt beyond about 20,000 characters; ask the person to
+     attach the full file).
+   - No amounts, valuations, revenue or profit figures, even if the transcript has them. Write
+     "they walked through operating figures; materials filed".
+4. **Split out follow-ups** (`bases create-bulk-change-request` into `followups`): only things
+   someone promised to do. Each needs an `owner` (for something the other side promised, our person
+   who chases it, with that in the title: "Chase Spruce for two customer contacts"), `due-on`
+   (convert what was said into YYYY-MM-DD; check the weekday — "next Monday" from a Thursday; leave
+   empty if no date), `deal`, `meeting` (the record from step 3), `status: open`. Update an open
+   follow-up with the same content instead of adding a duplicate.
+5. **Update the project** (`records change-request --operation update`): `latest-finding` becomes
+   this meeting's most important finding, `next-step` / `next-step-due` the nearest follow-up,
+   `last-meeting-on` the meeting date; add any new short name to `aliases`. **Change the stage only
+   if the meeting decided it** (e.g. the partner agreed to start diligence), and say so in the minutes.
+6. **Report back:** one sentence on what you wrote (one meeting, N follow-ups, which project fields),
+   with links to the meeting record and the project; if anything came back `in_review`, say who reviews it.
 
-## 写入示例
+## Write examples
 
 ```bash
-npx --yes busabase-cli@latest bases create-change-request --base-id <meetings 表 id> \
-  --fields-json @meeting.json --message "记录云杉智造 11-05 尽调访谈：交付周期与算法团队核实" \
-  --playbook skill:<本技能节点 id> --output json
-# meeting.json 里关联字段写成数组： "deal": ["<项目记录 id>"]
-npx --yes busabase-cli@latest bases create-bulk-change-request --base-id <followups 表 id> \
-  --records-json @followups.json --message "云杉智造 11-05 访谈产生的 3 条待跟进" \
-  --playbook skill:<本技能节点 id> --output json
-npx --yes busabase-cli@latest records change-request --record-id <项目记录 id> --operation update \
-  --fields-json @deal-update.json --message "云杉智造：更新最新发现、下一步和最近会议日期" \
-  --playbook skill:<本技能节点 id> --output json
+npx --yes busabase-cli@latest bases create-change-request --base-id <meetings base id> \
+  --fields-json @meeting.json --message "Log the 11-05 Spruce diligence interview: delivery time and algorithm team checked" \
+  --playbook skill:<this skill's node id> --output json
+# relations are arrays in meeting.json: "deal": ["<project record id>"]
+npx --yes busabase-cli@latest bases create-bulk-change-request --base-id <followups base id> \
+  --records-json @followups.json --message "Three follow-ups from the 11-05 Spruce interview" \
+  --playbook skill:<this skill's node id> --output json
+npx --yes busabase-cli@latest records change-request --record-id <project record id> --operation update \
+  --fields-json @deal-update.json --message "Spruce: update latest finding, next step and last meeting" \
+  --playbook skill:<this skill's node id> --output json
 ```
 
-## 检查清单（交付前自查）
+## Checklist before you report
 
-- [ ] 没有新建重复项目；会议的 `deal` 指向正确的公司。
-- [ ] 标题格式正确，`kind`/`phase` 合理。
-- [ ] 关键发现每条一行，且是本次会议的新信息。
-- [ ] 每条待跟进都有负责人；有日期的换算对了。
-- [ ] 没有写入财务数字；没有碰「投决会意见」表（除非用户是管理层且明确要求）。
-- [ ] 给用户的回复里有链接。
+- [ ] No duplicate project; the meeting's `deal` is the right company.
+- [ ] Title format is right; `kind` / `phase` make sense.
+- [ ] One finding per line, each new for this meeting.
+- [ ] Every follow-up has an owner; converted dates are correct.
+- [ ] No financial figures; the IC table untouched (unless the person is leadership and asked).
+- [ ] Links in your reply.

@@ -113,7 +113,7 @@ export const meetingsIn = (records, range) => records
 export const bulletLines = (text) => String(text || '').split('\n').map((line) => line.replace(/^\s*(?:[-*+]|\d+[.)])\s+/, '').trim()).filter(Boolean);
 
 /** People named on a meeting: who recorded it first, then attendees on our side. */
-const people = (meeting) => [meeting.fields['recorded-by'], ...String(meeting.fields.attendees || '').split(/[；;]/)[0].split(/[、,，]|及/)]
+const people = (meeting) => [meeting.fields['recorded-by'], ...String(meeting.fields.attendees || '').split(/[；;]/)[0].split(/[、,，]|及|\s+and\s+/)]
   .map((name) => String(name || '').replace(/[（(][^）)]*[）)]/g, '').trim()).filter(Boolean);
 
 /**

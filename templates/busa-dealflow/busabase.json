@@ -60,6 +60,12 @@
           }
         ]
       }
-    }
+    },
+    "videos": [
+      {
+        "src": "assets/recordings/busa-dealflow-intro.mp4",
+        "title": "Scenario introduction: from meeting notes to the leadership view"
+      }
+    ]
   }
 }

@@ -23,8 +23,8 @@
         "zh-CN": "用示例转写试跑一遍"
       },
       "body": {
-        "en": "Read `busa-dealflow`, then run this skill on `examples/sample-transcript-yunshan.md` from this skill's files (it is invented sample data). Show me what you would write before writing it.",
-        "zh-CN": "先读 `busa-dealflow`，再用本技能文件里的 `examples/sample-transcript-yunshan.md`（虚构示例）试跑一遍。写入前先把要写的内容给我看。"
+        "en": "Read `busa-dealflow`, then run this skill on `examples/sample-transcript-spruce.md` from this skill's files (invented sample data; `examples/sample-transcript-spruce-zh-CN.md` is the Chinese version). Show me what you would write before writing it.",
+        "zh-CN": "先读 `busa-dealflow`，再用本技能文件里的示例转写试跑一遍（虚构数据；中文版是 `examples/sample-transcript-spruce-zh-CN.md`，英文版是 `examples/sample-transcript-spruce.md`）。写入前先把要写的内容给我看。"
       },
       "intent": "change"
     },

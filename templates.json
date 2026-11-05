@@ -791,6 +791,13 @@
         "assets/screenshots/followups.webp",
         "assets/screenshots/connect.webp"
       ],
+      "video": "assets/recordings/busa-dealflow-intro.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-dealflow-intro.mp4",
+          "title": "Scenario introduction: from meeting notes to the leadership view"
+        }
+      ],
       "locales": {
         "zh-CN": {
           "screenshots": [
@@ -820,7 +827,7 @@
         "docs": 0,
         "bases": 5,
         "records": 29,
-        "files": 31,
+        "files": 32,
         "airapps": 1,
         "skill": true
       }

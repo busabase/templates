@@ -78,7 +78,7 @@ export function overviewHtml(ctx, range) {
     ? `<table class="ws-table seen-table"><thead><tr><th>${esc(t.project)}</th><th class="col-status">${esc(t.stage)}</th><th>${esc(t.latestMeeting)}</th><th>${esc(t.by)}</th><th class="ws-col-num">${esc(t.mMeetings)}</th></tr></thead><tbody>${seen.map((entry) => {
       const deal = ctx.index.get(entry.dealId);
       const name = deal ? `<a href="${ctx.peekUrl(deal)}">${esc(ctx.title(deal))}</a>` : esc(t.notLoaded);
-      return `<tr><td class="cell-primary">${name}</td><td class="col-status">${deal ? ctx.badge(deals, 'stage', deal.fields.stage) : '-'}</td><td><a class="rel-link" href="${ctx.peekUrl(entry.latest)}">${ctx.badge(meetings, 'kind', entry.latest.fields.kind)} ${esc(ctx.date(entry.latest.fields['held-on']))}</a></td><td>${esc(entry.people.join('、') || '-')}</td><td class="ws-col-num">${esc(entry.meetings.length)}</td></tr>`;
+      return `<tr><td class="cell-primary">${name}</td><td class="col-status">${deal ? ctx.badge(deals, 'stage', deal.fields.stage) : '-'}</td><td><a class="rel-link" href="${ctx.peekUrl(entry.latest)}">${ctx.badge(meetings, 'kind', entry.latest.fields.kind)} ${esc(ctx.date(entry.latest.fields['held-on']))}</a></td><td>${esc(entry.people.join(ctx.locale === 'zh-CN' ? '、' : ', ') || '-')}</td><td class="ws-col-num">${esc(entry.meetings.length)}</td></tr>`;
     }).join('')}</tbody></table>`
     : `<div class="empty-state"><strong>${esc(t.weekEmpty)}</strong><span>${esc(t.weekEmptyHint)}</span></div>`;
 
@@ -203,6 +203,8 @@ function dealHtml(ctx, row, head, factRows, sections) {
 export function connectHtml(ctx, { baseUrl, folderName, space, copied }) {
   const { t, locale } = ctx;
   const text = connectionPrompt(locale, { baseUrl, folderName, space });
+  const recent = ctx.records.filter((row) => row.baseKey === 'deals').sort((a, b) => String(b.fields['last-meeting-on'] || '').localeCompare(String(a.fields['last-meeting-on'] || '')))[0];
+  const project = recent ? ctx.title(recent) : (locale === 'zh-CN' ? '某个项目' : 'a project');
   const steps = [[t.stepCopy, t.stepCopyBody], [t.stepPaste, t.stepPasteBody], [t.stepApprove, t.stepApproveBody], [t.stepUse, t.stepUseBody]];
   return `<header class="page-hero"><div><span class="page-hero-context">${esc(folderName)}</span><h1>${esc(t.connectTitle)}</h1><p>${esc(t.connectLead)}</p></div></header>
     <ol class="connect-steps">${steps.map(([title, body], index) => `<li><span class="step-no">${index + 1}</span><strong>${esc(title)}</strong><span>${esc(body)}</span></li>`).join('')}</ol>
@@ -212,7 +214,7 @@ export function connectHtml(ctx, { baseUrl, folderName, space, copied }) {
         <pre class="prompt-text" id="promptText">${esc(text)}</pre>
         <p class="muted small">${esc(t.mcpNote)} <code>${esc(baseUrl.replace(/\/$/, ''))}/api/mcp</code></p></section>
       <div class="connect-side">
-        <section class="card"><h2 class="card-title">${esc(t.trySay)}</h2><ul class="say-list">${trySayExamples[locale].map((line) => `<li>${locale === 'zh-CN' ? `「${esc(line)}」` : `“${esc(line)}”`}</li>`).join('')}</ul></section>
+        <section class="card"><h2 class="card-title">${esc(t.trySay)}</h2><ul class="say-list">${trySayExamples[locale].map((template) => template.replace('{project}', project)).map((line) => `<li>${locale === 'zh-CN' ? `「${esc(line)}」` : `“${esc(line)}”`}</li>`).join('')}</ul></section>
         <section class="card"><h2 class="card-title">${esc(t.permissionTitle)}</h2><p>${esc(t.permissionBody)}</p></section>
       </div>
     </div>`;

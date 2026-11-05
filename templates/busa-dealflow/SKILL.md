@@ -20,100 +20,122 @@ metadata:
     risk: gated-write
 ---
 
-# 投资 Deal Flow 团队手册
+# Investment Deal Flow — team playbook
 
-这个文件夹是投资团队共用的「项目—会议—待跟进」空间。每个人继续用自己习惯的智能体（Codex、WorkBuddy、Claude
-Code……），智能体以**本人的账号和权限**读写这里。团队要的只有一个闭环：
+This folder is the shared projects–meetings–follow-ups space of an investment team. Everyone keeps
+the agent they already use (Codex, WorkBuddy, Claude Code…), and that agent reads and writes here
+**with that person's own account and permissions**. The team wants one loop:
 
 ```txt
-开完会 ──► 转写交给自己的智能体 ──► 找到项目（绝不重复建） ──► 写纪要 + 关键发现 + 待跟进 ──► 更新项目
-   ▲                                                                                      │
-   └──── 负责人关闭跟进 ◄── 管理层看「本周总览」/ 周报 ◄── 同事用各自的智能体查询同一份信息 ◄──┘
+meeting ──► transcript to your own agent ──► find the project (never a duplicate) ──► minutes + findings + follow-ups ──► update the project
+   ▲                                                                                                                    │
+   └── owners close follow-ups ◄── leadership reads "This week" / the digest ◄── colleagues ask their own agents ◄───────┘
 ```
 
-整理会议的具体步骤在 `dealflow-meeting-notes`，写周报在 `dealflow-weekly-digest`。本文件规定所有人都要守的数据约定。
+Turning one meeting into records is in `dealflow-meeting-notes`; the weekly digest is in
+`dealflow-weekly-digest`. This file holds the data rules everybody keeps.
 
-## 表和字段
+Write in the language the team works in. The sample data is in English and each company keeps its
+Chinese name in `aliases`, so a transcript in either language finds it.
 
-**空间**：用户的账号可能属于多个空间。用 `--space-id <团队空间 ID>` 指定（接入提示词里写了 ID），不要用 `space use` 改用户的默认空间。
+## Tables and fields
 
-表按安装时的 `resourceKey` 识别（文件夹里看到的名字可能被管理员改成中文，slug 可能带前缀）。找表的方法：
-`npx --yes busabase-cli@latest bases list --output json`，取本文件夹下 slug 以 `-deals`、`-meetings`、
-`-followups`、`-digests`、`-ic-notes` 结尾的那几张。
+**Space:** the person's account may belong to several spaces. Pass `--space-id <team space id>` on
+every command (the connection prompt names it); never run `space use` to change their default.
 
-### `deals` 项目（一家公司一条，所有东西都挂在它下面）
+Find tables by the `resourceKey` install stamped on them (the visible names may have been
+translated, and slugs may carry a prefix): `npx --yes busabase-cli@latest bases list --output json`,
+then take the Bases in this folder whose slug ends in `-deals`, `-meetings`, `-followups`,
+`-digests`, `-ic-notes`.
 
-| 字段 | 含义 | 规则 |
+### `deals` — Projects (one per company; everything hangs off it)
+
+| Field | Meaning | Rule |
 | --- | --- | --- |
-| `name` 项目 | 团队日常叫法，如「云杉智造」 | 必填；就是显示名 |
-| `company` 公司全称 | 工商全称 | 必填；**查重的主键** |
-| `aliases` 别名与常见叫法 | 简称、英文名、转写里常见的误写 | 逗号分隔；每次在转写里遇到新叫法就补上 |
-| `stage` 阶段 | `sourcing` 线索 · `first-meeting` 初步接触 · `diligence` 立项尽调 · `ic` 投决 · `portfolio` 已投·投后 · `on-hold` 暂缓 · `passed` 已放弃 | 必填；只在有会议或决定支持时改 |
-| `sector` 赛道 | `ai-infra` / `enterprise` / `robotics` / `healthcare` / `consumer` / `other` | |
-| `round` 轮次 | 文字，如「A 轮」 | |
-| `owner` 项目负责人 | 人名 | 必填 |
-| `team` 小组 | `tech` / `healthcare` / `consumer` | |
-| `one-liner` 一句话介绍 | 做什么、卖给谁 | |
-| `latest-finding` 最新关键发现 | 最近一次会议最重要的一条发现 | 每次写会议后更新 |
-| `next-step` / `next-step-due` 下一步 / 日期 | 团队要做的下一件事 | 每次写会议后更新 |
-| `last-meeting-on` 最近会议 | 日期 | 每次写会议后更新 |
-| `source` 来源 | 谁推荐、哪个活动 | |
+| `name` Project | What the team calls it, e.g. "Spruce Robotics" | required; the display name |
+| `company` Company legal name | Registered legal name | required; **the dedupe key** |
+| `aliases` Also known as | Short names, other-language names, common mis-transcriptions | comma-separated; add new ones whenever a transcript uses one |
+| `stage` Stage | `sourcing` · `first-meeting` · `diligence` · `ic` · `portfolio` · `on-hold` · `passed` | required; change only when a meeting or decision supports it |
+| `sector` Sector | `ai-infra` / `enterprise` / `robotics` / `healthcare` / `consumer` / `other` | |
+| `round` Round | Text, e.g. "Series A" | |
+| `owner` Deal lead | A person | required |
+| `team` Team | `tech` / `healthcare` / `consumer` | |
+| `one-liner` One-liner | What they do and for whom | |
+| `latest-finding` Latest finding | The most important finding of the latest meeting | update after every meeting |
+| `next-step` / `next-step-due` | The team's next action and its date | update after every meeting |
+| `last-meeting-on` Last meeting | Date | update after every meeting |
+| `source` Source | Who referred it, which event | |
 
-### `meetings` 会议与资料（每条只关联一个项目）
+### `meetings` — Meetings & files (each linked to exactly one project)
 
-会议、电话、尽调访谈、投决会、投后例会、归档资料都是这一张表，用 `kind` 区分：`intro` 首次会议 · `follow-up`
-跟进会议 · `diligence` 尽调访谈 · `ic` 投决会 · `board` 投后例会 · `document` 资料归档。`phase` 是 `pre` 投前 /
-`during` 投中 / `post` 投后。
+Meetings, calls, diligence interviews, IC meetings, portfolio reviews and filed documents all live
+here, told apart by `kind`: `intro` first meeting · `follow-up` · `diligence` interview · `ic`
+meeting · `board` portfolio review · `document` filed document. `phase` is `pre` / `during` / `post`
+investment.
 
-- `title` 固定格式：`YYYY-MM-DD · 项目名 · 类型`，例如 `2026-11-05 · 云杉智造 · 尽调访谈`。
-- `deal` 必填，关联到唯一一个项目。一次会议聊了两家公司，就写两条。
-- `summary` 纪要（Markdown 列表，事实）、`highlights` 关键发现（每行一条，管理层会逐条看）、`questions` 疑问与风险。
-- `recorded-by` 记录人、`attendees` 参会人（我方在前，分号后写对方）、`logged-via` 用哪个智能体整理的（Codex / WorkBuddy / Claude Code / 手动）。
-- `transcript` 放转写原文（太长就放摘录，原件用 `files` 附件）。
+- `title` is always `YYYY-MM-DD · Project · Type`, e.g. `2026-11-05 · Spruce Robotics · Diligence interview`.
+- `deal` is required and points at exactly one project. One meeting about two companies is two records.
+- `summary` minutes (Markdown bullets, facts), `highlights` key findings (one per line; leadership
+  reads them line by line), `questions` open questions and risks.
+- `recorded-by`, `attendees` (our side first, then a semicolon, then theirs), `logged-via` (which
+  agent wrote it: Codex / WorkBuddy / Claude Code / Manual).
+- `transcript` holds the original text (an excerpt if it is very long; attach the full file in `files`).
 
-### `followups` 待跟进
+### `followups` — Follow-ups
 
-`title` 写成一件能完成的事；`deal` 必填；`meeting` 写来源会议；`owner` 必填；`due-on` 截止日期；
-`status`：`open` 待办 · `in-progress` 进行中 · `done` 已完成 · `dropped` 已取消；完成时填 `done-on` 并在 `notes` 写结果。
+`title` is one thing that can be done; `deal` required; `meeting` is where it came from; `owner`
+required; `due-on`; `status`: `open` · `in-progress` · `done` · `dropped`. When done, set `done-on`
+and write the outcome in `notes`.
 
-### `digests` 管理层周报
+### `digests` — Weekly digests
 
-每周一条，规则见 `dealflow-weekly-digest`。
+One per week; see `dealflow-weekly-digest`.
 
-### `ic-notes` 投决会意见（仅管理层）
+### `ic-notes` — IC notes (leadership only)
 
-投决结论和合伙人意见。**安装后管理员要把这张表设为仅管理层可见**（表的「权限」里把可见范围改为私有，再授权给管理层）。
-看不到这张表的人，他们的智能体也看不到——在列表、搜索、grep 里都不存在。会议表里的投决会记录只写「已召开，结论见管理层表」。
+Investment-committee conclusions and partners' views. **After installing, an admin restricts this
+table to leadership** (table → permissions → visibility private → grant the partners). People who
+cannot see it — and their agents — find no trace of it in lists, search or grep. The IC meeting in
+`meetings` says only "the committee met; the conclusion is in the leadership table".
 
-## 必须遵守
+## Rules
 
-1. **一家公司只有一条项目记录。** 写任何东西之前先查重：按 `name`、`company`、`aliases` 三个字段查，再用
-   `grep` 在项目表里搜简称。找到了就用它；拿不准是不是同一家，**先问人**，不要新建。
-2. **所有写入都走变更请求**（busabase-cli 的 `*-change-request` 命令），写清楚 `--message`（动词 + 什么 + 为什么），
-   并带上 `--playbook skill:<本技能节点 id>`。不要传 `autoMerge`，看返回的 `status`：merged 就是已生效，in_review 就告诉用户在等谁审。
-3. **你以使用者本人的权限工作。** 查不到某张表，就是这个人没有权限：如实说「这张表没有共享给你」，不要绕过，
-   不要向用户索要别人的密钥，不要把管理层表的内容抄到共享表里。
-4. **不写敏感财务数据。** 基金回报、被投企业的收入利润估值等数字不进共享表；原件放附件，正文只写「材料已归档」。
-5. **阶段只在有依据时改**，并在项目的 `latest-finding` 或会议纪要里写明依据。
-6. **每次写完把链接发给用户**：`https://<Busabase 地址>/dashboard/<空间 id>/base/<表 slug>/<记录 id>`。
+1. **One company, one project record.** Before writing anything, search `name`, `company` and
+   `aliases`, then `grep` the projects table for short names. Found it → use it. Unsure whether it is
+   the same company → **ask**, do not create.
+2. **Every write is a change request** (the busabase-cli `*-change-request` commands) with a real
+   `--message` (verb + what + why) and `--playbook skill:<this skill's node id>`. Do not pass
+   `autoMerge`; read the returned `status`: merged means it landed, in_review means tell the person
+   who has to review it.
+3. **You act with the person's own permissions.** A table you cannot find is one they may not see:
+   say "this table is not shared with you", never work around it, never ask for someone else's key,
+   never copy leadership-table content into shared tables.
+4. **No sensitive financials.** Fund returns, portfolio revenue, profit or valuation figures stay
+   out of the shared tables; keep the original as an attachment and write "materials filed".
+5. **Change a stage only on evidence**, and say which meeting or decision in `latest-finding` or the minutes.
+6. **Send the link after every write**: `https://<busabase address>/dashboard/<space id>/base/<table slug>/<record id>`.
 
-## 常用查询（只读）
+## Read-only questions
 
-- 某个项目的全貌：先按名字找到项目，再查 `meetings` 和 `followups` 里 `deal` 指向它的记录，按日期排序，分投前/投中/投后讲。
-- 本周团队看了哪些项目：`meetings` 里 `held-on` 在本周一到今天的记录，按 `deal` 归并，列出参会人和关键发现。
-- 我还欠哪些跟进：`followups` 里 `owner` 是我、`status` 不是 `done`/`dropped` 的，逾期的排前面。
+- A project's full picture: find the project by name, then `meetings` and `followups` whose `deal`
+  points at it, in date order, told as pre / during / post investment.
+- What the team saw this week: `meetings` with `held-on` from Monday to today, grouped by `deal`,
+  with attendees and key findings.
+- What I still owe: `followups` whose `owner` is me and `status` is not `done`/`dropped`, overdue first.
 
 ```bash
-# 最近 50 条会议，按日期倒序；再在本地按 held-on 过滤出本周
-npx --yes busabase-cli@latest records query --base-id <meetings 表 id> --limit 50 \
+# latest 50 meetings, newest first; filter this week's by held-on locally
+npx --yes busabase-cli@latest records query --base-id <meetings base id> --limit 50 \
   --sort-json '{"fieldSlug":"held-on","fieldType":"date","direction":"desc"}' --slim --output json
-# 按项目名精确找项目；找不到再用 grep 搜简称和别名
-npx --yes busabase-cli@latest records by-field-text --base-id <deals 表 id> --field-slug name --value-text 云杉智造 --output json
-npx --yes busabase-cli@latest grep --pattern "云杉" --base-ids <deals 表 id> --output json
+# exact project by name; fall back to grep for short names and aliases
+npx --yes busabase-cli@latest records by-field-text --base-id <deals base id> --field-slug name --value-text "Spruce Robotics" --output json
+npx --yes busabase-cli@latest grep --pattern "Spruce|云杉" --base-ids <deals base id> --output json
 ```
 
-## 这个应用不做什么
+## What this app does not do
 
-- 文件夹里的 Deal Flow 应用只读：它展示本周总览、项目时间线、待跟进和接入提示词，不写任何数据。
-- 不发邮件、不对外联系、不自动同步旧系统。旧系统的数据要导入，另行商定导入方案后再做。
-- 不替人做投资判断；关键发现和阶段变化都要能对应到某次会议。
+- The Deal Flow app in this folder only reads: this week's overview, project timelines, the
+  follow-up board and the connection prompt. It writes nothing.
+- It sends no email, contacts nobody, and does not sync legacy systems. Importing from an old
+  system is a separate, agreed job.
+- It makes no investment judgement; every finding and stage change must trace to a meeting.

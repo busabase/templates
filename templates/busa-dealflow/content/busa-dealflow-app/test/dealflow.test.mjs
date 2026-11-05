@@ -31,8 +31,8 @@ test('ISO weeks: Monday start, labels round-trip, year boundaries', () => {
 test('this week: projects seen, meetings and findings come from meetings in the week only', () => {
   const week = weekRange(AS_OF);
   const seen = projectsSeen(rows, week).map((entry) => rows.find((row) => row.id === entry.dealId).fields.name).sort();
-  assert.deepEqual(seen, ['北辰算力', '星策', '澄观数据', '澜舟医疗']);
-  const xingce = projectsSeen(rows, week).find((entry) => entry.dealId === deal('星策').id);
+  assert.deepEqual(seen, ['Clearview Data', 'Polaris Compute', 'Starplan Software', 'Wavecraft Health']);
+  const xingce = projectsSeen(rows, week).find((entry) => entry.dealId === deal('Starplan Software').id);
   assert.equal(xingce.meetings.length, 2, 'a meeting and a filed board pack in the same week count once as a project');
   assert.ok(findingsIn(rows, week).length >= 6);
   // Last week only Yunshan and Qimu were met.
@@ -51,18 +51,18 @@ test('follow-ups due: overdue first, closed ones and far-off ones left out', () 
 });
 
 test('a project page is one timeline across pre, during and post investment', () => {
-  const lanzhou = dealTimeline(rows, deal('澜舟医疗').id);
+  const lanzhou = dealTimeline(rows, deal('Wavecraft Health').id);
   assert.deepEqual(lanzhou.map((group) => group.phase), ['during']);
-  const yunshan = dealTimeline(rows, deal('云杉智造').id);
+  const yunshan = dealTimeline(rows, deal('Spruce Robotics').id);
   assert.deepEqual(yunshan[0].meetings.map((row) => row.fields['held-on']), ['2026-10-14', '2026-10-28']);
-  const xingce = dealTimeline(rows, deal('星策').id);
+  const xingce = dealTimeline(rows, deal('Starplan Software').id);
   assert.deepEqual(xingce.map((group) => group.phase), ['post']);
   assert.equal(xingce[0].meetings.length, 3);
 });
 
 test('every sample company is marked as invented, and no figures leak into the sample', () => {
   assert.ok(hasSyntheticData(rows));
-  for (const row of rows.filter((item) => item.baseKey === 'deals')) assert.match(row.fields.company, /虚构/);
+  for (const row of rows.filter((item) => item.baseKey === 'deals')) assert.match(row.fields.company, /fictional/);
   const text = JSON.stringify(rows.map((row) => row.fields));
   assert.doesNotMatch(text, /[¥$€]|万元|亿元|估值\s*\d|IRR|DPI|TVPI|回报率\s*\d/);
 });
@@ -159,9 +159,9 @@ test('no app file carries the leadership-only sample content', async () => {
 
 test('people are listed once even when an agent adds their role in brackets', () => {
   const week = weekRange(AS_OF);
-  const extra = { id: 'recextrameeting0001', baseKey: 'meetings', fields: { title: 'x', deal: [deal('澄观数据').id], 'held-on': '2026-11-04', kind: 'follow-up', phase: 'pre', 'recorded-by': '周可（投资经理）', attendees: '周可、何嘉（分析师）；对方' } };
-  const entry = projectsSeen([...rows, extra], week).find((item) => item.dealId === deal('澄观数据').id);
-  assert.deepEqual(entry.people.sort(), ['何嘉', '周可']);
+  const extra = { id: 'recextrameeting0001', baseKey: 'meetings', fields: { title: 'x', deal: [deal('Clearview Data').id], 'held-on': '2026-11-04', kind: 'follow-up', phase: 'pre', 'recorded-by': 'Zhou Ke (associate)', attendees: 'Zhou Ke and He Jia (analyst); the founders' } };
+  const entry = projectsSeen([...rows, extra], week).find((item) => item.dealId === deal('Clearview Data').id);
+  assert.deepEqual(entry.people.sort(), ['He Jia', 'Zhou Ke']);
 });
 
 test('the prompt names the root Busabase host for any busabase.com origin, and a private host as is', async () => {
@@ -170,4 +170,9 @@ test('the prompt names the root Busabase host for any busabase.com origin, and a
   assert.equal(defaultServerAddress('https://busabase.com'), 'https://busabase.com');
   assert.equal(defaultServerAddress('https://busabase.example.cn:8443'), 'https://busabase.example.cn:8443');
   assert.equal(defaultServerAddress('http://localhost:4387'), 'http://localhost:4387');
+});
+
+test('the "try saying" examples name a project from the loaded data, not a hard-coded sample', async () => {
+  const { trySayExamples } = await import('../app/js/messages.js');
+  for (const locale of ['en', 'zh-CN']) assert.ok(trySayExamples[locale].some((line) => line.includes('{project}')) && !trySayExamples[locale].join(' ').includes('Spruce'));
 });

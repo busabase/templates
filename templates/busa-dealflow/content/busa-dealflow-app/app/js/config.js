@@ -280,7 +280,7 @@ export const appConfig = {
   binding: 'runtime',
   readOnly: true,
   schemaVersion: 1,
-  locale: 'zh-CN',
+  locale: 'en',
   brand: { accent: '#1f6f5c' },
   asOf: '2026-11-05',
   folder: { name: 'Deal Flow', slug: APP, description: 'Projects, meetings, follow-ups and the weekly leadership digest for an investment team.' },
