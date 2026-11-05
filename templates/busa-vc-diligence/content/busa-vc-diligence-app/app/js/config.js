@@ -1206,7 +1206,7 @@ export const appConfig = {
           "demo-target-perplexity"
         ],
         "type": "expert",
-        "interviewee": "Former search-industry executive (expert network call)",
+        "interviewee": "Former search-industry executive (expert network call; demo example)",
         "date": "__RECENT__",
         "interviewer": "Deal team",
         "key-claims": "Claims logged as claims: distribution partnerships decide who keeps query share; enterprise seats are expanding faster than consumer subscriptions. None of this is verified by the call itself.",

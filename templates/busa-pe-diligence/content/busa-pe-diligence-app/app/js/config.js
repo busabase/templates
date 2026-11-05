@@ -839,8 +839,8 @@ export const appConfig = {
         "stage": "diligence",
         "deal-type": "minority-growth",
         "ownership-stake-percent": 2,
-        "enterprise-value-usd-m": 5000000,
-        "financial-snapshot": "FY2026 (year ended Jan 25, 2026): revenue $215.9B (+65.5% YoY); net income $120.1B; gross margin 71.1% (FY2025: 75.0%); Data Center revenue $193.7B, about 90% of total; Gaming about 7%. Market capitalisation about $5.0T (Nov 3, 2026). Source: Form 10-K FY2026 — see Evidence.",
+        "enterprise-value-usd-m": 4960000,
+        "financial-snapshot": "FY2026 (year ended Jan 25, 2026): revenue $215.9B (+65.5% YoY); net income $120.1B; gross margin 71.1% (FY2025: 75.0%); Data Center revenue $193.7B, about 90% of total; Gaming about 7%. Market capitalisation about $5.0T (Nov 3, 2026; third-party market data, Unverified). Financials source: Form 10-K FY2026 — see Evidence.",
         "deal-source": "Public-market screening (demo example)",
         "deal-lead": "Deal team (demo)",
         "target-ic-date": "2026-12-15",
@@ -901,7 +901,7 @@ export const appConfig = {
         "requested-from": "SEC EDGAR (public filing)",
         "internal-owner": "Deal team (demo)",
         "due-date": "2026-11-20",
-        "received-date": "2026-11-06",
+        "received-date": "2026-11-03",
         "notes": "Primary source for every headline figure in the target's financial snapshot."
       }
     },
@@ -919,7 +919,7 @@ export const appConfig = {
         "requested-from": "SEC EDGAR (public filing)",
         "internal-owner": "Deal team (demo)",
         "due-date": "2026-11-20",
-        "received-date": "2026-11-08",
+        "received-date": "2026-11-04",
         "notes": "Reviewed for changes in segment mix and risk factors since the annual filing."
       }
     },
@@ -937,7 +937,7 @@ export const appConfig = {
         "requested-from": "Form 10-K disclosure; customer calls to follow",
         "internal-owner": "Deal team (demo)",
         "due-date": "2026-12-01",
-        "received-date": "2026-11-10",
+        "received-date": "2026-11-05",
         "notes": "Concentration is disclosed in the 10-K; durability of that demand is what the customer checks must test."
       }
     },
@@ -956,7 +956,7 @@ export const appConfig = {
         "advisor-owner": "External counsel (demo)",
         "internal-owner": "Deal team (demo)",
         "due-date": "2026-12-03",
-        "received-date": "2026-11-12",
+        "received-date": "2026-11-05",
         "notes": "Counsel confirmation outstanding; the filing itself is already in Evidence."
       }
     },
@@ -1138,7 +1138,7 @@ export const appConfig = {
         "source-date": "2026-11-03",
         "as-of-date": "2026-11-05",
         "verification": "unverified",
-        "summary": "A moving market figure from a third-party data page. Re-base on the IC-date close before any valuation work; do not carry this number into the IC memo as a fact."
+        "summary": "A moving market figure from a third-party data page. Re-base on the IC-date close before any valuation work; do not carry this number into the IC memo as a fact. Third-party estimates put enterprise value at about $4.96T on the same date; the target's indicative-EV field carries that estimate, not the market-cap figure."
       }
     },
     {
@@ -1222,7 +1222,7 @@ export const appConfig = {
       "id": "find-nvda-margin",
       "baseKey": "findings",
       "fields": {
-        "title": "Gross-margin compression on the Blackwell transition",
+        "title": "Gross-margin compression: Blackwell transition plus the $4.5B H20 charge",
         "target": [
           "target-nvidia"
         ],
@@ -1324,7 +1324,7 @@ export const appConfig = {
           "target-harbormed"
         ],
         "interview-type": "management",
-        "date": "2026-11-09",
+        "date": "2026-11-03",
         "participants": "Founder team (fictional example)",
         "key-claims": "Growth and margin claims matching the teaser — which is exactly why they stay untested until audited statements arrive.",
         "consistency": "untested",
