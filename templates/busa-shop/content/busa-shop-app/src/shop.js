@@ -60,7 +60,9 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
       records.readPage({
         baseId: tables.productsBaseId,
         limit: PRODUCTS_PAGE,
-        sort: { fieldSlug: "ref", direction: "asc" },
+        // `fieldType` is not optional in practice: Busabase before 2026-11-05
+        // answered a sort without it in the default order (newest first).
+        sort: { fieldSlug: "ref", fieldType: "number", direction: "asc" },
       }),
       tables.certificatesBaseId
         ? records
@@ -139,7 +141,12 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
     }
   };
 
-  const imageResponse = async (startUrl) => {
+  const fetchImage = async (startUrl) => {
+    // The browser preview (no key) signs in with the viewer's session cookie,
+    // which the browser itself sends to the Busabase origin only. It also hides
+    // a manual redirect behind an opaque response (status 0, no Location), so
+    // there the browser follows the hop to the storage host on its own.
+    if (!apiKey) return fetchImpl(startUrl, { redirect: "follow" });
     // The key goes only to the Busabase server itself, never to another host,
     // so redirects are followed by hand: a hop to a storage or CDN host is
     // fetched without it.
@@ -156,6 +163,12 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
       if (next.protocol !== "https:" && !sameOrigin(next.href)) return null;
       url = next.href;
     }
+    return response;
+  };
+
+  const imageResponse = async (startUrl) => {
+    const response = await fetchImage(startUrl);
+    if (!response) return null;
     const type = response.headers.get("content-type") ?? "";
     const length = Number(response.headers.get("content-length") ?? "0");
     if (!response.ok || !type.toLowerCase().startsWith("image/") || length > MAX_IMAGE_BYTES) {
