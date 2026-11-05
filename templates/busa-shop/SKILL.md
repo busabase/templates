@@ -1,6 +1,6 @@
 ---
 name: busa-shop
-description: Storefront website (Busabase Website engine) for a small cross-border seller, built on the busa-product-hub product list. It shows active products with price, photos and valid safety certificates, takes order requests into an Orders table (no payment), reads its store name, currency and contact from a Settings table, and comes with a daily shop check that writes a Reports row and improves from the owner's feedback. Use when the user invokes $busa-shop or /busa-shop, or asks to open an online shop / 独立站 / storefront for their products, import a product list or toy list (CSV, photos, certificates) into the product hub, put a product list on a public website, handle new website orders or order requests, check the shop, run the daily shop check, find missing photos, prices or expiring certificates (EN 71, ASTM F963, CPC, CE, UKCA) before a buyer sees them, or apply feedback on the last shop report.
+description: Storefront website (Busabase Website engine; on a Free space a private preview in the owner's own browser) for a small cross-border seller, built on the busa-product-hub product list. It shows active products with price, photos and valid safety certificates, takes order requests into an Orders table (no payment), reads its store name, currency and contact from a Settings table, and comes with a daily shop check that writes a Reports row and improves from the owner's feedback. Use when the user invokes $busa-shop or /busa-shop, or asks to open an online shop / 独立站 / storefront for their products, import a product list or toy list (CSV, photos, certificates) into the product hub, put a product list on a public website, handle new website orders or order requests, check the shop, run the daily shop check, find missing photos, prices or expiring certificates (EN 71, ASTM F963, CPC, CE, UKCA) before a buyer sees them, or apply feedback on the last shop report.
 metadata:
   category: ecommerce
   tags:
@@ -63,7 +63,7 @@ cannot declare that it needs another one, so nothing installs it for them.
 
 | Node | What it is |
 | --- | --- |
-| **Shop Website** (`busa-shop-app`, AirApp, Website engine) | The public site. `vendor/worker.js` is what deploys (the bundle of `src/` with busabase-sdk inside); `src/` is its source. `airapp.json` asks for `write` access because the order form creates records. |
+| **Shop Website** (`busa-shop-app`, AirApp, Website engine) | The public site. `vendor/worker.js` is what deploys (the bundle of `src/` with busabase-sdk inside); `src/` is its source. `airapp.json` asks for `write` access because the order form creates records. It *prefers* the Website engine: a space without it (Busabase Cloud Free) runs the same bundle as a private preview in the viewer's browser tab (`content/busa-shop-app/scripts/browser-preview.mjs`), with no address and no Go live. |
 | **Orders** | One row per order request. The website creates it with status `new` and never touches it again. |
 | **Settings** | One row: what the website shows and what the daily check uses. |
 | **Reports** | One row per daily shop check, with the owner's feedback. |
@@ -245,21 +245,38 @@ Fix the table and the page clears within a minute.
 4. **Check Settings** with the owner: store name, tagline, currency equal to
    the products' currency, a real contact email, language, ships-to
    countries, about text, shipping note, demo notice (off for a real shop).
-5. **The owner opens Shop Website.** Opening the node starts the members-only
-   preview by itself, on real data, in the App tab: there is nothing to click
-   first. (A **Run** button appears only on a node that has never run.) The
+5. **The owner opens Shop Website.** On Plus and higher (the Website engine),
+   opening the node starts the members-only preview by itself, on real data,
+   in the App tab: there is nothing to click first. (A **Run** button appears only on a node that has never run.) The
    header then shows **Running** and **Not live**, with the buttons **Go
    live** and **Restart** (zh-CN: 「运行中」「未发布」「上线」「重启」).
    Running the preview creates an API key in the owner's name, listed as
    `Site preview: Shop Website`, with the same write access as the live site.
-   On a Free plan the node shows **Upgrade to Plus to run this app**
-   (「升级到 Plus 版即可运行此应用」) instead: the Website engine needs Plus or
-   higher on Busabase Cloud, so stop and tell the owner. Once it runs, open
-   the preview and check: the home page lists what the listing rule says it
-   should, a product page, `/api/status` (`"setup": "ready"`),
-   `/sitemap.xml`. A test order lands in the real Orders table: place one
-   only if the owner agrees, then delete it.
-6. **Before Go live, tell the owner, in these words or similar:** "Go live
+   Once it runs, open the preview and check: the home page lists what the
+   listing rule says it should, a product page, `/api/status`
+   (`"setup": "ready"`), `/sitemap.xml`. A test order lands in the real Orders
+   table: place one only if the owner agrees, then delete it.
+
+   **On a Free space** (Busabase Cloud without Plus) the Website engine is not
+   included, so opening Shop Website runs a **private preview inside the
+   owner's own browser tab** instead (the browser engine). The header shows
+   only **Running** and **Restart** (「运行中」「重启」): no **Not live**, no
+   **Go live**. The Logs tab ends with `Busa Shop: private preview on the
+   browser engine, … Nothing is published; there is no Go live here.` It is
+   the same website reading the same tables, as the owner: no key is
+   created, it acts in the space the owner has open, and an order placed in
+   it is a real Orders row, saved as the owner's own Change Request. Nobody
+   else can open it and it stops when the tab closes. You cannot open it
+   yourself: ask the owner to click through home, a product and the order
+   form and tell you what they see. **More actions → Settings** shows the
+   engine as **Follow the app (Website)** with "Website is available on Plus
+   and above." and **Upgrade to Plus** (「跟随 App（网站）」
+   「网站仅在 Plus 版及以上套餐中提供。」「升级到 Plus 版」). The **Address**
+   it lists under that is not live and cannot be (**Public** says "Go live first."
+   「先上线一次。」). Steps 6 and 7 need Plus: tell the owner that going live, a
+   public address and real customers start with the upgrade, and stop there.
+6. **Before Go live (Plus and higher), tell the owner, in these words or
+   similar:** "Go live
    publishes the site at the address shown under More actions → Settings. It
    asks for **write** access, because the order form must save orders. Going
    live creates an API key in your name, listed as `Site: Shop Website`, next
@@ -449,9 +466,11 @@ write feedback into Owner feedback on this report for the next run.
 - **No CAPTCHA.** The form has a hidden honeypot field and validates
   everything, but a determined spammer can still send order requests.
 - **No custom domain yet**: the address is the one Busabase gives the site.
-- **Plus or higher on Busabase Cloud.** The Website engine is not in the Free
-  plan: a Free space shows "Upgrade to Plus to run this app" on Shop Website
-  and cannot preview or go live.
+- **Going live needs Plus or higher on Busabase Cloud.** The Website engine is
+  not in the Free plan. A Free space gets only the private preview in the
+  owner's own browser tab: no address, no Go live, nobody else can see it,
+  it runs only while the tab is open, and the daily check has no live site to
+  probe. Its orders are real rows all the same.
 - **The site's keys reach everything their owner can reach in this workspace**
   at write level, not only these tables. The website's fixed routes are the
   only thing in between. There are two: `Site: Shop Website` belongs to
@@ -493,4 +512,8 @@ npm test && npm run check
 
 Keep routes fixed: never pass a visitor's path, id, filter or body through to
 the API. Then the owner clicks Restart (a new preview of the new files) and
-Go live again.
+Go live again. `content/busa-shop-app/scripts/browser-preview.mjs` is what a Free space runs (the
+same `vendor/worker.js`, on the viewer's session, at `location.origin`); keep
+`airapp.json`'s `preferredEngine: "site"` (never `requiredEngine`, which turns
+a Free space back into an upgrade wall), its `start`, and an `install` that
+installs nothing. `npm run check` enforces all three.

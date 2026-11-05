@@ -1,7 +1,8 @@
 # busa-shop
 
 A public storefront for a small cross-border seller, running on Busabase's
-Website (`site`) engine. It sells from the Products table of
+Website (`site`) engine (on a space without it, such as Busabase Cloud Free, a
+private preview in your own browser tab). It sells from the Products table of
 [`busa-product-hub`](../busa-product-hub) (one product table, no copy), takes
 order requests into **Orders**, reads its texts from **Settings**, and comes
 with a daily shop check that writes **Reports** and applies the owner's
@@ -22,7 +23,15 @@ the **Public** switch are under **More actions → Settings**. Go live creates
 an API key in your name with `write` access, listed as `Site: Shop Website`,
 because the order form saves orders; the preview has its own,
 `Site preview: Shop Website`. On Busabase Cloud the Website engine needs Plus
-or higher: a Free space shows "Upgrade to Plus to run this app".
+or higher.
+
+On a Free space the shop still runs, for you only: opening *Shop Website* runs
+the same site inside your own browser tab (the browser engine,
+`content/busa-shop-app/scripts/browser-preview.mjs`), reading your tables as you,
+with your session and no key. The header shows **Running** and **Restart** only; there is no
+address and no **Go live**, and nobody else can open it. Orders you place there
+are real Orders rows. Upgrading the space to Plus switches the same node to the
+Website engine, with Go live.
 
 The shop's prices are busa-product-hub's **Price** and **Currency** columns
 (0.4.0 and later): change a price by editing that cell, and the site shows it
@@ -49,6 +58,12 @@ npm test          # unit tests + the deployed bundle against a fake Busabase API
 npm run check     # vendor/worker.js is fresh, import-free, default-export only
 BUSABASE_BASE_URL=… BUSABASE_API_KEY=… BUSABASE_SPACE_ID=… npm run dev   # local preview
 ```
+
+`airapp.json` *prefers* the Website engine (`preferredEngine: "site"`, never
+`requiredEngine`, which would turn a Free space into an upgrade wall). Where it
+is not available Busabase picks the browser engine and runs `install`
+(`node --version`: nothing to install, the bundle carries its dependencies) and
+`start` (`node scripts/browser-preview.mjs`). `npm run check` keeps all three.
 
 `vendor/worker.js` (`site.entry`) is what deploys and must be rebuilt after any
 change to `src/`. It sits in `vendor/` because it carries busabase-sdk inside it,

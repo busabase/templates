@@ -6,7 +6,9 @@
 // 1. vendor/worker.js is exactly what the documented command builds from src/
 //    (so nobody edits the bundle by hand, and nobody forgets to rebuild);
 // 2. vendor/worker.js has no import left and only a default export;
-// 3. airapp.json asks for the site engine, with the entry and assets that exist;
+// 3. airapp.json prefers the site engine (entry and assets as deployed) and
+//    falls back to the browser preview: `start` runs scripts/browser-preview.mjs,
+//    and `install` installs nothing (the bundle carries its dependencies);
 // 4. nothing under public/ mentions the site key.
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
@@ -40,7 +42,20 @@ if (exportBlock.replace(/\s+/g, " ").trim() !== "worker_default as default") {
 }
 
 const manifest = JSON.parse(readFileSync(join(root, "airapp.json"), "utf8"));
-if (manifest.requiredEngine !== "site") failures.push('airapp.json: requiredEngine must be "site".');
+// `preferredEngine`, not `requiredEngine`: a space without the Website engine
+// (Busabase Cloud Free) then runs the private browser preview instead of
+// showing an upgrade wall. Busabase never falls back TO `site`.
+if (manifest.requiredEngine !== undefined) failures.push("airapp.json: drop requiredEngine; use preferredEngine \"site\" so a space without the Website engine still gets the browser preview.");
+if (manifest.preferredEngine !== "site") failures.push('airapp.json: preferredEngine must be "site".');
+if (manifest.start !== "node scripts/browser-preview.mjs") failures.push('airapp.json: start must be "node scripts/browser-preview.mjs" (the browser preview).');
+if (typeof manifest.install !== "string" || /\bnpm\b|\bpnpm\b|\byarn\b/.test(manifest.install)) {
+  failures.push('airapp.json: install must be a command that installs nothing (vendor/worker.js carries its dependencies; `npm install` would pull the native esbuild into the browser tab).');
+}
+try {
+  statSync(join(root, "scripts", "browser-preview.mjs"));
+} catch {
+  failures.push("scripts/browser-preview.mjs is missing (airapp.json start).");
+}
 if (manifest.site?.entry !== "vendor/worker.js") failures.push('airapp.json: site.entry must be "vendor/worker.js".');
 if (manifest.site?.assets !== "public") failures.push('airapp.json: site.assets must be "public".');
 if (manifest.site?.access !== "write") failures.push('airapp.json: site.access must be "write" (the order form creates records).');
@@ -58,5 +73,5 @@ if (failures.length) {
   for (const failure of failures) console.error(`✗ ${failure}`);
   process.exitCode = 1;
 } else {
-  console.log("✓ vendor/worker.js is fresh, import-free and default-export only; airapp.json and public/ are clean.");
+  console.log("✓ vendor/worker.js is fresh, import-free and default-export only; airapp.json (Website engine, browser preview fallback) and public/ are clean.");
 }

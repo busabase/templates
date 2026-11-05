@@ -32,6 +32,10 @@ export const assetsBinding = {
 
 /** Serve a Worker module over node:http. Returns the listening server. */
 export const serveWorker = async ({ worker, env, port = 8787, host = "127.0.0.1" }) => {
+  // One env object for the life of the server, as on the platform: the site
+  // keeps its catalog cache per env, so a fresh object per request would read
+  // the workspace again on every page view and image.
+  const bindings = { ...env, ASSETS: assetsBinding };
   const server = http.createServer(async (req, res) => {
     let body = "";
     for await (const chunk of req) body += chunk;
@@ -41,7 +45,7 @@ export const serveWorker = async ({ worker, env, port = 8787, host = "127.0.0.1"
       headers: Object.entries(req.headers).flatMap(([key, value]) => (Array.isArray(value) ? value.map((item) => [key, item]) : [[key, value]])),
       body: req.method === "GET" || req.method === "HEAD" ? undefined : body,
     });
-    const response = await worker.fetch(request, { ...env, ASSETS: assetsBinding }, { waitUntil() {} });
+    const response = await worker.fetch(request, bindings, { waitUntil() {} });
     res.writeHead(response.status, Object.fromEntries(response.headers));
     res.end(response.body ? Buffer.from(await response.arrayBuffer()) : undefined);
   });
