@@ -1,0 +1,233 @@
+{
+  "name": "Targets",
+  "description": "Target companies under evaluation — one row per company, from first sourcing to the investment committee's decision. The pipeline this desk exists to move.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "open-diligence",
+      "label": "Open diligence on a company",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then open a diligence project for the company I name: add it to Targets at the Screening stage, note the deal type, target stake and indicative enterprise value, and generate its first diligence request list across all nine workstreams. Do not contact the company or anyone outside this workspace."
+    },
+    {
+      "key": "pipeline-brief",
+      "label": "Brief me on the pipeline",
+      "intent": "read-only",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then brief me on the pipeline: every target with its stage, what is blocking it, and the next IC date. Do not change anything."
+    },
+    {
+      "key": "ready-for-ic",
+      "label": "What stands between this target and IC?",
+      "intent": "read-only",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then tell me what stands between the target I name and the investment committee: critical requests still open, findings still open, and anything still unverified that the IC memo would have to carry as a caveat."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Company",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "ticker",
+      "name": "Ticker / listing",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "sector",
+      "name": "Sector",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "geography",
+      "name": "Geography",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "stage",
+      "name": "Stage",
+      "type": "select",
+      "required": true,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "sourced",
+            "name": "Sourced"
+          },
+          {
+            "id": "screening",
+            "name": "Screening"
+          },
+          {
+            "id": "diligence",
+            "name": "Diligence"
+          },
+          {
+            "id": "ic",
+            "name": "IC"
+          },
+          {
+            "id": "signing",
+            "name": "Signing"
+          },
+          {
+            "id": "closed",
+            "name": "Closed"
+          },
+          {
+            "id": "passed",
+            "name": "Passed"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "deal-type",
+      "name": "Deal type",
+      "type": "select",
+      "required": false,
+      "position": 5,
+      "options": {
+        "choices": [
+          {
+            "id": "majority-buyout",
+            "name": "Majority buyout"
+          },
+          {
+            "id": "minority-growth",
+            "name": "Minority growth"
+          },
+          {
+            "id": "take-private",
+            "name": "Take-private"
+          },
+          {
+            "id": "carve-out",
+            "name": "Carve-out"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "ownership-stake-percent",
+      "name": "Target ownership stake (%)",
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "enterprise-value-usd-m",
+      "name": "Indicative enterprise value (USD m)",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "financial-snapshot",
+      "name": "Financial snapshot",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "deal-source",
+      "name": "Deal source",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "deal-lead",
+      "name": "Deal lead",
+      "type": "text",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "target-ic-date",
+      "name": "Target IC date",
+      "type": "date",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "next-action",
+      "name": "Next action",
+      "type": "longtext",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "about",
+      "name": "About / demo note",
+      "type": "longtext",
+      "required": false,
+      "position": 13,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "pipeline",
+      "name": "Pipeline",
+      "type": "table",
+      "description": "Every target in pipeline order, earliest IC date first within a stage",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "direction": "asc",
+            "fieldSlug": "target-ic-date"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "name",
+          "stage",
+          "deal-type",
+          "enterprise-value-usd-m",
+          "deal-lead",
+          "target-ic-date"
+        ]
+      }
+    },
+    {
+      "slug": "in-diligence",
+      "name": "In diligence",
+      "type": "table",
+      "description": "Targets in the Diligence stage — the desk's active deep dives",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "stage",
+            "operator": "equals",
+            "value": "diligence"
+          }
+        ],
+        "sorts": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,243 @@
+{
+  "name": "Targets",
+  "description": "Target companies and the investment pipeline. One row per company: the diligence project lives here, and every request, evidence item, finding and interview points back to it.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "open-diligence",
+      "label": "Open a diligence project on a company",
+      "body": "Read the `busa-vc-diligence` skill in this folder and follow its workflow, then open a diligence project on the company I name: add it to Targets at Screening, note the round and the source, and build its first request list by workstream — cap table and corporate first, then team, market, product, traction, financials, legal and terms."
+    },
+    {
+      "key": "pipeline-brief",
+      "label": "Brief me on the pipeline",
+      "body": "Read the `busa-vc-diligence` skill in this folder and follow its workflow, then brief me on the pipeline: which targets are in diligence, what stage each is at, when their IC dates fall, and which ones are stalled because evidence is blocked. Do not change anything.",
+      "intent": "read-only"
+    },
+    {
+      "key": "what-blocks-ic",
+      "label": "What is blocking this target's IC?",
+      "body": "Read the `busa-vc-diligence` skill in this folder and follow its workflow, then tell me what is blocking the target I name from reaching IC: open critical requests, blocked evidence, and unresolved Critical or High findings, in the order I should chase them. Do not change anything.",
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Company",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "stage",
+      "name": "Stage",
+      "type": "select",
+      "required": true,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "sourced",
+            "name": "Sourced"
+          },
+          {
+            "id": "screening",
+            "name": "Screening"
+          },
+          {
+            "id": "diligence",
+            "name": "Diligence"
+          },
+          {
+            "id": "ic",
+            "name": "IC"
+          },
+          {
+            "id": "term-sheet",
+            "name": "Term Sheet"
+          },
+          {
+            "id": "closed",
+            "name": "Closed"
+          },
+          {
+            "id": "passed",
+            "name": "Passed"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "sector",
+      "name": "Sector",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "headquarters",
+      "name": "Headquarters",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "website",
+      "name": "Website",
+      "type": "url",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "lead",
+      "name": "Deal lead",
+      "type": "member",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "source",
+      "name": "Source",
+      "type": "select",
+      "required": false,
+      "position": 6,
+      "options": {
+        "choices": [
+          {
+            "id": "referral",
+            "name": "Referral"
+          },
+          {
+            "id": "inbound",
+            "name": "Inbound"
+          },
+          {
+            "id": "outbound",
+            "name": "Outbound research"
+          },
+          {
+            "id": "conference",
+            "name": "Conference"
+          },
+          {
+            "id": "portfolio",
+            "name": "Portfolio introduction"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "round",
+      "name": "Round",
+      "type": "text",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "proposed-amount",
+      "name": "Proposed amount (USD)",
+      "type": "number",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "ic-date",
+      "name": "IC date",
+      "type": "date",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "thesis",
+      "name": "Investment thesis",
+      "type": "longtext",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "description",
+      "name": "What it does",
+      "type": "longtext",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "data-basis",
+      "name": "Data basis",
+      "type": "select",
+      "required": false,
+      "position": 12,
+      "options": {
+        "choices": [
+          {
+            "id": "real-company",
+            "name": "Real company (public sources)"
+          },
+          {
+            "id": "fictional-demo",
+            "name": "Fictional demo company"
+          }
+        ]
+      }
+    }
+  ],
+  "views": [
+    {
+      "slug": "pipeline",
+      "name": "Pipeline",
+      "description": "Every target on the desk, in pipeline order",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": []
+      }
+    },
+    {
+      "slug": "in-diligence",
+      "name": "In diligence",
+      "description": "Targets in active diligence",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "stage",
+            "operator": "equals",
+            "value": "diligence"
+          }
+        ],
+        "sorts": []
+      }
+    },
+    {
+      "slug": "passed",
+      "name": "Passed",
+      "description": "Targets the desk has passed on, with the reason kept on the row",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "stage",
+            "operator": "equals",
+            "value": "passed"
+          }
+        ],
+        "sorts": []
+      }
+    }
+  ]
+}

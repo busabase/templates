@@ -1,0 +1,229 @@
+{
+  "name": "Diligence Requests",
+  "description": "The request list: every document, dataset and answer the desk has asked a target for, grouped by workstream, with criticality, owner side and status. This is where diligence is won or stalled.",
+  "position": 1,
+  "agentPrompts": [
+    {
+      "key": "build-request-list",
+      "label": "Build the request list for a target",
+      "body": "Read the `busa-vc-diligence` skill in this folder and follow its workflow, then build the diligence request list for the target I name, by workstream: audited or management financials and burn, cap table and prior-round terms, team and vesting, market evidence, product and tech review, traction cohorts, legal basics. Mark the items that gate IC as Critical."
+    },
+    {
+      "key": "chase-overdue",
+      "label": "Which requests are overdue or blocked?",
+      "body": "Read the `busa-vc-diligence` skill in this folder and follow its workflow, then list every request that is overdue or blocked across the desk, grouped by target, with the workstream and how long it has been waiting. Do not contact anyone — this desk never chases the company itself.",
+      "intent": "read-only"
+    },
+    {
+      "key": "mark-received",
+      "label": "Log evidence that just arrived",
+      "body": "Read the `busa-vc-diligence` skill in this folder and follow its workflow, then log the material I describe as received: set the matching requests to Received, and register each document in the Evidence Register with its source and date, still Unverified until it has been checked."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Request",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "target",
+      "name": "Target",
+      "type": "relation",
+      "required": true,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "targets",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "workstream",
+      "name": "Workstream",
+      "type": "select",
+      "required": true,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "corporate-cap-table",
+            "name": "Corporate & Cap Table"
+          },
+          {
+            "id": "team",
+            "name": "Team"
+          },
+          {
+            "id": "market",
+            "name": "Market"
+          },
+          {
+            "id": "product-tech",
+            "name": "Product & Tech"
+          },
+          {
+            "id": "business-traction",
+            "name": "Business & Traction"
+          },
+          {
+            "id": "financials",
+            "name": "Financials"
+          },
+          {
+            "id": "legal",
+            "name": "Legal"
+          },
+          {
+            "id": "terms",
+            "name": "Terms"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "criticality",
+      "name": "Criticality",
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "critical",
+            "name": "Critical"
+          },
+          {
+            "id": "standard",
+            "name": "Standard"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "requested",
+            "name": "Requested"
+          },
+          {
+            "id": "received",
+            "name": "Received"
+          },
+          {
+            "id": "reviewed",
+            "name": "Reviewed"
+          },
+          {
+            "id": "blocked",
+            "name": "Blocked"
+          },
+          {
+            "id": "waived",
+            "name": "Waived"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "requested-from",
+      "name": "Requested from",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "due-date",
+      "name": "Due date",
+      "type": "date",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "received-date",
+      "name": "Received date",
+      "type": "date",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Notes",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all-requests",
+      "name": "All requests",
+      "description": "The full request list across targets",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": []
+      }
+    },
+    {
+      "slug": "open-queue",
+      "name": "Open queue",
+      "description": "Requests still waiting on the company",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "requested"
+          }
+        ],
+        "sorts": []
+      }
+    },
+    {
+      "slug": "blocked",
+      "name": "Blocked",
+      "description": "Requests the company cannot or will not satisfy yet",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "blocked"
+          }
+        ],
+        "sorts": []
+      }
+    },
+    {
+      "slug": "critical",
+      "name": "Critical",
+      "description": "Requests that gate the investment decision",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "criticality",
+            "operator": "equals",
+            "value": "critical"
+          }
+        ],
+        "sorts": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+{
+  "name": "Diligence Requests",
+  "description": "The diligence request list — every document, analysis and check the team has asked for, grouped by workstream, with what is still missing and who is chasing it. This is the desk's main battlefield.",
+  "position": 1,
+  "agentPrompts": [
+    {
+      "key": "build-request-list",
+      "label": "Build the request list for a target",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then build the diligence request list for the target I name: the standard PE list across all nine workstreams, critical items first, each with who it is requested from and a due date. Mark anything a listed or seller-side source can already answer from public filings."
+    },
+    {
+      "key": "what-is-missing",
+      "label": "What are we still missing?",
+      "intent": "read-only",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then show me everything still missing for the target I name: requests still Requested or Blocked, critical ones first, with due dates and who owns each chase. Do not change anything."
+    },
+    {
+      "key": "log-received",
+      "label": "Log material that just arrived",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then log the material I describe as received: move the matching requests to Received, and register each document in Evidence as Unverified until someone has checked it against a primary source."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Request",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "target",
+      "name": "Target",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "targets"
+      }
+    },
+    {
+      "slug": "workstream",
+      "name": "Workstream",
+      "type": "select",
+      "required": true,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "corporate",
+            "name": "Corporate"
+          },
+          {
+            "id": "financial-qoe",
+            "name": "Financial / QoE"
+          },
+          {
+            "id": "tax",
+            "name": "Tax"
+          },
+          {
+            "id": "legal-compliance",
+            "name": "Legal & Compliance"
+          },
+          {
+            "id": "commercial",
+            "name": "Commercial"
+          },
+          {
+            "id": "operations",
+            "name": "Operations"
+          },
+          {
+            "id": "hr-org",
+            "name": "HR & Org"
+          },
+          {
+            "id": "tech-it",
+            "name": "Tech & IT"
+          },
+          {
+            "id": "esg",
+            "name": "ESG"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "criticality",
+      "name": "Criticality",
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "critical",
+            "name": "Critical"
+          },
+          {
+            "id": "standard",
+            "name": "Standard"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "requested",
+            "name": "Requested"
+          },
+          {
+            "id": "received",
+            "name": "Received"
+          },
+          {
+            "id": "reviewed",
+            "name": "Reviewed"
+          },
+          {
+            "id": "blocked",
+            "name": "Blocked"
+          },
+          {
+            "id": "waived",
+            "name": "Waived"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "requested-from",
+      "name": "Requested from",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "advisor-owner",
+      "name": "External advisor",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "internal-owner",
+      "name": "Internal owner",
+      "type": "text",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "due-date",
+      "name": "Due date",
+      "type": "date",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "received-date",
+      "name": "Received date",
+      "type": "date",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Notes",
+      "type": "longtext",
+      "required": false,
+      "position": 10,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "open-requests",
+      "name": "Still outstanding",
+      "type": "table",
+      "description": "Requests not yet reviewed or waived, nearest due date first",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "direction": "asc",
+            "fieldSlug": "due-date"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "target",
+          "workstream",
+          "criticality",
+          "status",
+          "due-date",
+          "internal-owner"
+        ]
+      }
+    },
+    {
+      "slug": "blocked",
+      "name": "Blocked",
+      "type": "table",
+      "description": "Requests stuck waiting on the seller, the data room, or an advisor",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "blocked"
+          }
+        ],
+        "sorts": [
+          {
+            "direction": "asc",
+            "fieldSlug": "due-date"
+          }
+        ]
+      }
+    }
+  ]
+}

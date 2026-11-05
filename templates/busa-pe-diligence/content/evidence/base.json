@@ -1,0 +1,195 @@
+{
+  "name": "Evidence Register",
+  "description": "One row per piece of evidence — what it is, where it came from, and whether anyone has verified it. The register is the desk's memory of what is actually known, as opposed to what has merely been said.",
+  "position": 2,
+  "agentPrompts": [
+    {
+      "key": "register-evidence",
+      "label": "Register evidence from a document",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then register the document I name in Evidence: type, source, source date, and a summary of what it establishes. Mark it Unverified unless it is itself a primary source (a filing, an audited statement) — and say which in the summary."
+    },
+    {
+      "key": "verify-evidence",
+      "label": "Verify a piece of evidence",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then verify the evidence I name against its primary source: check the figures and claims it carries, then update its verification status — Verified only if the primary source says the same thing, Contradicted if it does not — and note what you checked in the summary."
+    },
+    {
+      "key": "unverified-list",
+      "label": "What is still unverified?",
+      "intent": "read-only",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then list everything in Evidence still marked Unverified for the target I name, oldest first — these are the facts the IC memo may not state as facts. Do not change anything."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Evidence",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "target",
+      "name": "Target",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "targets"
+      }
+    },
+    {
+      "slug": "request",
+      "name": "For request",
+      "type": "relation",
+      "required": false,
+      "position": 2,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "diligence-requests"
+      }
+    },
+    {
+      "slug": "evidence-type",
+      "name": "Type",
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "filing",
+            "name": "SEC filing"
+          },
+          {
+            "id": "financial-statements",
+            "name": "Financial statements"
+          },
+          {
+            "id": "transcript",
+            "name": "Call transcript"
+          },
+          {
+            "id": "advisor-report",
+            "name": "Advisor report"
+          },
+          {
+            "id": "data-room",
+            "name": "Data-room document"
+          },
+          {
+            "id": "public-source",
+            "name": "Press / public source"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "source",
+      "name": "Source",
+      "type": "text",
+      "required": true,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "source-date",
+      "name": "Source date",
+      "type": "date",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "as-of-date",
+      "name": "Facts as of",
+      "type": "date",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "verification",
+      "name": "Verification",
+      "type": "select",
+      "required": true,
+      "position": 7,
+      "options": {
+        "choices": [
+          {
+            "id": "unverified",
+            "name": "Unverified"
+          },
+          {
+            "id": "verified",
+            "name": "Verified"
+          },
+          {
+            "id": "contradicted",
+            "name": "Contradicted"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "summary",
+      "name": "What it establishes",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "source-link",
+      "name": "Source link",
+      "type": "url",
+      "required": false,
+      "position": 9,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "unverified",
+      "name": "Unverified",
+      "type": "table",
+      "description": "Evidence nobody has checked against a primary source yet",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "verification",
+            "operator": "equals",
+            "value": "unverified"
+          }
+        ],
+        "sorts": [
+          {
+            "direction": "asc",
+            "fieldSlug": "source-date"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "all-evidence",
+      "name": "All evidence",
+      "type": "table",
+      "description": "The whole register, newest source first",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "direction": "desc",
+            "fieldSlug": "source-date"
+          }
+        ]
+      }
+    }
+  ]
+}

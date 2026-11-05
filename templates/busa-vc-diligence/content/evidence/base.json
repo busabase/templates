@@ -1,0 +1,205 @@
+{
+  "name": "Evidence Register",
+  "description": "Every piece of evidence the desk relies on, with its source, its date, and its verification status. A claim becomes a fact only when a row here says Verified.",
+  "position": 2,
+  "agentPrompts": [
+    {
+      "key": "register-evidence",
+      "label": "Register this evidence",
+      "body": "Read the `busa-vc-diligence` skill in this folder and follow its workflow, then register the document or source I describe in the Evidence Register: what it is, who produced it, its date, the target and request it answers, and a one-paragraph summary of what it actually shows. Leave it Unverified unless I say it has been checked."
+    },
+    {
+      "key": "unverified-sweep",
+      "label": "What are we still relying on unverified?",
+      "body": "Read the `busa-vc-diligence` skill in this folder and follow its workflow, then list every evidence item still marked Unverified or Contradicted, grouped by target, and name the finding or thesis point that depends on each one. Do not change anything.",
+      "intent": "read-only"
+    },
+    {
+      "key": "check-a-claim",
+      "label": "Check this claim against the evidence",
+      "body": "Read the `busa-vc-diligence` skill in this folder and follow its workflow, then take the claim I quote and check it against the Evidence Register for that target: which items support it, which contradict it, and which are still unverified. Report the claim's status; do not upgrade it to a fact on your own."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Evidence",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "target",
+      "name": "Target",
+      "type": "relation",
+      "required": true,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "targets",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "request",
+      "name": "Answers request",
+      "type": "relation",
+      "required": false,
+      "position": 2,
+      "options": {
+        "targetBaseSlug": "diligence-requests",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "type",
+      "name": "Type",
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "filing",
+            "name": "Regulatory filing"
+          },
+          {
+            "id": "financial-statement",
+            "name": "Financial statement"
+          },
+          {
+            "id": "report",
+            "name": "Press / research report"
+          },
+          {
+            "id": "company-statement",
+            "name": "Company statement"
+          },
+          {
+            "id": "company-document",
+            "name": "Company document"
+          },
+          {
+            "id": "interview-note",
+            "name": "Interview note"
+          },
+          {
+            "id": "dataset",
+            "name": "Third-party dataset"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "source",
+      "name": "Source",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "source-url",
+      "name": "Source link",
+      "type": "url",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "document-date",
+      "name": "Document date",
+      "type": "date",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "as-of",
+      "name": "Data as of",
+      "type": "date",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "verification",
+      "name": "Verification",
+      "type": "select",
+      "required": false,
+      "position": 8,
+      "options": {
+        "choices": [
+          {
+            "id": "unverified",
+            "name": "Unverified"
+          },
+          {
+            "id": "verified",
+            "name": "Verified"
+          },
+          {
+            "id": "contradicted",
+            "name": "Contradicted"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "summary",
+      "name": "What it shows",
+      "type": "longtext",
+      "required": false,
+      "position": 9,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all-evidence",
+      "name": "All evidence",
+      "description": "The full register across targets",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": []
+      }
+    },
+    {
+      "slug": "unverified",
+      "name": "Unverified",
+      "description": "Evidence the desk is relying on but has not checked yet",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "verification",
+            "operator": "equals",
+            "value": "unverified"
+          }
+        ],
+        "sorts": []
+      }
+    },
+    {
+      "slug": "contradicted",
+      "name": "Contradicted",
+      "description": "Evidence that conflicts with another source or with a company claim",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "verification",
+            "operator": "equals",
+            "value": "contradicted"
+          }
+        ],
+        "sorts": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "description": "A due-diligence desk for venture investment teams: a target pipeline, a request list by workstream, an evidence register that keeps every claim labelled verified, unverified or contradicted, findings and red flags tied to evidence, and an IC memo drafted from the record — never from memory.",
+  "displayName": "Busa VC Diligence",
+  "format": "busabase-package@1",
+  "license": "MIT",
+  "name": "busa-vc-diligence",
+  "tags": [
+    "finance",
+    "risk:gated-write",
+    "surface:busabase"
+  ],
+  "template": {
+    "agentPrompts": [
+      "Open a diligence project on this company and build the request list by workstream.",
+      "Cross-check the company's claims against the evidence register and raise a finding for anything that does not line up.",
+      "Draft the IC memo for this target: verified facts, red flags and unverified claims in separate sections."
+    ],
+    "airapp": "busa-vc-diligence-app",
+    "category": "finance",
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/target-detail.webp"
+    ],
+    "requires": {
+      "airapp": true
+    },
+    "schemaVersion": 1,
+    "tags": [
+      "finance",
+      "risk:gated-write",
+      "surface:busabase"
+    ]
+  },
+  "version": "0.1.0"
+}

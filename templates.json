@@ -3300,6 +3300,43 @@
       }
     },
     {
+      "subdir": "templates/busa-pe-diligence",
+      "name": "busa-pe-diligence",
+      "displayName": "Busa PE Diligence",
+      "description": "A due-diligence desk for private-equity teams: target pipeline, workstream request lists, an evidence register where every claim is verified, contradicted or still unverified, a red-flag wall priced into valuation and terms, and an IC memo drafted only from verified facts.",
+      "category": "finance",
+      "risk": "gated-write",
+      "tags": [
+        "finance",
+        "risk:gated-write",
+        "surface:busabase",
+        "due-diligence",
+        "private-equity"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/target-detail.webp",
+        "assets/screenshots/findings-wall.webp"
+      ],
+      "agentPrompts": [
+        "Open diligence on the company I name: build its PE request list across all nine workstreams and tell me what public filings can already answer.",
+        "Cross-check management's claims against the evidence register and raise a flag wherever they disagree.",
+        "Draft the IC memo for the target I name — verified facts as facts, everything else in the Unverified section."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 1,
+        "bases": 5,
+        "records": 27,
+        "files": 20,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-picks",
       "name": "busa-picks",
       "displayName": {
@@ -4331,6 +4368,40 @@
         "bases": 6,
         "records": 3,
         "files": 30,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
+      "subdir": "templates/busa-vc-diligence",
+      "name": "busa-vc-diligence",
+      "displayName": "Busa VC Diligence",
+      "description": "A due-diligence desk for venture investment teams: a target pipeline, a request list by workstream, an evidence register that keeps every claim labelled verified, unverified or contradicted, findings and red flags tied to evidence, and an IC memo drafted from the record — never from memory.",
+      "category": "finance",
+      "risk": "gated-write",
+      "tags": [
+        "finance",
+        "risk:gated-write",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/target-detail.webp"
+      ],
+      "agentPrompts": [
+        "Open a diligence project on this company and build the request list by workstream.",
+        "Cross-check the company's claims against the evidence register and raise a finding for anything that does not line up.",
+        "Draft the IC memo for this target: verified facts, red flags and unverified claims in separate sections."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 1,
+        "bases": 5,
+        "records": 25,
+        "files": 20,
         "airapps": 1,
         "skill": true
       }
