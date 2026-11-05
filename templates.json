@@ -3319,7 +3319,17 @@
         "assets/screenshots/target-detail.webp",
         "assets/screenshots/findings-wall.webp"
       ],
-      "video": "assets/recordings/busa-pe-diligence.mp4",
+      "video": "assets/recordings/busa-pe-diligence-film.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-pe-diligence-film.mp4",
+          "title": "Scenario film — the NVIDIA file"
+        },
+        {
+          "src": "assets/recordings/busa-pe-diligence.mp4",
+          "title": "Walkthrough — every screen, 25 seconds"
+        }
+      ],
       "agentPrompts": [
         "Open diligence on the company I name: build its PE request list across all nine workstreams and tell me what public filings can already answer.",
         "Cross-check management's claims against the evidence register and raise a flag wherever they disagree.",
@@ -4390,7 +4400,17 @@
         "assets/screenshots/overview.webp",
         "assets/screenshots/target-detail.webp"
       ],
-      "video": "assets/recordings/busa-vc-diligence.mp4",
+      "video": "assets/recordings/busa-vc-diligence-film.mp4",
+      "videos": [
+        {
+          "src": "assets/recordings/busa-vc-diligence-film.mp4",
+          "title": "Scenario film — the Perplexity file"
+        },
+        {
+          "src": "assets/recordings/busa-vc-diligence.mp4",
+          "title": "Walkthrough — every screen, 15 seconds"
+        }
+      ],
       "agentPrompts": [
         "Open a diligence project on this company and build the request list by workstream.",
         "Cross-check the company's claims against the evidence register and raise a finding for anything that does not line up.",
