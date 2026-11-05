@@ -38,7 +38,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-followups-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-followups-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-followups.mp4",

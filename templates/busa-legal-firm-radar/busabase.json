@@ -58,7 +58,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-legal-firm-radar-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-legal-firm-radar-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-legal-firm-radar.mp4",

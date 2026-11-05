@@ -61,7 +61,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-agent-orders-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-agent-orders-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-agent-orders.mp4",

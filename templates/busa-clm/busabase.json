@@ -58,7 +58,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-clm-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-clm-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-clm.mp4",

@@ -39,7 +39,8 @@
         "videos": [
           {
             "src": "assets/recordings/busa-office-recruiting-intro.mp4",
-            "title": "Scenario introduction (English)"
+            "title": "Scenario introduction (English)",
+            "poster": "assets/screenshots/busa-office-recruiting-intro-poster.jpg"
           },
           {
             "src": "assets/recordings/busa-office-recruiting-zh-CN.mp4",
@@ -65,7 +66,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-office-recruiting-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-office-recruiting-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-office-recruiting.mp4",

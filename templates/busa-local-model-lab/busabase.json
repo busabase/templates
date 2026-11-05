@@ -44,7 +44,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-local-model-lab-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-local-model-lab-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-local-model-lab.mp4",
