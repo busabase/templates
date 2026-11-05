@@ -23,7 +23,17 @@
       "assets/screenshots/target-detail.webp",
       "assets/screenshots/findings-wall.webp"
     ],
-    "video": "assets/recordings/busa-pe-diligence.mp4",
+    "video": "assets/recordings/busa-pe-diligence-film.mp4",
+    "videos": [
+      {
+        "title": "Scenario film — the NVIDIA file",
+        "src": "assets/recordings/busa-pe-diligence-film.mp4"
+      },
+      {
+        "title": "Walkthrough — every screen, 25 seconds",
+        "src": "assets/recordings/busa-pe-diligence.mp4"
+      }
+    ],
     "requires": {
       "airapp": true
     },

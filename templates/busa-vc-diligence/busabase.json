@@ -22,7 +22,17 @@
       "assets/screenshots/overview.webp",
       "assets/screenshots/target-detail.webp"
     ],
-    "video": "assets/recordings/busa-vc-diligence.mp4",
+    "video": "assets/recordings/busa-vc-diligence-film.mp4",
+    "videos": [
+      {
+        "title": "Scenario film — the Perplexity file",
+        "src": "assets/recordings/busa-vc-diligence-film.mp4"
+      },
+      {
+        "title": "Walkthrough — every screen, 15 seconds",
+        "src": "assets/recordings/busa-vc-diligence.mp4"
+      }
+    ],
     "requires": {
       "airapp": true
     },
