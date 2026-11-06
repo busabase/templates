@@ -5,11 +5,17 @@
 //
 // 1. vendor/worker.js is exactly what the documented command builds from src/
 //    (so nobody edits the bundle by hand, and nobody forgets to rebuild);
-// 2. vendor/worker.js has no import left and only a default export;
+// 2. vendor/worker.js has no import left and only a default export. The one
+//    exception is the lazy `import("cloudflare:sockets")` (email): Busabase's
+//    site check allows a literal `cloudflare:` specifier and refuses anything
+//    else, a computed `import(x)` included. It runs only on the Website engine;
 // 3. airapp.json prefers the site engine (entry and assets as deployed) and
 //    falls back to the browser preview: `start` runs scripts/browser-preview.mjs,
 //    and `install` installs nothing (the bundle carries its dependencies);
-// 4. nothing under public/ mentions the site key.
+// 4. nothing under public/ mentions the site key;
+// 5. no file Busabase uploads looks like a leaked secret to its upload check
+//    (busabase-core upload-safety: `secret: "<16+ characters>"` and friends),
+//    which would refuse the whole install.
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -36,6 +42,10 @@ try {
 
 const bundle = readFileSync(join(root, "vendor", "worker.js"), "utf8");
 if (/^\s*import[\s{*"']/m.test(bundle) || /\brequire\(\s*["']/.test(bundle)) failures.push("vendor/worker.js still imports something.");
+const dynamicImports = [...bundle.matchAll(/\bimport\(\s*(?:\/\*[^*]*\*\/\s*)?([^)\s]+)\s*\)/g)].map((match) => match[1]);
+if (dynamicImports.some((target) => target !== '"cloudflare:sockets"')) {
+  failures.push(`vendor/worker.js loads a module Busabase's site check refuses (only a literal "cloudflare:…" is allowed): ${dynamicImports.join(", ")}`);
+}
 const exportBlock = /^export\s*\{([^}]*)\};?\s*$/m.exec(bundle)?.[1] ?? "";
 if (exportBlock.replace(/\s+/g, " ").trim() !== "worker_default as default") {
   failures.push(`vendor/worker.js must export only a default handler, found: export { ${exportBlock.trim()} }`);
@@ -67,6 +77,25 @@ const walk = (dir) =>
   });
 for (const file of walk(join(root, "public"))) {
   if (/BUSABASE_API_KEY|Bearer\s/i.test(readFileSync(file, "utf8"))) failures.push(`${file} mentions the site key.`);
+}
+
+// The same rules Busabase applies to every uploaded file (packages/busabase-core/src/logic/upload-safety.ts).
+const UPLOAD_SECRET_RULES = [
+  /(AKIA|ASIA|AGPA|AIDA|AROA)[0-9A-Z]{16}/,
+  /AIza[0-9A-Za-z\-_]{35}/,
+  /sk_(live|test)_[0-9a-zA-Z]{16,}/,
+  /(api[_-]?key|secret|token)['"]?\s*[:=]\s*['"][0-9A-Za-z_-]{16,}['"]/i,
+  /eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/,
+  /-----BEGIN\s?(RSA|EC|OPENSSH|DSA|PGP)?\s?PRIVATE KEY-----/,
+  /xox[baprs]-[0-9A-Za-z-]{10,}/,
+  /gh[pousr]_[A-Za-z0-9]{36,}/,
+];
+for (const dir of ["src", "public", "vendor", "scripts"]) {
+  for (const file of walk(join(root, dir))) {
+    const content = readFileSync(file, "utf8");
+    const rule = UPLOAD_SECRET_RULES.find((pattern) => pattern.test(content));
+    if (rule) failures.push(`${file} matches Busabase's upload secret check (${rule}); the install would be refused.`);
+  }
 }
 
 if (failures.length) {

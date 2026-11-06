@@ -4,7 +4,10 @@
 
 import { countryName, formatPrice, imageSrc } from "./catalog.js";
 import { productDetails } from "./details.js";
-import { CLIENT_MESSAGE_KEYS, translator } from "./i18n.js";
+import { CLIENT_MESSAGE_KEYS, PAY_MESSAGE_KEYS, translator } from "./i18n.js";
+import { addressRules } from "./orders.js";
+import { fillPlaceholders, markdownText, pagePath, renderMarkdown } from "./policies.js";
+import { clientRates, shippingFor } from "./shipping.js";
 import {
   absoluteImages,
   absoluteUrl,
@@ -41,8 +44,11 @@ const layout = ({
   jsonLd = [],
   noindex = false,
   body,
+  site = {},
 }) => {
   const lang = settings?.language ?? "en";
+  const footerPages = (site.pages ?? []).filter((page) => page.inFooter);
+  const paypal = site.payment === "paypal";
   const storeName = settings?.storeName ?? "";
   const meta = [
     `<meta charset="utf-8">`,
@@ -65,7 +71,7 @@ const layout = ({
   const header = settings
     ? `<header class="site-header"><div class="wrap header-row">
   <a class="brand" href="/">${esc(storeName)}</a>
-  <nav class="site-nav"><a href="/#products">${esc(t("nav_products"))}</a><a class="order-link" href="/order">${esc(t("nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
+  <nav class="site-nav"><a href="/#products">${esc(t("nav_products"))}</a><a class="order-link" href="/order">${esc(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
 </div></header>`
     : "";
   const notice = settings?.demoNotice ? `<div class="demo-notice" role="note">${esc(t("demo_notice"))}</div>` : "";
@@ -73,7 +79,8 @@ const layout = ({
     ? `<footer class="site-footer"><div class="wrap footer-row">
   <p><strong>${esc(storeName)}</strong>${settings.tagline ? ` · ${esc(settings.tagline)}` : ""}</p>
   ${settings.contactEmail ? `<p>${esc(t("contact"))}: <a href="mailto:${esc(settings.contactEmail)}">${esc(settings.contactEmail)}</a></p>` : ""}
-  <p class="muted">${esc(t("footer_orders"))}</p>
+  ${footerPages.length ? `<nav class="footer-links" aria-label="${esc(t("footer_policies"))}">${footerPages.map((page) => `<a href="${esc(pagePath(page))}">${esc(page.title)}</a>`).join("")}</nav>` : ""}
+  <p class="muted">${esc(t(paypal ? "footer_paypal" : "footer_orders"))}</p>
 </div></footer>`
     : "";
   return `<!doctype html>
@@ -113,7 +120,8 @@ const card = (product, t) => `<li class="card">
   </a>
 </li>`;
 
-export const homePage = ({ origin, settings, catalog }) => {
+export const homePage = ({ origin, settings, catalog, site = {} }) => {
+  const paypal = site.payment === "paypal";
   const t = translator(settings.language);
   const title = settings.tagline ? `${settings.storeName} · ${settings.tagline}` : settings.storeName;
   const description = plainSummary(settings.about || settings.tagline || settings.storeName);
@@ -131,7 +139,7 @@ export const homePage = ({ origin, settings, catalog }) => {
 </section>
 <section class="how" aria-labelledby="how-heading">
   <h2 id="how-heading">${esc(t("how_heading"))}</h2>
-  <ol><li>${esc(t("how_1"))}</li><li>${esc(t("how_2"))}</li><li>${esc(t("how_3"))}</li></ol>
+  <ol>${(paypal ? ["how_paypal_1", "how_paypal_2", "how_paypal_3"] : ["how_1", "how_2", "how_3"]).map((key) => `<li>${esc(t(key))}</li>`).join("")}</ol>
 </section>
 ${settings.about ? `<section class="about" aria-labelledby="about-heading"><h2 id="about-heading">${esc(t("about_heading"))}</h2>${paragraphs(settings.about)}</section>` : ""}`;
   return layout({
@@ -143,10 +151,11 @@ ${settings.about ? `<section class="about" aria-labelledby="about-heading"><h2 i
     ogImage: firstImage ? absoluteImages(origin, firstImage)[0] : "",
     jsonLd: [storeJsonLd({ origin, settings })],
     body,
+    site,
   });
 };
 
-export const productPage = ({ origin, settings, product }) => {
+export const productPage = ({ origin, settings, product, site = {} }) => {
   const t = translator(settings.language);
   const content = product.content;
   const specs = [
@@ -189,7 +198,7 @@ export const productPage = ({ origin, settings, product }) => {
     ${product.subtitle ? `<p class="subtitle">${esc(product.subtitle)}</p>` : ""}
     <p class="price price-large">${esc(product.priceText)}</p>
     ${buy}
-    <p class="note">${esc(t("no_payment_note"))}</p>
+    <p class="note">${esc(t(site.payment === "paypal" ? "paypal_note" : "no_payment_note"))}</p>
     ${typeof content.description === "string" ? `<div class="description">${paragraphs(content.description)}</div>` : ""}
     ${bullets.length ? `<ul class="bullets">${bullets.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>` : ""}
     ${specs.length ? `<h2>${esc(t("details_heading"))}</h2><dl class="specs">${specs.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>` : ""}
@@ -206,15 +215,18 @@ export const productPage = ({ origin, settings, product }) => {
     ogImage: product.images.length ? absoluteImages(origin, product)[0] : "",
     jsonLd: [productJsonLd({ origin, product, settings })],
     body,
+    site,
   });
 };
 
 const errorText = (t, code, extra = {}) => (code ? t(`error_${code}`, extra) : "");
 
 /**
- * The order request page. `lines` is what the server can pre-fill without
- * JavaScript (from `?add=` or a failed post); the browser script replaces the
- * rows with the visitor's saved order request when it runs.
+ * The checkout page (the order request page when the shop takes no online
+ * payment). `lines` is what the server can pre-fill without JavaScript (from
+ * `?add=` or a failed post); the browser script replaces the rows with the
+ * visitor's saved order when it runs. `checkout` is what the handler worked
+ * out: `{ payment: "paypal" | "request", countries, shipping }`.
  */
 export const orderPage = ({
   origin,
@@ -226,10 +238,36 @@ export const orderPage = ({
   status = "",
   orderId,
   ordersReady = true,
+  checkout = { payment: "request", countries: settings.shipsTo, shipping: { status: "missing", rates: new Map() } },
+  site = {},
+  browserPreview = false,
 }) => {
   const t = translator(settings.language);
-  const total = lines.reduce((sum, line) => sum + Math.round(line.product.price * 100) * line.quantity, 0) / 100;
-  const totalText = formatPrice(total, settings.currency, settings.language);
+  const paypal = checkout.payment === "paypal";
+  // Only the owner ever sees the browser engine's private preview, so it can say what the plan allows.
+  const ownerNote = browserPreview
+    ? `<div class="owner-box" role="note"><h2>For the shop owner · 店主可见</h2>
+  <p>Online payment with PayPal and the order emails need the Website engine (Busabase Plus and higher): it keeps the PayPal secret and the mail password on the server and can open a mail connection. This private preview in your own browser has neither, so checkout takes order requests here. Nobody else sees this note.</p>
+  <p>PayPal 在线付款和订单邮件需要网站引擎（Busabase Plus 及以上）：它在服务器上保管 PayPal 密钥和邮箱授权码，并能连接邮件服务器。你浏览器里的这个私有预览两者都没有，所以这里的结账只收订单请求。这段说明只有你能看到。</p>
+</div>`
+    : "";
+  const subtotal = lines.reduce((sum, line) => sum + Math.round(line.product.price * 100) * line.quantity, 0) / 100;
+  const money = (amount) => formatPrice(amount, settings.currency, settings.language);
+  const country = checkout.countries.includes(values.country) ? values.country : "";
+  const rate = country ? shippingFor(checkout.shipping, country, subtotal) : null;
+  const shippingKnown = rate?.ok && rate.cost !== null;
+  const total = subtotal + (shippingKnown ? rate.cost : 0);
+  const shippingText = !country
+    ? checkout.shipping.status === "missing"
+      ? t("order_shipping_tbc")
+      : t("order_shipping_pick")
+    : rate?.ok
+      ? rate.cost === null
+        ? t("order_shipping_tbc")
+        : rate.cost === 0
+          ? t("order_shipping_free")
+          : money(rate.cost)
+      : t(`error_${rate?.code ?? "no_shipping"}`);
   const rows = lines.length
     ? lines
         .map(
@@ -244,49 +282,69 @@ export const orderPage = ({
   const fieldError = (name) =>
     `<p class="field-error" data-error-for="${name}"${errors[name] ? "" : " hidden"}>${esc(errorText(t, errors[name], values.errorValues ?? {}))}</p>`;
   const invalid = (name) => (errors[name] ? ` aria-invalid="true"` : "");
-  const countries = settings.shipsTo
+  const rules = addressRules(country);
+  const countries = checkout.countries
     .map((code) => ({ code, name: countryName(code, settings.language) }))
     .sort((a, b) => a.name.localeCompare(b.name, settings.language));
-  const form = ordersReady
+  const input = (name, labelKey, { autocomplete, required = false, maxlength = 300, type = "text", optionalKey = "" } = {}) =>
+    `<label><span data-label-for="${name}">${esc(t(required || !optionalKey ? labelKey : optionalKey))}</span><input name="${name}" type="${type}" autocomplete="${autocomplete}" maxlength="${maxlength}"${required ? " required" : ""} value="${esc(values[name])}"${invalid(name)}></label>
+    ${fieldError(name)}`;
+  const noCountries = checkout.countries.length === 0;
+  const form = ordersReady && !noCountries
     ? `<form class="order-form" method="post" action="/api/orders" data-order-form novalidate>
   <input type="hidden" name="orderId" value="${esc(orderId)}">
-  <input type="hidden" name="expectedTotal" value="${total.toFixed(2)}">
+  <input type="hidden" name="expectedTotal" value="${country && rate?.ok ? total.toFixed(2) : ""}">
   <section class="order-items" aria-labelledby="items-heading">
     <h2 id="items-heading">${esc(t("order_items"))}</h2>
     <div data-order-items>${rows}</div>
     ${fieldError("items")}
-    <p class="order-total"><span>${esc(t("order_total"))}</span> <strong data-order-total>${esc(totalText)}</strong></p>
+    <dl class="order-sums">
+      <div><dt>${esc(t("order_subtotal"))}</dt><dd data-order-subtotal>${esc(money(subtotal))}</dd></div>
+      <div><dt>${esc(t("order_shipping"))}</dt><dd data-order-shipping>${esc(shippingText)}</dd></div>
+      <div class="order-total"><dt>${esc(t("order_total"))}</dt><dd><strong data-order-total>${esc(money(total))}</strong></dd></div>
+    </dl>
+    <p class="note" data-order-delivery${rate?.ok && rate.estimate ? "" : " hidden"}>${rate?.ok && rate.estimate ? esc(t("order_delivery", { estimate: rate.estimate })) : ""}</p>
+    <p class="note" data-order-free-over hidden></p>
   </section>
   <section class="order-details" aria-labelledby="details-heading">
     <h2 id="details-heading">${esc(t("order_details"))}</h2>
-    <label>${esc(t("field_name"))}<input name="name" autocomplete="name" maxlength="100" required value="${esc(values.name)}"${invalid("name")}></label>
-    ${fieldError("name")}
-    <label>${esc(t("field_email"))}<input name="email" type="email" autocomplete="email" maxlength="200" required value="${esc(values.email)}"${invalid("email")}></label>
-    ${fieldError("email")}
-    <label>${esc(t("field_phone"))}<input name="phone" type="tel" autocomplete="tel" maxlength="40" value="${esc(values.phone)}"${invalid("phone")}></label>
-    ${fieldError("phone")}
+    ${input("name", "field_name", { autocomplete: "name", required: true, maxlength: 100 })}
+    ${input("email", "field_email", { autocomplete: "email", required: true, maxlength: 200, type: "email" })}
+    ${input("phone", "field_phone", { autocomplete: "tel", required: true, maxlength: 40, type: "tel" })}
+    <h3>${esc(t("order_address"))}</h3>
     <label>${esc(t("field_country"))}<select name="country" autocomplete="country" required${invalid("country")}>
       <option value="">${esc(t("choose_country"))}</option>
-      ${countries.map(({ code, name }) => `<option value="${code}"${values.country === code ? " selected" : ""}>${esc(name)}</option>`).join("")}
+      ${countries.map(({ code, name }) => `<option value="${code}"${country === code ? " selected" : ""}>${esc(name)}</option>`).join("")}
     </select></label>
     ${fieldError("country")}
-    <label>${esc(t("field_note"))}<textarea name="note" rows="4" maxlength="1000"${invalid("note")}>${esc(values.note)}</textarea></label>
+    ${input("address1", "field_address1", { autocomplete: "address-line1", required: true })}
+    ${input("address2", "field_address2", { autocomplete: "address-line2" })}
+    ${input("city", "field_city", { autocomplete: "address-level2", required: true, maxlength: 120 })}
+    ${input("region", "field_region", { autocomplete: "address-level1", required: rules.region, maxlength: 120, optionalKey: "field_region_optional" })}
+    ${input("postalCode", "field_postal", { autocomplete: "postal-code", required: rules.postalCode, maxlength: 20, optionalKey: "field_postal_optional" })}
+    <label>${esc(t("field_note"))}<textarea name="note" rows="3" maxlength="1000"${invalid("note")}>${esc(values.note)}</textarea></label>
     ${fieldError("note")}
     <div class="hp" aria-hidden="true"><label>Company website<input name="company_url" tabindex="-1" autocomplete="off"></label></div>
   </section>
   <div class="order-actions">
     <div class="form-status${status ? " is-error" : ""}" role="alert" data-form-status${status ? "" : " hidden"}>${esc(status)}</div>
-    <button class="button" type="submit" data-submit>${esc(t("submit"))}</button>
-    <p class="note">${esc(t("no_payment_note"))}</p>
+    <button class="button" type="submit" data-submit>${esc(t(paypal ? "submit_paypal" : "submit"))}</button>
+    <p class="note">${esc(t(paypal ? "paypal_note" : "no_payment_note"))}</p>
     ${settings.shippingNote ? `<div class="shipping-note note">${paragraphs(settings.shippingNote)}</div>` : ""}
   </div>
 </form>
-<section class="thanks" data-thanks hidden aria-live="polite"></section>`
-    : `<p class="form-status is-error">${esc(t("ordering_unavailable"))}${settings.contactEmail ? ` <a href="mailto:${esc(settings.contactEmail)}">${esc(settings.contactEmail)}</a>` : ""}</p>`;
+<section class="thanks" data-thanks hidden aria-live="polite"></section>
+<a href="/pay/" data-pay-base hidden></a>`
+    : `<p class="form-status is-error">${esc(t(noCountries && ordersReady ? "error_shipping_unavailable" : "ordering_unavailable"))}${settings.contactEmail ? ` <a href="mailto:${esc(settings.contactEmail)}">${esc(settings.contactEmail)}</a>` : ""}</p>`;
   const clientData = {
     language: settings.language,
     currency: settings.currency,
     contactEmail: settings.contactEmail,
+    payment: checkout.payment,
+    shipping: checkout.shipping.status,
+    rates: clientRates(checkout.shipping, checkout.countries),
+    regionRequired: checkout.countries.filter((code) => addressRules(code).region),
+    postalOptional: checkout.countries.filter((code) => !addressRules(code).postalCode),
     products: catalog.listed.map((product) => ({
       id: product.id,
       name: product.name,
@@ -297,22 +355,110 @@ export const orderPage = ({
     })),
     messages: Object.fromEntries(CLIENT_MESSAGE_KEYS.map((key) => [key, t(key)])),
   };
-  const body = `<h1>${esc(t("order_title"))}</h1>
-<p class="lead">${esc(t("order_intro"))}</p>
+  const body = `<h1>${esc(t(paypal ? "checkout_title" : "order_title"))}</h1>
+<p class="lead">${esc(t(paypal ? "checkout_intro" : "order_intro"))}</p>
+${ownerNote}
 ${form}
 <script type="application/json" id="shop-data">${JSON.stringify(clientData).replace(/</g, "\\u003c")}</script>`;
   return layout({
     settings,
     t,
-    title: `${t("order_title")} · ${settings.storeName}`,
-    description: plainSummary(t("order_intro")),
+    title: `${t(paypal ? "checkout_title" : "order_title")} · ${settings.storeName}`,
+    description: plainSummary(t(paypal ? "checkout_intro" : "order_intro")),
     canonical: absoluteUrl(origin, "/order"),
     noindex: true,
     body,
+    site,
   });
 };
 
-export const thanksPage = ({ origin, settings, orderId, email }) => {
+const PAY_STATUS_TEXT = {
+  new: "pay_status_request",
+  confirmed: "pay_status_request",
+  paid: "pay_status_paid",
+  shipped: "pay_status_shipped",
+  completed: "pay_status_shipped",
+  cancelled: "pay_status_cancelled",
+  refunded: "pay_status_refunded",
+  "payment-problem": "pay_status_problem",
+};
+
+/**
+ * One order's payment page, /pay/<order id>: what was ordered and the PayPal
+ * button while it is awaiting payment, its status otherwise. Shows no name,
+ * email or address: the order id in the address is all it takes to open it.
+ * `paypal` is `{ clientId, sdkUrl }` when the button can be shown.
+ */
+export const payPage = ({ origin, settings, order, paypal = null, site = {} }) => {
+  const t = translator(settings.language);
+  const money = (amount) => formatPrice(amount, order.currency || settings.currency, settings.language);
+  const items = order.lines
+    .map((line) => `<li><span>${esc(line.quantity)} × ${esc(line.name)}</span> <span>${esc(money(line.lineTotal))}</span></li>`)
+    .join("");
+  const shipping =
+    order.shipping === null ? t("order_shipping_tbc") : order.shipping === 0 ? t("order_shipping_free") : money(order.shipping);
+  const awaiting = order.status === "awaiting-payment";
+  const state = awaiting
+    ? paypal
+      ? `<div class="pay-box" data-pay-box><p class="note" data-pay-status>${esc(t("pay_loading"))}</p><div class="paypal-buttons" data-paypal-buttons></div></div>
+<noscript><p class="form-status is-error">${esc(t("pay_noscript"))}</p></noscript>
+<p class="note">${esc(t("pay_keep_link"))}</p>`
+      : `<p class="form-status">${esc(t("pay_offline", { orderId: order.orderId }))}</p>`
+    : `<p class="form-status${order.status === "payment-problem" ? " is-error" : ""}" data-pay-final>${esc(t(PAY_STATUS_TEXT[order.status] ?? "pay_status_request"))}</p>`;
+  const clientData = awaiting && paypal
+    ? {
+        orderId: order.orderId,
+        clientId: paypal.clientId,
+        sdkUrl: paypal.sdkUrl,
+        currency: order.currency || settings.currency,
+        locale: { en: "en-US", de: "de-DE", fr: "fr-FR", es: "es-ES" }[settings.language] ?? "en-US",
+        contactEmail: settings.contactEmail,
+        messages: Object.fromEntries(PAY_MESSAGE_KEYS.map((key) => [key, t(key, { orderId: order.orderId })])),
+      }
+    : null;
+  const body = `<h1>${esc(t(awaiting ? "pay_title" : "pay_order", { orderId: order.orderId }))}</h1>
+${awaiting ? `<p class="lead">${esc(t("pay_intro", { orderId: order.orderId }))}</p>` : ""}
+<section class="pay-summary" aria-label="${esc(t("pay_order", { orderId: order.orderId }))}">
+  <ul class="pay-items">${items}</ul>
+  <dl class="order-sums">
+    <div><dt>${esc(t("order_subtotal"))}</dt><dd>${esc(money(order.subtotal ?? order.total))}</dd></div>
+    <div><dt>${esc(t("order_shipping"))}</dt><dd>${esc(shipping)}</dd></div>
+    <div class="order-total"><dt>${esc(t(awaiting ? "pay_total" : "order_total"))}</dt><dd><strong>${esc(money(order.total))}</strong></dd></div>
+  </dl>
+  ${order.deliveryEstimate ? `<p class="note">${esc(t("order_delivery", { estimate: order.deliveryEstimate }))}</p>` : ""}
+</section>
+${state}
+<section class="thanks" data-thanks hidden aria-live="polite"></section>
+${clientData ? `<script type="application/json" id="pay-data">${JSON.stringify(clientData).replace(/</g, "\\u003c")}</script>` : ""}`;
+  return layout({
+    settings,
+    t,
+    title: `${t("pay_order", { orderId: order.orderId })} · ${settings.storeName}`,
+    canonical: absoluteUrl(origin, "/order"),
+    noindex: true,
+    body,
+    site,
+  });
+};
+
+/** A policy page from the Pages table: its title as the <h1>, its Markdown below. */
+export const policyPage = ({ origin, settings, page, site = {} }) => {
+  const t = translator(settings.language);
+  const body = fillPlaceholders(page.body, settings);
+  return layout({
+    settings,
+    t,
+    title: `${page.title} · ${settings.storeName}`,
+    description: plainSummary(markdownText(body) || page.title),
+    canonical: absoluteUrl(origin, pagePath(page)),
+    body: `<article class="policy"><h1>${esc(page.title)}</h1>
+${renderMarkdown(body)}
+</article>`,
+    site,
+  });
+};
+
+export const thanksPage = ({ origin, settings, orderId, email, site = {} }) => {
   const t = translator(settings.language);
   return layout({
     settings,
@@ -325,10 +471,11 @@ export const thanksPage = ({ origin, settings, orderId, email }) => {
   <p>${esc(t("thanks_body", { orderId, email }))}</p>
   <p><a class="button" href="/">${esc(t("thanks_continue"))}</a></p>
 </section>`,
+    site,
   });
 };
 
-export const notFoundPage = ({ settings }) => {
+export const notFoundPage = ({ settings, site = {} }) => {
   const t = translator(settings?.language ?? "en");
   return layout({
     settings,
@@ -336,6 +483,7 @@ export const notFoundPage = ({ settings }) => {
     title: settings ? `${t("not_found_title")} · ${settings.storeName}` : t("not_found_title"),
     noindex: true,
     body: `<section class="message"><h1>${esc(t("not_found_title"))}</h1><p>${esc(t("not_found_body"))}</p><p><a class="button" href="/">${esc(t("back_home"))}</a></p></section>`,
+    site,
   });
 };
 

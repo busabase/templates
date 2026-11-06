@@ -1,7 +1,9 @@
-// Browser side of the shop: the order request kept in this browser
-// (localStorage), the product gallery, and sending the order form as JSON.
-// Every page works without this file; it only makes the order form nicer.
-// Nothing here talks to Busabase: it calls this site's own /api/orders.
+// Browser side of the shop: the order kept in this browser (localStorage),
+// the product gallery, the checkout form (shipping by country, totals, sending
+// it as JSON) and the PayPal button on the pay page. Every page except paying
+// works without this file. Nothing here talks to Busabase or holds a secret:
+// it calls this site's own /api/orders and /api/paypal/*, and PayPal's own
+// JavaScript SDK (v6) draws the button.
 
 const CART_KEY = "busa-shop-order-request-v1";
 const ORDER_ID_KEY = "busa-shop-order-id-v1";
@@ -107,6 +109,13 @@ if (dataElement && form) {
   let products = new Map(data.products.map((product) => [product.id, product]));
   const itemsBox = form.querySelector("[data-order-items]");
   const totalBox = form.querySelector("[data-order-total]");
+  const subtotalBox = form.querySelector("[data-order-subtotal]");
+  const shippingBox = form.querySelector("[data-order-shipping]");
+  const deliveryBox = form.querySelector("[data-order-delivery]");
+  const freeOverBox = form.querySelector("[data-order-free-over]");
+  const countrySelect = form.elements.namedItem("country");
+  const regionRequired = new Set(data.regionRequired || []);
+  const postalOptional = new Set(data.postalOptional || []);
   const statusBox = form.querySelector("[data-form-status]");
   const submit = form.querySelector("[data-submit]");
   const thanks = document.querySelector("[data-thanks]");
@@ -171,8 +180,36 @@ if (dataElement && form) {
     return { items, dropped };
   };
 
-  const totalOf = (items) =>
+  const subtotalOf = (items) =>
     items.reduce((sum, item) => sum + Math.round(products.get(item.productId).price * 100) * item.quantity, 0) / 100;
+
+  // The same rule as the server's (src/shipping.js); the server recomputes it anyway.
+  const shippingOf = (subtotal) => {
+    if (data.shipping === "missing") return { known: false, cost: 0, text: messages.order_shipping_tbc };
+    const rate = data.rates[countrySelect?.value || ""];
+    if (!rate) return { known: false, cost: 0, text: countrySelect?.value ? messages.error_no_shipping : messages.order_shipping_pick };
+    const free = rate.cost === 0 || (rate.freeOver !== null && Math.round(subtotal * 100) >= Math.round(rate.freeOver * 100));
+    return { known: true, cost: free ? 0 : rate.cost, text: free ? messages.order_shipping_free : money(rate.cost), rate };
+  };
+
+  const totalOf = (items) => {
+    const subtotal = subtotalOf(items);
+    return Math.round((subtotal + shippingOf(subtotal).cost) * 100) / 100;
+  };
+
+  // A state / postal code is required only where the chosen country needs one.
+  const showAddressRules = () => {
+    const code = countrySelect?.value || "";
+    for (const [name, required, requiredKey, optionalKey] of [
+      ["region", regionRequired.has(code), "field_region", "field_region_optional"],
+      ["postalCode", !postalOptional.has(code), "field_postal", "field_postal_optional"],
+    ]) {
+      const input = form.elements.namedItem(name);
+      const label = form.querySelector(`[data-label-for="${name}"]`);
+      if (input) input.required = required;
+      if (label) label.textContent = messages[required ? requiredKey : optionalKey];
+    }
+  };
 
   const render = () => {
     const { items, dropped } = currentItems();
@@ -222,14 +259,33 @@ if (dataElement && form) {
       row.append(name, unit, label, remove);
       itemsBox.append(row);
     }
-    const total = totalOf(items);
+    const subtotal = subtotalOf(items);
+    const shipping = shippingOf(subtotal);
+    const total = Math.round((subtotal + shipping.cost) * 100) / 100;
+    if (subtotalBox) subtotalBox.textContent = money(subtotal);
+    if (shippingBox) shippingBox.textContent = shipping.text;
     totalBox.textContent = money(total);
-    form.elements.namedItem("expectedTotal").value = total.toFixed(2);
+    if (deliveryBox) {
+      deliveryBox.hidden = !shipping.rate?.estimate;
+      deliveryBox.textContent = shipping.rate?.estimate ? fill(messages.order_delivery, { estimate: shipping.rate.estimate }) : "";
+    }
+    if (freeOverBox) {
+      const freeOver = shipping.rate?.freeOver;
+      const show = Boolean(freeOver) && shipping.cost > 0;
+      freeOverBox.hidden = !show;
+      freeOverBox.textContent = show ? fill(messages.order_free_over, { amount: money(freeOver) }) : "";
+    }
+    form.elements.namedItem("expectedTotal").value = shipping.known || data.shipping === "missing" ? total.toFixed(2) : "";
     if (dropped) setStatus(messages.error_not_available, true);
     return items;
   };
 
   form.elements.namedItem("orderId").value = orderId();
+  countrySelect?.addEventListener("change", () => {
+    showAddressRules();
+    render();
+  });
+  showAddressRules();
   render();
 
   const itemMessage = (itemError) => {
@@ -256,6 +312,11 @@ if (dataElement && form) {
       email: String(fields.get("email") || ""),
       phone: String(fields.get("phone") || ""),
       country: String(fields.get("country") || ""),
+      address1: String(fields.get("address1") || ""),
+      address2: String(fields.get("address2") || ""),
+      city: String(fields.get("city") || ""),
+      region: String(fields.get("region") || ""),
+      postalCode: String(fields.get("postalCode") || ""),
       note: String(fields.get("note") || ""),
       website: String(fields.get("company_url") || ""),
       items,
@@ -277,7 +338,18 @@ if (dataElement && form) {
       response = null;
     }
     submit.disabled = false;
-    submit.textContent = messages.submit;
+    submit.textContent = data.payment === "paypal" ? messages.submit_paypal : messages.submit;
+
+    if (response?.ok && result.ok && result.payment === "paypal" && result.payPath) {
+      // Saved, awaiting payment: on to this order's pay page. Through a link
+      // the server rendered as "/pay/": the members-only preview serves the
+      // site under a sub-path and rewrites such links (not location.assign).
+      writeCart([]);
+      forgetOrderId();
+      const payBase = document.querySelector("[data-pay-base]");
+      window.location.assign(payBase ? `${payBase.href}${encodeURIComponent(result.orderId)}` : result.payPath);
+      return;
+    }
 
     if (response?.ok && result.ok) {
       writeCart([]);
@@ -334,6 +406,127 @@ if (dataElement && form) {
     const contact = data.contactEmail ? ` ${fill(messages.error_unavailable_contact, { email: data.contactEmail })}` : "";
     setStatus(`${messages.error_unavailable}${contact}`, true);
   });
+}
+
+// ---- Pay page: PayPal's own button (JavaScript SDK v6) ----
+//
+// PayPal's standard integration: the button asks THIS site to create the
+// PayPal order (the amount is the saved order's, never the browser's), PayPal
+// shows the buyer its own window, and on approval this site captures the
+// payment and marks the order paid.
+// https://developer.paypal.com/docsai/payments/methods/paypal/sdk/js/v6/paypal-checkout
+
+const payData = document.getElementById("pay-data");
+const payBox = document.querySelector("[data-pay-box]");
+
+if (payData && payBox) {
+  const data = JSON.parse(payData.textContent);
+  const messages = data.messages;
+  const statusLine = payBox.querySelector("[data-pay-status]");
+  const buttons = payBox.querySelector("[data-paypal-buttons]");
+  const thanks = document.querySelector("[data-thanks]");
+  // Root-relative: the members-only preview rewrites these to its sub-path.
+  const api = (path) => `/api/paypal/${path}`;
+  const say = (message, isError = false) => {
+    statusLine.textContent = message;
+    statusLine.hidden = !message;
+    statusLine.classList.toggle("is-error", isError);
+  };
+  const postJson = async (path, body) => {
+    const response = await fetch(api(path), {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/json" },
+      body: JSON.stringify(body),
+    });
+    const result = await response.json().catch(() => ({}));
+    return { response, result };
+  };
+
+  const loadScript = (src) =>
+    new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      script.onload = resolve;
+      script.onerror = () => reject(new Error("PayPal script did not load"));
+      document.head.append(script);
+    });
+
+  const showPaid = () => {
+    payBox.hidden = true;
+    thanks.replaceChildren();
+    const title = document.createElement("h2");
+    title.textContent = messages.pay_paid_title;
+    const text = document.createElement("p");
+    text.textContent = messages.pay_paid_body;
+    const link = document.createElement("a");
+    link.className = "button";
+    link.href = document.querySelector("a.brand")?.href || "/";
+    link.textContent = messages.thanks_continue;
+    const line = document.createElement("p");
+    line.append(link);
+    thanks.append(title, text, line);
+    thanks.hidden = false;
+  };
+
+  const createOrder = async () => {
+    const { response, result } = await postJson("orders", { orderId: data.orderId });
+    if (!response.ok || !result.id) throw new Error(result.error || "create failed");
+    return { orderId: result.id };
+  };
+
+  const onApprove = async (approval) => {
+    say(messages.pay_processing);
+    const { response, result } = await postJson("capture", { orderId: data.orderId, paypalOrderId: approval.orderId });
+    if (response.ok && result.ok && result.status === "paid") return showPaid();
+    if (response.ok && result.ok && result.status === "pending") return say(messages.pay_pending);
+    if (response.ok && result.ok && result.status === "problem") return say(messages.pay_problem, true);
+    if (result.error === "instrument_declined" || result.error === "declined") return say(messages.pay_declined, true);
+    return say(messages.pay_failed, true);
+  };
+
+  const start = async () => {
+    try {
+      await loadScript(data.sdkUrl);
+      const options = { components: ["paypal-payments"], pageType: "checkout", locale: data.locale };
+      let sdk;
+      try {
+        sdk = await window.paypal.createInstance({ ...options, clientId: data.clientId });
+      } catch {
+        // Some accounts need a client token instead of the client id; this site makes one.
+        const { response, result } = await postJson("client-token", {});
+        if (!response.ok || !result.clientToken) throw new Error("no client token");
+        sdk = await window.paypal.createInstance({ ...options, clientToken: result.clientToken });
+      }
+      const methods = await sdk.findEligibleMethods({ currencyCode: data.currency });
+      if (!methods.isEligible("paypal")) throw new Error("PayPal not eligible");
+      const session = sdk.createPayPalOneTimePaymentSession({
+        onApprove,
+        onCancel: () => say(messages.pay_cancelled),
+        onError: (error) => {
+          const text = String(error?.message || error || "");
+          say(/INSTRUMENT_DECLINED|INSUFFICIENT_FUNDS|TRANSACTION_REFUSED/.test(text) ? messages.pay_declined : messages.pay_failed, true);
+        },
+      });
+      const button = document.createElement("paypal-button");
+      button.setAttribute("type", "pay");
+      button.addEventListener("click", async () => {
+        say("");
+        try {
+          // Not awaited first: PayPal needs the click's own moment to open its window.
+          await session.start({ presentationMode: "auto" }, createOrder());
+        } catch {
+          say(messages.pay_failed, true);
+        }
+      });
+      buttons.append(button);
+      say("");
+    } catch {
+      say(messages.pay_unavailable, true);
+    }
+  };
+
+  start();
 }
 
 showCartCount();

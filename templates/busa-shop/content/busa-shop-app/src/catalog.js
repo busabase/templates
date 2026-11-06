@@ -321,11 +321,31 @@ export const parseCountryList = (value) => {
   return codes;
 };
 
+/** A select cell as the API returns it: the choice id, or `{ id, name }`. */
+const choice = (value) => (value && typeof value === "object" && !Array.isArray(value) ? lower(value.id ?? value.name) : lower(value));
+
+export const PAYPAL_MODES = ["off", "sandbox", "live"];
+export const SMTP_SECURITY_MODES = ["starttls", "tls", "none"];
+
 export const normalizeSettings = (record) => {
   const fields = record?.fields ?? {};
-  const language = lower(fields.language);
+  const language = choice(fields.language);
   const shipsTo = parseCountryList(fields["ships-to"]);
+  const paypalMode = choice(fields["paypal-mode"]);
+  const smtpSecurity = choice(fields["smtp-security"]);
+  const smtpPort = finiteNumber(fields["smtp-port"]);
   return {
+    // Payments and email. Only the non-secret half lives here: the PayPal
+    // secret and the SMTP password are in the Space Vault (src/vault.js).
+    paypalMode: PAYPAL_MODES.includes(paypalMode) ? paypalMode : "off",
+    paypalClientId: text(fields["paypal-client-id"]),
+    paypalWebhookId: text(fields["paypal-webhook-id"]),
+    smtpHost: text(fields["smtp-host"]).toLowerCase(),
+    smtpPort: smtpPort === null ? null : Math.trunc(smtpPort),
+    smtpSecurity: SMTP_SECURITY_MODES.includes(smtpSecurity) ? smtpSecurity : "starttls",
+    smtpUsername: text(fields["smtp-username"]),
+    emailFrom: text(fields["email-from"]),
+    notifyEmail: text(fields["notify-email"]),
     storeName: text(fields["store-name"]),
     tagline: text(fields.tagline),
     currency: text(fields.currency).toUpperCase(),

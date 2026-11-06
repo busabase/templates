@@ -31,7 +31,11 @@ const order = (overrides = {}) => ({
   orderId: "ORD-7K2M9QX4PT",
   name: "Mia Jensen",
   email: "mia.jensen@example.com",
+  phone: "+45 12 34 56 78",
   country: "DK",
+  address1: "Eksempelvej 7",
+  city: "Aarhus",
+  postalCode: "8000",
   note: "Birthday present.",
   items: [
     { productId: "tt-walking-robot", quantity: 2 },
@@ -169,7 +173,19 @@ describe("pages", () => {
     const robots = await call("/robots.txt");
     assert.match(robots.text, /Sitemap: https:\/\/tumbleberry-toys\.example\/sitemap\.xml/);
     const status = await call("/api/status");
-    assert.deepEqual(JSON.parse(status.text), { ok: true, setup: "ready", products: 10, ordering: true, productsFrom: "product-hub" });
+    // A shop from before 0.6.0: no Shipping or Pages table, no PayPal, no email.
+    assert.deepEqual(JSON.parse(status.text), {
+      ok: true,
+      setup: "ready",
+      products: 10,
+      ordering: true,
+      productsFrom: "product-hub",
+      payments: "requests",
+      paymentsNote: "off",
+      shipping: "missing",
+      email: "off",
+      pages: 0,
+    });
   });
 
   it("answers HEAD without a body and refuses other methods on pages", async () => {
@@ -387,10 +403,12 @@ describe("POST /api/orders", () => {
   it("creates one Orders row with only the website's fields, keyed by the order id", async () => {
     const { status, text } = await postJson(order());
     assert.equal(status, 200);
-    assert.deepEqual(JSON.parse(text), { ok: true, orderId: "ORD-7K2M9QX4PT" });
+    assert.deepEqual(JSON.parse(text), { ok: true, orderId: "ORD-7K2M9QX4PT", payment: "request" });
     assert.equal(ordersRows().length, 1);
     const fields = ordersRows()[0].fields;
     assert.deepEqual(Object.keys(fields).sort(), [
+      "address-line1",
+      "city",
       "country",
       "created-at",
       "currency",
@@ -400,13 +418,18 @@ describe("POST /api/orders", () => {
       "items",
       "items-summary",
       "order-id",
+      "payment-method",
+      "phone",
+      "postal-code",
+      "shipping-address",
       "source",
       "status",
+      "subtotal",
       "title",
       "total",
     ]);
     assert.equal(fields.status, "new");
-    assert.equal(fields.total, 66.5);
+    assert.equal(fields.total, 66.5, "no Shipping table: no shipping line, the owner confirms it");
     assert.equal(fields.currency, "USD");
     const create = api.log.find((entry) => entry.method === "POST");
     assert.equal(create.path, "/api/v1/bases/bas_orders/change-requests");
@@ -511,7 +534,11 @@ describe("POST /api/orders", () => {
       "qty.tt-wooden-train": "1",
       name: "Lucas Moreau",
       email: "lucas@example.org",
+      phone: "+33 4 00 00 00 00",
       country: "FR",
+      address1: "12 rue de l'Exemple",
+      city: "Lyon",
+      postalCode: "69002",
       note: "",
       company_url: "",
     });

@@ -49,26 +49,68 @@ ones are shown; never the number).
 | Slug | Type | Written by | Notes |
 | --- | --- | --- | --- |
 | `title` | text | website | Row name: `ORD-7K2M9QX4PT · Mia Jensen` |
-| `order-id` | text, required | website | Made by the buyer's browser: `ORD-` + 10 Crockford base32 characters. Also the create's idempotency key |
-| `status` | select, required | website (`new` only), then staff | `new`, `confirmed`, `paid`, `shipped`, `cancelled` |
+| `order-id` | text, required | website | Made by the buyer's browser: `ORD-` + 10 Crockford base32 characters. The create's idempotency key, the PayPal order's `custom_id` / `invoice_id`, and the pay page `/pay/<order-id>` |
+| `status` | select, required | website, then staff | `new`, `awaiting-payment`, `confirmed`, `paid`, `shipped`, `completed`, `cancelled`, `refunded`, `payment-problem`. The website sets `new` / `awaiting-payment` at checkout, then only `paid`, `payment-problem`, `refunded`, and only from PayPal |
+| `payment-method` | select | website | `paypal` or `request` |
+| `total` | number | website | Items total + shipping, computed by the website from the catalog and Shipping, in cents, never from the browser |
+| `currency` | text | website | Settings › Currency at order time |
 | `customer-name` | text | website | 1–100 characters, one line |
 | `email` | email | website | Up to 200 characters, Busabase's own email pattern |
-| `phone` | phone | website | Optional; left out when empty |
-| `country` | text | website | `Denmark (DK)`; only Settings › Ships to codes are accepted |
+| `phone` | phone | website | Required at checkout (the carrier needs it) |
+| `country` | text | website | `Denmark (DK)`; only countries in Settings › Ships to with a Shipping row |
+| `shipping-address` | longtext | website | The whole address as one block, for the parcel |
 | `items-summary` | longtext | website | `2 × Walking Robot Buddy (TT-ROB-01) @ 24.00 USD = 48.00 USD`, one line per item |
-| `items` | longtext | website | JSON `[{product_id, sku, name, quantity, unit_price, line_total}]` |
-| `total` | number | website | Computed by the website from the catalog it showed, in cents, never from the browser |
-| `currency` | text | website | Settings › Currency at order time |
+| `subtotal` | number | website | Items total |
+| `shipping` | number | website | From the Shipping table; left out for a shop without one |
+| `delivery-estimate` | text | website | The Shipping row's Delivery time |
+| `tracking-number` | text | staff only | The website never reads or writes it |
+| `paid-at` | date (with time) | website | PayPal's capture time |
+| `amount-paid` | number | website | What PayPal captured |
+| `paypal-order-id` | text | website | The PayPal order made for this order |
+| `paypal-capture-id` | text | website | PayPal's transaction id; how a refund finds the order |
+| `payer-email` | text | website | The PayPal account that paid |
+| `refunded-amount` | number | website | Sum of PayPal refunds |
+| `payment-problem` | longtext | website | One sentence: what PayPal reported that needs the owner |
+| `payment-log` | longtext | website | One dated line per thing PayPal said, with the webhook event id (so an event is applied once) |
+| `email-log` | longtext | website | One dated line per email: `sent …`, `FAILED … : <server answer>`, `no email sent: …` |
 | `customer-note` | longtext | website | Optional, up to 1000 characters |
 | `internal-note` | longtext | staff only | Dated lines. The website never reads or writes it |
 | `reply-draft` | longtext | staff only | The agent's draft reply for the owner to send |
+| `address-line1`, `address-line2`, `city`, `region`, `postal-code` | text | website | The address in parts. Region is required for AR, AU, BR, CA, CN, IN, JP, MX, US; postal code everywhere but a short list (HK, AE, IE…) |
+| `items` | longtext | website | JSON `[{product_id, sku, name, quantity, unit_price, line_total}]` |
 | `created-at` | date (with time) | website | ISO timestamp |
 | `source` | text | website | `website` (staff may enter `email`, `phone`, … for orders taken elsewhere) |
 
 The website creates a row through `bases.createChangeRequest` with
-`submittedBy: "busa-shop"` and `idempotencyKey: <order-id>`, and never sends
-`autoMerge`. With the owner's write access it is saved at once; otherwise it
-waits as a ChangeRequest and the buyer is still thanked.
+`submittedBy: "busa-shop"` and `idempotencyKey: <order-id>`, and changes it
+through `records.changeRequest` with `author: "busa-shop"` and the
+`baseCommitId` it just read (a concurrent change is re-read, never
+overwritten); it never sends `autoMerge`. Views: To ship, New order requests,
+Awaiting payment, Payment problems, Confirmed waiting for payment, All orders.
+
+## Shipping (`busa-shop-shipping`)
+
+| Slug | Type | Notes |
+| --- | --- | --- |
+| `name` | text, required | Zone, the owner's name for it |
+| `countries` | text, required | ISO codes, separated by commas, spaces or `；、` |
+| `rate` | number, required | Shipping cost in the shop's currency; 0 = free |
+| `currency` | text | Empty = the shop's; another currency makes the row unusable |
+| `free-over` | number | Free shipping when the items total reaches it |
+| `delivery-estimate` | text | Shown at checkout as written |
+| `position` | number | The first row (by position) naming a country wins |
+| `notes` | longtext | Owner only |
+
+## Pages (`busa-shop-pages`)
+
+| Slug | Type | Notes |
+| --- | --- | --- |
+| `title` | text, required | The page's `<h1>` and footer link |
+| `slug` | text, required | `/pages/<slug>`: lowercase letters, digits, `-` |
+| `status` | select, required | `published` or `draft` (a draft is a 404) |
+| `in-footer` | checkbox | Linked in every page's footer |
+| `position` | number | Footer order |
+| `body` | longtext | Simple Markdown; `{{store_name}}`, `{{contact_email}}`; 【fill in …】 markers |
 
 ## Settings (`busa-shop-settings`), one row
 
@@ -90,6 +132,19 @@ waits as a ChangeRequest and the buyer is still thanked.
 | `expiry-warning-days` | number | Daily check: default 90 |
 | `check-rules` | longtext | Daily check: standing rules from feedback |
 | `show-details` | text | Optional (0.4.0+), for a product hub table only: extra `content.attributes` keys for the product page, comma-separated (`防水等级, gtin`); `moq`, `lead_time_days`, `hs_code`, `carton_qty`, `country_of_origin` are never shown. Missing on older installs = none |
+| `paypal-mode` | select | `off`, `sandbox`, `live` |
+| `paypal-client-id` | text | The PayPal REST app's client ID (public) |
+| `paypal-webhook-id` | text | The webhook registered for `<live address>/api/paypal/webhook` |
+| `smtp-host` | text | Empty = no email |
+| `smtp-port` | number | `465` (default, with `tls`) or `587` (with `starttls`); 25 is refused |
+| `smtp-security` | select | `tls`, `starttls`, `none` (local test catcher only; sends no password) |
+| `smtp-username` | text | Usually the full mailbox address |
+| `email-from` | email | From address; empty = the SMTP username |
+| `notify-email` | email | Owner notifications; empty = Contact email |
+
+Secrets are never in Settings: the Space Vault holds `BUSA_SHOP_PAYPAL_CLIENT_SECRET`
+and `BUSA_SHOP_SMTP_PASSWORD` (Secrets, marked Runtime), read by the website at
+runtime through `GET /api/v1/vault/runtime` with its own key.
 
 ## Reports (`busa-shop-reports`)
 
@@ -99,7 +154,7 @@ waits as a ChangeRequest and the buyer is still thanked.
 | `report-date` | date, required | Normally one real report per date (see SKILL.md, step 0); newest = latest date, then latest `checked-at` |
 | `status` | select, required | `open`, `acknowledged`: set by the check that applied this report's feedback; an acknowledged report is never applied or written again |
 | `summary` | longtext | Two to four plain sentences |
-| `issue-types` | multiselect | `missing-price`, `hidden-product`, `missing-image`, `out-of-stock`, `certificate-missing`, `certificate-expired`, `certificate-expiring`, `orders-waiting`, `demo-leftovers`, `site-unreachable`, `site-mismatch`, `image-unreachable`, `other`: every type used in Issues |
+| `issue-types` | multiselect | `missing-price`, `hidden-product`, `missing-image`, `out-of-stock`, `certificate-missing`, `certificate-expired`, `certificate-expiring`, `orders-waiting`, `orders-to-ship`, `payment-waiting`, `payment-problem`, `email-failed`, `shipping-missing`, `policy-unfinished`, `checkout-setup`, `demo-leftovers`, `site-unreachable`, `site-mismatch`, `image-unreachable`, `other`: every type used in Issues |
 | `issue-count` | number | Lines in Issues, waiting orders included |
 | `issues` | longtext | One line per finding: `- [type] Product (id): what, and the date`; one per product for `certificate-missing`, naming every missing type |
 | `orders-waiting` | number | |
@@ -115,21 +170,28 @@ waits as a ChangeRequest and the buyer is still thanked.
 | --- | --- |
 | `GET /` | Home: store name, tagline, product grid, how ordering works, about |
 | `GET /products/<product-id>` | A listed product; anything else is a 404 |
-| `GET /order` | Order request form; `?add=<product-id>&qty=<n>` pre-fills one line |
-| `POST /api/orders` | JSON (from the page script) or a plain form post; creates one Orders row |
-| `GET /api/status` | `{ ok, setup, products, ordering, productsFrom }`; `productsFrom` (when ready) is `shop` or `product-hub`, the shape of the table it sells from |
+| `GET /order` | Checkout (cart, address, shipping, total); `?add=<product-id>&qty=<n>` pre-fills one line |
+| `POST /api/orders` | JSON (from the page script) or a plain form post; creates one Orders row, `awaiting-payment` (PayPal) or `new` (order request) |
+| `GET /pay/<order-id>` | That order's items, total and PayPal button, or its status; no name, email or address; `no-store`, `noindex` |
+| `POST /api/paypal/orders` | `{orderId}` → `{id}`: creates (or reuses) the PayPal order for one awaiting order, amount from the row |
+| `POST /api/paypal/capture` | `{orderId, paypalOrderId}` → `{status: "paid" \| "pending" \| "problem"}`; `422 instrument_declined` lets the buyer choose another way to pay |
+| `POST /api/paypal/client-token` | A browser-safe PayPal client token for this domain (SDK fallback) |
+| `POST /api/paypal/webhook` | PayPal's notifications: verified with `verify-webhook-signature` first (`400` if not genuine), applied once; `503` (PayPal retries) when it cannot verify yet |
+| `GET /pages/<slug>` | A published policy page |
+| `GET /api/status` | `{ ok, setup, products, ordering, productsFrom, payments, paymentsNote?, shipping, email, pages, pagesToFinish? }`; readiness only, never a value |
 | `GET /images/<product-id>/<n>` | Image `n` of a listed product, fetched with the key |
-| `GET /sitemap.xml`, `GET /robots.txt` | Home and every listed product; `/api/` and `/order` disallowed |
+| `GET /sitemap.xml`, `GET /robots.txt` | Home, listed products, published pages; `/api/`, `/order`, `/pay/` disallowed |
 | `/static/*`, `/favicon.svg` | Files in `public/` |
 
-`POST /api/orders` answers `200 {ok, orderId}`, `400 {errors, itemErrors}`
+`POST /api/orders` answers `200 {ok, orderId, payment, payPath?}`, `400 {errors, itemErrors}`
 (field → code: `required`, `invalid`, `too_long`, `invalid_email`,
-`invalid_phone`, `invalid_country`, `items_empty`, `too_many_items`,
-`not_available`, `sold_out`, `too_many`), `409` when the total the buyer saw
-is no longer the total (with current prices), `403` for a cross-site post,
-`413` over 16 KB, `415` for other content types, `503` when the shop is not
-set up or the order could not be saved (nothing was saved; the buyer keeps the
-same order id for the retry).
+`invalid_phone`, `invalid_country`, `no_shipping`, `shipping_unavailable`,
+`items_empty`, `too_many_items`, `not_available`, `sold_out`, `too_many`),
+`409` when the total the buyer saw (items + shipping) is no longer the total
+(with current prices), `403` for a cross-site post, `413` over 16 KB, `415`
+for other content types, `503` when the shop is not set up or the order could
+not be saved (nothing was saved; the buyer keeps the same order id for the
+retry).
 
 ## Written by `scripts/import-products.mjs`
 

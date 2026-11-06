@@ -4,8 +4,14 @@ A one-install online shop for a small cross-border seller, running on
 Busabase's Website (`site`) engine (on a space without it, such as Busabase
 Cloud Free, a private preview in your own browser tab). Product management is
 built in: the shop keeps its own **Products** and **Certificates** tables, in
-plain columns you edit in the grid, takes order requests into **Orders**,
-reads its texts from **Settings**, and comes with a daily shop check that
+plain columns you edit in the grid. Checkout asks for the delivery address,
+adds the shipping cost for the buyer's country from **Shipping**, and takes
+the payment with **PayPal** (created and captured on the server; webhooks
+verified with PayPal), or an order request while PayPal is off. Each order
+lands in **Orders**, where it is followed from payment to shipping; the buyer
+and the owner get emails over the owner's own **SMTP** mailbox; policy pages
+come from **Pages**. Texts and the non-secret setup are in **Settings**, the
+PayPal secret and the SMTP password in the Space **Vault**. A daily shop check
 writes **Reports** and applies the owner's feedback on the next run. The
 manual is [`SKILL.md`](SKILL.md).
 
@@ -54,8 +60,9 @@ Toys", its 12 toys and 39 certificates in [`assets/demo/`](assets/demo) (the
 CSVs the course imports into the shop's Products with
 [`scripts/import-products.mjs`](scripts/import-products.mjs), with original SVG
 illustrations; two toys have no photo, one has no price, some certificates
-are missing, expired or expiring on purpose), three sample orders and one
-sample report. [`assets/import/products-template.xlsx`](assets/import/products-template.xlsx)
+are missing, expired or expiring on purpose), four sample orders (one paid
+with fake PayPal ids), demo shipping rates, five policy pages full of
+【fill in …】 markers plus a hidden draft Legal notice, and one sample report. [`assets/import/products-template.xlsx`](assets/import/products-template.xlsx)
 is the blank bilingual sheet (`node scripts/import-products.mjs --write-template`).
 
 ## Developing the website
@@ -68,6 +75,12 @@ npm test          # unit tests, the importer, and the deployed bundle against a 
 npm run check     # vendor/worker.js is fresh, import-free, default-export only
 BUSABASE_BASE_URL=… BUSABASE_API_KEY=… BUSABASE_SPACE_ID=… npm run dev   # local preview
 ```
+
+The tests run checkout end to end through the bundle against a fake Busabase,
+a PayPal stand-in (`test/fake-paypal.mjs`: REST API, signed webhooks, a JS SDK
+v6 stand-in) and a real SMTP server on localhost. `npm run dev` sends email
+through Node's sockets; `PAYPAL_API_BASE` / `PAYPAL_SDK_URL` point it at a
+PayPal mock (a deploy never sets them).
 
 `airapp.json` *prefers* the Website engine (`preferredEngine: "site"`, never
 `requiredEngine`, which would turn a Free space into an upgrade wall). Where it

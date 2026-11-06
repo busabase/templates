@@ -28,10 +28,10 @@ describe("sitemap.xml and robots.txt", () => {
     assert.equal((xml.match(/<url>/g) ?? []).length, 3);
   });
 
-  it("keeps crawlers out of the API and the order form and points at the sitemap", () => {
+  it("keeps crawlers out of the API, the order form and the pay pages, and points at the sitemap", () => {
     assert.equal(
       buildRobots(origin),
-      "User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /order\nSitemap: https://shop.example/sitemap.xml\n",
+      "User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /order\nDisallow: /pay/\nSitemap: https://shop.example/sitemap.xml\n",
     );
   });
 });

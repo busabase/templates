@@ -1,0 +1,108 @@
+{
+  "name": "Pages",
+  "description": "The shop's policy pages (Shipping, Returns & warranty, Privacy, Terms, Contact), one row per page, shown at /pages/<Address> and linked in the footer when Show in footer is ticked. Text is simple Markdown (# headings, - lists, **bold**, [links](https://…)); {{store_name}} and {{contact_email}} become the Settings values. Every 【fill in …】 marks something only the owner can say: replace them all before going live. Only Published pages are on the site. A Legal notice (who runs the shop, registration, tax) is installed as a Draft, hidden: publish it only with what is true for you.",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "fill-in-policies",
+      "label": {
+        "en": "Finish my policy pages",
+        "zh-CN": "补全政策页"
+      },
+      "body": "Read the `busa-shop` skill in this folder and follow \"Payments and orders (收款与订单)\", \"Policy pages (政策页)\": list every 【fill in …】 still on the published pages, ask me for each answer, then show me the changed text and write it after I say yes. Never make up a return period, a warranty, a company name, an address or a law: only what I tell you."
+    },
+    {
+      "key": "check-policies",
+      "label": {
+        "en": "Are my policy pages ready?",
+        "zh-CN": "政策页准备好了吗？"
+      },
+      "body": "Read the `busa-shop` skill in this folder, then tell me which policy pages are published, which are in the footer, and which still contain 【fill in …】, and whether they agree with my Shipping costs and Settings (contact email, ships-to countries).",
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Title",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "slug",
+      "name": "Address (slug)",
+      "type": "text",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "published",
+            "name": "Published"
+          },
+          {
+            "id": "draft",
+            "name": "Draft"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "in-footer",
+      "name": "Show in footer",
+      "type": "checkbox",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "position",
+      "name": "Position",
+      "type": "number",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "body",
+      "name": "Text (Markdown)",
+      "type": "longtext",
+      "required": false,
+      "position": 5,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all-pages",
+      "name": "All pages",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "position",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "slug",
+          "status",
+          "in-footer",
+          "position"
+        ]
+      }
+    }
+  ]
+}

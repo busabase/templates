@@ -1,0 +1,115 @@
+{
+  "name": "Shipping",
+  "description": "Shipping costs by country: one row per zone, the countries it covers (ISO codes, comma-separated), the cost, and an optional free-shipping threshold. Checkout offers only countries that are in Settings › Ships to AND have a row here, and adds the cost to the order before payment. Empty Currency = the shop's currency. A change shows on the website within about a minute.",
+  "position": 3,
+  "agentPrompts": [
+    {
+      "key": "set-shipping-rates",
+      "label": {
+        "en": "Set my shipping costs",
+        "zh-CN": "设置运费"
+      },
+      "body": "Read the `busa-shop` skill in this folder and follow \"Payments and orders (收款与订单)\", \"Shipping costs (运费)\": change the shipping rows to the costs, countries, free-shipping threshold and delivery times I give you. Show me the rows before and after, write them after I say yes, and tell me which Ships to countries still have no rate (they cannot check out). Never invent a cost or a delivery time."
+    },
+    {
+      "key": "check-shipping",
+      "label": {
+        "en": "Which countries can order, and what does shipping cost?",
+        "zh-CN": "哪些国家能下单？运费多少？"
+      },
+      "body": "Read the `busa-shop` skill in this folder, then list the countries in Settings › Ships to with the shipping cost, free-shipping threshold and delivery time each one gets at checkout, and every country that cannot check out because it has no usable row (or a row in another currency, or a country named twice).",
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Zone",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "countries",
+      "name": "Countries (codes)",
+      "type": "text",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "rate",
+      "name": "Shipping cost",
+      "type": "number",
+      "required": true,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "currency",
+      "name": "Currency",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "free-over",
+      "name": "Free shipping from (items total)",
+      "type": "number",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "delivery-estimate",
+      "name": "Delivery time",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "position",
+      "name": "Position",
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Notes (owner only)",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all-rates",
+      "name": "All rates",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "position",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "name",
+          "countries",
+          "rate",
+          "currency",
+          "free-over",
+          "delivery-estimate",
+          "position"
+        ]
+      }
+    }
+  ]
+}

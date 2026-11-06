@@ -1,6 +1,6 @@
 {
   "name": "Busa Shop",
-  "description": "A one-install online shop for a small cross-border seller. Products and Certificates hold the product list in plain columns you edit in the table (no separate product hub needed); the public website (Shop Website) lists what is on sale, takes order requests into Orders, reads its texts from Settings, and the daily shop check writes its findings into Reports.",
+  "description": "A one-install online shop for a small cross-border seller. Products and Certificates hold the product list in plain columns you edit in the table (no separate product hub needed); the public website (Shop Website) lists what is on sale and has a real checkout: delivery address, shipping by country from Shipping, and payment with PayPal (or order requests when PayPal is off), with order emails over SMTP and policy pages from Pages. Orders follows each order from payment to shipping; Settings holds the texts and the non-secret setup (secrets go in the Space Vault); the daily shop check writes its findings into Reports.",
   "agentPrompts": [
     {
       "key": "import-catalog",
@@ -20,8 +20,11 @@
     },
     {
       "key": "open-shop",
-      "label": "Open my shop",
-      "body": "Read the `busa-shop` skill in this folder and follow \"Open the shop\": check the Products it will sell from, the settings, and the members-only preview, and tell me exactly what I still have to do before I click Go live."
+      "label": {
+        "en": "Open my shop",
+        "zh-CN": "开店：上线前要做什么"
+      },
+      "body": "Read the `busa-shop` skill in this folder and follow \"Open the shop\": check the Products it will sell from, the settings, shipping costs, policy pages, payments (PayPal, Vault) and order emails, and the members-only preview, and tell me exactly what I still have to do before I click Go live."
     },
     {
       "key": "daily-check",
@@ -30,8 +33,11 @@
     },
     {
       "key": "new-orders",
-      "label": "Handle new orders",
-      "body": "Read the `busa-shop` skill in this folder and follow \"Handle a new order\" for every order that is still new. Draft the replies for me; do not email anyone and do not mark anything paid or shipped."
+      "label": {
+        "en": "Handle orders: what to ship, what is waiting",
+        "zh-CN": "处理订单：发货、待付款、订单请求"
+      },
+      "body": "Read the `busa-shop` skill in this folder and follow \"Payments and orders (收款与订单)\": list the paid orders to ship, the orders awaiting payment and any payment problem, and for every order request still new follow \"Handle a new order request\" (draft the replies for me). Do not email anyone, do not refund, and never mark an order paid or shipped yourself."
     }
   ]
 }

@@ -21,7 +21,7 @@ const readRows = async (path) =>
     .map((line) => JSON.parse(line));
 
 describe("sample rows match their Bases", () => {
-  for (const name of ["orders", "settings", "reports"]) {
+  for (const name of ["orders", "settings", "reports", "shipping", "pages"]) {
     it(`${name}: every value fits its field`, async () => {
       const base = await readJson(`${contentDir}${name}/base.json`);
       const rows = await readRows(`${contentDir}${name}/records.ndjson`);
@@ -61,8 +61,13 @@ describe("sample rows match their Bases", () => {
       assert.match(row.fields["internal-note"], /^Fictional demo data/);
       assert.match(row.fields.email, /@example\.(com|net|org)$/);
       const items = JSON.parse(row.fields.items);
-      const total = items.reduce((sum, item) => sum + item.line_total, 0);
-      assert.equal(Math.round(total * 100) / 100, row.fields.total);
+      const subtotal = items.reduce((sum, item) => sum + item.line_total, 0);
+      assert.equal(Math.round(subtotal * 100) / 100, row.fields.subtotal);
+      assert.equal(Math.round((row.fields.subtotal + row.fields.shipping) * 100) / 100, row.fields.total, `${row.key}: total = items + shipping`);
+      if (row.fields.status === "paid") {
+        assert.equal(row.fields["amount-paid"], row.fields.total);
+        assert.match(row.fields["paypal-capture-id"], /^DEMO/, "a sample PayPal id that cannot be mistaken for a real one");
+      }
     }
   });
 

@@ -124,6 +124,29 @@ export const SHOP_NODES = {
   },
 };
 
+/** The Shipping and Pages a busa-shop 0.6.0+ install adds to its folder. */
+export const CHECKOUT_NODES = {
+  shipping: {
+    id: "nod_shop_shipping",
+    type: "base",
+    slug: "busa-shop-shipping",
+    parentId: "nod_shop",
+    baseId: "bas_shipping",
+    metadata: { appId: "busa-shop", resourceKey: "shipping", schemaVersion: 4 },
+  },
+  pages: {
+    id: "nod_shop_pages",
+    type: "base",
+    slug: "busa-shop-pages",
+    parentId: "nod_shop",
+    baseId: "bas_pages",
+    metadata: { appId: "busa-shop", resourceKey: "pages", schemaVersion: 4 },
+  },
+};
+
+export const sampleRows = async (name) =>
+  (await readNdjson(`${templateRoot}content/${name}/records.ndjson`)).map((row, index) => ({ id: `rec_${name}_${index + 1}`, fields: row.fields }));
+
 /** A workspace with only Busa Shop (0.5.0+) installed: no product hub anywhere. */
 export const SHOP_ONLY_NODES = [...Object.values(NODES).filter((node) => node.metadata.appId !== "busa-product-hub"), ...Object.values(SHOP_NODES)];
 
@@ -135,7 +158,7 @@ export const SHOP_ONLY_NODES = [...Object.values(NODES).filter((node) => node.me
  * archived; `priceColumn: false` is a product hub installed before 0.4.0:
  * prices in the Pricing JSON.
  */
-export const demoState = async ({ imageUrl, priceColumn = true, source = "product-hub" }) => {
+export const demoState = async ({ imageUrl, priceColumn = true, source = "product-hub", checkout = source === "shop" }) => {
   const planned = planProducts(parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8"))).products;
   const certificates = planCertificates(
     parseCsv(await readFile(`${DEMO_DIR}toy-certificates.csv`, "utf8")),
@@ -148,8 +171,9 @@ export const demoState = async ({ imageUrl, priceColumn = true, source = "produc
   if (source === "shop") {
     // The shop's own tables, as the importer writes them: plain columns, no JSON.
     return {
-      nodes: SHOP_ONLY_NODES,
+      nodes: checkout ? [...SHOP_ONLY_NODES, ...Object.values(CHECKOUT_NODES)] : SHOP_ONLY_NODES,
       records: {
+        ...(checkout ? { bas_shipping: await sampleRows("shipping"), bas_pages: await sampleRows("pages") } : {}),
         bas_shop_products: planned.map((product, index) => ({
           id: `rec_${product.productId}`,
           fields: {

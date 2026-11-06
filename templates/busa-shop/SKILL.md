@@ -1,6 +1,6 @@
 ---
 name: busa-shop
-description: Busa Shop (Busa 独立站) is a one-install online shop for a small cross-border seller, with product management built in (商品管理) and no separate product hub (产品枢纽) to install. Its own Products and Certificates tables feed a storefront website (Busabase Website engine; on Free a private preview in the owner's browser) that takes order requests into Orders (no payment), reads its texts and currency from Settings, and runs a daily shop check that writes Reports and learns from the owner's feedback. Use when the user invokes $busa-shop or /busa-shop, or asks to open an online shop, 网店 or 独立站, to import products (导入商品, 导入 Excel 商品表, import products from Excel or CSV, import Excel with pictures, a product list or 商品表), to turn a price list PDF, a photo or a product page into products, to put products in the shop (把商品放进店, 上架) or take them down (下架), to change a price (改价格), to record certificates (EN 71, ASTM F963, CPC, CE, UKCA), to handle new orders, or to run the daily shop check.
+description: Busa Shop (Busa 独立站) is a one-install online shop for a small cross-border seller, product management built in (商品管理, no 产品枢纽 to install). Its Products and Certificates feed a storefront website with a checkout (shipping by country, PayPal or order requests), order emails over SMTP and policy pages, plus Orders, Settings, Reports and a daily shop check. Use for $busa-shop or /busa-shop, or to open an online shop, 网店 or 独立站; to import products (导入商品, 导入 Excel 商品表, import Excel or CSV, import products from Excel, a product list or 商品表, a PDF or photo); to put products in the shop (把商品放进店, 上架), take them down (下架) or change a price (改价格); to record certificates; to set up payments (收款, 付款, PayPal, 结账, checkout), shipping costs (运费), emails (邮件, SMTP) or policy pages (政策页); to handle orders (订单, what to ship, awaiting payment, payment problems); or to run the daily shop check.
 metadata:
   category: ecommerce
   tags:
@@ -14,6 +14,8 @@ metadata:
       - products
       - certificates
       - orders
+      - shipping
+      - pages
       - settings
       - reports
     risk: local-write
@@ -21,15 +23,27 @@ metadata:
 
 # Busa Shop
 
-A real website for a small seller: strangers open it, look at the products and
-send an order request. **The shop keeps its own product list**: the
+A real website for a small seller: strangers open it, look at the products,
+check out and pay. **The shop keeps its own product list**: the
 **Products** table in this folder, with **Certificates** next to it, in plain
 columns the owner reads and edits in the table. Change a product there and the
 website shows the change within a minute. Nothing else needs installing.
 
-Ordering is an order *request*. The website takes no payment: it tells the
-buyer "we will contact you to confirm and arrange payment", and a person does
-that by email.
+**Checkout** asks for the buyer's delivery address, adds the shipping cost for
+their country from the **Shipping** table, and takes the payment with
+**PayPal**, into the owner's own PayPal account. PayPal confirms the payment
+to the website, which marks the order **paid** and emails the buyer a receipt
+and the owner "new paid order" through the owner's own **SMTP** mailbox. The
+shop's **policy pages** (Shipping, Returns & warranty, Privacy, Terms,
+Contact) come from the **Pages** table and are linked in the footer. The
+secrets this needs (the PayPal client secret, the SMTP password) live in the
+**Space Vault**, never in a table.
+
+Until PayPal is set up, and on Busabase Cloud Free, the same checkout sends an
+**order request** instead: the website tells the buyer "we will contact you to
+confirm and arrange payment", and a person does that by email. How payments,
+shipping, emails and orders work, and what you may do there: "Payments and
+orders (收款与订单)".
 
 ## Mandatory dependencies
 
@@ -44,9 +58,24 @@ busa-shop 0.5.0 already does.
 
 ## Boundary: what you never do
 
-- Never email or message a customer. You write a reply draft; the owner sends it.
-- Never set an order to `paid` or `shipped` unless the owner tells you it
-  happened. Never take, request or record card details.
+- Never email or message a customer yourself. You write a reply draft; the
+  owner sends it. (The website sends its own order emails; you do not send,
+  resend or rewrite them.)
+- **Never mark an order `paid` without PayPal's confirmation.** The website
+  does that itself when PayPal confirms a payment. Only for an order request
+  paid some other way (a bank transfer) do you set `paid`, and only when the
+  owner tells you the money arrived. Never set `shipped` unless the owner tells
+  you it shipped. Never take, request or record card details.
+- **Never refund, and never set `refunded`.** Refunds are made by the owner in
+  their PayPal account; PayPal tells the website, which records it. Never
+  promise a refund in a reply draft unless the owner said so.
+- **Never touch the Vault.** The PayPal client secret and the SMTP password
+  are typed into the Space Vault by the owner (or a Space admin) themselves.
+  Never ask for them in chat, never write them into a table, a file, a prompt,
+  a report or a log, and never read them back. You may name the Vault items
+  that are needed and say whether `/api/status` sees them.
+- Never switch Settings › PayPal to `live` unless the owner tells you to, after
+  a sandbox payment went through.
 - Never invent a product fact: a price, stock, a specification, a certificate,
   a date. An empty cell stays empty until the owner gives the value.
 - Never fix product data during the daily check. Report it; the owner (or
@@ -69,10 +98,12 @@ busa-shop 0.5.0 already does.
 | --- | --- |
 | **Products** | The shop's products, one row per product, plain columns (below). The website sells from here |
 | **Certificates** | One row per product certificate: what a product page shows as "valid until" |
-| **Orders** | One row per order request. The website creates it with status `new` and never touches it again. |
-| **Settings** | One row: what the website shows and what the daily check uses. |
+| **Orders** | One row per order. The website creates it at checkout (`awaiting-payment`, or `new` for an order request) and afterwards changes only its payment fields, when PayPal confirms something, and its Email log. Staff do the rest (shipped, completed, cancelled). |
+| **Shipping** | One row per shipping zone: the countries it covers, the cost, an optional free-shipping threshold, the delivery time. Checkout uses it. |
+| **Pages** | The shop's policy pages (Shipping, Returns & warranty, Privacy, Terms, Contact) in simple Markdown, with 【fill in …】 where only the owner can say. |
+| **Settings** | One row: what the website shows, the non-secret half of PayPal and SMTP, and what the daily check uses. |
 | **Reports** | One row per daily shop check, with the owner's feedback. |
-| **Shop Website** (`busa-shop-app`, AirApp, Website engine) | The public site. `vendor/worker.js` is what deploys (the bundle of `src/` with busabase-sdk inside); `src/` is its source. `airapp.json` asks for `write` access because the order form creates records. It *prefers* the Website engine: a space without it (Busabase Cloud Free) runs the same bundle as a private preview in the viewer's browser tab (`content/busa-shop-app/scripts/browser-preview.mjs`), with no address and no Go live. |
+| **Shop Website** (`busa-shop-app`, AirApp, Website engine) | The public site. `vendor/worker.js` is what deploys (the bundle of `src/` with busabase-sdk inside); `src/` is its source. `airapp.json` asks for `write` access because checkout creates Orders rows and records PayPal's confirmations on them. It *prefers* the Website engine: a space without it (Busabase Cloud Free) runs the same bundle as a private preview in the viewer's browser tab (`content/busa-shop-app/scripts/browser-preview.mjs`), with no address and no Go live. |
 | **busa-shop** (this skill) | The manual. `scripts/` holds the product importer and the live-site probe (below). |
 
 Field-by-field reference: [`references/shop-schema.md`](references/shop-schema.md).
@@ -118,18 +149,39 @@ check: record it under its real type.
 
 ### Orders
 
-`title` (shown as the row name: `ORD-… · customer`), `order-id` (made in the
-buyer's browser, e.g. `ORD-7K2M9QX4PT`; it is also the write's idempotency
-key, so a double click is one order), `status` (`new` → `confirmed` → `paid` →
-`shipped`, or `cancelled`), `customer-name`, `email`, `phone` (optional),
-`country` ("Denmark (DK)"), `items-summary` (one readable line per item),
-`items` (the same as JSON: product id, sku, name, quantity, unit price, line
-total), `total` and `currency` exactly as shown to the buyer, `customer-note`,
-`created-at`, `source` (`website`). Staff-only, never read or written by the
-website: `internal-note`, `reply-draft`.
+One row per order, made by checkout. The columns an owner meets first:
+**Order** (`ORD-… · customer`), **Order ID** (`ORD-7K2M9QX4PT`, made in the
+buyer's browser; it is also the write's idempotency key, so a double click is
+one order, and the order's pay page is `/pay/<Order ID>`), **Status**,
+**Payment** (`paypal`, or `request` for an order request), **Total** and
+**Currency** (items + shipping, as the buyer saw and paid them), the
+customer's name, email and phone, **Ship to** (the whole address as one
+block, the way it goes on a parcel), **Items**, **Items total**, **Shipping**,
+**Delivery time**.
 
-Views: **New orders** (status new, oldest first), **Confirmed, not shipped**,
-**All orders** (newest first).
+Payment columns, written by the website only when PayPal confirms something:
+**Paid at**, **Amount paid**, **PayPal order ID**, **PayPal transaction ID**
+(the capture id the owner finds in PayPal), **PayPal payer email**,
+**Refunded**, **Payment problem** (what needs the owner, in a sentence),
+**Payment log** (one dated line per thing PayPal said, with its event id) and
+**Email log** (one dated line per email sent, failed or not sent, and why).
+
+Staff only, never read or written by the website: **Tracking number**,
+**Internal note**, **Reply draft**. Also kept, for the agent and for labels:
+the address in parts (line 1, line 2, city, state / province, postal code),
+**Country** (`Denmark (DK)`), **Items (JSON)** (product id, sku, name,
+quantity, unit price, line total), **Customer note**, **Created at**,
+**Source** (`website`).
+
+Status, and who sets it ("Payments and orders" has the whole lifecycle):
+`awaiting-payment` → `paid` → `shipped` → `completed` for a PayPal order;
+`new` → `confirmed` → `paid` → `shipped` → `completed` for an order request;
+`cancelled`; `refunded` (PayPal reported a full refund); `payment-problem`
+(PayPal denied or reversed the payment, or captured a different amount).
+
+Views: **To ship** (paid, oldest payment first), **New order requests**,
+**Awaiting payment**, **Payment problems**, **Confirmed, waiting for
+payment**, **All orders** (newest first).
 
 ### Settings (one row)
 
@@ -143,6 +195,12 @@ Views: **New orders** (status new, oldest first), **Confirmed, not shipped**,
 | Show the demo-store notice | website | The yellow "fictional demo store" bar. Turn it off for a real shop |
 | Only list products with this tag | website | Optional: list only products whose Tags contain this word |
 | Products table | website, importer | Optional: sell from another table instead of this folder's Products (see "Sell from a product hub instead") |
+| PayPal | website | `off` (order requests only), `sandbox` (test money) or `live` (real payments). See "Set up PayPal" |
+| PayPal client ID | website | The PayPal REST app's client ID, sandbox or live to match. Not a secret: the buyer's browser gets it. Its **secret** goes in the Vault |
+| PayPal webhook ID | website | The ID PayPal gives the webhook registered for `<live address>/api/paypal/webhook`; every notification is verified with it |
+| SMTP host, SMTP port, SMTP security, SMTP username | website | The owner's mailbox for order emails: `smtp.example.com`, `587` with `starttls` or `465` with `tls`, the login (usually the full address). Its **password** goes in the Vault |
+| Send emails from | website | The From address (the SMTP mailbox, or an alias it may send as). Empty = the SMTP username |
+| Order notifications to | website | Where "new paid order" and "new order request" go. Empty = Contact email |
 | Live site address | daily check | The public address shown after Go live |
 | Required certificates | daily check | Comma-separated certificate types, e.g. `EN 71, ASTM F963, CPSIA / CPC` |
 | Certificate expiry warning (days) | daily check | Warn this many days before a certificate expires |
@@ -150,7 +208,45 @@ Views: **New orders** (status new, oldest first), **Confirmed, not shipped**,
 | Also show these product details | website | Only for a product hub table: more of its `content.attributes` keys for the product page, comma-separated (`防水等级, gtin`). The shop's own table needs none: its Specs column is the list |
 
 The website reads Settings at most once a minute, so a change shows on the
-live site within about a minute, with no redeploy.
+live site within about a minute, with no redeploy. **Never put a password or
+secret into Settings**: two things live in the **Space Vault** instead, each
+a Secret marked **Runtime**: `BUSA_SHOP_PAYPAL_CLIENT_SECRET` and
+`BUSA_SHOP_SMTP_PASSWORD` ("Payments and orders (收款与订单)").
+
+### Shipping
+
+One row per shipping zone: **Zone** (the owner's name for it, e.g. `European
+Union`), **Countries (codes)** (`DE, FR, ES`, ISO codes, comma-separated),
+**Shipping cost** (a number; 0 = free), **Currency** (empty = the shop's;
+another currency makes the row unusable), **Free shipping from (items
+total)** (optional), **Delivery time** (shown at checkout as written,
+`7–12 business days`), **Position**, **Notes** (owner only). The template's
+rows are fictional demo rates.
+
+Checkout offers a country only when it is in Settings › Ships to (empty =
+every country) **and** a usable row names it; the first row (by Position)
+that names a country wins. The shipping cost is added to the items total
+before the buyer pays, and is free when the items total reaches Free shipping
+from. A shop installed before busa-shop 0.6.0 has no Shipping table: it keeps
+taking order requests with "shipping confirmed in our reply", and cannot take
+PayPal payments until the table exists (install the template again).
+
+### Pages
+
+One row per policy page: **Title**, **Address (slug)** (the page is
+`/pages/<slug>`), **Status** (`published` / `draft`; only published pages are
+on the site), **Show in footer**, **Position** (footer order), **Text
+(Markdown)**. The Markdown is deliberately small: `#`/`##`/`###` headings,
+paragraphs, `-` and `1.` lists, `**bold**`, `*italic*`, `[text](https://… or
+/pages/… or mailto:…)`; no HTML. `{{store_name}}` and `{{contact_email}}`
+become the Settings values. The template installs five published pages
+(Shipping, Returns & warranty, Privacy, Terms, Contact) whose every
+**【fill in …】** marks something only the owner can say (a return period, a
+business address, the law that applies). A published page still showing a
+marker is reported by the daily check (`policy-unfinished`). A sixth page,
+**Legal notice** (who runs the shop, its registration or self-declaration,
+tax), installs as a **Draft** and out of the footer: it goes public only when
+the owner fills it in and sets it to published ("Selling legally (法律合规)").
 
 ### Reports
 
@@ -161,8 +257,10 @@ live site within about a minute, with no redeploy.
 only on the one sample report the template installs). Issue types:
 `missing-price`, `hidden-product`, `missing-image`, `out-of-stock`,
 `certificate-missing`, `certificate-expired`, `certificate-expiring`,
-`orders-waiting`, `demo-leftovers`, `site-unreachable`, `site-mismatch`,
-`image-unreachable`, `other`.
+`orders-waiting`, `orders-to-ship`, `payment-waiting`, `payment-problem`,
+`email-failed`, `shipping-missing`, `policy-unfinished`, `checkout-setup`,
+`demo-leftovers`, `site-unreachable`, `site-mismatch`, `image-unreachable`,
+`other`.
 
 ## The listing rule
 
@@ -261,7 +359,11 @@ up when it starts, using the stamp the installer puts on every node
       its own), the Base stamped `busa-product-hub` / `products` (fallback
       slug `busa-product-hub-products`), which is where that shop sold from;
 3. Certificates: the stamped one in the same folder as that Products table
-   (and, for a product hub, its AirApp, for the pictures inside it).
+   (and, for a product hub, its AirApp, for the pictures inside it);
+4. Shipping and Pages: stamped `busa-shop` / `shipping`, `pages` in the folder
+   of its Settings (fallback slugs `busa-shop-shipping`, `busa-shop-pages`).
+   A shop installed before busa-shop 0.6.0 has neither and keeps working:
+   order requests with no shipping line, no policy pages, no PayPal.
 
 A table stamped `busa-shop` is read as the shop's plain columns, any other as
 a product hub's (Lifecycle + Status, JSON blocks). `/api/status` says which:
@@ -514,8 +616,8 @@ folder with its own Products), and you import the product list into it.
 ## Open the shop
 
 1. **Install Busa Shop.** From the Template Center, one template: Products,
-   Certificates, Orders, Settings, Reports, Shop Website and this manual, in
-   one folder. Products and Certificates start empty, and the website says "No
+   Certificates, Orders, Shipping, Pages, Settings, Reports, Shop Website and
+   this manual, in one folder. Products and Certificates start empty, and the website says "No
    products are listed yet." until something is on sale.
 2. **Bring the products in** with "Bring products in, any way". The course's
    toy list is the fictional factory in this template's `assets/demo/`
@@ -531,6 +633,12 @@ folder with its own Products), and you import the product list into it.
 3. **Check Settings** with the owner: store name, tagline, currency equal to
    the products' currency, a real contact email, language, ships-to
    countries, about text, shipping note, demo notice (off for a real shop).
+   Then **Shipping** (a real cost for every ships-to country: "Shipping costs
+   (运费)"), the **policy pages** (every 【fill in …】 answered: "Policy pages
+   (政策页)") and, when the owner wants them, **order emails** ("Order emails
+   (邮件, SMTP)") and PayPal in sandbox ("Set up PayPal": a test purchase
+   works in the members-only preview of step 4). Tell the owner about
+   "Selling legally (法律合规)" and the hidden **Legal notice** page.
 4. **The owner opens Shop Website.** On Plus and higher (the Website engine),
    opening the node starts the members-only preview by itself, on real data,
    in the App tab: there is nothing to click first. (A **Run** button appears only on a node that has never run.) The
@@ -540,9 +648,11 @@ folder with its own Products), and you import the product list into it.
    `Site preview: Shop Website`, with the same write access as the live site.
    Once it runs, open the preview and check: the home page lists what the
    listing rule says it should, a product page, `/api/status`
-   (`"setup": "ready"`, `"productsFrom": "shop"`), `/sitemap.xml`. A test
-   order lands in the real Orders table: place one only if the owner agrees,
-   then delete it.
+   (`"setup": "ready"`, `"productsFrom": "shop"`, and what it says about
+   `payments`, `shipping`, `email` and `pagesToFinish`), `/sitemap.xml`, a
+   policy page from the footer. A test order lands in the real Orders table
+   (and, with SMTP set up, sends real emails): place one only if the owner
+   agrees, then delete it.
 
    **On a Free space** (Busabase Cloud without Plus) the Website engine is not
    included, so opening Shop Website runs a **private preview inside the
@@ -565,7 +675,8 @@ folder with its own Products), and you import the product list into it.
 5. **Before Go live (Plus and higher), tell the owner, in these words or
    similar:** "Go live
    publishes the site at the address shown under More actions → Settings. It
-   asks for **write** access, because the order form must save orders. Going
+   asks for **write** access, because checkout must save orders and record
+   PayPal's confirmations on them. Going
    live creates an API key in your name, listed as `Site: Shop Website`, next
    to the preview's `Site preview: Shop Website`; each can do whatever you
    can do in this workspace, not only these tables, and the website's code is
@@ -577,14 +688,254 @@ folder with its own Products), and you import the product list into it.
    check can test it. The owner finds it under **More actions → Settings**
    (「更多操作」→「设置」): **Address** (「地址」), with the **Public**
    (「公开」) switch next to it.
-7. **After any change to the website's code**, the live address keeps serving
+7. **Register the PayPal webhook** for `<live address>/api/paypal/webhook`
+   ("Set up PayPal", step 6): webhooks only arrive after Go live. Live
+   payments only when the owner says so.
+8. **After any change to the website's code**, the live address keeps serving
    the old version until the owner clicks **Restart** (a new preview of the
    new files) and then **Go live** again. Changes to Settings and to products
    need no redeploy.
 
-## Handle a new order
+## Payments and orders (收款与订单)
 
-For each order with status `new`, oldest first:
+Everything about getting paid and getting the parcel out: 收款 / 付款 / PayPal /
+结账 (checkout), 运费 (shipping costs), 邮件 / SMTP (order emails), 订单 (orders),
+政策页 (policy pages). The owner sets it up once; after that the website runs it,
+and you help the owner read it and do the human steps.
+
+### How an order moves
+
+| Status | Means | Set by |
+| --- | --- | --- |
+| `awaiting-payment` | The buyer filled in checkout and was sent to PayPal; PayPal has not confirmed a payment | the website |
+| `paid` | PayPal confirmed the payment, for exactly the order's total and currency | the website, from PayPal. For an order request paid another way: staff, when the owner says the money arrived |
+| `shipped` | Handed to the carrier, Tracking number filled in | staff |
+| `completed` | Arrived, nothing left to do | staff |
+| `new` | An order request (PayPal is off): nothing was charged | the website |
+| `confirmed` | The owner confirmed an order request by email and waits for the payment | staff |
+| `cancelled` | Will not be sent | staff |
+| `refunded` | PayPal reported the payment refunded in full (a partial refund only fills **Refunded**) | the website, from PayPal |
+| `payment-problem` | PayPal denied or reversed the payment, or captured a different amount: **Payment problem** says what, in a sentence | the website, from PayPal |
+
+How the website knows: when the buyer approves in PayPal's window, the website
+captures the payment itself (PayPal's standard integration: the order is
+created and captured on the server, with the amount from the Orders row, never
+from the browser), then PayPal also sends a **webhook** for every payment
+event. The website checks every webhook with PayPal
+(`verify-webhook-signature`) before it reads it, matches it to the order by our
+Order ID (the PayPal order's `custom_id`) or, for a refund, by the PayPal
+transaction ID, checks the amount and currency against the order, applies it
+once (the event id goes into Payment log, so a repeated notification changes
+nothing) and only then changes the order. A buyer who closes the window after
+approving is still captured, from the `CHECKOUT.ORDER.APPROVED` webhook.
+
+The website writes, besides creating the row: Status (`paid`,
+`payment-problem`, `refunded` only), PayPal order ID, PayPal transaction ID,
+Amount paid, Paid at, PayPal payer email, Refunded, Payment problem, Payment
+log, Email log. Nothing else, and never on an order it did not create.
+
+### Set up PayPal
+
+PayPal's own standard checkout, in the owner's own PayPal business account
+(https://developer.paypal.com/docs/checkout/standard/). The owner does every
+step below in PayPal and in the Vault; you explain, then check the result.
+One shop, one Shop Website node: sandbox and live are a switch in Settings,
+each with its own credentials. Start in **sandbox** (test money):
+
+1. **A sandbox app.** In https://developer.paypal.com, signed in with the
+   PayPal business account: **Apps & Credentials**, **Sandbox**, **Create
+   App** (type Merchant). It shows a **Client ID** and a **Secret**.
+2. **Client ID → Settings › PayPal client ID** (you may write it when the
+   owner pastes it: a client ID is public, the buyer's browser receives it).
+3. **Secret → the Space Vault, by the owner.** In Busabase: the settings
+   window (「工作空间设置」, from the account menu) → **Vault** (under 账户) →
+   **Space overrides** (「Space 覆盖值」) → choose this shop's space → **Add
+   secret** (「添加 Secret」): Name
+   `BUSA_SHOP_PAYPAL_CLIENT_SECRET`, Value the Secret, **Runtime** ticked →
+   **Save** (「保存」). Only the Space's owners and admins can. It must be the
+   **Space** tab: the website's keys (`Site preview: Shop Website` for the
+   preview, `Site: Shop Website` for the live site) never receive anyone's
+   personal (User defaults) values, and receive the Space's only while the
+   person who ran the preview or clicked Go live can write in this space.
+4. **Settings › PayPal = `sandbox`.** Within a minute, open the preview's
+   `/api/status` (or the live one): `"payments": "paypal-sandbox"`. Anything
+   else comes with `paymentsNote`: `off`, `no-client-id`, `no-secret` (no
+   Vault item by that name in the Space tab marked Runtime, or the key's
+   person cannot write in the space), `vault-unreadable`,
+   `currency-not-supported` (PayPal does not take Settings › Currency),
+   `no-shipping-table`, `browser-engine` (Free: no online payment). Until it
+   is ready, checkout keeps taking order requests.
+5. **A test purchase, in the members-only preview.** No Go live is needed:
+   the preview (Plus and higher) is the same website with its own key. PayPal
+   developer dashboard → **Testing Tools** → **Sandbox Accounts**: a
+   *Personal* account's email and password pay with sandbox money. Open Shop
+   Website, add a product, check out, pay as that account. The website
+   captures the payment itself, so the order is `paid` the moment PayPal's
+   window closes (Payment log: `buyer approved: capture … COMPLETED … →
+   paid`), and the receipt and the owner's notice go out by email right then.
+6. **The webhook, after Go live.** PayPal can only reach the public live
+   address, so **webhooks only arrive after Go live**; the preview never gets
+   them. In the same PayPal app, **Webhooks** → **Add Webhook**, URL
+   `<Settings › Live site address>/api/paypal/webhook`, events **Payment
+   capture completed**, **denied**, **pending**, **refunded**, **reversed**
+   and **Checkout order approved** → Save, and its **Webhook ID** into
+   Settings › PayPal webhook ID. Payments do not wait for it: it is the
+   backup that records what happens later in PayPal (a refund, a reversal or
+   dispute, a capture PayPal finished after holding it, a buyer who closed
+   the window after approving). Without it (in the preview, or before it is
+   registered) those later changes are not written to the order: the owner
+   sees them in PayPal and tells you, and you note them in Internal note. A
+   webhook that arrives while Settings › PayPal webhook ID is still empty is
+   answered "try again later"; PayPal retries for three days, so none is
+   lost while the owner registers it.
+
+**Switching to live** (only when the owner says so, after a sandbox purchase
+worked): in PayPal switch to **Live**, take the live app's Client ID (into
+Settings) and Secret (the owner replaces the Vault value, same name), add the
+same webhook URL to the live app and put its Webhook ID into Settings, then
+Settings › PayPal = `live`. All of them belong together: a sandbox client ID
+with a live secret is refused by PayPal (checkout then says PayPal is
+unavailable and the order stays `awaiting-payment`). One small real order,
+refunded afterwards in PayPal, proves it.
+
+The Vault is on every Busabase Cloud plan, Free included (no plan switch
+gates it). Online payment needs the Website engine (Plus and higher): on a
+Free space the browser preview has no key to read the Vault with and cannot
+open a mail connection, so its checkout takes order requests and shows the
+owner, and only the owner, a note saying why.
+
+### Order emails (邮件, SMTP)
+
+The website sends, in the store's language, from the owner's own mailbox:
+
+| Email | To | When |
+| --- | --- | --- |
+| `payment-receipt` | buyer | PayPal confirmed the payment: the order, address, amount and PayPal transaction ID |
+| `owner-paid` | Settings › Order notifications to (else Contact email) | the same moment: a new paid order to ship |
+| `request-received` | buyer | an order request was saved: only the shop's own data (items, prices, order number), never the name, note or address typed into the form, because anyone can type anyone's email there |
+| `owner-request` | the owner | an order request was saved |
+| `owner-problem` | the owner | PayPal denied or reversed a payment, or the amount did not match |
+
+Setup, all in Settings except the password: **SMTP host**, **SMTP port** and
+**SMTP security** (`465` + `tls`, or `587` + `starttls`; port 25 is blocked
+for websites), **SMTP username** (usually the full mailbox address), **Send
+emails from**, **Order notifications to**. The password (for Gmail or Outlook
+with two-step login an *app password*, for QQ / 163 mail the *authorization
+code*) goes into the Space Vault by the owner, as above: Name
+`BUSA_SHOP_SMTP_PASSWORD`, Runtime ticked.
+
+**QQ Mail (QQ 邮箱)**, the template's defaults: SMTP host `smtp.qq.com`,
+port `465` with `tls` (QQ also lists 587: then `starttls`), SMTP username and
+Send emails from both the full QQ address (`12345678@qq.com`), and in the
+Vault the mailbox's **授权码**, never the QQ password. The owner turns SMTP on
+and generates the 授权码 in QQ Mail's settings (设置 → 账号 → POP3/IMAP/SMTP
+服务 → 开启, then 生成授权码): https://service.mail.qq.com/detail/0/141 and
+https://wx.mail.qq.com/list/readtemplate?name=app_intro.html#/agreement/authorizationCode
+(changing the QQ password expires the 授权码: then put the new one in the
+Vault). `/api/status` then says
+`"email": "ready"`; otherwise `off` (no host), `no-sender`, `no-password`,
+`bad-port`. `none` security is only for a local test mail catcher: it sends no
+password.
+
+Every order's **Email log** says what was sent to whom, or why not
+(`FAILED payment-receipt to …: 535 …`, `no email sent: …`). An email never
+holds up an order or a payment, and a failed one is not retried: tell the
+owner, who can write to the buyer from the mailbox. SMTP is for these few
+emails per order, not for newsletters or bulk mail (mailbox providers cap a
+day's sending, and bulk mail from a personal mailbox gets it blocked); bulk
+email needs an email service such as AWS SES, which this template does not
+use.
+
+### Shipping costs (运费)
+
+When the owner gives you costs ("EU 12 dollars, free from 90; US 9"), show the
+Shipping rows before and after (Zone, Countries, Shipping cost, Free shipping
+from, Delivery time), write them after the owner says yes, read them back, and
+tell the owner every Settings › Ships to country that still has no usable row:
+checkout does not offer it. Never invent a cost or a delivery time; an empty
+Delivery time is fine. A cost is in the shop's currency (Currency empty). A
+change shows at checkout within about a minute.
+
+### Policy pages (政策页)
+
+Buyers and PayPal expect a shop to say how it ships, takes returns, handles
+data and who runs it. The five pages are generic and every **【fill in …】** is
+a question for the owner. List the markers still on published pages, ask the
+owner each answer, show the changed text, write it after their yes. Never make
+up a return period, a warranty, a business name or address, a law or a
+company number: an unanswered marker stays. Keep what the pages say in line
+with Shipping (delivery times), Settings (contact email, ships-to) and how the
+shop takes payment. They are templates, not legal advice: the owner is
+responsible for them and should check what the countries they sell to
+require. Add a page with a new row (published, an Address of lowercase letters,
+digits and `-`).
+
+### Selling legally (法律合规)
+
+Guidance with official sources, **not legal advice**: tell the owner what to
+check, and never decide for them. For an individual selling online from
+mainland China:
+
+- **Registration.** The E-commerce Law (《电子商务法》第十条) and
+  《网络交易监督管理办法》第八条 let an individual with **total annual sales of
+  no more than 100,000 CNY** (all their online shops added up) sell without
+  registering a business; above that, or for goods that need a licence, they
+  register (个体工商户 or a company). Texts:
+  https://www.cac.gov.cn/2018-09/01/c_1123362506.htm and
+  https://www.gov.cn/zhengce/zhengceku/2021-03/16/content_5593226.htm
+- **What the shop must show.** A registered seller shows its business
+  licence information on the shop's front page (《电子商务法》第十五条). An
+  individual who does not need to register must, under
+  《网络交易监督管理办法》第十二条, truthfully show a self-declaration (e.g.
+  「个人从事零星小额交易活动，依法不需要办理市场主体登记」) with their real
+  address and contact, or a link to it. The template's **Legal notice** page
+  is the place for this; it installs as a hidden draft so that nothing is
+  published in the owner's name until they fill it in and publish it. Never
+  publish it for them, and never write a self-declaration or a licence
+  number they have not given you.
+- **Tax.** Shop income is taxable (《电子商务法》第十一条). The local tax office
+  (hotline 12366) says what applies.
+- **Consumers.** In China, goods sold online can be returned within seven
+  days without a reason, with a few exceptions (《消费者权益保护法》第二十五条);
+  buyers abroad have their own rights (in the EU, 14 days). The Returns page
+  must not promise less than the buyer's law gives.
+- **Personal data.** Names, addresses and phone numbers are personal
+  information (《个人信息保护法》; the GDPR for EU buyers): collect only what
+  shipping needs, keep it safe, say so on the Privacy page.
+- **Export and import.** What may be sold, product safety marks (CE, UKCA,
+  EN 71, CPSIA…), import duties and VAT depend on the destination country;
+  check each country in Settings › Ships to before selling there.
+
+The laws above are in the national law database, https://flk.npc.gov.cn
+(search by name).
+
+### Ship a paid order
+
+**To ship** lists the paid orders, oldest payment first. For each: the Ship
+to block, the phone, the items. When the owner says an order has gone out and
+gives the tracking number: write **Tracking number**, set Status `shipped`,
+add `YYYY-MM-DD shipped, tracking … (owner in chat)` to Internal note, and
+remind the owner to lower Stock (orders do not change it). `completed` when the
+owner says it arrived. The website does not email the buyer about shipping:
+draft that email for the owner if they want one.
+
+### Awaiting payment and payment problems
+
+- **Awaiting payment** for more than a day is almost always a buyer who left
+  at PayPal's window. Nothing was charged. Its pay page `/pay/<Order ID>`
+  still works if the buyer comes back. Cancel it only when the owner says so.
+- **Payment problem**: read Payment problem and Payment log to the owner in
+  plain words and say what to look at in PayPal (Activity, Resolution Center
+  for a reversal). Do not ship a `payment-problem` order until the owner has
+  checked PayPal. Never change its status yourself.
+- **Refunds** are made by the owner in PayPal (Activity → the payment →
+  Refund). PayPal tells the website; the order shows **Refunded** and, when
+  it is the whole amount, `refunded`.
+
+## Handle a new order request
+
+An order request is what checkout makes while PayPal is off (and on a Free
+space): status `new`, nothing charged. For each, oldest first:
 
 1. Read its items and check each against Products now: still listed, in
    stock (Stock ≥ quantity, or Stock empty), price unchanged. The shop has
@@ -595,16 +946,18 @@ For each order with status `new`, oldest first:
    add `YYYY-MM-DD spam, cancelled by agent at <owner>'s request` only if the
    owner agrees; otherwise flag it.
 3. Write **Reply draft**: thank them, confirm what is available, say what is
-   not, give the shipping cost or a placeholder `[shipping cost]` for the
-   owner, and how payment will be arranged (`[payment details]`; never a link
-   you made up). Sign with the store name.
+   not, give the shipping cost (the order's Shipping, from the Shipping
+   table; a placeholder `[shipping cost]` for the owner when it is empty), and
+   how payment will be arranged (`[payment details]`; never a link you made
+   up). Sign with the store name.
 4. Add a dated line to **Internal note** with what you checked. Leave status `new`.
 5. Tell the owner which orders are ready to send, and anything odd.
 
-When the owner says the reply was sent: status `confirmed`. Paid: `paid`.
-Shipped: `shipped`, tracking number in Internal note. Cancelled: `cancelled`
-with the reason. When an order is confirmed or shipped, remind the owner to
-lower the product's Stock (orders do not change stock).
+When the owner says the reply was sent: status `confirmed`. Paid (the owner
+says the money arrived): `paid`. Shipped: "Ship a paid order". Cancelled:
+`cancelled` with the reason in Internal note. When an order is confirmed or
+shipped, remind the owner to lower the product's Stock (orders do not change
+stock).
 
 ## Daily shop check
 
@@ -627,7 +980,7 @@ row.
   feedback again and never write to it again.
 - **Order.** "Newest" means latest `report-date`, and for the same date, latest
   `checked-at`.
-- **Where today's findings go** (step 6): if a real (not sample) report dated
+- **Where today's findings go** (step 7): if a real (not sample) report dated
   today exists, is still `open`, and has empty Owner feedback, this is a
   same-day re-run: update that report in place. In every other case create a
   new report for today. That includes the case where today's real report was
@@ -674,14 +1027,48 @@ An expired certificate of a required type counts as `certificate-expired`,
 not `certificate-missing`. Then apply every Standing check rule; a finding
 with no type of its own is `other`.
 
-### 3. Check orders
+### 3. Check orders and payments
 
 `orders-waiting`: every order still `new`, and every `confirmed` order older
 than 7 days (waiting for payment). Each one is one line in Issues (order id,
 customer, total, since when) and counts toward the issue count; their number
 also goes into Orders waiting.
 
-### 4. Check for demo leftovers
+`orders-to-ship`: every `paid` order (Orders › To ship), one line each: order
+id, customer, country, total, paid since when.
+
+`payment-waiting`: every `awaiting-payment` order created more than 24 hours
+ago, one line each (order id, total, since when). Nearly always a buyer who
+left at PayPal's window; say so, and that nothing was charged.
+
+`payment-problem`: every `payment-problem` order, and every `awaiting-payment`
+order whose Payment problem is filled in (PayPal is holding the payment), one
+line each with Payment problem as written. Say "do not ship before checking
+PayPal".
+
+`email-failed`: every order whose Email log has a `FAILED` or `no email sent`
+line dated after the previous real report's Checked at (the last 7 days when
+there is none), one line per order with that line as written.
+
+### 4. Check shipping, policy pages and the checkout setup
+
+Read Shipping, Pages and Settings, and the live site's `/api/status` when
+Live site address is set (step 6 probes it). One line for each:
+
+- `shipping-missing` if a Settings › Ships to country (every country, when it
+  is empty) has no usable Shipping row: no row names it, or its row has
+  another currency or no cost, or an earlier row already names it. One line
+  naming those countries. Also when the shop has no Shipping table (installed
+  before 0.6.0) and Settings › PayPal is not `off`.
+- `policy-unfinished`, one line per published page that still contains a
+  【fill in …】, with its title and the markers' text.
+- `checkout-setup`, one line each, when `/api/status` says `payments` is
+  `requests` while Settings › PayPal is `sandbox` or `live` (give its
+  `paymentsNote` and what it means: "Set up PayPal", step 5), or `email` is
+  not `ready` while Settings › SMTP host is set, or Settings › PayPal is not
+  `off` and PayPal webhook ID is empty.
+
+### 5. Check for demo leftovers
 
 Only when Settings › Live site address is set, so the shop is public. One
 `demo-leftovers` line for each of these that is still true:
@@ -691,12 +1078,14 @@ Only when Settings › Live site address is set, so the shop is public. One
   is at `example.com`, `example.net` or `example.org`);
 - Settings › About the store still says the shop is fictional demo data;
 - Orders still holds the sample orders (title ends "(fictional demo)", or
-  Internal note starts "Fictional demo data").
+  Internal note starts "Fictional demo data");
+- Shipping still has the template's demo rates (Notes start "Fictional demo
+  rate").
 
 The course's own live demo shop will show these on purpose. A real shop
 should not.
 
-### 5. Check the live site
+### 6. Check the live site
 
 If Live site address is set: `node scripts/probe-site.mjs <address>` (from this
 skill's files). It opens the site as a stranger: the home page (status, time),
@@ -711,15 +1100,16 @@ product page**. Report:
   `images.failed` (product, URL, what came back).
 
 Put a short summary in Live site check. If the address is empty, write "not
-checked: no live site address in Settings" and skip steps 4 and 5.
+checked: no live site address in Settings" and skip steps 5 and 6 (and the
+`/api/status` half of step 4).
 
-### 6. Write the report
+### 7. Write the report
 
 Fill the report chosen by the rule in step 0:
 `title` = `Daily shop check · YYYY-MM-DD`, `report-date` = today, `status` =
 `open`, Sample report unticked, a `summary` of two to four plain sentences
 (how many products are on the site, the most important problems, orders
-waiting), `issues` with one line per finding, like
+to ship and waiting, payment problems), `issues` with one line per finding, like
 `- [certificate-expiring] Wooden Train Set (tt-wooden-train): EN 71 expires on 2026-12-01, in 26 days.`,
 `issue-types` = every type that appears in Issues, `issue-count` = the
 number of lines in Issues (waiting orders included), `orders-waiting`,
@@ -732,9 +1122,31 @@ write feedback into Owner feedback on this report for the next run.
 
 ## Honest limits
 
-- **No payment.** Orders are requests; payment is arranged by email.
+- **One payment provider: PayPal.** (PayPal's own button may offer a buyer a
+  card through PayPal.) No Stripe, no bank transfer at checkout: with PayPal
+  off, checkout takes order requests and payment is arranged by email.
+- **Payments need the Website engine (Plus and higher).** A purchase works
+  in the members-only preview already; PayPal's webhooks (later refunds,
+  reversals, disputes) only arrive after Go live. The Free plan's browser
+  preview takes order requests only and sends no email (it tells the owner
+  so on the checkout page).
+- **Refunds are made in PayPal** by the owner; the website only records what
+  PayPal reports. No partial-refund workflow beyond the Refunded amount.
+- **No taxes or duties are calculated**, and shipping is one cost per country
+  (with an optional free-shipping threshold): no weights, carriers, labels or
+  tracking lookups. The owner types the tracking number.
+- **Stock is not reserved or decremented** by an order, paid or not.
+- **Abandoned checkouts stay** in Orders as `awaiting-payment`; the daily check
+  lists those older than a day and the owner cancels them.
+- **Order emails go out once and are not retried.** A failure is in the
+  order's Email log and the daily check. SMTP suits these few emails per order,
+  not newsletters or bulk mail.
 - **No CAPTCHA.** The form has a hidden honeypot field and validates
-  everything, but a determined spammer can still send order requests.
+  everything, but a determined spammer can still send order requests (and,
+  with SMTP set up, make the shop send the "request received" email, which
+  carries only the shop's own data, to the address they typed).
+- **The policy pages are templates, not legal advice.** The owner fills in and
+  answers for them.
 - **No custom domain yet**: the address is the one Busabase gives the site.
 - **Going live needs Plus or higher on Busabase Cloud.** The Website engine is
   not in the Free plan. A Free space gets only the private preview in the
@@ -742,19 +1154,19 @@ write feedback into Owner feedback on this report for the next run.
   it runs only while the tab is open, and the daily check has no live site to
   probe. Its orders are real rows all the same.
 - **The site's keys reach everything their owner can reach in this workspace**
-  at write level, not only these tables. The website's fixed routes are the
-  only thing in between. There are two: `Site: Shop Website` belongs to
-  whoever clicked Go live, `Site preview: Shop Website` to whoever ran the
-  preview (opening the node runs it), and each stops working if that person
-  leaves the workspace.
-- **No notification on a new order.** Someone has to look at New orders (the
-  daily check counts them).
-- **Stock is not reserved or decremented** by an order.
-- **The preview runs on real data**: a test order in the preview is a real row.
+  at write level, not only these tables, and the Space's Vault values marked
+  Runtime (the website keeps only its two and drops the rest). The website's
+  fixed routes are the only thing in between. There are two:
+  `Site: Shop Website` belongs to whoever clicked Go live,
+  `Site preview: Shop Website` to whoever ran the preview (opening the node
+  runs it), and each stops working if that person leaves the workspace.
+- **The preview runs on real data**: a test order in the preview is a real
+  row, and with SMTP set up it sends real emails.
 - **At most the first 100 products** of the Products table are shown.
-- **The site shows what the tables say**, up to a minute late, and stays up
-  with the last good data for up to ten minutes if Busabase cannot be reached;
-  after that it shows "temporarily unavailable".
+- **The site shows what the tables say**, up to a minute late (the Vault up
+  to five minutes), and stays up with the last good data for up to ten
+  minutes if Busabase cannot be reached; after that it shows "temporarily
+  unavailable".
 - **Certificates are shown as recorded.** The website cannot check the
   documents; an expired one is hidden, nothing more.
 - **One shop per workspace.** With two Busa Shop folders the website and the
@@ -775,10 +1187,14 @@ write feedback into Owner feedback on this report for the next run.
 ## Changing the website
 
 Read `$busabase-app-creator` first. The source is `content/busa-shop-app/src/`
-(`catalog.js` listing, the two table shapes and images, `orders.js` validation
-and the Orders fields written, `seo.js`, `pages.js`, `details.js` which product
-details a page shows and how Specs is read, `resources.js` table lookup,
-`shop.js` the only code that calls Busabase, `handler.js` routes). Then, in
+(`catalog.js` listing, the two table shapes and images, `orders.js` checkout
+validation and the Orders fields written, `shipping.js` the rates rule,
+`policies.js` the Pages table and its Markdown, `paypal.js` PayPal's REST API
+and what each webhook event does, `vault.js` the two Vault values, `smtp.js`
+the SMTP client, `mail.js` the emails, `seo.js`, `pages.js`, `details.js`
+which product details a page shows and how Specs is read, `resources.js`
+table lookup, `shop.js` the only code that calls Busabase besides the Vault
+read, `handler.js` routes). Then, in
 that folder:
 
 ```bash

@@ -58,9 +58,21 @@ describe("a shop with its own Products, and no product hub anywhere", () => {
     assert.doesNotMatch(text, /Rainbow Xylophone|Magnetic Building Tiles/, "no price; a draft");
     assert.match(text, /Dino Explorer Figures<\/h3>[\s\S]*?Out of stock/);
     const bases = api.log.filter((entry) => entry.path === "/api/v1/records").map((entry) => entry.query.baseId);
-    assert.deepEqual(bases.sort(), ["bas_settings", "bas_shop_certificates", "bas_shop_products"]);
+    assert.deepEqual(bases.sort(), ["bas_pages", "bas_settings", "bas_shipping", "bas_shop_certificates", "bas_shop_products"]);
     assert.deepEqual(api.log.find((entry) => entry.query.baseId === "bas_shop_products").query.sort, { fieldSlug: "ref", fieldType: "number", direction: "asc" });
-    assert.deepEqual(JSON.parse((await call("/api/status")).text), { ok: true, setup: "ready", products: 10, ordering: true, productsFrom: "shop" });
+    assert.deepEqual(JSON.parse((await call("/api/status")).text), {
+      ok: true,
+      setup: "ready",
+      products: 10,
+      ordering: true,
+      productsFrom: "shop",
+      payments: "requests",
+      paymentsNote: "off",
+      shipping: { countries: 22, problems: 0 },
+      email: "off",
+      pages: 5,
+      pagesToFinish: ["shipping", "returns", "privacy", "terms", "contact"],
+    });
   });
 
   it("a product page shows the plain columns: description, highlights, Specs lines, warranty, returns and valid certificates", async () => {
@@ -128,14 +140,21 @@ describe("a shop with its own Products, and no product hub anywhere", () => {
         orderId: "ORD-7K2M9QX4PT",
         name: "Mia Jensen",
         email: "mia.jensen@example.com",
+        phone: "+45 12 34 56 78",
         country: "DK",
+        address1: "Eksempelvej 7",
+        city: "Aarhus",
+        postalCode: "8000",
         items: [{ productId: "tt-walking-robot", quantity: 2 }],
-        expectedTotal: 48,
+        expectedTotal: 59.9,
       }),
     });
     assert.equal(response.status, 200, response.text);
     const [saved] = api.state.records.bas_orders;
-    assert.equal(saved.fields.total, 48);
+    assert.equal(saved.fields.subtotal, 48);
+    assert.equal(saved.fields.shipping, 11.9, "the European Union rate from the template's Shipping");
+    assert.equal(saved.fields.total, 59.9);
+    assert.equal(saved.fields["delivery-estimate"], "7–12 business days");
     assert.match(saved.fields["items-summary"], /Walking Robot Buddy/);
   });
 

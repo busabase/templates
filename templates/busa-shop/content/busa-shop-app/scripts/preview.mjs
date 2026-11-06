@@ -8,6 +8,10 @@
 // public/ as the static assets, the way the platform binds them. The key stays
 // in this process; the browser never sees it. Without a key it answers with the
 // "temporarily unavailable" page, which is what a visitor would see too.
+//
+// Email goes out for real through Node's sockets (scripts/node-sockets.mjs);
+// SMTP_TEST_CA_FILE trusts a local test mail server's own certificate.
+// PAYPAL_API_BASE / PAYPAL_SDK_URL point PayPal at a mock instead (testing only).
 import { readFile } from "node:fs/promises";
 import http from "node:http";
 import { extname, join, normalize } from "node:path";
@@ -45,7 +49,8 @@ export const serveWorker = async ({ worker, env, port = 8787, host = "127.0.0.1"
       headers: Object.entries(req.headers).flatMap(([key, value]) => (Array.isArray(value) ? value.map((item) => [key, item]) : [[key, value]])),
       body: req.method === "GET" || req.method === "HEAD" ? undefined : body,
     });
-    const response = await worker.fetch(request, bindings, { waitUntil() {} });
+    // Work handed to waitUntil (the emails) keeps running after the answer, as on the platform.
+    const response = await worker.fetch(request, bindings, { waitUntil: (promise) => promise.catch((error) => console.error("waitUntil:", error?.message ?? error)) });
     res.writeHead(response.status, Object.fromEntries(response.headers));
     res.end(response.body ? Buffer.from(await response.arrayBuffer()) : undefined);
   });
@@ -55,15 +60,21 @@ export const serveWorker = async ({ worker, env, port = 8787, host = "127.0.0.1"
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const { default: worker } = await import(new URL("../vendor/worker.js", import.meta.url));
+  const { createNodeSockets } = await import("./node-sockets.mjs");
   const port = Number(process.env.PORT ?? 8787);
+  const ca = process.env.SMTP_TEST_CA_FILE ? await readFile(process.env.SMTP_TEST_CA_FILE, "utf8") : undefined;
   await serveWorker({
     worker,
     port,
+    host: process.env.HOST ?? "127.0.0.1",
     env: {
       BUSABASE_BASE_URL: process.env.BUSABASE_BASE_URL ?? "",
       BUSABASE_API_KEY: process.env.BUSABASE_API_KEY ?? "",
       BUSABASE_SPACE_ID: process.env.BUSABASE_SPACE_ID ?? "",
       BUSABASE_AIRAPP_RUNTIME: "site",
+      SOCKETS: createNodeSockets({ ca }),
+      ...(process.env.PAYPAL_API_BASE ? { PAYPAL_API_BASE: process.env.PAYPAL_API_BASE } : {}),
+      ...(process.env.PAYPAL_SDK_URL ? { PAYPAL_SDK_URL: process.env.PAYPAL_SDK_URL } : {}),
     },
   });
   console.log(`Busa Shop preview on http://localhost:${port} (reading ${process.env.BUSABASE_BASE_URL || "no workspace: set BUSABASE_BASE_URL"})`);

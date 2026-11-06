@@ -68,6 +68,28 @@ export const resolveShopTables = (nodes) => ({
   }),
 });
 
+/**
+ * Shipping and Pages (busa-shop 0.6.0 and later), in the folder of this
+ * shop's Settings. A shop installed before has neither: it keeps taking order
+ * requests without a shipping line and shows no policy pages.
+ */
+export const resolveShopExtras = (nodes, shopFolderId) => ({
+  shipping: pickResource(nodes, {
+    type: "base",
+    appId: SHOP_APP_ID,
+    resourceKey: "shipping",
+    fallbackSlug: "busa-shop-shipping",
+    parentId: shopFolderId,
+  }),
+  pages: pickResource(nodes, {
+    type: "base",
+    appId: SHOP_APP_ID,
+    resourceKey: "pages",
+    fallbackSlug: "busa-shop-pages",
+    parentId: shopFolderId,
+  }),
+});
+
 const siblingSlug = (slug, resourceKey) =>
   slug.endsWith("-products") ? `${slug.slice(0, -"-products".length)}-${resourceKey}` : "";
 

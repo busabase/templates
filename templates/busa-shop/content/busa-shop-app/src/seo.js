@@ -29,13 +29,14 @@ const isoDay = (value) => {
   return Number.isFinite(parsed) ? new Date(parsed).toISOString().slice(0, 10) : "";
 };
 
-export const buildSitemap = (origin, products) => {
+export const buildSitemap = (origin, products, pages = []) => {
   const urls = [
     `  <url><loc>${xmlEscape(absoluteUrl(origin, "/"))}</loc></url>`,
     ...products.map((product) => {
       const lastmod = isoDay(product.updatedAt);
       return `  <url><loc>${xmlEscape(absoluteUrl(origin, productPath(product)))}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`;
     }),
+    ...pages.map((page) => `  <url><loc>${xmlEscape(absoluteUrl(origin, `/pages/${page.slug}`))}</loc></url>`),
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>\n`;
 };
@@ -46,6 +47,7 @@ export const buildRobots = (origin) =>
     "Allow: /",
     "Disallow: /api/",
     "Disallow: /order",
+    "Disallow: /pay/",
     `Sitemap: ${absoluteUrl(origin, "/sitemap.xml")}`,
     "",
   ].join("\n");

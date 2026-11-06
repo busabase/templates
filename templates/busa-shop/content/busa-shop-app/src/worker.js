@@ -12,19 +12,32 @@
 // leave vendored bundles alone, as they do for every app's app/vendor/busabase-*.js.
 //
 // Fixed routes only. Each one has one job, and none passes a visitor's path,
-// id, filter or body through to the API:
+// filter or body through to the API. The one visitor value that reaches it is
+// an order id (ORD- + ten characters, pattern-checked), as the exact value of
+// this shop's Orders › Order ID:
 //
 //   GET  /                        home: store name, tagline, product grid
 //   GET  /products/<product-id>   one listed product (404 for anything else)
-//   GET  /order                   the order request form
-//   POST /api/orders              create one Orders row (JSON or a plain form post)
-//   GET  /api/status              { ok, setup, products, ordering } for the daily check
+//   GET  /order                   checkout: cart, delivery address, shipping, total
+//   POST /api/orders              create one Orders row (JSON or a plain form post):
+//                                 `new` (order request) or `awaiting-payment` (PayPal)
+//   GET  /pay/<order-id>          that order's PayPal button, or its status
+//   POST /api/paypal/orders       create the PayPal order for one of our orders (server-side amount)
+//   POST /api/paypal/capture      capture it after the buyer approved; mark the order paid
+//   POST /api/paypal/client-token a browser-safe PayPal client token (SDK fallback)
+//   POST /api/paypal/webhook      PayPal's notifications, each verified with PayPal first
+//   GET  /pages/<slug>            a published policy page from the Pages table
+//   GET  /api/status              readiness for the daily check (never a secret)
 //   GET  /images/<product-id>/<n> image n of a listed product, fetched with the site key
 //   GET  /sitemap.xml, /robots.txt
 //   /static/*, /favicon.svg       files in public/, served by the platform
 //
 // Bindings (set by Busabase on every deploy, never written anywhere else):
 //   env.BUSABASE_BASE_URL, env.BUSABASE_API_KEY, env.BUSABASE_SPACE_ID
+// Secrets come from the Busabase Vault at runtime (src/vault.js), never from here.
+// Only a local run sets these (npm run dev, tests); a deploy never does:
+//   env.SOCKETS          a `connect()` for SMTP outside Cloudflare (scripts/node-sockets.mjs)
+//   env.PAYPAL_API_BASE, env.PAYPAL_SDK_URL   a PayPal mock instead of PayPal
 
 import { createHandler } from "./handler.js";
 
