@@ -1,6 +1,6 @@
 ---
 name: busa-shop
-description: Storefront website (Busabase Website engine; on a Free space a private preview in the owner's own browser) for a small cross-border seller, built on the busa-product-hub product list. It shows active products with price, photos and valid safety certificates, takes order requests into an Orders table (no payment), reads its store name, currency and contact from a Settings table, and comes with a daily shop check that writes a Reports row and improves from the owner's feedback. Use when the user invokes $busa-shop or /busa-shop, or asks to open an online shop / 独立站 / storefront for their products, import a product list or toy list (CSV, photos, certificates) into the product hub, put a product list on a public website, handle new website orders or order requests, check the shop, run the daily shop check, find missing photos, prices or expiring certificates (EN 71, ASTM F963, CPC, CE, UKCA) before a buyer sees them, or apply feedback on the last shop report.
+description: Storefront website (Busabase Website engine; on a Free space a private preview in the owner's own browser) for a small cross-border seller, built on the busa-product-hub product list. It shows active products with price, photos and valid safety certificates, takes order requests into an Orders table (no payment), reads its store name, currency and contact from a Settings table, and comes with a daily shop check that writes a Reports row and improves from the owner's feedback. Use when the user invokes $busa-shop or /busa-shop, or asks to open an online shop / 独立站 / storefront for their products, import a product list or toy list (Excel with pictures, CSV, photos, certificates) into the product hub, put a product list on a public website, handle new website orders or order requests, check the shop, run the daily shop check, find missing photos, prices or expiring certificates (EN 71, ASTM F963, CPC, CE, UKCA) before a buyer sees them, or apply feedback on the last shop report.
 metadata:
   category: ecommerce
   tags:
@@ -34,9 +34,10 @@ that by email.
 
 1. `$busabase` for connecting, finding nodes, reading and writing records.
 2. The `busa-product-hub` skill (installed with that template) for anything
-   that changes products, stock or certificates. The one exception is
-   importing a product list: this skill's `scripts/import-catalog.mjs` writes
-   Products and Certificates into the product hub (see "Open the shop").
+   that changes products, stock or certificates, including importing a
+   product list: its `import-products.mjs` is the one importer, for
+   Excel and CSV, pictures and certificates (its "Bring products in, any
+   way"; "Open the shop" below shows the toy list).
 3. `$busabase-app-creator` before changing the website's code.
 
 If `busa-product-hub` is not installed in this workspace, stop and tell the
@@ -67,7 +68,7 @@ cannot declare that it needs another one, so nothing installs it for them.
 | **Orders** | One row per order request. The website creates it with status `new` and never touches it again. |
 | **Settings** | One row: what the website shows and what the daily check uses. |
 | **Reports** | One row per daily shop check, with the owner's feedback. |
-| **busa-shop** (this skill) | The manual. `scripts/` holds two helpers (below). |
+| **busa-shop** (this skill) | The manual. `scripts/` holds the live-site probe (below). |
 
 Field-by-field reference: [`references/shop-schema.md`](references/shop-schema.md).
 
@@ -207,40 +208,35 @@ Fix the table and the page clears within a minute.
 2. **Retire the product hub's three sample products** (Aurora Desk Lamp, Bento
    Lunchbox, Expandable Spice Rack): following the busa-product-hub skill, set
    their `lifecycle` to `archive`. Otherwise a lamp appears in the toy shop.
-3. **Import the product list** with this skill's `scripts/import-catalog.mjs`,
-   one command. Put it in a directory with the product list CSV, the
-   certificates CSV and the photos (`images/`), then:
+3. **Import the product list** with busa-product-hub's importer,
+   `import-products.mjs` in the scripts folder of the busa-product-hub skill
+   node in the same workspace (read it with `$busabase`: `busabase-cli nodes
+   read-file --kind skill --node-id <that node> --file-path
+   <scripts folder>/import-products.mjs --output json`, the folder being
+   `scripts`), following that skill's "Bring products in, any way":
+   preview, the owner confirms, import, read back. It reads an Excel workbook
+   with the pictures inside it, or CSV files with a photo folder, with English
+   or Chinese column names. Put it in a directory with the owner's files, then:
 
    ```bash
    npm i busabase-sdk
    BUSABASE_BASE_URL=… BUSABASE_API_KEY=… BUSABASE_SPACE_ID=… \
-     node import-catalog.mjs toy-catalog.csv --certificates toy-certificates.csv --images images/
+     node import-products.mjs toy-catalog.csv --certificates toy-certificates.csv --images images/ --dry-run
    ```
 
-   Run it with `--dry-run` first and show the owner the summary. It finds the
-   product hub's tables itself, uploads the photos, upserts every product by
-   `product-id`, links the certificates in the same run, and prints what it
-   created, updated, left unchanged and skipped, with reasons. Running it
-   again changes nothing; after editing the CSV it changes only what
-   changed. An empty cell never clears a stored value, and nothing is
-   invented: a product without a price is imported without one (the shop then
-   hides it). The price goes into the Price and Currency columns, not into
-   the Pricing JSON (on a product hub from before 0.4.0, which has no Price
-   column, it goes into the JSON as before, and the summary says so). A price
-   in the list overwrites the Price cell: once the owner changes prices in
-   the table, update the list as well, or leave its price cells empty. The
-   course's toy list is the fictional factory in this
-   template's `assets/demo/`
+   Show the owner the preview it prints (one row per product, its pictures,
+   the empty fields, how each column was read), then run the same command
+   without `--dry-run`. A product is on the website only when the listing rule
+   below holds, and the preview counts the ones that would not be; a sheet
+   without Status/Lifecycle columns needs the owner's
+   `--fill status=active --fill lifecycle=active`, and prices that name no
+   currency need `--currency <CODE>` equal to Settings › Currency. The
+   course's toy list is the fictional factory in this template's
+   `assets/demo/`
    (https://github.com/busabase/templates/tree/main/templates/busa-shop/assets/demo);
-   the student hands those files to you. Columns: `product_id`, `name`,
-   `price`, `currency` (required), then `sku`, `subtitle`, `category`,
-   `lifecycle`, `status`, `landed_cost`, `stock_available`, `age_grade`,
-   `materials`, `batteries`, `dimensions`, `weight`, `carton_qty`, `moq`,
-   `lead_time_days`, `hs_code`, `country_of_origin`, `warranty`, `returns`,
-   `image_file` and `gallery_files` (file names in `images/` or https URLs,
-   `|`-separated), `tags`, `description`, `bullets` (`|`-separated), `vendor`.
-   Certificates: `product_id`, `cert_type` (a type the product hub offers),
-   `cert_number`, `issuer`, `issued_date`, `expiry_date` (YYYY-MM-DD).
+   the student hands those files to you. A course that brings its own Excel
+   file (phones, say) imports it the same way:
+   `node import-products.mjs phones.xlsx --dry-run`.
    Afterwards read the Products table back and confirm the count and a few prices.
 4. **Check Settings** with the owner: store name, tagline, currency equal to
    the products' currency, a real contact email, language, ships-to
@@ -490,10 +486,8 @@ write feedback into Owner feedback on this report for the next run.
 
 ## Helpers in `scripts/`
 
-- `import-catalog.mjs`: imports a product list CSV, its photos and a
-  certificates CSV into the installed busa-product-hub. Needs only Node and
-  `busabase-sdk`; copy it into an empty directory and run it. `--dry-run`
-  writes and uploads nothing.
+- Importing products is busa-product-hub's importer (step 3 of "Open the
+  shop"), not a script of this skill.
 - `probe-site.mjs`: the live-site half of the daily check. Reads the public
   site only.
 

@@ -98,24 +98,10 @@ same order id for the retry).
 | Certificates | first 100 | `product`, `cert-type` (shown as is; `Other` is not shown), `expiry-date` |
 | Product Hub AirApp | one file per image request | only for image paths under `assets/` |
 
-## Written to busa-product-hub by `scripts/import-catalog.mjs`
+## Written to busa-product-hub by its importer
 
-Run by an agent or a person, never by the website. Products are matched by
-`product-id`; certificates by product + `cert-type` + `cert-number`.
-
-| Base | Fields it may write |
-| --- | --- |
-| Products | `product-id`, `sku`, `name`, `subtitle`, `category`, `lifecycle`, `status`, `vendor`, `image`, `gallery`, `tags`, `price`, `currency`; inside the JSON blocks only the keys the list fills (`pricing`: `target_price`, `landed_cost`, `gross_margin_pct`; `inventory`: `available`; `content`: `description`, `bullets`, `attributes.*`, `images_ready`, `image_files`); `ref`, `created-at` on create; `updated-at` when something changed |
-| Certificates | `product`, `cert-type`, `cert-number`, `issuer`, `issued-date`, `expiry-date`, `source-note` |
-
-Other keys in the JSON blocks, other fields (`owner`, `compliance`, the
-certificate `file`, …) and every value the list leaves empty are kept as
-stored. The price is the exception that moves: on a Products table with the
-Price column, `current_price`, `price` and `currency` are taken out of
-`pricing` (a value still there and not in the list moves into the empty
-column), so a product has one price. On a table from before busa-product-hub
-0.4.0, which has no Price column, the importer writes `pricing.currency` and
-`pricing.current_price` instead, exactly as earlier versions did, and its
-summary notes it. `gross_margin_pct` is recomputed from the price and
-`landed_cost` whenever both are known. `content.image_files` remembers each uploaded photo's file name,
-SHA-256 and URL, which is how a second run knows not to upload it again.
+Products, pictures and certificates are imported by busa-product-hub's
+`scripts/import-products.mjs` (Excel or CSV), run by an agent or a person,
+never by the website. What it writes, field by field, is in
+busa-product-hub's `references/product-hub-schema.md`, "Written by
+`scripts/import-products.mjs`".

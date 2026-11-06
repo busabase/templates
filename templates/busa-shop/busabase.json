@@ -9,7 +9,7 @@
     "en": "A public storefront website for a small cross-border seller: it shows the products from Busa Product Hub, takes order requests into an Orders table, and comes with a daily shop check your agent runs and improves from your feedback.",
     "zh-CN": "面向小型跨境卖家的公开独立站：直接展示 Busa 产品枢纽里的商品，把买家的订单请求写进订单表，并附带一个每日店铺巡检，由你的智能体执行、按你的反馈持续改进。"
   },
-  "version": "0.3.0",
+  "version": "0.3.1",
   "license": "MIT",
   "tags": [
     "ecommerce",
@@ -41,7 +41,7 @@
       "assets/screenshots/setup.webp"
     ],
     "agentPrompts": [
-      "Import this toy list into the product hub: products, photos and certificates. Show me the dry run first.",
+      "Import this product list into the product hub (Excel with pictures, or CSV with photos and certificates). Show me the preview first.",
       "Open my shop: check that the website can read my Busa Product Hub products and the shop settings, and tell me what I still have to do before I click Go live.",
       "Run today's shop check: read my feedback on the last report, then check products, certificates, new orders and the live site, and write one report.",
       "Handle the new orders on my shop: check items and stock, and draft a confirmation reply for each one for me to send."

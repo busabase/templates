@@ -7,7 +7,8 @@ Do not use them as facts about any real product.
 
 - `toy-catalog.csv`: the factory's product list, 12 toys. Import it, with
   the certificates and photos, into Busa Product Hub with
-  `scripts/import-catalog.mjs` (see SKILL.md, "Open the shop").
+  busa-product-hub's `scripts/import-products.mjs` (see SKILL.md, "Open the
+  shop").
 - `toy-certificates.csv`: 39 safety certificates for those toys, each under
   its own type (EN 71, ASTM F963, CPSIA / CPC, UKCA, CE, FCC, UN38.3; the toy
   types need Busa Product Hub 0.3.0 or later).

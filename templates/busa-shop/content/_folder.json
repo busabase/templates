@@ -5,7 +5,7 @@
     {
       "key": "import-catalog",
       "label": "Import a product list into the product hub",
-      "body": "Read the `busa-shop` skill in this folder and follow \"Import the product list\" in \"Open the shop\": run `scripts/import-catalog.mjs` with the CSV files and photos I give you, with `--dry-run` first, show me the summary, then run it for real. Never invent a value the list does not contain."
+      "body": "Read the `busa-shop` skill in this folder and follow \"Import the product list\" in \"Open the shop\": run busa-product-hub's `scripts/import-products.mjs` on the Excel or CSV file (and photos) I give you, with `--dry-run` first, show me the preview, then run it for real once I say yes. Never invent a value the list does not contain."
     },
     {
       "key": "open-shop",
