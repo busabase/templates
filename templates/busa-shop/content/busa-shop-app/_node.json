@@ -1,13 +1,13 @@
 {
   "type": "airapp",
   "name": "Shop Website",
-  "description": "The public storefront (Website engine, write access): home page with the product grid, product pages, an order request form that creates one Orders row per request, sitemap.xml, robots.txt and schema.org Product data. It reads products from Busa Product Hub and its texts from this folder's Settings. Edit src/, rebuild vendor/worker.js (the deployed bundle), then Restart and Go live again.",
+  "description": "The public storefront (Website engine, write access): home page with the product grid, product pages, an order request form that creates one Orders row per request, sitemap.xml, robots.txt and schema.org Product data. It reads products from Busa Product Hub and its texts from this folder's Settings. On a Free space it runs as a private preview in your own browser tab instead: the same site, as you, with no address and no Go live (going live needs Plus). Edit src/, rebuild vendor/worker.js (the deployed bundle), then Restart and Go live again.",
   "agentPrompts": [
     {
       "key": "preview-site",
       "label": "Check the members-only preview",
       "intent": "read-only",
-      "body": "Read the `busa-shop` skill in this folder, then open the preview address of this website (opening this node starts the preview) and tell me what a visitor sees: the products listed, anything hidden and why, and whether the order form works. Do not place an order unless I ask."
+      "body": "Read the `busa-shop` skill in this folder, then open the preview address of this website (opening this node starts the preview) and tell me what a visitor sees: the products listed, anything hidden and why, and whether the order form works. On a Free space the preview runs only in my browser tab and has no address: then tell me what to look at and ask me what I see. Do not place an order unless I ask."
     },
     {
       "key": "change-site-text",
@@ -18,7 +18,7 @@
       "key": "explain-go-live",
       "label": "What happens when I click Go live?",
       "intent": "read-only",
-      "body": "Read the `busa-shop` skill in this folder, then explain in plain words what Go live does for this website: the address, the write access it asks for and why, the key it creates in my name, and how to take the site offline again."
+      "body": "Read the `busa-shop` skill in this folder, then explain in plain words what Go live does for this website: the address, the write access it asks for and why, the key it creates in my name, and how to take the site offline again. If this space is on Free, say first that Go live needs Plus and what the private browser preview is."
     }
   ]
 }

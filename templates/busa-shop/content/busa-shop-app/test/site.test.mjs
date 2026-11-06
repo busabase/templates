@@ -58,7 +58,7 @@ before(async () => {
 beforeEach(() => {
   Object.assign(api.state, structuredClone(pristine));
   api.state.records.bas_orders = [];
-  Object.assign(api.options, { failCreates: false, queueCreates: false, failReads: false });
+  Object.assign(api.options, { failCreates: false, queueCreates: false, failReads: false, viewerSession: false });
   api.log.length = 0;
   api.reset();
   foreign.log.length = 0;
@@ -111,7 +111,7 @@ describe("pages", () => {
     assert.deepEqual(Object.values(api.log[0].query.types), ["base", "airapp"]);
     const bases = api.log.filter((entry) => entry.path === "/api/v1/records").map((entry) => [entry.query.baseId, entry.query.limit]);
     assert.deepEqual(bases.sort(), [["bas_certificates", "100"], ["bas_products", "100"], ["bas_settings", "5"]]);
-    assert.deepEqual(api.log.find((entry) => entry.query.baseId === "bas_products").query.sort, { fieldSlug: "ref", direction: "asc" });
+    assert.deepEqual(api.log.find((entry) => entry.query.baseId === "bas_products").query.sort, { fieldSlug: "ref", fieldType: "number", direction: "asc" });
     assert.ok(api.log.every((entry) => entry.auth === `Bearer ${TEST_KEY}` && entry.space === "spc_demo"));
   });
 
@@ -271,6 +271,39 @@ describe("images", () => {
     const { status, text } = await call("/images/prod-aurora-lamp/0");
     assert.equal(status, 200);
     assert.match(text, /^<svg/);
+  });
+
+  it("follows a /api/assets/…/raw redirect by hand with the key, and sends the key only to Busabase", async () => {
+    const robot = api.state.records.bas_products.find((row) => row.id === "rec_tt-walking-robot");
+    Object.assign(robot.fields, { image: "/api/assets/walking-robot.svg/raw", gallery: "[]" });
+    const { status, type } = await call("/images/tt-walking-robot/0");
+    assert.equal(status, 200);
+    assert.equal(type, "image/svg+xml");
+    const hops = api.log.filter((entry) => entry.path.includes("walking-robot.svg")).map((entry) => [entry.path, entry.auth]);
+    assert.deepEqual(hops, [
+      ["/api/assets/walking-robot.svg/raw", `Bearer ${TEST_KEY}`],
+      ["/assets/walking-robot.svg", `Bearer ${TEST_KEY}`],
+    ]);
+  });
+
+  it("in the browser preview (no key) lets the browser follow the asset redirect, which it cannot read by hand", async () => {
+    // A browser answers `redirect: "manual"` with an opaque response (status 0,
+    // no Location). This stub does the same, so following by hand finds nothing.
+    const browserFetch = async (url, init = {}) => {
+      if (init.redirect === "manual") return { status: 0, ok: false, type: "opaqueredirect", headers: new Headers(), body: null };
+      return fetch(url, init);
+    };
+    api.options.viewerSession = true;
+    const robot = api.state.records.bas_products.find((row) => row.id === "rec_tt-walking-robot");
+    Object.assign(robot.fields, { image: "/api/assets/walking-robot.svg/raw", gallery: "[]" });
+    // The fake's /assets/ answers only with the key or a viewer session; the
+    // session is what the browser engine has.
+    const handler = createHandler({ fetch: browserFetch });
+    const env = { BUSABASE_BASE_URL: api.origin, BUSABASE_API_KEY: "", BUSABASE_SPACE_ID: "", BUSABASE_AIRAPP_RUNTIME: "browser" };
+    const response = await handler(new Request(`${SITE}/images/tt-walking-robot/0`), env, { waitUntil() {} });
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("content-type"), "image/svg+xml");
+    assert.ok(api.log.every((entry) => entry.auth === "" && entry.space === ""), "no key and no space header from the browser preview");
   });
 
   it("links a public https image directly and does not proxy it", async () => {
