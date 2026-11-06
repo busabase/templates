@@ -45,7 +45,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-insure-data-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-insure-data-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-insure-data.mp4",

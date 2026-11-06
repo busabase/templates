@@ -52,7 +52,8 @@
     "videos": [
       {
         "src": "assets/recordings/b2b-crm-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/b2b-crm-intro-poster.jpg"
       }
     ],
     "video": "assets/recordings/b2b-crm-intro.mp4"

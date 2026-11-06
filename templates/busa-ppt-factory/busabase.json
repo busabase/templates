@@ -60,7 +60,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-ppt-factory-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-ppt-factory-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-ppt-factory.mp4",

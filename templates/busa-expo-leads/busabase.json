@@ -56,7 +56,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-expo-leads-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-expo-leads-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-expo-leads.mp4",

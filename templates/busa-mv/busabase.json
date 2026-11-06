@@ -56,7 +56,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-mv-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-mv-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-mv.mp4",

@@ -60,7 +60,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-legal-casebase-ingest-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-legal-casebase-ingest-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-legal-casebase-ingest.mp4",

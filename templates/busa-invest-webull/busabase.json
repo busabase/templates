@@ -56,7 +56,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-invest-webull-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-invest-webull-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-invest-webull.mp4",

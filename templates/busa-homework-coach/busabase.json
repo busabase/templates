@@ -56,7 +56,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-homework-coach-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-homework-coach-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-homework-coach.mp4",

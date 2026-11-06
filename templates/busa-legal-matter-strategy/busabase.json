@@ -58,7 +58,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-legal-matter-strategy-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-legal-matter-strategy-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-legal-matter-strategy.mp4",

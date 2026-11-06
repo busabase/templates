@@ -67,7 +67,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-email-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-email-intro-poster.jpg"
       }
     ],
     "video": "assets/recordings/busa-email-intro.mp4"

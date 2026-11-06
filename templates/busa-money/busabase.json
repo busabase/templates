@@ -64,7 +64,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-money-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-money-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-money.mp4",
