@@ -3826,7 +3826,7 @@
         "Summarize the latest products and flag what needs my attention.",
         "Which products are at stock risk or not ready to publish on a new channel?"
       ],
-      "version": "0.5.2",
+      "version": "0.5.3",
       "license": "MIT",
       "stats": {
         "folders": 0,
@@ -4186,8 +4186,8 @@
         "zh-CN": "Busa 独立站"
       },
       "description": {
-        "en": "A public storefront website for a small cross-border seller: it shows the products from Busa Product Hub, takes order requests into an Orders table, and comes with a daily shop check your agent runs and improves from your feedback.",
-        "zh-CN": "面向小型跨境卖家的公开独立站：直接展示 Busa 产品枢纽里的商品，把买家的订单请求写进订单表，并附带一个每日店铺巡检，由你的智能体执行、按你的反馈持续改进。"
+        "en": "A one-install online shop for a small cross-border seller, with product management built in: its own Products and Certificates tables (import an Excel or CSV product list with pictures, or edit the table), a public storefront website that lists what is on sale and takes order requests into an Orders table, and a daily shop check your agent runs and improves from your feedback.",
+        "zh-CN": "面向小型跨境卖家的一键开店模板，自带商品管理：店铺自己的商品表和证书表（导入含图片的 Excel 或 CSV 商品表，或直接在表里改），公开的独立站只展示在售商品、把买家的订单请求写进订单表，并附带一个每日店铺巡检，由你的智能体执行、按你的反馈持续改进。"
       },
       "category": "ecommerce",
       "risk": "local-write",
@@ -4198,6 +4198,7 @@
         "industry:ecommerce",
         "surface:website",
         "storefront",
+        "products",
         "orders",
         "cross-border"
       ],
@@ -4213,19 +4214,19 @@
         "assets/screenshots/setup.webp"
       ],
       "agentPrompts": [
-        "Import this product list into the product hub (Excel with pictures, or CSV with photos and certificates). Show me the preview first.",
-        "Open my shop: check that the website can read my Busa Product Hub products and the shop settings, and tell me what I still have to do before I click Go live.",
+        "Import this product list into my shop's Products (Excel with pictures, or CSV with photos and certificates). Show me the preview first.",
+        "Open my shop: check the products it will list and the shop settings, and tell me what I still have to do before I click Go live.",
         "Run today's shop check: read my feedback on the last report, then check products, certificates, new orders and the live site, and write one report.",
         "Handle the new orders on my shop: check items and stock, and draft a confirmation reply for each one for me to send."
       ],
-      "version": "0.4.1",
+      "version": "0.5.0",
       "license": "MIT",
       "stats": {
         "folders": 0,
         "docs": 0,
-        "bases": 3,
+        "bases": 5,
         "records": 5,
-        "files": 24,
+        "files": 25,
         "airapps": 1,
         "skill": true
       }
