@@ -4054,14 +4054,14 @@
         "Run today's shop check: read my feedback on the last report, then check products, certificates, new orders and the live site, and write one report.",
         "Handle the new orders on my shop: check items and stock, and draft a confirmation reply for each one for me to send."
       ],
-      "version": "0.2.0",
+      "version": "0.3.0",
       "license": "MIT",
       "stats": {
         "folders": 0,
         "docs": 0,
         "bases": 3,
         "records": 5,
-        "files": 23,
+        "files": 24,
         "airapps": 1,
         "skill": true
       }

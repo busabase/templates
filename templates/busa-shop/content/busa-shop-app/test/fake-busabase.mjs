@@ -52,7 +52,10 @@ export const startFakeBusabase = async (state) => {
   const revisions = new Map(); // recordId → head revision
   const head = (id) => `cmt_${id}_${revisions.get(id) ?? 0}`;
   let nextId = 1;
-  const options = { failCreates: false, queueCreates: false, failReads: false, ...state.options };
+  // `viewerSession`: also accept a request with no Authorization at all, the
+  // way Busabase accepts the browser engine's calls on the viewer's session
+  // cookie (the browser sends it; nothing here can). A wrong key is still 401.
+  const options = { failCreates: false, queueCreates: false, failReads: false, viewerSession: false, ...state.options };
 
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, "http://localhost");
@@ -74,8 +77,16 @@ export const startFakeBusabase = async (state) => {
       res.writeHead(200);
       return res.end();
     }
-    if (auth !== `Bearer ${TEST_KEY}`) return send(401, { code: "UNAUTHORIZED", message: "Unauthorized" });
+    if (auth !== `Bearer ${TEST_KEY}` && !(options.viewerSession && auth === "")) {
+      return send(401, { code: "UNAUTHORIZED", message: "Unauthorized" });
+    }
 
+    const rawAsset = /^\/api\/assets\/([^/]+)\/raw$/.exec(url.pathname);
+    if (rawAsset) {
+      // Like Busabase: a private asset answers with a redirect to the storage host.
+      res.writeHead(302, { location: `/assets/${rawAsset[1]}` });
+      return res.end();
+    }
     if (url.pathname.startsWith("/assets/")) {
       const asset = state.assets?.[decodeURIComponent(url.pathname.slice("/assets/".length))];
       if (!asset) return send(404, { code: "NOT_FOUND" });
@@ -93,9 +104,16 @@ export const startFakeBusabase = async (state) => {
       const ref = entry.query.baseId;
       const node = state.nodes.find((candidate) => candidate.type === "base" && (candidate.baseId === ref || candidate.slug === ref));
       if (!node) return send(404, { code: "NOT_FOUND", message: "Base not found" });
-      let rows = [...(state.records[node.baseId] ?? [])];
-      const sortField = entry.query.sort?.fieldSlug;
-      if (sortField) rows.sort((a, b) => Number(a.fields[sortField] ?? Infinity) - Number(b.fields[sortField] ?? Infinity));
+      // Like Busabase: newest first by default, and a `sort` is applied only
+      // when it says the field is a number or a date (`fieldType`). Busabase
+      // before 2026-11-05 ignored a sort without one and answered in the
+      // default order, so the site must always send it.
+      let rows = [...(state.records[node.baseId] ?? [])].reverse();
+      const sort = entry.query.sort;
+      if (sort?.fieldSlug && (sort.fieldType === "number" || sort.fieldType === "date")) {
+        const sign = sort.direction === "desc" ? -1 : 1;
+        rows.sort((a, b) => sign * (Number(a.fields[sort.fieldSlug] ?? Infinity) - Number(b.fields[sort.fieldSlug] ?? Infinity)));
+      }
       const limit = Number(entry.query.limit ?? 50);
       const offset = Number(entry.query.cursor ?? 0);
       const page = rows.slice(offset, offset + limit).map((row) => ({

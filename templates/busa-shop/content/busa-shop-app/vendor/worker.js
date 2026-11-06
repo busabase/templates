@@ -28967,7 +28967,9 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       records.readPage({
         baseId: tables.productsBaseId,
         limit: PRODUCTS_PAGE,
-        sort: { fieldSlug: "ref", direction: "asc" }
+        // `fieldType` is not optional in practice: Busabase before 2026-11-05
+        // answered a sort without it in the default order (newest first).
+        sort: { fieldSlug: "ref", fieldType: "number", direction: "asc" }
       }),
       tables.certificatesBaseId ? records.readPage({ baseId: tables.certificatesBaseId, limit: CERTIFICATES_PAGE }).then((page) => page.records).catch((error62) => {
         log.warn?.("busa-shop: certificates unreadable", describeError(error62));
@@ -29031,7 +29033,8 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       return false;
     }
   };
-  const imageResponse = async (startUrl) => {
+  const fetchImage = async (startUrl) => {
+    if (!apiKey) return fetchImpl(startUrl, { redirect: "follow" });
     let url2 = startUrl;
     let response;
     for (let hop = 0; ; hop += 1) {
@@ -29045,6 +29048,11 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       if (next.protocol !== "https:" && !sameOrigin(next.href)) return null;
       url2 = next.href;
     }
+    return response;
+  };
+  const imageResponse = async (startUrl) => {
+    const response = await fetchImage(startUrl);
+    if (!response) return null;
     const type = response.headers.get("content-type") ?? "";
     const length = Number(response.headers.get("content-length") ?? "0");
     if (!response.ok || !type.toLowerCase().startsWith("image/") || length > MAX_IMAGE_BYTES) {
