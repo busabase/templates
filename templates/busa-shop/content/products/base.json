@@ -1,0 +1,305 @@
+{
+  "name": "Products",
+  "description": "The shop's products, one row per product, in plain columns you edit in the table. The website lists a product when Status is On sale (active), it has a Name, a Product ID (its page address) and a Price above 0, and its Currency is the shop's (an empty Currency means the shop's, Settings › Currency). Stock: empty means unknown, 0 shows Out of stock. Specs: one \"Label: value\" per line (Battery: 5000 mAh), shown as the product's details. Cost, Source and Notes are for you only: the website never reads them. Position orders the products on the site (empty goes last). A change shows on the website within about a minute.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "import-products",
+      "label": {
+        "en": "Import products (Excel or CSV, pictures included)",
+        "zh-CN": "导入商品（Excel 或 CSV 商品表，含图片）"
+      },
+      "body": "{target}\n\nRead the `busa-shop` skill in this folder and follow \"Manage products (商品管理)\", \"Bring products in, any way\": run its `scripts/import-products.mjs` on the file I give you with `--dry-run` first and show me the preview (every product, its pictures, the empty fields, how each column was read, which ones the shop would not list). Import only after I say yes, then read this table back. Never invent a value the file does not contain."
+    },
+    {
+      "key": "change-price",
+      "label": {
+        "en": "Change a price",
+        "zh-CN": "改价格"
+      },
+      "body": "{target}\n\nRead the `busa-shop` skill in this folder and follow \"Change a price (改价格)\": show me the product's current Price and the new one I give you, and write it into the Price cell after I say yes, with a change message saying I asked. Never work out a price yourself."
+    },
+    {
+      "key": "take-down",
+      "label": {
+        "en": "Take products off sale (archive)",
+        "zh-CN": "下架商品（归档）"
+      },
+      "body": "{target}\n\nRead the `busa-shop` skill in this folder and follow \"Take products off sale (下架)\": list the products I describe with their Product ID, name and Status, and set Status to archive only for those after I say yes, in one change whose message records that I asked. Nothing is deleted. Then read this table back and tell me how many were taken down. If a product fits my description only partly, ask me."
+    },
+    {
+      "key": "put-on-sale",
+      "label": {
+        "en": "Put products on sale",
+        "zh-CN": "上架商品"
+      },
+      "body": "{target}\n\nRead the `busa-shop` skill in this folder and follow \"Put products on sale (上架)\": list the products I name with what each still lacks before the website lists it (a price, a photo, the shop's currency), set Status to active for those I confirm, and tell me what shows on the site within a minute."
+    },
+    {
+      "key": "what-is-listed",
+      "label": {
+        "en": "Which products are on my website, and which are not?",
+        "zh-CN": "哪些商品在网站上，哪些没有？"
+      },
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-shop` skill in this folder, apply \"The listing rule\" to every row of this table and the shop's Settings, and tell me which products the website lists and, for every other one, exactly why not (status, price, currency, product ID, tag)."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "product-id",
+      "name": "Product ID",
+      "type": "text",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "active",
+            "name": "On sale"
+          },
+          {
+            "id": "draft",
+            "name": "Draft"
+          },
+          {
+            "id": "archive",
+            "name": "Off sale (archived)"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "price",
+      "name": "Price",
+      "type": "number",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "currency",
+      "name": "Currency",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "stock",
+      "name": "Stock",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "category",
+      "name": "Category",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "brand",
+      "name": "Brand",
+      "type": "text",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "model",
+      "name": "Model",
+      "type": "text",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "subtitle",
+      "name": "Subtitle",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "image",
+      "name": "Image URL",
+      "type": "text",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "gallery",
+      "name": "More photos (one link per line)",
+      "type": "longtext",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "description",
+      "name": "Description",
+      "type": "longtext",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "highlights",
+      "name": "Highlights (one per line)",
+      "type": "longtext",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "specs",
+      "name": "Specs (one \"Label: value\" per line)",
+      "type": "longtext",
+      "required": false,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "warranty",
+      "name": "Warranty",
+      "type": "text",
+      "required": false,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "returns",
+      "name": "Returns",
+      "type": "text",
+      "required": false,
+      "position": 16,
+      "options": {}
+    },
+    {
+      "slug": "sku",
+      "name": "SKU",
+      "type": "text",
+      "required": false,
+      "position": 17,
+      "options": {}
+    },
+    {
+      "slug": "tags",
+      "name": "Tags (comma-separated)",
+      "type": "text",
+      "required": false,
+      "position": 18,
+      "options": {}
+    },
+    {
+      "slug": "ref",
+      "name": "Position on the site",
+      "type": "number",
+      "required": false,
+      "position": 19,
+      "options": {}
+    },
+    {
+      "slug": "cost",
+      "name": "Cost (internal)",
+      "type": "number",
+      "required": false,
+      "position": 20,
+      "options": {}
+    },
+    {
+      "slug": "source",
+      "name": "Source (internal)",
+      "type": "text",
+      "required": false,
+      "position": 21,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Notes (internal)",
+      "type": "longtext",
+      "required": false,
+      "position": 22,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "on-sale",
+      "name": "On sale",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "active"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "ref",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "name",
+          "product-id",
+          "status",
+          "price",
+          "currency",
+          "stock",
+          "category",
+          "image"
+        ]
+      }
+    },
+    {
+      "slug": "all-products",
+      "name": "All products",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "ref",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "name",
+          "product-id",
+          "status",
+          "price",
+          "currency",
+          "stock",
+          "category",
+          "image"
+        ]
+      }
+    }
+  ]
+}

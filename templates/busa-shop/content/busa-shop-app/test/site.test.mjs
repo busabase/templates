@@ -8,7 +8,7 @@ import worker from "../vendor/worker.js";
 import { allowedOrigin, createHandler } from "../src/handler.js";
 import { startFakeBusabase, TEST_KEY } from "./fake-busabase.mjs";
 import { demoState, NODES } from "./fixtures.mjs";
-import { parseCsv, planProducts, productFields } from "../../../../busa-product-hub/scripts/import-products.mjs";
+import { parseCsv, planProducts, productFields } from "../../../scripts/import-products.mjs";
 
 const SITE = "https://tumbleberry-toys.example";
 let api;
@@ -169,7 +169,7 @@ describe("pages", () => {
     const robots = await call("/robots.txt");
     assert.match(robots.text, /Sitemap: https:\/\/tumbleberry-toys\.example\/sitemap\.xml/);
     const status = await call("/api/status");
-    assert.deepEqual(JSON.parse(status.text), { ok: true, setup: "ready", products: 10, ordering: true });
+    assert.deepEqual(JSON.parse(status.text), { ok: true, setup: "ready", products: 10, ordering: true, productsFrom: "product-hub" });
   });
 
   it("answers HEAD without a body and refuses other methods on pages", async () => {
@@ -543,7 +543,8 @@ describe("setup and failure states", () => {
     assert.equal(response.headers.get("x-robots-tag"), "noindex");
     assert.match(text, /<meta charset="utf-8">/);
     assert.match(text, /This shop is not open yet/);
-    assert.match(text, /Install the Busa Product Hub template/);
+    assert.match(text, /This shop sells from the Products table in its own folder/);
+    assert.match(text, /Busa Product Hub Products table\? Write its id or slug into this shop&#39;s Settings|Busa Product Hub Products table\? Write its id or slug into this shop's Settings/);
     assert.match(text, /products-missing/);
     assert.deepEqual(JSON.parse((await call("/api/status")).text), { ok: false, setup: "products-missing", products: 0, ordering: false });
     const post = await postJson(order());

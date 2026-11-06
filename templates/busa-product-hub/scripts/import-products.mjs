@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Import a product list into the Busa Product Hub installed in this workspace:
-// Products, their pictures, and Certificates, in one run. The list can be an
-// Excel workbook (.xlsx, pictures inside it included) or a CSV file.
+// Import a product list into the shop's Products table: Products, their
+// pictures, and Certificates, in one run. The list can be an Excel workbook
+// (.xlsx, pictures inside it included) or a CSV file.
 //
 //   npm i busabase-sdk
 //   export BUSABASE_BASE_URL=https://busabase.com BUSABASE_API_KEY=… BUSABASE_SPACE_ID=…
@@ -9,18 +9,36 @@
 //   node import-products.mjs products.xlsx               # after the owner says yes
 //   node import-products.mjs --write-template products-template.xlsx   # the blank bilingual sheet
 //
+// One importer for two templates: busa-shop ships it (scripts/import-products.mjs,
+// the canonical copy) and busa-product-hub carries a byte-identical copy
+// (a test keeps them identical). Which table it writes:
+//
+//   1. --products-base <id or slug>, when given;
+//   2. in a workspace with Busa Shop: the table named in the shop's Settings ›
+//      "Products table" when the owner filled it in (a product hub's, say);
+//      otherwise the shop's own Products (busa-shop 0.5.0 and later); otherwise,
+//      in a shop installed before 0.5.0, Busa Product Hub's Products, where that
+//      shop sells from — the same table the website reads (its src/resources.js);
+//   3. with no Busa Shop: Busa Product Hub's Products.
+//
+// The preview's first line names the table. Two table shapes: the shop's own
+// has plain columns an owner edits in the grid (one Status, Price, Currency,
+// Stock, Specs as "Label: value" lines, Notes…); a product hub's has Lifecycle
+// + Status and JSON blocks (pricing, inventory, content).
+//
 // Self-contained on purpose: it needs only Node 20+ and `busabase-sdk`, so an
-// agent can copy this one file out of the busa-product-hub skill into an empty
-// directory and run it. It reads .xlsx itself (Node's built-in zlib), because no
-// spreadsheet library on npm returns pictures with the row they sit in, and that
-// is the part that matters here.
+// agent can copy this one file out of the skill into an empty directory and
+// run it. It reads .xlsx itself (Node's built-in zlib), because no spreadsheet
+// library on npm returns pictures with the row they sit in, and that is the
+// part that matters here.
 //
 // What it does, and does not do:
 // - Reads the header row wherever it is (a title row above it is fine) and
 //   understands common English and Chinese column names (名称, 售价, 币种, 库存,
-//   主图, FCC ID, …). A column it does not know is kept, under its own header, as
-//   a product detail in `content.attributes`, and the preview says so. A column
-//   with values but no header is reported, never silently dropped.
+//   主图, FCC ID, …). A column it does not know is kept, under its own header:
+//   in the shop's Notes (never on the website), or in a product hub's
+//   `content.attributes`; the preview says so. A column with values but no
+//   header is reported, never silently dropped.
 // - Pictures, three ways: https links in an image column, file names found in an
 //   images folder, and pictures inside the workbook: floating pictures placed on
 //   a product's row, Excel's "Place in Cell" pictures, and WPS's in-cell
@@ -28,24 +46,22 @@
 //   URLs go into `image` / `gallery`.
 // - Certificates from a Certificates sheet (or a separate file), and from
 //   certificate columns on the product sheet ("FCC ID", "CE 证书编号").
-// - Finds the product hub's Products and Certificates tables by the stamp the
-//   template installer writes ({ appId: "busa-product-hub", resourceKey }), then
-//   by the default slugs; --products-base <id or slug> names the table.
+// - Finds the tables by the stamp the template installer writes
+//   ({ appId, resourceKey }), then by the default slugs.
 // - Upserts each product by `product-id`. Without an ID column the ID is made
 //   from the SKU, or from the name and the variant columns (colour, storage…),
 //   and the preview says so.
 // - Idempotent: a value already stored is not written again, a picture already
-//   uploaded (same SHA-256, remembered in `content.image_files`) is not uploaded
-//   again, so a second run changes nothing.
+//   uploaded (same SHA-256) is not uploaded again, so a second run changes nothing.
 // - Never invents a value: an empty cell is "not provided" and leaves the stored
 //   value alone; it never clears one. Only what the owner asks for with
 //   --currency or --fill is filled in, and only where both the sheet and the
 //   table are empty.
-// - Records where each product came from in `content.source` (--source, a
-//   来源/Source column, or "<file> › <sheet>").
-// - Writes the selling price into the Products table's Price and Currency
-//   columns (busa-product-hub 0.4.0 and later), or, on an older table without a
-//   Price column, into `pricing.current_price` / `pricing.currency`.
+// - Records where each product came from (--source, a 来源/Source column, or
+//   "<file> › <sheet>").
+// - Writes the selling price into the Price and Currency columns, or, on a
+//   product hub table from before busa-product-hub 0.4.0 (no Price column),
+//   into `pricing.current_price` / `pricing.currency`.
 // - Never passes `autoMerge`: with write access a change lands at once; without
 //   it, it waits for review, and the summary says so.
 import { createHash } from "node:crypto";
@@ -54,8 +70,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import zlib from "node:zlib";
 
+export const SHOP_APP_ID = "busa-shop";
 export const PRODUCT_HUB_APP_ID = "busa-product-hub";
-export const IMPORTER_ID = "busa-product-hub-import";
+/** The two table shapes (see the top of this file). */
+export const SHOP_SHAPE = "shop";
+export const PRODUCT_HUB_SHAPE = "product-hub";
+/** Who the change requests say they come from, by the table written. */
+export const IMPORTER_IDS = { [SHOP_SHAPE]: "busa-shop-import", [PRODUCT_HUB_SHAPE]: "busa-product-hub-import" };
 export const PRODUCT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/;
 /** The product ID of the example row in the template spreadsheet; that row is never imported. */
 export const TEMPLATE_EXAMPLE_ID = "example-phone";
@@ -88,6 +109,9 @@ const parseCellRef = (ref) => {
   for (const char of match[1].toUpperCase()) column = column * 26 + (char.charCodeAt(0) - 64);
   return { column, row: Number(match[2]) };
 };
+
+/** A stored number cell, or null when it is empty or not a number. */
+const finiteOrNull = (value) => (value === null || value === undefined || value === "" || !Number.isFinite(Number(value)) ? null : Number(value));
 
 /** A number written the way a person reads it: 9.8, not 9.8000000000000007. */
 const formatNumber = (value) => {
@@ -818,7 +842,7 @@ const STATUS_WORDS = [
   [/^(?:live|已发布|已上线)$/i, "live"],
   [/^(?:draft|草稿|未上架|未发布|待上架)$/i, "draft"],
   [/^(?:needs_review|needs review|待审核|待审|审核中)$/i, "needs_review"],
-  [/^(?:blocked|下架|已下架|停售|禁用|禁售)$/i, "blocked"],
+  [/^(?:blocked|下架|已下架|停售|禁用|禁售|archive|archived|归档|已归档|off ?sale)$/i, "blocked"],
 ];
 const LIFECYCLE_WORDS = [
   [/^(?:active|在售|正常|销售中|常规)$/i, "active"],
@@ -834,6 +858,18 @@ const codeWord = (value, table) => {
     for (const [pattern, code] of table) if (pattern.test(part.trim())) return { code, known: true };
   }
   return { code: raw.toLowerCase(), known: false };
+};
+
+/**
+ * busa-shop's one Status (`active` on sale, `draft`, `archive` off sale) from
+ * what a sheet's Status and Lifecycle say, as codes (`codeWord`). "" when
+ * neither says, or says something else: the shop does not list it.
+ */
+export const shopStatusFor = (status = "", lifecycle = "") => {
+  if (lifecycle === "archive" || status === "blocked") return "archive";
+  if (lifecycle === "test" || status === "draft" || status === "needs_review") return "draft";
+  if (["active", "approved", "live"].includes(status) || (!status && ["active", "launch"].includes(lifecycle))) return "active";
+  return "";
 };
 
 const YES = /^(?:yes|y|true|是|有|已有|已认证|已通过|通过|✓|✔|√|ok)$/i;
@@ -1165,8 +1201,8 @@ export const planProducts = (rows, { language = "", source = "", sourceLabel = "
     }
     const status = codeWord(row.status, STATUS_WORDS);
     const lifecycle = codeWord(row.lifecycle, LIFECYCLE_WORDS);
-    if (!status.known) notes.push(`${id}: status "${row.status}" is not one the shop lists (active, approved, live), kept as written`);
-    if (!lifecycle.known) notes.push(`${id}: lifecycle "${row.lifecycle}" is not one the shop lists (active, launch), kept as written`);
+    if (!status.known) notes.push(`${id}: status "${row.status}" says neither on sale (在售, active), draft (草稿) nor off sale (下架), so the shop will not list it`);
+    if (!lifecycle.known) notes.push(`${id}: lifecycle "${row.lifecycle}" is not one the shop lists (active, launch), kept as written in a product hub table`);
     const launch = row.launch_date ? parseDate(row.launch_date) : "";
     if (row.launch_date && !launch) notes.push(`${id}: launch date "${row.launch_date}" is not YYYY-MM-DD, left out`);
 
@@ -1311,39 +1347,75 @@ export const readCertificateSheet = (sheet, products) => {
 
 // ------------------------------------------------- finding the tables ----
 
-const stamped = (node, resourceKey) => node?.metadata?.appId === PRODUCT_HUB_APP_ID && node?.metadata?.resourceKey === resourceKey;
+const stamped = (node, appId, resourceKey) => node?.metadata?.appId === appId && node?.metadata?.resourceKey === resourceKey;
+
+/** One stamped Base, else the default slug: `{ status: "found" | "missing" | "ambiguous", node, nodes }`. */
+const pick = (bases, { appId, resourceKey, fallbackSlug, parentId }) => {
+  const candidates = bases.filter((node) => parentId === undefined || node.parentId === parentId);
+  let matches = candidates.filter((node) => stamped(node, appId, resourceKey));
+  if (!matches.length && fallbackSlug) matches = candidates.filter((node) => node.slug === fallbackSlug);
+  return { status: matches.length === 1 ? "found" : matches.length ? "ambiguous" : "missing", node: matches[0], nodes: matches };
+};
+
+/** This workspace's Busa Shop Settings Base, as the website finds it. */
+export const findShopSettings = (nodes) =>
+  pick(
+    nodes.filter((node) => node.type === "base"),
+    { appId: SHOP_APP_ID, resourceKey: "settings", fallbackSlug: "busa-shop-settings" },
+  );
+
+/** A busa-shop Products table (by its stamp) has the shop's plain columns; any other is read as a product hub's. */
+const shapeOf = (node) => (node?.metadata?.appId === SHOP_APP_ID ? SHOP_SHAPE : PRODUCT_HUB_SHAPE);
 
 /**
- * The product hub's Products and Certificates Bases from one `nodes.list`
- * answer, by installer stamp, then default slug; `override` (a base id, node
- * id or slug) names the Products table. Throws a readable Error otherwise.
+ * The Products table to write, and its Certificates, from one `nodes.list`
+ * answer; the order at the top of this file. `override` is --products-base,
+ * `settingsOverride` the shop's Settings › Products table, `shopFolderId` the
+ * folder of the shop's Settings (where its own Products live), `shopFound`
+ * whether there is a Busa Shop at all. Throws a readable Error otherwise.
  */
-export const resolveProductHub = (nodes, override = "") => {
+export const resolveTarget = (nodes, { override = "", settingsOverride = "", shopFolderId, shopFound = shopFolderId !== undefined } = {}) => {
   const bases = nodes.filter((node) => node.type === "base");
+  const named = (ref) => bases.find((node) => node.baseId === ref || node.id === ref || node.slug === ref);
   let products;
+  let shape;
+  let from;
   if (override) {
-    products = bases.find((node) => node.baseId === override || node.id === override || node.slug === override);
+    products = named(override);
     if (!products) throw new Error(`No Base "${override}" in this workspace (--products-base). Check the id or slug.`);
+    [shape, from] = [shapeOf(products), "--products-base"];
+  } else if (settingsOverride) {
+    products = named(settingsOverride);
+    if (!products) {
+      throw new Error(
+        `The shop's Settings › Products table says "${settingsOverride}", which is not a Base in this workspace (the website shows "products-override-not-found" too). Correct it, or clear it to use the shop's own Products.`,
+      );
+    }
+    [shape, from] = [shapeOf(products), "settings"];
   } else {
-    let matches = bases.filter((node) => stamped(node, "products"));
-    if (!matches.length) matches = bases.filter((node) => node.slug === "busa-product-hub-products");
-    if (!matches.length) {
-      throw new Error(
-        "Busa Product Hub is not installed in this workspace: no Products table found. Install the Busa Product Hub template first, then run this again.",
-      );
+    const own = shopFolderId === undefined ? { status: "missing" } : pick(bases, { appId: SHOP_APP_ID, resourceKey: "products", fallbackSlug: "busa-shop-products", parentId: shopFolderId });
+    if (own.status === "ambiguous") throw new Error(`This shop's folder has ${own.nodes.length} Products tables (${own.nodes.map((node) => node.slug).join(", ")}). Name one with --products-base <slug>.`);
+    if (own.status === "found") [products, shape, from] = [own.node, SHOP_SHAPE, "shop"];
+    else {
+      const hub = pick(bases, { appId: PRODUCT_HUB_APP_ID, resourceKey: "products", fallbackSlug: "busa-product-hub-products" });
+      if (hub.status === "missing") {
+        throw new Error(
+          shopFound
+            ? "This Busa Shop has no Products table of its own (it was installed before busa-shop 0.5.0, when the shop sold from Busa Product Hub) and no Busa Product Hub is installed. Install the Busa Shop template again to get its Products table, or install Busa Product Hub, then run this again."
+            : "No Products table found in this workspace. Install the Busa Shop template (it has its own Products table), or Busa Product Hub, then run this again.",
+        );
+      }
+      if (hub.status === "ambiguous") {
+        throw new Error(`This workspace has ${hub.nodes.length} Busa Product Hub Products tables (${hub.nodes.map((node) => node.slug).join(", ")}). Name one with --products-base <slug>.`);
+      }
+      [products, shape, from] = [hub.node, PRODUCT_HUB_SHAPE, "product-hub"];
     }
-    if (matches.length > 1) {
-      throw new Error(
-        `This workspace has ${matches.length} Busa Product Hub Products tables (${matches.map((node) => node.slug).join(", ")}). Name one with --products-base <slug>.`,
-      );
-    }
-    products = matches[0];
   }
   const siblings = bases.filter((node) => node.parentId === products.parentId);
   const certificates =
-    siblings.find((node) => stamped(node, "certificates")) ??
+    siblings.find((node) => stamped(node, shape === SHOP_SHAPE ? SHOP_APP_ID : PRODUCT_HUB_APP_ID, "certificates")) ??
     siblings.find((node) => node.slug === products.slug.replace(/-products$/, "-certificates"));
-  return { productsBaseId: products.baseId, productsSlug: products.slug, certificatesBaseId: certificates?.baseId ?? null };
+  return { shape, from, productsBaseId: products.baseId, productsSlug: products.slug, certificatesBaseId: certificates?.baseId ?? null };
 };
 
 // -------------------------------------------------- building the rows ----
@@ -1392,7 +1464,7 @@ export const hasPriceColumn = (base) => (base?.fields ?? []).some((field) => fie
 
 /** True when `next` would store the same thing as `current` for that field. */
 const sameValue = (slug, current, next) => {
-  if (JSON_FIELDS.has(slug)) {
+  if (JSON_FIELDS.has(slug) && /^[[{]/.test(typeof next === "string" ? next.trim() : "")) {
     const parse = (value) => (typeof value === "string" ? (value.trim() ? JSON.parse(value) : null) : value ?? null);
     try {
       return canonical(parse(current)) === canonical(parse(next));
@@ -1469,6 +1541,137 @@ export const productFields = (planned, existing = {}, images = null, { priceColu
 /** Only the fields whose stored value would change. */
 export const changedFields = (existing, next) =>
   Object.fromEntries(Object.entries(next).filter(([slug, value]) => !sameValue(slug, existing[slug], value)));
+
+// ------------------------------------------- the shop's own Products ----
+
+/** The Specs line for each detail, in the website's order and English words (busa-shop src/i18n.js, spec_<key>). */
+export const SHOP_SPEC_LABELS = {
+  color: "Colour",
+  screen: "Display",
+  processor: "Processor",
+  memory: "RAM",
+  storage: "Storage",
+  battery: "Battery",
+  charging: "Charging",
+  camera: "Camera",
+  front_camera: "Front camera",
+  network: "Network",
+  os: "Operating system",
+  specs: "Specifications",
+  age_grade: "Age",
+  materials: "Materials",
+  batteries: "Batteries",
+  dimensions: "Size",
+  weight: "Weight",
+  in_the_box: "In the box",
+};
+/** Details with a column of their own in the shop's table. */
+export const SHOP_DETAIL_COLUMNS = { brand: "Brand", model: "Model", warranty: "Warranty", returns: "Returns" };
+/** How a detail kept in Notes (for the owner, never on the website) is labelled, when it has a canonical key. */
+const NOTE_LABELS = { moq: "MOQ", lead_time_days: "Lead time (days)", hs_code: "HS code", carton_qty: "Carton qty", country_of_origin: "Country of origin", gtin: "EAN / GTIN" };
+
+const detailText = (value) => (Array.isArray(value) ? value.join(", ") : typeof value === "number" ? formatNumber(value) : clean(value));
+/** One line of "Label: value": no colon in the label, no line break in either. */
+const lineEntry = (label, value) => [clean(label).replace(/[:：]/g, " ").replace(/\s+/g, " ").trim(), clean(detailText(value))];
+
+/** The thing a "Label: value" line is about, read like a column header: "RAM" → memory, "电池" → battery, "Supplier" → vendor. */
+const lineKey = (label) => {
+  const { target } = readHeader(label);
+  return target?.attribute ?? target?.field ?? `?${squash(label)}`;
+};
+const LABELLED_LINE = /^(\s*(?:[-•*]\s+)?([^:：\n]{1,60})[:：]\s*)/;
+
+/** Whether stored "Label: value" lines already have one about the same thing as `label`. */
+const hasLine = (stored, label) =>
+  String(stored ?? "")
+    .split(/\r?\n/)
+    .some((line) => {
+      const match = LABELLED_LINE.exec(line);
+      return match && lineKey(match[2].trim()) === lineKey(label);
+    });
+
+/**
+ * "Label: value" lines (Specs, Notes) with `entries` ([label, value]) merged
+ * in: a line about the same thing gets the new value under the label already
+ * there (the owner may have reworded it); a new one goes at the end; every
+ * other line stays as it was. It never removes a line.
+ */
+export const mergeLines = (stored, entries) => {
+  const lines = String(stored ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.replace(/\s+$/, ""))
+    .filter((line) => line.trim());
+  for (const [label, value] of entries) {
+    if (!label || !value) continue;
+    const key = lineKey(label);
+    const index = lines.findIndex((line) => {
+      const match = LABELLED_LINE.exec(line);
+      return match && lineKey(match[2].trim()) === key;
+    });
+    if (index >= 0) lines[index] = `${LABELLED_LINE.exec(lines[index])[1]}${value}`;
+    else lines.push(`${label}: ${value}`);
+  }
+  return lines.join("\n");
+};
+
+/**
+ * The fields of busa-shop's own Products this import writes for one product,
+ * merged over what is stored: plain columns an owner reads and edits in the
+ * grid. The details a shopper reads go into Brand, Model, Warranty, Returns
+ * and Specs; everything else the sheet says (supplier, trade terms, unknown
+ * columns) into Notes, which the website never reads. `images` as for
+ * `productFields`.
+ */
+export const shopProductFields = (planned, existing = {}, images = null) => {
+  const fields = { "product-id": planned.productId };
+  for (const slug of ["sku", "name", "subtitle", "category"]) if (planned.text[slug]) fields[slug] = planned.text[slug];
+  const fill = planned.fill ?? {};
+  let status = shopStatusFor(planned.text.status, planned.text.lifecycle);
+  if (!status && !planned.text.status && !planned.text.lifecycle && blank(existing.status) && (fill.status || fill.lifecycle)) {
+    status = shopStatusFor(codeWord(fill.status, STATUS_WORDS).code, codeWord(fill.lifecycle, LIFECYCLE_WORDS).code);
+  }
+  if (status) fields.status = status;
+  if (planned.price !== null) fields.price = planned.price;
+  const currency = planned.currency || (blank(existing.currency) ? "" : String(existing.currency).trim()) || fill.currency || "";
+  if (currency) fields.currency = currency;
+  if (planned.available !== null) fields.stock = planned.available;
+  const cost = planned.cogs ?? planned.landedCost ?? null;
+  if (cost !== null) fields.cost = cost;
+  if (!blank(fill.category) && !planned.text.category && blank(existing.category)) fields.category = fill.category;
+  for (const key of Object.keys(SHOP_DETAIL_COLUMNS)) {
+    const value = detailText(planned.attributes[key]);
+    if (value) fields[key] = value;
+  }
+  if (planned.description) fields.description = planned.description;
+  if (planned.bullets.length) fields.highlights = planned.bullets.join("\n");
+  if (planned.tags.length) fields.tags = planned.tags.join(", ");
+  const specs = Object.keys(SHOP_SPEC_LABELS)
+    .filter((key) => detailText(planned.attributes[key]))
+    .map((key) => lineEntry(SHOP_SPEC_LABELS[key], planned.attributes[key]));
+  if (specs.length) fields.specs = mergeLines(existing.specs, specs);
+  const notes = [
+    ...Object.entries(planned.attributes)
+      .filter(([key]) => !(key in SHOP_SPEC_LABELS) && !(key in SHOP_DETAIL_COLUMNS))
+      .map(([key, value]) => lineEntry(NOTE_LABELS[key] ?? key, value)),
+    ...(planned.text.vendor ? [lineEntry("Supplier", planned.text.vendor)] : !blank(fill.vendor) && !hasLine(existing.notes, "Supplier") ? [lineEntry("Supplier", fill.vendor)] : []),
+    ...(planned.text.owner ? [lineEntry("Owner", planned.text.owner)] : []),
+    ...(planned.text["launch-date"] ? [lineEntry("Launch date", planned.text["launch-date"])] : []),
+    ...(planned.cogs !== null && planned.cogs !== undefined && planned.landedCost !== null && planned.landedCost !== undefined ? [lineEntry("Landed cost", planned.landedCost)] : []),
+  ].filter(([label, value]) => label && value);
+  if (notes.length) fields.notes = mergeLines(existing.notes, notes);
+  if (planned.source) fields.source = planned.source;
+  if (images?.length) {
+    fields.image = images[0].url;
+    // The list names this product's pictures: More photos becomes the rest of them (cleared only if it held some).
+    if (images.length > 1 || !blank(existing.gallery)) {
+      fields.gallery = images
+        .slice(1)
+        .map((image) => image.url)
+        .join("\n");
+    }
+  }
+  return fields;
+};
 
 const relationIds = (value) => {
   if (typeof value === "string") return value ? [value] : [];
@@ -1627,16 +1830,42 @@ export const runImport = async ({
     ...(env.BUSABASE_API_KEY ? { apiKey: env.BUSABASE_API_KEY } : {}),
     ...(env.BUSABASE_SPACE_ID ? { spaceId: env.BUSABASE_SPACE_ID } : {}),
   });
-  const records = createAirAppRecords(client, { appId: IMPORTER_ID });
-  const hub = resolveProductHub((await client.nodes.list({ types: ["base"] })) ?? [], productsBase);
-  const priceColumn = hasPriceColumn(await client.bases.get({ baseId: hub.productsBaseId }));
+  const nodes = (await client.nodes.list({ types: ["base"] })) ?? [];
+  // The shop's Settings say where it sells from, and in which currency.
+  const shopSettings = findShopSettings(nodes);
+  if (shopSettings.status === "ambiguous" && !productsBase) {
+    throw new Error(
+      `This workspace has ${shopSettings.nodes.length} Busa Shop Settings tables (${shopSettings.nodes.map((node) => node.slug).join(", ")}), so it has more than one shop. Name the Products table with --products-base <slug>.`,
+    );
+  }
+  let settingsFields = {};
+  if (shopSettings.status === "found") {
+    const reader = createAirAppRecords(client, { appId: IMPORTER_IDS[SHOP_SHAPE] });
+    settingsFields = (await reader.readPage({ baseId: shopSettings.node.baseId, limit: 5 })).records[0]?.fields ?? {};
+  }
+  const storeCurrency = /^[A-Z]{3}$/.test(clean(settingsFields.currency).toUpperCase()) ? clean(settingsFields.currency).toUpperCase() : "";
+  const hub = resolveTarget(nodes, {
+    override: productsBase,
+    settingsOverride: clean(settingsFields["products-base"]),
+    shopFolderId: shopSettings.status === "found" ? shopSettings.node.parentId : undefined,
+    shopFound: shopSettings.status !== "missing",
+  });
+  const shop = hub.shape === SHOP_SHAPE;
+  const records = createAirAppRecords(client, { appId: IMPORTER_IDS[hub.shape] });
+  const productsTable = await client.bases.get({ baseId: hub.productsBaseId });
+  const priceColumn = shop || hasPriceColumn(productsTable);
+  const tableColumns = new Set((productsTable?.fields ?? []).map((field) => field.slug));
   if (allCertificates.length && !hub.certificatesBaseId) {
-    throw new Error(`No Certificates table next to ${hub.productsSlug}. Install Busa Product Hub completely, or run without certificates.`);
+    throw new Error(`No Certificates table next to ${hub.productsSlug}. Install ${shop ? "Busa Shop" : "Busa Product Hub"} completely, or run without certificates.`);
   }
 
   const summary = {
     dryRun,
     productsTable: hub.productsSlug,
+    target: hub.shape,
+    from: hub.from,
+    shopFound: shopSettings.status !== "missing",
+    storeCurrency,
     priceColumn,
     file: fileName,
     sheet: csv ? "" : productSheet.name,
@@ -1657,6 +1886,18 @@ export const runImport = async ({
       `${hub.productsSlug} has no Price column (Busa Product Hub before 0.4.0), so prices stay in Pricing (JSON) as before, where the shop reads them.`,
     );
   }
+  // A column the owner removed from the shop's table is left out, never sent.
+  const droppedColumns = new Set();
+  const keepColumns = (fields) => {
+    if (!shop || !tableColumns.size) return fields;
+    return Object.fromEntries(
+      Object.entries(fields).filter(([slug]) => {
+        if (tableColumns.has(slug)) return true;
+        droppedColumns.add(slug);
+        return false;
+      }),
+    );
+  };
   summary.products.skipped = plan.skipped.length;
   summary.certificates.skipped = certificatePlan.skipped.length + inlinePlan.skipped.length + inlineMissing.length;
 
@@ -1667,6 +1908,41 @@ export const runImport = async ({
     maxRef = Math.max(maxRef, Number(record.fields.ref) || 0);
     if (id && !existingProducts.has(id)) existingProducts.set(id, record);
   }
+
+  // The shop's table keeps no list of uploaded files: a stored picture is
+  // known by the SHA-256 of its bytes, read back from its URL (the key only
+  // ever goes to the Busabase server itself).
+  const busabaseOrigin = new URL(env.BUSABASE_BASE_URL).origin;
+  const fetchImpl = sdk?.fetch ?? globalThis.fetch;
+  const authFor = (url) =>
+    new URL(url).origin === busabaseOrigin && env.BUSABASE_API_KEY
+      ? { authorization: `Bearer ${env.BUSABASE_API_KEY}`, ...(env.BUSABASE_SPACE_ID ? { "x-busabase-space": env.BUSABASE_SPACE_ID } : {}) }
+      : {};
+  const storedPicture = async (url) => {
+    try {
+      let response = await fetchImpl(url, { headers: authFor(url), redirect: "manual" });
+      const location = response.headers.get("location");
+      if (response.status >= 300 && response.status < 400 && location) {
+        await response.body?.cancel?.();
+        const next = new URL(location, url).href;
+        response = await fetchImpl(next, { headers: authFor(next) });
+      }
+      if (!response.ok) return null;
+      const bytes = Buffer.from(await response.arrayBuffer());
+      return bytes.length ? bytes : null;
+    } catch {
+      return null;
+    }
+  };
+  const storedPictures = async (fields) => {
+    const known = [];
+    for (const url of [clean(fields.image), ...String(fields.gallery ?? "").split(/[\s|]+/)].filter((ref) => /^https?:\/\//i.test(ref))) {
+      if (known.some((item) => item.url === url)) continue;
+      const bytes = await storedPicture(url);
+      if (bytes) known.push({ file: path.basename(new URL(url).pathname), sha256: sha256(bytes), url });
+    }
+    return known;
+  };
   const productRecordIds = new Map();
   const nowIso = () => now().toISOString();
 
@@ -1674,7 +1950,7 @@ export const runImport = async ({
   for (const planned of plan.products) {
     const existing = existingProducts.get(planned.productId);
     const stored = existing?.fields ?? {};
-    const known = asList(asObject(stored.content).image_files);
+    let known = shop ? null : asList(asObject(stored.content).image_files);
     const row = {
       line: planned.line,
       where: planned.where,
@@ -1702,6 +1978,7 @@ export const runImport = async ({
         return null;
       }
       hashes.add(hash);
+      known ??= await storedPictures(stored);
       const already = known.find((item) => item?.sha256 === hash && item?.url);
       if (already) {
         summary.images.reused += 1;
@@ -1765,35 +2042,37 @@ export const runImport = async ({
       images = unique.length ? unique.slice(0, MAX_PICTURES) : null;
     }
 
-    const next = productFields(planned, stored, images, { priceColumn });
+    const next = keepColumns(shop ? shopProductFields(planned, stored, images) : productFields(planned, stored, images, { priceColumn }));
     const after = { ...stored, ...next };
     row.currency = String((priceColumn ? after.currency : asObject(after.pricing).currency) ?? "");
     row.currencyFrom = planned.currency ? planned.currencyFrom : row.currency ? (fill.currency === row.currency ? "--currency" : "table") : "";
     const storedPrice = priceColumn ? after.price : asObject(after.pricing).current_price;
     row.price = blank(storedPrice) || !Number.isFinite(Number(storedPrice)) ? null : Number(storedPrice);
-    row.stock = asObject(after.inventory).available ?? null;
+    row.stock = (shop ? finiteOrNull(after.stock) : asObject(after.inventory).available) ?? null;
     if (blank(storedPrice)) row.empty.push("price");
-    if (!row.currency) row.empty.push("currency");
-    if (asObject(after.inventory).available === undefined) row.empty.push("stock");
+    if (!row.currency && !(shop && storeCurrency)) row.empty.push("currency");
+    if (row.stock === null) row.empty.push("stock");
     if (blank(after.image)) row.empty.push("picture");
     if (blank(after.status)) row.empty.push("status");
-    if (blank(after.lifecycle)) row.empty.push("lifecycle");
-    if (!asObject(after.content).description) row.empty.push("description");
+    if (!shop && blank(after.lifecycle)) row.empty.push("lifecycle");
+    if (!(shop ? clean(after.description) : asObject(after.content).description)) row.empty.push("description");
     // Busa Shop's listing rule (busa-shop SKILL.md, "The listing rule"), so the owner sees before
     // importing which products a shop would leave off, and why.
     const lifecycle = String(after.lifecycle ?? "");
     const status = String(after.status ?? "");
+    // In the shop's own table an empty Currency is the store's currency.
+    const sellsIn = row.currency || (shop ? storeCurrency : "");
     row.unlisted = [
-      ...(!lifecycle ? ["no lifecycle"] : ["active", "launch"].includes(lifecycle) ? [] : [`lifecycle "${lifecycle}"`]),
-      ...(!status ? ["no status"] : ["active", "approved", "live"].includes(status) ? [] : [`status "${status}"`]),
+      ...(shop ? [] : !lifecycle ? ["no lifecycle"] : ["active", "launch"].includes(lifecycle) ? [] : [`lifecycle "${lifecycle}"`]),
+      ...(!status ? ["no status"] : (shop ? ["active"] : ["active", "approved", "live"]).includes(status) ? [] : [`status "${status}"`]),
       ...(Number(storedPrice) > 0 ? [] : ["no price"]),
-      ...(row.currency ? [] : ["no currency"]),
+      ...(!sellsIn ? ["no currency"] : storeCurrency && sellsIn.toUpperCase() !== storeCurrency ? [`currency ${sellsIn}, the shop sells in ${storeCurrency}`] : []),
     ];
     row.listed = !row.unlisted.length;
 
     if (!existing) {
       maxRef += 1;
-      const fields = { ...next, ref: maxRef, "created-at": nowIso(), "updated-at": nowIso() };
+      const fields = keepColumns({ ...next, ref: maxRef, ...(shop ? {} : { "created-at": nowIso(), "updated-at": nowIso() }) });
       if (dryRun) {
         summary.products.created += 1;
         row.action = "create";
@@ -1830,7 +2109,7 @@ export const runImport = async ({
     const outcome = await records.updateRecord({
       recordId: existing.id,
       baseCommitId: existing.headCommitId,
-      fields: { ...changes, "updated-at": nowIso() },
+      fields: shop ? changes : { ...changes, "updated-at": nowIso() },
       message: `Update product ${planned.productId} from ${fileName} (${row.changed.join(", ")})`,
     });
     if (outcome.status === "queued") {
@@ -1856,7 +2135,9 @@ export const runImport = async ({
       };
       const typeId = certificateTypeId(choices, cert.type);
       if (!typeId) {
-        skip(`type "${cert.type}" is not an option of the Certificates table (it offers: ${choices.map((choice) => choice.name).join(", ")}). Update Busa Product Hub (0.3.0 adds EN 71, ASTM F963, CPSIA / CPC) or add the option.`);
+        skip(
+          `type "${cert.type}" is not an option of the Certificates table (it offers: ${choices.map((choice) => choice.name).join(", ")}). ${shop ? "Add the option to its Certificate type field" : "Update Busa Product Hub (0.3.0 adds EN 71, ASTM F963, CPSIA / CPC) or add the option"}.`,
+        );
         continue;
       }
       if (cert.badExpiry) summary.notes.push(`${label}: expiry date is not YYYY-MM-DD, left out`);
@@ -1918,6 +2199,9 @@ export const runImport = async ({
       else summary.certificates.updated += 1;
     }
   }
+  if (droppedColumns.size) {
+    summary.notes.push(`${hub.productsSlug} has no ${[...droppedColumns].map((slug) => `"${slug}"`).join(", ")} column, so those values were left out.`);
+  }
   return summary;
 };
 
@@ -1928,17 +2212,45 @@ const cellText = (value, max = 48) => {
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 };
 
-const describeTarget = (as) => {
+const describeTarget = (as, shop = false) => {
   if (as.field === "image") return "picture (main, then gallery)";
   if (as.field === "gallery") return "gallery pictures";
-  if (as.field === "cogs") return "cost (pricing.cogs)";
-  if (as.field === "landed_cost") return "landed cost (pricing.landed_cost)";
-  if (as.field === "stock_available") return "stock (inventory.available)";
-  if (as.field === "source") return "where the data came from (content.source)";
+  if (as.field === "cogs") return shop ? "cost (Cost; never on the website)" : "cost (pricing.cogs)";
+  if (as.field === "landed_cost") return shop ? "landed cost (Cost when there is no cost column, else a Notes line)" : "landed cost (pricing.landed_cost)";
+  if (as.field === "stock_available") return shop ? "stock (Stock)" : "stock (inventory.available)";
+  if (as.field === "source") return shop ? "where the data came from (Source; never on the website)" : "where the data came from (content.source)";
   if (as.field === "name" && as.fromModel) return "name (no name column, so the model is the name)";
+  if (shop && as.field === "status") return "status (在售/active → active, 草稿/draft → draft, 下架/archive → archive)";
+  if (shop && as.field === "lifecycle") return "lifecycle (read into Status: archive → archive, test → draft)";
+  if (shop && as.field === "vendor") return 'supplier (a "Supplier" line in Notes; never on the website)';
+  if (shop && as.field === "launch_date") return 'launch date (a Notes line)';
+  if (shop && as.field === "owner") return 'owner (a Notes line)';
+  if (shop && as.field === "bullets") return "highlights (Highlights, one per line)";
   if (as.field) return as.field.replace(/_/g, " ");
   if (as.certificate) return `${as.certificate} certificate number`;
   return "";
+};
+
+/** Where a product detail goes, in the preview's "How the columns were read". */
+const describeDetail = (column, shop) => {
+  const key = column.as.attribute;
+  if (!shop) {
+    if (!column.known) {
+      return `not a known column; kept as the product detail "${key}" (in the record's Content JSON, content.attributes; a Busa Shop website shows it only when its Settings › Also show these product details names it)`;
+    }
+    return `product detail "${key}"${column.hint ? ` (unit "${column.hint}" added to bare numbers)` : ""}`;
+  }
+  const unit = column.hint && column.known ? ` (unit "${column.hint}" added to bare numbers)` : "";
+  if (key in SHOP_DETAIL_COLUMNS) return `${SHOP_DETAIL_COLUMNS[key]} (shown on the product page)${unit}`;
+  if (key in SHOP_SPEC_LABELS) return `Specs line "${SHOP_SPEC_LABELS[key]}" (shown on the product page)${unit}`;
+  if (!column.known) return `not a known column; kept in Notes as "${key}: …" (never on the website; to show it, move the line into Specs)`;
+  return `Notes line "${NOTE_LABELS[key] ?? key}" (for you and trade buyers; never on the website)${unit}`;
+};
+
+const FROM = {
+  shop: "the shop's own Products",
+  settings: "named in the shop's Settings › Products table",
+  "--products-base": "named with --products-base",
 };
 
 /** The summary as the text the owner reads: counts, one table row per product, then what needs a look. */
@@ -1946,8 +2258,12 @@ export const formatSummary = (summary) => {
   const verb = summary.dryRun ? "would be " : "";
   const line = (label, counts) =>
     `${label}: ${counts.created} ${verb}created, ${counts.updated} ${verb}updated, ${counts.unchanged} unchanged, ${counts.skipped} skipped${counts.queued ? `, ${counts.queued} waiting for review` : ""}`;
+  const shop = summary.target === SHOP_SHAPE;
+  const from =
+    FROM[summary.from] ??
+    (summary.shopFound ? "Busa Product Hub's, which this shop sells from: it was installed before busa-shop 0.5.0 and has no Products of its own" : "Busa Product Hub's");
   const out = [
-    `${summary.dryRun ? "Dry run, nothing was written or uploaded. " : ""}Products table: ${summary.productsTable}`,
+    `${summary.dryRun ? "Dry run, nothing was written or uploaded. " : ""}Products table: ${summary.productsTable} (${from})`,
     `Read from: ${summary.file}${summary.sheet ? `, sheet "${summary.sheet}"` : ""}, headers on ${summary.sheet ? "row" : "line"} ${summary.headerRow}${summary.certificatesFrom ? `; certificates from ${summary.certificatesFrom}` : ""}`,
     line("Products", summary.products),
     line("Certificates", summary.certificates),
@@ -1978,12 +2294,18 @@ export const formatSummary = (summary) => {
         reasons.has("no status") ? "--fill status=active" : "",
         reasons.has("no currency") ? "--currency <CODE>" : "",
       ].filter(Boolean);
+      const currency = summary.storeCurrency ? ` (${summary.storeCurrency}, Settings › Currency)` : "";
+      const rule = shop
+        ? `Busa Shop lists a product only with Status active, a price above 0 and the shop's currency${currency}.`
+        : `Busa Shop lists a product only with lifecycle active/launch, status active/approved/live, a price and a currency${summary.storeCurrency ? ` equal to the shop's${currency}` : ""}.`;
       out.push(
-        `Busa Shop lists a product only with lifecycle active/launch, status active/approved/live, a price and a currency. ${unlisted.length} of ${summary.rows.length} would not be listed as they are: ${why}.${fixes.length ? ` If the owner wants them on sale, fill the sheet, or run with ${fixes.join(" ")} (it fills only empty cells).` : ""}`,
+        `${rule} ${unlisted.length} of ${summary.rows.length} would not be listed as they are: ${why}.${fixes.length ? ` If the owner wants them on sale, fill the sheet, or run with ${fixes.join(" ")} (it fills only empty cells).` : ""}`,
       );
     }
     const noCurrency = summary.rows.filter((row) => row.price !== null && row.price !== undefined && !row.currency);
-    if (noCurrency.length) out.push(`${noCurrency.length} prices say no currency: add a 币种 / Currency column, or ask the owner and run with --currency <CODE>.`);
+    if (noCurrency.length && shop && summary.storeCurrency) {
+      out.push(`${noCurrency.length} prices say no currency: the shop shows them in its own currency, ${summary.storeCurrency} (Settings › Currency). If they are in another currency, add a 币种 / Currency column, or ask the owner and run with --currency <CODE>.`);
+    } else if (noCurrency.length) out.push(`${noCurrency.length} prices say no currency: add a 币种 / Currency column, or ask the owner and run with --currency <CODE>.`);
     const fromHint = summary.rows.filter((row) => ["price cell", "price header"].includes(row.currencyFrom));
     if (fromHint.length) out.push(`Currency read from the ${[...new Set(fromHint.map((row) => row.currencyFrom))].join(" and ")} for ${fromHint.length} product(s): ${[...new Set(fromHint.map((row) => row.currency))].join(", ")}. Check it is right.`);
   }
@@ -1991,11 +2313,13 @@ export const formatSummary = (summary) => {
     out.push("", "How the columns were read:");
     for (const column of summary.columns) {
       const header = `${column.letter} "${cellText(column.header, 40)}"`;
-      if (column.duplicateOf) out.push(`- ${header} → a second ${describeTarget(column.as) || column.as.attribute} column (the first is ${column.duplicateOf}); kept as the product detail "${column.as.attribute}"`);
-      else if (column.as.ignore) out.push(`- ${header} → ${column.as.ignore}, not imported`);
-      else if (column.as.attribute && !column.known) out.push(`- ${header} → not a known column; kept as the product detail "${column.as.attribute}" (in the record's Content JSON, content.attributes; a Busa Shop website shows it only when its Settings › Also show these product details names it)`);
-      else if (column.as.attribute) out.push(`- ${header} → product detail "${column.as.attribute}"${column.hint ? ` (unit "${column.hint}" added to bare numbers)` : ""}`);
-      else out.push(`- ${header} → ${describeTarget(column.as)}${column.hint && column.as.field === "price" ? ` (header says "${column.hint}")` : ""}`);
+      if (column.duplicateOf) {
+        out.push(
+          `- ${header} → a second ${describeTarget(column.target ?? column.as, shop) || column.as.attribute} column (the first is ${column.duplicateOf}); kept ${shop ? `in Notes as "${column.as.attribute}: …"` : `as the product detail "${column.as.attribute}"`}`,
+        );
+      } else if (column.as.ignore) out.push(`- ${header} → ${column.as.ignore}, not imported`);
+      else if (column.as.attribute) out.push(`- ${header} → ${describeDetail(column, shop)}`);
+      else out.push(`- ${header} → ${describeTarget(column.as, shop)}${column.hint && column.as.field === "price" ? ` (header says "${column.hint}")` : ""}`);
     }
     const fills = Object.entries(summary.fill ?? {});
     if (fills.length) out.push(`Filled in where both the sheet and the table were empty, because you asked: ${fills.map(([key, value]) => `${key} = ${value}`).join(", ")}`);
@@ -2169,7 +2493,7 @@ const TEMPLATE_HELP = [
   ["4. 图片三种方式：① 直接把图片插入到这个商品所在的那一行（浮动图片或“放置在单元格中”都可以）；② 在「主图」「图集」里填 https:// 图片链接，多个用 | 分开；③ 填图片文件名，再把图片文件夹一起交给 Agent。"],
   ["   Pictures, three ways: (1) insert the picture into the product's row (floating over the row, or Place in Cell); (2) put https:// links in Image / Gallery, several separated by |; (3) type file names and give your agent the folder of pictures."],
   ["5. 状态填 active（在售）、生命周期填 active，商品才会出现在 Busa Shop 网站上；draft 是草稿。Status active and Lifecycle active put a product on a Busa Shop website; draft keeps it off."],
-  ["6. 表里没有的列（比如「防水等级」）也会保留，作为商品参数存进产品库。Any other column (for example “Water resistance”) is kept as a product detail."],
+  ["6. 表里没有的列（比如「防水等级」）也会保留：在网店的商品表里记进「备注」（不上网站），在产品枢纽里存为商品参数。Any other column (for example “Water resistance”) is kept: in a Busa Shop's Products as a Notes line (never on the website), in Busa Product Hub as a product detail."],
   ["7. 认证写在「认证 Certificates」表。类型只能是 CE、FCC、RoHS、UN38.3、UKCA、EN 71、ASTM F963、CPSIA / CPC；日期写成 2028-01-15。"],
   ["   Certificates go on the Certificates sheet. Type is one of CE, FCC, RoHS, UN38.3, UKCA, EN 71, ASTM F963, CPSIA / CPC; dates as 2028-01-15."],
   ["8. 两张表的「来源」都写这一行数据从哪来（文件名和页码，或网址）。Source, on both sheets: where this row's facts came from (a file and page, or a web address)."],
@@ -2198,9 +2522,11 @@ export const templateWorkbook = () =>
 
 const USAGE = `Usage: node import-products.mjs <products.xlsx | products.csv> [options]
 
-Imports products, their pictures and certificates into the Busa Product Hub
-installed in the workspace named by BUSABASE_BASE_URL / BUSABASE_API_KEY /
-BUSABASE_SPACE_ID. Needs: npm i busabase-sdk
+Imports products, their pictures and certificates into the workspace named by
+BUSABASE_BASE_URL / BUSABASE_API_KEY / BUSABASE_SPACE_ID: into Busa Shop's own
+Products table, or the table its Settings › Products table names, or (with no
+shop, or a shop from before busa-shop 0.5.0) Busa Product Hub's. The preview's
+first line names the table. Needs: npm i busabase-sdk
 
   --dry-run                    read everything and print the preview; write and upload nothing
   --sheet <name>               the products sheet (default: the first sheet whose header row names products)
@@ -2210,7 +2536,7 @@ BUSABASE_SPACE_ID. Needs: npm i busabase-sdk
   --currency <CODE>            the currency of prices that do not say one (CNY, USD…); never overrides one
   --fill <field>=<value>       fill status, lifecycle, category or vendor where the sheet AND the table are empty
   --source "<text>"            where this data came from, kept on each product (default: file › sheet)
-  --products-base <id|slug>    the Products table, when the workspace has more than one
+  --products-base <id|slug>    write this Products table instead (e.g. busa-product-hub-products)
   --json                       print the summary as JSON
   --write-template <file.xlsx> write the blank bilingual template spreadsheet and stop (no Busabase needed)`;
 

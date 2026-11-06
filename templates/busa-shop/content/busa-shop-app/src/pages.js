@@ -151,7 +151,7 @@ export const productPage = ({ origin, settings, product }) => {
   const content = product.content;
   const specs = [
     ...(product.sku ? [[t("spec_sku"), product.sku]] : []),
-    ...productDetails(content.attributes, { extraKeys: settings.showDetails, language: settings.language }),
+    ...productDetails(content.attributes, { extraKeys: [...(product.specKeys ?? []), ...settings.showDetails], language: settings.language }),
   ];
   const bullets = Array.isArray(content.bullets)
     ? content.bullets.filter((item) => typeof item === "string" && item.trim()).slice(0, 8)
@@ -362,15 +362,15 @@ export const SETUP_MESSAGES = {
   "products-missing": {
     title: "This shop has no product list yet",
     steps: [
-      "This shop shows the products from the Products table of the Busa Product Hub template. It does not keep a copy of its own.",
-      "Install the Busa Product Hub template in this workspace, add or import your products there, then refresh this page.",
-      "Already installed under another folder name? Write the Products table's id or slug into this shop's Settings, field “Products table”.",
+      "This shop sells from the Products table in its own folder, next to Orders and Settings. That table is missing or cannot be read.",
+      "Install the Busa Shop template again, or restore Products from the trash, then add or import your products there and refresh this page.",
+      "Selling from another table, such as a Busa Product Hub Products table? Write its id or slug into this shop's Settings, field “Products table”.",
     ],
   },
   "products-ambiguous": {
     title: "This shop found more than one product list",
     steps: [
-      "This workspace has more than one Busa Product Hub Products table, so the shop will not guess which one to sell from.",
+      "This workspace has more than one Products table this shop could sell from, so it will not guess which one.",
       "Write the id or slug of the one to use into this shop's Settings, field “Products table”, then refresh this page.",
     ],
   },
@@ -378,13 +378,13 @@ export const SETUP_MESSAGES = {
     title: "The product list named in Settings was not found",
     steps: [
       "This shop's Settings name a Products table that this site cannot find or cannot read.",
-      "Check the id or slug in Settings, field “Products table”, or clear it to use the Busa Product Hub Products table automatically.",
+      "Check the id or slug in Settings, field “Products table”, or clear it to sell from this shop's own Products table.",
     ],
   },
   "settings-missing": {
     title: "This shop's Settings table was not found",
     steps: [
-      "The Busa Shop template creates Orders, Settings and Reports tables next to this website. The Settings table is missing or cannot be read.",
+      "The Busa Shop template creates Products, Certificates, Orders, Settings and Reports tables next to this website. The Settings table is missing or cannot be read.",
       "Install the Busa Shop template again, or restore the Settings table from the trash, then refresh this page.",
     ],
   },

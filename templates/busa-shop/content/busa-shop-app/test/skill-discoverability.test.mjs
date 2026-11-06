@@ -1,4 +1,6 @@
-// Can an Agent find the two manuals with the words a shop owner uses?
+// Can an Agent find the two manuals with the words a shop owner uses? Since
+// busa-shop 0.5.0 the shop has its own product list, so its manual is the one
+// a shop owner's words must reach: 商品管理, 导入 Excel, 下架, 改价格…
 //
 // Busabase's `playbooks search` lowercases every phrasing the Agent sends and
 // matches it as a substring of a Skill node's name, slug and SKILL.md
@@ -76,13 +78,12 @@ test("busa-product-hub is found by the words a shop owner uses", async () => {
     "import products from Excel",
     // Found in the rehearsal; keep it.
     "导入 Excel 商品表",
-    // What an owner says about their product list.
+    // What an owner says about their product list. (「把商品放进店」 is the shop's now.)
     "Busa 产品枢纽",
     "商品表",
     "商品管理",
     "导入商品",
     "导入 Excel",
-    "把商品放进店",
     "上架",
     "归档商品",
     "import products",
@@ -96,11 +97,44 @@ test("busa-product-hub is found by the words a shop owner uses", async () => {
   assert.deepEqual(missed, [], `busa-product-hub's description does not contain: ${missed.join(" / ")}`);
 });
 
-test("busa-shop is found by the words an owner uses about their shop", async () => {
+test("busa-shop is found by the words an owner uses about their shop and its products", async () => {
   const skill = await skillOf("busa-shop");
-  const queries = ["产品枢纽", "把商品放进店", "上架", "下架", "商品表", "独立站", "网店", "import products", "product list", "online shop"];
+  const queries = [
+    // The shop.
+    "网店",
+    "独立站",
+    "online shop",
+    "storefront",
+    // Its product list, built in: the words that found only the product hub before 0.5.0.
+    "商品管理",
+    "商品表",
+    "导入商品",
+    "导入 Excel",
+    "导入 Excel 商品表",
+    "把商品放进店",
+    "上架",
+    "下架",
+    "改价格",
+    "import products",
+    "import products from Excel",
+    "import Excel",
+    "product list",
+    "Excel",
+    "CSV",
+    // An owner who still says the course's old name for the product list.
+    "产品枢纽",
+  ];
   const missed = queries.filter((query) => !skillMatches(skill, query));
   assert.deepEqual(missed, [], `busa-shop's description does not contain: ${missed.join(" / ")}`);
+});
+
+test("busa-shop's Products table carries prompts for each thing an owner asks about products", async () => {
+  const shop = await promptsOf("busa-shop");
+  const labelled = (query) => shop.filter((prompt) => matches(prompt.labels, query)).map((p) => p.where);
+  for (const query of ["导入商品", "改价格", "下架", "上架", "商品管理", "把商品放进店", "import products", "Change a price", "Take products off sale"]) {
+    assert.ok(labelled(query).length > 0, `no busa-shop prompt label says ${query}`);
+  }
+  assert.ok(labelled("导入商品").some((where) => where.startsWith("products/")), "the Products table itself offers 导入商品");
 });
 
 test("the import and take-down prompts have Chinese labels search can find", async () => {
@@ -112,7 +146,7 @@ test("the import and take-down prompts have Chinese labels search can find", asy
   assert.ok(labelled(hub, "下架").length > 0, "no busa-product-hub prompt label says 下架");
   assert.ok(labelled(shop, "把商品放进店").length > 0, "no busa-shop prompt label says 把商品放进店");
   // A searched body must still name the skill to read, inside the searched prefix.
-  for (const prompt of [...hub, ...shop].filter((p) => matches(p.labels, "导入商品") || matches(p.labels, "下架"))) {
+  for (const prompt of [...hub, ...shop].filter((p) => ["导入商品", "下架", "上架", "改价格", "商品管理"].some((query) => matches(p.labels, query)))) {
     assert.ok(matches(prompt.bodies, "skill in this folder"), `${prompt.where}: the body does not say which skill to read`);
   }
 });

@@ -1,20 +1,24 @@
 # busa-shop
 
-A public storefront for a small cross-border seller, running on Busabase's
-Website (`site`) engine (on a space without it, such as Busabase Cloud Free, a
-private preview in your own browser tab). It sells from the Products table of
-[`busa-product-hub`](../busa-product-hub) (one product table, no copy), takes
-order requests into **Orders**, reads its texts from **Settings**, and comes
-with a daily shop check that writes **Reports** and applies the owner's
-feedback on the next run. The manual is [`SKILL.md`](SKILL.md).
-
-Install busa-product-hub first; a template cannot declare that dependency, so
-the website shows an owner-facing setup page until it finds a Products table.
+A one-install online shop for a small cross-border seller, running on
+Busabase's Website (`site`) engine (on a space without it, such as Busabase
+Cloud Free, a private preview in your own browser tab). Product management is
+built in: the shop keeps its own **Products** and **Certificates** tables, in
+plain columns you edit in the grid, takes order requests into **Orders**,
+reads its texts from **Settings**, and comes with a daily shop check that
+writes **Reports** and applies the owner's feedback on the next run. The
+manual is [`SKILL.md`](SKILL.md).
 
 ```bash
-busabase-cli install ./templates/busa-product-hub
 busabase-cli install ./templates/busa-shop
 ```
+
+Products starts empty. Bring a product list in with the importer in
+[`scripts/import-products.mjs`](scripts/import-products.mjs) (Excel workbooks
+with the pictures inside, or CSV, English or Chinese column names; a dry-run
+preview first), or type products into the table. The shop lists a product when
+its Status is On sale and it has a name, a product ID and a price in the
+shop's currency; a change shows on the site within about a minute.
 
 Then open *Shop Website*: opening it starts the members-only preview (the
 header shows **Running** and **Not live**; a **Run** button appears only on a
@@ -33,21 +37,26 @@ address and no **Go live**, and nobody else can open it. Orders you place there
 are real Orders rows. Upgrading the space to Plus switches the same node to the
 Website engine, with Go live.
 
-The shop's prices are busa-product-hub's **Price** and **Currency** columns
-(0.4.0 and later): change a price by editing that cell, and the site shows it
-within about a minute. A product hub installed before 0.4.0 keeps prices in
-its Pricing JSON, and the site reads them there.
+## Busa Product Hub is optional
+
+Busa Shop no longer needs [`busa-product-hub`](../busa-product-hub). That
+template is for export sellers who manage several channels (Amazon, Shopify,
+TikTok Shop, eBay) and their certificates in one place. To sell from its
+Products table instead of the shop's own, write its slug
+(`busa-product-hub-products`) into the shop's Settings › **Products table**.
+A shop installed before 0.5.0, which has no Products of its own, keeps selling
+from the product hub with nothing to change.
 
 ## Demo data
 
 Everything is fictional and labelled as such: the toy factory "Tumbleberry
 Toys", its 12 toys and 39 certificates in [`assets/demo/`](assets/demo) (the
-CSVs the course imports into the product hub with busa-product-hub's
-[`scripts/import-products.mjs`](../busa-product-hub/scripts/import-products.mjs), which also reads
-Excel workbooks with pictures inside, with original SVG
+CSVs the course imports into the shop's Products with
+[`scripts/import-products.mjs`](scripts/import-products.mjs), with original SVG
 illustrations; two toys have no photo, one has no price, some certificates
 are missing, expired or expiring on purpose), three sample orders and one
-sample report.
+sample report. [`assets/import/products-template.xlsx`](assets/import/products-template.xlsx)
+is the blank bilingual sheet (`node scripts/import-products.mjs --write-template`).
 
 ## Developing the website
 
@@ -55,7 +64,7 @@ sample report.
 cd content/busa-shop-app
 npm install
 npx esbuild src/worker.js --bundle --format=esm --platform=neutral --outfile=vendor/worker.js
-npm test          # unit tests + the deployed bundle against a fake Busabase API
+npm test          # unit tests, the importer, and the deployed bundle against a fake Busabase API
 npm run check     # vendor/worker.js is fresh, import-free, default-export only
 BUSABASE_BASE_URL=… BUSABASE_API_KEY=… BUSABASE_SPACE_ID=… npm run dev   # local preview
 ```
@@ -72,3 +81,7 @@ and this repository's checks read an app's own source (`src/`) and skip vendored
 bundles.
 The screenshots were taken from that bundle running locally against the
 template's demo data served by the test fake, not from a live install.
+
+`scripts/import-products.mjs` is also shipped, byte for byte, as
+busa-product-hub's `scripts/import-products.mjs`; edit it here and copy it
+there (`test/import-products-shop.test.mjs` fails until the two agree).

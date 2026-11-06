@@ -1,6 +1,6 @@
 ---
 name: busa-product-hub
-description: Busa Product Hub (Busa 产品枢纽) is a Busabase App-in-Skill for export and small sellers that holds the product list they and their agent share, the one a Busa Shop website sells from — catalog/SKU master data, prices, inventory and reorder, channel status on Amazon/Shopify/TikTok Shop/eBay, quality holds, a review queue for changes the agent proposes, and certificate expiry (CE/FCC/RoHS/UN38.3/UKCA, EN 71). Use it for 商品管理 and to import products from Excel or CSV — import Excel workbooks with the pictures inside, or any product spreadsheet with English or Chinese columns (导入商品, 导入 Excel 商品表, 上传产品表, 把商品放进店) — or to turn a supplier PDF, a catalogue photo, a product page or pasted text into products, always as a preview the owner confirms first. Also use it to put products on sale (上架) or take them down (下架, 归档商品, archive), to answer MOQ, lead-time or certificate questions before a trade show, and whenever the user invokes $busa-product-hub or /busa-product-hub or names the 产品枢纽, 商品库, 商品表 or SKU 管理.
+description: Busa Product Hub (Busa 产品枢纽) is a Busabase App-in-Skill for export sellers on several channels, holding the product list they and their agent share — catalog/SKU master data, prices, inventory and reorder, channel status on Amazon/Shopify/TikTok Shop/eBay, quality holds, a review queue for changes the agent proposes, and certificate expiry (CE/FCC/RoHS/UN38.3/UKCA, EN 71). A Busa Shop can sell from it but no longer needs it. Use it for 商品管理 in the hub and to import products from Excel or CSV — import Excel workbooks with the pictures inside, or any product spreadsheet with English or Chinese columns (导入商品, 导入 Excel 商品表, 上传产品表) — or to turn a supplier PDF, a catalogue photo, a product page or pasted text into products, as a preview the owner confirms first. Also use it to put products on sale (上架) or take them down (下架, 归档商品, archive), to answer MOQ, lead-time or certificate questions before a trade show, and when the user invokes $busa-product-hub or /busa-product-hub or names the 产品枢纽, 商品库, 商品表 or SKU 管理.
 metadata:
   category: ecommerce
   tags:
@@ -22,6 +22,15 @@ metadata:
 ---
 
 # Busa Product Hub
+
+> **Busa Shop has its own product list.** Since busa-shop 0.5.0 a shop keeps
+> its products in the Products and Certificates tables of its own folder, and
+> its manual ("Manage products (商品管理)") covers importing, prices and taking
+> products down. If this workspace has such a shop and the owner talks about
+> the shop's products, follow the `busa-shop` skill instead, unless the shop's
+> Settings › Products table names this hub's Products (then the shop sells
+> from here, and this manual applies). A shop installed before busa-shop 0.5.0
+> has no Products of its own and sells from this hub.
 
 ## Overview
 
@@ -86,8 +95,9 @@ report the exact missing dependency. Do not invent a second data backend.
   so it happens in a script the agent runs, never in the AirApp:
   - **A product list** (products, their pictures and certificates, from a
     spreadsheet, a CSV, or anything transcribed into one) enters through
-    `scripts/import-products.mjs`, the one product-list importer for this
-    template and for busa-shop. See "Bring products in, any way".
+    `scripts/import-products.mjs`, the one product-list importer, shared with
+    busa-shop (this is a byte-identical copy of busa-shop's). See "Bring
+    products in, any way".
   - **Channel rows, inventory per warehouse, review items and the Settings
     row** enter through `scripts/ingest_products.mjs`, which reads a JSON
     payload the agent prepares (shaped like the retired
@@ -221,8 +231,18 @@ importer, `scripts/import-products.mjs`, whatever form it arrives in. A
 spreadsheet goes in as it is; anything else (a PDF, a photo, a web page,
 pasted text) is first transcribed into the template spreadsheet. Every run is
 the same four steps: **preview → the owner confirms → import → read back.**
-It is the only product-list importer: busa-shop's skill points here too, so
-an Excel file, a CSV and a transcribed price list all land the same way.
+It is the only product-list importer: busa-shop ships the same file (its copy
+is the canonical one), so an Excel file, a CSV and a transcribed price list
+all land the same way.
+
+**Which table it writes** is the first line of its preview (`Products table:
+busa-product-hub-products (…)`). It writes this hub's Products when the
+workspace has no Busa Shop, or a shop from before busa-shop 0.5.0 (no Products
+of its own), or when the shop's Settings › Products table names this table.
+In a workspace whose Busa Shop has its own Products, it writes the shop's
+table by default: to import into this hub there, add
+`--products-base busa-product-hub-products` (or this table's slug), and say
+so to the owner.
 
 Never collect product data by crawling: no bulk downloads from brand or
 marketplace websites, whose terms usually forbid it. The data comes from the
@@ -291,7 +311,9 @@ empty.
   passed over. Certificates come from a sheet whose headers name a
   certificate number (认证 Certificates in the template), or from
   `--certificates <file>`; `--sheet` and `--certificates-sheet` choose.
-- **Column names.** 名称/商品名称/品名/Name → name; 型号/Model is the name
+- **Column names** (into this hub's table; into a Busa Shop's own Products
+  the same columns become its plain columns, Specs and Notes lines: see
+  busa-shop's manual). 名称/商品名称/品名/Name → name; 型号/Model is the name
   when there is no name column, otherwise a detail; 商品编号/Product ID; 货号/SKU;
   售价/价格/零售价/Price → price; 币种/货币/Currency; 成本/进价/Cost →
   `pricing.cogs`; 到岸成本/Landed cost; 库存/Stock → `inventory.available`;
@@ -471,9 +493,12 @@ Demo mode:
 - `import-products.mjs`: the product-list importer ("Bring products in, any
   way"). One file; needs only Node 20+ and `busabase-sdk`; copy it into an
   empty directory and run it. `--dry-run` writes and uploads nothing;
-  `--write-template` writes the template spreadsheet. Its tests run with
-  busa-shop's (`templates/busa-shop/content/busa-shop-app`, `npm test`), which
-  hold the fake Busabase it is tested against.
+  `--write-template` writes the template spreadsheet; `--products-base`
+  names the table. It is a byte-identical copy of busa-shop's
+  `scripts/import-products.mjs`: edit that one and copy it here. Its tests run
+  with busa-shop's (`templates/busa-shop/content/busa-shop-app`, `npm test`),
+  which hold the fake Busabase it is tested against and check that the two
+  copies agree.
 - `ingest_products.mjs`: the JSON snapshot ingest for channels, inventory,
   review items and Settings (Boundary). Runs from a checkout of the templates
   repository.

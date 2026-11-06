@@ -311,6 +311,7 @@ export const createHandler = (overrides = {}) => {
         setup: state.setup,
         products: state.setup === "ready" ? state.catalog.listed.length : 0,
         ordering: state.setup === "ready" && Boolean(state.ordersBaseId),
+        ...(state.setup === "ready" ? { productsFrom: state.productsFrom } : {}),
       });
     }
     if (state.setup !== "ready") {

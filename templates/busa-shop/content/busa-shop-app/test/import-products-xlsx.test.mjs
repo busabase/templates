@@ -1,4 +1,4 @@
-// busa-product-hub/scripts/import-products.mjs reading Excel: a workbook built
+// scripts/import-products.mjs reading Excel (into a busa-product-hub table here; the shop's own table is import-products-shop.test.mjs): a workbook built
 // here the way Excel and WPS write one (shared strings, a date style, a currency
 // format, merged cells, a title row, floating pictures, Excel's "Place in Cell"
 // pictures and WPS's DISPIMG pictures), imported against the fake Busabase with
@@ -27,7 +27,7 @@ import {
   readXlsx,
   runImport,
   templateWorkbook,
-} from "../../../../busa-product-hub/scripts/import-products.mjs";
+} from "../../../scripts/import-products.mjs";
 import { startFakeBusabase, TEST_KEY } from "./fake-busabase.mjs";
 import { NODES } from "./fixtures.mjs";
 
@@ -35,7 +35,8 @@ const hubBase = async (name) =>
   JSON.parse(await readFile(fileURLToPath(new URL(`../../../../busa-product-hub/content/${name}/base.json`, import.meta.url)), "utf8"));
 const hubCertificatesBase = await hubBase("certificates");
 const hubProductsBase = await hubBase("products");
-const TEMPLATE_ASSET = fileURLToPath(new URL("../../../../busa-product-hub/assets/import/products-template.xlsx", import.meta.url));
+const TEMPLATE_ASSET = fileURLToPath(new URL("../../../assets/import/products-template.xlsx", import.meta.url));
+const HUB_TEMPLATE_ASSET = fileURLToPath(new URL("../../../../busa-product-hub/assets/import/products-template.xlsx", import.meta.url));
 const FIXTURES = fileURLToPath(new URL("./fixtures/", import.meta.url));
 const sdk = { createBusabaseClient, uploadAsset, createAirAppRecords };
 
@@ -574,6 +575,7 @@ describe("import-products.mjs: reading cells and headers", () => {
 describe("the template spreadsheet", () => {
   it("assets/import/products-template.xlsx is what --write-template writes", async () => {
     assert.deepEqual(await readFile(TEMPLATE_ASSET), templateWorkbook(), "regenerate: node scripts/import-products.mjs --write-template assets/import/products-template.xlsx");
+    assert.deepEqual(await readFile(HUB_TEMPLATE_ASSET), templateWorkbook(), "busa-product-hub ships the same sheet: copy assets/import/products-template.xlsx there");
     const out = path.join(dir, "made", "products-template.xlsx");
     const lines = [];
     assert.equal(await main(["--write-template", out], { log: (line) => lines.push(line) }), 0);

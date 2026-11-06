@@ -2,9 +2,9 @@
 // busa-product-hub's importer actually writes.
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { parseCsv, planProducts } from "../../../../busa-product-hub/scripts/import-products.mjs";
-import { normalizeSettings } from "../src/catalog.js";
-import { parseDetailKeys, productDetails, SHOPPER_DETAILS, TRADE_DETAILS } from "../src/details.js";
+import { parseCsv, planProducts, shopProductFields } from "../../../scripts/import-products.mjs";
+import { normalizeProduct, normalizeSettings } from "../src/catalog.js";
+import { parseDetailKeys, parseSpecs, productDetails, SHOPPER_DETAILS, specKeyFor, TRADE_DETAILS } from "../src/details.js";
 import { MESSAGES } from "../src/i18n.js";
 
 // A budget phone as a Chinese seller's sheet has it (invented test data).
@@ -100,5 +100,35 @@ describe("productDetails", () => {
   it("reads Settings › Also show these product details", () => {
     assert.deepEqual(normalizeSettings({ fields: { "show-details": " 防水等级 ,gtin,,GTIN " } }).showDetails, ["防水等级", "gtin"]);
     assert.deepEqual(normalizeSettings({ fields: {} }).showDetails, [], "a shop installed before the field existed shows the known keys only");
+  });
+});
+
+describe("Specs in the shop's own Products", () => {
+  it("reads one \"Label: value\" per line: known labels as their key, the owner's own labels as written, in order", () => {
+    const { attributes, extraKeys } = parseSpecs("Battery: 5110 mAh\n运行内存：8 GB\n- Front camera: 8 MP\nIP rating: IP54\nAll-day battery\n\nEAN / GTIN: 6941234567890");
+    assert.deepEqual(attributes, { battery: "5110 mAh", memory: "8 GB", front_camera: "8 MP", "IP rating": "IP54", gtin: "6941234567890", specs: "All-day battery" });
+    assert.deepEqual(extraKeys, ["IP rating", "gtin"]);
+    assert.equal(specKeyFor("Akku"), "battery", "the store languages' own words");
+    assert.equal(specKeyFor("Écran"), "screen");
+    assert.equal(specKeyFor("保修"), "warranty");
+    assert.equal(specKeyFor("Weight (kg)"), "", "a label it does not know stays the owner's");
+    assert.deepEqual(parseSpecs(undefined), { attributes: {}, extraKeys: [] });
+  });
+
+  it("a phone imported into the shop's table shows the same details, in the same order, as from a product hub", () => {
+    const [phone] = planProducts(parseCsv(PHONE_CSV)).products;
+    const fields = shopProductFields(phone);
+    assert.equal(fields.brand, "Xinghe");
+    assert.match(fields.specs, /^Colour: 星空蓝\nDisplay: 6\.7 英寸 120Hz AMOLED\nProcessor: 天玑 7025\nRAM: 8GB\nStorage: 256 GB\nBattery: 5110 mAh/);
+    assert.match(fields.notes, /^MOQ: 100$/m);
+    assert.match(fields.notes, /^防水等级: IP54$/m, "a column it does not know is the owner's, in Notes");
+    const fromShop = normalizeProduct({ fields }, { shape: "shop" });
+    const fromHub = productDetails(phone.attributes);
+    assert.deepEqual(productDetails(fromShop.content.attributes, { extraKeys: fromShop.specKeys }), fromHub);
+    // Moved into Specs by the owner, an unknown line is shown; a trade one never is.
+    const edited = normalizeProduct({ fields: { ...fields, specs: `${fields.specs}\n防水等级: IP54\nMOQ: 100` } }, { shape: "shop" });
+    const rows = productDetails(edited.content.attributes, { extraKeys: edited.specKeys });
+    assert.deepEqual(rows.at(-1), ["防水等级", "IP54"]);
+    assert.ok(!rows.some(([label]) => label === "MOQ"));
   });
 });

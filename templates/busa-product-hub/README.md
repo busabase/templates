@@ -35,6 +35,22 @@ all behind an approval-gated review queue.
 - Settings: sanitized seller profile, platform connectors, warehouses,
   review policy, and data-provider state.
 
+## Busa Shop does not need it
+
+Busa Shop (0.5.0 and later) has its own Products and Certificates tables, so a
+seller who only wants a website installs just Busa Shop. This template is for
+export sellers who manage several channels, warehouses, a review queue and
+certificate expiry in one place. To have a Busa Shop website sell from this
+hub's Products instead of its own, write `busa-product-hub-products` (or this
+table's slug) into the shop's Settings › **Products table**; a shop installed
+before 0.5.0 already sells from here.
+
+Products enter through `scripts/import-products.mjs`, the same importer Busa
+Shop ships (this is a byte-identical copy; the canonical file and its tests
+live in `templates/busa-shop`). Its preview's first line names the table it
+writes: here, when no Busa Shop has its own Products, or when the shop's
+Settings point at this table, or with `--products-base busa-product-hub-products`.
+
 ## Running Locally
 
 ```bash

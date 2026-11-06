@@ -1,7 +1,7 @@
 {
   "name": "Orders",
   "description": "Order requests from the shop website, one row per order. The website writes a new row with status `new` and never changes it afterwards; staff move it through confirmed → paid → shipped (or cancelled). Internal note and reply draft are staff-only: the website never reads or writes them.",
-  "position": 0,
+  "position": 2,
   "agentPrompts": [
     {
       "key": "handle-new-orders",

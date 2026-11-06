@@ -28156,6 +28156,161 @@ var productDetails = (attributes, { extraKeys = [], language = "en" } = {}) => {
   }
   return rows;
 };
+var squashLabel = (value2) => String(value2 ?? "").normalize("NFKC").toLowerCase().replace(/[\s_\-.:/()（）·]+/g, "");
+var SPEC_KEYS = [...SHOPPER_DETAILS, "gtin"];
+var SPEC_SYNONYMS = {
+  brand: ["\u54C1\u724C", "make"],
+  model: ["\u578B\u53F7", "\u673A\u578B"],
+  color: ["color", "\u989C\u8272", "\u914D\u8272"],
+  screen: ["screen", "screen size", "\u5C4F\u5E55", "\u5C4F\u5E55\u5C3A\u5BF8", "\u663E\u793A\u5C4F"],
+  processor: ["chip", "chipset", "cpu", "soc", "\u5904\u7406\u5668", "\u82AF\u7247"],
+  memory: ["memory", "ram", "\u5185\u5B58", "\u8FD0\u884C\u5185\u5B58", "\u8FD0\u5B58"],
+  storage: ["rom", "storage capacity", "\u5B58\u50A8", "\u673A\u8EAB\u5B58\u50A8", "\u5B58\u50A8\u5BB9\u91CF"],
+  battery: ["battery capacity", "\u7535\u6C60", "\u7535\u6C60\u5BB9\u91CF"],
+  charging: ["fast charging", "charging power", "\u5FEB\u5145", "\u5145\u7535", "\u5145\u7535\u529F\u7387"],
+  camera: ["rear camera", "main camera", "cameras", "\u540E\u7F6E\u6444\u50CF\u5934", "\u6444\u50CF\u5934", "\u540E\u6444", "\u4E3B\u6444"],
+  front_camera: ["selfie camera", "\u524D\u7F6E\u6444\u50CF\u5934", "\u524D\u6444"],
+  network: ["\u7F51\u7EDC", "\u7F51\u7EDC\u5236\u5F0F"],
+  os: ["os", "system", "\u7CFB\u7EDF", "\u64CD\u4F5C\u7CFB\u7EDF"],
+  specs: ["specifications", "spec", "\u89C4\u683C", "\u53C2\u6570", "\u89C4\u683C\u53C2\u6570"],
+  age_grade: ["age", "age grade", "\u9002\u7528\u5E74\u9F84", "\u5E74\u9F84"],
+  materials: ["material", "\u6750\u8D28", "\u6750\u6599"],
+  batteries: ["battery type", "\u7535\u6C60\u89C4\u683C", "\u6240\u9700\u7535\u6C60"],
+  dimensions: ["dimensions", "size", "\u5C3A\u5BF8", "\u4EA7\u54C1\u5C3A\u5BF8"],
+  weight: ["net weight", "\u91CD\u91CF", "\u51C0\u91CD"],
+  in_the_box: ["what's in the box", "box contents", "package contents", "\u5305\u88C5\u6E05\u5355", "\u5305\u88C5\u5185\u5BB9"],
+  warranty: ["\u4FDD\u4FEE", "\u8D28\u4FDD", "\u4FDD\u4FEE\u671F"],
+  returns: ["return policy", "\u9000\u8D27", "\u9000\u6362\u8D27", "\u9000\u8D27\u653F\u7B56"],
+  gtin: ["ean", "upc", "barcode", "\u6761\u7801", "\u6761\u5F62\u7801"]
+};
+var SPEC_LABELS = (() => {
+  const map2 = /* @__PURE__ */ new Map();
+  const add = (label2, key) => {
+    const squashed = squashLabel(label2);
+    if (squashed && !map2.has(squashed)) map2.set(squashed, key);
+  };
+  for (const key of SPEC_KEYS) {
+    add(key, key);
+    for (const language of Object.keys(MESSAGES)) {
+      const label2 = MESSAGES[language]?.[`spec_${key}`];
+      if (label2) add(label2, key);
+    }
+    for (const synonym of SPEC_SYNONYMS[key] ?? []) add(synonym, key);
+  }
+  return map2;
+})();
+var specKeyFor = (label2) => SPEC_LABELS.get(squashLabel(label2)) ?? "";
+var parseSpecs = (value2) => {
+  const attributes = {};
+  const extraKeys = [];
+  const free = [];
+  for (const raw of String(value2 ?? "").split(/\r?\n/)) {
+    const line = raw.trim().replace(/^[-•*]\s+/, "");
+    if (!line) continue;
+    const match = /^([^:：]{1,60})[:：]\s*(.+)$/.exec(line);
+    if (!match) {
+      free.push(line);
+      continue;
+    }
+    const label2 = match[1].trim();
+    const key = specKeyFor(label2) || label2;
+    if (attributes[key] !== void 0) continue;
+    attributes[key] = match[2].trim();
+    if (!SHOPPER.has(keyOf(key))) extraKeys.push(key);
+  }
+  if (free.length && attributes.specs === void 0) attributes.specs = free.join("; ");
+  return { attributes, extraKeys };
+};
+
+// src/resources.js
+var SHOP_APP_ID = "busa-shop";
+var PRODUCT_HUB_APP_ID = "busa-product-hub";
+var SHOP_SHAPE = "shop";
+var PRODUCT_HUB_SHAPE = "product-hub";
+var stamped = (node2, appId, resourceKey) => node2?.metadata?.appId === appId && node2?.metadata?.resourceKey === resourceKey;
+var pickResource = (nodes, { type, appId, resourceKey, fallbackSlug, parentId }) => {
+  const candidates = nodes.filter(
+    (node2) => node2.type === type && (parentId === void 0 || node2.parentId === parentId)
+  );
+  let matches = candidates.filter((node2) => stamped(node2, appId, resourceKey));
+  if (matches.length === 0 && fallbackSlug) matches = candidates.filter((node2) => node2.slug === fallbackSlug);
+  if (matches.length === 1) return { status: "found", node: matches[0] };
+  if (matches.length === 0) return { status: "missing" };
+  return { status: "ambiguous", nodes: matches };
+};
+var resolveShopTables = (nodes) => ({
+  settings: pickResource(nodes, {
+    type: "base",
+    appId: SHOP_APP_ID,
+    resourceKey: "settings",
+    fallbackSlug: "busa-shop-settings"
+  }),
+  orders: pickResource(nodes, {
+    type: "base",
+    appId: SHOP_APP_ID,
+    resourceKey: "orders",
+    fallbackSlug: "busa-shop-orders"
+  })
+});
+var siblingSlug = (slug, resourceKey) => slug.endsWith("-products") ? `${slug.slice(0, -"-products".length)}-${resourceKey}` : "";
+var resolveProductTables = (nodes, override, { shopFolderId } = {}) => {
+  let products;
+  let shape;
+  if (override) {
+    const node2 = nodes.find(
+      (candidate) => candidate.type === "base" && (candidate.baseId === override || candidate.id === override || candidate.slug === override)
+    );
+    if (!node2) return { status: "products-override-not-found" };
+    products = node2;
+    shape = node2.metadata?.appId === SHOP_APP_ID ? SHOP_SHAPE : PRODUCT_HUB_SHAPE;
+  } else {
+    const own2 = shopFolderId === void 0 ? { status: "missing" } : pickResource(nodes, {
+      type: "base",
+      appId: SHOP_APP_ID,
+      resourceKey: "products",
+      fallbackSlug: "busa-shop-products",
+      parentId: shopFolderId
+    });
+    if (own2.status === "ambiguous") return { status: "products-ambiguous" };
+    if (own2.status === "found") {
+      products = own2.node;
+      shape = SHOP_SHAPE;
+    } else {
+      const picked = pickResource(nodes, {
+        type: "base",
+        appId: PRODUCT_HUB_APP_ID,
+        resourceKey: "products",
+        fallbackSlug: "busa-product-hub-products"
+      });
+      if (picked.status === "missing") return { status: "products-missing" };
+      if (picked.status === "ambiguous") return { status: "products-ambiguous" };
+      products = picked.node;
+      shape = PRODUCT_HUB_SHAPE;
+    }
+  }
+  const appId = shape === SHOP_SHAPE ? SHOP_APP_ID : PRODUCT_HUB_APP_ID;
+  const certificates = pickResource(nodes, {
+    type: "base",
+    appId,
+    resourceKey: "certificates",
+    fallbackSlug: siblingSlug(products.slug, "certificates"),
+    parentId: products.parentId
+  });
+  const hubApp = shape === PRODUCT_HUB_SHAPE ? pickResource(nodes, {
+    type: "airapp",
+    appId: PRODUCT_HUB_APP_ID,
+    resourceKey: "busa-product-hub-app",
+    fallbackSlug: "busa-product-hub-app",
+    parentId: products.parentId
+  }) : { status: "missing" };
+  return {
+    status: "ready",
+    shape,
+    productsBaseId: products.baseId,
+    certificatesBaseId: certificates.status === "found" ? certificates.node.baseId : null,
+    hubAppNodeId: hubApp.status === "found" ? hubApp.node.id : null
+  };
+};
 
 // src/catalog.js
 var PRODUCT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/;
@@ -28194,11 +28349,17 @@ var asObject = (value2) => {
 };
 var isBlank = (value2) => value2 === null || value2 === void 0 || typeof value2 === "string" && !value2.trim();
 var columnOr = (column, legacy) => isBlank(column) ? legacy : column;
-var asStringList = (value2) => {
-  const parsed = parseJson(value2, []);
-  if (!Array.isArray(parsed)) return [];
-  return parsed.filter((item) => typeof item === "string" && item.trim()).map((item) => item.trim());
+var asStringList = (value2, separators = null) => {
+  if (Array.isArray(value2)) return value2.filter((item) => typeof item === "string" && item.trim()).map((item) => item.trim());
+  if (typeof value2 !== "string" || !value2.trim()) return [];
+  const parsed = parseJson(value2, null);
+  if (Array.isArray(parsed)) return asStringList(parsed);
+  if (!separators) return [];
+  return value2.split(separators).map((item) => item.trim()).filter(Boolean);
 };
+var LINES = /\r?\n/;
+var LINKS = /[\s|]+/;
+var TAGS = /[,，;；|\n]+/;
 var classifyImageRef = (ref, busabaseOrigin) => {
   const value2 = text(ref);
   if (!value2 || value2.length > 2e3) return null;
@@ -28228,14 +28389,26 @@ var classifyImageRef = (ref, busabaseOrigin) => {
   if (segments[0] !== "assets" || !IMAGE_FILE.test(path)) return null;
   return { kind: "airapp", path: `app/${path}` };
 };
-var normalizeProduct = (record2) => {
+var normalizeProduct = (record2, { shape = "" } = {}) => {
   const fields = record2?.fields ?? {};
   const imageRefs = [];
-  for (const ref of [text(fields.image), ...asStringList(fields.gallery)]) {
+  for (const ref of [text(fields.image), ...asStringList(fields.gallery, LINKS)]) {
     if (ref && !imageRefs.includes(ref)) imageRefs.push(ref);
   }
   const pricing = asObject(fields.pricing);
+  const inventory = asObject(fields.inventory);
+  const stock = finiteNumber(fields.stock);
+  if (stock !== null) inventory.available = stock;
+  const content = asObject(fields.content);
+  const specs = parseSpecs(fields.specs);
+  const attributes = { ...asObject(content.attributes), ...specs.attributes };
+  for (const key of ["brand", "model", "warranty", "returns"]) if (text(fields[key])) attributes[key] = text(fields[key]);
+  if (Object.keys(attributes).length) content.attributes = attributes;
+  if (typeof fields.description === "string" && fields.description.trim()) content.description = fields.description.trim();
+  const highlights = asStringList(fields.highlights, LINES);
+  if (highlights.length) content.bullets = highlights;
   return {
+    shape: shape === SHOP_SHAPE ? SHOP_SHAPE : "product-hub",
     recordId: typeof record2?.id === "string" ? record2.id : "",
     id: text(fields["product-id"]),
     ref: finiteNumber(fields.ref),
@@ -28246,26 +28419,29 @@ var normalizeProduct = (record2) => {
     lifecycle: lower(fields.lifecycle),
     status: lower(fields.status),
     vendor: text(fields.vendor),
-    tags: asStringList(fields.tags),
+    tags: asStringList(fields.tags, TAGS),
     // The selling price as stored: the column, or the JSON while the column is empty.
     priceValue: columnOr(fields.price, pricing.current_price),
     currencyValue: columnOr(fields.currency, pricing.currency),
     pricing,
-    inventory: asObject(fields.inventory),
-    content: asObject(fields.content),
+    inventory,
+    content,
+    // Labels the owner wrote in Specs beyond the standard ones: shown, after them.
+    specKeys: specs.extraKeys,
     imageRefs,
     updatedAt: text(fields["updated-at"]) || text(record2?.updatedAt)
   };
 };
 var listingFor = (product, settings) => {
   const reasons = [];
-  if (!LISTED_LIFECYCLES.has(product.lifecycle)) reasons.push("lifecycle");
+  const own2 = product.shape === SHOP_SHAPE;
+  if (!own2 && !LISTED_LIFECYCLES.has(product.lifecycle)) reasons.push("lifecycle");
   if (!LISTED_STATUSES.has(product.status)) reasons.push("status");
   if (!product.name) reasons.push("name");
   if (!PRODUCT_ID_PATTERN.test(product.id)) reasons.push("product-id");
   const price = finiteNumber(product.priceValue);
   if (price === null || price <= 0) reasons.push("price");
-  const currency = text(product.currencyValue).toUpperCase();
+  const currency = text(product.currencyValue).toUpperCase() || (own2 ? settings.currency : "");
   if (!currency) reasons.push("currency");
   else if (currency !== settings.currency) reasons.push("currency-mismatch");
   if (settings.listedTag && !product.tags.some((tag) => tag.toLowerCase() === settings.listedTag.toLowerCase())) {
@@ -28282,11 +28458,11 @@ var listingFor = (product, settings) => {
     maxQuantity: available === null ? MAX_ORDER_QUANTITY : Math.max(0, Math.min(MAX_ORDER_QUANTITY, Math.floor(available)))
   };
 };
-var imagesFor = (product, busabaseOrigin) => {
+var imagesFor = (product, busabaseOrigin, { airapp = true } = {}) => {
   const images = [];
   for (const ref of product.imageRefs) {
     const image = classifyImageRef(ref, busabaseOrigin);
-    if (!image) continue;
+    if (!image || image.kind === "airapp" && !airapp) continue;
     images.push(image);
     if (images.length >= MAX_IMAGES) break;
   }
@@ -28368,13 +28544,13 @@ var countryName = (code, language = "en") => {
     return code;
   }
 };
-var buildCatalog = ({ productRecords, certificateRecords, settings, busabaseOrigin, nowMs }) => {
+var buildCatalog = ({ productRecords, certificateRecords, settings, busabaseOrigin, nowMs, shape = "", airappImages = true }) => {
   const certificates = certificateRecords.map(normalizeCertificate);
   const listed = [];
   const hidden = [];
   const seenIds = /* @__PURE__ */ new Set();
   for (const record2 of productRecords) {
-    const product = normalizeProduct(record2);
+    const product = normalizeProduct(record2, { shape });
     const listing = listingFor(product, settings);
     if (listing.listed && seenIds.has(product.id)) listing.reasons.push("duplicate-id");
     if (!listing.listed || listing.reasons.length) {
@@ -28386,7 +28562,7 @@ var buildCatalog = ({ productRecords, certificateRecords, settings, busabaseOrig
       ...product,
       ...listing,
       priceText: formatPrice(listing.price, listing.currency, settings.language),
-      images: imagesFor(product, busabaseOrigin),
+      images: imagesFor(product, busabaseOrigin, { airapp: airappImages }),
       certificates: validCertificatesFor(product, certificates, nowMs)
     });
   }
@@ -28766,7 +28942,7 @@ var productPage = ({ origin, settings, product }) => {
   const content = product.content;
   const specs = [
     ...product.sku ? [[t("spec_sku"), product.sku]] : [],
-    ...productDetails(content.attributes, { extraKeys: settings.showDetails, language: settings.language })
+    ...productDetails(content.attributes, { extraKeys: [...product.specKeys ?? [], ...settings.showDetails], language: settings.language })
   ];
   const bullets = Array.isArray(content.bullets) ? content.bullets.filter((item) => typeof item === "string" && item.trim()).slice(0, 8) : [];
   const thumbs = product.images.length > 1 ? `<ul class="thumbs">${product.images.map(
@@ -28935,15 +29111,15 @@ var SETUP_MESSAGES = {
   "products-missing": {
     title: "This shop has no product list yet",
     steps: [
-      "This shop shows the products from the Products table of the Busa Product Hub template. It does not keep a copy of its own.",
-      "Install the Busa Product Hub template in this workspace, add or import your products there, then refresh this page.",
-      "Already installed under another folder name? Write the Products table's id or slug into this shop's Settings, field \u201CProducts table\u201D."
+      "This shop sells from the Products table in its own folder, next to Orders and Settings. That table is missing or cannot be read.",
+      "Install the Busa Shop template again, or restore Products from the trash, then add or import your products there and refresh this page.",
+      "Selling from another table, such as a Busa Product Hub Products table? Write its id or slug into this shop's Settings, field \u201CProducts table\u201D."
     ]
   },
   "products-ambiguous": {
     title: "This shop found more than one product list",
     steps: [
-      "This workspace has more than one Busa Product Hub Products table, so the shop will not guess which one to sell from.",
+      "This workspace has more than one Products table this shop could sell from, so it will not guess which one.",
       "Write the id or slug of the one to use into this shop's Settings, field \u201CProducts table\u201D, then refresh this page."
     ]
   },
@@ -28951,13 +29127,13 @@ var SETUP_MESSAGES = {
     title: "The product list named in Settings was not found",
     steps: [
       "This shop's Settings name a Products table that this site cannot find or cannot read.",
-      "Check the id or slug in Settings, field \u201CProducts table\u201D, or clear it to use the Busa Product Hub Products table automatically."
+      "Check the id or slug in Settings, field \u201CProducts table\u201D, or clear it to sell from this shop's own Products table."
     ]
   },
   "settings-missing": {
     title: "This shop's Settings table was not found",
     steps: [
-      "The Busa Shop template creates Orders, Settings and Reports tables next to this website. The Settings table is missing or cannot be read.",
+      "The Busa Shop template creates Products, Certificates, Orders, Settings and Reports tables next to this website. The Settings table is missing or cannot be read.",
       "Install the Busa Shop template again, or restore the Settings table from the trash, then refresh this page."
     ]
   },
@@ -28997,75 +29173,6 @@ var setupPage = ({ code }) => {
   });
 };
 
-// src/resources.js
-var SHOP_APP_ID = "busa-shop";
-var PRODUCT_HUB_APP_ID = "busa-product-hub";
-var stamped = (node2, appId, resourceKey) => node2?.metadata?.appId === appId && node2?.metadata?.resourceKey === resourceKey;
-var pickResource = (nodes, { type, appId, resourceKey, fallbackSlug, parentId }) => {
-  const candidates = nodes.filter(
-    (node2) => node2.type === type && (parentId === void 0 || node2.parentId === parentId)
-  );
-  let matches = candidates.filter((node2) => stamped(node2, appId, resourceKey));
-  if (matches.length === 0 && fallbackSlug) matches = candidates.filter((node2) => node2.slug === fallbackSlug);
-  if (matches.length === 1) return { status: "found", node: matches[0] };
-  if (matches.length === 0) return { status: "missing" };
-  return { status: "ambiguous", nodes: matches };
-};
-var resolveShopTables = (nodes) => ({
-  settings: pickResource(nodes, {
-    type: "base",
-    appId: SHOP_APP_ID,
-    resourceKey: "settings",
-    fallbackSlug: "busa-shop-settings"
-  }),
-  orders: pickResource(nodes, {
-    type: "base",
-    appId: SHOP_APP_ID,
-    resourceKey: "orders",
-    fallbackSlug: "busa-shop-orders"
-  })
-});
-var resolveProductTables = (nodes, override) => {
-  let products;
-  if (override) {
-    const node2 = nodes.find(
-      (candidate) => candidate.type === "base" && (candidate.baseId === override || candidate.id === override || candidate.slug === override)
-    );
-    if (!node2) return { status: "products-override-not-found" };
-    products = node2;
-  } else {
-    const picked = pickResource(nodes, {
-      type: "base",
-      appId: PRODUCT_HUB_APP_ID,
-      resourceKey: "products",
-      fallbackSlug: "busa-product-hub-products"
-    });
-    if (picked.status === "missing") return { status: "products-missing" };
-    if (picked.status === "ambiguous") return { status: "products-ambiguous" };
-    products = picked.node;
-  }
-  const certificates = pickResource(nodes, {
-    type: "base",
-    appId: PRODUCT_HUB_APP_ID,
-    resourceKey: "certificates",
-    fallbackSlug: products.slug.endsWith("-products") ? `${products.slug.slice(0, -"-products".length)}-certificates` : "",
-    parentId: products.parentId
-  });
-  const hubApp = pickResource(nodes, {
-    type: "airapp",
-    appId: PRODUCT_HUB_APP_ID,
-    resourceKey: "busa-product-hub-app",
-    fallbackSlug: "busa-product-hub-app",
-    parentId: products.parentId
-  });
-  return {
-    status: "ready",
-    productsBaseId: products.baseId,
-    certificatesBaseId: certificates.status === "found" ? certificates.node.baseId : null,
-    hubAppNodeId: hubApp.status === "found" ? hubApp.node.id : null
-  };
-};
-
 // src/shop.js
 var CATALOG_TTL_MS = 6e4;
 var STALE_IF_ERROR_MS = 10 * 6e4;
@@ -29096,7 +29203,7 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
     const settings = normalizeSettings(settingsRecord);
     if (!/^[A-Z]{3}$/.test(settings.currency)) return { setup: "currency-missing", settings };
     if (!settings.storeName) settings.storeName = "Shop";
-    const tables = resolveProductTables(nodes, settings.productsBase);
+    const tables = resolveProductTables(nodes, settings.productsBase, { shopFolderId: shop.settings.node.parentId });
     if (tables.status !== "ready") return { setup: tables.status, settings };
     const [productsPage, certificateRecords] = await Promise.all([
       records.readPage({
@@ -29116,12 +29223,15 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       certificateRecords,
       settings,
       busabaseOrigin,
-      nowMs: now()
+      nowMs: now(),
+      shape: tables.shape,
+      airappImages: Boolean(tables.hubAppNodeId)
     });
     return {
       setup: "ready",
       settings,
       catalog,
+      productsFrom: tables.shape,
       ordersBaseId: shop.orders.status === "found" ? shop.orders.node.baseId : null,
       hubAppNodeId: tables.hubAppNodeId,
       moreProducts: Boolean(productsPage.nextCursor)
@@ -29462,7 +29572,8 @@ var createHandler = (overrides = {}) => {
         ok: state.setup === "ready",
         setup: state.setup,
         products: state.setup === "ready" ? state.catalog.listed.length : 0,
-        ordering: state.setup === "ready" && Boolean(state.ordersBaseId)
+        ordering: state.setup === "ready" && Boolean(state.ordersBaseId),
+        ...state.setup === "ready" ? { productsFrom: state.productsFrom } : {}
       });
     }
     if (state.setup !== "ready") {

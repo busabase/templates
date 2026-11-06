@@ -1,8 +1,48 @@
 # Busa Shop schema
 
-The three Bases this template installs (`content/<base>/base.json` is the
+The five Bases this template installs (`content/<base>/base.json` is the
 source; installed slugs are `busa-shop-<folder name>`), the website's routes,
-and what the website reads from busa-product-hub.
+what the importer writes, and what the website reads when Settings point it
+at a busa-product-hub table instead (or the shop is older than 0.5.0).
+
+## Products (`busa-shop-products`)
+
+Plain columns an owner edits in the grid. The website reads the first 100 rows
+by `ref` (Position), never writes them.
+
+| Slug | Type | Read by the website | Notes |
+| --- | --- | --- | --- |
+| `name` | text, required | yes | |
+| `product-id` | text, required | yes | Page address `/products/<product-id>`: `[A-Za-z0-9][A-Za-z0-9._-]{0,79}`. Import key |
+| `status` | select | yes | `active` (On sale, listed), `draft`, `archive` (Off sale) |
+| `price` | number | yes | Above 0 to be listed |
+| `currency` | text | yes | ISO 4217; empty = Settings › Currency; another currency is not listed |
+| `stock` | number | yes | Empty = unknown; 0 or less = Out of stock; caps the order quantity |
+| `category` | text | yes | Search data only (schema.org `category`), not shown as text |
+| `brand`, `model` | text | yes | First two Details lines; `brand` is also schema.org `brand` |
+| `subtitle` | text | yes | Under the name on the card and the product page |
+| `image` | text | yes | Main photo URL (see SKILL.md "Product images") |
+| `gallery` | longtext | yes | More photo URLs, one per line (a JSON array is read too) |
+| `description` | longtext | yes | Paragraphs separated by a blank line |
+| `highlights` | longtext | yes | One per line, shown as a list (at most 8) |
+| `specs` | longtext | yes | One `Label: value` per line; known labels become Details keys (`src/details.js`, `parseSpecs`), others are shown as written, after them |
+| `warranty`, `returns` | text | yes | Last two Details lines |
+| `sku` | text | yes | "Item no.", and written into orders |
+| `tags` | text | yes | Comma-separated; only for Settings › `listed-tag` |
+| `ref` | number | sort only | "Position on the site": ascending, empty last |
+| `cost` | number | **never** | Unit cost (or landed cost) |
+| `source` | text | **never** | Where the facts came from |
+| `notes` | longtext | **never** | `Label: value` lines: supplier, MOQ, lead time, HS code, carton qty, country of origin, EAN, and any column of an imported sheet that is not for shoppers |
+
+## Certificates (`busa-shop-certificates`)
+
+The same fields as busa-product-hub's Certificates, so one importer writes
+both: `product` (relation to this folder's Products, one), `cert-type`
+(select: CE, FCC, RoHS, UN38.3, UKCA, EN 71, ASTM F963, CPSIA / CPC, Other),
+`issuer`, `cert-number`, `issued-date`, `expiry-date` (text, YYYY-MM-DD),
+`file` (attachment, one), `source-note`. The website reads the first 100 rows:
+`product`, `cert-type` (`Other` is not shown), `expiry-date` (only unexpired
+ones are shown; never the number).
 
 ## Orders (`busa-shop-orders`)
 
@@ -44,12 +84,12 @@ waits as a ChangeRequest and the buyer is still thanked.
 | `shipping-note` | longtext | Shown under the order form |
 | `demo-notice` | checkbox | The "fictional demo store" bar |
 | `listed-tag` | text | Optional tag filter |
-| `products-base` | text | Optional: Products table id or slug |
+| `products-base` | text | Optional: another Products table to sell from (id or slug), e.g. `busa-product-hub-products`. Empty = this folder's Products |
 | `site-url` | url | Live address, for the daily check |
 | `required-certificates` | text | Daily check: certificate types, `EN 71, ASTM F963, CPSIA / CPC` |
 | `expiry-warning-days` | number | Daily check: default 90 |
 | `check-rules` | longtext | Daily check: standing rules from feedback |
-| `show-details` | text | Optional (0.4.0+): extra `content.attributes` keys for the product page, comma-separated (`防水等级, gtin`); `moq`, `lead_time_days`, `hs_code`, `carton_qty`, `country_of_origin` are never shown. Missing on older installs = none |
+| `show-details` | text | Optional (0.4.0+), for a product hub table only: extra `content.attributes` keys for the product page, comma-separated (`防水等级, gtin`); `moq`, `lead_time_days`, `hs_code`, `carton_qty`, `country_of_origin` are never shown. Missing on older installs = none |
 
 ## Reports (`busa-shop-reports`)
 
@@ -77,7 +117,7 @@ waits as a ChangeRequest and the buyer is still thanked.
 | `GET /products/<product-id>` | A listed product; anything else is a 404 |
 | `GET /order` | Order request form; `?add=<product-id>&qty=<n>` pre-fills one line |
 | `POST /api/orders` | JSON (from the page script) or a plain form post; creates one Orders row |
-| `GET /api/status` | `{ ok, setup, products, ordering }` |
+| `GET /api/status` | `{ ok, setup, products, ordering, productsFrom }`; `productsFrom` (when ready) is `shop` or `product-hub`, the shape of the table it sells from |
 | `GET /images/<product-id>/<n>` | Image `n` of a listed product, fetched with the key |
 | `GET /sitemap.xml`, `GET /robots.txt` | Home and every listed product; `/api/` and `/order` disallowed |
 | `/static/*`, `/favicon.svg` | Files in `public/` |
@@ -91,18 +131,33 @@ is no longer the total (with current prices), `403` for a cross-site post,
 set up or the order could not be saved (nothing was saved; the buyer keeps the
 same order id for the retry).
 
-## Read from busa-product-hub (never written)
+## Written by `scripts/import-products.mjs`
+
+Run by an agent or a person, never by the website. It writes the table the
+website sells from (SKILL.md, "How the website finds its tables"), or the one
+`--products-base` names. Products are matched by `product-id`; certificates
+by product + `cert-type` + `cert-number`. An empty cell in the list leaves
+the stored value alone.
+
+| Base | Fields it may write |
+| --- | --- |
+| Products (the shop's) | `product-id`, `name`, `sku`, `subtitle`, `category`, `status` (from the sheet's Status and Lifecycle: on sale → `active`, draft/test → `draft`, 下架/archive → `archive`), `price`, `currency`, `stock`, `cost` (cost, or landed cost when there is none), `brand`, `model`, `warranty`, `returns`, `description`, `highlights`, `tags`, `specs` and `notes` (lines merged by label: a line about the same thing gets the new value under the label already there, new lines are appended, none is removed), `source`, `image` + `gallery` (the uploaded pictures: main, then the rest one per line); `ref` on create |
+| Certificates | `product`, `cert-type`, `cert-number`, `issuer`, `issued-date`, `expiry-date`, `source-note` (`<file> › <sheet> row <n>`, plus the row's Source/备注) |
+
+A column it writes but the table no longer has (the owner deleted it) is left
+out, and the summary says so. A picture is not uploaded again when the
+product already shows one with the same bytes (it reads the stored URLs back).
+Into a busa-product-hub table it writes that template's shape instead
+(busa-product-hub's `references/product-hub-schema.md`, "Written by
+`scripts/import-products.mjs`").
+
+## Read from a busa-product-hub table (never written by the website)
+
+When Settings › Products table names one, or the shop was installed before
+0.5.0 and has no Products of its own:
 
 | Base | Read | Fields used |
 | --- | --- | --- |
-| Products | first 100 by `ref` | `product-id`, `name`, `subtitle`, `sku`, `category`, `lifecycle`, `status`, `tags`, `image`, `gallery`, `price` and `currency` (busa-product-hub 0.4.0+; while a column is empty, `pricing.current_price` / `pricing.currency`), `inventory` (`available`), `content` (`description`, `bullets`, `attributes`: the shopper keys in `src/details.js` plus Settings › `show-details`; see SKILL.md "Product details on the page"), `updated-at` |
+| Products | first 100 by `ref` | `product-id`, `name`, `subtitle`, `sku`, `category`, `lifecycle`, `status`, `tags` (JSON), `image`, `gallery` (JSON), `price` and `currency` (busa-product-hub 0.4.0+; while a column is empty, `pricing.current_price` / `pricing.currency`), `inventory` (`available`), `content` (`description`, `bullets`, `attributes`: the shopper keys in `src/details.js` plus Settings › `show-details`; see SKILL.md "Product details on the page"), `updated-at` |
 | Certificates | first 100 | `product`, `cert-type` (shown as is; `Other` is not shown), `expiry-date` |
 | Product Hub AirApp | one file per image request | only for image paths under `assets/` |
-
-## Written to busa-product-hub by its importer
-
-Products, pictures and certificates are imported by busa-product-hub's
-`scripts/import-products.mjs` (Excel or CSV), run by an agent or a person,
-never by the website. What it writes, field by field, is in
-busa-product-hub's `references/product-hub-schema.md`, "Written by
-`scripts/import-products.mjs`".

@@ -3,9 +3,10 @@
 // it only ever calls these procedures:
 //
 //   nodes.list({ types: ["base", "airapp"] })   find the tables (src/resources.js)
-//   records.list  Settings (5 rows), Products (100), Certificates (100)
+//   records.list  Settings (5 rows), Products (100), Certificates (100):
+//                 the shop's own Products and Certificates, or a product hub's
 //   bases.createChangeRequest  one Orders row per order request
-//   fileTrees.readFile  one image file inside the Product Hub AirApp
+//   fileTrees.readFile  one image file inside the Product Hub AirApp (product hub tables only)
 //
 // Nothing a visitor sends is passed through to the API: no Base, record id,
 // path, filter or body. The visitor's input selects among products this module
@@ -53,7 +54,7 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
     if (!/^[A-Z]{3}$/.test(settings.currency)) return { setup: "currency-missing", settings };
     if (!settings.storeName) settings.storeName = "Shop";
 
-    const tables = resolveProductTables(nodes, settings.productsBase);
+    const tables = resolveProductTables(nodes, settings.productsBase, { shopFolderId: shop.settings.node.parentId });
     if (tables.status !== "ready") return { setup: tables.status, settings };
 
     const [productsPage, certificateRecords] = await Promise.all([
@@ -82,11 +83,14 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
       settings,
       busabaseOrigin,
       nowMs: now(),
+      shape: tables.shape,
+      airappImages: Boolean(tables.hubAppNodeId),
     });
     return {
       setup: "ready",
       settings,
       catalog,
+      productsFrom: tables.shape,
       ordersBaseId: shop.orders.status === "found" ? shop.orders.node.baseId : null,
       hubAppNodeId: tables.hubAppNodeId,
       moreProducts: Boolean(productsPage.nextCursor),

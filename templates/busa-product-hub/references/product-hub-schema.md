@@ -78,7 +78,11 @@ JSON, so a product never carries two prices that can disagree.
 
 Run by an agent or a person, never by the AirApp or a website. Products are
 matched by `product-id`; certificates by product + `cert-type` +
-`cert-number`.
+`cert-number`. The same importer (shipped by busa-shop; this template carries
+a byte-identical copy) writes a Busa Shop's own Products instead when the
+workspace has a shop with one and its Settings do not name this table; its
+preview says which table, and busa-shop's `references/shop-schema.md` lists
+what it writes there.
 
 | Base | Fields it may write |
 | --- | --- |
