@@ -1,0 +1,202 @@
+{
+  "name": "Objectives",
+  "description": "What the company and each team want to achieve this quarter.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "draft-okrs",
+      "label": {
+        "en": "Draft next quarter’s objectives from our plan",
+        "zh-CN": "根据年度计划起草下季度目标"
+      },
+      "body": {
+        "en": "Read the `busa-okr` skill in this folder and follow it. Draft company and team objectives for the quarter I name from the plan or notes I paste: three company objectives at most, each team objective supporting one of them, each with two to four measurable key results. Show me the draft before writing anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-okr` Skill，按它的规则做。根据我贴的计划或笔记，为我指定的季度起草公司级和团队级目标：公司级最多三个，每个团队目标都要支撑其中一个，每个目标配两到四个可量化的关键结果。写入前先给我看草稿。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "objective-status",
+      "label": {
+        "en": "How is this objective really doing?",
+        "zh-CN": "这个目标实际进展如何"
+      },
+      "body": {
+        "en": "Read the `busa-okr` skill in this folder and follow it. For the objective I name, show each key result with its progress against where the quarter says it should be, the latest update and who wrote it, and any open actions. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-okr` Skill，按它的规则做。针对我说的目标，列出每个关键结果的进度和按时间应达到的进度、最近一次更新及写入者，以及未完成的行动。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Objective",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "level",
+      "name": "Level",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "company",
+            "name": "Company",
+            "color": "cyan"
+          },
+          {
+            "id": "team",
+            "name": "Team",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "team",
+      "name": "Team",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "company",
+            "name": "Company",
+            "color": "cyan"
+          },
+          {
+            "id": "growth",
+            "name": "Growth",
+            "color": "slate"
+          },
+          {
+            "id": "sales",
+            "name": "Sales",
+            "color": "slate"
+          },
+          {
+            "id": "operations",
+            "name": "Operations",
+            "color": "slate"
+          },
+          {
+            "id": "support",
+            "name": "Support",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "owner",
+      "name": "Owner",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "quarter",
+      "name": "Quarter",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "parent",
+      "name": "Supports",
+      "type": "relation",
+      "required": false,
+      "position": 5,
+      "options": {
+        "targetBaseSlug": "objectives",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "confidence",
+      "name": "Confidence",
+      "type": "select",
+      "required": false,
+      "position": 6,
+      "options": {
+        "choices": [
+          {
+            "id": "on-track",
+            "name": "On track",
+            "color": "emerald"
+          },
+          {
+            "id": "watch",
+            "name": "Watch",
+            "color": "amber"
+          },
+          {
+            "id": "at-risk",
+            "name": "At risk",
+            "color": "rose"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "summary",
+      "name": "Latest word",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "All objectives",
+      "description": "Company objectives first, then each team",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "title",
+          "level",
+          "team",
+          "owner",
+          "confidence",
+          "parent"
+        ]
+      }
+    },
+    {
+      "slug": "at-risk",
+      "name": "At risk",
+      "description": "Objectives whose confidence is at risk",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "confidence",
+            "operator": "equals",
+            "value": "at-risk"
+          }
+        ],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "title",
+          "team",
+          "owner",
+          "confidence",
+          "summary"
+        ]
+      }
+    }
+  ]
+}

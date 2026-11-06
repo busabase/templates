@@ -1,0 +1,49 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-okr",
+  "displayName": {
+    "en": "OKR Cockpit",
+    "zh-CN": "OKR 经营驾驶舱"
+  },
+  "description": {
+    "en": "Company and team OKRs that every team's agent keeps current with evidence: one light per key result, recovery actions, and a Monday business review — so the CEO asks one question instead of holding a status meeting.",
+    "zh-CN": "公司和各团队的 OKR 由各团队的 Agent 带着依据持续更新：每个关键结果一盏红绿灯、偏离就有补救行动、每周一自动出经营周报——老板问一句就知道进展，不用再开进度会。"
+  },
+  "version": "0.1.0",
+  "license": "MIT",
+  "tags": [
+    "okr",
+    "goals",
+    "management",
+    "weekly-review",
+    "risk:gated-write"
+  ],
+  "template": {
+    "category": "management",
+    "schemaVersion": 1,
+    "airapp": "busa-okr-app",
+    "tags": [
+      "okr",
+      "goals",
+      "ceo",
+      "multi-agent",
+      "weekly-review"
+    ],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/key-result.webp",
+      "assets/screenshots/objective.webp",
+      "assets/screenshots/weekly-review.webp"
+    ],
+    "agentPrompts": [
+      "Which goals are at risk this quarter, and why?",
+      "Update the Growth team's key results from our data and flag anything that turned red.",
+      "Write this Monday's business review."
+    ],
+    "secrets": [],
+    "requires": {
+      "airapp": true
+    }
+  }
+}

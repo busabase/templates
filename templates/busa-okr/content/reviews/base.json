@@ -1,0 +1,134 @@
+{
+  "name": "Weekly Reviews",
+  "description": "The Monday business review an agent writes from the records above: one headline, every team, every risk.",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "write-review",
+      "label": {
+        "en": "Write this Monday’s business review",
+        "zh-CN": "写本周一的经营周报"
+      },
+      "body": {
+        "en": "Read the `busa-okr` skill in this folder and follow it. Write the weekly review for last Monday to Sunday from the objectives, key results, check-ins and actions: a one-line headline, overall progress against the quarter, each team in two lines, every red and watch key result with its cause and action, and what changed since last week.",
+        "zh-CN": "先阅读本文件夹里的 `busa-okr` Skill，按它的规则做。根据目标、关键结果、进展记录和行动，写上周一到周日的经营周报：一句话结论、整体进度对比时间进度、每个团队两行、每个红灯和黄灯关键结果的原因与行动、与上周相比的变化。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "compare-weeks",
+      "label": {
+        "en": "What got better or worse since last week?",
+        "zh-CN": "和上周比哪些变好了、哪些变差了"
+      },
+      "body": {
+        "en": "Read the `busa-okr` skill in this folder and follow it. Compare the two latest reviews and the check-ins between them: which key results changed light, which numbers moved most, and which actions closed. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-okr` Skill，按它的规则做。对比最近两份周报和期间的进展记录：哪些关键结果换了灯、哪些数字变动最大、哪些行动完成了。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Review",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "draft",
+            "name": "Draft",
+            "color": "amber"
+          },
+          {
+            "id": "final",
+            "name": "Final",
+            "color": "emerald"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "period-start",
+      "name": "From",
+      "type": "date",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "period-end",
+      "name": "To",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "headline",
+      "name": "Headline",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "at-risk-count",
+      "name": "Key results at risk",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "written-by",
+      "name": "Written by",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "body",
+      "name": "Review",
+      "type": "markdown",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest",
+      "name": "Latest first",
+      "description": "Every weekly review, newest first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "period-end",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "period-start",
+          "period-end",
+          "headline"
+        ]
+      }
+    }
+  ]
+}
