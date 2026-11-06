@@ -180,6 +180,33 @@ describe("pages", () => {
   });
 });
 
+describe("prices", () => {
+  const robotRow = () => api.state.records.bas_products.find((row) => row.fields["product-id"] === "tt-walking-robot");
+
+  it("shows the Price column, and a changed cell on the next read", async () => {
+    assert.equal(robotRow().fields.price, 24);
+    assert.equal(JSON.parse(robotRow().fields.pricing).current_price, undefined, "the import left no second price");
+    assert.match((await call("/products/tt-walking-robot")).text, /<p class="price price-large">\$24\.00<\/p>/);
+    robotRow().fields.price = 22; // the owner edits the cell
+    assert.match((await call("/products/tt-walking-robot")).text, /<p class="price price-large">\$22\.00<\/p>/);
+    robotRow().fields.price = null; // and empties it: no price, so not for sale
+    assert.equal((await call("/products/tt-walking-robot")).status, 404);
+  });
+
+  it("still shows prices from a product hub installed before 0.4.0 (Pricing JSON, no Price column)", async () => {
+    Object.assign(api.state, await demoState({ imageUrl: (file) => `${api.origin}/assets/${file}`, priceColumn: false }));
+    api.state.records.bas_orders = [];
+    assert.equal("price" in robotRow().fields, false);
+    assert.equal(JSON.parse(robotRow().fields.pricing).current_price, 24);
+    const home = await call("/");
+    assert.equal(home.status, 200);
+    assert.equal([...home.text.matchAll(/<li class="card">/g)].length, 10, "the same ten products as with the column");
+    assert.match((await call("/products/tt-walking-robot")).text, /<p class="price price-large">\$24\.00<\/p>/);
+    const status = JSON.parse((await call("/api/status")).text);
+    assert.deepEqual([status.setup, status.products], ["ready", 10]);
+  });
+});
+
 describe("images", () => {
   it("streams an image of a listed product, fetched with the key from Busabase", async () => {
     const { status, type, text, response } = await call("/images/tt-walking-robot/1");

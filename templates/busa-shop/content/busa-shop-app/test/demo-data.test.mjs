@@ -142,10 +142,13 @@ describe("the toy list", () => {
   it("builds product rows without inventing anything", async () => {
     const { products } = planProducts(parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8")));
     const xylophone = productFields(products.find((product) => product.productId === "tt-xylophone"));
-    assert.equal(JSON.parse(xylophone.pricing).current_price, undefined, "an empty price stays empty");
+    assert.equal(xylophone.price, undefined, "an empty price stays empty");
+    assert.equal(JSON.parse(xylophone.pricing).current_price, undefined, "and no price hides in the JSON");
     const robotPlan = products.find((product) => product.productId === "tt-walking-robot");
     const robot = productFields(robotPlan, {}, robotPlan.imageRefs.map((file) => ({ file, sha256: "", url: `https://cdn.example/${file}` })));
     assert.deepEqual(JSON.parse(robot.gallery), ["https://cdn.example/walking-robot.svg", "https://cdn.example/walking-robot-box.svg"]);
+    assert.equal(robot.price, 24, "the price is the Price column");
+    assert.equal(robot.currency, "USD");
     assert.equal(JSON.parse(robot.pricing).gross_margin_pct, 59.2);
     assert.equal(JSON.parse(robot.content).attributes.moq, 48);
     assert.deepEqual(JSON.parse(robot.inventory), { available: 180 }, "only what the list says: no invented on-hand figure");

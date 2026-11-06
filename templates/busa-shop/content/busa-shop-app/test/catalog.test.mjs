@@ -25,7 +25,9 @@ const record = (fields, id = "rec_1") => ({
     name: "Toy",
     lifecycle: "active",
     status: "active",
-    pricing: JSON.stringify({ currency: "USD", current_price: 24 }),
+    price: 24,
+    currency: "USD",
+    pricing: JSON.stringify({ target_price: 24, landed_cost: 9.8 }),
     ...fields,
   },
 });
@@ -55,21 +57,52 @@ describe("the listing rule", () => {
     }
   });
 
-  it("hides a product with no price, a zero price or a non-numeric price", () => {
-    assert.deepEqual(listing({ pricing: JSON.stringify({ currency: "USD" }) }).reasons, ["price"]);
-    assert.deepEqual(listing({ pricing: JSON.stringify({ currency: "USD", current_price: 0 }) }).reasons, ["price"]);
-    assert.deepEqual(listing({ pricing: JSON.stringify({ currency: "USD", current_price: "abc" }) }).reasons, ["price"]);
-    assert.deepEqual(listing({ pricing: "not json" }).reasons, ["price", "currency"]);
+  it("uses the Price and Currency columns, not a price left in the Pricing JSON", () => {
+    const result = listing({ price: 22, pricing: JSON.stringify({ currency: "EUR", current_price: 30 }) });
+    assert.equal(result.listed, true);
+    assert.equal(result.price, 22);
+    assert.equal(result.currency, "USD");
+  });
+
+  it("falls back to pricing.current_price and pricing.currency while the columns are empty (a product hub from before 0.4.0)", () => {
+    const legacy = { pricing: JSON.stringify({ currency: "USD", current_price: 19.5, landed_cost: 7 }) };
+    for (const empty of [{ price: undefined, currency: undefined }, { price: null, currency: null }, { price: "", currency: " " }]) {
+      const result = listing({ ...empty, ...legacy });
+      assert.equal(result.listed, true, JSON.stringify(empty));
+      assert.equal(result.price, 19.5);
+      assert.equal(result.currency, "USD");
+    }
+    // Each column falls back on its own.
+    assert.equal(listing({ currency: "", pricing: JSON.stringify({ currency: "USD" }) }).price, 24);
+    assert.deepEqual(listing({ price: null, pricing: JSON.stringify({ current_price: 12 }) }).price, 12);
+  });
+
+  it("hides a product with neither a Price column nor a JSON price", () => {
+    const result = listing({ price: null, pricing: JSON.stringify({ target_price: 24 }) });
+    assert.equal(result.listed, false);
+    assert.deepEqual(result.reasons, ["price"]);
+    assert.deepEqual(listing({ price: null, currency: null, pricing: "" }).reasons, ["price", "currency"]);
+  });
+
+  it("hides a product with a zero or non-numeric price; 0 in the column is not empty, so no fallback", () => {
+    assert.deepEqual(listing({ price: 0 }).reasons, ["price"]);
+    assert.deepEqual(listing({ price: 0, pricing: JSON.stringify({ current_price: 30 }) }).reasons, ["price"]);
+    assert.deepEqual(listing({ price: "abc" }).reasons, ["price"]);
+    assert.deepEqual(listing({ price: null, pricing: JSON.stringify({ currency: "USD", current_price: 0 }) }).reasons, ["price"]);
+    assert.deepEqual(listing({ price: null, currency: null, pricing: "not json" }).reasons, ["price", "currency"]);
   });
 
   it("accepts a numeric string price and rounds to cents", () => {
-    assert.equal(listing({ pricing: JSON.stringify({ currency: "USD", current_price: "18.499" }) }).price, 18.5);
+    assert.equal(listing({ price: "18.499" }).price, 18.5);
+    assert.equal(listing({ price: null, pricing: JSON.stringify({ currency: "USD", current_price: "18.499" }) }).price, 18.5);
   });
 
   it("hides a product priced in another currency than the store's", () => {
-    assert.deepEqual(listing({ pricing: JSON.stringify({ currency: "EUR", current_price: 10 }) }).reasons, [
+    assert.deepEqual(listing({ currency: "EUR" }).reasons, ["currency-mismatch"]);
+    assert.deepEqual(listing({ price: null, currency: null, pricing: JSON.stringify({ currency: "EUR", current_price: 10 }) }).reasons, [
       "currency-mismatch",
     ]);
+    assert.equal(listing({ currency: "usd" }).listed, true, "case-insensitive");
   });
 
   it("hides a product without a name or with an id that cannot be a URL", () => {

@@ -14,7 +14,10 @@ all behind an approval-gated review queue.
   image-rich product cards, recent activity, and review queue preview.
 - Products: a catalog table and full product pages with gallery, pricing,
   inventory, content readiness, compliance notes, channel matrix, linked
-  certificates, and linked review items.
+  certificates, and linked review items. The selling price is a plain
+  **Price** number column (with **Currency**) that you edit like any other
+  cell; tables installed before 0.4.0 keep it in the Pricing JSON until the
+  app adds the columns.
 - Inventory: warehouse availability, inbound stock, days cover, and
   stockout-risk flags.
 - Channels: Amazon/Shopify/TikTok Shop/eBay listing status, content score,

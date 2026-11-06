@@ -5,11 +5,12 @@
 // ported verbatim (same ids, same names, same numbers, same bilingual copy)
 // from the retired app/server/demo.ts. The fourth review item and the five
 // certificates are new for busa-product-hub's certificate-tracker scope.
-// `pricing.currency`, `content.images_ready`, and `content.attributes` feed
+// `price` + `currency` (the Price and Currency columns since 0.4.0),
+// `content.images_ready`, and `content.attributes` feed
 // the derived Agent readiness score; the attribute values match
 // content/products/records.ndjson for the three products both ship
 // (Aurora: all four; Lunch box: no weight; Spice rack: no warranty/returns).
-import { assembleSnapshot, computeMetrics } from "../product-hub-model.js?v=0.1.0";
+import { assembleSnapshot, computeMetrics } from "../product-hub-model.js?v=0.4.0";
 
 const NOW = "2026-07-07T09:00:00.000Z";
 export const FEATURED_PRODUCT_ID = "prod-aurora-lamp";
@@ -79,12 +80,12 @@ function demoProducts(zh) {
       launch_date: "2026-07-18",
       updated_at: "2026-07-07T07:52:00.000Z",
       created_at: "2026-06-20T02:00:00.000Z",
+      price: 38.99,
+      currency: "USD",
       pricing: {
-        currency: "USD",
         cogs: 11.8,
         landed_cost: 15.25,
         target_price: 39.99,
-        current_price: 38.99,
         map_price: 34.99,
         gross_margin_pct: 51.4,
         breakeven_acos: 34.2,
@@ -138,12 +139,12 @@ function demoProducts(zh) {
       launch_date: "2026-05-12",
       updated_at: "2026-07-07T05:40:00.000Z",
       created_at: "2026-05-01T02:00:00.000Z",
+      price: 21.99,
+      currency: "USD",
       pricing: {
-        currency: "USD",
         cogs: 5.2,
         landed_cost: 7.45,
         target_price: 22.99,
-        current_price: 21.99,
         map_price: 19.99,
         gross_margin_pct: 47.1,
         breakeven_acos: 29.5,
@@ -193,12 +194,12 @@ function demoProducts(zh) {
       launch_date: "2026-04-03",
       updated_at: "2026-07-06T13:20:00.000Z",
       created_at: "2026-03-15T02:00:00.000Z",
+      price: 24.99,
+      currency: "USD",
       pricing: {
-        currency: "USD",
         cogs: 8.6,
         landed_cost: 12.9,
         target_price: 28.99,
-        current_price: 24.99,
         map_price: 23.99,
         gross_margin_pct: 28.3,
         breakeven_acos: 17.4,
@@ -250,12 +251,12 @@ function demoProducts(zh) {
       launch_date: "2026-08-02",
       updated_at: "2026-07-05T16:05:00.000Z",
       created_at: "2026-06-10T02:00:00.000Z",
+      price: 29.99,
+      currency: "USD",
       pricing: {
-        currency: "USD",
         cogs: 7.1,
         landed_cost: 10.85,
         target_price: 29.99,
-        current_price: 29.99,
         map_price: 24.99,
         gross_margin_pct: 44.8,
         breakeven_acos: 27.8,
@@ -306,12 +307,12 @@ function demoProducts(zh) {
       launch_date: "2025-11-08",
       updated_at: "2026-07-04T09:55:00.000Z",
       created_at: "2025-10-20T02:00:00.000Z",
+      price: 16.99,
+      currency: "USD",
       pricing: {
-        currency: "USD",
         cogs: 6.4,
         landed_cost: 9.3,
         target_price: 18.99,
-        current_price: 16.99,
         map_price: 15.99,
         gross_margin_pct: 32.9,
         breakeven_acos: 18.1,

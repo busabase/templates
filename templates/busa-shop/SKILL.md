@@ -52,9 +52,10 @@ cannot declare that it needs another one, so nothing installs it for them.
   in busa-product-hub only.
 - Never fix product data during the daily check. Report it; the owner (or the
   product hub procedure, when they ask) fixes it.
-- Never click Run or Go live, never change `site.access` in
-  `content/busa-shop-app/airapp.json`, and never copy the site's key anywhere.
-  Going live is the owner's decision and their consent.
+- Never click Run, Restart or Go live, never change `site.access` in
+  `content/busa-shop-app/airapp.json`, and never copy either of the site's
+  keys anywhere. Running the preview and going live are the owner's
+  decisions and their consent.
 - Never overwrite a person's text in Owner feedback, Internal note or Reply
   draft. Add dated lines; do not rewrite history.
 
@@ -90,7 +91,7 @@ Views: **New orders** (status new, oldest first), **Confirmed, not shipped**,
 | Field | Used by | Meaning |
 | --- | --- | --- |
 | Store name, Tagline, About, Shipping note | website | The texts on the pages |
-| Currency | website | Three letters (`USD`). A product is listed only if its `pricing.currency` is the same |
+| Currency | website | Three letters (`USD`). A product is listed only if its currency (the product hub's Currency column) is the same |
 | Contact email | website | Shown in the footer and in error messages. Use a real inbox before going live |
 | Language | website | `en`, `de`, `fr` or `es`: the website's own words. Product texts stay as written |
 | Ships to | website | Country codes, comma-separated. The order form offers only these. Empty = every country |
@@ -122,7 +123,13 @@ only on the one sample report the template installs). Issue types:
 Products (`busa-product-hub-products`), first 100 rows by `ref`:
 
 - `product-id` (the page address `/products/<product-id>`; letters, digits, `.`, `_`, `-`), `name`, `subtitle`, `sku`, `category`, `lifecycle`, `status`, `tags`
-- `pricing` JSON: `current_price`, `currency`
+- `price` and `currency`: the **Price** (a number) and **Currency** columns,
+  busa-product-hub 0.4.0 and later. This is the selling price; the owner
+  changes it by editing the Price cell. A product hub installed before 0.4.0
+  has no such columns and keeps the price in the `pricing` JSON
+  (`current_price`, `currency`): the website reads each column and falls back
+  to the JSON only while that column is empty, so an older install keeps its
+  prices.
 - `inventory` JSON: `available` (0 or less = out of stock; missing = not known)
 - `content` JSON: `description` (paragraphs), `bullets` (list), `attributes`
   (`age_grade`, `materials`, `batteries`, `dimensions`, `weight`, `warranty`,
@@ -146,8 +153,8 @@ A product is on the website only when **all** of these hold
 1. `lifecycle` is `active` or `launch` (not `test`, not `archive`, not empty);
 2. `status` is `active`, `approved` or `live` (not `draft`, `needs_review`, `blocked`, …);
 3. it has a `name` and a URL-safe `product-id`, not used by an earlier row;
-4. `pricing.current_price` is a number above 0;
-5. `pricing.currency` equals Settings › Currency;
+4. the price is a number above 0: the `price` column, or `pricing.current_price` while that column is empty;
+5. the currency equals Settings › Currency: the `currency` column, or `pricing.currency` while that column is empty;
 6. Settings › "Only list products with this tag" is empty, or the product has that tag.
 
 Stock never hides a product: `inventory.available` of 0 or less shows "Out of
@@ -217,7 +224,12 @@ Fix the table and the page clears within a minute.
    again changes nothing; after editing the CSV it changes only what
    changed. An empty cell never clears a stored value, and nothing is
    invented: a product without a price is imported without one (the shop then
-   hides it). The course's toy list is the fictional factory in this
+   hides it). The price goes into the Price and Currency columns, not into
+   the Pricing JSON (on a product hub from before 0.4.0, which has no Price
+   column, it goes into the JSON as before, and the summary says so). A price
+   in the list overwrites the Price cell: once the owner changes prices in
+   the table, update the list as well, or leave its price cells empty. The
+   course's toy list is the fictional factory in this
    template's `assets/demo/`
    (https://github.com/busabase/templates/tree/main/templates/busa-shop/assets/demo);
    the student hands those files to you. Columns: `product_id`, `name`,
@@ -233,24 +245,58 @@ Fix the table and the page clears within a minute.
 4. **Check Settings** with the owner: store name, tagline, currency equal to
    the products' currency, a real contact email, language, ships-to
    countries, about text, shipping note, demo notice (off for a real shop).
-5. **The owner clicks Run** on Shop Website. That deploys a members-only
-   preview in the App tab, on real data. Open it and check: the home page
-   lists what the listing rule says it should, a product page, `/api/status`
-   (`"setup": "ready"`), `/sitemap.xml`. A test order lands in the real
-   Orders table: place one only if the owner agrees, then delete it.
+5. **The owner opens Shop Website.** Opening the node starts the members-only
+   preview by itself, on real data, in the App tab: there is nothing to click
+   first. (A **Run** button appears only on a node that has never run.) The
+   header then shows **Running** and **Not live**, with the buttons **Go
+   live** and **Restart** (zh-CN: 「运行中」「未发布」「上线」「重启」).
+   Running the preview creates an API key in the owner's name, listed as
+   `Site preview: Shop Website`, with the same write access as the live site.
+   On a Free plan the node shows **Upgrade to Plus to run this app**
+   (「升级到 Plus 版即可运行此应用」) instead: the Website engine needs Plus or
+   higher on Busabase Cloud, so stop and tell the owner. Once it runs, open
+   the preview and check: the home page lists what the listing rule says it
+   should, a product page, `/api/status` (`"setup": "ready"`),
+   `/sitemap.xml`. A test order lands in the real Orders table: place one
+   only if the owner agrees, then delete it.
 6. **Before Go live, tell the owner, in these words or similar:** "Go live
-   publishes the site at the address in the node's settings. It asks for
-   **write** access, because the order form must save orders. Going live
-   creates an API key in your name, listed as `Site: Shop Website`; it can do
-   whatever you can do in this workspace, not only these tables, and the
-   website's code is the only thing between a stranger and that. Turning
-   Public off, or moving the app to Trash, cuts it off." The owner clicks Go
-   live; you do not.
+   publishes the site at the address shown under More actions → Settings. It
+   asks for **write** access, because the order form must save orders. Going
+   live creates an API key in your name, listed as `Site: Shop Website`, next
+   to the preview's `Site preview: Shop Website`; each can do whatever you
+   can do in this workspace, not only these tables, and the website's code is
+   the only thing between a stranger and that. Turning Public off, or moving
+   the app to Trash, cuts the live site off." The owner clicks **Go live**
+   (「上线」); you do not. The header then shows **Live** (「已上线」) and the
+   message "The site is live." (「网站已上线。」).
 7. **Write the live address into Settings › Live site address**, so the daily
-   check can test it.
+   check can test it. The owner finds it under **More actions → Settings**
+   (「更多操作」→「设置」): **Address** (「地址」), with the **Public**
+   (「公开」) switch next to it.
 8. **After any change to the website's code**, the live address keeps serving
-   the old version until the owner clicks Run and Go live again. Changes to
-   Settings and to products need no redeploy.
+   the old version until the owner clicks **Restart** (a new preview of the
+   new files) and then **Go live** again. Changes to Settings and to products
+   need no redeploy.
+
+## Change a price
+
+The selling price is the Products table's **Price** cell (busa-product-hub
+0.4.0 and later), a plain number next to **Currency**. To change it, the
+owner opens the Products table, clicks the product's Product ID in the first
+column (the record opens), clicks **Edit** (「编辑」), types the new number
+into **Price** (near the bottom of the form, just above the button) and clicks
+**Update Now** (「立即更新」). No JSON is involved, and nothing else has to
+change: the live site shows the new price within about a minute. The table
+does not edit cells in place (clicking the Price cell itself does nothing), so
+it is always open → Edit → Update Now. The stored margin
+(`gross_margin_pct` in Pricing) does not follow the new price by itself; the
+next import recomputes it, or recompute it when the owner asks.
+
+Change a price for the owner only when they ask, in the Price column (with
+`$busabase`, a record change on `price`), never as a `current_price` in
+Pricing. On a product hub from before 0.4.0 there is no Price column yet, and
+the price is still `pricing.current_price` (see busa-product-hub's "The
+selling price").
 
 ## Handle a new order
 
@@ -329,7 +375,7 @@ with its type:
 
 | Type | Report it when | Lines |
 | --- | --- | --- |
-| `missing-price` | lifecycle and status would list it, but `pricing.current_price` is missing or not above 0 | one per product |
+| `missing-price` | lifecycle and status would list it, but its price (the Price column, or `pricing.current_price` while that is empty) is missing or not above 0 | one per product |
 | `hidden-product` | lifecycle is `active`/`launch` but it is hidden for another reason (status, currency, tag, id). Products in `test`/`archive` are hidden on purpose: do not report them | one per product |
 | `missing-image` | listed, but no image the website can show | one per product |
 | `out-of-stock` | listed, and `inventory.available` is 0 or less. Report it only when a Standing check rule asks for it (the sample feedback does) | one per product |
@@ -403,10 +449,15 @@ write feedback into Owner feedback on this report for the next run.
 - **No CAPTCHA.** The form has a hidden honeypot field and validates
   everything, but a determined spammer can still send order requests.
 - **No custom domain yet**: the address is the one Busabase gives the site.
-- **The site's key reaches everything its owner can reach in this workspace**
+- **Plus or higher on Busabase Cloud.** The Website engine is not in the Free
+  plan: a Free space shows "Upgrade to Plus to run this app" on Shop Website
+  and cannot preview or go live.
+- **The site's keys reach everything their owner can reach in this workspace**
   at write level, not only these tables. The website's fixed routes are the
-  only thing in between. The key belongs to whoever clicked Go live and stops
-  working if they leave the workspace.
+  only thing in between. There are two: `Site: Shop Website` belongs to
+  whoever clicked Go live, `Site preview: Shop Website` to whoever ran the
+  preview (opening the node runs it), and each stops working if that person
+  leaves the workspace.
 - **No notification on a new order.** Someone has to look at New orders (the
   daily check counts them).
 - **Stock is not reserved or decremented** by an order.
@@ -441,4 +492,5 @@ npm test && npm run check
 ```
 
 Keep routes fixed: never pass a visitor's path, id, filter or body through to
-the API. Then the owner clicks Run and Go live again.
+the API. Then the owner clicks Restart (a new preview of the new files) and
+Go live again.

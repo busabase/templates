@@ -63,6 +63,8 @@ export function normalizeProductRow({
   compliance = "",
   created_at = "",
   updated_at = "",
+  price = null,
+  currency = "",
 } = {}) {
   return {
     product_id,
@@ -85,6 +87,11 @@ export function normalizeProductRow({
     compliance: parseJsonValue(compliance, {}) || {},
     created_at,
     updated_at,
+    // The Price and Currency columns as stored (null / "" when empty). Read the
+    // selling price through sellingPriceOf(), which falls back to the Pricing
+    // JSON of a table made before 0.4.0.
+    price: knownNumber(price),
+    currency: nonEmpty(currency) ? String(currency).trim() : "",
     // The Busabase record id, kept only when a live row carried one: it is
     // what a certificate's `product` relation points at (see
     // agentReadinessFor()). Never written back -- productToFields() ignores it.
@@ -92,8 +99,21 @@ export function normalizeProductRow({
   };
 }
 
-export function productToFields(product = {}) {
+/**
+ * The Products fields for one product. Since 0.4.0 the selling price is written
+ * to the Price and Currency columns and taken out of the Pricing JSON, so a
+ * product never carries two prices that could disagree. `priceColumn: false` is
+ * for a Products table made before 0.4.0 that has no such columns yet: the
+ * price then stays in (or goes into) the Pricing JSON, as it always did.
+ */
+export function productToFields(product = {}, { priceColumn = true } = {}) {
+  const { price, currency } = sellingPriceOf(product);
+  const rest = withoutSellingPrice(product.pricing);
+  const pricing = priceColumn
+    ? rest
+    : { ...rest, ...(currency ? { currency } : {}), ...(price !== null ? { current_price: price } : {}) };
   return {
+    ...(priceColumn ? { price: price ?? "", currency } : {}),
     product_id: product.product_id || "",
     ref: product.ref || 0,
     sku: product.sku || "",
@@ -108,7 +128,7 @@ export function productToFields(product = {}) {
     image: product.image || "",
     gallery: JSON.stringify(product.gallery || []),
     tags: JSON.stringify(product.tags || []),
-    pricing: JSON.stringify(product.pricing || {}),
+    pricing: JSON.stringify(pricing),
     inventory: JSON.stringify(product.inventory || {}),
     content: JSON.stringify(product.content || {}),
     compliance: JSON.stringify(product.compliance || {}),
@@ -463,6 +483,41 @@ export const AGENT_LIVE_CHANNEL_STATUSES = new Set(["live", "active"]);
 export const OPEN_REVIEW_STATUSES = new Set(["needs_review", "changes_requested"]);
 const CHANNEL_PRICE_TOLERANCE = 0.01;
 
+// ---- Selling price ----
+//
+// Since 0.4.0 the selling price is the Products table's Price column (a plain
+// number a person edits in the table) and its Currency column. A table made by
+// an earlier install keeps the price inside the Pricing JSON (`current_price`,
+// `currency`; `price` in some imported rows), so every reader prefers the
+// column and falls back to the JSON only when the column is empty. A column
+// holding 0 is a price of 0, not an empty one.
+export const SELLING_PRICE_KEYS = ["current_price", "price", "currency"];
+
+const isBlank = (value) => value === null || value === undefined || (typeof value === "string" && value.trim() === "");
+
+/**
+ * @param {Record<string, any>} product a normalized product, or a raw snake_cased row
+ * @returns {{ price: number | null, currency: string, source: "column" | "pricing" | "" }}
+ */
+export function sellingPriceOf(product = {}) {
+  const pricing = parseJsonValue(product.pricing, {}) || {};
+  const legacyPrice = isBlank(pricing.current_price) ? pricing.price : pricing.current_price;
+  const fromColumn = !isBlank(product.price);
+  const rawPrice = fromColumn ? product.price : legacyPrice;
+  const rawCurrency = isBlank(product.currency) ? pricing.currency : product.currency;
+  return {
+    price: knownNumber(rawPrice),
+    currency: nonEmpty(rawCurrency) ? String(rawCurrency).trim().toUpperCase() : "",
+    source: fromColumn ? "column" : isBlank(legacyPrice) ? "" : "pricing",
+  };
+}
+
+/** The Pricing JSON without the selling price, which lives in its own columns since 0.4.0. */
+export function withoutSellingPrice(pricing) {
+  const parsed = parseJsonValue(pricing, {}) || {};
+  return Object.fromEntries(Object.entries(parsed).filter(([key]) => !SELLING_PRICE_KEYS.includes(key)));
+}
+
 function knownNumber(value) {
   if (value === null || value === undefined || value === "") return null;
   const number = Number(value);
@@ -491,11 +546,9 @@ export function agentReadinessFor(
   const checks = [];
   const add = (id, ok, reason, detail, data = {}) => checks.push({ id, ok, reason, detail, data });
 
-  // 1. price -- a price and the currency it is in. `price` is the Busabase
-  // record shape; `current_price` is the demo/ingest shape of the same fact.
-  const pricing = product.pricing || {};
-  const price = knownNumber(pricing.price ?? pricing.current_price);
-  const currency = nonEmpty(pricing.currency) ? String(pricing.currency).trim() : "";
+  // 1. price -- a price and the currency it is in: the Price and Currency
+  // columns, or the Pricing JSON of a table made before 0.4.0 (sellingPriceOf).
+  const { price, currency } = sellingPriceOf(product);
   const hasPrice = price !== null && price > 0;
   if (hasPrice && currency) add("price", true, "priced", `${currency} ${price.toFixed(2)}`, { price, currency });
   else if (!hasPrice && !currency) add("price", false, "missing_price_currency", "no price or currency");

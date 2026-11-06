@@ -181,6 +181,22 @@
       "required": false,
       "position": 19,
       "options": {}
+    },
+    {
+      "slug": "price",
+      "name": "Price",
+      "type": "number",
+      "required": false,
+      "position": 20,
+      "options": {}
+    },
+    {
+      "slug": "currency",
+      "name": "Currency",
+      "type": "text",
+      "required": false,
+      "position": 21,
+      "options": {}
     }
   ],
   "views": []

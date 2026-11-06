@@ -27,6 +27,11 @@
 // - Never invents a value: an empty cell is "not provided" and leaves the
 //   stored value alone; it never clears one. A missing price stays missing (the
 //   shop then hides that product and the daily check reports it).
+// - Writes the price where the product hub keeps it: the Products table's
+//   Price and Currency columns (busa-product-hub 0.4.0 and later), taking it out
+//   of the Pricing JSON so there is one price; or, on a table made before
+//   0.4.0 that has no Price column, `pricing.current_price` / `pricing.currency`
+//   as before.
 // - Never passes `autoMerge`: with write access a change lands at once; without
 //   it, it waits for review, and the summary says so.
 import { createHash } from "node:crypto";
@@ -276,6 +281,15 @@ const canonical = (value) => {
 
 const JSON_FIELDS = new Set(["pricing", "inventory", "content", "gallery", "tags"]);
 
+// The selling price's keys inside the Pricing JSON of a table made before
+// busa-product-hub 0.4.0. On a table with the Price column they are moved out.
+const JSON_PRICE_KEYS = ["current_price", "price", "currency"];
+
+const blank = (value) => value === null || value === undefined || (typeof value === "string" && !value.trim());
+
+/** True when the Products table has busa-product-hub 0.4.0's Price column. */
+export const hasPriceColumn = (base) => (base?.fields ?? []).some((field) => field.slug === "price");
+
 /** True when `next` would store the same thing as `current` for that field. */
 const sameValue = (slug, current, next) => {
   if (JSON_FIELDS.has(slug)) {
@@ -294,20 +308,34 @@ const sameValue = (slug, current, next) => {
  * The Products fields this import writes for one product, merged over what is
  * stored. `images` is `[{ file, sha256, url }]` for the photos it could find,
  * or null when the list names none (stored photos are then left alone).
+ * `priceColumn` says whether the table has the Price and Currency columns
+ * (busa-product-hub 0.4.0+); without them the price goes into the Pricing JSON.
  */
-export const productFields = (planned, existing = {}, images = null) => {
+export const productFields = (planned, existing = {}, images = null, { priceColumn = true } = {}) => {
   const fields = { "product-id": planned.productId };
   for (const [slug, value] of Object.entries(planned.text)) if (value) fields[slug] = value;
 
   const pricing = { ...asObject(existing.pricing) };
-  if (planned.currency) pricing.currency = planned.currency;
-  if (planned.price !== null) {
-    pricing.current_price = planned.price;
-    pricing.target_price = planned.price;
+  let price;
+  if (priceColumn) {
+    // One price: the column. A price still in the JSON (a row from before the
+    // upgrade) moves into the empty column instead of staying behind as a copy.
+    const stored = blank(existing.price) ? pricing.current_price ?? pricing.price : existing.price;
+    const storedCurrency = blank(existing.currency) ? pricing.currency : existing.currency;
+    for (const key of JSON_PRICE_KEYS) delete pricing[key];
+    price = planned.price ?? (blank(stored) || !Number.isFinite(Number(stored)) ? null : Number(stored));
+    const currency = planned.currency || (blank(storedCurrency) ? "" : String(storedCurrency).trim());
+    if (price !== null) fields.price = price;
+    if (currency) fields.currency = currency;
+  } else {
+    if (planned.currency) pricing.currency = planned.currency;
+    if (planned.price !== null) pricing.current_price = planned.price;
+    price = typeof pricing.current_price === "number" ? pricing.current_price : null;
   }
+  if (planned.price !== null) pricing.target_price = planned.price;
   if (planned.landedCost !== null) pricing.landed_cost = planned.landedCost;
-  if (typeof pricing.current_price === "number" && typeof pricing.landed_cost === "number" && pricing.current_price > 0) {
-    pricing.gross_margin_pct = Math.round(((pricing.current_price - pricing.landed_cost) / pricing.current_price) * 1000) / 10;
+  if (typeof price === "number" && typeof pricing.landed_cost === "number" && price > 0) {
+    pricing.gross_margin_pct = Math.round(((price - pricing.landed_cost) / price) * 1000) / 10;
   }
   fields.pricing = JSON.stringify(pricing);
 
@@ -408,6 +436,7 @@ export const runImport = async ({
   });
   const records = createAirAppRecords(client, { appId: IMPORTER_ID });
   const hub = resolveProductHub((await client.nodes.list({ types: ["base"] })) ?? [], productsBase);
+  const priceColumn = hasPriceColumn(await client.bases.get({ baseId: hub.productsBaseId }));
   if (certificatePlan.certificates.length && !hub.certificatesBaseId) {
     throw new Error(`No Certificates table next to ${hub.productsSlug}. Install Busa Product Hub completely, or run without --certificates.`);
   }
@@ -415,12 +444,18 @@ export const runImport = async ({
   const summary = {
     dryRun,
     productsTable: hub.productsSlug,
+    priceColumn,
     products: { created: 0, updated: 0, unchanged: 0, skipped: 0, queued: 0 },
     certificates: { created: 0, updated: 0, unchanged: 0, skipped: 0, queued: 0 },
     images: { uploaded: 0, reused: 0, missing: 0 },
     skipped: [...plan.skipped, ...certificatePlan.skipped],
     notes: [...plan.notes],
   };
+  if (!priceColumn) {
+    summary.notes.push(
+      `${hub.productsSlug} has no Price column (Busa Product Hub before 0.4.0), so prices stay in Pricing (JSON) as before, where the shop reads them.`,
+    );
+  }
   summary.products.skipped = plan.skipped.length;
   summary.certificates.skipped = certificatePlan.skipped.length;
 
@@ -479,7 +514,7 @@ export const runImport = async ({
       if (!images.length) images = null;
     }
 
-    const next = productFields(planned, stored, images);
+    const next = productFields(planned, stored, images, { priceColumn });
     if (!existing) {
       maxRef += 1;
       const fields = { ...next, ref: maxRef, "created-at": nowIso(), "updated-at": nowIso() };

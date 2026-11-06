@@ -17,9 +17,10 @@ import { DEMO_DIR, NODES } from "./fixtures.mjs";
 
 const appDir = fileURLToPath(new URL("..", import.meta.url));
 const scriptPath = fileURLToPath(new URL("../../../scripts/import-catalog.mjs", import.meta.url));
-const hubCertificatesBase = JSON.parse(
-  await readFile(fileURLToPath(new URL("../../../../busa-product-hub/content/certificates/base.json", import.meta.url)), "utf8"),
-);
+const hubBase = async (name) =>
+  JSON.parse(await readFile(fileURLToPath(new URL(`../../../../busa-product-hub/content/${name}/base.json`, import.meta.url)), "utf8"));
+const hubCertificatesBase = await hubBase("certificates");
+const hubProductsBase = await hubBase("products");
 const sdk = { createBusabaseClient, uploadAsset, createAirAppRecords };
 const CATALOG = `${DEMO_DIR}toy-catalog.csv`;
 const CERTIFICATES = `${DEMO_DIR}toy-certificates.csv`;
@@ -34,16 +35,18 @@ const certificates = () => api.state.records.bas_certificates;
 const product = (id) => products().find((row) => row.fields["product-id"] === id);
 const writes = () => api.log.filter((entry) => entry.method !== "GET");
 
-const freshState = ({ withToyTypes = true } = {}) => {
+// `priceColumn: false` is a product hub installed before 0.4.0: no Price or Currency column.
+const freshState = ({ withToyTypes = true, priceColumn = true } = {}) => {
   const fields = structuredClone(hubCertificatesBase.fields);
   if (!withToyTypes) {
     const type = fields.find((field) => field.slug === "cert-type");
     type.options.choices = type.options.choices.filter((choice) => !["EN 71", "ASTM F963", "CPSIA / CPC"].includes(choice.id));
   }
+  const productFieldsDeclared = hubProductsBase.fields.filter((field) => priceColumn || !["price", "currency"].includes(field.slug));
   return {
     nodes: Object.values(NODES),
     records: { bas_products: [], bas_certificates: [], bas_settings: [], bas_orders: [], bas_reports: [] },
-    bases: { bas_certificates: { name: "Certificates", fields } },
+    bases: { bas_certificates: { name: "Certificates", fields }, bas_products: { name: "Products", fields: productFieldsDeclared } },
     files: {},
     assets: {},
   };
@@ -77,7 +80,10 @@ describe("import-catalog.mjs", () => {
     assert.equal(robot.lifecycle, "active");
     assert.match(robot.image, new RegExp(`^${api.origin}/assets/k\\d+-walking-robot\\.svg$`));
     assert.equal(JSON.parse(robot.gallery).length, 2);
-    assert.deepEqual(JSON.parse(robot.pricing), { currency: "USD", current_price: 24, target_price: 24, landed_cost: 9.8, gross_margin_pct: 59.2 });
+    assert.equal(robot.price, 24, "the price goes into the Price column");
+    assert.equal(robot.currency, "USD");
+    assert.deepEqual(JSON.parse(robot.pricing), { target_price: 24, landed_cost: 9.8, gross_margin_pct: 59.2 }, "and not into the JSON");
+    assert.equal(summary.priceColumn, true);
     const content = JSON.parse(robot.content);
     assert.equal(content.images_ready, true);
     assert.deepEqual(content.image_files.map((item) => item.file), ["walking-robot.svg", "walking-robot-box.svg"]);
@@ -87,7 +93,8 @@ describe("import-catalog.mjs", () => {
     assert.deepEqual(stored.bytes, await readFile(`${IMAGES}/walking-robot.svg`));
 
     const xylophone = product("tt-xylophone").fields;
-    assert.equal(JSON.parse(xylophone.pricing).current_price, undefined, "no price in the list, none written");
+    assert.equal(xylophone.price, undefined, "no price in the list, none written");
+    assert.equal(JSON.parse(xylophone.pricing).current_price, undefined);
     const kitchen = product("tt-chef-kitchen").fields;
     assert.equal(kitchen.image, undefined, "no photo in the list, no image field written");
 
@@ -136,12 +143,79 @@ describe("import-catalog.mjs", () => {
       assert.deepEqual(summary.products, { created: 0, updated: 1, unchanged: 11, skipped: 0, queued: 0 });
       assert.equal(summary.certificates.unchanged, 39);
       const update = writes().find((entry) => entry.path.includes("/records/"));
-      assert.deepEqual(Object.keys(JSON.parse(update.body).fields).sort(), ["pricing", "updated-at"]);
+      assert.deepEqual(Object.keys(JSON.parse(update.body).fields).sort(), ["price", "pricing", "updated-at"]);
       assert.equal(JSON.parse(update.body).baseCommitId, `cmt_${bear.id}_0`);
       const after = product("tt-cuddle-bear").fields;
-      assert.deepEqual(JSON.parse(after.pricing), { ...pricing, current_price: 16.5, target_price: 16.5, gross_margin_pct: 69.1, map_price: 14 });
+      assert.equal(after.price, 16.5);
+      assert.deepEqual(JSON.parse(after.pricing), { ...pricing, target_price: 16.5, gross_margin_pct: 69.1, map_price: 14 });
       assert.equal(JSON.parse(after.content).score, 91);
       assert.equal(after.owner, "Mia");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("a price the owner typed into the Price cell is kept when the list leaves the price empty, and the margin follows it", async () => {
+    await run();
+    const bear = product("tt-cuddle-bear");
+    bear.fields.price = 13.5; // the owner's edit in the Products table
+    const dir = await mkdtemp(path.join(tmpdir(), "busa-shop-import-"));
+    try {
+      const csv = (await readFile(CATALOG, "utf8")).replace(/(tt-cuddle-bear,TT-PLS-04,[^\n]*?,active,active,)15\.00,/, "$1,");
+      assert.notEqual(csv, await readFile(CATALOG, "utf8"));
+      await writeFile(path.join(dir, "toy-catalog.csv"), csv);
+      api.log.length = 0;
+      const summary = await run({ catalogPath: path.join(dir, "toy-catalog.csv") });
+      assert.deepEqual([summary.products.updated, summary.products.unchanged], [1, 11]);
+      const update = writes().find((entry) => entry.path.includes("/records/"));
+      assert.deepEqual(Object.keys(JSON.parse(update.body).fields).sort(), ["pricing", "updated-at"], "the price itself is not touched");
+      assert.equal(product("tt-cuddle-bear").fields.price, 13.5);
+      const pricing = JSON.parse(product("tt-cuddle-bear").fields.pricing);
+      assert.equal(pricing.target_price, 15, "the list's earlier target stays");
+      assert.equal(pricing.gross_margin_pct, Math.round(((13.5 - pricing.landed_cost) / 13.5) * 1000) / 10);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("into a product hub from before 0.4.0 (no Price column), writes the price to Pricing (JSON) as before", async () => {
+    Object.assign(api.state, freshState({ priceColumn: false }));
+    const summary = await run();
+    assert.equal(summary.priceColumn, false);
+    assert.equal(summary.products.created, 12);
+    const robot = product("tt-walking-robot").fields;
+    assert.equal("price" in robot, false, "no field the table does not have");
+    assert.equal("currency" in robot, false);
+    assert.deepEqual(JSON.parse(robot.pricing), { currency: "USD", current_price: 24, target_price: 24, landed_cost: 9.8, gross_margin_pct: 59.2 });
+    assert.match(formatSummary(summary), /has no Price column \(Busa Product Hub before 0\.4\.0\), so prices stay in Pricing \(JSON\) as before, where the shop reads them\./);
+    api.log.length = 0;
+    assert.equal((await run()).products.unchanged, 12, "and a second run changes nothing");
+    assert.deepEqual(writes(), []);
+  });
+
+  it("after the product hub gains the Price column, moves each JSON price into it, leaving no second price", async () => {
+    Object.assign(api.state, freshState({ priceColumn: false }));
+    await run();
+    // The upgrade appends the two columns; the stored rows keep their JSON prices.
+    Object.assign(api.state.bases, freshState().bases);
+    const robotBefore = structuredClone(product("tt-walking-robot").fields);
+    const dir = await mkdtemp(path.join(tmpdir(), "busa-shop-import-"));
+    try {
+      // The list no longer gives the robot a price: the stored one moves, it is not lost.
+      const csv = (await readFile(CATALOG, "utf8")).replace("Robots & STEM,active,active,24.00,", "Robots & STEM,active,active,,");
+      assert.notEqual(csv, await readFile(CATALOG, "utf8"));
+      await writeFile(path.join(dir, "toy-catalog.csv"), csv);
+      const summary = await run({ catalogPath: path.join(dir, "toy-catalog.csv") });
+      assert.equal(summary.priceColumn, true);
+      assert.equal(summary.products.updated, 12, "every toy moves: the unpriced xylophone moves its currency");
+      assert.equal(product("tt-xylophone").fields.price, undefined);
+      assert.equal(product("tt-xylophone").fields.currency, "USD");
+      const robot = product("tt-walking-robot").fields;
+      assert.equal(robot.price, 24);
+      assert.equal(robot.currency, "USD");
+      const { current_price, currency, ...rest } = JSON.parse(robotBefore.pricing);
+      assert.deepEqual([current_price, currency], [24, "USD"]);
+      assert.deepEqual(JSON.parse(robot.pricing), rest, "the JSON keeps everything but the price");
     } finally {
       await rm(dir, { recursive: true, force: true });
     }

@@ -29,6 +29,7 @@ import {
   productForCertificate,
   productToFields,
   reviewToFields,
+  sellingPriceOf,
 } from "../content/busa-product-hub-app/app/js/product-hub-model.js";
 
 function help() {
@@ -145,6 +146,15 @@ async function main() {
       readAll(client, declared("settings")),
     ]);
 
+  // Since 0.4.0 the selling price is the Products table's Price/Currency
+  // columns. A table made by an earlier install has neither until the AirApp
+  // upgrades it, so the price then stays in the Pricing JSON, as before.
+  const productsBase = await client.bases.get({ baseId: declared("products").baseId });
+  const priceColumn = (productsBase?.fields ?? []).some((field) => field.slug === "price");
+  if (!priceColumn) {
+    console.log("Products has no Price column yet (installed before 0.4.0): prices stay in Pricing (JSON). Open the Busa Product Hub app once to add the column.");
+  }
+
   const productsById = new Map(existingProducts.map((row) => [row.product_id, row]));
   let nextProductRef = Math.max(0, ...existingProducts.map((row) => Number(row.ref) || 0)) + 1;
   const now = new Date().toISOString();
@@ -154,13 +164,21 @@ async function main() {
   for (const input of incomingProducts) {
     if (!input.product_id) throw new Error("Every product needs a product_id");
     const existing = productsById.get(input.product_id);
-    const fields = productToFields({
-      ...existing,
-      ...input,
-      ref: existing ? existing.ref : nextProductRef++,
-      created_at: existing?.created_at || input.created_at || now,
-      updated_at: now,
-    });
+    // A price in the payload (`price`, or the older `pricing.current_price`)
+    // replaces the stored one; without one the stored price is kept.
+    const incoming = sellingPriceOf(input);
+    const fields = productToFields(
+      {
+        ...existing,
+        ...input,
+        ...(incoming.source ? { price: incoming.price } : {}),
+        ...(incoming.currency ? { currency: incoming.currency } : {}),
+        ref: existing ? existing.ref : nextProductRef++,
+        created_at: existing?.created_at || input.created_at || now,
+        updated_at: now,
+      },
+      { priceColumn },
+    );
     const result = await upsert(
       client,
       declared("products"),
