@@ -3712,18 +3712,19 @@
         }
       },
       "agentPrompts": [
+        "Import my product list from this Excel file, pictures included. Show me the preview first.",
         "Show me which certificates are expiring soon or already expired.",
         "Summarize the latest products and flag what needs my attention.",
         "Which products are at stock risk or not ready to publish on a new channel?"
       ],
-      "version": "0.4.0",
+      "version": "0.5.0",
       "license": "MIT",
       "stats": {
         "folders": 0,
         "docs": 0,
         "bases": 6,
         "records": 8,
-        "files": 37,
+        "files": 38,
         "airapps": 1,
         "skill": true
       }
@@ -4097,19 +4098,19 @@
         "assets/screenshots/setup.webp"
       ],
       "agentPrompts": [
-        "Import this toy list into the product hub: products, photos and certificates. Show me the dry run first.",
+        "Import this product list into the product hub (Excel with pictures, or CSV with photos and certificates). Show me the preview first.",
         "Open my shop: check that the website can read my Busa Product Hub products and the shop settings, and tell me what I still have to do before I click Go live.",
         "Run today's shop check: read my feedback on the last report, then check products, certificates, new orders and the live site, and write one report.",
         "Handle the new orders on my shop: check items and stock, and draft a confirmation reply for each one for me to send."
       ],
-      "version": "0.3.0",
+      "version": "0.3.1",
       "license": "MIT",
       "stats": {
         "folders": 0,
         "docs": 0,
         "bases": 3,
         "records": 5,
-        "files": 24,
+        "files": 23,
         "airapps": 1,
         "skill": true
       }
