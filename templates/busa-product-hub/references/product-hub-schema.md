@@ -247,7 +247,7 @@ staleness overlay to compute.
 ## Invariants
 
 - Keep `product_id`, `channel_id`, `inventory_id`, and `item_id` stable across re-syncs.
-- Treat external marketplace publishing, price changes, SKU archival, and quality holds as approval-required.
+- Treat external marketplace publishing and quality holds as approval-required, and the price changes and SKU archival an agent proposes on its own. Archiving products, or setting an exact price, that the owner asked for in chat needs no review item: the owner confirms the listed products and the change's message records the request (`SKILL.md`, "Take products off sale (下架)").
 - The selling price lives in `price` / `currency` only. Never write `current_price`, `price` or `currency` into `pricing`.
 - Product images ship as static files under `content/busa-product-hub-app/app/assets/product-images/` (served by `server.js`), referenced by relative URL from `products.image`/`gallery` — never depend on external image URLs.
 - Never invent a certificate, expiry date, or test report. A missing certificate is a gap to flag (or a `spec_claim` review item), never a value to guess.

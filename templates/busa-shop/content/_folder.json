@@ -4,8 +4,11 @@
   "agentPrompts": [
     {
       "key": "import-catalog",
-      "label": "Import a product list into the product hub",
-      "body": "Read the `busa-shop` skill in this folder and follow \"Import the product list\" in \"Open the shop\": run busa-product-hub's `scripts/import-products.mjs` on the Excel or CSV file (and photos) I give you, with `--dry-run` first, show me the preview, then run it for real once I say yes. Never invent a value the list does not contain."
+      "label": {
+        "en": "Import a product list into the product hub",
+        "zh-CN": "把商品放进店（导入商品表）"
+      },
+      "body": "Read the `busa-shop` skill in this folder and follow \"Import the product list\" in \"Open the shop\": run busa-product-hub's `scripts/import-products.mjs` on the Excel or CSV file (and photos) I give you, with `--dry-run` first, show me the preview, then run it for real once I say yes. If I also ask you to take old products down, list them in the same preview and archive them after my yes, as step 2 says. Never invent a value the list does not contain."
     },
     {
       "key": "open-shop",

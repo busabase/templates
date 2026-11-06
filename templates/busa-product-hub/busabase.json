@@ -9,7 +9,7 @@
     "en": "Product and certification hub for export sellers: SKU master data, pricing, inventory, channel status (Amazon, Shopify, TikTok Shop, eBay), content readiness, compliance notes, lifecycle state, and a certificate expiry tracker (CE/FCC/RoHS/UN38.3/UKCA).",
     "zh-CN": "面向出口卖家的产品与认证枢纽：SKU 主数据、定价、库存、渠道状态（Amazon、Shopify、TikTok Shop、eBay）、内容就绪度、合规备注、生命周期状态，以及认证到期追踪（CE/FCC/RoHS/UN38.3/UKCA）。"
   },
-  "version": "0.5.1",
+  "version": "0.5.2",
   "license": "MIT",
   "tags": [
     "ecommerce",

@@ -1,6 +1,6 @@
 ---
 name: busa-product-hub
-description: Product & certification hub (Busabase App-in-Skill) for export/trade sellers — catalog/SKU master data, pricing, inventory, channel status, content assets, compliance notes, lifecycle state, a certificate-expiry tracker (CE/FCC/RoHS/UN38.3/UKCA), and an approval-gated review queue. Use when the user invokes $busa-product-hub or /busa-product-hub, asks for 电商商品管理, 商品库, SKU 管理, inventory/reorder, product status across Amazon/Shopify/TikTok Shop/eBay, channel publishing approvals, price-change review, quality holds, product lifecycle/archive decisions, certificate expiry tracking, CE/FCC/RoHS/UN38.3/UKCA certification status, MOQ or lead-time questions ahead of a trade show, or a Busabase-backed product management desk. Also use it to bring products in, that is to import a product list from an Excel workbook (.xlsx, pictures inside included) or CSV with English or Chinese columns (导入商品, 导入 Excel 商品表, 上传产品表), or turn a supplier price list PDF, a photo of a catalogue page, a product page the owner points to, or pasted text into products, always as a preview the owner confirms first.
+description: Busa Product Hub (Busa 产品枢纽) is a Busabase App-in-Skill for export and small sellers that holds the product list they and their agent share, the one a Busa Shop website sells from — catalog/SKU master data, prices, inventory and reorder, channel status on Amazon/Shopify/TikTok Shop/eBay, quality holds, a review queue for changes the agent proposes, and certificate expiry (CE/FCC/RoHS/UN38.3/UKCA, EN 71). Use it for 商品管理 and to import products from Excel or CSV — import Excel workbooks with the pictures inside, or any product spreadsheet with English or Chinese columns (导入商品, 导入 Excel 商品表, 上传产品表, 把商品放进店) — or to turn a supplier PDF, a catalogue photo, a product page or pasted text into products, always as a preview the owner confirms first. Also use it to put products on sale (上架) or take them down (下架, 归档商品, archive), to answer MOQ, lead-time or certificate questions before a trade show, and whenever the user invokes $busa-product-hub or /busa-product-hub or names the 产品枢纽, 商品库, 商品表 or SKU 管理.
 metadata:
   category: ecommerce
   tags:
@@ -62,10 +62,25 @@ report the exact missing dependency. Do not invent a second data backend.
 - The AirApp reads and writes Busabase records only. It never publishes a
   channel listing, changes a price, archives a SKU, lifts a quality hold, or
   performs any other external side effect.
-- Publishing channels, changing prices, archiving SKUs, and lifting quality
-  holds all require a human approval record on a review item. The operator
-  (or their agent) performs the real follow-up outside the app after
-  explicit approval and reports the concrete result back.
+- **What the owner asks for in so many words is their decision; what you
+  work out yourself is a proposal.**
+  - When the owner asks you in chat to take products down or archive them
+    (「上节课的演示玩具都下架」, "archive the three sample products"), that
+    request is the decision: show the exact list in your preview, archive
+    only after they say yes, and record their request on the change. No
+    review item. See "Take products off sale (下架)".
+  - The same holds for an exact new price the owner gives you for a product
+    they name (see "The selling price").
+  - Anything you propose or infer yourself goes into a review item and
+    waits for the owner's decision in the review queue: archiving a product
+    nobody named (a slow seller, a duplicate, one whose certificate lapsed),
+    a price you worked out from a margin, a channel or a competitor, a
+    status change you think the data calls for.
+  - Publishing a channel listing, lifting a quality hold and treating a
+    `spec_claim` as verified always need an approved review item, even when
+    the owner asks in chat: the review item is their sign-off record. The
+    operator (or their agent) performs the real follow-up outside the app
+    after that approval and reports the concrete result back.
 - Reading a product list, a marketplace export, an inventory CSV, or a
   certificate PDF is a genuine external operation a browser cannot perform,
   so it happens in a script the agent runs, never in the AirApp:
@@ -84,9 +99,10 @@ report the exact missing dependency. Do not invent a second data backend.
     state after an approved decision); do not use it for a product list.
 
   The AirApp itself never fetches documents from remote systems on its own.
-- Publishing channels, changing prices, archiving SKUs, lifting quality
-  holds, and treating a `spec_claim` as verified all require a human
-  approval record on a review item; `scripts/execute_decisions.mjs` never
+- Whatever goes through a review item (above: publishing channels, the
+  price changes and archiving you proposed, lifting quality holds, treating
+  a `spec_claim` as verified) needs a human approval record on that item;
+  `scripts/execute_decisions.mjs` never
   performs the action itself — it only writes an execution marker
   (`execution-status: "ready_for_agent"`) with the concrete operation
   (`publish_channel` / `apply_price_change` / `lift_quality_hold` /
@@ -151,10 +167,13 @@ columns the next time they write that product. Until then,
 change a price where it is stored now: in the JSON on an old table, in the
 column on a new one.
 
-Changing a price is still approval-gated for an agent (Boundary above): carry
-out an approved `price_change` review item by writing the new Price, never a
-second price in the JSON. The owner editing the cell themselves is their own
-decision and needs no review item.
+Who decides a price (Boundary above): the owner editing the cell themselves,
+or telling you the exact new price for a product they name, is their own
+decision and needs no review item; show the old and new price, write it after
+they say yes, and say in the change's message that they asked. A price you
+propose (from a margin, a channel or a competitor) is a `price_change` review
+item; carry out an approved one by writing the new Price. Either way it is the
+Price column, never a second price in the JSON.
 
 ### The `spec_claim` review type
 
@@ -229,6 +248,8 @@ owner's own files, or from one page the owner points to (below).
    (made from the name, see below), prices with no currency, a currency it
    read from a `(元)` header or a `¥` sign, columns kept as product details,
    products a shop would not list and why, rows and pictures it left out.
+   If the owner also asked you to take old products down, list those in the
+   same preview ("Take products off sale (下架)").
 3. **The owner confirms**, and decides only what the preview says is
    missing and only they can know:
    - the currency of prices that do not say one: `--currency CNY`;
@@ -239,7 +260,8 @@ owner's own files, or from one page the owner points to (below).
    Never fill in a price, a stock number, a specification, a certificate or a
    date yourself. An empty cell stays empty. If the owner corrects the sheet,
    run the preview again.
-4. **Import and read back.** The same command without `--dry-run`. Then read
+4. **Import and read back.** The same command without `--dry-run` (then
+   archive the old products the owner confirmed, if any). Then read
    the Products table back: the number of products, a few prices, and that
    each picture URL opens. If the summary says "waiting for review", the
    credential cannot write here: tell the owner who can approve it.
@@ -339,6 +361,49 @@ blank bilingual workbook (it is also in the templates repository,
 The example rows (Product ID `example-phone`) are never imported. Owners may
 add any other column; it is kept as a detail.
 
+## Take products off sale (下架)
+
+Taking a product off sale means setting its **Lifecycle** to `archive`
+(归档). A Busa Shop website stops listing it within about a minute. Nothing
+is deleted: the record, its pictures and its certificates stay, and setting
+Lifecycle back to `active` puts it on sale again (上架). (A sheet whose
+Status column says 下架 imports as `blocked`, which also hides a product; use
+`archive` for products being retired.)
+
+**When the owner asks for it in chat**, naming the products or describing
+them in a way you can resolve (「上节课的演示玩具都下架」, "take the sample
+products down"), the request is their decision and you carry it out
+directly:
+
+1. **List exactly what you will archive** in your preview: Product ID, name,
+   current Lifecycle and Status, read from the Products table. When the same
+   message also brings new products, put this list in the import's preview.
+   Say what you are leaving alone and why (already archived, not matched). If
+   a product fits the description only partly, ask; do not guess.
+2. **Archive after the owner says yes to that list**, only those products, in
+   one change whose message records the request:
+
+   ```bash
+   busabase-cli records bulk-update-change-request --base-id <Products Base id> \
+     --updates-json '[{"recordId":"<record id>","fields":{"lifecycle":"archive","updated-at":"<now, ISO>"}}, …]' \
+     --message "Archived at the owner's request in chat on 2026-11-06 («上节课的演示玩具都下架»); the owner confirmed this list of 12."
+   ```
+
+   The message keeps the owner's words, the date and the count with the
+   change. No review item. (If the change waits for review instead of
+   landing, the key cannot write here: tell the owner who can approve it.)
+3. **Read back** that each one now has Lifecycle `archive`, and tell the
+   owner how many. Import first and archive second, so the shop is never
+   empty; for about a minute a reload of the live shop may then show the old
+   products, the new ones or both, before it settles.
+
+**When nobody asked** and you think a product should go (it looks retired,
+it duplicates another, its certificate lapsed), do not archive it. Create a
+review item (`type` `lifecycle`, `recommendation` `approve`, your reason in
+Summary and Evidence) and tell the owner it is waiting in the review queue.
+Once they approve it, set Lifecycle as above and cite the review item in the
+change's message.
+
 ## Local App
 
 Default behavior is AirApp-first — give the user the clickable AirApp URL.
@@ -390,8 +455,10 @@ Demo mode:
   supplier facts. Mark them missing and request evidence.
 - Do not weaken margin, MAP, low-stock, or compliance gates to make a
   product pass.
-- Keep channel publishing, price changes, SKU archival, and quality-hold
-  changes approval-gated even if the connector credentials are ready.
+- Keep channel publishing, quality-hold changes, and any price change or
+  archive you propose yourself approval-gated, even if the connector
+  credentials are ready. Archive or reprice directly only what the owner
+  asked for in chat, after showing them exactly what will change (Boundary).
 - Any certificate or product field sourced from a document without a
   page/section citation gets a `spec_claim` review item before it is trusted
   on a customer-facing quote.

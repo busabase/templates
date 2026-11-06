@@ -3717,7 +3717,7 @@
         "Summarize the latest products and flag what needs my attention.",
         "Which products are at stock risk or not ready to publish on a new channel?"
       ],
-      "version": "0.5.1",
+      "version": "0.5.2",
       "license": "MIT",
       "stats": {
         "folders": 0,
@@ -4103,7 +4103,7 @@
         "Run today's shop check: read my feedback on the last report, then check products, certificates, new orders and the live site, and write one report.",
         "Handle the new orders on my shop: check items and stock, and draft a confirmation reply for each one for me to send."
       ],
-      "version": "0.4.0",
+      "version": "0.4.1",
       "license": "MIT",
       "stats": {
         "folders": 0,

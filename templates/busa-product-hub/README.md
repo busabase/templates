@@ -78,8 +78,13 @@ never drift.
 
 The AirApp reads and writes Busabase only — it never publishes a channel
 listing, changes a price, archives a SKU, or lifts a quality hold by itself.
-Those actions require a human approval record in the review queue; carrying
-them out is the operator's or their agent's job, outside this app. Products,
+Publishing a listing and lifting a quality hold require a human approval
+record in the review queue, and so do the price changes and archiving an
+agent proposes on its own; carrying them out is the operator's or their
+agent's job, outside this app. Products the owner asks their agent in chat to
+take down (下架), or an exact price they give it, are the owner's own decision:
+the agent shows the list, waits for a yes and records the request on the
+change, with no review item (`SKILL.md`, "Take products off sale (下架)"). Products,
 channels, inventory, review items, and certificates enter Busabase through
 the operator's own workflow (directly, through `$busabase`, or through an
 agent), never through the browser. Never commit real seller exports,

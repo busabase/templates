@@ -1,6 +1,6 @@
 ---
 name: busa-shop
-description: Storefront website (Busabase Website engine; on a Free space a private preview in the owner's own browser) for a small cross-border seller, built on the busa-product-hub product list. It shows active products with price, photos, specs and valid safety certificates, takes order requests into an Orders table (no payment), reads its store name, currency and contact from a Settings table, and comes with a daily shop check that writes a Reports row and improves from the owner's feedback. Use when the user invokes $busa-shop or /busa-shop, or asks to open an online shop / 独立站 / storefront for their products, import a product list or toy list (Excel with pictures, CSV, photos, certificates) into the product hub, put a product list on a public website, handle new website orders or order requests, check the shop, run the daily shop check, find missing photos, prices or expiring certificates (EN 71, ASTM F963, CPC, CE, UKCA) before a buyer sees them, or apply feedback on the last shop report.
+description: Storefront website (Busabase Website engine; on a Free space a private preview in the owner's browser) for a small cross-border seller, selling from the busa-product-hub (Busa 产品枢纽) product list. It shows active products with price, photos, specs and valid safety certificates, takes order requests into an Orders table (no payment), reads its store name, currency and contact from Settings, and runs a daily shop check that writes a Reports row and learns from the owner's feedback. Use when the user invokes $busa-shop or /busa-shop, or asks to open an online shop / 网店 / 独立站 / storefront, put products in the shop (把商品放进店, 上架) or take old ones down (下架), import products or a product list (Excel with pictures, CSV, 商品表, certificates) into the product hub, put a product list on a public website, handle new orders or order requests, run the daily shop check, find missing photos, prices or expiring certificates (EN 71, ASTM F963, CPC, CE, UKCA) before a buyer sees them, or apply feedback on the last shop report.
 metadata:
   category: ecommerce
   tags:
@@ -37,7 +37,8 @@ that by email.
    that changes products, stock or certificates, including importing a
    product list: its `import-products.mjs` is the one importer, for
    Excel and CSV, pictures and certificates (its "Bring products in, any
-   way"; "Open the shop" below shows the toy list).
+   way"; "Open the shop" below shows the toy list), and taking products off
+   the shop (its "Take products off sale (下架)").
 3. `$busabase-app-creator` before changing the website's code.
 
 If `busa-product-hub` is not installed in this workspace, stop and tell the
@@ -241,8 +242,16 @@ Fix the table and the page clears within a minute.
 1. **Install busa-product-hub, then busa-shop.** Both from the Template Center,
    in the same workspace.
 2. **Retire the product hub's three sample products** (Aurora Desk Lamp, Bento
-   Lunchbox, Expandable Spice Rack): following the busa-product-hub skill, set
-   their `lifecycle` to `archive`. Otherwise a lamp appears in the toy shop.
+   Lunchbox, Expandable Spice Rack), or a lamp appears in the toy shop. They
+   are part of opening the shop the owner asked for, so follow
+   busa-product-hub's "Take products off sale (下架)": list the three in your
+   preview, and after the owner says yes set their `lifecycle` to `archive`
+   in one change whose message says the owner asked. No review item. Old
+   products the owner asks you to take down when a new list comes in
+   (「上节课的演示玩具都下架」) go the same way: list them in the import's
+   preview (step 3), import, then archive them. A product you only *think*
+   should go, and the owner did not name, is a review item in the product hub
+   instead.
 3. **Import the product list** with busa-product-hub's importer,
    `import-products.mjs` in the scripts folder of the busa-product-hub skill
    node in the same workspace (read it with `$busabase`: `busabase-cli nodes
@@ -272,7 +281,10 @@ Fix the table and the page clears within a minute.
    the student hands those files to you. A course that brings its own Excel
    file (phones, say) imports it the same way:
    `node import-products.mjs phones.xlsx --dry-run`.
-   Afterwards read the Products table back and confirm the count and a few prices.
+   Afterwards read the Products table back and confirm the count and a few
+   prices. For about a minute after an import or an archive, reloads of the
+   live shop may switch between the old and the new product list before it
+   settles.
 4. **Check Settings** with the owner: store name, tagline, currency equal to
    the products' currency, a real contact email, language, ships-to
    countries, about text, shipping note, demo notice (off for a real shop).
@@ -340,9 +352,12 @@ it is always open → Edit → Update Now. The stored margin
 (`gross_margin_pct` in Pricing) does not follow the new price by itself; the
 next import recomputes it, or recompute it when the owner asks.
 
-Change a price for the owner only when they ask, in the Price column (with
-`$busabase`, a record change on `price`), never as a `current_price` in
-Pricing. On a product hub from before 0.4.0 there is no Price column yet, and
+Change a price for the owner only when they ask and give the price, in the
+Price column (with `$busabase`, a record change on `price` whose message says
+the owner asked), never as a `current_price` in Pricing. Their request is the
+decision, so there is no review item; a price you would suggest yourself is a
+`price_change` review item in the product hub (busa-product-hub's
+"Boundary"). On a product hub from before 0.4.0 there is no Price column yet, and
 the price is still `pricing.current_price` (see busa-product-hub's "The
 selling price").
 

@@ -11,7 +11,10 @@
     },
     {
       "key": "ingest-data",
-      "label": "Bring in products from a file, a price list or a product page",
+      "label": {
+        "en": "Bring in products from a file, a price list or a product page",
+        "zh-CN": "导入商品：Excel、价目表或商品页"
+      },
       "body": "{target}\n\nRead the `busa-product-hub` skill in this folder and follow \"Bring products in, any way\": an Excel or CSV file goes straight to `scripts/import-products.mjs`; a supplier price list PDF, a catalogue photo, a product page I point to or text I paste is first transcribed into the template spreadsheet and shown to me. Always the `--dry-run` preview first, the import only after I say yes, and where each product's data came from recorded. Never invent a fact the source does not contain, and never crawl a website."
     },
     {
