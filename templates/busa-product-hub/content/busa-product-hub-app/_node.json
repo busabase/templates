@@ -11,8 +11,8 @@
     },
     {
       "key": "ingest-data",
-      "label": "Ingest a marketplace export or spec sheet",
-      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder and follow its workflow, then run `scripts/ingest_products.mjs` with the product/channel/inventory/certificate payload I prepared, upserting by natural key so re-ingests stay idempotent. Never invent a fact the source document doesn't contain."
+      "label": "Bring in products from a file, a price list or a product page",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder and follow \"Bring products in, any way\": an Excel or CSV file goes straight to `scripts/import-products.mjs`; a supplier price list PDF, a catalogue photo, a product page I point to or text I paste is first transcribed into the template spreadsheet and shown to me. Always the `--dry-run` preview first, the import only after I say yes, and where each product's data came from recorded. Never invent a fact the source does not contain, and never crawl a website."
     },
     {
       "key": "trade-show-prep",

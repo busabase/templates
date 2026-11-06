@@ -1,5 +1,5 @@
 // A small stand-in for the Busabase REST API, enough for the routes the site
-// and scripts/import-catalog.mjs call: GET /api/v1/nodes, GET /api/v1/bases/{id},
+// and busa-product-hub/scripts/import-products.mjs call: GET /api/v1/nodes, GET /api/v1/bases/{id},
 // GET /api/v1/records (cursor paging), POST /api/v1/bases/{baseId}/change-requests,
 // POST /api/v1/records/{recordId}/change-requests, GET
 // /api/v1/file-trees/{nodeId}/files/{path}, POST /api/v1/assets/upload-urls and

@@ -4,6 +4,11 @@
   "position": 0,
   "agentPrompts": [
     {
+      "key": "import-products",
+      "label": "Import my product list (Excel or CSV, pictures included)",
+      "body": "{target}\n\nRead the `busa-product-hub` skill in this folder and follow \"Bring products in, any way\": run `scripts/import-products.mjs` on the file I give you with `--dry-run` first and show me the preview (every product, its pictures, the empty fields, how each column was read). Import only after I say yes, then read the table back. Never invent a value the file does not contain."
+    },
+    {
       "key": "update-catalog",
       "label": "Update a product's catalog info",
       "body": "{target}\n\nRead the `busa-product-hub` skill in this folder and follow its workflow, then update the catalog identity, content, or compliance-note fields I describe for the product I name. Do not change price or lifecycle/archive status here — those need a review item and human approval first."

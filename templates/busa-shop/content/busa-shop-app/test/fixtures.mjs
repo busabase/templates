@@ -1,9 +1,9 @@
 // Workspace state for tests and the local preview, built from the template's
-// own demo files: the toy list in assets/demo, as scripts/import-catalog.mjs
+// own demo files: the toy list in assets/demo, as busa-product-hub/scripts/import-products.mjs
 // writes it into busa-product-hub, and the Settings row this template installs.
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { parseCsv, planCertificates, planProducts, productFields } from "../../../scripts/import-catalog.mjs";
+import { parseCsv, planCertificates, planProducts, productFields } from "../../../../busa-product-hub/scripts/import-products.mjs";
 
 const templateRoot = fileURLToPath(new URL("../../../", import.meta.url));
 export const DEMO_DIR = `${templateRoot}assets/demo/`;

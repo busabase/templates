@@ -58,7 +58,7 @@ only ever writes a review decision onto a review item's own record.
 | `tags` | `tags` | longtext | JSON array of tag strings |
 | `pricing` | `pricing` | longtext | JSON object: `cogs`, `landed_cost`, `target_price`, `map_price`, `gross_margin_pct`, `breakeven_acos`. Not the selling price: that is `price` + `currency` since 0.4.0. Tables made before 0.4.0 keep it here as `current_price` + `currency` |
 | `inventory` | `inventory` | longtext | JSON object rollup: `on_hand`, `available`, `reserved`, `inbound`, `days_cover`, `reorder_point`, `reorder_qty` |
-| `content` | `content` | longtext | JSON object: `hero_images_ready`, `hero_images_required`, `video_ready`, `listing_source`, `copy_status` |
+| `content` | `content` | longtext | JSON object: `hero_images_ready`, `hero_images_required`, `video_ready`, `listing_source`, `copy_status`; written by the importer: `description`, `bullets`, `attributes` (an object of product details), `images_ready`, `image_files`, `source` (where the product's data came from) |
 | `compliance` | `compliance` | longtext | JSON object: `score`, `status`, `notes` (array) |
 | `created-at` | `created_at` | text | ISO timestamp |
 | `updated-at` | `updated_at` | text | ISO timestamp |
@@ -73,6 +73,42 @@ to `pricing.current_price` / `pricing.currency` only while the column is
 empty (`sellingPriceOf()` in `product-hub-model.js`); writers
 (`productToFields()`) put the price in the columns and take it out of the
 JSON, so a product never carries two prices that can disagree.
+
+### Written by `scripts/import-products.mjs`
+
+Run by an agent or a person, never by the AirApp or a website. Products are
+matched by `product-id`; certificates by product + `cert-type` +
+`cert-number`.
+
+| Base | Fields it may write |
+| --- | --- |
+| Products | `product-id`, `sku`, `name`, `subtitle`, `category`, `lifecycle`, `status`, `vendor`, `owner`, `launch-date`, `image`, `gallery`, `tags`, `price`, `currency`; inside the JSON blocks only the keys the list fills (`pricing`: `target_price`, `cogs`, `landed_cost`, `gross_margin_pct`; `inventory`: `available`; `content`: `description`, `bullets`, `attributes.*`, `images_ready`, `image_files`, `source`); `ref`, `created-at` on create; `updated-at` when something changed |
+| Certificates | `product`, `cert-type`, `cert-number`, `issuer`, `issued-date`, `expiry-date`, `source-note` (`<file> › <sheet> row <n>`, plus the row's Source/备注) |
+
+`content.attributes` holds the details a sheet gives: the known keys
+`brand`, `model`, `color`, `memory`, `storage`, `screen`, `battery`,
+`camera`, `processor`, `os`, `network`, `specs`, `gtin`, `age_grade`,
+`materials`, `batteries`, `dimensions`, `weight`, `carton_qty`, `moq`,
+`lead_time_days`, `hs_code`, `country_of_origin`, `warranty`, `returns`,
+and any other column under its own header text (`"防水等级": "IP68"`).
+busa-shop's product page shows only `age_grade`, `materials`, `batteries`,
+`dimensions`, `weight`, `warranty` and `returns`, so a column nobody has
+looked at never reaches a public page.
+
+Other keys in the JSON blocks, other fields (`compliance`, the certificate
+`file`, …) and every value the list leaves empty are kept as stored. The
+price is the exception that moves: on a Products table with the Price
+column, `current_price`, `price` and `currency` are taken out of `pricing` (a
+value still there and not in the list moves into the empty column), so a
+product has one price. On a table from before 0.4.0, which has no Price
+column, the importer writes `pricing.currency` and `pricing.current_price`
+instead, and its summary says so. `gross_margin_pct` is recomputed from the
+price and `landed_cost` (or `cogs` when there is no landed cost) whenever
+both are known. `content.image_files` remembers each uploaded picture's file
+name, SHA-256 and URL, which is how a second run knows not to upload it
+again. `--fill` and `--currency` write `status`, `lifecycle`, `category`,
+`vendor` or `currency` only where the sheet and the stored row are both
+empty.
 
 ## Channels (`busa-product-hub-channels`)
 

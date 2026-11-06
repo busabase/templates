@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { after, before, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-import { certificateTypeId, parseCsv, planCertificates, planProducts, productFields } from "../../../scripts/import-catalog.mjs";
+import { certificateTypeId, parseCsv, planCertificates, planProducts, productFields } from "../../../../busa-product-hub/scripts/import-products.mjs";
 import { probeSite } from "../../../scripts/probe-site.mjs";
 import worker from "../vendor/worker.js";
 import { serveWorker } from "../scripts/preview.mjs";
