@@ -1,0 +1,145 @@
+{
+  "name": "Check-ins",
+  "description": "One row every time a key result moves: the new value, the evidence, and which agent or person wrote it.",
+  "position": 2,
+  "agentPrompts": [
+    {
+      "key": "log-checkin",
+      "label": {
+        "en": "Log a new number for a key result",
+        "zh-CN": "为一个关键结果记一个新数值"
+      },
+      "body": {
+        "en": "Read the `busa-okr` skill in this folder and follow it. Record the new value I give for the key result I name: one check-in with the previous and new value, today’s date, me as the writer and the evidence I describe, then update the key result’s current value and light.",
+        "zh-CN": "先阅读本文件夹里的 `busa-okr` Skill，按它的规则做。为我指定的关键结果记下我给的新数值：写一条进展记录，含原值、新值、今天的日期、写入者是我、以及我说的依据；再更新这个关键结果的当前值和红绿灯。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "what-changed",
+      "label": {
+        "en": "What changed this week, and who wrote it?",
+        "zh-CN": "这周改了什么，是谁写的"
+      },
+      "body": {
+        "en": "Read the `busa-okr` skill in this folder and follow it. Summarise the check-ins of the last seven days by team: which numbers moved, by how much, and which agent or person wrote each one. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-okr` Skill，按它的规则做。按团队汇总最近七天的进展记录：哪些数字变了、变了多少、每条是哪个 Agent 或哪个人写的。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Update",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "key-result",
+      "name": "Key result",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "key-results",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "checked-on",
+      "name": "Date",
+      "type": "date",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "previous-value",
+      "name": "Was",
+      "type": "number",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "new-value",
+      "name": "Now",
+      "type": "number",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "written-by",
+      "name": "Written by",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "writer",
+      "name": "Writer",
+      "type": "select",
+      "required": false,
+      "position": 6,
+      "options": {
+        "choices": [
+          {
+            "id": "agent",
+            "name": "Agent",
+            "color": "cyan"
+          },
+          {
+            "id": "person",
+            "name": "Person",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "evidence",
+      "name": "Evidence",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "source-url",
+      "name": "Source link",
+      "type": "url",
+      "required": false,
+      "position": 8,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest",
+      "name": "Latest first",
+      "description": "Every check-in, newest first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "checked-on",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "key-result",
+          "checked-on",
+          "written-by",
+          "writer"
+        ]
+      }
+    }
+  ]
+}

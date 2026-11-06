@@ -1,0 +1,56 @@
+{
+  "type": "airapp",
+  "name": "OKR Cockpit",
+  "description": "Company and team OKRs kept current by every team’s agent, with the evidence behind each number.",
+  "position": 5,
+  "agentPrompts": [
+    {
+      "key": "ask-risk",
+      "label": {
+        "en": "Which goals are at risk this quarter, and why?",
+        "zh-CN": "这季度哪些目标有风险，为什么"
+      },
+      "body": {
+        "en": "Read the `busa-okr` skill in this folder and follow it. Answer as the CEO’s chief of staff: overall progress against the quarter, then every key result at risk or on watch, worst first, with its cause, its latest evidence and the open action. Keep it to one screen. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-okr` Skill，按它的规则做。以 CEO 幕僚的口吻回答：先说整体进度对比时间进度，再按严重程度列出每个有风险和需关注的关键结果，附原因、最新依据和对应行动。控制在一屏以内。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "weekly-update",
+      "label": {
+        "en": "Run this week’s update for every team",
+        "zh-CN": "为所有团队跑本周更新"
+      },
+      "body": {
+        "en": "Read the `busa-okr` skill in this folder and follow it. For each team in turn, read each key result’s data source, write a check-in with the new value and its evidence, recompute the lights, open an action for anything newly red, and then write this week’s review as a draft.",
+        "zh-CN": "先阅读本文件夹里的 `busa-okr` Skill，按它的规则做。依次为每个团队读取每个关键结果的数据来源，写一条带新数值和依据的进展记录，重算红绿灯，新变红的开一条行动，最后写一份本周经营周报草稿。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "write-review",
+      "label": {
+        "en": "Write this Monday’s business review",
+        "zh-CN": "写本周一的经营周报"
+      },
+      "body": {
+        "en": "Read the `busa-okr` skill in this folder and follow it. Write the weekly review for last Monday to Sunday: a one-line headline, overall progress against the quarter, each team in two lines, every red and watch key result with its cause and action, and what changed since last week.",
+        "zh-CN": "先阅读本文件夹里的 `busa-okr` Skill，按它的规则做。写上周一到周日的经营周报：一句话结论、整体进度对比时间进度、每个团队两行、每个红灯和黄灯关键结果的原因与行动、与上周相比的变化。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "draft-okrs",
+      "label": {
+        "en": "Draft next quarter’s OKRs from our plan",
+        "zh-CN": "根据年度计划起草下季度 OKR"
+      },
+      "body": {
+        "en": "Read the `busa-okr` skill in this folder and follow it. Draft company and team objectives with two to four measurable key results each from the plan I paste. Every team objective supports a company one. Show me the draft before writing.",
+        "zh-CN": "先阅读本文件夹里的 `busa-okr` Skill，按它的规则做。根据我贴的计划起草公司级和团队级目标，每个目标配两到四个可量化的关键结果，每个团队目标都要支撑一个公司目标。写入前先给我看草稿。"
+      },
+      "intent": "change"
+    }
+  ]
+}
