@@ -13,6 +13,8 @@
 // keeps the price in `pricing.current_price` / `pricing.currency`; each value
 // is read from its column and, only while that column is empty, from the JSON.
 
+import { parseDetailKeys } from "./details.js";
+
 export const PRODUCT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/;
 export const CURRENCY_PATTERN = /^[A-Z]{3}$/;
 
@@ -283,6 +285,7 @@ export const normalizeSettings = (record) => {
     demoNotice: fields["demo-notice"] === true || fields["demo-notice"] === "true",
     listedTag: text(fields["listed-tag"]),
     productsBase: text(fields["products-base"]),
+    showDetails: parseDetailKeys(fields["show-details"]),
   };
 };
 

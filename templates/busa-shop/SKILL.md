@@ -1,6 +1,6 @@
 ---
 name: busa-shop
-description: Storefront website (Busabase Website engine; on a Free space a private preview in the owner's own browser) for a small cross-border seller, built on the busa-product-hub product list. It shows active products with price, photos and valid safety certificates, takes order requests into an Orders table (no payment), reads its store name, currency and contact from a Settings table, and comes with a daily shop check that writes a Reports row and improves from the owner's feedback. Use when the user invokes $busa-shop or /busa-shop, or asks to open an online shop / 独立站 / storefront for their products, import a product list or toy list (Excel with pictures, CSV, photos, certificates) into the product hub, put a product list on a public website, handle new website orders or order requests, check the shop, run the daily shop check, find missing photos, prices or expiring certificates (EN 71, ASTM F963, CPC, CE, UKCA) before a buyer sees them, or apply feedback on the last shop report.
+description: Storefront website (Busabase Website engine; on a Free space a private preview in the owner's own browser) for a small cross-border seller, built on the busa-product-hub product list. It shows active products with price, photos, specs and valid safety certificates, takes order requests into an Orders table (no payment), reads its store name, currency and contact from a Settings table, and comes with a daily shop check that writes a Reports row and improves from the owner's feedback. Use when the user invokes $busa-shop or /busa-shop, or asks to open an online shop / 独立站 / storefront for their products, import a product list or toy list (Excel with pictures, CSV, photos, certificates) into the product hub, put a product list on a public website, handle new website orders or order requests, check the shop, run the daily shop check, find missing photos, prices or expiring certificates (EN 71, ASTM F963, CPC, CE, UKCA) before a buyer sees them, or apply feedback on the last shop report.
 metadata:
   category: ecommerce
   tags:
@@ -103,6 +103,7 @@ Views: **New orders** (status new, oldest first), **Confirmed, not shipped**,
 | Required certificates | daily check | Comma-separated certificate types, e.g. `EN 71, ASTM F963, CPSIA / CPC` |
 | Certificate expiry warning (days) | daily check | Warn this many days before a certificate expires |
 | Standing check rules | daily check | Rules added from the owner's feedback, one per line, newest last |
+| Also show these product details | website | Optional: more product details for the product page, comma-separated, as the keys stored in `content.attributes` (`防水等级, gtin`). See "Product details on the page" |
 
 The website reads Settings at most once a minute, so a change shows on the
 live site within about a minute, with no redeploy.
@@ -133,9 +134,7 @@ Products (`busa-product-hub-products`), first 100 rows by `ref`:
   prices.
 - `inventory` JSON: `available` (0 or less = out of stock; missing = not known)
 - `content` JSON: `description` (paragraphs), `bullets` (list), `attributes`
-  (`age_grade`, `materials`, `batteries`, `dimensions`, `weight`, `warranty`,
-  `returns` are shown; `moq`, `lead_time_days`, `hs_code`, `carton_qty`,
-  `country_of_origin` stay off the public page)
+  (see "Product details on the page")
 - `image`, `gallery` (see "Product images")
 
 Certificates (`busa-product-hub-certificates`): `product`, `cert-type`,
@@ -145,6 +144,42 @@ types are the product hub's options (0.3.0 and later): CE, FCC, RoHS, UN38.3,
 UKCA, and for toys **EN 71** (EU), **ASTM F963** (US) and **CPSIA / CPC** (US
 Children's Product Certificate). A certificate of type `Other` is not shown,
 because it names nothing a buyer can check: record it under its real type.
+
+## Product details on the page
+
+busa-product-hub's importer keeps every column of a product sheet in
+`content.attributes`: a column it knows under its canonical key (`电池(mAh)`
+→ `battery`, `起订量` → `moq`), any other column under its own header
+(`防水等级`). The product page's **Details** list (`src/details.js`) shows,
+under the store language's words and in this order, whichever of these a
+product has:
+
+`brand`, `model`, `color`, `screen`, `processor`, `memory`, `storage`,
+`battery`, `charging`, `camera`, `front_camera`, `network`, `os`, `specs`,
+`age_grade`, `materials`, `batteries`, `dimensions`, `weight`, `in_the_box`,
+`warranty`, `returns` (after the SKU as "Item no.").
+
+So a phone sheet (品牌, 型号, 颜色, 运行内存, 机身存储, 屏幕, 处理器, 电池, 快充,
+后置/前置摄像头, 网络, 系统, 包装清单, 保修) shows as a spec list; a toy shows its
+age, materials, batteries, size, weight, warranty and returns. Put a note about
+Google services or a China/global ROM in the 系统 OS column, where a buyer looks.
+
+- **Never shown**, whatever Settings say: `moq`, `lead_time_days`, `hs_code`,
+  `carton_qty`, `country_of_origin`. They are for the owner and trade buyers.
+- **Any other key is hidden** until the owner names it in Settings › **Also
+  show these product details**, e.g. `防水等级, gtin`: the keys as stored (the
+  import preview prints each one: `kept as the product detail "防水等级"`),
+  separated by commas. They are shown after the list above, in that order,
+  labelled with the key itself (`gtin` reads "EAN / GTIN", `refresh_rate`
+  "Refresh rate"). A column nobody looked at never reaches a public page:
+  ask the owner before you add a key, and do not add one whose values are
+  internal (a supplier, a cost, a sales script).
+- A shop installed before busa-shop 0.4.0 has no such Settings field and shows
+  only the list above. To add it, with the owner's agreement: `busabase-cli
+  bases create-field --base-id <the Settings Base id> --slug show-details
+  --name "Also show these product details" --field-type text`.
+- The `brand` detail is also the product's brand in the page's search data
+  (schema.org `brand`); without one, the store's name.
 
 ## The listing rule
 
@@ -495,7 +530,7 @@ write feedback into Owner feedback on this report for the next run.
 
 Read `$busabase-app-creator` first. The source is `content/busa-shop-app/src/`
 (`catalog.js` listing and images, `orders.js` validation and the Orders fields
-written, `seo.js`, `pages.js`, `resources.js` table lookup, `shop.js` the only
+written, `seo.js`, `pages.js`, `details.js` which product details a page shows, `resources.js` table lookup, `shop.js` the only
 code that calls Busabase, `handler.js` routes). Then, in that folder:
 
 ```bash

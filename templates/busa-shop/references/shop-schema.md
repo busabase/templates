@@ -49,6 +49,7 @@ waits as a ChangeRequest and the buyer is still thanked.
 | `required-certificates` | text | Daily check: certificate types, `EN 71, ASTM F963, CPSIA / CPC` |
 | `expiry-warning-days` | number | Daily check: default 90 |
 | `check-rules` | longtext | Daily check: standing rules from feedback |
+| `show-details` | text | Optional (0.4.0+): extra `content.attributes` keys for the product page, comma-separated (`防水等级, gtin`); `moq`, `lead_time_days`, `hs_code`, `carton_qty`, `country_of_origin` are never shown. Missing on older installs = none |
 
 ## Reports (`busa-shop-reports`)
 
@@ -94,7 +95,7 @@ same order id for the retry).
 
 | Base | Read | Fields used |
 | --- | --- | --- |
-| Products | first 100 by `ref` | `product-id`, `name`, `subtitle`, `sku`, `category`, `lifecycle`, `status`, `tags`, `image`, `gallery`, `price` and `currency` (busa-product-hub 0.4.0+; while a column is empty, `pricing.current_price` / `pricing.currency`), `inventory` (`available`), `content` (`description`, `bullets`, `attributes`), `updated-at` |
+| Products | first 100 by `ref` | `product-id`, `name`, `subtitle`, `sku`, `category`, `lifecycle`, `status`, `tags`, `image`, `gallery`, `price` and `currency` (busa-product-hub 0.4.0+; while a column is empty, `pricing.current_price` / `pricing.currency`), `inventory` (`available`), `content` (`description`, `bullets`, `attributes`: the shopper keys in `src/details.js` plus Settings › `show-details`; see SKILL.md "Product details on the page"), `updated-at` |
 | Certificates | first 100 | `product`, `cert-type` (shown as is; `Other` is not shown), `expiry-date` |
 | Product Hub AirApp | one file per image request | only for image paths under `assets/` |
 

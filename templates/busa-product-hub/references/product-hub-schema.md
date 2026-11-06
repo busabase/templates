@@ -87,13 +87,16 @@ matched by `product-id`; certificates by product + `cert-type` +
 
 `content.attributes` holds the details a sheet gives: the known keys
 `brand`, `model`, `color`, `memory`, `storage`, `screen`, `battery`,
-`camera`, `processor`, `os`, `network`, `specs`, `gtin`, `age_grade`,
-`materials`, `batteries`, `dimensions`, `weight`, `carton_qty`, `moq`,
-`lead_time_days`, `hs_code`, `country_of_origin`, `warranty`, `returns`,
-and any other column under its own header text (`"防水等级": "IP68"`).
-busa-shop's product page shows only `age_grade`, `materials`, `batteries`,
-`dimensions`, `weight`, `warranty` and `returns`, so a column nobody has
-looked at never reaches a public page.
+`charging`, `camera`, `front_camera`, `processor`, `os`, `network`, `specs`,
+`gtin`, `age_grade`, `materials`, `batteries`, `dimensions`, `weight`,
+`carton_qty`, `moq`, `lead_time_days`, `hs_code`, `country_of_origin`,
+`in_the_box`, `warranty`, `returns`, and any other column under its own
+header text (`"防水等级": "IP68"`). busa-shop's product page shows the
+shopper keys among them (all but `gtin` and the trade keys `carton_qty`,
+`moq`, `lead_time_days`, `hs_code`, `country_of_origin`, which it never
+shows) and another key only when its Settings › "Also show these product
+details" names it, so a column nobody has looked at never reaches a public
+page (busa-shop's SKILL.md, "Product details on the page").
 
 Other keys in the JSON blocks, other fields (`compliance`, the certificate
 `file`, …) and every value the list leaves empty are kept as stored. The

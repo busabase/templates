@@ -55,6 +55,12 @@ export const productDescription = (product) =>
     .filter(Boolean)
     .join(". "));
 
+/** The maker's brand from the product's details (a shop reselling REDMI phones is not their brand); empty when not given. */
+const productBrand = (product) => {
+  const brand = product.content?.attributes?.brand;
+  return typeof brand === "string" ? brand.trim() : "";
+};
+
 export const productJsonLd = ({ origin, product, settings }) => {
   const url = absoluteUrl(origin, productPath(product));
   const data = {
@@ -66,7 +72,7 @@ export const productJsonLd = ({ origin, product, settings }) => {
     ...(product.sku ? { sku: product.sku } : {}),
     ...(product.category ? { category: product.category } : {}),
     ...(product.images.length ? { image: absoluteImages(origin, product) } : {}),
-    brand: { "@type": "Brand", name: settings.storeName },
+    brand: { "@type": "Brand", name: productBrand(product) || settings.storeName },
     offers: {
       "@type": "Offer",
       url,

@@ -8,6 +8,7 @@ import worker from "../vendor/worker.js";
 import { allowedOrigin, createHandler } from "../src/handler.js";
 import { startFakeBusabase, TEST_KEY } from "./fake-busabase.mjs";
 import { demoState, NODES } from "./fixtures.mjs";
+import { parseCsv, planProducts, productFields } from "../../../../busa-product-hub/scripts/import-products.mjs";
 
 const SITE = "https://tumbleberry-toys.example";
 let api;
@@ -204,6 +205,73 @@ describe("prices", () => {
     assert.match((await call("/products/tt-walking-robot")).text, /<p class="price price-large">\$24\.00<\/p>/);
     const status = JSON.parse((await call("/api/status")).text);
     assert.deepEqual([status.setup, status.products], ["ready", 10]);
+  });
+});
+
+describe("product details", () => {
+  // A phone imported from a sheet with Chinese headers, as busa-product-hub's importer writes it (invented test data).
+  const PHONE_CSV = [
+    "商品编号,商品名称,品牌,型号,颜色,运行内存,机身存储(GB),屏幕,处理器,电池(mAh),快充(W),后置摄像头,网络,系统,包装清单,保修,售价,币种,库存,状态,生命周期,起订量,交期,海关编码,装箱数,原产地,防水等级,直播话术",
+    "test-phone-a1,测试手机 A1,Xinghe,A1 TEST,Starry Blue,8GB,256,6.7-inch 120Hz AMOLED,MediaTek Dimensity 7025,5110,33,50 MP main,5G dual SIM,Android 14 (HyperOS); Google Play preinstalled,Phone | 33W charger | USB-C cable | Case,1-year warranty,199,USD,40,active,active,100,15,8517.13,40,China,IP54,LIVE-SCRIPT-ONLY",
+  ].join("\n");
+
+  const addPhone = () => {
+    const [phone] = planProducts(parseCsv(PHONE_CSV)).products;
+    api.state.records.bas_products.push({ id: "rec_test_phone", fields: { ...productFields(phone, {}, null), ref: 99, "updated-at": "2026-11-06T08:00:00.000Z" } });
+  };
+  const settingsRow = () => api.state.records.bas_settings[0];
+  const detailRows = (text) => [...text.matchAll(/<div><dt>([^<]*)<\/dt><dd>([^<]*)<\/dd><\/div>/g)].map((match) => [match[1], match[2]]);
+
+  it("a phone page lists its specs in order, and none of the trade or unknown columns", async () => {
+    addPhone();
+    const { status, text } = await call("/products/test-phone-a1");
+    assert.equal(status, 200);
+    assert.deepEqual(detailRows(text), [
+      ["Brand", "Xinghe"],
+      ["Model", "A1 TEST"],
+      ["Colour", "Starry Blue"],
+      ["Display", "6.7-inch 120Hz AMOLED"],
+      ["Processor", "MediaTek Dimensity 7025"],
+      ["RAM", "8GB"],
+      ["Storage", "256 GB"],
+      ["Battery", "5110 mAh"],
+      ["Charging", "33 W"],
+      ["Camera", "50 MP main"],
+      ["Network", "5G dual SIM"],
+      ["Operating system", "Android 14 (HyperOS); Google Play preinstalled"],
+      ["In the box", "Phone | 33W charger | USB-C cable | Case"],
+      ["Warranty", "1-year warranty"],
+    ]);
+    for (const hidden of ["8517.13", "China", "IP54", "LIVE-SCRIPT-ONLY", "防水等级", "MOQ"]) assert.ok(!text.includes(hidden), hidden);
+    const jsonLd = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(text)[1]);
+    assert.deepEqual(jsonLd.brand, { "@type": "Brand", name: "Xinghe" }, "the maker's brand, not the store's name");
+    assert.equal(jsonLd.offers.seller.name, "Tumbleberry Toys");
+  });
+
+  it("Settings › Also show these product details adds the owner's keys, never a trade key, in the store language", async () => {
+    addPhone();
+    settingsRow().fields["show-details"] = "防水等级, moq, hs_code";
+    settingsRow().fields.language = "de";
+    const rows = detailRows((await call("/products/test-phone-a1")).text);
+    assert.deepEqual(rows.slice(0, 2), [["Marke", "Xinghe"], ["Modell", "A1 TEST"]]);
+    assert.deepEqual(rows.slice(-2), [["Garantie", "1-year warranty"], ["防水等级", "IP54"]]);
+    assert.ok(!JSON.stringify(rows).includes("8517.13") && !rows.some(([, value]) => value === "100"), "moq and hs_code stay off");
+  });
+
+  it("a toy page keeps its details, and the store as the brand", async () => {
+    const { text } = await call("/products/tt-walking-robot");
+    assert.deepEqual(detailRows(text), [
+      ["Item no.", "TT-ROB-01"],
+      ["Age", "3+"],
+      ["Materials", "ABS plastic"],
+      ["Batteries", "2 × AA (not included)"],
+      ["Size", "14 × 9 × 21 cm"],
+      ["Weight", "0.32 kg"],
+      ["Warranty", "1-year limited warranty"],
+      ["Returns", "30-day returns"],
+    ]);
+    const jsonLd = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(text)[1]);
+    assert.equal(jsonLd.brand.name, "Tumbleberry Toys");
   });
 });
 

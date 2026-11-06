@@ -3,6 +3,7 @@
 // <meta charset="utf-8"> (Cloudflare serves text/html without a charset).
 
 import { countryName, formatPrice, imageSrc } from "./catalog.js";
+import { productDetails } from "./details.js";
 import { CLIENT_MESSAGE_KEYS, translator } from "./i18n.js";
 import {
   absoluteImages,
@@ -145,22 +146,13 @@ ${settings.about ? `<section class="about" aria-labelledby="about-heading"><h2 i
   });
 };
 
-const SPEC_KEYS = ["age_grade", "materials", "batteries", "dimensions", "weight", "warranty", "returns"];
-
-const specValue = (value) => {
-  if (Array.isArray(value)) return value.filter((item) => typeof item === "string" || typeof item === "number").join(", ");
-  if (typeof value === "string" || typeof value === "number") return String(value).trim();
-  return "";
-};
-
 export const productPage = ({ origin, settings, product }) => {
   const t = translator(settings.language);
   const content = product.content;
-  const attributes = content.attributes && typeof content.attributes === "object" ? content.attributes : {};
   const specs = [
-    product.sku ? [t("spec_sku"), product.sku] : null,
-    ...SPEC_KEYS.map((key) => [t(`spec_${key}`), specValue(attributes[key])]),
-  ].filter((row) => row?.[1]);
+    ...(product.sku ? [[t("spec_sku"), product.sku]] : []),
+    ...productDetails(content.attributes, { extraKeys: settings.showDetails, language: settings.language }),
+  ];
   const bullets = Array.isArray(content.bullets)
     ? content.bullets.filter((item) => typeof item === "string" && item.trim()).slice(0, 8)
     : [];

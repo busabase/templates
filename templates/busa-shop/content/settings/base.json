@@ -159,6 +159,14 @@
       "required": false,
       "position": 14,
       "options": {}
+    },
+    {
+      "slug": "show-details",
+      "name": "Also show these product details",
+      "type": "text",
+      "required": false,
+      "position": 15,
+      "options": {}
     }
   ],
   "views": []

@@ -702,7 +702,9 @@ const PRODUCT_COLUMNS = [
   [{ attribute: "storage" }, "storage", "rom", "storage capacity", "存储", "存储容量", "机身存储", "机身内存", "存储空间"],
   [{ attribute: "screen" }, "screen", "screen size", "display", "屏幕", "屏幕尺寸", "显示屏", "屏幕规格", "屏幕大小", "屏幕参数"],
   [{ attribute: "battery" }, "battery", "battery capacity", "电池", "电池容量"],
-  [{ attribute: "camera" }, "camera", "cameras", "摄像头", "相机", "后置摄像头", "主摄", "像素"],
+  [{ attribute: "camera" }, "camera", "cameras", "main camera", "rear camera", "摄像头", "相机", "后置摄像头", "后摄", "主摄", "像素"],
+  [{ attribute: "front_camera" }, "front_camera", "front camera", "selfie camera", "前置摄像头", "前摄", "前置相机", "前置像素"],
+  [{ attribute: "charging" }, "charging", "fast charging", "charging power", "charging speed", "充电", "快充", "充电功率", "快充功率", "有线快充", "闪充"],
   [{ attribute: "processor" }, "processor", "chip", "chipset", "cpu", "soc", "处理器", "芯片", "cpu型号"],
   [{ attribute: "os" }, "os", "operating system", "系统", "操作系统"],
   [{ attribute: "network" }, "network", "网络", "网络制式", "网络类型"],
@@ -720,6 +722,7 @@ const PRODUCT_COLUMNS = [
   [{ attribute: "country_of_origin" }, "country_of_origin", "country of origin", "origin", "原产地", "产地", "原产国"],
   [{ attribute: "warranty" }, "warranty", "保修", "质保", "保修期", "质保期", "保修政策"],
   [{ attribute: "returns" }, "returns", "return policy", "退货", "退换货", "退货政策", "退换政策"],
+  [{ attribute: "in_the_box" }, "in_the_box", "in the box", "what's in the box", "box contents", "package contents", "包装清单", "包装内容", "盒内物品", "随机附件", "随附配件", "标配"],
 ];
 
 const CERTIFICATE_COLUMNS = [
@@ -1990,7 +1993,7 @@ export const formatSummary = (summary) => {
       const header = `${column.letter} "${cellText(column.header, 40)}"`;
       if (column.duplicateOf) out.push(`- ${header} → a second ${describeTarget(column.as) || column.as.attribute} column (the first is ${column.duplicateOf}); kept as the product detail "${column.as.attribute}"`);
       else if (column.as.ignore) out.push(`- ${header} → ${column.as.ignore}, not imported`);
-      else if (column.as.attribute && !column.known) out.push(`- ${header} → not a known column; kept as the product detail "${column.as.attribute}" (in the record's Content JSON, content.attributes; not shown on a shop website)`);
+      else if (column.as.attribute && !column.known) out.push(`- ${header} → not a known column; kept as the product detail "${column.as.attribute}" (in the record's Content JSON, content.attributes; a Busa Shop website shows it only when its Settings › Also show these product details names it)`);
       else if (column.as.attribute) out.push(`- ${header} → product detail "${column.as.attribute}"${column.hint ? ` (unit "${column.hint}" added to bare numbers)` : ""}`);
       else out.push(`- ${header} → ${describeTarget(column.as)}${column.hint && column.as.field === "price" ? ` (header says "${column.hint}")` : ""}`);
     }

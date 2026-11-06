@@ -274,17 +274,18 @@ empty.
   售价/价格/零售价/Price → price; 币种/货币/Currency; 成本/进价/Cost →
   `pricing.cogs`; 到岸成本/Landed cost; 库存/Stock → `inventory.available`;
   状态/Status (在售 → active, 草稿 → draft, 下架 → blocked); 生命周期/Lifecycle;
-  类目/分类/Category; 供应商/Vendor; 品牌, 颜色, 内存, 存储, 屏幕, 电池, 处理器,
-  系统, 网络, 规格, 条码, 材质, 尺寸, 重量, 起订量, 交期, 保修 and their English
-  names → `content.attributes`; 主图/图片/图片链接/Image → the main picture,
+  类目/分类/Category; 供应商/Vendor; 品牌, 颜色, 内存, 存储, 屏幕, 电池, 快充,
+  后置/前置摄像头, 处理器, 系统, 网络, 包装清单, 规格, 条码, 材质, 尺寸, 重量, 起订量,
+  交期, 保修 and their English names → `content.attributes`; 主图/图片/图片链接/Image → the main picture,
   图集/Gallery → more pictures; 描述/Description; 卖点/Highlights → bullets;
   标签/Tags; 来源/Source → `content.source`; a column named after a
   certificate (FCC ID, CE 证书编号, UKCA, EN 71…) → a certificate of that type
   with the cell as its number. Bilingual headers (`售价 Price`) work, and a
   unit in brackets goes with bare numbers (`存储(GB)` 256 → `256 GB`).
   **A column it does not know is kept** as a product detail under its own
-  header (in the record's Content JSON, `content.attributes`; a shop's website
-  does not show it); a column with
+  header (in the record's Content JSON, `content.attributes`; a Busa Shop
+  website shows it only when its Settings › "Also show these product details"
+  name it); a column with
   values and no header is reported and left out; 序号 is ignored.
 - **Values.** Prices as people write them (`¥5,999.00`, `5999元/台`,
   `US$ 999`). The currency comes from a currency column, else a sign in the

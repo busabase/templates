@@ -338,7 +338,7 @@ describe("import-products.mjs: an Excel workbook with pictures inside", () => {
     assert.match(text, /\| 5 \| note-n1-128-[0-9a-f]{6}\* \| 云雀 Note（测试） \| — \| 0 \| 1: I5 in the cell \(WPS\) \| create \| price, currency, lifecycle, description \|/);
     assert.match(text, /\| 7 \| [^|]+ \| 云雀 Lite（测试） \| 999 CNY \| 10 \| 2: lite\.png, I7 in the sheet \(same picture again\) \| create \| lifecycle, description \|/);
     assert.match(text, /\* No product ID column: these IDs were made from the name and variant\./);
-    assert.match(text, /- K "防水等级" → not a known column; kept as the product detail "防水等级" \(in the record's Content JSON, content\.attributes; not shown on a shop website\)/);
+    assert.match(text, /- K "防水等级" → not a known column; kept as the product detail "防水等级" \(in the record's Content JSON, content\.attributes; a Busa Shop website shows it only when its Settings › Also show these product details names it\)/);
     assert.match(text, /- C "型号" → product detail "model"/);
     assert.match(text, /- E "存储\(GB\)" → product detail "storage" \(unit "GB" added to bare numbers\)/);
     assert.match(text, /- F "售价\(元\)" → price \(header says "元"\)/);
