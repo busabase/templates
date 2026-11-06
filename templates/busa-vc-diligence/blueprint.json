@@ -1,0 +1,1150 @@
+{
+  "schema_version": 1,
+  "app": {
+    "name": "Busa VC Diligence",
+    "slug": "busa-vc-diligence-app",
+    "description": "A due-diligence desk for venture investment teams: claim, evidence, verification, finding, decision — in one record chain.",
+    "locale": "en",
+    "deployment": "cloud",
+    "space_id": "",
+    "read_only": true,
+    "brand": {
+      "mode": "inferred",
+      "accent": "#176B5B",
+      "logo_path": ""
+    }
+  },
+  "workspace": {
+    "folder": {
+      "name": "Busa VC Diligence",
+      "slug": "busa-vc-diligence",
+      "node_id": ""
+    },
+    "bases": [
+      {
+        "key": "targets",
+        "name": "Targets",
+        "slug": "busa-vc-diligence-targets",
+        "node_id": "",
+        "base_id": "",
+        "read_limit": 50,
+        "description": "Target companies and the investment pipeline. One row per company: the diligence project lives here, and every request, evidence item, finding and interview points back to it.",
+        "views": [
+          {
+            "key": "pipeline",
+            "name": "Pipeline",
+            "type": "table",
+            "config": {
+              "filters": [],
+              "sorts": []
+            },
+            "view_id": ""
+          },
+          {
+            "key": "in-diligence",
+            "name": "In diligence",
+            "type": "table",
+            "config": {
+              "filters": [
+                {
+                  "fieldSlug": "stage",
+                  "operator": "equals",
+                  "value": "diligence"
+                }
+              ],
+              "sorts": []
+            },
+            "view_id": ""
+          },
+          {
+            "key": "passed",
+            "name": "Passed",
+            "type": "table",
+            "config": {
+              "filters": [
+                {
+                  "fieldSlug": "stage",
+                  "operator": "equals",
+                  "value": "passed"
+                }
+              ],
+              "sorts": []
+            },
+            "view_id": ""
+          }
+        ],
+        "fields": [
+          {
+            "slug": "name",
+            "name": "Company",
+            "type": "text",
+            "required": true
+          },
+          {
+            "slug": "stage",
+            "name": "Stage",
+            "type": "select",
+            "required": true,
+            "options": {
+              "choices": [
+                {
+                  "id": "sourced",
+                  "name": "Sourced"
+                },
+                {
+                  "id": "screening",
+                  "name": "Screening"
+                },
+                {
+                  "id": "diligence",
+                  "name": "Diligence"
+                },
+                {
+                  "id": "ic",
+                  "name": "IC"
+                },
+                {
+                  "id": "term-sheet",
+                  "name": "Term Sheet"
+                },
+                {
+                  "id": "closed",
+                  "name": "Closed"
+                },
+                {
+                  "id": "passed",
+                  "name": "Passed"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "sector",
+            "name": "Sector",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "headquarters",
+            "name": "Headquarters",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "website",
+            "name": "Website",
+            "type": "url",
+            "required": false
+          },
+          {
+            "slug": "lead",
+            "name": "Deal lead",
+            "type": "member",
+            "required": false
+          },
+          {
+            "slug": "source",
+            "name": "Source",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "referral",
+                  "name": "Referral"
+                },
+                {
+                  "id": "inbound",
+                  "name": "Inbound"
+                },
+                {
+                  "id": "outbound",
+                  "name": "Outbound research"
+                },
+                {
+                  "id": "conference",
+                  "name": "Conference"
+                },
+                {
+                  "id": "portfolio",
+                  "name": "Portfolio introduction"
+                },
+                {
+                  "id": "other",
+                  "name": "Other"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "round",
+            "name": "Round",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "proposed-amount",
+            "name": "Proposed amount (USD)",
+            "type": "number",
+            "required": false
+          },
+          {
+            "slug": "ic-date",
+            "name": "IC date",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "thesis",
+            "name": "Investment thesis",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "description",
+            "name": "What it does",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "data-basis",
+            "name": "Data basis",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "real-company",
+                  "name": "Real company (public sources)"
+                },
+                {
+                  "id": "fictional-demo",
+                  "name": "Fictional demo company"
+                }
+              ]
+            }
+          }
+        ],
+        "seed_records": []
+      },
+      {
+        "key": "diligence-requests",
+        "name": "Diligence Requests",
+        "slug": "busa-vc-diligence-diligence-requests",
+        "node_id": "",
+        "base_id": "",
+        "read_limit": 50,
+        "description": "The request list: every document, dataset and answer the desk has asked a target for, grouped by workstream, with criticality, owner side and status. This is where diligence is won or stalled.",
+        "views": [
+          {
+            "key": "all-requests",
+            "name": "All requests",
+            "type": "table",
+            "config": {
+              "filters": [],
+              "sorts": []
+            },
+            "view_id": ""
+          },
+          {
+            "key": "open-queue",
+            "name": "Open queue",
+            "type": "table",
+            "config": {
+              "filters": [
+                {
+                  "fieldSlug": "status",
+                  "operator": "equals",
+                  "value": "requested"
+                }
+              ],
+              "sorts": []
+            },
+            "view_id": ""
+          },
+          {
+            "key": "blocked",
+            "name": "Blocked",
+            "type": "table",
+            "config": {
+              "filters": [
+                {
+                  "fieldSlug": "status",
+                  "operator": "equals",
+                  "value": "blocked"
+                }
+              ],
+              "sorts": []
+            },
+            "view_id": ""
+          },
+          {
+            "key": "critical",
+            "name": "Critical",
+            "type": "table",
+            "config": {
+              "filters": [
+                {
+                  "fieldSlug": "criticality",
+                  "operator": "equals",
+                  "value": "critical"
+                }
+              ],
+              "sorts": []
+            },
+            "view_id": ""
+          }
+        ],
+        "fields": [
+          {
+            "slug": "title",
+            "name": "Request",
+            "type": "text",
+            "required": true
+          },
+          {
+            "slug": "target",
+            "name": "Target",
+            "type": "relation",
+            "required": true,
+            "options": {
+              "targetBaseSlug": "targets",
+              "multiple": false
+            }
+          },
+          {
+            "slug": "workstream",
+            "name": "Workstream",
+            "type": "select",
+            "required": true,
+            "options": {
+              "choices": [
+                {
+                  "id": "corporate-cap-table",
+                  "name": "Corporate & Cap Table"
+                },
+                {
+                  "id": "team",
+                  "name": "Team"
+                },
+                {
+                  "id": "market",
+                  "name": "Market"
+                },
+                {
+                  "id": "product-tech",
+                  "name": "Product & Tech"
+                },
+                {
+                  "id": "business-traction",
+                  "name": "Business & Traction"
+                },
+                {
+                  "id": "financials",
+                  "name": "Financials"
+                },
+                {
+                  "id": "legal",
+                  "name": "Legal"
+                },
+                {
+                  "id": "terms",
+                  "name": "Terms"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "criticality",
+            "name": "Criticality",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "critical",
+                  "name": "Critical"
+                },
+                {
+                  "id": "standard",
+                  "name": "Standard"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "status",
+            "name": "Status",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "requested",
+                  "name": "Requested"
+                },
+                {
+                  "id": "received",
+                  "name": "Received"
+                },
+                {
+                  "id": "reviewed",
+                  "name": "Reviewed"
+                },
+                {
+                  "id": "blocked",
+                  "name": "Blocked"
+                },
+                {
+                  "id": "waived",
+                  "name": "Waived"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "requested-from",
+            "name": "Requested from",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "due-date",
+            "name": "Due date",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "received-date",
+            "name": "Received date",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "notes",
+            "name": "Notes",
+            "type": "longtext",
+            "required": false
+          }
+        ],
+        "seed_records": []
+      },
+      {
+        "key": "evidence",
+        "name": "Evidence Register",
+        "slug": "busa-vc-diligence-evidence",
+        "node_id": "",
+        "base_id": "",
+        "read_limit": 50,
+        "description": "Every piece of evidence the desk relies on, with its source, its date, and its verification status. A claim becomes a fact only when a row here says Verified.",
+        "views": [
+          {
+            "key": "all-evidence",
+            "name": "All evidence",
+            "type": "table",
+            "config": {
+              "filters": [],
+              "sorts": []
+            },
+            "view_id": ""
+          },
+          {
+            "key": "unverified",
+            "name": "Unverified",
+            "type": "table",
+            "config": {
+              "filters": [
+                {
+                  "fieldSlug": "verification",
+                  "operator": "equals",
+                  "value": "unverified"
+                }
+              ],
+              "sorts": []
+            },
+            "view_id": ""
+          },
+          {
+            "key": "contradicted",
+            "name": "Contradicted",
+            "type": "table",
+            "config": {
+              "filters": [
+                {
+                  "fieldSlug": "verification",
+                  "operator": "equals",
+                  "value": "contradicted"
+                }
+              ],
+              "sorts": []
+            },
+            "view_id": ""
+          }
+        ],
+        "fields": [
+          {
+            "slug": "title",
+            "name": "Evidence",
+            "type": "text",
+            "required": true
+          },
+          {
+            "slug": "target",
+            "name": "Target",
+            "type": "relation",
+            "required": true,
+            "options": {
+              "targetBaseSlug": "targets",
+              "multiple": false
+            }
+          },
+          {
+            "slug": "request",
+            "name": "Answers request",
+            "type": "relation",
+            "required": false,
+            "options": {
+              "targetBaseSlug": "diligence-requests",
+              "multiple": false
+            }
+          },
+          {
+            "slug": "type",
+            "name": "Type",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "filing",
+                  "name": "Regulatory filing"
+                },
+                {
+                  "id": "financial-statement",
+                  "name": "Financial statement"
+                },
+                {
+                  "id": "report",
+                  "name": "Press / research report"
+                },
+                {
+                  "id": "company-statement",
+                  "name": "Company statement"
+                },
+                {
+                  "id": "company-document",
+                  "name": "Company document"
+                },
+                {
+                  "id": "interview-note",
+                  "name": "Interview note"
+                },
+                {
+                  "id": "dataset",
+                  "name": "Third-party dataset"
+                },
+                {
+                  "id": "other",
+                  "name": "Other"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "source",
+            "name": "Source",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "source-url",
+            "name": "Source link",
+            "type": "url",
+            "required": false
+          },
+          {
+            "slug": "document-date",
+            "name": "Document date",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "as-of",
+            "name": "Data as of",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "verification",
+            "name": "Verification",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "unverified",
+                  "name": "Unverified"
+                },
+                {
+                  "id": "verified",
+                  "name": "Verified"
+                },
+                {
+                  "id": "contradicted",
+                  "name": "Contradicted"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "summary",
+            "name": "What it shows",
+            "type": "longtext",
+            "required": false
+          }
+        ],
+        "seed_records": []
+      },
+      {
+        "key": "findings",
+        "name": "Findings & Red Flags",
+        "slug": "busa-vc-diligence-findings",
+        "node_id": "",
+        "base_id": "",
+        "read_limit": 50,
+        "description": "What diligence has found: each finding states the claim being tested, what the evidence actually shows, its severity, and its impact on valuation, terms or the decision. Every finding must link to evidence.",
+        "views": [
+          {
+            "key": "all-findings",
+            "name": "All findings",
+            "type": "table",
+            "config": {
+              "filters": [],
+              "sorts": []
+            },
+            "view_id": ""
+          },
+          {
+            "key": "open",
+            "name": "Open",
+            "type": "table",
+            "config": {
+              "filters": [
+                {
+                  "fieldSlug": "status",
+                  "operator": "equals",
+                  "value": "open"
+                }
+              ],
+              "sorts": []
+            },
+            "view_id": ""
+          },
+          {
+            "key": "critical",
+            "name": "Critical",
+            "type": "table",
+            "config": {
+              "filters": [
+                {
+                  "fieldSlug": "severity",
+                  "operator": "equals",
+                  "value": "critical"
+                }
+              ],
+              "sorts": []
+            },
+            "view_id": ""
+          }
+        ],
+        "fields": [
+          {
+            "slug": "title",
+            "name": "Finding",
+            "type": "text",
+            "required": true
+          },
+          {
+            "slug": "target",
+            "name": "Target",
+            "type": "relation",
+            "required": true,
+            "options": {
+              "targetBaseSlug": "targets",
+              "multiple": false
+            }
+          },
+          {
+            "slug": "evidence",
+            "name": "Evidence",
+            "type": "relation",
+            "required": true,
+            "options": {
+              "targetBaseSlug": "evidence",
+              "multiple": false
+            }
+          },
+          {
+            "slug": "workstream",
+            "name": "Workstream",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "corporate-cap-table",
+                  "name": "Corporate & Cap Table"
+                },
+                {
+                  "id": "team",
+                  "name": "Team"
+                },
+                {
+                  "id": "market",
+                  "name": "Market"
+                },
+                {
+                  "id": "product-tech",
+                  "name": "Product & Tech"
+                },
+                {
+                  "id": "business-traction",
+                  "name": "Business & Traction"
+                },
+                {
+                  "id": "financials",
+                  "name": "Financials"
+                },
+                {
+                  "id": "legal",
+                  "name": "Legal"
+                },
+                {
+                  "id": "terms",
+                  "name": "Terms"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "severity",
+            "name": "Severity",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "critical",
+                  "name": "Critical"
+                },
+                {
+                  "id": "high",
+                  "name": "High"
+                },
+                {
+                  "id": "medium",
+                  "name": "Medium"
+                },
+                {
+                  "id": "low",
+                  "name": "Low"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "status",
+            "name": "Status",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "open",
+                  "name": "Open"
+                },
+                {
+                  "id": "mitigated",
+                  "name": "Mitigated"
+                },
+                {
+                  "id": "accepted",
+                  "name": "Accepted"
+                },
+                {
+                  "id": "deal-breaker",
+                  "name": "Deal-breaker"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "claim",
+            "name": "Claim being tested",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "what-we-know",
+            "name": "What the evidence shows",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "impact",
+            "name": "Impact on valuation / terms / decision",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "owner",
+            "name": "Owner",
+            "type": "member",
+            "required": false
+          },
+          {
+            "slug": "resolve-by",
+            "name": "Resolve by",
+            "type": "date",
+            "required": false
+          }
+        ],
+        "seed_records": []
+      },
+      {
+        "key": "interviews",
+        "name": "Interviews & References",
+        "slug": "busa-vc-diligence-interviews",
+        "node_id": "",
+        "base_id": "",
+        "read_limit": 50,
+        "description": "Management calls, customer references and expert calls. What was said is logged as claims, with a note of how far the claims match the evidence — an interview is a source of claims, never of facts by itself.",
+        "views": [
+          {
+            "key": "all-interviews",
+            "name": "All interviews",
+            "type": "table",
+            "config": {
+              "filters": [],
+              "sorts": []
+            },
+            "view_id": ""
+          },
+          {
+            "key": "untested",
+            "name": "Not yet tested",
+            "type": "table",
+            "config": {
+              "filters": [
+                {
+                  "fieldSlug": "consistency",
+                  "operator": "equals",
+                  "value": "untested"
+                }
+              ],
+              "sorts": []
+            },
+            "view_id": ""
+          }
+        ],
+        "fields": [
+          {
+            "slug": "title",
+            "name": "Interview",
+            "type": "text",
+            "required": true
+          },
+          {
+            "slug": "target",
+            "name": "Target",
+            "type": "relation",
+            "required": true,
+            "options": {
+              "targetBaseSlug": "targets",
+              "multiple": false
+            }
+          },
+          {
+            "slug": "type",
+            "name": "Type",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "management",
+                  "name": "Management / founder"
+                },
+                {
+                  "id": "customer",
+                  "name": "Customer reference"
+                },
+                {
+                  "id": "expert",
+                  "name": "Industry expert"
+                },
+                {
+                  "id": "former-employee",
+                  "name": "Former employee"
+                },
+                {
+                  "id": "coinvestor",
+                  "name": "Co-investor / syndicate"
+                },
+                {
+                  "id": "other",
+                  "name": "Other"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "interviewee",
+            "name": "Interviewee / role",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "date",
+            "name": "Date",
+            "type": "date",
+            "required": false
+          },
+          {
+            "slug": "interviewer",
+            "name": "Interview lead",
+            "type": "text",
+            "required": false
+          },
+          {
+            "slug": "key-claims",
+            "name": "Key claims made",
+            "type": "longtext",
+            "required": false
+          },
+          {
+            "slug": "consistency",
+            "name": "Consistency with evidence",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "consistent",
+                  "name": "Consistent with evidence"
+                },
+                {
+                  "id": "partly",
+                  "name": "Partly consistent"
+                },
+                {
+                  "id": "contradicts",
+                  "name": "Contradicts evidence"
+                },
+                {
+                  "id": "untested",
+                  "name": "Not yet tested"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "credibility",
+            "name": "Credibility",
+            "type": "select",
+            "required": false,
+            "options": {
+              "choices": [
+                {
+                  "id": "high",
+                  "name": "High"
+                },
+                {
+                  "id": "medium",
+                  "name": "Medium"
+                },
+                {
+                  "id": "low",
+                  "name": "Low"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "follow-ups",
+            "name": "Follow-ups",
+            "type": "longtext",
+            "required": false
+          }
+        ],
+        "seed_records": []
+      }
+    ],
+    "docs": [
+      {
+        "key": "ic-memo-and-playbook",
+        "name": "IC Memo and Diligence Playbook",
+        "slug": "ic-memo-and-playbook",
+        "node_id": "",
+        "description": "The desk's standing standard: workflow, workstream requirements, severity rubric, fund thresholds, and the IC memo skeleton."
+      }
+    ],
+    "drives": [],
+    "whiteboards": [],
+    "forms": [],
+    "workflows": [],
+    "html": [],
+    "vault_requirements": [],
+    "integrations": [],
+    "relations": [
+      {
+        "source_base": "diligence-requests",
+        "field_slug": "target",
+        "field_name": "Target",
+        "target_base": "targets",
+        "required": true,
+        "multiple": false
+      },
+      {
+        "source_base": "evidence",
+        "field_slug": "target",
+        "field_name": "Target",
+        "target_base": "targets",
+        "required": true,
+        "multiple": false
+      },
+      {
+        "source_base": "evidence",
+        "field_slug": "request",
+        "field_name": "Answers request",
+        "target_base": "diligence-requests",
+        "required": false,
+        "multiple": false
+      },
+      {
+        "source_base": "findings",
+        "field_slug": "target",
+        "field_name": "Target",
+        "target_base": "targets",
+        "required": true,
+        "multiple": false
+      },
+      {
+        "source_base": "findings",
+        "field_slug": "evidence",
+        "field_name": "Evidence",
+        "target_base": "evidence",
+        "required": true,
+        "multiple": false
+      },
+      {
+        "source_base": "interviews",
+        "field_slug": "target",
+        "field_name": "Target",
+        "target_base": "targets",
+        "required": true,
+        "multiple": false
+      }
+    ]
+  },
+  "ui": {
+    "primary_base": "targets",
+    "list_columns": {
+      "targets": [
+        "name",
+        "stage",
+        "round",
+        "ic-date"
+      ],
+      "diligence-requests": [
+        "title",
+        "workstream",
+        "criticality",
+        "status",
+        "due-date"
+      ],
+      "evidence": [
+        "title",
+        "type",
+        "source",
+        "verification"
+      ],
+      "findings": [
+        "title",
+        "severity",
+        "status",
+        "resolve-by"
+      ],
+      "interviews": [
+        "title",
+        "type",
+        "consistency",
+        "date"
+      ]
+    },
+    "detail_modes": {
+      "targets": "page",
+      "diligence-requests": "split",
+      "evidence": "drawer",
+      "findings": "page",
+      "interviews": "drawer"
+    },
+    "density": "default",
+    "summary": "See what is in diligence, what is flagged, what is stuck, and what is still unverified — per target and across the desk.",
+    "screens": [
+      {
+        "id": "overview",
+        "name": "Overview",
+        "purpose": "Targets in diligence, open Critical findings, overdue requests; target list, findings wall, desk summary",
+        "data_sources": [
+          "targets",
+          "diligence-requests",
+          "findings"
+        ]
+      },
+      {
+        "id": "target-detail",
+        "name": "Target detail",
+        "purpose": "Thesis, workstream progress, top findings, claims and evidence snapshot, interviews, next actions",
+        "data_sources": [
+          "targets",
+          "diligence-requests",
+          "evidence",
+          "findings",
+          "interviews"
+        ]
+      },
+      {
+        "id": "findings-wall",
+        "name": "Findings wall",
+        "purpose": "Every open finding across the desk, ordered by severity",
+        "data_sources": [
+          "findings"
+        ]
+      }
+    ],
+    "attention_states": [
+      "blocked",
+      "overdue",
+      "open-critical-finding",
+      "unverified-load-bearing-claim"
+    ],
+    "actions": []
+  },
+  "onboarding": {
+    "version": 1,
+    "required_fields": [],
+    "completion_resource": "targets",
+    "rationale": "Read-only cockpit over the desk's Bases; the only setup is filling the fund's own thresholds in the Playbook doc, which is a document edit, not app configuration."
+  },
+  "permissions": {
+    "read_procedures": [
+      "nodes.list",
+      "nodes.get",
+      "records.list",
+      "records.get",
+      "records.count"
+    ],
+    "change_request_procedures": []
+  }
+}

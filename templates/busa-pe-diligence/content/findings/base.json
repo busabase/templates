@@ -1,0 +1,249 @@
+{
+  "name": "Findings & Red Flags",
+  "description": "What diligence has found — each finding states the claim that was tested, what the evidence actually shows, and what it should do to valuation or terms. No finding exists without the evidence behind it.",
+  "position": 3,
+  "agentPrompts": [
+    {
+      "key": "cross-check-claims",
+      "label": "Cross-check management's claims",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then cross-check management's claims against the evidence for the target I name, and raise a flag wherever they disagree: state the claim, what the evidence shows, a severity from the skill's rubric, and the impact on valuation or terms. Every flag must link the evidence behind it — if there is no evidence, log it as an unverified claim instead of a finding."
+    },
+    {
+      "key": "red-flag-brief",
+      "label": "Brief me on the red flags",
+      "intent": "read-only",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then brief me on the open findings for the target I name, worst first: severity, what the evidence shows, and what each one should do to valuation or deal terms. Do not change anything."
+    },
+    {
+      "key": "deal-breaker-check",
+      "label": "Is there a deal-breaker here?",
+      "intent": "read-only",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then tell me whether anything found so far on the target I name meets the skill's deal-breaker bar, and what evidence would have to change for that verdict to move. Do not change anything."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Finding",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "target",
+      "name": "Target",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "targets"
+      }
+    },
+    {
+      "slug": "evidence",
+      "name": "Evidence",
+      "type": "relation",
+      "required": true,
+      "position": 2,
+      "options": {
+        "multiple": true,
+        "targetBaseSlug": "evidence"
+      }
+    },
+    {
+      "slug": "severity",
+      "name": "Severity",
+      "type": "select",
+      "required": true,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "critical",
+            "name": "Critical"
+          },
+          {
+            "id": "high",
+            "name": "High"
+          },
+          {
+            "id": "medium",
+            "name": "Medium"
+          },
+          {
+            "id": "low",
+            "name": "Low"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "category",
+      "name": "Category",
+      "type": "select",
+      "required": false,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "financial-qoe",
+            "name": "Financial / QoE"
+          },
+          {
+            "id": "customer-concentration",
+            "name": "Customer concentration"
+          },
+          {
+            "id": "market",
+            "name": "Market"
+          },
+          {
+            "id": "legal",
+            "name": "Legal"
+          },
+          {
+            "id": "tax",
+            "name": "Tax"
+          },
+          {
+            "id": "operations",
+            "name": "Operations"
+          },
+          {
+            "id": "governance",
+            "name": "Governance"
+          },
+          {
+            "id": "tech",
+            "name": "Tech"
+          },
+          {
+            "id": "esg",
+            "name": "ESG"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 5,
+      "options": {
+        "choices": [
+          {
+            "id": "open",
+            "name": "Open"
+          },
+          {
+            "id": "mitigated",
+            "name": "Mitigated"
+          },
+          {
+            "id": "accepted",
+            "name": "Accepted"
+          },
+          {
+            "id": "deal-breaker",
+            "name": "Deal-breaker"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "claim",
+      "name": "The claim being tested",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "what-evidence-shows",
+      "name": "What the evidence shows",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "impact",
+      "name": "Impact on valuation / terms",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "owner",
+      "name": "Owner",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "resolve-by",
+      "name": "Resolve by",
+      "type": "date",
+      "required": false,
+      "position": 10,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "open-findings",
+      "name": "Open findings",
+      "type": "table",
+      "description": "Findings still open — the red-flag wall, in the order the cockpit shows them",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "open"
+          }
+        ],
+        "sorts": [
+          {
+            "direction": "asc",
+            "fieldSlug": "resolve-by"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "target",
+          "severity",
+          "category",
+          "status",
+          "owner",
+          "resolve-by"
+        ]
+      }
+    },
+    {
+      "slug": "deal-breakers",
+      "name": "Deal-breakers",
+      "type": "table",
+      "description": "Findings that ended, or should end, a deal",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "deal-breaker"
+          }
+        ],
+        "sorts": []
+      }
+    }
+  ]
+}

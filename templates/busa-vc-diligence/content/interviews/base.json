@@ -1,0 +1,197 @@
+{
+  "name": "Interviews & References",
+  "description": "Management calls, customer references and expert calls. What was said is logged as claims, with a note of how far the claims match the evidence — an interview is a source of claims, never of facts by itself.",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "log-interview",
+      "label": "Log this call",
+      "body": "Read the `busa-vc-diligence` skill in this folder and follow its workflow, then log the call I describe: who it was with (role, not just a name), the key claims they made, and the follow-ups. Mark every claim's consistency as Not yet tested until it has been checked against the Evidence Register."
+    },
+    {
+      "key": "test-interview-claims",
+      "label": "Test this interview's claims against the evidence",
+      "body": "Read the `busa-vc-diligence` skill in this folder and follow its workflow, then take the interview I name and test each key claim against the Evidence Register for that target: mark the interview's consistency Consistent, Partly consistent, Contradicts evidence, or still Not yet tested, and name the evidence behind the verdict. Do not change the claims themselves."
+    },
+    {
+      "key": "reference-gaps",
+      "label": "Who have we not heard from yet?",
+      "body": "Read the `busa-vc-diligence` skill in this folder and follow its workflow, then for the target I name, tell me which reference voices are missing — no customer, no expert, no former employee — judged against the claims the investment thesis depends on. Do not change anything.",
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Interview",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "target",
+      "name": "Target",
+      "type": "relation",
+      "required": true,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "targets",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "type",
+      "name": "Type",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "management",
+            "name": "Management / founder"
+          },
+          {
+            "id": "customer",
+            "name": "Customer reference"
+          },
+          {
+            "id": "expert",
+            "name": "Industry expert"
+          },
+          {
+            "id": "former-employee",
+            "name": "Former employee"
+          },
+          {
+            "id": "coinvestor",
+            "name": "Co-investor / syndicate"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "interviewee",
+      "name": "Interviewee / role",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "date",
+      "name": "Date",
+      "type": "date",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "interviewer",
+      "name": "Interview lead",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "key-claims",
+      "name": "Key claims made",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "consistency",
+      "name": "Consistency with evidence",
+      "type": "select",
+      "required": false,
+      "position": 7,
+      "options": {
+        "choices": [
+          {
+            "id": "consistent",
+            "name": "Consistent with evidence"
+          },
+          {
+            "id": "partly",
+            "name": "Partly consistent"
+          },
+          {
+            "id": "contradicts",
+            "name": "Contradicts evidence"
+          },
+          {
+            "id": "untested",
+            "name": "Not yet tested"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "credibility",
+      "name": "Credibility",
+      "type": "select",
+      "required": false,
+      "position": 8,
+      "options": {
+        "choices": [
+          {
+            "id": "high",
+            "name": "High"
+          },
+          {
+            "id": "medium",
+            "name": "Medium"
+          },
+          {
+            "id": "low",
+            "name": "Low"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "follow-ups",
+      "name": "Follow-ups",
+      "type": "longtext",
+      "required": false,
+      "position": 9,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all-interviews",
+      "name": "All interviews",
+      "description": "Every call logged on the desk",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": []
+      }
+    },
+    {
+      "slug": "untested",
+      "name": "Not yet tested",
+      "description": "Interviews whose claims have not been checked against evidence",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "consistency",
+            "operator": "equals",
+            "value": "untested"
+          }
+        ],
+        "sorts": []
+      }
+    }
+  ]
+}

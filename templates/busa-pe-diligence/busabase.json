@@ -1,0 +1,50 @@
+{
+  "description": "A due-diligence desk for private-equity teams: target pipeline, workstream request lists, an evidence register where every claim is verified, contradicted or still unverified, a red-flag wall priced into valuation and terms, and an IC memo drafted only from verified facts.",
+  "displayName": "Busa PE Diligence",
+  "format": "busabase-package@1",
+  "license": "MIT",
+  "name": "busa-pe-diligence",
+  "tags": [
+    "finance",
+    "risk:gated-write",
+    "surface:busabase"
+  ],
+  "template": {
+    "agentPrompts": [
+      "Open diligence on the company I name: build its PE request list across all nine workstreams and tell me what public filings can already answer.",
+      "Cross-check management's claims against the evidence register and raise a flag wherever they disagree.",
+      "Draft the IC memo for the target I name — verified facts as facts, everything else in the Unverified section."
+    ],
+    "airapp": "busa-pe-diligence-app",
+    "category": "finance",
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/target-detail.webp",
+      "assets/screenshots/findings-wall.webp"
+    ],
+    "video": "assets/recordings/busa-pe-diligence-film.mp4",
+    "videos": [
+      {
+        "title": "Scenario film — the NVIDIA file",
+        "src": "assets/recordings/busa-pe-diligence-film.mp4"
+      },
+      {
+        "title": "Walkthrough — every screen, 25 seconds",
+        "src": "assets/recordings/busa-pe-diligence.mp4"
+      }
+    ],
+    "requires": {
+      "airapp": true
+    },
+    "schemaVersion": 1,
+    "tags": [
+      "finance",
+      "due-diligence",
+      "private-equity",
+      "risk:gated-write",
+      "surface:busabase"
+    ]
+  },
+  "version": "0.1.0"
+}

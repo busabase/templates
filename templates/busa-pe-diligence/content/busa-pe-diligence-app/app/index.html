@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Busa PE Diligence</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <strong id="brandName">Busa PE Diligence</strong>
+          <span id="brandSub"></span>
+        </div>
+        <span class="topbar-side">
+          <span class="badge" id="readOnlyBadge" title="This cockpit never writes"></span>
+        </span>
+      </header>
+
+      <nav class="nav" aria-label="Cockpit screens">
+        <a class="nav-link" data-page="overviewPage" data-label="navOverview" href="#/"></a>
+        <a class="nav-link" data-page="targetsPage" data-label="navTargets" href="#/targets"></a>
+        <a class="nav-link" data-page="findingsPage" data-label="navFindings" href="#/findings"></a>
+      </nav>
+
+      <div class="state-message" id="loadingState" role="status"></div>
+      <div class="state-message error" id="errorState" role="alert" hidden></div>
+
+      <main id="overviewPage" hidden>
+        <section class="metrics" id="metrics" aria-label="Desk summary"></section>
+        <p class="page-note" id="pageNote" hidden></p>
+
+        <section class="card" aria-labelledby="progressTitle">
+          <header class="card-head">
+            <h2 id="progressTitle"></h2>
+          </header>
+          <div id="progressList"></div>
+          <p class="empty" id="progressEmpty" hidden></p>
+        </section>
+
+        <div class="grid">
+          <section class="card" aria-labelledby="overdueTitle">
+            <header class="card-head">
+              <h2 id="overdueTitle"></h2>
+            </header>
+          <div id="overdueList"></div>
+            <p class="empty" id="overdueEmpty" hidden></p>
+          </section>
+
+          <section class="card" aria-labelledby="topFindingsTitle">
+            <header class="card-head">
+              <h2 id="topFindingsTitle"></h2>
+            </header>
+            <div id="topFindingsList"></div>
+            <p class="empty" id="topFindingsEmpty" hidden></p>
+          </section>
+        </div>
+      </main>
+
+      <main id="targetsPage" hidden>
+        <section class="card" aria-labelledby="targetsTitle">
+          <header class="card-head">
+            <h2 id="targetsTitle"></h2>
+          </header>
+          <div id="targetsList"></div>
+          <p class="empty" id="targetsEmpty" hidden></p>
+          <div id="targetsMore" class="more-row"></div>
+        </section>
+      </main>
+
+      <main id="detailPage" hidden>
+        <p><a class="target-link" id="backLink" href="#/targets"></a></p>
+        <h1 id="detailName"></h1>
+        <p class="meta" id="detailMeta"></p>
+
+        <section class="card" aria-labelledby="snapshotTitle">
+          <header class="card-head">
+            <h2 id="snapshotTitle"></h2>
+          </header>
+          <p id="detailSnapshot"></p>
+        </section>
+
+        <div class="grid">
+          <section class="card" aria-labelledby="streamsTitle">
+            <header class="card-head">
+              <h2 id="streamsTitle"></h2>
+            </header>
+            <div id="detailStreams"></div>
+          </section>
+
+          <section class="card" aria-labelledby="actionsTitle">
+            <header class="card-head">
+              <h2 id="actionsTitle"></h2>
+            </header>
+            <div id="detailActions"></div>
+          </section>
+        </div>
+
+        <section class="card" aria-labelledby="detailFindingsTitle">
+          <header class="card-head">
+            <h2 id="detailFindingsTitle"></h2>
+          </header>
+          <div id="detailFindings"></div>
+        </section>
+      </main>
+
+      <main id="findingsPage" hidden>
+        <section aria-labelledby="findingsTitle">
+          <h1 id="findingsTitle"></h1>
+          <div id="findingsList"></div>
+          <div id="findingsMore" class="more-row"></div>
+        </section>
+      </main>
+
+      <footer class="foot">
+        <p id="readOnlyNote"></p>
+        <p id="demoDisclaimer"></p>
+      </footer>
+    </div>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

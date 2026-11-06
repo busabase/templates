@@ -1,0 +1,198 @@
+{
+  "name": "Interviews & Site Visits",
+  "description": "Management calls, expert calls, customer references and site visits — what was claimed, by whom, and whether the evidence agrees. Everything said here is a claim until Evidence says otherwise.",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "log-interview",
+      "label": "Log an interview or site visit",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then log the interview or visit I describe: who said what, the key claims in their words, and a first consistency mark of Not yet tested. Claims stay claims — do not upgrade anything to a fact here."
+    },
+    {
+      "key": "testimonial-check",
+      "label": "Check an interview against the evidence",
+      "intent": "read-only",
+      "body": "Read the `busa-pe-diligence` skill in this folder and follow its workflow, then check the interview I name against the evidence register: which of its claims the evidence supports, which it contradicts, and which are still untested. Do not change anything."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Interview / visit",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "target",
+      "name": "Target",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "multiple": false,
+        "targetBaseSlug": "targets"
+      }
+    },
+    {
+      "slug": "interview-type",
+      "name": "Type",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "management",
+            "name": "Management call"
+          },
+          {
+            "id": "earnings-call",
+            "name": "Public earnings call"
+          },
+          {
+            "id": "expert",
+            "name": "Expert call"
+          },
+          {
+            "id": "customer",
+            "name": "Customer reference"
+          },
+          {
+            "id": "site-visit",
+            "name": "Site visit"
+          },
+          {
+            "id": "advisor",
+            "name": "Advisor session"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "date",
+      "name": "Date",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "participants",
+      "name": "Participants / source",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "key-claims",
+      "name": "Key claims made",
+      "type": "longtext",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "consistency",
+      "name": "Consistency with evidence",
+      "type": "select",
+      "required": false,
+      "position": 6,
+      "options": {
+        "choices": [
+          {
+            "id": "consistent",
+            "name": "Consistent with evidence"
+          },
+          {
+            "id": "partly",
+            "name": "Partly consistent"
+          },
+          {
+            "id": "contradicted",
+            "name": "Contradicted by evidence"
+          },
+          {
+            "id": "untested",
+            "name": "Not yet tested"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "credibility",
+      "name": "Source credibility",
+      "type": "select",
+      "required": false,
+      "position": 7,
+      "options": {
+        "choices": [
+          {
+            "id": "high",
+            "name": "High"
+          },
+          {
+            "id": "medium",
+            "name": "Medium"
+          },
+          {
+            "id": "low",
+            "name": "Low"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "follow-ups",
+      "name": "Follow-ups",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all-interviews",
+      "name": "All interviews",
+      "type": "table",
+      "description": "Every call and visit, most recent first",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "direction": "desc",
+            "fieldSlug": "date"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "untested-claims",
+      "name": "Claims not yet tested",
+      "type": "table",
+      "description": "Interviews whose claims nobody has checked against the evidence yet",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "consistency",
+            "operator": "equals",
+            "value": "untested"
+          }
+        ],
+        "sorts": [
+          {
+            "direction": "desc",
+            "fieldSlug": "date"
+          }
+        ]
+      }
+    }
+  ]
+}
