@@ -56,7 +56,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-radar-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-radar-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-radar.mp4",

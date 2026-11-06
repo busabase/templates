@@ -60,7 +60,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-support-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-support-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-support.mp4",

@@ -58,7 +58,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-drama-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-drama-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-drama.mp4",

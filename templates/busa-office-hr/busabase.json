@@ -34,7 +34,8 @@
         "videos": [
           {
             "src": "assets/recordings/busa-office-hr-intro.mp4",
-            "title": "Scenario introduction (English)"
+            "title": "Scenario introduction (English)",
+            "poster": "assets/screenshots/busa-office-hr-intro-poster.jpg"
           },
           {
             "src": "assets/recordings/busa-office-hr-zh-CN.mp4",
@@ -65,7 +66,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-office-hr-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-office-hr-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-office-hr.mp4",

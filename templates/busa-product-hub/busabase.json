@@ -62,7 +62,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-product-hub-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-product-hub-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-product-hub.mp4",

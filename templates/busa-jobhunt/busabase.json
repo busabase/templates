@@ -70,7 +70,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-jobhunt-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-jobhunt-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-jobhunt.mp4",

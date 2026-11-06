@@ -68,7 +68,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-sales-outreach-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-sales-outreach-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-sales-outreach.mp4",

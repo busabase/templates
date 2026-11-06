@@ -1,0 +1,245 @@
+{
+  "name": "Key Results",
+  "description": "The measurable results behind each objective, with where they started, where they must land and where they are now.",
+  "position": 1,
+  "agentPrompts": [
+    {
+      "key": "update-team-krs",
+      "label": {
+        "en": "Update my team’s key results from our data",
+        "zh-CN": "用我们的数据更新本团队的关键结果"
+      },
+      "body": {
+        "en": "Read the `busa-okr` skill in this folder and follow it. Update the key results of the team I name: read each one’s data source, write the new current value with an evidence line in Check-ins, recompute its light by the skill’s rule, and open an action for any key result that turns red. Touch no other team’s rows.",
+        "zh-CN": "先阅读本文件夹里的 `busa-okr` Skill，按它的规则做。更新我指定团队的关键结果：读每个关键结果的数据来源，在「进展记录」里写入新数值和依据，按 Skill 的规则重新算红绿灯；变成红灯的关键结果要开一条行动。不要动其他团队的记录。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "which-red",
+      "label": {
+        "en": "Which key results are at risk, and why?",
+        "zh-CN": "哪些关键结果有风险，为什么"
+      },
+      "body": {
+        "en": "Read the `busa-okr` skill in this folder and follow it. List the key results at risk or on watch, worst first: how far each trails the quarter, the last update and its evidence, and the open action if there is one. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-okr` Skill，按它的规则做。按严重程度列出有风险和需关注的关键结果：各自落后时间进度多少、最近一次更新和依据、对应的行动。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Key result",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "objective",
+      "name": "Objective",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "objectives",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "team",
+      "name": "Team",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "company",
+            "name": "Company",
+            "color": "cyan"
+          },
+          {
+            "id": "growth",
+            "name": "Growth",
+            "color": "slate"
+          },
+          {
+            "id": "sales",
+            "name": "Sales",
+            "color": "slate"
+          },
+          {
+            "id": "operations",
+            "name": "Operations",
+            "color": "slate"
+          },
+          {
+            "id": "support",
+            "name": "Support",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "owner",
+      "name": "Owner",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "on-track",
+            "name": "On track",
+            "color": "emerald"
+          },
+          {
+            "id": "watch",
+            "name": "Watch",
+            "color": "amber"
+          },
+          {
+            "id": "at-risk",
+            "name": "At risk",
+            "color": "rose"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "unit",
+      "name": "Unit",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "direction",
+      "name": "Direction",
+      "type": "select",
+      "required": false,
+      "position": 6,
+      "options": {
+        "choices": [
+          {
+            "id": "increase",
+            "name": "Increase",
+            "color": "slate"
+          },
+          {
+            "id": "decrease",
+            "name": "Decrease",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "start-value",
+      "name": "Start",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "target-value",
+      "name": "Target",
+      "type": "number",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "current-value",
+      "name": "Current",
+      "type": "number",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "source",
+      "name": "Data source",
+      "type": "text",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "updated-by",
+      "name": "Last updated by",
+      "type": "text",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "updated-on",
+      "name": "Last updated",
+      "type": "date",
+      "required": false,
+      "position": 12,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "All key results",
+      "description": "Every key result with its light",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "title",
+          "objective",
+          "team",
+          "status",
+          "current-value",
+          "target-value",
+          "updated-by",
+          "updated-on"
+        ]
+      }
+    },
+    {
+      "slug": "red",
+      "name": "At risk",
+      "description": "Key results that are clearly behind",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "at-risk"
+          }
+        ],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "title",
+          "team",
+          "owner",
+          "current-value",
+          "target-value",
+          "source"
+        ]
+      }
+    }
+  ]
+}

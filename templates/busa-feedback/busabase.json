@@ -54,7 +54,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-feedback-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-feedback-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-feedback.mp4",

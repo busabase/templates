@@ -52,7 +52,8 @@
         "videos": [
           {
             "src": "assets/recordings/busa-rnd-intro.mp4",
-            "title": "Scenario introduction (English)"
+            "title": "Scenario introduction (English)",
+            "poster": "assets/screenshots/busa-rnd-intro-poster.jpg"
           },
           {
             "src": "assets/recordings/busa-rnd-zh-CN.mp4",
@@ -73,7 +74,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-rnd-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-rnd-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-rnd.mp4",

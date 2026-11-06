@@ -56,7 +56,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-standup-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-standup-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-standup.mp4",

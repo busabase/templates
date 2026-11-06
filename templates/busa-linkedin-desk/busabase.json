@@ -41,7 +41,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-linkedin-desk-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-linkedin-desk-intro-poster.jpg"
       },
       {
         "title": "Full tour",
@@ -68,7 +69,8 @@
         "videos": [
           {
             "src": "assets/recordings/busa-linkedin-desk-intro.mp4",
-            "title": "Scenario introduction (English)"
+            "title": "Scenario introduction (English)",
+            "poster": "assets/screenshots/busa-linkedin-desk-intro-poster.jpg"
           },
           {
             "title": "完整导览",

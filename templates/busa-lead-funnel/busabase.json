@@ -52,7 +52,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-lead-funnel-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-lead-funnel-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-lead-funnel.mp4",

@@ -52,7 +52,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-portfolio-health-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-portfolio-health-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-portfolio-health.mp4",

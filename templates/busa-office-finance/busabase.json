@@ -28,7 +28,8 @@
         "videos": [
           {
             "src": "assets/recordings/busa-office-finance-intro.mp4",
-            "title": "Scenario introduction (English)"
+            "title": "Scenario introduction (English)",
+            "poster": "assets/screenshots/busa-office-finance-intro-poster.jpg"
           },
           {
             "src": "assets/recordings/busa-office-finance-zh-CN.mp4",
@@ -59,7 +60,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-office-finance-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-office-finance-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-office-finance.mp4",

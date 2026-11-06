@@ -52,7 +52,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-cms-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-cms-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-cms.mp4",

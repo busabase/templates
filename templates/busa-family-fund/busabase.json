@@ -56,7 +56,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-family-fund-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-family-fund-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-family-fund.mp4",

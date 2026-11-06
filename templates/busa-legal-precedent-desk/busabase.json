@@ -58,7 +58,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-legal-precedent-desk-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-legal-precedent-desk-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-legal-precedent-desk.mp4",

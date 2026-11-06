@@ -61,7 +61,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-agent-shelf-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-agent-shelf-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-agent-shelf.mp4",

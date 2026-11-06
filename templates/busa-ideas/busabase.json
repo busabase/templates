@@ -44,7 +44,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-ideas-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-ideas-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-ideas.mp4",

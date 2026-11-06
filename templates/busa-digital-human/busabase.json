@@ -54,7 +54,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-digital-human-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-digital-human-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-digital-human.mp4",

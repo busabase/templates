@@ -60,7 +60,8 @@
     "videos": [
       {
         "src": "assets/recordings/busa-pr-review-intro.mp4",
-        "title": "Scenario introduction (English)"
+        "title": "Scenario introduction (English)",
+        "poster": "assets/screenshots/busa-pr-review-intro-poster.jpg"
       },
       {
         "src": "assets/recordings/busa-pr-review.mp4",
