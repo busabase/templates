@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { pickResource, resolveProductTables, resolveShopTables } from "../src/resources.js";
-import { NODES } from "./fixtures.mjs";
+import { NODES, SHOP_NODES, SHOP_ONLY_NODES } from "./fixtures.mjs";
 
 const all = Object.values(NODES);
 const strip = (node) => ({ ...node, metadata: {} });
@@ -31,9 +31,51 @@ describe("finding the shop's own tables", () => {
 });
 
 describe("finding the Products table", () => {
-  it("uses busa-product-hub's stamped Products, with its sibling Certificates and AirApp", () => {
-    assert.deepEqual(resolveProductTables(all, ""), {
+  const shopFolderId = NODES.settings.parentId;
+
+  it("sells from the shop's own Products and Certificates, with no product hub anywhere", () => {
+    assert.deepEqual(resolveProductTables(SHOP_ONLY_NODES, "", { shopFolderId }), {
       status: "ready",
+      shape: "shop",
+      productsBaseId: "bas_shop_products",
+      certificatesBaseId: "bas_shop_certificates",
+      hubAppNodeId: null,
+    });
+  });
+
+  it("prefers the shop's own Products to a product hub installed next to it", () => {
+    const both = [...all, ...Object.values(SHOP_NODES)];
+    assert.equal(resolveProductTables(both, "", { shopFolderId }).productsBaseId, "bas_shop_products");
+    // Settings › Products table still points the shop at the hub, with the hub's siblings.
+    assert.deepEqual(resolveProductTables(both, "busa-product-hub-products", { shopFolderId }), {
+      status: "ready",
+      shape: "product-hub",
+      productsBaseId: "bas_products",
+      certificatesBaseId: "bas_certificates",
+      hubAppNodeId: "nod_hub_app",
+    });
+    // …and back at its own table by slug, which reads as the shop's shape.
+    assert.equal(resolveProductTables(both, "busa-shop-products", { shopFolderId }).shape, "shop");
+  });
+
+  it("only takes Products from this shop's own folder, by stamp or by the default slug", () => {
+    const elsewhere = { ...SHOP_NODES.products, parentId: "nod_other_shop" };
+    assert.equal(resolveProductTables([...all, elsewhere], "", { shopFolderId }).productsBaseId, "bas_products", "another folder's table is not this shop's");
+    const unstamped = [...all, { ...SHOP_NODES.products, metadata: {} }];
+    assert.equal(resolveProductTables(unstamped, "", { shopFolderId }).shape, "shop");
+    const twice = [...SHOP_ONLY_NODES, { ...SHOP_NODES.products, id: "nod_shop_products_2", baseId: "bas_shop_products_2" }];
+    assert.deepEqual(resolveProductTables(twice, "", { shopFolderId }), { status: "products-ambiguous" });
+  });
+
+  it("says the Products table is missing when the shop has none and there is no product hub", () => {
+    const bare = SHOP_ONLY_NODES.filter((node) => node !== SHOP_NODES.products);
+    assert.deepEqual(resolveProductTables(bare, "", { shopFolderId }), { status: "products-missing" });
+  });
+
+  it("a shop from before 0.5.0 (no Products of its own) keeps selling from busa-product-hub's stamped Products, with its sibling Certificates and AirApp", () => {
+    assert.deepEqual(resolveProductTables(all, "", { shopFolderId }), {
+      status: "ready",
+      shape: "product-hub",
       productsBaseId: "bas_products",
       certificatesBaseId: "bas_certificates",
       hubAppNodeId: "nod_hub_app",
@@ -62,6 +104,7 @@ describe("finding the Products table", () => {
     for (const ref of ["busa-product-hub-2-products", "bas_products_2", "nod_hub2_products"]) {
       assert.deepEqual(resolveProductTables(nodes, ref), {
         status: "ready",
+        shape: "product-hub",
         productsBaseId: "bas_products_2",
         certificatesBaseId: "bas_certs_2",
         hubAppNodeId: null,

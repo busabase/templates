@@ -1,23 +1,41 @@
 {
   "name": "Orders",
-  "description": "Order requests from the shop website, one row per order. The website writes a new row with status `new` and never changes it afterwards; staff move it through confirmed → paid → shipped (or cancelled). Internal note and reply draft are staff-only: the website never reads or writes them.",
-  "position": 0,
+  "description": "One row per order, from checkout on the shop website. The website creates it as `awaiting-payment` (PayPal) or `new` (an order request, when the shop takes no online payment), and afterwards changes only its payment fields, and only when PayPal confirms (a capture it made, or a webhook it verified with PayPal): Paid, a payment problem, a refund. Staff move it on: paid → shipped (with the tracking number) → completed, or cancelled. Internal note, reply draft and tracking number are staff-only: the website never reads or writes them. Nobody marks an order paid without PayPal's confirmation, or, for an order request, the owner's word that the money arrived.",
+  "position": 2,
   "agentPrompts": [
     {
+      "key": "ship-paid-orders",
+      "label": {
+        "en": "What do I need to ship today?",
+        "zh-CN": "今天要发哪些货？"
+      },
+      "body": "Read the `busa-shop` skill in this folder and follow \"Payments and orders (收款与订单)\", \"Ship a paid order\": list every order in To ship, oldest first, with the address, phone, items and what to pack. When I tell you an order has shipped and give you the tracking number, write it into Tracking number, set the order to shipped and add a dated line to its internal note. Never set an order to paid yourself.",
+      "intent": "change"
+    },
+    {
+      "key": "payment-problems",
+      "label": {
+        "en": "Explain the payment problems",
+        "zh-CN": "解释收款问题"
+      },
+      "body": "Read the `busa-shop` skill in this folder, then for every order that is awaiting payment for more than a day or has a Payment problem, tell me what PayPal reported (Payment log, Payment problem), what it means and what I should check in my PayPal account. Do not change any order, do not refund and do not mark anything paid.",
+      "intent": "read-only"
+    },
+    {
       "key": "handle-new-orders",
-      "label": "Handle today's new orders",
-      "body": "Read the `busa-shop` skill in this folder and follow its \"Handle a new order\" procedure for every order with status `new`: check the items against the product list and stock, write a reply draft for me to send, and tell me what each order needs. Do not email the customer and do not change an order to paid or shipped yourself."
+      "label": "Handle today's new order requests",
+      "body": "Read the `busa-shop` skill in this folder and follow its \"Handle a new order request\" procedure for every order with status `new`: check the items against the product list and stock, write a reply draft for me to send, and tell me what each order needs. Do not email the customer and do not change an order to paid or shipped yourself."
     },
     {
       "key": "orders-waiting",
       "label": "Which orders are waiting on me?",
-      "body": "Read the `busa-shop` skill in this folder, then list orders that are still `new` or `confirmed`, oldest first, with how long each has been waiting and what the next step is.",
+      "body": "Read the `busa-shop` skill in this folder, then list orders that are still `new`, `confirmed`, `awaiting-payment` or `paid` (not shipped), oldest first, with how long each has been waiting and what the next step is.",
       "intent": "read-only"
     },
     {
       "key": "mark-order-status",
       "label": "Move an order to its next status",
-      "body": "Read the `busa-shop` skill in this folder, then change the status of the order I name to the status I give (confirmed, paid, shipped or cancelled) and add a dated line to its internal note saying who asked for the change. Only do this when I tell you the step really happened."
+      "body": "Read the `busa-shop` skill in this folder, then change the status of the order I name to the status I give (confirmed, shipped, completed or cancelled) and add a dated line to its internal note saying who asked for the change. Only do this when I tell you the step really happened. Paid is set by PayPal: for an order request paid another way, set it to paid only when I say the money arrived. Never set refunded, and never refund: refunds are made in PayPal."
     }
   ],
   "fields": [
@@ -47,11 +65,15 @@
         "choices": [
           {
             "id": "new",
-            "name": "New"
+            "name": "New order request"
+          },
+          {
+            "id": "awaiting-payment",
+            "name": "Awaiting payment"
           },
           {
             "id": "confirmed",
-            "name": "Confirmed"
+            "name": "Confirmed, waiting for payment"
           },
           {
             "id": "paid",
@@ -62,66 +84,49 @@
             "name": "Shipped"
           },
           {
+            "id": "completed",
+            "name": "Completed"
+          },
+          {
             "id": "cancelled",
             "name": "Cancelled"
+          },
+          {
+            "id": "refunded",
+            "name": "Refunded"
+          },
+          {
+            "id": "payment-problem",
+            "name": "Payment problem"
           }
         ]
       }
     },
     {
-      "slug": "customer-name",
-      "name": "Customer name",
-      "type": "text",
+      "slug": "payment-method",
+      "name": "Payment",
+      "type": "select",
       "required": false,
       "position": 3,
-      "options": {}
-    },
-    {
-      "slug": "email",
-      "name": "Email",
-      "type": "email",
-      "required": false,
-      "position": 4,
-      "options": {}
-    },
-    {
-      "slug": "phone",
-      "name": "Phone",
-      "type": "phone",
-      "required": false,
-      "position": 5,
-      "options": {}
-    },
-    {
-      "slug": "country",
-      "name": "Country",
-      "type": "text",
-      "required": false,
-      "position": 6,
-      "options": {}
-    },
-    {
-      "slug": "items-summary",
-      "name": "Items",
-      "type": "longtext",
-      "required": false,
-      "position": 7,
-      "options": {}
-    },
-    {
-      "slug": "items",
-      "name": "Items (JSON)",
-      "type": "longtext",
-      "required": false,
-      "position": 8,
-      "options": {}
+      "options": {
+        "choices": [
+          {
+            "id": "paypal",
+            "name": "PayPal"
+          },
+          {
+            "id": "request",
+            "name": "Order request (no online payment)"
+          }
+        ]
+      }
     },
     {
       "slug": "total",
       "name": "Total",
       "type": "number",
       "required": false,
-      "position": 9,
+      "position": 4,
       "options": {}
     },
     {
@@ -129,7 +134,163 @@
       "name": "Currency",
       "type": "text",
       "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "customer-name",
+      "name": "Customer name",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "email",
+      "name": "Email",
+      "type": "email",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "phone",
+      "name": "Phone",
+      "type": "phone",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "country",
+      "name": "Country",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "shipping-address",
+      "name": "Ship to",
+      "type": "longtext",
+      "required": false,
       "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "items-summary",
+      "name": "Items",
+      "type": "longtext",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "subtotal",
+      "name": "Items total",
+      "type": "number",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "shipping",
+      "name": "Shipping",
+      "type": "number",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "delivery-estimate",
+      "name": "Delivery time",
+      "type": "text",
+      "required": false,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "tracking-number",
+      "name": "Tracking number (staff)",
+      "type": "text",
+      "required": false,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "paid-at",
+      "name": "Paid at",
+      "type": "date",
+      "required": false,
+      "position": 16,
+      "options": {
+        "date": {
+          "includeTime": true
+        }
+      }
+    },
+    {
+      "slug": "amount-paid",
+      "name": "Amount paid",
+      "type": "number",
+      "required": false,
+      "position": 17,
+      "options": {}
+    },
+    {
+      "slug": "paypal-order-id",
+      "name": "PayPal order ID",
+      "type": "text",
+      "required": false,
+      "position": 18,
+      "options": {}
+    },
+    {
+      "slug": "paypal-capture-id",
+      "name": "PayPal transaction ID",
+      "type": "text",
+      "required": false,
+      "position": 19,
+      "options": {}
+    },
+    {
+      "slug": "payer-email",
+      "name": "PayPal payer email",
+      "type": "text",
+      "required": false,
+      "position": 20,
+      "options": {}
+    },
+    {
+      "slug": "refunded-amount",
+      "name": "Refunded",
+      "type": "number",
+      "required": false,
+      "position": 21,
+      "options": {}
+    },
+    {
+      "slug": "payment-problem",
+      "name": "Payment problem",
+      "type": "longtext",
+      "required": false,
+      "position": 22,
+      "options": {}
+    },
+    {
+      "slug": "payment-log",
+      "name": "Payment log (PayPal)",
+      "type": "longtext",
+      "required": false,
+      "position": 23,
+      "options": {}
+    },
+    {
+      "slug": "email-log",
+      "name": "Email log",
+      "type": "longtext",
+      "required": false,
+      "position": 24,
       "options": {}
     },
     {
@@ -137,7 +298,7 @@
       "name": "Customer note",
       "type": "longtext",
       "required": false,
-      "position": 11,
+      "position": 25,
       "options": {}
     },
     {
@@ -145,7 +306,7 @@
       "name": "Internal note (staff only)",
       "type": "longtext",
       "required": false,
-      "position": 12,
+      "position": 26,
       "options": {}
     },
     {
@@ -153,7 +314,55 @@
       "name": "Reply draft (staff only)",
       "type": "longtext",
       "required": false,
-      "position": 13,
+      "position": 27,
+      "options": {}
+    },
+    {
+      "slug": "address-line1",
+      "name": "Address line 1",
+      "type": "text",
+      "required": false,
+      "position": 28,
+      "options": {}
+    },
+    {
+      "slug": "address-line2",
+      "name": "Address line 2",
+      "type": "text",
+      "required": false,
+      "position": 29,
+      "options": {}
+    },
+    {
+      "slug": "city",
+      "name": "City",
+      "type": "text",
+      "required": false,
+      "position": 30,
+      "options": {}
+    },
+    {
+      "slug": "region",
+      "name": "State / province",
+      "type": "text",
+      "required": false,
+      "position": 31,
+      "options": {}
+    },
+    {
+      "slug": "postal-code",
+      "name": "Postal code",
+      "type": "text",
+      "required": false,
+      "position": 32,
+      "options": {}
+    },
+    {
+      "slug": "items",
+      "name": "Items (JSON)",
+      "type": "longtext",
+      "required": false,
+      "position": 33,
       "options": {}
     },
     {
@@ -161,7 +370,7 @@
       "name": "Created at",
       "type": "date",
       "required": false,
-      "position": 14,
+      "position": 34,
       "options": {
         "date": {
           "includeTime": true
@@ -173,14 +382,45 @@
       "name": "Source",
       "type": "text",
       "required": false,
-      "position": 15,
+      "position": 35,
       "options": {}
     }
   ],
   "views": [
     {
+      "slug": "to-ship",
+      "name": "To ship",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "paid"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "paid-at",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "shipping-address",
+          "items-summary",
+          "total",
+          "currency",
+          "phone",
+          "paid-at",
+          "tracking-number"
+        ]
+      }
+    },
+    {
       "slug": "new-orders",
-      "name": "New orders",
+      "name": "New order requests",
       "type": "table",
       "config": {
         "filters": [
@@ -209,8 +449,68 @@
       }
     },
     {
+      "slug": "awaiting-payment",
+      "name": "Awaiting payment",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "awaiting-payment"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "created-at",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "total",
+          "currency",
+          "email",
+          "created-at",
+          "paypal-order-id",
+          "payment-problem"
+        ]
+      }
+    },
+    {
+      "slug": "payment-problems",
+      "name": "Payment problems",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "payment-problem"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "created-at",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "payment-problem",
+          "total",
+          "amount-paid",
+          "currency",
+          "paypal-capture-id",
+          "payment-log"
+        ]
+      }
+    },
+    {
       "slug": "in-progress",
-      "name": "Confirmed, not shipped",
+      "name": "Confirmed, waiting for payment",
       "type": "table",
       "config": {
         "filters": [
@@ -218,14 +518,8 @@
             "fieldSlug": "status",
             "operator": "equals",
             "value": "confirmed"
-          },
-          {
-            "fieldSlug": "status",
-            "operator": "equals",
-            "value": "paid"
           }
         ],
-        "filterConjunction": "or",
         "sorts": [
           {
             "fieldSlug": "created-at",

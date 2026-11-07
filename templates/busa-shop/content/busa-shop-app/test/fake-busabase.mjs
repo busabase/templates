@@ -1,9 +1,11 @@
 // A small stand-in for the Busabase REST API, enough for the routes the site
-// and scripts/import-catalog.mjs call: GET /api/v1/nodes, GET /api/v1/bases/{id},
+// and busa-product-hub/scripts/import-products.mjs call: GET /api/v1/nodes, GET /api/v1/bases/{id},
 // GET /api/v1/records (cursor paging), POST /api/v1/bases/{baseId}/change-requests,
 // POST /api/v1/records/{recordId}/change-requests, GET
 // /api/v1/file-trees/{nodeId}/files/{path}, POST /api/v1/assets/upload-urls and
-// /confirmations with a presigned PUT, plus a private asset path. It records every
+// /confirmations with a presigned PUT, GET /api/v1/records/get (one record by an
+// exact field value), GET /api/v1/vault/runtime (`state.vault`, the runtime
+// values the key would receive), plus a private asset path. It records every
 // request so tests can assert what was asked for and which requests carried the key.
 import { readFile } from "node:fs/promises";
 import http from "node:http";
@@ -127,6 +129,25 @@ export const startFakeBusabase = async (state) => {
       }));
       return send(200, { records: page, nextCursor: rows.length > offset + limit ? String(offset + limit) : null });
     }
+    if (req.method === "GET" && url.pathname === "/api/v1/vault/runtime") {
+      // Like Busabase: the endpoint wants an API key; a session (no key) is refused.
+      if (auth === "") return send(401, { code: "UNAUTHORIZED", message: "API key required" });
+      return send(200, state.vault ?? {});
+    }
+    if (req.method === "GET" && url.pathname === "/api/v1/records/get") {
+      const { baseId, fieldSlug, valueText } = entry.query;
+      const row = (state.records[baseId] ?? []).find((candidate) => String(candidate.fields?.[fieldSlug] ?? "") === valueText);
+      if (!row) return send(404, { code: "NOT_FOUND", message: "Record not found" });
+      return send(200, {
+        id: row.id,
+        baseId,
+        headCommitId: head(row.id),
+        status: "active",
+        createdAt: "2026-11-01T00:00:00.000Z",
+        updatedAt: "2026-11-01T00:00:00.000Z",
+        headCommit: { id: head(row.id), payload: row.fields },
+      });
+    }
     const baseGet = /^\/api\/v1\/bases\/([^/]+)$/.exec(url.pathname);
     if (req.method === "GET" && baseGet) {
       const baseId = decodeURIComponent(baseGet[1]);
@@ -139,6 +160,12 @@ export const startFakeBusabase = async (state) => {
       const input = JSON.parse(body || "{}");
       const row = Object.values(state.records).flat().find((candidate) => candidate.id === recordId);
       if (!row) return send(404, { code: "NOT_FOUND" });
+      if (options.conflictOnce?.has(recordId)) {
+        // Someone else wrote first: the record moves on, this write is refused.
+        options.conflictOnce.delete(recordId);
+        Object.assign(row.fields, options.conflictFields ?? {});
+        revisions.set(recordId, (revisions.get(recordId) ?? 0) + 1);
+      }
       if (input.baseCommitId && input.baseCommitId !== head(recordId)) return send(409, { code: "CONFLICT", message: "stale baseCommitId" });
       if (options.queueUpdates) return send(200, { id: `cr_${recordId}`, status: "in_review", materialized: false });
       Object.assign(row.fields, input.fields);

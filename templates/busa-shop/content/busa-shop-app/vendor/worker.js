@@ -839,14 +839,14 @@ function promiseAllObject(promisesObj) {
 }
 function randomString(length = 10) {
   const chars = "abcdefghijklmnopqrstuvwxyz";
-  let str = "";
+  let str2 = "";
   for (let i = 0; i < length; i++) {
-    str += chars[Math.floor(Math.random() * chars.length)];
+    str2 += chars[Math.floor(Math.random() * chars.length)];
   }
-  return str;
+  return str2;
 }
-function esc(str) {
-  return JSON.stringify(str);
+function esc(str2) {
+  return JSON.stringify(str2);
 }
 function slugify(input2) {
   return input2.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-").replace(/^-+|-+$/g, "");
@@ -960,8 +960,8 @@ var primitiveTypes = /* @__PURE__ */ new Set([
   "symbol",
   "undefined"
 ]);
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function escapeRegex(str2) {
+  return str2.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 function clone(inst, def, params) {
   const cl = new inst._zod.constr(def ?? inst._zod.def);
@@ -1227,13 +1227,13 @@ function getSizableOrigin(input2) {
   return "unknown";
 }
 var highSurrogate = /[\uD800-\uDBFF]/;
-function codePointLength(str) {
-  const units = str.length;
-  if (!highSurrogate.test(str))
+function codePointLength(str2) {
+  const units = str2.length;
+  if (!highSurrogate.test(str2))
     return units;
   let count = units;
   for (let i = 0; i < units - 1; i++) {
-    if ((str.charCodeAt(i) & 64512) === 55296 && (str.charCodeAt(i + 1) & 64512) === 56320) {
+    if ((str2.charCodeAt(i) & 64512) === 55296 && (str2.charCodeAt(i + 1) & 64512) === 56320) {
       count--;
       i++;
     }
@@ -20593,7 +20593,7 @@ function getEventMeta(container) {
 }
 function generateContentDisposition(filename, disposition = "inline") {
   const encodedFileName = filename.replace(/[^\x20-\x7E]/g, "_").replace(/"/g, '\\"');
-  const encodedFilenameStar = encodeURIComponent(filename).replace(/['()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`).replace(/%(7C|60|5E)/g, (str, hex3) => String.fromCharCode(Number.parseInt(hex3, 16)));
+  const encodedFilenameStar = encodeURIComponent(filename).replace(/['()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`).replace(/%(7C|60|5E)/g, (str2, hex3) => String.fromCharCode(Number.parseInt(hex3, 16)));
   return `${disposition}; filename="${encodedFileName}"; filename*=utf-8''${encodedFilenameStar}`;
 }
 function getFilenameFromContentDisposition(contentDisposition) {
@@ -20768,7 +20768,7 @@ function toEventStream(iterator, options = {}) {
   const initialCommentEnabled = options.eventIteratorInitialCommentEnabled ?? true;
   const initialComment = options.eventIteratorInitialComment ?? "";
   let cancelled = false;
-  let timeout;
+  let timeout2;
   let span;
   const stream = new ReadableStream({
     start(controller) {
@@ -20782,7 +20782,7 @@ function toEventStream(iterator, options = {}) {
     async pull(controller) {
       try {
         if (keepAliveEnabled) {
-          timeout = setInterval(() => {
+          timeout2 = setInterval(() => {
             controller.enqueue(encodeEventMessage({
               comments: [keepAliveComment]
             }));
@@ -20790,7 +20790,7 @@ function toEventStream(iterator, options = {}) {
           }, keepAliveInterval);
         }
         const value2 = await runInSpanContext(span, () => iterator.next());
-        clearInterval(timeout);
+        clearInterval(timeout2);
         if (cancelled) {
           return;
         }
@@ -20809,7 +20809,7 @@ function toEventStream(iterator, options = {}) {
           span?.end();
         }
       } catch (err) {
-        clearInterval(timeout);
+        clearInterval(timeout2);
         if (cancelled) {
           return;
         }
@@ -20831,7 +20831,7 @@ function toEventStream(iterator, options = {}) {
     async cancel() {
       try {
         cancelled = true;
-        clearInterval(timeout);
+        clearInterval(timeout2);
         span?.addEvent("cancelled");
         await runInSpanContext(span, () => iterator.return?.());
       } catch (e) {
@@ -27703,6 +27703,856 @@ function createAirAppRecords(client, options = {}) {
   };
 }
 
+// src/i18n.js
+var en = {
+  nav_products: "Products",
+  nav_order: "Your order",
+  demo_notice: "Demo store: the products, prices and certificates on this site are fictional. Orders placed here are test orders.",
+  products_heading: "Products",
+  products_empty: "No products are listed yet. Please check back soon.",
+  how_heading: "How ordering works",
+  how_1: "Choose products and send us an order request.",
+  how_2: "We email you to confirm availability, shipping and the final price.",
+  how_3: "You pay only after we have confirmed. Nothing is charged on this site.",
+  about_heading: "About us",
+  sold_out: "Out of stock",
+  add_to_order: "Add to order request",
+  quantity: "Quantity",
+  details_heading: "Details",
+  certificates_heading: "Safety certificates on file",
+  valid_until: "valid until {date}",
+  spec_sku: "Item no.",
+  spec_brand: "Brand",
+  spec_model: "Model",
+  spec_color: "Colour",
+  spec_screen: "Display",
+  spec_processor: "Processor",
+  spec_memory: "RAM",
+  spec_storage: "Storage",
+  spec_battery: "Battery",
+  spec_charging: "Charging",
+  spec_camera: "Camera",
+  spec_front_camera: "Front camera",
+  spec_network: "Network",
+  spec_os: "Operating system",
+  spec_specs: "Specifications",
+  spec_in_the_box: "In the box",
+  spec_gtin: "EAN / GTIN",
+  spec_age_grade: "Age",
+  spec_materials: "Materials",
+  spec_batteries: "Batteries",
+  spec_dimensions: "Size",
+  spec_weight: "Weight",
+  spec_warranty: "Warranty",
+  spec_returns: "Returns",
+  photo_coming: "Photo coming soon",
+  order_title: "Order request",
+  order_intro: "Send us an order request. This is not a payment: we will contact you by email to confirm your order and arrange payment.",
+  order_items: "Items",
+  order_remove: "Remove",
+  order_empty: "Your order request is empty.",
+  order_browse: "Browse products",
+  order_total: "Total",
+  order_details: "Your details",
+  field_name: "Full name",
+  field_email: "Email",
+  field_phone: "Phone (for the delivery)",
+  field_country: "Ship to",
+  field_note: "Note (optional)",
+  choose_country: "Choose a country",
+  submit: "Send order request",
+  sending: "Sending\u2026",
+  no_payment_note: "No payment is taken now. We will contact you to confirm and arrange payment.",
+  thanks_title: "Thank you, we have your order request",
+  thanks_body: "Your order request {orderId} has been received. We will email {email} to confirm the details and arrange payment. Nothing has been charged.",
+  thanks_continue: "Continue browsing",
+  error_unavailable: "We could not send your order request just now, and nothing was saved. Your details are still here: please try again in a moment.",
+  error_unavailable_contact: "If it keeps failing, email us at {email}.",
+  error_fix: "Please check the highlighted fields.",
+  error_required: "Please fill this in.",
+  error_invalid: "This is not valid.",
+  error_too_long: "This is too long.",
+  error_invalid_email: "Please enter a valid email address.",
+  error_invalid_phone: "Please enter a phone number for the delivery.",
+  error_invalid_country: "Please choose a country we ship to.",
+  error_items_empty: "Add at least one product.",
+  error_too_many_items: "Too many different products in one request.",
+  error_not_available: "A product in your order is no longer available. It has been removed.",
+  error_sold_out: "{name} is out of stock.",
+  error_too_many: "Only {max} of {name} can be ordered.",
+  error_price_changed: "Prices changed since you opened this page. The new total is {total}. Please check your order and send it again.",
+  ordering_unavailable: "Ordering is not available on this site yet.",
+  not_found_title: "Not available",
+  not_found_body: "This page or product is not available.",
+  back_home: "Back to the shop",
+  unavailable_title: "The shop is temporarily unavailable",
+  unavailable_body: "Please try again in a few minutes.",
+  contact: "Contact",
+  footer_orders: "Order requests only. No payment is taken on this site.",
+  how_paypal_1: "Choose products and add them to your order.",
+  how_paypal_2: "Enter your delivery address: the shipping cost is shown before you pay.",
+  how_paypal_3: "Pay securely with PayPal. You get a receipt by email, and we ship your order.",
+  paypal_note: "Shipping is added at checkout. Pay securely with PayPal.",
+  footer_paypal: "Secure payment with PayPal.",
+  checkout_title: "Checkout",
+  checkout_intro: "Check your order and tell us where to ship it. You pay with PayPal on the next step.",
+  order_subtotal: "Items",
+  order_shipping: "Shipping",
+  order_shipping_free: "Free",
+  order_shipping_pick: "Choose a country to see the shipping cost.",
+  order_shipping_tbc: "Confirmed in our reply",
+  order_delivery: "Delivery: {estimate}",
+  order_free_over: "Free shipping from {amount} in items.",
+  order_address: "Delivery address",
+  field_address1: "Address",
+  field_address2: "Apartment, suite, etc. (optional)",
+  field_city: "City",
+  field_region: "State / province",
+  field_region_optional: "State / province (optional)",
+  field_postal: "Postal code",
+  field_postal_optional: "Postal code (optional)",
+  submit_paypal: "Continue to payment",
+  error_no_shipping: "We do not ship to this country yet.",
+  error_shipping_unavailable: "Ordering is paused for a moment: the shipping costs could not be loaded. Please try again later.",
+  pay_title: "Pay for your order",
+  pay_intro: "Your order {orderId} is saved. Pay with PayPal to confirm it.",
+  pay_total: "Total to pay",
+  pay_loading: "Loading PayPal\u2026",
+  pay_processing: "Confirming your payment with PayPal\u2026",
+  pay_unavailable: "PayPal could not be loaded. Your order {orderId} is saved: try again in a moment, or contact us.",
+  pay_cancelled: "Payment cancelled. Your order is saved: you can pay on this page whenever you are ready.",
+  pay_declined: "PayPal declined that payment method. Click the PayPal button again to choose another one.",
+  pay_failed: "The payment did not go through, and nothing was charged. Please try again.",
+  pay_pending: "PayPal is still reviewing your payment. We will email you as soon as it is confirmed.",
+  pay_problem: "Something about this payment needs a look. Nothing more is needed from you now: we will contact you by email.",
+  pay_paid_title: "Thank you, your payment is received",
+  pay_paid_body: "Order {orderId} is paid. We will send a receipt to your email and write again when it ships.",
+  pay_keep_link: "You can come back to this order at this page's address.",
+  pay_noscript: "Paying with PayPal needs JavaScript. Please turn it on and reload this page.",
+  pay_offline: "Online payment is not available right now. Your order {orderId} is saved, and we will contact you to arrange payment.",
+  pay_status_request: "This is an order request. We will contact you by email to confirm it and arrange payment.",
+  pay_status_paid: "This order is paid. Thank you!",
+  pay_status_shipped: "This order is paid and on its way. Thank you!",
+  pay_status_cancelled: "This order was cancelled.",
+  pay_status_refunded: "This order was refunded.",
+  pay_status_problem: "There is a question about the payment for this order. We will contact you by email.",
+  pay_order: "Order {orderId}",
+  nav_checkout: "Checkout",
+  footer_policies: "Shop policies"
+};
+var de = {
+  nav_products: "Produkte",
+  nav_order: "Ihre Bestellung",
+  demo_notice: "Demo-Shop: Produkte, Preise und Zertifikate auf dieser Seite sind frei erfunden. Bestellungen hier sind Testbestellungen.",
+  products_heading: "Produkte",
+  products_empty: "Noch keine Produkte gelistet. Bitte schauen Sie bald wieder vorbei.",
+  how_heading: "So funktioniert die Bestellung",
+  how_1: "W\xE4hlen Sie Produkte und senden Sie uns eine Bestellanfrage.",
+  how_2: "Wir best\xE4tigen per E-Mail Verf\xFCgbarkeit, Versand und den Endpreis.",
+  how_3: "Sie zahlen erst nach unserer Best\xE4tigung. Auf dieser Seite wird nichts abgebucht.",
+  about_heading: "\xDCber uns",
+  sold_out: "Ausverkauft",
+  add_to_order: "Zur Bestellanfrage hinzuf\xFCgen",
+  quantity: "Menge",
+  details_heading: "Details",
+  certificates_heading: "Vorliegende Sicherheitszertifikate",
+  valid_until: "g\xFCltig bis {date}",
+  spec_sku: "Artikelnr.",
+  spec_brand: "Marke",
+  spec_model: "Modell",
+  spec_color: "Farbe",
+  spec_screen: "Display",
+  spec_processor: "Prozessor",
+  spec_memory: "Arbeitsspeicher",
+  spec_storage: "Speicher",
+  spec_battery: "Akku",
+  spec_charging: "Laden",
+  spec_camera: "Kamera",
+  spec_front_camera: "Frontkamera",
+  spec_network: "Mobilfunk",
+  spec_os: "Betriebssystem",
+  spec_specs: "Technische Daten",
+  spec_in_the_box: "Lieferumfang",
+  spec_gtin: "EAN / GTIN",
+  spec_age_grade: "Alter",
+  spec_materials: "Material",
+  spec_batteries: "Batterien",
+  spec_dimensions: "Gr\xF6\xDFe",
+  spec_weight: "Gewicht",
+  spec_warranty: "Garantie",
+  spec_returns: "R\xFCckgabe",
+  photo_coming: "Foto folgt",
+  order_title: "Bestellanfrage",
+  order_intro: "Senden Sie uns eine Bestellanfrage. Dies ist keine Zahlung: Wir melden uns per E-Mail, um Ihre Bestellung zu best\xE4tigen und die Zahlung zu vereinbaren.",
+  order_items: "Artikel",
+  order_remove: "Entfernen",
+  order_empty: "Ihre Bestellanfrage ist leer.",
+  order_browse: "Produkte ansehen",
+  order_total: "Summe",
+  order_details: "Ihre Angaben",
+  field_name: "Vollst\xE4ndiger Name",
+  field_email: "E-Mail",
+  field_phone: "Telefon (f\xFCr die Zustellung)",
+  field_country: "Lieferland",
+  field_note: "Nachricht (optional)",
+  choose_country: "Land w\xE4hlen",
+  submit: "Bestellanfrage senden",
+  sending: "Wird gesendet\u2026",
+  no_payment_note: "Es wird jetzt nichts bezahlt. Wir melden uns, um die Bestellung zu best\xE4tigen und die Zahlung zu vereinbaren.",
+  thanks_title: "Vielen Dank, Ihre Bestellanfrage ist eingegangen",
+  thanks_body: "Ihre Bestellanfrage {orderId} ist eingegangen. Wir schreiben an {email}, um die Details zu best\xE4tigen und die Zahlung zu vereinbaren. Es wurde nichts abgebucht.",
+  thanks_continue: "Weiter einkaufen",
+  error_unavailable: "Ihre Bestellanfrage konnte gerade nicht gesendet werden, es wurde nichts gespeichert. Ihre Angaben sind noch da: Bitte versuchen Sie es gleich noch einmal.",
+  error_unavailable_contact: "Wenn es weiterhin nicht klappt, schreiben Sie uns an {email}.",
+  error_fix: "Bitte pr\xFCfen Sie die markierten Felder.",
+  error_required: "Bitte ausf\xFCllen.",
+  error_invalid: "Diese Angabe ist ung\xFCltig.",
+  error_too_long: "Das ist zu lang.",
+  error_invalid_email: "Bitte geben Sie eine g\xFCltige E-Mail-Adresse ein.",
+  error_invalid_phone: "Bitte geben Sie eine Telefonnummer f\xFCr die Zustellung an.",
+  error_invalid_country: "Bitte w\xE4hlen Sie ein Land, in das wir liefern.",
+  error_items_empty: "Bitte f\xFCgen Sie mindestens ein Produkt hinzu.",
+  error_too_many_items: "Zu viele verschiedene Produkte in einer Anfrage.",
+  error_not_available: "Ein Produkt Ihrer Bestellung ist nicht mehr verf\xFCgbar und wurde entfernt.",
+  error_sold_out: "{name} ist ausverkauft.",
+  error_too_many: "Von {name} k\xF6nnen h\xF6chstens {max} bestellt werden.",
+  error_price_changed: "Die Preise haben sich ge\xE4ndert, seit Sie die Seite ge\xF6ffnet haben. Die neue Summe ist {total}. Bitte pr\xFCfen Sie die Bestellung und senden Sie sie erneut.",
+  ordering_unavailable: "Bestellungen sind auf dieser Seite noch nicht m\xF6glich.",
+  not_found_title: "Nicht verf\xFCgbar",
+  not_found_body: "Diese Seite oder dieses Produkt ist nicht verf\xFCgbar.",
+  back_home: "Zur\xFCck zum Shop",
+  unavailable_title: "Der Shop ist vor\xFCbergehend nicht erreichbar",
+  unavailable_body: "Bitte versuchen Sie es in ein paar Minuten noch einmal.",
+  contact: "Kontakt",
+  footer_orders: "Nur Bestellanfragen. Auf dieser Seite wird keine Zahlung abgewickelt.",
+  how_paypal_1: "W\xE4hlen Sie Produkte und legen Sie sie in Ihre Bestellung.",
+  how_paypal_2: "Geben Sie Ihre Lieferadresse ein: Die Versandkosten sehen Sie vor dem Bezahlen.",
+  how_paypal_3: "Bezahlen Sie sicher mit PayPal. Sie erhalten eine Best\xE4tigung per E-Mail, und wir versenden Ihre Bestellung.",
+  paypal_note: "Der Versand wird an der Kasse berechnet. Sicher bezahlen mit PayPal.",
+  footer_paypal: "Sichere Zahlung mit PayPal.",
+  checkout_title: "Kasse",
+  checkout_intro: "Pr\xFCfen Sie Ihre Bestellung und sagen Sie uns, wohin wir liefern sollen. Im n\xE4chsten Schritt bezahlen Sie mit PayPal.",
+  order_subtotal: "Artikel",
+  order_shipping: "Versand",
+  order_shipping_free: "Kostenlos",
+  order_shipping_pick: "W\xE4hlen Sie ein Land, um die Versandkosten zu sehen.",
+  order_shipping_tbc: "Wird in unserer Antwort best\xE4tigt",
+  order_delivery: "Lieferzeit: {estimate}",
+  order_free_over: "Kostenloser Versand ab {amount} Warenwert.",
+  order_address: "Lieferadresse",
+  field_address1: "Adresse",
+  field_address2: "Wohnung, Etage usw. (optional)",
+  field_city: "Ort",
+  field_region: "Bundesland / Provinz",
+  field_region_optional: "Bundesland / Provinz (optional)",
+  field_postal: "Postleitzahl",
+  field_postal_optional: "Postleitzahl (optional)",
+  submit_paypal: "Weiter zur Zahlung",
+  error_no_shipping: "In dieses Land liefern wir noch nicht.",
+  error_shipping_unavailable: "Bestellen ist kurz pausiert: Die Versandkosten konnten nicht geladen werden. Bitte versuchen Sie es sp\xE4ter erneut.",
+  pay_title: "Bestellung bezahlen",
+  pay_intro: "Ihre Bestellung {orderId} ist gespeichert. Bezahlen Sie mit PayPal, um sie abzuschlie\xDFen.",
+  pay_total: "Zu zahlen",
+  pay_loading: "PayPal wird geladen\u2026",
+  pay_processing: "Ihre Zahlung wird bei PayPal best\xE4tigt\u2026",
+  pay_unavailable: "PayPal konnte nicht geladen werden. Ihre Bestellung {orderId} ist gespeichert: Versuchen Sie es gleich noch einmal oder kontaktieren Sie uns.",
+  pay_cancelled: "Zahlung abgebrochen. Ihre Bestellung ist gespeichert: Sie k\xF6nnen auf dieser Seite bezahlen, wann immer Sie m\xF6chten.",
+  pay_declined: "PayPal hat diese Zahlungsart abgelehnt. Klicken Sie erneut auf den PayPal-Button, um eine andere zu w\xE4hlen.",
+  pay_failed: "Die Zahlung ist nicht durchgegangen, es wurde nichts abgebucht. Bitte versuchen Sie es erneut.",
+  pay_pending: "PayPal pr\xFCft Ihre Zahlung noch. Wir schreiben Ihnen, sobald sie best\xE4tigt ist.",
+  pay_problem: "Diese Zahlung muss gepr\xFCft werden. Sie m\xFCssen jetzt nichts weiter tun: Wir melden uns per E-Mail.",
+  pay_paid_title: "Vielen Dank, Ihre Zahlung ist eingegangen",
+  pay_paid_body: "Bestellung {orderId} ist bezahlt. Wir senden Ihnen eine Best\xE4tigung per E-Mail und melden uns wieder, wenn sie versandt wird.",
+  pay_keep_link: "Unter der Adresse dieser Seite finden Sie Ihre Bestellung wieder.",
+  pay_noscript: "F\xFCr die Zahlung mit PayPal wird JavaScript ben\xF6tigt. Bitte aktivieren Sie es und laden Sie die Seite neu.",
+  pay_offline: "Online-Zahlung ist gerade nicht verf\xFCgbar. Ihre Bestellung {orderId} ist gespeichert, und wir melden uns, um die Zahlung zu vereinbaren.",
+  pay_status_request: "Dies ist eine Bestellanfrage. Wir melden uns per E-Mail, um sie zu best\xE4tigen und die Zahlung zu vereinbaren.",
+  pay_status_paid: "Diese Bestellung ist bezahlt. Vielen Dank!",
+  pay_status_shipped: "Diese Bestellung ist bezahlt und unterwegs. Vielen Dank!",
+  pay_status_cancelled: "Diese Bestellung wurde storniert.",
+  pay_status_refunded: "Diese Bestellung wurde erstattet.",
+  pay_status_problem: "Zur Zahlung dieser Bestellung gibt es eine Frage. Wir melden uns per E-Mail.",
+  pay_order: "Bestellung {orderId}",
+  nav_checkout: "Kasse",
+  footer_policies: "Shop-Richtlinien"
+};
+var fr = {
+  nav_products: "Produits",
+  nav_order: "Votre commande",
+  demo_notice: "Boutique de d\xE9monstration : les produits, prix et certificats de ce site sont fictifs. Les commandes pass\xE9es ici sont des commandes de test.",
+  products_heading: "Produits",
+  products_empty: "Aucun produit n'est encore en ligne. Revenez bient\xF4t.",
+  how_heading: "Comment commander",
+  how_1: "Choisissez vos produits et envoyez-nous une demande de commande.",
+  how_2: "Nous vous \xE9crivons pour confirmer la disponibilit\xE9, la livraison et le prix final.",
+  how_3: "Vous ne payez qu'apr\xE8s notre confirmation. Rien n'est d\xE9bit\xE9 sur ce site.",
+  about_heading: "Qui sommes-nous",
+  sold_out: "En rupture de stock",
+  add_to_order: "Ajouter \xE0 la demande",
+  quantity: "Quantit\xE9",
+  details_heading: "D\xE9tails",
+  certificates_heading: "Certificats de s\xE9curit\xE9 disponibles",
+  valid_until: "valable jusqu'au {date}",
+  spec_sku: "R\xE9f\xE9rence",
+  spec_brand: "Marque",
+  spec_model: "Mod\xE8le",
+  spec_color: "Couleur",
+  spec_screen: "\xC9cran",
+  spec_processor: "Processeur",
+  spec_memory: "M\xE9moire vive",
+  spec_storage: "Stockage",
+  spec_battery: "Batterie",
+  spec_charging: "Recharge",
+  spec_camera: "Appareil photo",
+  spec_front_camera: "Cam\xE9ra frontale",
+  spec_network: "R\xE9seau",
+  spec_os: "Syst\xE8me d'exploitation",
+  spec_specs: "Caract\xE9ristiques",
+  spec_in_the_box: "Contenu de la bo\xEEte",
+  spec_gtin: "EAN / GTIN",
+  spec_age_grade: "\xC2ge",
+  spec_materials: "Mat\xE9riaux",
+  spec_batteries: "Piles",
+  spec_dimensions: "Dimensions",
+  spec_weight: "Poids",
+  spec_warranty: "Garantie",
+  spec_returns: "Retours",
+  photo_coming: "Photo \xE0 venir",
+  order_title: "Demande de commande",
+  order_intro: "Envoyez-nous une demande de commande. Ce n'est pas un paiement : nous vous contacterons par e-mail pour confirmer la commande et organiser le paiement.",
+  order_items: "Articles",
+  order_remove: "Retirer",
+  order_empty: "Votre demande de commande est vide.",
+  order_browse: "Voir les produits",
+  order_total: "Total",
+  order_details: "Vos coordonn\xE9es",
+  field_name: "Nom complet",
+  field_email: "E-mail",
+  field_phone: "T\xE9l\xE9phone (pour la livraison)",
+  field_country: "Pays de livraison",
+  field_note: "Message (facultatif)",
+  choose_country: "Choisir un pays",
+  submit: "Envoyer la demande",
+  sending: "Envoi\u2026",
+  no_payment_note: "Aucun paiement n'est demand\xE9 maintenant. Nous vous contacterons pour confirmer et organiser le paiement.",
+  thanks_title: "Merci, nous avons bien re\xE7u votre demande",
+  thanks_body: "Votre demande de commande {orderId} a bien \xE9t\xE9 re\xE7ue. Nous \xE9crirons \xE0 {email} pour confirmer les d\xE9tails et organiser le paiement. Rien n'a \xE9t\xE9 d\xE9bit\xE9.",
+  thanks_continue: "Continuer mes achats",
+  error_unavailable: "Votre demande n'a pas pu \xEAtre envoy\xE9e pour le moment et rien n'a \xE9t\xE9 enregistr\xE9. Vos informations sont toujours l\xE0 : r\xE9essayez dans un instant.",
+  error_unavailable_contact: "Si le probl\xE8me persiste, \xE9crivez-nous \xE0 {email}.",
+  error_fix: "V\xE9rifiez les champs signal\xE9s.",
+  error_required: "Ce champ est obligatoire.",
+  error_invalid: "Cette valeur n'est pas valide.",
+  error_too_long: "C'est trop long.",
+  error_invalid_email: "Saisissez une adresse e-mail valide.",
+  error_invalid_phone: "Veuillez indiquer un num\xE9ro de t\xE9l\xE9phone pour la livraison.",
+  error_invalid_country: "Choisissez un pays o\xF9 nous livrons.",
+  error_items_empty: "Ajoutez au moins un produit.",
+  error_too_many_items: "Trop de produits diff\xE9rents dans une seule demande.",
+  error_not_available: "Un produit de votre commande n'est plus disponible ; il a \xE9t\xE9 retir\xE9.",
+  error_sold_out: "{name} est en rupture de stock.",
+  error_too_many: "{name} : {max} au maximum.",
+  error_price_changed: "Les prix ont chang\xE9 depuis l'ouverture de la page. Le nouveau total est de {total}. V\xE9rifiez votre commande puis renvoyez-la.",
+  ordering_unavailable: "La commande n'est pas encore possible sur ce site.",
+  not_found_title: "Indisponible",
+  not_found_body: "Cette page ou ce produit n'est pas disponible.",
+  back_home: "Retour \xE0 la boutique",
+  unavailable_title: "La boutique est momentan\xE9ment indisponible",
+  unavailable_body: "R\xE9essayez dans quelques minutes.",
+  contact: "Contact",
+  footer_orders: "Demandes de commande uniquement. Aucun paiement n'est effectu\xE9 sur ce site.",
+  how_paypal_1: "Choisissez des produits et ajoutez-les \xE0 votre commande.",
+  how_paypal_2: "Indiquez votre adresse de livraison : les frais de port s'affichent avant le paiement.",
+  how_paypal_3: "Payez en toute s\xE9curit\xE9 avec PayPal. Vous recevez un re\xE7u par e-mail, et nous exp\xE9dions votre commande.",
+  paypal_note: "La livraison est ajout\xE9e au moment du paiement. Paiement s\xE9curis\xE9 avec PayPal.",
+  footer_paypal: "Paiement s\xE9curis\xE9 avec PayPal.",
+  checkout_title: "Paiement",
+  checkout_intro: "V\xE9rifiez votre commande et indiquez-nous o\xF9 la livrer. Vous payez avec PayPal \xE0 l'\xE9tape suivante.",
+  order_subtotal: "Articles",
+  order_shipping: "Livraison",
+  order_shipping_free: "Gratuite",
+  order_shipping_pick: "Choisissez un pays pour voir les frais de port.",
+  order_shipping_tbc: "Confirm\xE9e dans notre r\xE9ponse",
+  order_delivery: "Livraison : {estimate}",
+  order_free_over: "Livraison gratuite d\xE8s {amount} d'articles.",
+  order_address: "Adresse de livraison",
+  field_address1: "Adresse",
+  field_address2: "Appartement, \xE9tage, etc. (facultatif)",
+  field_city: "Ville",
+  field_region: "\xC9tat / province",
+  field_region_optional: "\xC9tat / province (facultatif)",
+  field_postal: "Code postal",
+  field_postal_optional: "Code postal (facultatif)",
+  submit_paypal: "Continuer vers le paiement",
+  error_no_shipping: "Nous ne livrons pas encore dans ce pays.",
+  error_shipping_unavailable: "Les commandes sont suspendues un instant : les frais de port n'ont pas pu \xEAtre charg\xE9s. Veuillez r\xE9essayer plus tard.",
+  pay_title: "Payer votre commande",
+  pay_intro: "Votre commande {orderId} est enregistr\xE9e. Payez avec PayPal pour la confirmer.",
+  pay_total: "Total \xE0 payer",
+  pay_loading: "Chargement de PayPal\u2026",
+  pay_processing: "Confirmation de votre paiement aupr\xE8s de PayPal\u2026",
+  pay_unavailable: "PayPal n'a pas pu \xEAtre charg\xE9. Votre commande {orderId} est enregistr\xE9e : r\xE9essayez dans un instant ou contactez-nous.",
+  pay_cancelled: "Paiement annul\xE9. Votre commande est enregistr\xE9e : vous pouvez payer sur cette page quand vous voulez.",
+  pay_declined: "PayPal a refus\xE9 ce moyen de paiement. Cliquez \xE0 nouveau sur le bouton PayPal pour en choisir un autre.",
+  pay_failed: "Le paiement n'a pas abouti et rien n'a \xE9t\xE9 d\xE9bit\xE9. Veuillez r\xE9essayer.",
+  pay_pending: "PayPal examine encore votre paiement. Nous vous \xE9crirons d\xE8s qu'il sera confirm\xE9.",
+  pay_problem: "Ce paiement doit \xEAtre v\xE9rifi\xE9. Vous n'avez rien d'autre \xE0 faire : nous vous contacterons par e-mail.",
+  pay_paid_title: "Merci, votre paiement est re\xE7u",
+  pay_paid_body: "La commande {orderId} est pay\xE9e. Nous vous envoyons un re\xE7u par e-mail et vous \xE9crirons \xE0 nouveau lors de l'exp\xE9dition.",
+  pay_keep_link: "Vous pouvez revenir \xE0 cette commande \xE0 l'adresse de cette page.",
+  pay_noscript: "Le paiement avec PayPal n\xE9cessite JavaScript. Activez-le puis rechargez cette page.",
+  pay_offline: "Le paiement en ligne n'est pas disponible pour le moment. Votre commande {orderId} est enregistr\xE9e et nous vous contacterons pour organiser le paiement.",
+  pay_status_request: "Ceci est une demande de commande. Nous vous contacterons par e-mail pour la confirmer et organiser le paiement.",
+  pay_status_paid: "Cette commande est pay\xE9e. Merci !",
+  pay_status_shipped: "Cette commande est pay\xE9e et en route. Merci !",
+  pay_status_cancelled: "Cette commande a \xE9t\xE9 annul\xE9e.",
+  pay_status_refunded: "Cette commande a \xE9t\xE9 rembours\xE9e.",
+  pay_status_problem: "Le paiement de cette commande soul\xE8ve une question. Nous vous contacterons par e-mail.",
+  pay_order: "Commande {orderId}",
+  nav_checkout: "Paiement",
+  footer_policies: "Conditions de la boutique"
+};
+var es = {
+  nav_products: "Productos",
+  nav_order: "Tu pedido",
+  demo_notice: "Tienda de demostraci\xF3n: los productos, precios y certificados de este sitio son ficticios. Los pedidos hechos aqu\xED son pedidos de prueba.",
+  products_heading: "Productos",
+  products_empty: "Todav\xEDa no hay productos publicados. Vuelve pronto.",
+  how_heading: "C\xF3mo hacer un pedido",
+  how_1: "Elige productos y env\xEDanos una solicitud de pedido.",
+  how_2: "Te escribimos para confirmar la disponibilidad, el env\xEDo y el precio final.",
+  how_3: "Solo pagas despu\xE9s de nuestra confirmaci\xF3n. En este sitio no se cobra nada.",
+  about_heading: "Qui\xE9nes somos",
+  sold_out: "Agotado",
+  add_to_order: "A\xF1adir a la solicitud",
+  quantity: "Cantidad",
+  details_heading: "Detalles",
+  certificates_heading: "Certificados de seguridad disponibles",
+  valid_until: "v\xE1lido hasta el {date}",
+  spec_sku: "Referencia",
+  spec_brand: "Marca",
+  spec_model: "Modelo",
+  spec_color: "Color",
+  spec_screen: "Pantalla",
+  spec_processor: "Procesador",
+  spec_memory: "Memoria RAM",
+  spec_storage: "Almacenamiento",
+  spec_battery: "Bater\xEDa",
+  spec_charging: "Carga",
+  spec_camera: "C\xE1mara",
+  spec_front_camera: "C\xE1mara frontal",
+  spec_network: "Red m\xF3vil",
+  spec_os: "Sistema operativo",
+  spec_specs: "Especificaciones",
+  spec_in_the_box: "Contenido de la caja",
+  spec_gtin: "EAN / GTIN",
+  spec_age_grade: "Edad",
+  spec_materials: "Materiales",
+  spec_batteries: "Pilas",
+  spec_dimensions: "Medidas",
+  spec_weight: "Peso",
+  spec_warranty: "Garant\xEDa",
+  spec_returns: "Devoluciones",
+  photo_coming: "Foto pr\xF3ximamente",
+  order_title: "Solicitud de pedido",
+  order_intro: "Env\xEDanos una solicitud de pedido. No es un pago: te contactaremos por correo para confirmar el pedido y acordar el pago.",
+  order_items: "Art\xEDculos",
+  order_remove: "Quitar",
+  order_empty: "Tu solicitud de pedido est\xE1 vac\xEDa.",
+  order_browse: "Ver productos",
+  order_total: "Total",
+  order_details: "Tus datos",
+  field_name: "Nombre completo",
+  field_email: "Correo electr\xF3nico",
+  field_phone: "Tel\xE9fono (para la entrega)",
+  field_country: "Pa\xEDs de env\xEDo",
+  field_note: "Mensaje (opcional)",
+  choose_country: "Elige un pa\xEDs",
+  submit: "Enviar solicitud",
+  sending: "Enviando\u2026",
+  no_payment_note: "Ahora no se cobra nada. Te contactaremos para confirmar y acordar el pago.",
+  thanks_title: "Gracias, hemos recibido tu solicitud",
+  thanks_body: "Hemos recibido tu solicitud de pedido {orderId}. Escribiremos a {email} para confirmar los detalles y acordar el pago. No se ha cobrado nada.",
+  thanks_continue: "Seguir mirando",
+  error_unavailable: "No hemos podido enviar tu solicitud ahora mismo y no se ha guardado nada. Tus datos siguen aqu\xED: int\xE9ntalo de nuevo en un momento.",
+  error_unavailable_contact: "Si sigue fallando, escr\xEDbenos a {email}.",
+  error_fix: "Revisa los campos marcados.",
+  error_required: "Rellena este campo.",
+  error_invalid: "Este valor no es v\xE1lido.",
+  error_too_long: "Es demasiado largo.",
+  error_invalid_email: "Introduce un correo electr\xF3nico v\xE1lido.",
+  error_invalid_phone: "Indica un n\xFAmero de tel\xE9fono para la entrega.",
+  error_invalid_country: "Elige un pa\xEDs al que enviemos.",
+  error_items_empty: "A\xF1ade al menos un producto.",
+  error_too_many_items: "Demasiados productos distintos en una solicitud.",
+  error_not_available: "Un producto de tu pedido ya no est\xE1 disponible y se ha quitado.",
+  error_sold_out: "{name} est\xE1 agotado.",
+  error_too_many: "Solo se pueden pedir {max} de {name}.",
+  error_price_changed: "Los precios han cambiado desde que abriste la p\xE1gina. El nuevo total es {total}. Revisa tu pedido y env\xEDalo de nuevo.",
+  ordering_unavailable: "Todav\xEDa no se pueden hacer pedidos en este sitio.",
+  not_found_title: "No disponible",
+  not_found_body: "Esta p\xE1gina o producto no est\xE1 disponible.",
+  back_home: "Volver a la tienda",
+  unavailable_title: "La tienda no est\xE1 disponible en este momento",
+  unavailable_body: "Int\xE9ntalo de nuevo en unos minutos.",
+  contact: "Contacto",
+  footer_orders: "Solo solicitudes de pedido. En este sitio no se cobra nada.",
+  how_paypal_1: "Elige productos y a\xF1\xE1delos a tu pedido.",
+  how_paypal_2: "Indica tu direcci\xF3n de entrega: ver\xE1s el coste de env\xEDo antes de pagar.",
+  how_paypal_3: "Paga de forma segura con PayPal. Recibes un recibo por correo y enviamos tu pedido.",
+  paypal_note: "El env\xEDo se a\xF1ade al pagar. Pago seguro con PayPal.",
+  footer_paypal: "Pago seguro con PayPal.",
+  checkout_title: "Pago",
+  checkout_intro: "Revisa tu pedido e ind\xEDcanos d\xF3nde enviarlo. Pagas con PayPal en el siguiente paso.",
+  order_subtotal: "Art\xEDculos",
+  order_shipping: "Env\xEDo",
+  order_shipping_free: "Gratis",
+  order_shipping_pick: "Elige un pa\xEDs para ver el coste de env\xEDo.",
+  order_shipping_tbc: "Se confirma en nuestra respuesta",
+  order_delivery: "Entrega: {estimate}",
+  order_free_over: "Env\xEDo gratis a partir de {amount} en art\xEDculos.",
+  order_address: "Direcci\xF3n de entrega",
+  field_address1: "Direcci\xF3n",
+  field_address2: "Piso, puerta, etc. (opcional)",
+  field_city: "Ciudad",
+  field_region: "Estado / provincia",
+  field_region_optional: "Estado / provincia (opcional)",
+  field_postal: "C\xF3digo postal",
+  field_postal_optional: "C\xF3digo postal (opcional)",
+  submit_paypal: "Continuar al pago",
+  error_no_shipping: "Todav\xEDa no enviamos a este pa\xEDs.",
+  error_shipping_unavailable: "Los pedidos est\xE1n en pausa un momento: no se pudieron cargar los costes de env\xEDo. Int\xE9ntalo m\xE1s tarde.",
+  pay_title: "Paga tu pedido",
+  pay_intro: "Tu pedido {orderId} est\xE1 guardado. Paga con PayPal para confirmarlo.",
+  pay_total: "Total a pagar",
+  pay_loading: "Cargando PayPal\u2026",
+  pay_processing: "Confirmando tu pago con PayPal\u2026",
+  pay_unavailable: "No se pudo cargar PayPal. Tu pedido {orderId} est\xE1 guardado: int\xE9ntalo de nuevo en un momento o cont\xE1ctanos.",
+  pay_cancelled: "Pago cancelado. Tu pedido est\xE1 guardado: puedes pagar en esta p\xE1gina cuando quieras.",
+  pay_declined: "PayPal rechaz\xF3 ese m\xE9todo de pago. Pulsa de nuevo el bot\xF3n de PayPal para elegir otro.",
+  pay_failed: "El pago no se complet\xF3 y no se ha cobrado nada. Int\xE9ntalo de nuevo.",
+  pay_pending: "PayPal todav\xEDa est\xE1 revisando tu pago. Te escribiremos en cuanto se confirme.",
+  pay_problem: "Hay que revisar este pago. No tienes que hacer nada m\xE1s ahora: te contactaremos por correo.",
+  pay_paid_title: "Gracias, hemos recibido tu pago",
+  pay_paid_body: "El pedido {orderId} est\xE1 pagado. Te enviaremos un recibo por correo y te escribiremos de nuevo cuando salga.",
+  pay_keep_link: "Puedes volver a este pedido en la direcci\xF3n de esta p\xE1gina.",
+  pay_noscript: "Para pagar con PayPal hace falta JavaScript. Act\xEDvalo y vuelve a cargar esta p\xE1gina.",
+  pay_offline: "El pago en l\xEDnea no est\xE1 disponible ahora. Tu pedido {orderId} est\xE1 guardado y te contactaremos para acordar el pago.",
+  pay_status_request: "Esto es una solicitud de pedido. Te contactaremos por correo para confirmarla y acordar el pago.",
+  pay_status_paid: "Este pedido est\xE1 pagado. \xA1Gracias!",
+  pay_status_shipped: "Este pedido est\xE1 pagado y en camino. \xA1Gracias!",
+  pay_status_cancelled: "Este pedido se ha cancelado.",
+  pay_status_refunded: "Este pedido se ha reembolsado.",
+  pay_status_problem: "Hay una duda sobre el pago de este pedido. Te contactaremos por correo.",
+  pay_order: "Pedido {orderId}",
+  nav_checkout: "Pago",
+  footer_policies: "Pol\xEDticas de la tienda"
+};
+var MESSAGES = { en, de, fr, es };
+var translator = (language) => {
+  const table = MESSAGES[language] ?? en;
+  return (key, values = {}) => {
+    const template = table[key] ?? en[key] ?? key;
+    return template.replace(/\{(\w+)\}/g, (match, name) => name in values ? String(values[name]) : match);
+  };
+};
+var CLIENT_MESSAGE_KEYS = [
+  "order_remove",
+  "order_empty",
+  "order_total",
+  "quantity",
+  "sending",
+  "submit",
+  "thanks_title",
+  "thanks_body",
+  "thanks_continue",
+  "error_unavailable",
+  "error_unavailable_contact",
+  "error_fix",
+  "error_required",
+  "error_invalid",
+  "error_too_long",
+  "error_invalid_email",
+  "error_invalid_phone",
+  "error_invalid_country",
+  "error_items_empty",
+  "error_too_many_items",
+  "error_not_available",
+  "error_sold_out",
+  "error_too_many",
+  "error_price_changed",
+  "sold_out",
+  "submit_paypal",
+  "order_shipping_free",
+  "order_shipping_pick",
+  "order_shipping_tbc",
+  "order_delivery",
+  "order_free_over",
+  "field_region",
+  "field_region_optional",
+  "field_postal",
+  "field_postal_optional",
+  "error_no_shipping",
+  "error_shipping_unavailable"
+];
+var PAY_MESSAGE_KEYS = [
+  "pay_loading",
+  "pay_processing",
+  "pay_unavailable",
+  "pay_cancelled",
+  "pay_declined",
+  "pay_failed",
+  "pay_pending",
+  "pay_problem",
+  "pay_paid_title",
+  "pay_paid_body",
+  "thanks_continue"
+];
+
+// src/details.js
+var SHOPPER_DETAILS = [
+  "brand",
+  "model",
+  "color",
+  "screen",
+  "processor",
+  "memory",
+  "storage",
+  "battery",
+  "charging",
+  "camera",
+  "front_camera",
+  "network",
+  "os",
+  "specs",
+  "age_grade",
+  "materials",
+  "batteries",
+  "dimensions",
+  "weight",
+  "in_the_box",
+  "warranty",
+  "returns"
+];
+var TRADE_DETAILS = ["moq", "lead_time_days", "hs_code", "carton_qty", "country_of_origin"];
+var keyOf = (value2) => String(value2 ?? "").normalize("NFKC").trim().toLowerCase().replace(/\s+/g, " ");
+var SHOPPER = new Set(SHOPPER_DETAILS.map(keyOf));
+var TRADE = new Set(TRADE_DETAILS.map(keyOf));
+var parseDetailKeys = (value2) => {
+  const keys = [];
+  const seen = /* @__PURE__ */ new Set();
+  for (const part of String(value2 ?? "").split(/[,;|\n\r，；、]+/)) {
+    const key = part.trim();
+    if (key && !seen.has(keyOf(key))) {
+      seen.add(keyOf(key));
+      keys.push(key);
+    }
+  }
+  return keys;
+};
+var detailValue = (value2) => {
+  if (Array.isArray(value2)) return value2.filter((item) => typeof item === "string" || typeof item === "number").join(", ").trim();
+  if (typeof value2 === "number") return Number.isFinite(value2) ? String(value2) : "";
+  if (typeof value2 === "string") return value2.trim();
+  return "";
+};
+var labelFor = (key, language) => {
+  const message = `spec_${keyOf(key)}`;
+  const known = MESSAGES[language]?.[message] ?? MESSAGES.en[message];
+  if (known) return known;
+  const words = key.trim().replace(/_+/g, " ");
+  return /^[a-z]/.test(words) ? words[0].toUpperCase() + words.slice(1) : words;
+};
+var productDetails = (attributes, { extraKeys = [], language = "en" } = {}) => {
+  const source = attributes && typeof attributes === "object" && !Array.isArray(attributes) ? attributes : {};
+  const byKey = /* @__PURE__ */ new Map();
+  for (const key of Object.keys(source)) if (!byKey.has(keyOf(key))) byKey.set(keyOf(key), key);
+  const rows = [];
+  const add = (wanted) => {
+    const stored = byKey.get(keyOf(wanted));
+    if (stored === void 0) return;
+    const value2 = detailValue(source[stored]);
+    if (value2) rows.push([labelFor(stored, language), value2]);
+  };
+  for (const key of SHOPPER_DETAILS) add(key);
+  for (const key of extraKeys) {
+    const wanted = keyOf(key);
+    if (!SHOPPER.has(wanted) && !TRADE.has(wanted)) add(key);
+  }
+  return rows;
+};
+var squashLabel = (value2) => String(value2 ?? "").normalize("NFKC").toLowerCase().replace(/[\s_\-.:/()（）·]+/g, "");
+var SPEC_KEYS = [...SHOPPER_DETAILS, "gtin"];
+var SPEC_SYNONYMS = {
+  brand: ["\u54C1\u724C", "make"],
+  model: ["\u578B\u53F7", "\u673A\u578B"],
+  color: ["color", "\u989C\u8272", "\u914D\u8272"],
+  screen: ["screen", "screen size", "\u5C4F\u5E55", "\u5C4F\u5E55\u5C3A\u5BF8", "\u663E\u793A\u5C4F"],
+  processor: ["chip", "chipset", "cpu", "soc", "\u5904\u7406\u5668", "\u82AF\u7247"],
+  memory: ["memory", "ram", "\u5185\u5B58", "\u8FD0\u884C\u5185\u5B58", "\u8FD0\u5B58"],
+  storage: ["rom", "storage capacity", "\u5B58\u50A8", "\u673A\u8EAB\u5B58\u50A8", "\u5B58\u50A8\u5BB9\u91CF"],
+  battery: ["battery capacity", "\u7535\u6C60", "\u7535\u6C60\u5BB9\u91CF"],
+  charging: ["fast charging", "charging power", "\u5FEB\u5145", "\u5145\u7535", "\u5145\u7535\u529F\u7387"],
+  camera: ["rear camera", "main camera", "cameras", "\u540E\u7F6E\u6444\u50CF\u5934", "\u6444\u50CF\u5934", "\u540E\u6444", "\u4E3B\u6444"],
+  front_camera: ["selfie camera", "\u524D\u7F6E\u6444\u50CF\u5934", "\u524D\u6444"],
+  network: ["\u7F51\u7EDC", "\u7F51\u7EDC\u5236\u5F0F"],
+  os: ["os", "system", "\u7CFB\u7EDF", "\u64CD\u4F5C\u7CFB\u7EDF"],
+  specs: ["specifications", "spec", "\u89C4\u683C", "\u53C2\u6570", "\u89C4\u683C\u53C2\u6570"],
+  age_grade: ["age", "age grade", "\u9002\u7528\u5E74\u9F84", "\u5E74\u9F84"],
+  materials: ["material", "\u6750\u8D28", "\u6750\u6599"],
+  batteries: ["battery type", "\u7535\u6C60\u89C4\u683C", "\u6240\u9700\u7535\u6C60"],
+  dimensions: ["dimensions", "size", "\u5C3A\u5BF8", "\u4EA7\u54C1\u5C3A\u5BF8"],
+  weight: ["net weight", "\u91CD\u91CF", "\u51C0\u91CD"],
+  in_the_box: ["what's in the box", "box contents", "package contents", "\u5305\u88C5\u6E05\u5355", "\u5305\u88C5\u5185\u5BB9"],
+  warranty: ["\u4FDD\u4FEE", "\u8D28\u4FDD", "\u4FDD\u4FEE\u671F"],
+  returns: ["return policy", "\u9000\u8D27", "\u9000\u6362\u8D27", "\u9000\u8D27\u653F\u7B56"],
+  gtin: ["ean", "upc", "barcode", "\u6761\u7801", "\u6761\u5F62\u7801"]
+};
+var SPEC_LABELS = (() => {
+  const map2 = /* @__PURE__ */ new Map();
+  const add = (label2, key) => {
+    const squashed = squashLabel(label2);
+    if (squashed && !map2.has(squashed)) map2.set(squashed, key);
+  };
+  for (const key of SPEC_KEYS) {
+    add(key, key);
+    for (const language of Object.keys(MESSAGES)) {
+      const label2 = MESSAGES[language]?.[`spec_${key}`];
+      if (label2) add(label2, key);
+    }
+    for (const synonym of SPEC_SYNONYMS[key] ?? []) add(synonym, key);
+  }
+  return map2;
+})();
+var specKeyFor = (label2) => SPEC_LABELS.get(squashLabel(label2)) ?? "";
+var parseSpecs = (value2) => {
+  const attributes = {};
+  const extraKeys = [];
+  const free = [];
+  for (const raw of String(value2 ?? "").split(/\r?\n/)) {
+    const line = raw.trim().replace(/^[-•*]\s+/, "");
+    if (!line) continue;
+    const match = /^([^:：]{1,60})[:：]\s*(.+)$/.exec(line);
+    if (!match) {
+      free.push(line);
+      continue;
+    }
+    const label2 = match[1].trim();
+    const key = specKeyFor(label2) || label2;
+    if (attributes[key] !== void 0) continue;
+    attributes[key] = match[2].trim();
+    if (!SHOPPER.has(keyOf(key))) extraKeys.push(key);
+  }
+  if (free.length && attributes.specs === void 0) attributes.specs = free.join("; ");
+  return { attributes, extraKeys };
+};
+
+// src/resources.js
+var SHOP_APP_ID = "busa-shop";
+var PRODUCT_HUB_APP_ID = "busa-product-hub";
+var SHOP_SHAPE = "shop";
+var PRODUCT_HUB_SHAPE = "product-hub";
+var stamped = (node2, appId, resourceKey) => node2?.metadata?.appId === appId && node2?.metadata?.resourceKey === resourceKey;
+var pickResource = (nodes, { type, appId, resourceKey, fallbackSlug, parentId }) => {
+  const candidates = nodes.filter(
+    (node2) => node2.type === type && (parentId === void 0 || node2.parentId === parentId)
+  );
+  let matches = candidates.filter((node2) => stamped(node2, appId, resourceKey));
+  if (matches.length === 0 && fallbackSlug) matches = candidates.filter((node2) => node2.slug === fallbackSlug);
+  if (matches.length === 1) return { status: "found", node: matches[0] };
+  if (matches.length === 0) return { status: "missing" };
+  return { status: "ambiguous", nodes: matches };
+};
+var resolveShopTables = (nodes) => ({
+  settings: pickResource(nodes, {
+    type: "base",
+    appId: SHOP_APP_ID,
+    resourceKey: "settings",
+    fallbackSlug: "busa-shop-settings"
+  }),
+  orders: pickResource(nodes, {
+    type: "base",
+    appId: SHOP_APP_ID,
+    resourceKey: "orders",
+    fallbackSlug: "busa-shop-orders"
+  })
+});
+var resolveShopExtras = (nodes, shopFolderId) => ({
+  shipping: pickResource(nodes, {
+    type: "base",
+    appId: SHOP_APP_ID,
+    resourceKey: "shipping",
+    fallbackSlug: "busa-shop-shipping",
+    parentId: shopFolderId
+  }),
+  pages: pickResource(nodes, {
+    type: "base",
+    appId: SHOP_APP_ID,
+    resourceKey: "pages",
+    fallbackSlug: "busa-shop-pages",
+    parentId: shopFolderId
+  })
+});
+var siblingSlug = (slug, resourceKey) => slug.endsWith("-products") ? `${slug.slice(0, -"-products".length)}-${resourceKey}` : "";
+var resolveProductTables = (nodes, override, { shopFolderId } = {}) => {
+  let products;
+  let shape;
+  if (override) {
+    const node2 = nodes.find(
+      (candidate) => candidate.type === "base" && (candidate.baseId === override || candidate.id === override || candidate.slug === override)
+    );
+    if (!node2) return { status: "products-override-not-found" };
+    products = node2;
+    shape = node2.metadata?.appId === SHOP_APP_ID ? SHOP_SHAPE : PRODUCT_HUB_SHAPE;
+  } else {
+    const own2 = shopFolderId === void 0 ? { status: "missing" } : pickResource(nodes, {
+      type: "base",
+      appId: SHOP_APP_ID,
+      resourceKey: "products",
+      fallbackSlug: "busa-shop-products",
+      parentId: shopFolderId
+    });
+    if (own2.status === "ambiguous") return { status: "products-ambiguous" };
+    if (own2.status === "found") {
+      products = own2.node;
+      shape = SHOP_SHAPE;
+    } else {
+      const picked = pickResource(nodes, {
+        type: "base",
+        appId: PRODUCT_HUB_APP_ID,
+        resourceKey: "products",
+        fallbackSlug: "busa-product-hub-products"
+      });
+      if (picked.status === "missing") return { status: "products-missing" };
+      if (picked.status === "ambiguous") return { status: "products-ambiguous" };
+      products = picked.node;
+      shape = PRODUCT_HUB_SHAPE;
+    }
+  }
+  const appId = shape === SHOP_SHAPE ? SHOP_APP_ID : PRODUCT_HUB_APP_ID;
+  const certificates = pickResource(nodes, {
+    type: "base",
+    appId,
+    resourceKey: "certificates",
+    fallbackSlug: siblingSlug(products.slug, "certificates"),
+    parentId: products.parentId
+  });
+  const hubApp = shape === PRODUCT_HUB_SHAPE ? pickResource(nodes, {
+    type: "airapp",
+    appId: PRODUCT_HUB_APP_ID,
+    resourceKey: "busa-product-hub-app",
+    fallbackSlug: "busa-product-hub-app",
+    parentId: products.parentId
+  }) : { status: "missing" };
+  return {
+    status: "ready",
+    shape,
+    productsBaseId: products.baseId,
+    certificatesBaseId: certificates.status === "found" ? certificates.node.baseId : null,
+    hubAppNodeId: hubApp.status === "found" ? hubApp.node.id : null
+  };
+};
+
 // src/catalog.js
 var PRODUCT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/;
 var LISTED_LIFECYCLES = /* @__PURE__ */ new Set(["active", "launch"]);
@@ -27740,11 +28590,17 @@ var asObject = (value2) => {
 };
 var isBlank = (value2) => value2 === null || value2 === void 0 || typeof value2 === "string" && !value2.trim();
 var columnOr = (column, legacy) => isBlank(column) ? legacy : column;
-var asStringList = (value2) => {
-  const parsed = parseJson(value2, []);
-  if (!Array.isArray(parsed)) return [];
-  return parsed.filter((item) => typeof item === "string" && item.trim()).map((item) => item.trim());
+var asStringList = (value2, separators = null) => {
+  if (Array.isArray(value2)) return value2.filter((item) => typeof item === "string" && item.trim()).map((item) => item.trim());
+  if (typeof value2 !== "string" || !value2.trim()) return [];
+  const parsed = parseJson(value2, null);
+  if (Array.isArray(parsed)) return asStringList(parsed);
+  if (!separators) return [];
+  return value2.split(separators).map((item) => item.trim()).filter(Boolean);
 };
+var LINES = /\r?\n/;
+var LINKS = /[\s|]+/;
+var TAGS = /[,，;；|\n]+/;
 var classifyImageRef = (ref, busabaseOrigin) => {
   const value2 = text(ref);
   if (!value2 || value2.length > 2e3) return null;
@@ -27774,14 +28630,26 @@ var classifyImageRef = (ref, busabaseOrigin) => {
   if (segments[0] !== "assets" || !IMAGE_FILE.test(path)) return null;
   return { kind: "airapp", path: `app/${path}` };
 };
-var normalizeProduct = (record2) => {
+var normalizeProduct = (record2, { shape = "" } = {}) => {
   const fields = record2?.fields ?? {};
   const imageRefs = [];
-  for (const ref of [text(fields.image), ...asStringList(fields.gallery)]) {
+  for (const ref of [text(fields.image), ...asStringList(fields.gallery, LINKS)]) {
     if (ref && !imageRefs.includes(ref)) imageRefs.push(ref);
   }
   const pricing = asObject(fields.pricing);
+  const inventory = asObject(fields.inventory);
+  const stock = finiteNumber(fields.stock);
+  if (stock !== null) inventory.available = stock;
+  const content = asObject(fields.content);
+  const specs = parseSpecs(fields.specs);
+  const attributes = { ...asObject(content.attributes), ...specs.attributes };
+  for (const key of ["brand", "model", "warranty", "returns"]) if (text(fields[key])) attributes[key] = text(fields[key]);
+  if (Object.keys(attributes).length) content.attributes = attributes;
+  if (typeof fields.description === "string" && fields.description.trim()) content.description = fields.description.trim();
+  const highlights = asStringList(fields.highlights, LINES);
+  if (highlights.length) content.bullets = highlights;
   return {
+    shape: shape === SHOP_SHAPE ? SHOP_SHAPE : "product-hub",
     recordId: typeof record2?.id === "string" ? record2.id : "",
     id: text(fields["product-id"]),
     ref: finiteNumber(fields.ref),
@@ -27792,26 +28660,29 @@ var normalizeProduct = (record2) => {
     lifecycle: lower(fields.lifecycle),
     status: lower(fields.status),
     vendor: text(fields.vendor),
-    tags: asStringList(fields.tags),
+    tags: asStringList(fields.tags, TAGS),
     // The selling price as stored: the column, or the JSON while the column is empty.
     priceValue: columnOr(fields.price, pricing.current_price),
     currencyValue: columnOr(fields.currency, pricing.currency),
     pricing,
-    inventory: asObject(fields.inventory),
-    content: asObject(fields.content),
+    inventory,
+    content,
+    // Labels the owner wrote in Specs beyond the standard ones: shown, after them.
+    specKeys: specs.extraKeys,
     imageRefs,
     updatedAt: text(fields["updated-at"]) || text(record2?.updatedAt)
   };
 };
 var listingFor = (product, settings) => {
   const reasons = [];
-  if (!LISTED_LIFECYCLES.has(product.lifecycle)) reasons.push("lifecycle");
+  const own2 = product.shape === SHOP_SHAPE;
+  if (!own2 && !LISTED_LIFECYCLES.has(product.lifecycle)) reasons.push("lifecycle");
   if (!LISTED_STATUSES.has(product.status)) reasons.push("status");
   if (!product.name) reasons.push("name");
   if (!PRODUCT_ID_PATTERN.test(product.id)) reasons.push("product-id");
   const price = finiteNumber(product.priceValue);
   if (price === null || price <= 0) reasons.push("price");
-  const currency = text(product.currencyValue).toUpperCase();
+  const currency = text(product.currencyValue).toUpperCase() || (own2 ? settings.currency : "");
   if (!currency) reasons.push("currency");
   else if (currency !== settings.currency) reasons.push("currency-mismatch");
   if (settings.listedTag && !product.tags.some((tag) => tag.toLowerCase() === settings.listedTag.toLowerCase())) {
@@ -27828,11 +28699,11 @@ var listingFor = (product, settings) => {
     maxQuantity: available === null ? MAX_ORDER_QUANTITY : Math.max(0, Math.min(MAX_ORDER_QUANTITY, Math.floor(available)))
   };
 };
-var imagesFor = (product, busabaseOrigin) => {
+var imagesFor = (product, busabaseOrigin, { airapp = true } = {}) => {
   const images = [];
   for (const ref of product.imageRefs) {
     const image = classifyImageRef(ref, busabaseOrigin);
-    if (!image) continue;
+    if (!image || image.kind === "airapp" && !airapp) continue;
     images.push(image);
     if (images.length >= MAX_IMAGES) break;
   }
@@ -27878,11 +28749,28 @@ var parseCountryList = (value2) => {
   }
   return codes;
 };
+var choice = (value2) => value2 && typeof value2 === "object" && !Array.isArray(value2) ? lower(value2.id ?? value2.name) : lower(value2);
+var PAYPAL_MODES = ["off", "sandbox", "live"];
+var SMTP_SECURITY_MODES = ["starttls", "tls", "none"];
 var normalizeSettings = (record2) => {
   const fields = record2?.fields ?? {};
-  const language = lower(fields.language);
+  const language = choice(fields.language);
   const shipsTo = parseCountryList(fields["ships-to"]);
+  const paypalMode = choice(fields["paypal-mode"]);
+  const smtpSecurity = choice(fields["smtp-security"]);
+  const smtpPort = finiteNumber(fields["smtp-port"]);
   return {
+    // Payments and email. Only the non-secret half lives here: the PayPal
+    // secret and the SMTP password are in the Space Vault (src/vault.js).
+    paypalMode: PAYPAL_MODES.includes(paypalMode) ? paypalMode : "off",
+    paypalClientId: text(fields["paypal-client-id"]),
+    paypalWebhookId: text(fields["paypal-webhook-id"]),
+    smtpHost: text(fields["smtp-host"]).toLowerCase(),
+    smtpPort: smtpPort === null ? null : Math.trunc(smtpPort),
+    smtpSecurity: SMTP_SECURITY_MODES.includes(smtpSecurity) ? smtpSecurity : "starttls",
+    smtpUsername: text(fields["smtp-username"]),
+    emailFrom: text(fields["email-from"]),
+    notifyEmail: text(fields["notify-email"]),
     storeName: text(fields["store-name"]),
     tagline: text(fields.tagline),
     currency: text(fields.currency).toUpperCase(),
@@ -27893,7 +28781,8 @@ var normalizeSettings = (record2) => {
     shippingNote: text(fields["shipping-note"]),
     demoNotice: fields["demo-notice"] === true || fields["demo-notice"] === "true",
     listedTag: text(fields["listed-tag"]),
-    productsBase: text(fields["products-base"])
+    productsBase: text(fields["products-base"]),
+    showDetails: parseDetailKeys(fields["show-details"])
   };
 };
 var LOCALE_TAGS = { en: "en-US", de: "de-DE", fr: "fr-FR", es: "es-ES" };
@@ -27913,13 +28802,13 @@ var countryName = (code, language = "en") => {
     return code;
   }
 };
-var buildCatalog = ({ productRecords, certificateRecords, settings, busabaseOrigin, nowMs }) => {
+var buildCatalog = ({ productRecords, certificateRecords, settings, busabaseOrigin, nowMs, shape = "", airappImages = true }) => {
   const certificates = certificateRecords.map(normalizeCertificate);
   const listed = [];
   const hidden = [];
   const seenIds = /* @__PURE__ */ new Set();
   for (const record2 of productRecords) {
-    const product = normalizeProduct(record2);
+    const product = normalizeProduct(record2, { shape });
     const listing = listingFor(product, settings);
     if (listing.listed && seenIds.has(product.id)) listing.reasons.push("duplicate-id");
     if (!listing.listed || listing.reasons.length) {
@@ -27931,18 +28820,625 @@ var buildCatalog = ({ productRecords, certificateRecords, settings, busabaseOrig
       ...product,
       ...listing,
       priceText: formatPrice(listing.price, listing.currency, settings.language),
-      images: imagesFor(product, busabaseOrigin),
+      images: imagesFor(product, busabaseOrigin, { airapp: airappImages }),
       certificates: validCertificatesFor(product, certificates, nowMs)
     });
   }
   return { listed, hidden };
 };
 
+// src/smtp.js
+var SMTP_SECURITY = ["starttls", "tls", "none"];
+var DEFAULT_TIMEOUT_MS = 15e3;
+var SmtpError = class extends Error {
+  constructor(message, { code = 0, stage = "" } = {}) {
+    super(message);
+    this.name = "SmtpError";
+    this.code = code;
+    this.stage = stage;
+  }
+};
+var encoder = new TextEncoder();
+var toBase64 = (text2) => {
+  const bytes = encoder.encode(text2);
+  let binary = "";
+  for (let index = 0; index < bytes.length; index += 32768) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 32768));
+  }
+  return btoa(binary);
+};
+var wrap76 = (base643) => base643.replace(/.{1,76}/g, "$&\r\n").replace(/\r\n$/, "");
+var UNSAFE_HEADER = /[\r\n\u0000]/;
+var ADDRESS = /^[^\s<>()",;:\\@]+@[^\s<>()",;:\\@]+\.[^\s<>()",;:\\@]+$/;
+var isSafeAddress = (address) => typeof address === "string" && address.length <= 254 && ADDRESS.test(address);
+var encodeHeaderWords = (value2) => {
+  const text2 = String(value2 ?? "");
+  if (UNSAFE_HEADER.test(text2)) throw new SmtpError("header value contains a line break");
+  if (/^[\x20-\x7e]*$/.test(text2) && text2.length <= 70 && !/=\?/.test(text2)) return text2;
+  const words = [];
+  let chunk = "";
+  for (const char of text2) {
+    if (encoder.encode(chunk + char).length > 45) {
+      words.push(`=?UTF-8?B?${toBase64(chunk)}?=`);
+      chunk = "";
+    }
+    chunk += char;
+  }
+  if (chunk) words.push(`=?UTF-8?B?${toBase64(chunk)}?=`);
+  return words.join("\r\n ");
+};
+var mailbox = (address, name) => {
+  if (!isSafeAddress(address)) throw new SmtpError(`not a usable email address: ${String(address).slice(0, 80)}`);
+  if (!name) return `<${address}>`;
+  const display = /^[A-Za-z0-9 !#$%&'*+\-/=?^_`{|}~.]*$/.test(name) && name.length <= 60 ? `"${name}"` : encodeHeaderWords(name);
+  return `${display} <${address}>`;
+};
+var randomToken = () => {
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+};
+var buildMessage = ({ from, fromName, to, replyTo, subject, text: text2, html: html2, now = /* @__PURE__ */ new Date() }) => {
+  const domain2 = from.split("@")[1] ?? "localhost";
+  const boundary = `busa-shop-${randomToken()}`;
+  const headers = [
+    `From: ${mailbox(from, fromName)}`,
+    `To: ${mailbox(to)}`,
+    ...replyTo && replyTo !== from ? [`Reply-To: ${mailbox(replyTo)}`] : [],
+    `Subject: ${encodeHeaderWords(subject)}`,
+    `Date: ${now.toUTCString().replace("GMT", "+0000")}`,
+    `Message-ID: <${randomToken()}@${domain2}>`,
+    "MIME-Version: 1.0",
+    // Automatic mail: no out-of-office replies to the shop (RFC 3834).
+    "Auto-Submitted: auto-generated",
+    `Content-Type: multipart/alternative; boundary="${boundary}"`
+  ];
+  const part = (type, body) => [`--${boundary}`, `Content-Type: ${type}; charset=UTF-8`, "Content-Transfer-Encoding: base64", "", wrap76(toBase64(body))].join("\r\n");
+  return [...headers, "", part("text/plain", text2), part("text/html", html2 ?? ""), `--${boundary}--`, ""].join("\r\n");
+};
+var dotStuff = (message) => `${message.replace(/\r?\n/g, "\r\n").replace(/^\./gm, "..")}\r
+.\r
+`;
+var timeout = (ms, stage) => {
+  let timer;
+  const promise2 = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new SmtpError(`no answer from the mail server within ${Math.round(ms / 1e3)} s`, { stage })), ms);
+  });
+  return { promise: promise2, clear: () => clearTimeout(timer) };
+};
+var withTimeout = async (work, ms, stage) => {
+  const timer = timeout(ms, stage);
+  try {
+    return await Promise.race([work, timer.promise]);
+  } finally {
+    timer.clear();
+  }
+};
+var channel = (socket, timeoutMs) => {
+  const reader = socket.readable.getReader();
+  const writer = socket.writable.getWriter();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  const readReply = async (stage) => {
+    const lines = [];
+    const read = async () => {
+      for (; ; ) {
+        let index = buffer.indexOf("\n");
+        while (index !== -1) {
+          const line = buffer.slice(0, index).replace(/\r$/, "");
+          buffer = buffer.slice(index + 1);
+          lines.push(line);
+          if (/^\d{3}(?: |$)/.test(line)) {
+            return { code: Number(line.slice(0, 3)), lines, text: lines.map((item) => item.slice(4)).join(" ").trim() };
+          }
+          if (!/^\d{3}-/.test(line)) throw new SmtpError(`unexpected reply from the mail server: ${line.slice(0, 120)}`, { stage });
+          index = buffer.indexOf("\n");
+        }
+        const { value: value2, done } = await reader.read();
+        if (done) throw new SmtpError("the mail server closed the connection", { stage });
+        buffer += decoder.decode(value2, { stream: true });
+      }
+    };
+    return withTimeout(read(), timeoutMs, stage);
+  };
+  const write = (line) => withTimeout(writer.write(encoder.encode(line)), timeoutMs, "write");
+  const release = () => {
+    reader.releaseLock();
+    writer.releaseLock();
+  };
+  return { readReply, write, release };
+};
+var expect = (reply, codes, stage) => {
+  if (!codes.includes(reply.code)) {
+    throw new SmtpError(`${stage}: the mail server answered ${reply.code} ${reply.text.slice(0, 160)}`.trim(), { code: reply.code, stage });
+  }
+  return reply;
+};
+var capabilities = (reply) => {
+  const caps = /* @__PURE__ */ new Map();
+  for (const line of reply.lines.slice(1)) {
+    const [name, ...rest] = line.slice(4).trim().split(/\s+/);
+    if (name) caps.set(name.toUpperCase(), rest.map((item) => item.toUpperCase()));
+  }
+  return caps;
+};
+var sendMail = async ({
+  connect,
+  host,
+  port,
+  security = "starttls",
+  username = "",
+  password = "",
+  heloName = "busa-shop.invalid",
+  messages,
+  timeoutMs = DEFAULT_TIMEOUT_MS
+}) => {
+  if (typeof connect !== "function") throw new SmtpError("this engine cannot open a mail connection", { stage: "connect" });
+  if (!SMTP_SECURITY.includes(security)) throw new SmtpError(`unknown SMTP security "${security}"`, { stage: "connect" });
+  if (!host || !Number.isInteger(port) || port <= 0 || port > 65535) throw new SmtpError("the mail server host or port is missing", { stage: "connect" });
+  if (port === 25) throw new SmtpError("port 25 is blocked for websites: use 587 (STARTTLS) or 465 (TLS)", { stage: "connect" });
+  const sendPassword = Boolean(username) && security !== "none";
+  if (username && !password && security !== "none") throw new SmtpError("the SMTP password is missing from the Vault", { stage: "auth" });
+  let socket = connect({ hostname: host, port }, { secureTransport: security === "tls" ? "on" : security === "starttls" ? "starttls" : "off", allowHalfOpen: false });
+  const results = [];
+  try {
+    if (socket.opened) await withTimeout(socket.opened, timeoutMs, "connect");
+    let io = channel(socket, timeoutMs);
+    expect(await io.readReply("greeting"), [220], "greeting");
+    await io.write(`EHLO ${heloName}\r
+`);
+    let ehlo = expect(await io.readReply("EHLO"), [250], "EHLO");
+    if (security === "starttls") {
+      if (!capabilities(ehlo).has("STARTTLS")) throw new SmtpError("the mail server does not offer STARTTLS on this port", { stage: "STARTTLS" });
+      await io.write("STARTTLS\r\n");
+      expect(await io.readReply("STARTTLS"), [220], "STARTTLS");
+      io.release();
+      socket = socket.startTls();
+      io = channel(socket, timeoutMs);
+      await io.write(`EHLO ${heloName}\r
+`);
+      ehlo = expect(await io.readReply("EHLO"), [250], "EHLO");
+    }
+    if (sendPassword) {
+      const methods = capabilities(ehlo).get("AUTH") ?? [];
+      if (methods.includes("PLAIN") || !methods.includes("LOGIN")) {
+        await io.write(`AUTH PLAIN ${toBase64(`\0${username}\0${password}`)}\r
+`);
+        expect(await io.readReply("AUTH"), [235], "login");
+      } else {
+        await io.write("AUTH LOGIN\r\n");
+        expect(await io.readReply("AUTH"), [334], "login");
+        await io.write(`${toBase64(username)}\r
+`);
+        expect(await io.readReply("AUTH"), [334], "login");
+        await io.write(`${toBase64(password)}\r
+`);
+        expect(await io.readReply("AUTH"), [235], "login");
+      }
+    }
+    for (const message of messages) {
+      try {
+        if (!isSafeAddress(message.from)) throw new SmtpError("the sender address in Settings is not usable", { stage: "MAIL FROM" });
+        if (!isSafeAddress(message.to)) throw new SmtpError("the recipient address is not usable", { stage: "RCPT TO" });
+        const data = dotStuff(buildMessage(message));
+        await io.write(`MAIL FROM:<${message.from}>\r
+`);
+        expect(await io.readReply("MAIL FROM"), [250], "sender refused");
+        await io.write(`RCPT TO:<${message.to}>\r
+`);
+        expect(await io.readReply("RCPT TO"), [250, 251], "recipient refused");
+        await io.write("DATA\r\n");
+        expect(await io.readReply("DATA"), [354], "DATA");
+        await io.write(data);
+        expect(await io.readReply("message"), [250], "message refused");
+        results.push({ tag: message.tag, to: message.to, ok: true });
+      } catch (error62) {
+        results.push({ tag: message.tag, to: message.to, ok: false, error: error62?.message ?? String(error62) });
+        if (error62?.code) {
+          await io.write("RSET\r\n");
+          await io.readReply("RSET").catch(() => null);
+        } else {
+          for (const rest of messages.slice(results.length)) {
+            results.push({ tag: rest.tag, to: rest.to, ok: false, error: "not sent: the connection to the mail server was lost" });
+          }
+          break;
+        }
+      }
+    }
+    await io.write("QUIT\r\n").catch(() => null);
+    await io.readReply("QUIT").catch(() => null);
+  } finally {
+    try {
+      await socket.close?.();
+    } catch {
+    }
+  }
+  return results;
+};
+
+// src/mail.js
+var en2 = {
+  hello: "Hello,",
+  hello_name: "Hello {name},",
+  request_subject: "We received your order request {orderId}",
+  request_intro: "Thank you for your order request at {store}. Nothing has been charged: we will reply to this address to confirm availability and arrange payment.",
+  receipt_subject: "Order {orderId} confirmed: payment received",
+  receipt_intro: "Thank you for your order at {store}. We have received your payment of {amount} through PayPal.",
+  receipt_next: "We will email you again when your order ships.",
+  items: "Items",
+  subtotal: "Items total",
+  shipping: "Shipping",
+  shipping_free: "Free",
+  shipping_tbc: "to be confirmed",
+  total: "Total",
+  total_paid: "Total paid",
+  order_id: "Order",
+  paypal_id: "PayPal transaction",
+  ship_to: "Ship to",
+  delivery: "Delivery time",
+  questions: "Questions? Reply to this email or write to {email}.",
+  questions_reply: "Questions? Reply to this email.",
+  owner_request_subject: "New order request {orderId} \xB7 {total}",
+  owner_request_intro: "A new order request came in through your shop. It is not paid: reply to the customer to confirm it and arrange payment, then set it to Confirmed in Orders.",
+  owner_paid_subject: "New paid order {orderId} \xB7 {amount}",
+  owner_paid_intro: "PayPal confirmed a payment for this order. It is in Orders \u203A To ship.",
+  owner_problem_subject: "Payment problem on order {orderId}",
+  owner_problem_intro: "PayPal reported something about this order that needs you:",
+  owner_problem_next: "Look at the payment in your PayPal account before you ship anything.",
+  customer: "Customer",
+  email: "Email",
+  phone: "Phone",
+  note: "Customer note",
+  auto_note: "Sent automatically by the {store} website."
+};
+var de2 = {
+  hello: "Hallo,",
+  hello_name: "Hallo {name},",
+  request_subject: "Wir haben Ihre Bestellanfrage {orderId} erhalten",
+  request_intro: "Vielen Dank f\xFCr Ihre Bestellanfrage bei {store}. Es wurde nichts abgebucht: Wir antworten an diese Adresse, um die Verf\xFCgbarkeit zu best\xE4tigen und die Zahlung zu vereinbaren.",
+  receipt_subject: "Bestellung {orderId} best\xE4tigt: Zahlung erhalten",
+  receipt_intro: "Vielen Dank f\xFCr Ihre Bestellung bei {store}. Wir haben Ihre Zahlung \xFCber {amount} per PayPal erhalten.",
+  receipt_next: "Wir schreiben Ihnen wieder, sobald Ihre Bestellung versandt ist.",
+  items: "Artikel",
+  subtotal: "Warenwert",
+  shipping: "Versand",
+  shipping_free: "Kostenlos",
+  shipping_tbc: "wird best\xE4tigt",
+  total: "Gesamt",
+  total_paid: "Bezahlt",
+  order_id: "Bestellung",
+  paypal_id: "PayPal-Transaktion",
+  ship_to: "Lieferadresse",
+  delivery: "Lieferzeit",
+  questions: "Fragen? Antworten Sie auf diese E-Mail oder schreiben Sie an {email}.",
+  questions_reply: "Fragen? Antworten Sie einfach auf diese E-Mail.",
+  owner_request_subject: "Neue Bestellanfrage {orderId} \xB7 {total}",
+  owner_request_intro: "\xDCber Ihren Shop ist eine neue Bestellanfrage eingegangen. Sie ist nicht bezahlt: Antworten Sie dem Kunden, um sie zu best\xE4tigen und die Zahlung zu vereinbaren, und setzen Sie sie dann in Orders auf Confirmed.",
+  owner_paid_subject: "Neue bezahlte Bestellung {orderId} \xB7 {amount}",
+  owner_paid_intro: "PayPal hat eine Zahlung f\xFCr diese Bestellung best\xE4tigt. Sie steht in Orders \u203A To ship.",
+  owner_problem_subject: "Zahlungsproblem bei Bestellung {orderId}",
+  owner_problem_intro: "PayPal meldet zu dieser Bestellung etwas, das Sie ansehen m\xFCssen:",
+  owner_problem_next: "Pr\xFCfen Sie die Zahlung in Ihrem PayPal-Konto, bevor Sie etwas versenden.",
+  customer: "Kunde",
+  email: "E-Mail",
+  phone: "Telefon",
+  note: "Anmerkung des Kunden",
+  auto_note: "Automatisch von der Website von {store} gesendet."
+};
+var fr2 = {
+  hello: "Bonjour,",
+  hello_name: "Bonjour {name},",
+  request_subject: "Nous avons re\xE7u votre demande de commande {orderId}",
+  request_intro: "Merci pour votre demande de commande chez {store}. Rien n'a \xE9t\xE9 d\xE9bit\xE9 : nous r\xE9pondrons \xE0 cette adresse pour confirmer la disponibilit\xE9 et organiser le paiement.",
+  receipt_subject: "Commande {orderId} confirm\xE9e : paiement re\xE7u",
+  receipt_intro: "Merci pour votre commande chez {store}. Nous avons bien re\xE7u votre paiement de {amount} via PayPal.",
+  receipt_next: "Nous vous \xE9crirons \xE0 nouveau lorsque votre commande sera exp\xE9di\xE9e.",
+  items: "Articles",
+  subtotal: "Total des articles",
+  shipping: "Livraison",
+  shipping_free: "Gratuite",
+  shipping_tbc: "\xE0 confirmer",
+  total: "Total",
+  total_paid: "Total pay\xE9",
+  order_id: "Commande",
+  paypal_id: "Transaction PayPal",
+  ship_to: "Livrer \xE0",
+  delivery: "D\xE9lai de livraison",
+  questions: "Des questions ? R\xE9pondez \xE0 cet e-mail ou \xE9crivez \xE0 {email}.",
+  questions_reply: "Des questions ? R\xE9pondez simplement \xE0 cet e-mail.",
+  owner_request_subject: "Nouvelle demande de commande {orderId} \xB7 {total}",
+  owner_request_intro: "Une nouvelle demande de commande est arriv\xE9e par votre boutique. Elle n'est pas pay\xE9e : r\xE9pondez au client pour la confirmer et organiser le paiement, puis passez-la \xE0 Confirmed dans Orders.",
+  owner_paid_subject: "Nouvelle commande pay\xE9e {orderId} \xB7 {amount}",
+  owner_paid_intro: "PayPal a confirm\xE9 un paiement pour cette commande. Elle se trouve dans Orders \u203A To ship.",
+  owner_problem_subject: "Probl\xE8me de paiement sur la commande {orderId}",
+  owner_problem_intro: "PayPal signale sur cette commande quelque chose qui demande votre attention :",
+  owner_problem_next: "V\xE9rifiez le paiement dans votre compte PayPal avant d'exp\xE9dier quoi que ce soit.",
+  customer: "Client",
+  email: "E-mail",
+  phone: "T\xE9l\xE9phone",
+  note: "Note du client",
+  auto_note: "Envoy\xE9 automatiquement par le site de {store}."
+};
+var es2 = {
+  hello: "Hola:",
+  hello_name: "Hola, {name}:",
+  request_subject: "Hemos recibido tu solicitud de pedido {orderId}",
+  request_intro: "Gracias por tu solicitud de pedido en {store}. No se ha cobrado nada: responderemos a esta direcci\xF3n para confirmar la disponibilidad y acordar el pago.",
+  receipt_subject: "Pedido {orderId} confirmado: pago recibido",
+  receipt_intro: "Gracias por tu pedido en {store}. Hemos recibido tu pago de {amount} a trav\xE9s de PayPal.",
+  receipt_next: "Te escribiremos de nuevo cuando enviemos tu pedido.",
+  items: "Art\xEDculos",
+  subtotal: "Total de art\xEDculos",
+  shipping: "Env\xEDo",
+  shipping_free: "Gratis",
+  shipping_tbc: "por confirmar",
+  total: "Total",
+  total_paid: "Total pagado",
+  order_id: "Pedido",
+  paypal_id: "Transacci\xF3n de PayPal",
+  ship_to: "Enviar a",
+  delivery: "Plazo de entrega",
+  questions: "\xBFPreguntas? Responde a este correo o escribe a {email}.",
+  questions_reply: "\xBFPreguntas? Responde a este correo.",
+  owner_request_subject: "Nueva solicitud de pedido {orderId} \xB7 {total}",
+  owner_request_intro: "Ha llegado una nueva solicitud de pedido por tu tienda. No est\xE1 pagada: responde al cliente para confirmarla y acordar el pago, y despu\xE9s m\xE1rcala como Confirmed en Orders.",
+  owner_paid_subject: "Nuevo pedido pagado {orderId} \xB7 {amount}",
+  owner_paid_intro: "PayPal ha confirmado un pago para este pedido. Est\xE1 en Orders \u203A To ship.",
+  owner_problem_subject: "Problema de pago en el pedido {orderId}",
+  owner_problem_intro: "PayPal ha comunicado algo sobre este pedido que necesita tu atenci\xF3n:",
+  owner_problem_next: "Revisa el pago en tu cuenta de PayPal antes de enviar nada.",
+  customer: "Cliente",
+  email: "Correo",
+  phone: "Tel\xE9fono",
+  note: "Nota del cliente",
+  auto_note: "Enviado autom\xE1ticamente por la web de {store}."
+};
+var EMAIL_MESSAGES = { en: en2, de: de2, fr: fr2, es: es2 };
+var fill = (template, values) => template.replace(/\{(\w+)\}/g, (match, key) => key in values ? String(values[key]) : match);
+var escapeHtml = (value2) => String(value2 ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+var smtpConfig = (settings, secrets, { canConnect = true } = {}) => {
+  const host = settings.smtpHost;
+  if (!host) return { ready: false, reason: "off" };
+  if (!canConnect) return { ready: false, reason: "browser-engine" };
+  const port = settings.smtpPort ?? (settings.smtpSecurity === "tls" ? 465 : 587);
+  if (!Number.isInteger(port) || port <= 0 || port > 65535 || port === 25) return { ready: false, reason: "bad-port" };
+  const from = settings.emailFrom || settings.smtpUsername;
+  if (!isSafeAddress(from)) return { ready: false, reason: "no-sender" };
+  const password = secrets?.smtpPassword ?? "";
+  if (settings.smtpUsername && settings.smtpSecurity !== "none" && !password) return { ready: false, reason: "no-password" };
+  const notify = isSafeAddress(settings.notifyEmail) ? settings.notifyEmail : isSafeAddress(settings.contactEmail) ? settings.contactEmail : "";
+  return {
+    ready: true,
+    host,
+    port,
+    security: settings.smtpSecurity,
+    username: settings.smtpUsername,
+    password,
+    from,
+    fromName: settings.storeName,
+    notify
+  };
+};
+var money = (amount, settings) => formatPrice(amount, settings.currency, settings.language);
+var lineText = (line, settings) => `${line.quantity} \xD7 ${line.name}${line.sku ? ` (${line.sku})` : ""}: ${money(line.lineTotal, settings)}`;
+var totals = (order, settings, t, { paid = false } = {}) => [
+  [t.subtotal, money(order.subtotal ?? order.total, settings)],
+  [t.shipping, order.shipping === null || order.shipping === void 0 ? t.shipping_tbc : order.shipping === 0 ? t.shipping_free : money(order.shipping, settings)],
+  [paid ? t.total_paid : t.total, money(paid && Number.isFinite(order.amountPaid) ? order.amountPaid : order.total, settings)]
+];
+var addressLines = (order) => {
+  const address = order.address ?? {};
+  return [
+    order.name,
+    address.line1,
+    address.line2,
+    [address.postalCode, address.city].filter(Boolean).join(" "),
+    address.region,
+    order.countryLabel ?? address.country
+  ].filter(Boolean);
+};
+var render = ({ t, settings, greeting, intro, sections, closing }) => {
+  const footer = [settings.contactEmail ? fill(t.questions, { email: settings.contactEmail }) : t.questions_reply, settings.storeName].filter(Boolean);
+  const text2 = [
+    greeting,
+    "",
+    ...intro,
+    "",
+    ...sections.flatMap((section) => [`${section.title}:`, ...section.lines.map((line) => Array.isArray(line) ? `${line[0]}: ${line[1]}` : `  ${line}`), ""]),
+    ...closing,
+    ...closing.length ? [""] : [],
+    ...footer,
+    "",
+    "--",
+    fill(t.auto_note, { store: settings.storeName }),
+    ""
+  ].join("\n");
+  const htmlSection = (section) => `<h3 style="margin:20px 0 6px;font-size:15px">${escapeHtml(section.title)}</h3>` + (section.lines.some(Array.isArray) ? `<table style="border-collapse:collapse">${section.lines.map(
+    (line) => Array.isArray(line) ? `<tr><td style="padding:2px 16px 2px 0;color:#555">${escapeHtml(line[0])}</td><td style="padding:2px 0"><strong>${escapeHtml(line[1])}</strong></td></tr>` : `<tr><td colspan="2" style="padding:2px 0">${escapeHtml(line)}</td></tr>`
+  ).join("")}</table>` : `<p style="margin:0">${section.lines.map(escapeHtml).join("<br>")}</p>`);
+  const html2 = `<!doctype html><html lang="${escapeHtml(settings.language)}"><body style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;color:#1f2328;max-width:600px">
+<p>${escapeHtml(greeting)}</p>
+${intro.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("\n")}
+${sections.map(htmlSection).join("\n")}
+${closing.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("\n")}
+<p>${footer.map(escapeHtml).join("<br>")}</p>
+<p style="color:#777;font-size:12px">${escapeHtml(fill(t.auto_note, { store: settings.storeName }))}</p>
+</body></html>`;
+  return { text: text2, html: html2 };
+};
+var composeEmails = (kind, order, settings, config2, { problem = "" } = {}) => {
+  const t = EMAIL_MESSAGES[settings.language] ?? en2;
+  const store = settings.storeName || "Shop";
+  const base = { from: config2.from, fromName: config2.fromName || store };
+  const items = { title: t.items, lines: order.lines.map((line) => lineText(line, settings)) };
+  const messages = [];
+  const owner = (subject, intro, sections, closing = []) => {
+    if (!config2.notify) return;
+    messages.push({
+      ...base,
+      tag: `owner-${kind}`,
+      to: config2.notify,
+      replyTo: isSafeAddress(order.email) ? order.email : "",
+      subject,
+      ...render({ t, settings, greeting: t.hello, intro, sections, closing })
+    });
+  };
+  const customer = {
+    title: t.customer,
+    lines: [
+      [t.order_id, order.orderId],
+      [t.customer, order.name],
+      [t.email, order.email],
+      ...order.phone ? [[t.phone, order.phone]] : [],
+      ...order.note ? [[t.note, order.note]] : []
+    ]
+  };
+  const shipTo = { title: t.ship_to, lines: addressLines(order) };
+  if (kind === "request") {
+    const total = money(order.total, settings);
+    messages.push({
+      ...base,
+      tag: "request-received",
+      to: order.email,
+      replyTo: settings.contactEmail,
+      subject: fill(t.request_subject, { orderId: order.orderId }),
+      ...render({
+        t,
+        settings,
+        greeting: t.hello,
+        intro: [fill(t.request_intro, { store })],
+        sections: [items, { title: t.order_id, lines: [[t.order_id, order.orderId], ...totals(order, settings, t)] }],
+        closing: []
+      })
+    });
+    owner(fill(t.owner_request_subject, { orderId: order.orderId, total }), [t.owner_request_intro], [
+      customer,
+      items,
+      { title: t.total, lines: totals(order, settings, t) },
+      shipTo
+    ]);
+  } else if (kind === "paid") {
+    const amount = money(Number.isFinite(order.amountPaid) ? order.amountPaid : order.total, settings);
+    const paidRows = [...totals(order, settings, t, { paid: true }), ...order.captureId ? [[t.paypal_id, order.captureId]] : []];
+    messages.push({
+      ...base,
+      tag: "payment-receipt",
+      to: order.email,
+      replyTo: settings.contactEmail,
+      subject: fill(t.receipt_subject, { orderId: order.orderId }),
+      ...render({
+        t,
+        settings,
+        greeting: order.name ? fill(t.hello_name, { name: order.name }) : t.hello,
+        intro: [fill(t.receipt_intro, { store, amount })],
+        sections: [
+          items,
+          { title: t.order_id, lines: [[t.order_id, order.orderId], ...paidRows] },
+          shipTo,
+          ...order.deliveryEstimate ? [{ title: t.delivery, lines: [order.deliveryEstimate] }] : []
+        ],
+        closing: [t.receipt_next]
+      })
+    });
+    owner(fill(t.owner_paid_subject, { orderId: order.orderId, amount }), [t.owner_paid_intro], [
+      customer,
+      items,
+      { title: t.total_paid, lines: paidRows },
+      shipTo
+    ]);
+  } else if (kind === "problem") {
+    owner(fill(t.owner_problem_subject, { orderId: order.orderId }), [t.owner_problem_intro, problem], [customer, { title: t.total, lines: totals(order, settings, t) }], [
+      t.owner_problem_next
+    ]);
+  }
+  return messages.filter((message) => isSafeAddress(message.to));
+};
+var emailLogLines = (results, nowIso) => results.map(
+  (result) => result.ok ? `${nowIso} sent ${result.tag} to ${result.to}` : `${nowIso} FAILED ${result.tag} to ${result.to}: ${String(result.error).slice(0, 200)}`
+);
+var EMAIL_SKIP_REASONS = {
+  off: "no email sent: SMTP is not set up (Settings \u203A SMTP host)",
+  "no-sender": "no email sent: Settings \u203A Send emails from is not a usable address",
+  "no-password": "no email sent: the SMTP password (BUSA_SHOP_SMTP_PASSWORD) is not in the Space Vault, marked Runtime",
+  "bad-port": "no email sent: Settings \u203A SMTP port must be 587 (STARTTLS) or 465 (TLS); port 25 is blocked for websites",
+  "browser-engine": "no email sent: the private browser preview cannot send email"
+};
+
+// src/shipping.js
+var COUNTRY_SET2 = new Set(COUNTRY_CODES);
+var centsOf = (amount) => Math.round(amount * 100);
+var buildShippingRates = (records, settings) => {
+  const rates = /* @__PURE__ */ new Map();
+  const problems = [];
+  const rows = [...records ?? []].map((record2, index) => ({ record: record2, index, position: finiteNumber(record2?.fields?.position) })).sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || a.index - b.index);
+  for (const { record: record2 } of rows) {
+    const fields = record2?.fields ?? {};
+    const zone = text(fields.name);
+    const rawCodes = text(fields.countries).toUpperCase().split(/[\s,;，、；]+/).filter(Boolean);
+    const label2 = zone || rawCodes.join(", ") || record2?.id || "?";
+    if (!rawCodes.length) {
+      problems.push({ code: "no-countries", zone: label2 });
+      continue;
+    }
+    const cost = finiteNumber(fields.rate);
+    if (cost === null || cost < 0) {
+      problems.push({ code: "no-rate", zone: label2 });
+      continue;
+    }
+    const currency = text(fields.currency).toUpperCase() || settings.currency;
+    if (currency !== settings.currency) {
+      problems.push({ code: "currency-mismatch", zone: label2, currency });
+      continue;
+    }
+    const freeOver = finiteNumber(fields["free-over"]);
+    for (const code of rawCodes) {
+      if (!COUNTRY_SET2.has(code)) {
+        problems.push({ code: "unknown-country", zone: label2, country: code });
+        continue;
+      }
+      if (rates.has(code)) {
+        problems.push({ code: "duplicate-country", zone: label2, country: code, kept: rates.get(code).zone });
+        continue;
+      }
+      rates.set(code, {
+        zone: label2,
+        country: code,
+        cost: centsOf(cost) / 100,
+        currency,
+        freeOver: freeOver !== null && freeOver > 0 ? centsOf(freeOver) / 100 : null,
+        estimate: text(fields["delivery-estimate"])
+      });
+    }
+  }
+  return { rates, problems };
+};
+var checkoutCountries = (settings, shipping) => {
+  if (shipping.status !== "ready") return settings.shipsTo;
+  return settings.shipsTo.filter((code) => shipping.rates.has(code));
+};
+var shippingFor = (shipping, country, subtotal) => {
+  if (shipping.status === "missing") return { ok: true, cost: null, estimate: "", free: false, unknown: true };
+  if (shipping.status !== "ready") return { ok: false, code: "shipping_unavailable" };
+  const rate = shipping.rates.get(country);
+  if (!rate) return { ok: false, code: "no_shipping" };
+  const free = rate.cost === 0 || rate.freeOver !== null && centsOf(subtotal) >= centsOf(rate.freeOver);
+  return { ok: true, cost: free ? 0 : rate.cost, estimate: rate.estimate, free, zone: rate.zone };
+};
+var clientRates = (shipping, countries) => shipping.status === "ready" ? Object.fromEntries(
+  countries.map((code) => {
+    const rate = shipping.rates.get(code);
+    return [code, { cost: rate.cost, freeOver: rate.freeOver, estimate: rate.estimate }];
+  })
+) : {};
+var NO_POSTAL_CODE = new Set(
+  "AE AG AO AW BF BI BJ BO BS BW BZ CD CF CG CI CK CM DJ DM ER FJ GA GD GH GM GQ GY HK IE JM KI KM KN KP LC ML MO MR MS MW NR NU QA RW SB SC SL SO SR ST SY TF TK TL TO TT TV TZ UG VU YE ZW".split(" ")
+);
+var REGION_REQUIRED = new Set("AR AU BR CA CN IN JP MX US".split(" "));
+
 // src/orders.js
 var ORDER_ID_PATTERN = /^ORD-[0-9A-HJKMNP-TV-Z]{10}$/;
 var EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 var PHONE_PATTERN = /^\+?[\d\s().-]{6,}$/;
-var LIMITS = { name: 100, email: 200, phone: 40, note: 1e3, items: 20 };
+var LIMITS = { name: 100, email: 200, phone: 40, note: 1e3, items: 20, address: 300, city: 120, region: 120, postalCode: 20 };
 var CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
 var CONTROL_OR_NEWLINE = /[\u0000-\u001F\u007F]/;
 var field = (value2) => typeof value2 === "string" ? value2.trim() : "";
@@ -27971,24 +29467,29 @@ var parseItems = (raw) => {
   }
   return [...merged].map(([productId, quantity]) => ({ productId, quantity }));
 };
-var validateOrder = (input2, { listed, settings }) => {
+var cents = (amount) => Math.round(amount * 100);
+var addressRules = (country) => ({ region: REGION_REQUIRED.has(country), postalCode: !NO_POSTAL_CODE.has(country) });
+var validateOrder = (input2, { listed, settings, shipping = { status: "missing" } }) => {
   const body = input2 && typeof input2 === "object" && !Array.isArray(input2) ? input2 : {};
   const errors = {};
   const itemErrors = [];
   const orderId = field(body.orderId);
   if (!ORDER_ID_PATTERN.test(orderId)) errors.orderId = "invalid";
   const name = singleLine(errors, "name", body.name, { max: LIMITS.name, required: true });
-  const email3 = singleLine(errors, "email", body.email, {
-    max: LIMITS.email,
-    required: true,
-    pattern: EMAIL_PATTERN
-  });
+  const email3 = singleLine(errors, "email", body.email, { max: LIMITS.email, required: true, pattern: EMAIL_PATTERN });
   if (errors.email === "invalid") errors.email = "invalid_email";
-  const phone = singleLine(errors, "phone", body.phone, { max: LIMITS.phone, required: false, pattern: PHONE_PATTERN });
+  const phone = singleLine(errors, "phone", body.phone, { max: LIMITS.phone, required: true, pattern: PHONE_PATTERN });
   if (errors.phone === "invalid") errors.phone = "invalid_phone";
   const country = field(body.country).toUpperCase();
+  const countries = checkoutCountries(settings, shipping);
   if (!country) errors.country = "required";
-  else if (!settings.shipsTo.includes(country)) errors.country = "invalid_country";
+  else if (!countries.includes(country)) errors.country = settings.shipsTo.includes(country) ? "no_shipping" : "invalid_country";
+  const rules = addressRules(errors.country ? "" : country);
+  const line1 = singleLine(errors, "address1", body.address1, { max: LIMITS.address, required: true });
+  const line2 = singleLine(errors, "address2", body.address2, { max: LIMITS.address, required: false });
+  const city = singleLine(errors, "city", body.city, { max: LIMITS.city, required: true });
+  const region = singleLine(errors, "region", body.region, { max: LIMITS.region, required: rules.region });
+  const postalCode = singleLine(errors, "postalCode", body.postalCode, { max: LIMITS.postalCode, required: rules.postalCode });
   const note = field(body.note).replace(/\r\n?/g, "\n");
   if (note.length > LIMITS.note) errors.note = "too_long";
   else if (CONTROL.test(note)) errors.note = "invalid";
@@ -28017,12 +29518,15 @@ var validateOrder = (input2, { listed, settings }) => {
     }
     if (itemErrors.length) errors.items = itemErrors[0].code;
   }
+  const currency = settings.currency;
+  const subtotalCents = lines.reduce((sum, line) => sum + cents(line.product.price) * line.quantity, 0);
+  const rate = errors.country ? null : shippingFor(shipping, country, subtotalCents / 100);
+  if (rate && !rate.ok) errors.country = rate.code;
   if (Object.keys(errors).length) {
     return { ok: false, status: 400, errors, itemErrors };
   }
-  const currency = settings.currency;
-  const totalCents = lines.reduce((sum, line) => sum + Math.round(line.product.price * 100) * line.quantity, 0);
-  const total = totalCents / 100;
+  const shippingCents = rate.cost === null ? 0 : cents(rate.cost);
+  const total = (subtotalCents + shippingCents) / 100;
   const expected = body.expectedTotal;
   if (typeof expected === "number" && Number.isFinite(expected) && Math.abs(expected - total) > 4e-3) {
     return {
@@ -28042,8 +29546,12 @@ var validateOrder = (input2, { listed, settings }) => {
       email: email3,
       phone,
       country,
+      address: { line1, line2, city, region, postalCode, country },
       note,
       currency,
+      subtotal: subtotalCents / 100,
+      shipping: rate.cost === null ? null : shippingCents / 100,
+      deliveryEstimate: rate.estimate ?? "",
       total,
       lines: lines.map(({ product, quantity }) => ({
         productId: product.id,
@@ -28051,23 +29559,35 @@ var validateOrder = (input2, { listed, settings }) => {
         name: product.name,
         quantity,
         unitPrice: product.price,
-        lineTotal: Math.round(product.price * 100) * quantity / 100
+        lineTotal: cents(product.price) * quantity / 100
       }))
     }
   };
 };
-var orderToFields = (order, { nowIso }) => {
-  const money = (amount) => amount.toFixed(2);
+var money2 = (amount) => amount.toFixed(2);
+var formatShippingAddress = (order) => [
+  order.name,
+  order.address.line1,
+  order.address.line2,
+  [order.address.postalCode, order.address.city].filter(Boolean).join(" "),
+  order.address.region,
+  `${countryName(order.country, "en")} (${order.country})`
+].filter(Boolean).join("\n");
+var orderToFields = (order, { nowIso, payment = "request" }) => {
   const lines = order.lines.map(
-    (line) => `${line.quantity} \xD7 ${line.name}${line.sku ? ` (${line.sku})` : ""} @ ${money(line.unitPrice)} ${order.currency} = ${money(line.lineTotal)} ${order.currency}`
+    (line) => `${line.quantity} \xD7 ${line.name}${line.sku ? ` (${line.sku})` : ""} @ ${money2(line.unitPrice)} ${order.currency} = ${money2(line.lineTotal)} ${order.currency}`
   );
   const fields = {
     title: `${order.orderId} \xB7 ${order.name}`,
     "order-id": order.orderId,
-    status: "new",
+    status: payment === "paypal" ? "awaiting-payment" : "new",
+    "payment-method": payment === "paypal" ? "paypal" : "request",
     "customer-name": order.name,
     email: order.email,
     country: `${countryName(order.country, "en")} (${order.country})`,
+    "address-line1": order.address.line1,
+    city: order.address.city,
+    "shipping-address": formatShippingAddress(order),
     "items-summary": lines.join("\n"),
     items: JSON.stringify(
       order.lines.map((line) => ({
@@ -28079,14 +29599,89 @@ var orderToFields = (order, { nowIso }) => {
         line_total: line.lineTotal
       }))
     ),
+    subtotal: order.subtotal,
     total: order.total,
     currency: order.currency,
     "created-at": nowIso,
     source: "website"
   };
+  if (order.shipping !== null && order.shipping !== void 0) fields.shipping = order.shipping;
+  if (order.deliveryEstimate) fields["delivery-estimate"] = order.deliveryEstimate;
   if (order.phone) fields.phone = order.phone;
+  if (order.address.line2) fields["address-line2"] = order.address.line2;
+  if (order.address.region) fields.region = order.address.region;
+  if (order.address.postalCode) fields["postal-code"] = order.address.postalCode;
   if (order.note) fields["customer-note"] = order.note;
   return fields;
+};
+var numberOrNull = (value2) => {
+  const parsed = typeof value2 === "string" && value2.trim() !== "" ? Number(value2) : value2;
+  return typeof parsed === "number" && Number.isFinite(parsed) ? parsed : null;
+};
+var str = (value2) => typeof value2 === "string" ? value2.trim() : typeof value2 === "number" ? String(value2) : "";
+var selectValue = (value2) => {
+  if (value2 && typeof value2 === "object" && !Array.isArray(value2)) return str(value2.id ?? value2.name).toLowerCase();
+  return str(value2).toLowerCase();
+};
+var orderFromRecord = (record2) => {
+  const fields = record2?.fields ?? {};
+  let lines = [];
+  try {
+    const parsed = JSON.parse(typeof fields.items === "string" ? fields.items : "[]");
+    if (Array.isArray(parsed)) {
+      lines = parsed.filter((line) => line && typeof line === "object").map((line) => ({
+        productId: str(line.product_id),
+        sku: str(line.sku),
+        name: str(line.name),
+        quantity: Number(line.quantity) || 0,
+        unitPrice: numberOrNull(line.unit_price) ?? 0,
+        lineTotal: numberOrNull(line.line_total) ?? 0
+      }));
+    }
+  } catch {
+    lines = [];
+  }
+  const countryLabel = str(fields.country);
+  const country = /\(([A-Z]{2})\)\s*$/.exec(countryLabel)?.[1] ?? "";
+  return {
+    recordId: typeof record2?.id === "string" ? record2.id : "",
+    headCommitId: typeof record2?.headCommitId === "string" ? record2.headCommitId : "",
+    orderId: str(fields["order-id"]),
+    status: selectValue(fields.status),
+    paymentMethod: selectValue(fields["payment-method"]) || "request",
+    name: str(fields["customer-name"]),
+    email: str(fields.email),
+    phone: str(fields.phone),
+    country,
+    countryLabel,
+    address: {
+      line1: str(fields["address-line1"]),
+      line2: str(fields["address-line2"]),
+      city: str(fields.city),
+      region: str(fields.region),
+      postalCode: str(fields["postal-code"]),
+      country
+    },
+    note: typeof fields["customer-note"] === "string" ? fields["customer-note"] : "",
+    lines,
+    subtotal: numberOrNull(fields.subtotal),
+    shipping: numberOrNull(fields.shipping),
+    total: numberOrNull(fields.total) ?? 0,
+    currency: str(fields.currency).toUpperCase(),
+    deliveryEstimate: str(fields["delivery-estimate"]),
+    paypalOrderId: str(fields["paypal-order-id"]),
+    captureId: str(fields["paypal-capture-id"]),
+    amountPaid: numberOrNull(fields["amount-paid"]),
+    refundedAmount: numberOrNull(fields["refunded-amount"]) ?? 0,
+    paymentLog: typeof fields["payment-log"] === "string" ? fields["payment-log"] : "",
+    emailLog: typeof fields["email-log"] === "string" ? fields["email-log"] : "",
+    paymentProblem: str(fields["payment-problem"]),
+    createdAt: str(fields["created-at"])
+  };
+};
+var appendLogLines = (current, lines, max = 12e3) => {
+  const next = [String(current ?? "").trimEnd(), ...lines].filter(Boolean).join("\n");
+  return next.length > max ? next.slice(next.length - max).replace(/^[^\n]*\n/, "") : next;
 };
 var orderInputFromForm = (form) => {
   const items = [];
@@ -28095,17 +29690,23 @@ var orderInputFromForm = (form) => {
     const quantity = Number(value2);
     items.push({ productId: key.slice(4), quantity: Number.isFinite(quantity) ? Math.trunc(quantity) : Number.NaN });
   }
-  const expected = Number(form.get("expectedTotal"));
+  const rawExpected = form.get("expectedTotal");
+  const expected = rawExpected !== null && rawExpected.trim() !== "" ? Number(rawExpected) : Number.NaN;
   return {
     orderId: form.get("orderId") ?? "",
     name: form.get("name") ?? "",
     email: form.get("email") ?? "",
     phone: form.get("phone") ?? "",
     country: form.get("country") ?? "",
+    address1: form.get("address1") ?? "",
+    address2: form.get("address2") ?? "",
+    city: form.get("city") ?? "",
+    region: form.get("region") ?? "",
+    postalCode: form.get("postalCode") ?? "",
     note: form.get("note") ?? "",
     website: form.get("company_url") ?? "",
     items,
-    ...form.get("expectedTotal") !== null && Number.isFinite(expected) ? { expectedTotal: expected } : {}
+    ...Number.isFinite(expected) ? { expectedTotal: expected } : {}
   };
 };
 var isHoneypotHit = (input2) => typeof input2?.website === "string" && input2.website.trim() !== "";
@@ -28117,322 +29718,91 @@ var newOrderId = (random = (bytes) => crypto.getRandomValues(bytes)) => {
   return id;
 };
 
-// src/i18n.js
-var en = {
-  nav_products: "Products",
-  nav_order: "Your order",
-  demo_notice: "Demo store: the products, prices and certificates on this site are fictional. Orders placed here are test orders.",
-  products_heading: "Products",
-  products_empty: "No products are listed yet. Please check back soon.",
-  how_heading: "How ordering works",
-  how_1: "Choose products and send us an order request.",
-  how_2: "We email you to confirm availability, shipping and the final price.",
-  how_3: "You pay only after we have confirmed. Nothing is charged on this site.",
-  about_heading: "About us",
-  sold_out: "Out of stock",
-  add_to_order: "Add to order request",
-  quantity: "Quantity",
-  details_heading: "Details",
-  certificates_heading: "Safety certificates on file",
-  valid_until: "valid until {date}",
-  spec_sku: "Item no.",
-  spec_age_grade: "Age",
-  spec_materials: "Materials",
-  spec_batteries: "Batteries",
-  spec_dimensions: "Size",
-  spec_weight: "Weight",
-  spec_warranty: "Warranty",
-  spec_returns: "Returns",
-  photo_coming: "Photo coming soon",
-  order_title: "Order request",
-  order_intro: "Send us an order request. This is not a payment: we will contact you by email to confirm your order and arrange payment.",
-  order_items: "Items",
-  order_remove: "Remove",
-  order_empty: "Your order request is empty.",
-  order_browse: "Browse products",
-  order_total: "Total",
-  order_details: "Your details",
-  field_name: "Full name",
-  field_email: "Email",
-  field_phone: "Phone (optional)",
-  field_country: "Ship to",
-  field_note: "Note (optional)",
-  choose_country: "Choose a country",
-  submit: "Send order request",
-  sending: "Sending\u2026",
-  no_payment_note: "No payment is taken now. We will contact you to confirm and arrange payment.",
-  thanks_title: "Thank you, we have your order request",
-  thanks_body: "Your order request {orderId} has been received. We will email {email} to confirm the details and arrange payment. Nothing has been charged.",
-  thanks_continue: "Continue browsing",
-  error_unavailable: "We could not send your order request just now, and nothing was saved. Your details are still here: please try again in a moment.",
-  error_unavailable_contact: "If it keeps failing, email us at {email}.",
-  error_fix: "Please check the highlighted fields.",
-  error_required: "Please fill this in.",
-  error_invalid: "This is not valid.",
-  error_too_long: "This is too long.",
-  error_invalid_email: "Please enter a valid email address.",
-  error_invalid_phone: "Please enter a valid phone number, or leave it empty.",
-  error_invalid_country: "Please choose a country we ship to.",
-  error_items_empty: "Add at least one product.",
-  error_too_many_items: "Too many different products in one request.",
-  error_not_available: "A product in your order is no longer available. It has been removed.",
-  error_sold_out: "{name} is out of stock.",
-  error_too_many: "Only {max} of {name} can be ordered.",
-  error_price_changed: "Prices changed since you opened this page. The new total is {total}. Please check your order and send it again.",
-  ordering_unavailable: "Ordering is not available on this site yet.",
-  not_found_title: "Not available",
-  not_found_body: "This page or product is not available.",
-  back_home: "Back to the shop",
-  unavailable_title: "The shop is temporarily unavailable",
-  unavailable_body: "Please try again in a few minutes.",
-  contact: "Contact",
-  footer_orders: "Order requests only. No payment is taken on this site."
+// src/policies.js
+var PAGE_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,59}$/;
+var FILL_IN_MARKER = /【fill in[^】]*】/i;
+var PAGES_LIMIT = 50;
+var esc2 = (value2) => String(value2 ?? "").replace(
+  /[&<>"']/g,
+  (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]
+);
+var buildPages = (records) => {
+  const pages = [];
+  const seen = /* @__PURE__ */ new Set();
+  const rows = [...records ?? []].map((record2, index) => ({ record: record2, index, position: finiteNumber(record2?.fields?.position) })).sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || a.index - b.index);
+  for (const { record: record2 } of rows) {
+    const fields = record2?.fields ?? {};
+    const slug = text(fields.slug).toLowerCase();
+    const title = text(fields.title);
+    const status = text(fields.status).toLowerCase();
+    if (status !== "published" || !title || !PAGE_SLUG_PATTERN.test(slug) || seen.has(slug)) continue;
+    seen.add(slug);
+    pages.push({
+      slug,
+      title,
+      body: typeof fields.body === "string" ? fields.body : "",
+      inFooter: fields["in-footer"] === true || fields["in-footer"] === "true",
+      updatedAt: text(record2?.updatedAt)
+    });
+  }
+  return pages;
 };
-var de = {
-  nav_products: "Produkte",
-  nav_order: "Ihre Bestellung",
-  demo_notice: "Demo-Shop: Produkte, Preise und Zertifikate auf dieser Seite sind frei erfunden. Bestellungen hier sind Testbestellungen.",
-  products_heading: "Produkte",
-  products_empty: "Noch keine Produkte gelistet. Bitte schauen Sie bald wieder vorbei.",
-  how_heading: "So funktioniert die Bestellung",
-  how_1: "W\xE4hlen Sie Produkte und senden Sie uns eine Bestellanfrage.",
-  how_2: "Wir best\xE4tigen per E-Mail Verf\xFCgbarkeit, Versand und den Endpreis.",
-  how_3: "Sie zahlen erst nach unserer Best\xE4tigung. Auf dieser Seite wird nichts abgebucht.",
-  about_heading: "\xDCber uns",
-  sold_out: "Ausverkauft",
-  add_to_order: "Zur Bestellanfrage hinzuf\xFCgen",
-  quantity: "Menge",
-  details_heading: "Details",
-  certificates_heading: "Vorliegende Sicherheitszertifikate",
-  valid_until: "g\xFCltig bis {date}",
-  spec_sku: "Artikelnr.",
-  spec_age_grade: "Alter",
-  spec_materials: "Material",
-  spec_batteries: "Batterien",
-  spec_dimensions: "Gr\xF6\xDFe",
-  spec_weight: "Gewicht",
-  spec_warranty: "Garantie",
-  spec_returns: "R\xFCckgabe",
-  photo_coming: "Foto folgt",
-  order_title: "Bestellanfrage",
-  order_intro: "Senden Sie uns eine Bestellanfrage. Dies ist keine Zahlung: Wir melden uns per E-Mail, um Ihre Bestellung zu best\xE4tigen und die Zahlung zu vereinbaren.",
-  order_items: "Artikel",
-  order_remove: "Entfernen",
-  order_empty: "Ihre Bestellanfrage ist leer.",
-  order_browse: "Produkte ansehen",
-  order_total: "Summe",
-  order_details: "Ihre Angaben",
-  field_name: "Vollst\xE4ndiger Name",
-  field_email: "E-Mail",
-  field_phone: "Telefon (optional)",
-  field_country: "Lieferland",
-  field_note: "Nachricht (optional)",
-  choose_country: "Land w\xE4hlen",
-  submit: "Bestellanfrage senden",
-  sending: "Wird gesendet\u2026",
-  no_payment_note: "Es wird jetzt nichts bezahlt. Wir melden uns, um die Bestellung zu best\xE4tigen und die Zahlung zu vereinbaren.",
-  thanks_title: "Vielen Dank, Ihre Bestellanfrage ist eingegangen",
-  thanks_body: "Ihre Bestellanfrage {orderId} ist eingegangen. Wir schreiben an {email}, um die Details zu best\xE4tigen und die Zahlung zu vereinbaren. Es wurde nichts abgebucht.",
-  thanks_continue: "Weiter einkaufen",
-  error_unavailable: "Ihre Bestellanfrage konnte gerade nicht gesendet werden, es wurde nichts gespeichert. Ihre Angaben sind noch da: Bitte versuchen Sie es gleich noch einmal.",
-  error_unavailable_contact: "Wenn es weiterhin nicht klappt, schreiben Sie uns an {email}.",
-  error_fix: "Bitte pr\xFCfen Sie die markierten Felder.",
-  error_required: "Bitte ausf\xFCllen.",
-  error_invalid: "Diese Angabe ist ung\xFCltig.",
-  error_too_long: "Das ist zu lang.",
-  error_invalid_email: "Bitte geben Sie eine g\xFCltige E-Mail-Adresse ein.",
-  error_invalid_phone: "Bitte geben Sie eine g\xFCltige Telefonnummer ein oder lassen Sie das Feld leer.",
-  error_invalid_country: "Bitte w\xE4hlen Sie ein Land, in das wir liefern.",
-  error_items_empty: "Bitte f\xFCgen Sie mindestens ein Produkt hinzu.",
-  error_too_many_items: "Zu viele verschiedene Produkte in einer Anfrage.",
-  error_not_available: "Ein Produkt Ihrer Bestellung ist nicht mehr verf\xFCgbar und wurde entfernt.",
-  error_sold_out: "{name} ist ausverkauft.",
-  error_too_many: "Von {name} k\xF6nnen h\xF6chstens {max} bestellt werden.",
-  error_price_changed: "Die Preise haben sich ge\xE4ndert, seit Sie die Seite ge\xF6ffnet haben. Die neue Summe ist {total}. Bitte pr\xFCfen Sie die Bestellung und senden Sie sie erneut.",
-  ordering_unavailable: "Bestellungen sind auf dieser Seite noch nicht m\xF6glich.",
-  not_found_title: "Nicht verf\xFCgbar",
-  not_found_body: "Diese Seite oder dieses Produkt ist nicht verf\xFCgbar.",
-  back_home: "Zur\xFCck zum Shop",
-  unavailable_title: "Der Shop ist vor\xFCbergehend nicht erreichbar",
-  unavailable_body: "Bitte versuchen Sie es in ein paar Minuten noch einmal.",
-  contact: "Kontakt",
-  footer_orders: "Nur Bestellanfragen. Auf dieser Seite wird keine Zahlung abgewickelt."
+var fillPlaceholders = (body, settings) => String(body ?? "").replace(/\{\{\s*store_name\s*\}\}/g, settings.storeName || "").replace(/\{\{\s*contact_email\s*\}\}/g, settings.contactEmail || "\u3010fill in: contact email\u3011");
+var safeHref = (raw) => {
+  const href = raw.trim();
+  if (/^https:\/\/[^\s"'<>]+$/i.test(href)) return href;
+  if (/^mailto:[^\s"'<>]+$/i.test(href)) return href;
+  if (/^\/[A-Za-z0-9._~\-/#?=&%]*$/.test(href) && !href.startsWith("//")) return href;
+  return null;
 };
-var fr = {
-  nav_products: "Produits",
-  nav_order: "Votre commande",
-  demo_notice: "Boutique de d\xE9monstration : les produits, prix et certificats de ce site sont fictifs. Les commandes pass\xE9es ici sont des commandes de test.",
-  products_heading: "Produits",
-  products_empty: "Aucun produit n'est encore en ligne. Revenez bient\xF4t.",
-  how_heading: "Comment commander",
-  how_1: "Choisissez vos produits et envoyez-nous une demande de commande.",
-  how_2: "Nous vous \xE9crivons pour confirmer la disponibilit\xE9, la livraison et le prix final.",
-  how_3: "Vous ne payez qu'apr\xE8s notre confirmation. Rien n'est d\xE9bit\xE9 sur ce site.",
-  about_heading: "Qui sommes-nous",
-  sold_out: "En rupture de stock",
-  add_to_order: "Ajouter \xE0 la demande",
-  quantity: "Quantit\xE9",
-  details_heading: "D\xE9tails",
-  certificates_heading: "Certificats de s\xE9curit\xE9 disponibles",
-  valid_until: "valable jusqu'au {date}",
-  spec_sku: "R\xE9f\xE9rence",
-  spec_age_grade: "\xC2ge",
-  spec_materials: "Mat\xE9riaux",
-  spec_batteries: "Piles",
-  spec_dimensions: "Dimensions",
-  spec_weight: "Poids",
-  spec_warranty: "Garantie",
-  spec_returns: "Retours",
-  photo_coming: "Photo \xE0 venir",
-  order_title: "Demande de commande",
-  order_intro: "Envoyez-nous une demande de commande. Ce n'est pas un paiement : nous vous contacterons par e-mail pour confirmer la commande et organiser le paiement.",
-  order_items: "Articles",
-  order_remove: "Retirer",
-  order_empty: "Votre demande de commande est vide.",
-  order_browse: "Voir les produits",
-  order_total: "Total",
-  order_details: "Vos coordonn\xE9es",
-  field_name: "Nom complet",
-  field_email: "E-mail",
-  field_phone: "T\xE9l\xE9phone (facultatif)",
-  field_country: "Pays de livraison",
-  field_note: "Message (facultatif)",
-  choose_country: "Choisir un pays",
-  submit: "Envoyer la demande",
-  sending: "Envoi\u2026",
-  no_payment_note: "Aucun paiement n'est demand\xE9 maintenant. Nous vous contacterons pour confirmer et organiser le paiement.",
-  thanks_title: "Merci, nous avons bien re\xE7u votre demande",
-  thanks_body: "Votre demande de commande {orderId} a bien \xE9t\xE9 re\xE7ue. Nous \xE9crirons \xE0 {email} pour confirmer les d\xE9tails et organiser le paiement. Rien n'a \xE9t\xE9 d\xE9bit\xE9.",
-  thanks_continue: "Continuer mes achats",
-  error_unavailable: "Votre demande n'a pas pu \xEAtre envoy\xE9e pour le moment et rien n'a \xE9t\xE9 enregistr\xE9. Vos informations sont toujours l\xE0 : r\xE9essayez dans un instant.",
-  error_unavailable_contact: "Si le probl\xE8me persiste, \xE9crivez-nous \xE0 {email}.",
-  error_fix: "V\xE9rifiez les champs signal\xE9s.",
-  error_required: "Ce champ est obligatoire.",
-  error_invalid: "Cette valeur n'est pas valide.",
-  error_too_long: "C'est trop long.",
-  error_invalid_email: "Saisissez une adresse e-mail valide.",
-  error_invalid_phone: "Saisissez un num\xE9ro de t\xE9l\xE9phone valide, ou laissez le champ vide.",
-  error_invalid_country: "Choisissez un pays o\xF9 nous livrons.",
-  error_items_empty: "Ajoutez au moins un produit.",
-  error_too_many_items: "Trop de produits diff\xE9rents dans une seule demande.",
-  error_not_available: "Un produit de votre commande n'est plus disponible ; il a \xE9t\xE9 retir\xE9.",
-  error_sold_out: "{name} est en rupture de stock.",
-  error_too_many: "{name} : {max} au maximum.",
-  error_price_changed: "Les prix ont chang\xE9 depuis l'ouverture de la page. Le nouveau total est de {total}. V\xE9rifiez votre commande puis renvoyez-la.",
-  ordering_unavailable: "La commande n'est pas encore possible sur ce site.",
-  not_found_title: "Indisponible",
-  not_found_body: "Cette page ou ce produit n'est pas disponible.",
-  back_home: "Retour \xE0 la boutique",
-  unavailable_title: "La boutique est momentan\xE9ment indisponible",
-  unavailable_body: "R\xE9essayez dans quelques minutes.",
-  contact: "Contact",
-  footer_orders: "Demandes de commande uniquement. Aucun paiement n'est effectu\xE9 sur ce site."
-};
-var es = {
-  nav_products: "Productos",
-  nav_order: "Tu pedido",
-  demo_notice: "Tienda de demostraci\xF3n: los productos, precios y certificados de este sitio son ficticios. Los pedidos hechos aqu\xED son pedidos de prueba.",
-  products_heading: "Productos",
-  products_empty: "Todav\xEDa no hay productos publicados. Vuelve pronto.",
-  how_heading: "C\xF3mo hacer un pedido",
-  how_1: "Elige productos y env\xEDanos una solicitud de pedido.",
-  how_2: "Te escribimos para confirmar la disponibilidad, el env\xEDo y el precio final.",
-  how_3: "Solo pagas despu\xE9s de nuestra confirmaci\xF3n. En este sitio no se cobra nada.",
-  about_heading: "Qui\xE9nes somos",
-  sold_out: "Agotado",
-  add_to_order: "A\xF1adir a la solicitud",
-  quantity: "Cantidad",
-  details_heading: "Detalles",
-  certificates_heading: "Certificados de seguridad disponibles",
-  valid_until: "v\xE1lido hasta el {date}",
-  spec_sku: "Referencia",
-  spec_age_grade: "Edad",
-  spec_materials: "Materiales",
-  spec_batteries: "Pilas",
-  spec_dimensions: "Medidas",
-  spec_weight: "Peso",
-  spec_warranty: "Garant\xEDa",
-  spec_returns: "Devoluciones",
-  photo_coming: "Foto pr\xF3ximamente",
-  order_title: "Solicitud de pedido",
-  order_intro: "Env\xEDanos una solicitud de pedido. No es un pago: te contactaremos por correo para confirmar el pedido y acordar el pago.",
-  order_items: "Art\xEDculos",
-  order_remove: "Quitar",
-  order_empty: "Tu solicitud de pedido est\xE1 vac\xEDa.",
-  order_browse: "Ver productos",
-  order_total: "Total",
-  order_details: "Tus datos",
-  field_name: "Nombre completo",
-  field_email: "Correo electr\xF3nico",
-  field_phone: "Tel\xE9fono (opcional)",
-  field_country: "Pa\xEDs de env\xEDo",
-  field_note: "Mensaje (opcional)",
-  choose_country: "Elige un pa\xEDs",
-  submit: "Enviar solicitud",
-  sending: "Enviando\u2026",
-  no_payment_note: "Ahora no se cobra nada. Te contactaremos para confirmar y acordar el pago.",
-  thanks_title: "Gracias, hemos recibido tu solicitud",
-  thanks_body: "Hemos recibido tu solicitud de pedido {orderId}. Escribiremos a {email} para confirmar los detalles y acordar el pago. No se ha cobrado nada.",
-  thanks_continue: "Seguir mirando",
-  error_unavailable: "No hemos podido enviar tu solicitud ahora mismo y no se ha guardado nada. Tus datos siguen aqu\xED: int\xE9ntalo de nuevo en un momento.",
-  error_unavailable_contact: "Si sigue fallando, escr\xEDbenos a {email}.",
-  error_fix: "Revisa los campos marcados.",
-  error_required: "Rellena este campo.",
-  error_invalid: "Este valor no es v\xE1lido.",
-  error_too_long: "Es demasiado largo.",
-  error_invalid_email: "Introduce un correo electr\xF3nico v\xE1lido.",
-  error_invalid_phone: "Introduce un tel\xE9fono v\xE1lido o deja el campo vac\xEDo.",
-  error_invalid_country: "Elige un pa\xEDs al que enviemos.",
-  error_items_empty: "A\xF1ade al menos un producto.",
-  error_too_many_items: "Demasiados productos distintos en una solicitud.",
-  error_not_available: "Un producto de tu pedido ya no est\xE1 disponible y se ha quitado.",
-  error_sold_out: "{name} est\xE1 agotado.",
-  error_too_many: "Solo se pueden pedir {max} de {name}.",
-  error_price_changed: "Los precios han cambiado desde que abriste la p\xE1gina. El nuevo total es {total}. Revisa tu pedido y env\xEDalo de nuevo.",
-  ordering_unavailable: "Todav\xEDa no se pueden hacer pedidos en este sitio.",
-  not_found_title: "No disponible",
-  not_found_body: "Esta p\xE1gina o producto no est\xE1 disponible.",
-  back_home: "Volver a la tienda",
-  unavailable_title: "La tienda no est\xE1 disponible en este momento",
-  unavailable_body: "Int\xE9ntalo de nuevo en unos minutos.",
-  contact: "Contacto",
-  footer_orders: "Solo solicitudes de pedido. En este sitio no se cobra nada."
-};
-var MESSAGES = { en, de, fr, es };
-var translator = (language) => {
-  const table = MESSAGES[language] ?? en;
-  return (key, values = {}) => {
-    const template = table[key] ?? en[key] ?? key;
-    return template.replace(/\{(\w+)\}/g, (match, name) => name in values ? String(values[name]) : match);
+var inline = (escaped) => escaped.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (match, label2, href) => {
+  const url2 = safeHref(href.replace(/&amp;/g, "&"));
+  return url2 ? `<a href="${esc2(url2)}">${label2}</a>` : label2;
+}).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/(^|[\s(])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>").replace(/(^|[\s(])_([^_\s][^_]*)_/g, "$1<em>$2</em>");
+var renderMarkdown = (source) => {
+  const lines = String(source ?? "").replace(/\r\n?/g, "\n").split("\n");
+  const out = [];
+  let paragraph = [];
+  let list = null;
+  const flushParagraph = () => {
+    if (paragraph.length) out.push(`<p>${paragraph.map((line) => inline(esc2(line))).join("<br>")}</p>`);
+    paragraph = [];
   };
+  const flushList = () => {
+    if (list) out.push(`<${list.tag}>${list.items.map((item) => `<li>${inline(esc2(item))}</li>`).join("")}</${list.tag}>`);
+    list = null;
+  };
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    const heading = /^(#{1,3})\s+(.+)$/.exec(line.trim());
+    const bullet = /^\s*[-*]\s+(.+)$/.exec(line);
+    const numbered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
+    if (!line.trim()) {
+      flushParagraph();
+      flushList();
+    } else if (heading) {
+      flushParagraph();
+      flushList();
+      const level = Math.min(heading[1].length + 1, 4);
+      out.push(`<h${level}>${inline(esc2(heading[2]))}</h${level}>`);
+    } else if (bullet || numbered) {
+      flushParagraph();
+      const tag = bullet ? "ul" : "ol";
+      if (list && list.tag !== tag) flushList();
+      list ??= { tag, items: [] };
+      list.items.push((bullet ?? numbered)[1]);
+    } else {
+      flushList();
+      paragraph.push(line.trim());
+    }
+  }
+  flushParagraph();
+  flushList();
+  return out.join("\n");
 };
-var CLIENT_MESSAGE_KEYS = [
-  "order_remove",
-  "order_empty",
-  "order_total",
-  "quantity",
-  "sending",
-  "submit",
-  "thanks_title",
-  "thanks_body",
-  "thanks_continue",
-  "error_unavailable",
-  "error_unavailable_contact",
-  "error_fix",
-  "error_required",
-  "error_invalid",
-  "error_too_long",
-  "error_invalid_email",
-  "error_invalid_phone",
-  "error_invalid_country",
-  "error_items_empty",
-  "error_too_many_items",
-  "error_not_available",
-  "error_sold_out",
-  "error_too_many",
-  "error_price_changed",
-  "sold_out"
-];
+var markdownText = (source) => String(source ?? "").replace(/^#{1,3}\s+/gm, "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/[*_]/g, "").replace(/\s+/g, " ").trim();
+var pagePath = (page) => `/pages/${page.slug}`;
+var unfinishedPages = (pages) => pages.filter((page) => FILL_IN_MARKER.test(page.body)).map((page) => page.slug);
 
 // src/seo.js
 var xmlEscape = (value2) => String(value2).replace(/[<>&'"]/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[char]);
@@ -28442,21 +29812,22 @@ var absoluteImages = (origin, product) => product.images.map((image, index) => a
 var plainSummary = (value2, max = 160) => {
   const flat = String(value2 ?? "").replace(/\s+/g, " ").trim();
   if (flat.length <= max) return flat;
-  const cut = flat.slice(0, max - 1);
-  const space = cut.lastIndexOf(" ");
-  return `${(space > max * 0.6 ? cut.slice(0, space) : cut).replace(/[\s,.;:]+$/, "")}\u2026`;
+  const cut2 = flat.slice(0, max - 1);
+  const space = cut2.lastIndexOf(" ");
+  return `${(space > max * 0.6 ? cut2.slice(0, space) : cut2).replace(/[\s,.;:]+$/, "")}\u2026`;
 };
 var isoDay = (value2) => {
   const parsed = Date.parse(value2 ?? "");
   return Number.isFinite(parsed) ? new Date(parsed).toISOString().slice(0, 10) : "";
 };
-var buildSitemap = (origin, products) => {
+var buildSitemap = (origin, products, pages = []) => {
   const urls = [
     `  <url><loc>${xmlEscape(absoluteUrl(origin, "/"))}</loc></url>`,
     ...products.map((product) => {
       const lastmod = isoDay(product.updatedAt);
       return `  <url><loc>${xmlEscape(absoluteUrl(origin, productPath(product)))}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`;
-    })
+    }),
+    ...pages.map((page) => `  <url><loc>${xmlEscape(absoluteUrl(origin, `/pages/${page.slug}`))}</loc></url>`)
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -28469,10 +29840,15 @@ var buildRobots = (origin) => [
   "Allow: /",
   "Disallow: /api/",
   "Disallow: /order",
+  "Disallow: /pay/",
   `Sitemap: ${absoluteUrl(origin, "/sitemap.xml")}`,
   ""
 ].join("\n");
 var productDescription = (product) => plainSummary([product.subtitle, typeof product.content.description === "string" ? product.content.description : ""].filter(Boolean).join(". "));
+var productBrand = (product) => {
+  const brand = product.content?.attributes?.brand;
+  return typeof brand === "string" ? brand.trim() : "";
+};
 var productJsonLd = ({ origin, product, settings }) => {
   const url2 = absoluteUrl(origin, productPath(product));
   const data = {
@@ -28484,7 +29860,7 @@ var productJsonLd = ({ origin, product, settings }) => {
     ...product.sku ? { sku: product.sku } : {},
     ...product.category ? { category: product.category } : {},
     ...product.images.length ? { image: absoluteImages(origin, product) } : {},
-    brand: { "@type": "Brand", name: settings.storeName },
+    brand: { "@type": "Brand", name: productBrand(product) || settings.storeName },
     offers: {
       "@type": "Offer",
       url: url2,
@@ -28508,11 +29884,11 @@ var storeJsonLd = ({ origin, settings }) => ({
 var jsonLdScript = (data) => `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, "\\u003c")}</script>`;
 
 // src/pages.js
-var esc2 = (value2) => String(value2 ?? "").replace(
+var esc3 = (value2) => String(value2 ?? "").replace(
   /[&<>"']/g,
   (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]
 );
-var paragraphs = (value2) => String(value2 ?? "").split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean).map((block) => `<p>${esc2(block).replace(/\n/g, "<br>")}</p>`).join("\n");
+var paragraphs = (value2) => String(value2 ?? "").split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean).map((block) => `<p>${esc3(block).replace(/\n/g, "<br>")}</p>`).join("\n");
 var layout = ({
   settings,
   t,
@@ -28523,40 +29899,44 @@ var layout = ({
   ogImage = "",
   jsonLd = [],
   noindex = false,
-  body
+  body,
+  site = {}
 }) => {
   const lang = settings?.language ?? "en";
+  const footerPages = (site.pages ?? []).filter((page) => page.inFooter);
+  const paypal = site.payment === "paypal";
   const storeName = settings?.storeName ?? "";
   const meta3 = [
     `<meta charset="utf-8">`,
     `<meta name="viewport" content="width=device-width, initial-scale=1">`,
-    `<title>${esc2(title)}</title>`,
-    description ? `<meta name="description" content="${esc2(description)}">` : "",
-    canonical ? `<link rel="canonical" href="${esc2(canonical)}">` : "",
+    `<title>${esc3(title)}</title>`,
+    description ? `<meta name="description" content="${esc3(description)}">` : "",
+    canonical ? `<link rel="canonical" href="${esc3(canonical)}">` : "",
     noindex ? `<meta name="robots" content="noindex">` : "",
-    `<meta property="og:type" content="${esc2(ogType)}">`,
-    storeName ? `<meta property="og:site_name" content="${esc2(storeName)}">` : "",
-    `<meta property="og:title" content="${esc2(title)}">`,
-    description ? `<meta property="og:description" content="${esc2(description)}">` : "",
-    canonical ? `<meta property="og:url" content="${esc2(canonical)}">` : "",
-    ogImage ? `<meta property="og:image" content="${esc2(ogImage)}">` : "",
+    `<meta property="og:type" content="${esc3(ogType)}">`,
+    storeName ? `<meta property="og:site_name" content="${esc3(storeName)}">` : "",
+    `<meta property="og:title" content="${esc3(title)}">`,
+    description ? `<meta property="og:description" content="${esc3(description)}">` : "",
+    canonical ? `<meta property="og:url" content="${esc3(canonical)}">` : "",
+    ogImage ? `<meta property="og:image" content="${esc3(ogImage)}">` : "",
     `<meta name="twitter:card" content="${ogImage ? "summary_large_image" : "summary"}">`,
     `<link rel="icon" href="/favicon.svg" type="image/svg+xml">`,
     `<link rel="stylesheet" href="/static/shop.css">`,
     ...jsonLd.map(jsonLdScript)
   ].filter(Boolean);
   const header = settings ? `<header class="site-header"><div class="wrap header-row">
-  <a class="brand" href="/">${esc2(storeName)}</a>
-  <nav class="site-nav"><a href="/#products">${esc2(t("nav_products"))}</a><a class="order-link" href="/order">${esc2(t("nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
+  <a class="brand" href="/">${esc3(storeName)}</a>
+  <nav class="site-nav"><a href="/#products">${esc3(t("nav_products"))}</a><a class="order-link" href="/order">${esc3(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
 </div></header>` : "";
-  const notice = settings?.demoNotice ? `<div class="demo-notice" role="note">${esc2(t("demo_notice"))}</div>` : "";
+  const notice = settings?.demoNotice ? `<div class="demo-notice" role="note">${esc3(t("demo_notice"))}</div>` : "";
   const footer = settings ? `<footer class="site-footer"><div class="wrap footer-row">
-  <p><strong>${esc2(storeName)}</strong>${settings.tagline ? ` \xB7 ${esc2(settings.tagline)}` : ""}</p>
-  ${settings.contactEmail ? `<p>${esc2(t("contact"))}: <a href="mailto:${esc2(settings.contactEmail)}">${esc2(settings.contactEmail)}</a></p>` : ""}
-  <p class="muted">${esc2(t("footer_orders"))}</p>
+  <p><strong>${esc3(storeName)}</strong>${settings.tagline ? ` \xB7 ${esc3(settings.tagline)}` : ""}</p>
+  ${settings.contactEmail ? `<p>${esc3(t("contact"))}: <a href="mailto:${esc3(settings.contactEmail)}">${esc3(settings.contactEmail)}</a></p>` : ""}
+  ${footerPages.length ? `<nav class="footer-links" aria-label="${esc3(t("footer_policies"))}">${footerPages.map((page) => `<a href="${esc3(pagePath(page))}">${esc3(page.title)}</a>`).join("")}</nav>` : ""}
+  <p class="muted">${esc3(t(paypal ? "footer_paypal" : "footer_orders"))}</p>
 </div></footer>` : "";
   return `<!doctype html>
-<html lang="${esc2(lang)}">
+<html lang="${esc3(lang)}">
 <head>
 ${meta3.join("\n")}
 </head>
@@ -28575,39 +29955,40 @@ ${footer}
 var productImage = (product, t, { index = 0, className = "", eager = false } = {}) => {
   const image = product.images[index];
   if (!image) {
-    return `<div class="placeholder ${className}"><img src="/static/placeholder.svg" alt="" width="96" height="96"><span>${esc2(t("photo_coming"))}</span></div>`;
+    return `<div class="placeholder ${className}"><img src="/static/placeholder.svg" alt="" width="96" height="96"><span>${esc3(t("photo_coming"))}</span></div>`;
   }
-  return `<img class="${className}" src="${esc2(imageSrc(product, image, index))}" alt="${esc2(product.name)}" width="800" height="800"${eager ? "" : ` loading="lazy"`} decoding="async" referrerpolicy="no-referrer">`;
+  return `<img class="${className}" src="${esc3(imageSrc(product, image, index))}" alt="${esc3(product.name)}" width="800" height="800"${eager ? "" : ` loading="lazy"`} decoding="async" referrerpolicy="no-referrer">`;
 };
 var card = (product, t) => `<li class="card">
-  <a class="card-link" href="${esc2(productPath(product))}">
+  <a class="card-link" href="${esc3(productPath(product))}">
     <div class="card-media">${productImage(product, t)}</div>
     <div class="card-body">
-      <h3>${esc2(product.name)}</h3>
-      ${product.subtitle ? `<p class="subtitle">${esc2(product.subtitle)}</p>` : ""}
-      <p class="price">${esc2(product.priceText)}${product.soldOut ? ` <span class="badge">${esc2(t("sold_out"))}</span>` : ""}</p>
+      <h3>${esc3(product.name)}</h3>
+      ${product.subtitle ? `<p class="subtitle">${esc3(product.subtitle)}</p>` : ""}
+      <p class="price">${esc3(product.priceText)}${product.soldOut ? ` <span class="badge">${esc3(t("sold_out"))}</span>` : ""}</p>
     </div>
   </a>
 </li>`;
-var homePage = ({ origin, settings, catalog }) => {
+var homePage = ({ origin, settings, catalog, site = {} }) => {
+  const paypal = site.payment === "paypal";
   const t = translator(settings.language);
   const title = settings.tagline ? `${settings.storeName} \xB7 ${settings.tagline}` : settings.storeName;
   const description = plainSummary(settings.about || settings.tagline || settings.storeName);
   const firstImage = catalog.listed.find((product) => product.images.length);
-  const grid = catalog.listed.length ? `<ul class="grid">${catalog.listed.map((product) => card(product, t)).join("\n")}</ul>` : `<p class="empty">${esc2(t("products_empty"))}</p>`;
+  const grid = catalog.listed.length ? `<ul class="grid">${catalog.listed.map((product) => card(product, t)).join("\n")}</ul>` : `<p class="empty">${esc3(t("products_empty"))}</p>`;
   const body = `<section class="hero">
-  <h1>${esc2(settings.storeName)}</h1>
-  ${settings.tagline ? `<p class="tagline">${esc2(settings.tagline)}</p>` : ""}
+  <h1>${esc3(settings.storeName)}</h1>
+  ${settings.tagline ? `<p class="tagline">${esc3(settings.tagline)}</p>` : ""}
 </section>
 <section id="products" aria-labelledby="products-heading">
-  <h2 id="products-heading">${esc2(t("products_heading"))}</h2>
+  <h2 id="products-heading">${esc3(t("products_heading"))}</h2>
   ${grid}
 </section>
 <section class="how" aria-labelledby="how-heading">
-  <h2 id="how-heading">${esc2(t("how_heading"))}</h2>
-  <ol><li>${esc2(t("how_1"))}</li><li>${esc2(t("how_2"))}</li><li>${esc2(t("how_3"))}</li></ol>
+  <h2 id="how-heading">${esc3(t("how_heading"))}</h2>
+  <ol>${(paypal ? ["how_paypal_1", "how_paypal_2", "how_paypal_3"] : ["how_1", "how_2", "how_3"]).map((key) => `<li>${esc3(t(key))}</li>`).join("")}</ol>
 </section>
-${settings.about ? `<section class="about" aria-labelledby="about-heading"><h2 id="about-heading">${esc2(t("about_heading"))}</h2>${paragraphs(settings.about)}</section>` : ""}`;
+${settings.about ? `<section class="about" aria-labelledby="about-heading"><h2 id="about-heading">${esc3(t("about_heading"))}</h2>${paragraphs(settings.about)}</section>` : ""}`;
   return layout({
     settings,
     t,
@@ -28616,49 +29997,43 @@ ${settings.about ? `<section class="about" aria-labelledby="about-heading"><h2 i
     canonical: absoluteUrl(origin, "/"),
     ogImage: firstImage ? absoluteImages(origin, firstImage)[0] : "",
     jsonLd: [storeJsonLd({ origin, settings })],
-    body
+    body,
+    site
   });
 };
-var SPEC_KEYS = ["age_grade", "materials", "batteries", "dimensions", "weight", "warranty", "returns"];
-var specValue = (value2) => {
-  if (Array.isArray(value2)) return value2.filter((item) => typeof item === "string" || typeof item === "number").join(", ");
-  if (typeof value2 === "string" || typeof value2 === "number") return String(value2).trim();
-  return "";
-};
-var productPage = ({ origin, settings, product }) => {
+var productPage = ({ origin, settings, product, site = {} }) => {
   const t = translator(settings.language);
   const content = product.content;
-  const attributes = content.attributes && typeof content.attributes === "object" ? content.attributes : {};
   const specs = [
-    product.sku ? [t("spec_sku"), product.sku] : null,
-    ...SPEC_KEYS.map((key) => [t(`spec_${key}`), specValue(attributes[key])])
-  ].filter((row) => row?.[1]);
+    ...product.sku ? [[t("spec_sku"), product.sku]] : [],
+    ...productDetails(content.attributes, { extraKeys: [...product.specKeys ?? [], ...settings.showDetails], language: settings.language })
+  ];
   const bullets = Array.isArray(content.bullets) ? content.bullets.filter((item) => typeof item === "string" && item.trim()).slice(0, 8) : [];
   const thumbs = product.images.length > 1 ? `<ul class="thumbs">${product.images.map(
-    (image, index) => `<li><a href="${esc2(imageSrc(product, image, index))}" data-gallery-thumb><img src="${esc2(imageSrc(product, image, index))}" alt="" width="120" height="120" loading="lazy" referrerpolicy="no-referrer"></a></li>`
+    (image, index) => `<li><a href="${esc3(imageSrc(product, image, index))}" data-gallery-thumb><img src="${esc3(imageSrc(product, image, index))}" alt="" width="120" height="120" loading="lazy" referrerpolicy="no-referrer"></a></li>`
   ).join("")}</ul>` : "";
-  const buy = product.soldOut ? `<p class="badge badge-large">${esc2(t("sold_out"))}</p>` : `<form class="add-form" action="/order" method="get" data-add-form>
-  <input type="hidden" name="add" value="${esc2(product.id)}">
-  <label class="qty">${esc2(t("quantity"))} <input type="number" name="qty" min="1" max="${product.maxQuantity}" value="1" inputmode="numeric"></label>
-  <button class="button" type="submit">${esc2(t("add_to_order"))}</button>
+  const buy = product.soldOut ? `<p class="badge badge-large">${esc3(t("sold_out"))}</p>` : `<form class="add-form" action="/order" method="get" data-add-form>
+  <input type="hidden" name="add" value="${esc3(product.id)}">
+  <label class="qty">${esc3(t("quantity"))} <input type="number" name="qty" min="1" max="${product.maxQuantity}" value="1" inputmode="numeric"></label>
+  <button class="button" type="submit">${esc3(t("add_to_order"))}</button>
 </form>`;
-  const certificates = product.certificates.length ? `<h2>${esc2(t("certificates_heading"))}</h2>
-<ul class="certs">${product.certificates.map((cert) => `<li><strong>${esc2(cert.label)}</strong> <span class="muted">${esc2(t("valid_until", { date: cert.expires }))}</span></li>`).join("")}</ul>` : "";
-  const body = `<nav class="crumbs" aria-label="Breadcrumb"><a href="/#products">${esc2(t("nav_products"))}</a> <span aria-hidden="true">/</span> <span>${esc2(product.name)}</span></nav>
+  const certificates = product.certificates.length ? `<h2>${esc3(t("certificates_heading"))}</h2>
+<ul class="certs">${product.certificates.map((cert) => `<li><strong>${esc3(cert.label)}</strong> <span class="muted">${esc3(t("valid_until", { date: cert.expires }))}</span></li>`).join("")}</ul>` : "";
+  const body = `<nav class="crumbs" aria-label="Breadcrumb"><a href="/#products">${esc3(t("nav_products"))}</a> <span aria-hidden="true">/</span> <span>${esc3(product.name)}</span></nav>
 <article class="product">
   <div class="gallery">
     <div class="gallery-main" data-gallery-main>${productImage(product, t, { eager: true })}</div>
     ${thumbs}
   </div>
   <div class="product-info">
-    <h1>${esc2(product.name)}</h1>
-    ${product.subtitle ? `<p class="subtitle">${esc2(product.subtitle)}</p>` : ""}
-    <p class="price price-large">${esc2(product.priceText)}</p>
+    <h1>${esc3(product.name)}</h1>
+    ${product.subtitle ? `<p class="subtitle">${esc3(product.subtitle)}</p>` : ""}
+    <p class="price price-large">${esc3(product.priceText)}</p>
     ${buy}
-    <p class="note">${esc2(t("no_payment_note"))}</p>
+    <p class="note">${esc3(t(site.payment === "paypal" ? "paypal_note" : "no_payment_note"))}</p>
     ${typeof content.description === "string" ? `<div class="description">${paragraphs(content.description)}</div>` : ""}
-    ${bullets.length ? `<ul class="bullets">${bullets.map((item) => `<li>${esc2(item)}</li>`).join("")}</ul>` : ""}
-    ${specs.length ? `<h2>${esc2(t("details_heading"))}</h2><dl class="specs">${specs.map(([label2, value2]) => `<div><dt>${esc2(label2)}</dt><dd>${esc2(value2)}</dd></div>`).join("")}</dl>` : ""}
+    ${bullets.length ? `<ul class="bullets">${bullets.map((item) => `<li>${esc3(item)}</li>`).join("")}</ul>` : ""}
+    ${specs.length ? `<h2>${esc3(t("details_heading"))}</h2><dl class="specs">${specs.map(([label2, value2]) => `<div><dt>${esc3(label2)}</dt><dd>${esc3(value2)}</dd></div>`).join("")}</dl>` : ""}
     ${certificates}
   </div>
 </article>`;
@@ -28671,7 +30046,8 @@ var productPage = ({ origin, settings, product }) => {
     ogType: "product",
     ogImage: product.images.length ? absoluteImages(origin, product)[0] : "",
     jsonLd: [productJsonLd({ origin, product, settings })],
-    body
+    body,
+    site
   });
 };
 var errorText = (t, code, extra = {}) => code ? t(`error_${code}`, extra) : "";
@@ -28684,59 +30060,91 @@ var orderPage = ({
   errors = {},
   status = "",
   orderId,
-  ordersReady = true
+  ordersReady = true,
+  checkout = { payment: "request", countries: settings.shipsTo, shipping: { status: "missing", rates: /* @__PURE__ */ new Map() } },
+  site = {},
+  browserPreview = false
 }) => {
   const t = translator(settings.language);
-  const total = lines.reduce((sum, line) => sum + Math.round(line.product.price * 100) * line.quantity, 0) / 100;
-  const totalText = formatPrice(total, settings.currency, settings.language);
+  const paypal = checkout.payment === "paypal";
+  const ownerNote = browserPreview ? `<div class="owner-box" role="note"><h2>For the shop owner \xB7 \u5E97\u4E3B\u53EF\u89C1</h2>
+  <p>Online payment with PayPal and the order emails need the Website engine (Busabase Plus and higher): it keeps the PayPal secret and the mail password on the server and can open a mail connection. This private preview in your own browser has neither, so checkout takes order requests here. Nobody else sees this note.</p>
+  <p>PayPal \u5728\u7EBF\u4ED8\u6B3E\u548C\u8BA2\u5355\u90AE\u4EF6\u9700\u8981\u7F51\u7AD9\u5F15\u64CE\uFF08Busabase Plus \u53CA\u4EE5\u4E0A\uFF09\uFF1A\u5B83\u5728\u670D\u52A1\u5668\u4E0A\u4FDD\u7BA1 PayPal \u5BC6\u94A5\u548C\u90AE\u7BB1\u6388\u6743\u7801\uFF0C\u5E76\u80FD\u8FDE\u63A5\u90AE\u4EF6\u670D\u52A1\u5668\u3002\u4F60\u6D4F\u89C8\u5668\u91CC\u7684\u8FD9\u4E2A\u79C1\u6709\u9884\u89C8\u4E24\u8005\u90FD\u6CA1\u6709\uFF0C\u6240\u4EE5\u8FD9\u91CC\u7684\u7ED3\u8D26\u53EA\u6536\u8BA2\u5355\u8BF7\u6C42\u3002\u8FD9\u6BB5\u8BF4\u660E\u53EA\u6709\u4F60\u80FD\u770B\u5230\u3002</p>
+</div>` : "";
+  const subtotal = lines.reduce((sum, line) => sum + Math.round(line.product.price * 100) * line.quantity, 0) / 100;
+  const money3 = (amount) => formatPrice(amount, settings.currency, settings.language);
+  const country = checkout.countries.includes(values.country) ? values.country : "";
+  const rate = country ? shippingFor(checkout.shipping, country, subtotal) : null;
+  const shippingKnown = rate?.ok && rate.cost !== null;
+  const total = subtotal + (shippingKnown ? rate.cost : 0);
+  const shippingText = !country ? checkout.shipping.status === "missing" ? t("order_shipping_tbc") : t("order_shipping_pick") : rate?.ok ? rate.cost === null ? t("order_shipping_tbc") : rate.cost === 0 ? t("order_shipping_free") : money3(rate.cost) : t(`error_${rate?.code ?? "no_shipping"}`);
   const rows = lines.length ? lines.map(
-    ({ product, quantity }) => `<div class="order-row" data-product-id="${esc2(product.id)}">
-  <span class="order-name">${esc2(product.name)}</span>
-  <span class="order-unit">${esc2(product.priceText)}</span>
-  <label class="qty"><span class="visually-hidden">${esc2(t("quantity"))}</span><input type="number" name="qty.${esc2(product.id)}" value="${quantity}" min="0" max="${product.maxQuantity}" inputmode="numeric"></label>
+    ({ product, quantity }) => `<div class="order-row" data-product-id="${esc3(product.id)}">
+  <span class="order-name">${esc3(product.name)}</span>
+  <span class="order-unit">${esc3(product.priceText)}</span>
+  <label class="qty"><span class="visually-hidden">${esc3(t("quantity"))}</span><input type="number" name="qty.${esc3(product.id)}" value="${quantity}" min="0" max="${product.maxQuantity}" inputmode="numeric"></label>
 </div>`
-  ).join("\n") : `<p class="empty">${esc2(t("order_empty"))} <a href="/#products">${esc2(t("order_browse"))}</a></p>`;
-  const fieldError = (name) => `<p class="field-error" data-error-for="${name}"${errors[name] ? "" : " hidden"}>${esc2(errorText(t, errors[name], values.errorValues ?? {}))}</p>`;
+  ).join("\n") : `<p class="empty">${esc3(t("order_empty"))} <a href="/#products">${esc3(t("order_browse"))}</a></p>`;
+  const fieldError = (name) => `<p class="field-error" data-error-for="${name}"${errors[name] ? "" : " hidden"}>${esc3(errorText(t, errors[name], values.errorValues ?? {}))}</p>`;
   const invalid = (name) => errors[name] ? ` aria-invalid="true"` : "";
-  const countries = settings.shipsTo.map((code) => ({ code, name: countryName(code, settings.language) })).sort((a, b) => a.name.localeCompare(b.name, settings.language));
-  const form = ordersReady ? `<form class="order-form" method="post" action="/api/orders" data-order-form novalidate>
-  <input type="hidden" name="orderId" value="${esc2(orderId)}">
-  <input type="hidden" name="expectedTotal" value="${total.toFixed(2)}">
+  const rules = addressRules(country);
+  const countries = checkout.countries.map((code) => ({ code, name: countryName(code, settings.language) })).sort((a, b) => a.name.localeCompare(b.name, settings.language));
+  const input2 = (name, labelKey, { autocomplete, required: required2 = false, maxlength = 300, type = "text", optionalKey = "" } = {}) => `<label><span data-label-for="${name}">${esc3(t(required2 || !optionalKey ? labelKey : optionalKey))}</span><input name="${name}" type="${type}" autocomplete="${autocomplete}" maxlength="${maxlength}"${required2 ? " required" : ""} value="${esc3(values[name])}"${invalid(name)}></label>
+    ${fieldError(name)}`;
+  const noCountries = checkout.countries.length === 0;
+  const form = ordersReady && !noCountries ? `<form class="order-form" method="post" action="/api/orders" data-order-form novalidate>
+  <input type="hidden" name="orderId" value="${esc3(orderId)}">
+  <input type="hidden" name="expectedTotal" value="${country && rate?.ok ? total.toFixed(2) : ""}">
   <section class="order-items" aria-labelledby="items-heading">
-    <h2 id="items-heading">${esc2(t("order_items"))}</h2>
+    <h2 id="items-heading">${esc3(t("order_items"))}</h2>
     <div data-order-items>${rows}</div>
     ${fieldError("items")}
-    <p class="order-total"><span>${esc2(t("order_total"))}</span> <strong data-order-total>${esc2(totalText)}</strong></p>
+    <dl class="order-sums">
+      <div><dt>${esc3(t("order_subtotal"))}</dt><dd data-order-subtotal>${esc3(money3(subtotal))}</dd></div>
+      <div><dt>${esc3(t("order_shipping"))}</dt><dd data-order-shipping>${esc3(shippingText)}</dd></div>
+      <div class="order-total"><dt>${esc3(t("order_total"))}</dt><dd><strong data-order-total>${esc3(money3(total))}</strong></dd></div>
+    </dl>
+    <p class="note" data-order-delivery${rate?.ok && rate.estimate ? "" : " hidden"}>${rate?.ok && rate.estimate ? esc3(t("order_delivery", { estimate: rate.estimate })) : ""}</p>
+    <p class="note" data-order-free-over hidden></p>
   </section>
   <section class="order-details" aria-labelledby="details-heading">
-    <h2 id="details-heading">${esc2(t("order_details"))}</h2>
-    <label>${esc2(t("field_name"))}<input name="name" autocomplete="name" maxlength="100" required value="${esc2(values.name)}"${invalid("name")}></label>
-    ${fieldError("name")}
-    <label>${esc2(t("field_email"))}<input name="email" type="email" autocomplete="email" maxlength="200" required value="${esc2(values.email)}"${invalid("email")}></label>
-    ${fieldError("email")}
-    <label>${esc2(t("field_phone"))}<input name="phone" type="tel" autocomplete="tel" maxlength="40" value="${esc2(values.phone)}"${invalid("phone")}></label>
-    ${fieldError("phone")}
-    <label>${esc2(t("field_country"))}<select name="country" autocomplete="country" required${invalid("country")}>
-      <option value="">${esc2(t("choose_country"))}</option>
-      ${countries.map(({ code, name }) => `<option value="${code}"${values.country === code ? " selected" : ""}>${esc2(name)}</option>`).join("")}
+    <h2 id="details-heading">${esc3(t("order_details"))}</h2>
+    ${input2("name", "field_name", { autocomplete: "name", required: true, maxlength: 100 })}
+    ${input2("email", "field_email", { autocomplete: "email", required: true, maxlength: 200, type: "email" })}
+    ${input2("phone", "field_phone", { autocomplete: "tel", required: true, maxlength: 40, type: "tel" })}
+    <h3>${esc3(t("order_address"))}</h3>
+    <label>${esc3(t("field_country"))}<select name="country" autocomplete="country" required${invalid("country")}>
+      <option value="">${esc3(t("choose_country"))}</option>
+      ${countries.map(({ code, name }) => `<option value="${code}"${country === code ? " selected" : ""}>${esc3(name)}</option>`).join("")}
     </select></label>
     ${fieldError("country")}
-    <label>${esc2(t("field_note"))}<textarea name="note" rows="4" maxlength="1000"${invalid("note")}>${esc2(values.note)}</textarea></label>
+    ${input2("address1", "field_address1", { autocomplete: "address-line1", required: true })}
+    ${input2("address2", "field_address2", { autocomplete: "address-line2" })}
+    ${input2("city", "field_city", { autocomplete: "address-level2", required: true, maxlength: 120 })}
+    ${input2("region", "field_region", { autocomplete: "address-level1", required: rules.region, maxlength: 120, optionalKey: "field_region_optional" })}
+    ${input2("postalCode", "field_postal", { autocomplete: "postal-code", required: rules.postalCode, maxlength: 20, optionalKey: "field_postal_optional" })}
+    <label>${esc3(t("field_note"))}<textarea name="note" rows="3" maxlength="1000"${invalid("note")}>${esc3(values.note)}</textarea></label>
     ${fieldError("note")}
     <div class="hp" aria-hidden="true"><label>Company website<input name="company_url" tabindex="-1" autocomplete="off"></label></div>
   </section>
   <div class="order-actions">
-    <div class="form-status${status ? " is-error" : ""}" role="alert" data-form-status${status ? "" : " hidden"}>${esc2(status)}</div>
-    <button class="button" type="submit" data-submit>${esc2(t("submit"))}</button>
-    <p class="note">${esc2(t("no_payment_note"))}</p>
+    <div class="form-status${status ? " is-error" : ""}" role="alert" data-form-status${status ? "" : " hidden"}>${esc3(status)}</div>
+    <button class="button" type="submit" data-submit>${esc3(t(paypal ? "submit_paypal" : "submit"))}</button>
+    <p class="note">${esc3(t(paypal ? "paypal_note" : "no_payment_note"))}</p>
     ${settings.shippingNote ? `<div class="shipping-note note">${paragraphs(settings.shippingNote)}</div>` : ""}
   </div>
 </form>
-<section class="thanks" data-thanks hidden aria-live="polite"></section>` : `<p class="form-status is-error">${esc2(t("ordering_unavailable"))}${settings.contactEmail ? ` <a href="mailto:${esc2(settings.contactEmail)}">${esc2(settings.contactEmail)}</a>` : ""}</p>`;
+<section class="thanks" data-thanks hidden aria-live="polite"></section>
+<a href="/pay/" data-pay-base hidden></a>` : `<p class="form-status is-error">${esc3(t(noCountries && ordersReady ? "error_shipping_unavailable" : "ordering_unavailable"))}${settings.contactEmail ? ` <a href="mailto:${esc3(settings.contactEmail)}">${esc3(settings.contactEmail)}</a>` : ""}</p>`;
   const clientData = {
     language: settings.language,
     currency: settings.currency,
     contactEmail: settings.contactEmail,
+    payment: checkout.payment,
+    shipping: checkout.shipping.status,
+    rates: clientRates(checkout.shipping, checkout.countries),
+    regionRequired: checkout.countries.filter((code) => addressRules(code).region),
+    postalOptional: checkout.countries.filter((code) => !addressRules(code).postalCode),
     products: catalog.listed.map((product) => ({
       id: product.id,
       name: product.name,
@@ -28747,21 +30155,90 @@ var orderPage = ({
     })),
     messages: Object.fromEntries(CLIENT_MESSAGE_KEYS.map((key) => [key, t(key)]))
   };
-  const body = `<h1>${esc2(t("order_title"))}</h1>
-<p class="lead">${esc2(t("order_intro"))}</p>
+  const body = `<h1>${esc3(t(paypal ? "checkout_title" : "order_title"))}</h1>
+<p class="lead">${esc3(t(paypal ? "checkout_intro" : "order_intro"))}</p>
+${ownerNote}
 ${form}
 <script type="application/json" id="shop-data">${JSON.stringify(clientData).replace(/</g, "\\u003c")}</script>`;
   return layout({
     settings,
     t,
-    title: `${t("order_title")} \xB7 ${settings.storeName}`,
-    description: plainSummary(t("order_intro")),
+    title: `${t(paypal ? "checkout_title" : "order_title")} \xB7 ${settings.storeName}`,
+    description: plainSummary(t(paypal ? "checkout_intro" : "order_intro")),
     canonical: absoluteUrl(origin, "/order"),
     noindex: true,
-    body
+    body,
+    site
   });
 };
-var thanksPage = ({ origin, settings, orderId, email: email3 }) => {
+var PAY_STATUS_TEXT = {
+  new: "pay_status_request",
+  confirmed: "pay_status_request",
+  paid: "pay_status_paid",
+  shipped: "pay_status_shipped",
+  completed: "pay_status_shipped",
+  cancelled: "pay_status_cancelled",
+  refunded: "pay_status_refunded",
+  "payment-problem": "pay_status_problem"
+};
+var payPage = ({ origin, settings, order, paypal = null, site = {} }) => {
+  const t = translator(settings.language);
+  const money3 = (amount) => formatPrice(amount, order.currency || settings.currency, settings.language);
+  const items = order.lines.map((line) => `<li><span>${esc3(line.quantity)} \xD7 ${esc3(line.name)}</span> <span>${esc3(money3(line.lineTotal))}</span></li>`).join("");
+  const shipping = order.shipping === null ? t("order_shipping_tbc") : order.shipping === 0 ? t("order_shipping_free") : money3(order.shipping);
+  const awaiting = order.status === "awaiting-payment";
+  const state = awaiting ? paypal ? `<div class="pay-box" data-pay-box><p class="note" data-pay-status>${esc3(t("pay_loading"))}</p><div class="paypal-buttons" data-paypal-buttons></div></div>
+<noscript><p class="form-status is-error">${esc3(t("pay_noscript"))}</p></noscript>
+<p class="note">${esc3(t("pay_keep_link"))}</p>` : `<p class="form-status">${esc3(t("pay_offline", { orderId: order.orderId }))}</p>` : `<p class="form-status${order.status === "payment-problem" ? " is-error" : ""}" data-pay-final>${esc3(t(PAY_STATUS_TEXT[order.status] ?? "pay_status_request"))}</p>`;
+  const clientData = awaiting && paypal ? {
+    orderId: order.orderId,
+    clientId: paypal.clientId,
+    sdkUrl: paypal.sdkUrl,
+    currency: order.currency || settings.currency,
+    locale: { en: "en-US", de: "de-DE", fr: "fr-FR", es: "es-ES" }[settings.language] ?? "en-US",
+    contactEmail: settings.contactEmail,
+    messages: Object.fromEntries(PAY_MESSAGE_KEYS.map((key) => [key, t(key, { orderId: order.orderId })]))
+  } : null;
+  const body = `<h1>${esc3(t(awaiting ? "pay_title" : "pay_order", { orderId: order.orderId }))}</h1>
+${awaiting ? `<p class="lead">${esc3(t("pay_intro", { orderId: order.orderId }))}</p>` : ""}
+<section class="pay-summary" aria-label="${esc3(t("pay_order", { orderId: order.orderId }))}">
+  <ul class="pay-items">${items}</ul>
+  <dl class="order-sums">
+    <div><dt>${esc3(t("order_subtotal"))}</dt><dd>${esc3(money3(order.subtotal ?? order.total))}</dd></div>
+    <div><dt>${esc3(t("order_shipping"))}</dt><dd>${esc3(shipping)}</dd></div>
+    <div class="order-total"><dt>${esc3(t(awaiting ? "pay_total" : "order_total"))}</dt><dd><strong>${esc3(money3(order.total))}</strong></dd></div>
+  </dl>
+  ${order.deliveryEstimate ? `<p class="note">${esc3(t("order_delivery", { estimate: order.deliveryEstimate }))}</p>` : ""}
+</section>
+${state}
+<section class="thanks" data-thanks hidden aria-live="polite"></section>
+${clientData ? `<script type="application/json" id="pay-data">${JSON.stringify(clientData).replace(/</g, "\\u003c")}</script>` : ""}`;
+  return layout({
+    settings,
+    t,
+    title: `${t("pay_order", { orderId: order.orderId })} \xB7 ${settings.storeName}`,
+    canonical: absoluteUrl(origin, "/order"),
+    noindex: true,
+    body,
+    site
+  });
+};
+var policyPage = ({ origin, settings, page, site = {} }) => {
+  const t = translator(settings.language);
+  const body = fillPlaceholders(page.body, settings);
+  return layout({
+    settings,
+    t,
+    title: `${page.title} \xB7 ${settings.storeName}`,
+    description: plainSummary(markdownText(body) || page.title),
+    canonical: absoluteUrl(origin, pagePath(page)),
+    body: `<article class="policy"><h1>${esc3(page.title)}</h1>
+${renderMarkdown(body)}
+</article>`,
+    site
+  });
+};
+var thanksPage = ({ origin, settings, orderId, email: email3, site = {} }) => {
   const t = translator(settings.language);
   return layout({
     settings,
@@ -28770,20 +30247,22 @@ var thanksPage = ({ origin, settings, orderId, email: email3 }) => {
     canonical: absoluteUrl(origin, "/order"),
     noindex: true,
     body: `<section class="thanks">
-  <h1>${esc2(t("thanks_title"))}</h1>
-  <p>${esc2(t("thanks_body", { orderId, email: email3 }))}</p>
-  <p><a class="button" href="/">${esc2(t("thanks_continue"))}</a></p>
-</section>`
+  <h1>${esc3(t("thanks_title"))}</h1>
+  <p>${esc3(t("thanks_body", { orderId, email: email3 }))}</p>
+  <p><a class="button" href="/">${esc3(t("thanks_continue"))}</a></p>
+</section>`,
+    site
   });
 };
-var notFoundPage = ({ settings }) => {
+var notFoundPage = ({ settings, site = {} }) => {
   const t = translator(settings?.language ?? "en");
   return layout({
     settings,
     t,
     title: settings ? `${t("not_found_title")} \xB7 ${settings.storeName}` : t("not_found_title"),
     noindex: true,
-    body: `<section class="message"><h1>${esc2(t("not_found_title"))}</h1><p>${esc2(t("not_found_body"))}</p><p><a class="button" href="/">${esc2(t("back_home"))}</a></p></section>`
+    body: `<section class="message"><h1>${esc3(t("not_found_title"))}</h1><p>${esc3(t("not_found_body"))}</p><p><a class="button" href="/">${esc3(t("back_home"))}</a></p></section>`,
+    site
   });
 };
 var unavailablePage = ({ settings } = {}) => {
@@ -28793,22 +30272,22 @@ var unavailablePage = ({ settings } = {}) => {
     t,
     title: t("unavailable_title"),
     noindex: true,
-    body: `<section class="message"><h1>${esc2(t("unavailable_title"))}</h1><p>${esc2(t("unavailable_body"))}</p></section>`
+    body: `<section class="message"><h1>${esc3(t("unavailable_title"))}</h1><p>${esc3(t("unavailable_body"))}</p></section>`
   });
 };
 var SETUP_MESSAGES = {
   "products-missing": {
     title: "This shop has no product list yet",
     steps: [
-      "This shop shows the products from the Products table of the Busa Product Hub template. It does not keep a copy of its own.",
-      "Install the Busa Product Hub template in this workspace, add or import your products there, then refresh this page.",
-      "Already installed under another folder name? Write the Products table's id or slug into this shop's Settings, field \u201CProducts table\u201D."
+      "This shop sells from the Products table in its own folder, next to Orders and Settings. That table is missing or cannot be read.",
+      "Install the Busa Shop template again, or restore Products from the trash, then add or import your products there and refresh this page.",
+      "Selling from another table, such as a Busa Product Hub Products table? Write its id or slug into this shop's Settings, field \u201CProducts table\u201D."
     ]
   },
   "products-ambiguous": {
     title: "This shop found more than one product list",
     steps: [
-      "This workspace has more than one Busa Product Hub Products table, so the shop will not guess which one to sell from.",
+      "This workspace has more than one Products table this shop could sell from, so it will not guess which one.",
       "Write the id or slug of the one to use into this shop's Settings, field \u201CProducts table\u201D, then refresh this page."
     ]
   },
@@ -28816,13 +30295,13 @@ var SETUP_MESSAGES = {
     title: "The product list named in Settings was not found",
     steps: [
       "This shop's Settings name a Products table that this site cannot find or cannot read.",
-      "Check the id or slug in Settings, field \u201CProducts table\u201D, or clear it to use the Busa Product Hub Products table automatically."
+      "Check the id or slug in Settings, field \u201CProducts table\u201D, or clear it to sell from this shop's own Products table."
     ]
   },
   "settings-missing": {
     title: "This shop's Settings table was not found",
     steps: [
-      "The Busa Shop template creates Orders, Settings and Reports tables next to this website. The Settings table is missing or cannot be read.",
+      "The Busa Shop template creates Products, Certificates, Orders, Settings and Reports tables next to this website. The Settings table is missing or cannot be read.",
       "Install the Busa Shop template again, or restore the Settings table from the trash, then refresh this page."
     ]
   },
@@ -28854,81 +30333,308 @@ var setupPage = ({ code }) => {
   <h1>This shop is not open yet</h1>
   <p>Please come back soon.</p>
   <div class="owner-box">
-    <h2>For the shop owner: ${esc2(message.title)}</h2>
-    <ol>${message.steps.map((step) => `<li>${esc2(step)}</li>`).join("")}</ol>
-    <p class="muted">Setup code: <code>${esc2(code)}</code>. Changes to tables show here within about a minute. No redeploy is needed.</p>
+    <h2>For the shop owner: ${esc3(message.title)}</h2>
+    <ol>${message.steps.map((step) => `<li>${esc3(step)}</li>`).join("")}</ol>
+    <p class="muted">Setup code: <code>${esc3(code)}</code>. Changes to tables show here within about a minute. No redeploy is needed.</p>
   </div>
 </section>`
   });
 };
 
-// src/resources.js
-var SHOP_APP_ID = "busa-shop";
-var PRODUCT_HUB_APP_ID = "busa-product-hub";
-var stamped = (node2, appId, resourceKey) => node2?.metadata?.appId === appId && node2?.metadata?.resourceKey === resourceKey;
-var pickResource = (nodes, { type, appId, resourceKey, fallbackSlug, parentId }) => {
-  const candidates = nodes.filter(
-    (node2) => node2.type === type && (parentId === void 0 || node2.parentId === parentId)
-  );
-  let matches = candidates.filter((node2) => stamped(node2, appId, resourceKey));
-  if (matches.length === 0 && fallbackSlug) matches = candidates.filter((node2) => node2.slug === fallbackSlug);
-  if (matches.length === 1) return { status: "found", node: matches[0] };
-  if (matches.length === 0) return { status: "missing" };
-  return { status: "ambiguous", nodes: matches };
+// src/paypal.js
+var PAYPAL_API = { sandbox: "https://api-m.sandbox.paypal.com", live: "https://api-m.paypal.com" };
+var PAYPAL_SDK = { sandbox: "https://www.sandbox.paypal.com/web-sdk/v6/core", live: "https://www.paypal.com/web-sdk/v6/core" };
+var PAYPAL_CURRENCIES = new Set(
+  "AUD BRL CAD CNY CZK DKK EUR HKD HUF ILS JPY MYR MXN TWD NZD NOK PHP PLN GBP SGD SEK CHF THB USD".split(" ")
+);
+var NO_DECIMAL_CURRENCIES = /* @__PURE__ */ new Set(["HUF", "JPY", "TWD"]);
+var PAYPAL_ORDER_ID_PATTERN = /^[A-Z0-9]{5,40}$/;
+var PAYPAL_CAPTURE_ID_PATTERN = /^[A-Z0-9]{5,40}$/;
+var paypalValue = (amount, currency) => {
+  if (typeof amount !== "number" || !Number.isFinite(amount) || amount < 0) return null;
+  if (NO_DECIMAL_CURRENCIES.has(currency)) return Number.isInteger(amount) ? String(amount) : null;
+  return (Math.round(amount * 100) / 100).toFixed(2);
 };
-var resolveShopTables = (nodes) => ({
-  settings: pickResource(nodes, {
-    type: "base",
-    appId: SHOP_APP_ID,
-    resourceKey: "settings",
-    fallbackSlug: "busa-shop-settings"
-  }),
-  orders: pickResource(nodes, {
-    type: "base",
-    appId: SHOP_APP_ID,
-    resourceKey: "orders",
-    fallbackSlug: "busa-shop-orders"
-  })
-});
-var resolveProductTables = (nodes, override) => {
-  let products;
-  if (override) {
-    const node2 = nodes.find(
-      (candidate) => candidate.type === "base" && (candidate.baseId === override || candidate.id === override || candidate.slug === override)
-    );
-    if (!node2) return { status: "products-override-not-found" };
-    products = node2;
-  } else {
-    const picked = pickResource(nodes, {
-      type: "base",
-      appId: PRODUCT_HUB_APP_ID,
-      resourceKey: "products",
-      fallbackSlug: "busa-product-hub-products"
-    });
-    if (picked.status === "missing") return { status: "products-missing" };
-    if (picked.status === "ambiguous") return { status: "products-ambiguous" };
-    products = picked.node;
-  }
-  const certificates = pickResource(nodes, {
-    type: "base",
-    appId: PRODUCT_HUB_APP_ID,
-    resourceKey: "certificates",
-    fallbackSlug: products.slug.endsWith("-products") ? `${products.slug.slice(0, -"-products".length)}-certificates` : "",
-    parentId: products.parentId
-  });
-  const hubApp = pickResource(nodes, {
-    type: "airapp",
-    appId: PRODUCT_HUB_APP_ID,
-    resourceKey: "busa-product-hub-app",
-    fallbackSlug: "busa-product-hub-app",
-    parentId: products.parentId
-  });
+var cents2 = (value2) => Math.round(Number(value2) * 100);
+var sameAmount = (paid, expected) => Boolean(paid && expected) && String(paid.currency).toUpperCase() === String(expected.currency).toUpperCase() && Number.isFinite(Number(paid.value)) && cents2(paid.value) === cents2(expected.value);
+var cut = (value2, max) => String(value2 ?? "").slice(0, max);
+var createOrderBody = (order, { storeName, locale }) => {
+  const currency = order.currency;
+  const value2 = paypalValue(order.total, currency);
+  if (value2 === null) throw new Error(`total ${order.total} cannot be written in ${currency}`);
+  const items = (order.lines ?? []).map((line) => ({
+    name: cut(line.name || line.productId, 127),
+    quantity: String(line.quantity),
+    unit_amount: { currency_code: currency, value: paypalValue(line.unitPrice, currency) },
+    ...line.sku ? { sku: cut(line.sku, 127) } : {},
+    category: "PHYSICAL_GOODS"
+  }));
+  const itemTotal = items.reduce((sum, item) => sum + cents2(item.unit_amount.value) * Number(item.quantity), 0);
+  const shippingCents = cents2(order.shipping ?? 0);
+  const consistent = items.every((item) => item.unit_amount.value !== null) && itemTotal + shippingCents === cents2(value2) && paypalValue(itemTotal / 100, currency) !== null;
+  const address = order.address ?? {};
   return {
-    status: "ready",
-    productsBaseId: products.baseId,
-    certificatesBaseId: certificates.status === "found" ? certificates.node.baseId : null,
-    hubAppNodeId: hubApp.status === "found" ? hubApp.node.id : null
+    intent: "CAPTURE",
+    purchase_units: [
+      {
+        reference_id: order.orderId,
+        custom_id: order.orderId,
+        invoice_id: order.orderId,
+        description: cut(`${storeName || "Shop"} order ${order.orderId}`, 127),
+        amount: {
+          currency_code: currency,
+          value: value2,
+          ...consistent ? {
+            breakdown: {
+              item_total: { currency_code: currency, value: paypalValue(itemTotal / 100, currency) },
+              shipping: { currency_code: currency, value: paypalValue(shippingCents / 100, currency) }
+            }
+          } : {}
+        },
+        ...consistent ? { items } : {},
+        shipping: {
+          name: { full_name: cut(order.name, 300) },
+          address: {
+            address_line_1: cut(address.line1, 300),
+            ...address.line2 ? { address_line_2: cut(address.line2, 300) } : {},
+            admin_area_2: cut(address.city, 120),
+            ...address.region ? { admin_area_1: cut(address.region, 300) } : {},
+            ...address.postalCode ? { postal_code: cut(address.postalCode, 60) } : {},
+            country_code: address.country
+          }
+        }
+      }
+    ],
+    payment_source: {
+      paypal: {
+        experience_context: {
+          brand_name: cut(storeName || "Shop", 127),
+          shipping_preference: "SET_PROVIDED_ADDRESS",
+          user_action: "PAY_NOW",
+          ...locale ? { locale } : {}
+        }
+      }
+    }
   };
+};
+var ourOrderIdOf = (paypalOrder) => {
+  const unit = paypalOrder?.purchase_units?.[0];
+  return String(unit?.custom_id || unit?.invoice_id || "");
+};
+var captureOf = (paypalOrder) => {
+  const unit = paypalOrder?.purchase_units?.[0];
+  const capture = unit?.payments?.captures?.[0];
+  if (!capture) return null;
+  return {
+    captureId: String(capture.id ?? ""),
+    status: String(capture.status ?? ""),
+    amount: { value: String(capture.amount?.value ?? ""), currency: String(capture.amount?.currency_code ?? "") },
+    reason: String(capture.status_details?.reason ?? ""),
+    createTime: String(capture.create_time ?? ""),
+    payerEmail: String(paypalOrder?.payer?.email_address ?? paypalOrder?.payment_source?.paypal?.email_address ?? "")
+  };
+};
+var paypalIssue = (body) => String(body?.details?.[0]?.issue ?? body?.name ?? "");
+var PayPalError = class extends Error {
+  constructor(message, { status = 0, issue: issue2 = "", debugId = "" } = {}) {
+    super(message);
+    this.name = "PayPalError";
+    this.status = status;
+    this.issue = issue2;
+    this.debugId = debugId;
+  }
+};
+var createPayPalClient = ({ apiBase, clientId, clientSecret, fetchImpl = fetch, now = () => Date.now() }) => {
+  let token = null;
+  const accessToken = async () => {
+    if (token && now() < token.expiresAt) return token.value;
+    const response = await fetchImpl(`${apiBase}/v1/oauth2/token`, {
+      method: "POST",
+      headers: {
+        authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
+        "content-type": "application/x-www-form-urlencoded",
+        accept: "application/json"
+      },
+      body: "grant_type=client_credentials"
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok || typeof body.access_token !== "string") {
+      throw new PayPalError(`PayPal refused the client id / secret (${response.status} ${body.error ?? ""})`.trim(), {
+        status: response.status,
+        issue: String(body.error ?? "AUTHENTICATION_FAILURE")
+      });
+    }
+    const seconds = Number(body.expires_in) || 300;
+    token = { value: body.access_token, expiresAt: now() + Math.max(30, seconds - 60) * 1e3 };
+    return token.value;
+  };
+  const call = async (method, path, { body, rawBody, requestId } = {}) => {
+    const headers = {
+      authorization: `Bearer ${await accessToken()}`,
+      "content-type": "application/json",
+      accept: "application/json",
+      prefer: "return=representation",
+      ...requestId ? { "paypal-request-id": requestId } : {}
+    };
+    const response = await fetchImpl(`${apiBase}${path}`, {
+      method,
+      headers,
+      ...rawBody !== void 0 ? { body: rawBody } : body !== void 0 ? { body: JSON.stringify(body) } : {}
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401) token = null;
+    if (!response.ok) {
+      throw new PayPalError(`PayPal ${method} ${path.replace(/\/[A-Z0-9]{5,40}(?=\/|$)/g, "/\u2026")} \u2192 ${response.status} ${paypalIssue(data)}`.trim(), {
+        status: response.status,
+        issue: paypalIssue(data),
+        debugId: String(data?.debug_id ?? "")
+      });
+    }
+    return data;
+  };
+  const clientToken = async (domain2) => {
+    const response = await fetchImpl(`${apiBase}/v1/oauth2/token`, {
+      method: "POST",
+      headers: {
+        authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
+        "content-type": "application/x-www-form-urlencoded",
+        accept: "application/json"
+      },
+      body: new URLSearchParams({ grant_type: "client_credentials", response_type: "client_token", "domains[]": domain2 }).toString()
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok || typeof body.access_token !== "string") {
+      throw new PayPalError(`PayPal gave no client token (${response.status})`, { status: response.status, issue: String(body.error ?? "") });
+    }
+    return body.access_token;
+  };
+  return {
+    clientToken,
+    createOrder: (body, requestId) => call("POST", "/v2/checkout/orders", { body, requestId }),
+    getOrder: (paypalOrderId) => call("GET", `/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}`),
+    captureOrder: (paypalOrderId, requestId) => call("POST", `/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}/capture`, { rawBody: "{}", requestId }),
+    /**
+     * Ask PayPal whether a webhook delivery is genuine. The event goes back
+     * byte for byte as it arrived (PayPal: "exactly as it was received"), so
+     * the body is assembled around the raw text instead of re-serialised.
+     */
+    verifyWebhook: async ({ headers, rawBody, webhookId }) => {
+      const get2 = (name) => headers.get(name) ?? "";
+      const envelope = `{"auth_algo":${JSON.stringify(get2("paypal-auth-algo"))},"cert_url":${JSON.stringify(get2("paypal-cert-url"))},"transmission_id":${JSON.stringify(get2("paypal-transmission-id"))},"transmission_sig":${JSON.stringify(get2("paypal-transmission-sig"))},"transmission_time":${JSON.stringify(get2("paypal-transmission-time"))},"webhook_id":${JSON.stringify(webhookId)},"webhook_event":${rawBody}}`;
+      const data = await call("POST", "/v1/notifications/verify-webhook-signature", { rawBody: envelope });
+      return data?.verification_status === "SUCCESS";
+    }
+  };
+};
+var HANDLED_EVENTS = /* @__PURE__ */ new Set([
+  "PAYMENT.CAPTURE.COMPLETED",
+  "PAYMENT.CAPTURE.PENDING",
+  "PAYMENT.CAPTURE.DENIED",
+  "PAYMENT.CAPTURE.DECLINED",
+  "PAYMENT.CAPTURE.REFUNDED",
+  "PAYMENT.CAPTURE.REVERSED",
+  "CHECKOUT.ORDER.APPROVED"
+]);
+var parentCaptureId = (resource) => {
+  const up = (resource?.links ?? []).find((link) => link?.rel === "up" && typeof link.href === "string");
+  return /\/v2\/payments\/captures\/([A-Z0-9]{5,40})/.exec(up?.href ?? "")?.[1] ?? "";
+};
+var eventOrderRef = (event) => {
+  const resource = event?.resource ?? {};
+  const type = String(event?.event_type ?? "");
+  const ourId = type.startsWith("CHECKOUT.ORDER.") ? ourOrderIdOf(resource) : String(resource.custom_id || resource.invoice_id || "");
+  const captureId = type === "PAYMENT.CAPTURE.REFUNDED" || type === "PAYMENT.CAPTURE.REVERSED" ? parentCaptureId(resource) : String(resource.id ?? "");
+  return { ourId, captureId, paypalOrderId: type.startsWith("CHECKOUT.ORDER.") ? String(resource.id ?? "") : String(resource.supplementary_data?.related_ids?.order_id ?? "") };
+};
+var FINAL_STATUSES = /* @__PURE__ */ new Set(["shipped", "completed"]);
+var decideWebhook = (event, order, { nowIso }) => {
+  const type = String(event?.event_type ?? "");
+  const resource = event?.resource ?? {};
+  const amount = { value: String(resource.amount?.value ?? ""), currency: String(resource.amount?.currency_code ?? "") };
+  const expected = { value: order.total, currency: order.currency };
+  const money3 = `${amount.value} ${amount.currency}`.trim();
+  const isPaid = order.status === "paid" || FINAL_STATUSES.has(order.status);
+  if (type === "PAYMENT.CAPTURE.COMPLETED") {
+    if (isPaid && (!order.captureId || order.captureId === resource.id)) {
+      return { kind: "log", fields: order.captureId ? {} : { "paypal-capture-id": String(resource.id) }, note: `capture ${resource.id} completed (already marked paid)` };
+    }
+    if (!sameAmount(amount, expected)) {
+      return {
+        kind: "problem",
+        fields: {
+          status: "payment-problem",
+          "paypal-capture-id": String(resource.id ?? ""),
+          "amount-paid": Number(amount.value) || 0,
+          "payment-problem": `${nowIso.slice(0, 10)}: PayPal captured ${money3}, but this order is ${paypalValue(order.total, order.currency) ?? order.total} ${order.currency}. Check the payment in PayPal before shipping.`
+        },
+        note: `capture ${resource.id} completed for ${money3}: AMOUNT MISMATCH`
+      };
+    }
+    return {
+      kind: "paid",
+      fields: {
+        status: "paid",
+        "paypal-capture-id": String(resource.id ?? ""),
+        "amount-paid": Number(amount.value),
+        "paid-at": resource.create_time || nowIso
+      },
+      note: `capture ${resource.id} completed for ${money3} \u2192 paid`
+    };
+  }
+  if (type === "PAYMENT.CAPTURE.PENDING") {
+    if (isPaid) return { kind: "log", fields: {}, note: `capture ${resource.id} pending (order already paid)` };
+    const reason = String(resource.status_details?.reason ?? "");
+    return {
+      kind: "problem",
+      fields: {
+        "paypal-capture-id": String(resource.id ?? ""),
+        "payment-problem": `${nowIso.slice(0, 10)}: PayPal is holding this payment (${reason || "pending"}). It is not paid yet: look at it in your PayPal account.`
+      },
+      note: `capture ${resource.id} pending ${reason}`.trim(),
+      keepStatus: true
+    };
+  }
+  if (type === "PAYMENT.CAPTURE.DENIED" || type === "PAYMENT.CAPTURE.DECLINED") {
+    if (isPaid && order.captureId && order.captureId !== resource.id) {
+      return { kind: "log", fields: {}, note: `capture ${resource.id} denied (another capture already paid this order)` };
+    }
+    return {
+      kind: "problem",
+      fields: {
+        status: "payment-problem",
+        "payment-problem": `${nowIso.slice(0, 10)}: PayPal denied the payment (capture ${resource.id}). Nothing was received. Do not ship.`
+      },
+      note: `capture ${resource.id} denied`
+    };
+  }
+  if (type === "PAYMENT.CAPTURE.REFUNDED") {
+    const refunded = Math.round(((order.refundedAmount ?? 0) + (Number(amount.value) || 0)) * 100) / 100;
+    const paid = order.amountPaid ?? order.total;
+    const full = refunded + 4e-3 >= paid;
+    return {
+      kind: "refund",
+      fields: {
+        "refunded-amount": refunded,
+        ...full ? { status: "refunded" } : {}
+      },
+      note: `refund ${resource.id} of ${money3}${full ? " \u2192 refunded" : ` (partial: ${refunded} ${order.currency} refunded in total)`}`
+    };
+  }
+  if (type === "PAYMENT.CAPTURE.REVERSED") {
+    return {
+      kind: "problem",
+      fields: {
+        status: "payment-problem",
+        "payment-problem": `${nowIso.slice(0, 10)}: PayPal reversed this payment (${money3}): the money went back to the buyer, usually a chargeback or a dispute. Do not ship; open the case in PayPal's Resolution Center.`
+      },
+      note: `reversal ${resource.id} of ${money3}`
+    };
+  }
+  if (type === "CHECKOUT.ORDER.APPROVED") {
+    if (isPaid || order.status !== "awaiting-payment") return { kind: "log", fields: {}, note: `PayPal order ${resource.id} approved (order is ${order.status})` };
+    return { kind: "capture", fields: {}, note: `PayPal order ${resource.id} approved: capturing` };
+  }
+  return { kind: "ignore", fields: {}, note: `${type} not handled` };
 };
 
 // src/shop.js
@@ -28937,6 +30643,8 @@ var STALE_IF_ERROR_MS = 10 * 6e4;
 var PRODUCTS_PAGE = 100;
 var CERTIFICATES_PAGE = 100;
 var SETTINGS_PAGE = 5;
+var SHIPPING_PAGE = 100;
+var UPDATE_ATTEMPTS = 3;
 var MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 var ShopUnavailableError = class extends Error {
   constructor(message, cause) {
@@ -28946,6 +30654,21 @@ var ShopUnavailableError = class extends Error {
   }
 };
 var describeError = (error62) => error62?.status ?? error62?.code ?? error62?.name ?? "error";
+var isConflict = (error62) => error62?.status === 409 || error62?.code === "CONFLICT";
+var readOptional = async (records, resource, limit, log, label2) => {
+  if (resource.status === "missing") return { status: "missing", records: [] };
+  if (resource.status === "ambiguous") {
+    log.warn?.(`busa-shop: more than one ${label2} table in this shop's folder`);
+    return { status: "unreadable", records: [] };
+  }
+  try {
+    const page = await records.readPage({ baseId: resource.node.baseId, limit });
+    return { status: "ready", records: page.records };
+  } catch (error62) {
+    log.warn?.(`busa-shop: ${label2} unreadable`, describeError(error62));
+    return { status: "unreadable", records: [] };
+  }
+};
 var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, now = () => Date.now(), log = console }) => {
   let cached2 = null;
   let inFlight = null;
@@ -28961,9 +30684,10 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
     const settings = normalizeSettings(settingsRecord);
     if (!/^[A-Z]{3}$/.test(settings.currency)) return { setup: "currency-missing", settings };
     if (!settings.storeName) settings.storeName = "Shop";
-    const tables = resolveProductTables(nodes, settings.productsBase);
+    const tables = resolveProductTables(nodes, settings.productsBase, { shopFolderId: shop.settings.node.parentId });
     if (tables.status !== "ready") return { setup: tables.status, settings };
-    const [productsPage, certificateRecords] = await Promise.all([
+    const extras = resolveShopExtras(nodes, shop.settings.node.parentId);
+    const [productsPage, certificateRecords, shippingRead, pagesRead] = await Promise.all([
       records.readPage({
         baseId: tables.productsBaseId,
         limit: PRODUCTS_PAGE,
@@ -28974,20 +30698,30 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       tables.certificatesBaseId ? records.readPage({ baseId: tables.certificatesBaseId, limit: CERTIFICATES_PAGE }).then((page) => page.records).catch((error62) => {
         log.warn?.("busa-shop: certificates unreadable", describeError(error62));
         return [];
-      }) : Promise.resolve([])
+      }) : Promise.resolve([]),
+      readOptional(records, extras.shipping, SHIPPING_PAGE, log, "Shipping"),
+      readOptional(records, extras.pages, PAGES_LIMIT, log, "Pages")
     ]);
     const catalog = buildCatalog({
       productRecords: productsPage.records,
       certificateRecords,
       settings,
       busabaseOrigin,
-      nowMs: now()
+      nowMs: now(),
+      shape: tables.shape,
+      airappImages: Boolean(tables.hubAppNodeId)
     });
     return {
       setup: "ready",
       settings,
       catalog,
+      productsFrom: tables.shape,
       ordersBaseId: shop.orders.status === "found" ? shop.orders.node.baseId : null,
+      // `ready` with rates, or `missing` (a shop from before 0.6.0: order
+      // requests without a shipping line) or `unreadable` (ordering pauses).
+      shipping: shippingRead.status === "ready" ? { status: "ready", ...buildShippingRates(shippingRead.records, settings) } : { status: shippingRead.status, rates: /* @__PURE__ */ new Map(), problems: [] },
+      pages: buildPages(pagesRead.records),
+      pagesStatus: pagesRead.status,
       hubAppNodeId: tables.hubAppNodeId,
       moreProducts: Boolean(productsPage.nextCursor)
     };
@@ -29011,19 +30745,53 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       throw new ShopUnavailableError("The workspace could not be read", error62);
     }
   };
-  const createOrder = async (state, order) => {
-    const fields = orderToFields(order, { nowIso: new Date(now()).toISOString() });
+  const createOrder = async (state, order, { payment = "request" } = {}) => {
+    const fields = orderToFields(order, { nowIso: new Date(now()).toISOString(), payment });
     try {
       const outcome = await records.createRecord({
         baseId: state.ordersBaseId,
         fields,
-        message: `Order request ${order.orderId} from the website`,
+        message: payment === "paypal" ? `Checkout ${order.orderId} from the website (awaiting PayPal payment)` : `Order request ${order.orderId} from the website`,
         idempotencyKey: order.orderId
       });
       return { status: outcome.status, recordId: outcome.recordId ?? null };
     } catch (error62) {
       log.error?.("busa-shop: order not saved", order.orderId, describeError(error62));
       throw new ShopUnavailableError("The order could not be saved", error62);
+    }
+  };
+  const findOrderBy = async (state, fieldSlug, valueText) => {
+    if (!state.ordersBaseId || !valueText) return null;
+    try {
+      const record2 = await records.findRecord({ baseId: state.ordersBaseId, fieldSlug, valueText });
+      return record2 ? orderFromRecord(record2) : null;
+    } catch (error62) {
+      log.error?.("busa-shop: order unreadable", describeError(error62));
+      throw new ShopUnavailableError("The order could not be read", error62);
+    }
+  };
+  const findOrder = (state, orderId) => findOrderBy(state, "order-id", orderId);
+  const findOrderByCapture = (state, captureId) => findOrderBy(state, "paypal-capture-id", captureId);
+  const updateOrder = async (state, orderId, decide, message) => {
+    for (let attempt = 1; ; attempt += 1) {
+      const order = await findOrder(state, orderId);
+      if (!order) return { order: null, result: null };
+      const result = decide(order);
+      if (!result || !Object.keys(result.fields ?? {}).length) return { order, result: null };
+      try {
+        const outcome = await records.updateRecord({
+          recordId: order.recordId,
+          ...order.headCommitId ? { baseCommitId: order.headCommitId } : {},
+          fields: result.fields,
+          message: typeof message === "function" ? message(result) : message
+        });
+        if (outcome.status === "queued") log.warn?.("busa-shop: order change waits for review", orderId);
+        return { order, result, outcome };
+      } catch (error62) {
+        if (isConflict(error62) && attempt < UPDATE_ATTEMPTS) continue;
+        log.error?.("busa-shop: order not updated", orderId, describeError(error62));
+        throw new ShopUnavailableError("The order could not be updated", error62);
+      }
     }
   };
   const sameOrigin = (url2) => {
@@ -29083,15 +30851,72 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       return null;
     }
   };
-  return { load, createOrder, productImage: productImage2, appId: SHOP_APP_ID };
+  return { load, createOrder, findOrder, findOrderByCapture, updateOrder, productImage: productImage2, appId: SHOP_APP_ID };
+};
+
+// src/vault.js
+var VAULT_KEYS = [
+  ["paypalSecret", "BUSA_SHOP_PAYPAL_CLIENT_SECRET"],
+  ["smtpPassword", "BUSA_SHOP_SMTP_PASSWORD"]
+];
+var VAULT_TTL_MS = 5 * 6e4;
+var VAULT_ERROR_TTL_MS = 3e4;
+var readShopSecrets = async ({ baseUrl, apiKey, spaceId, fetchImpl = fetch }) => {
+  if (!apiKey) return { secrets: {}, error: "no-key" };
+  let response;
+  try {
+    response = await fetchImpl(`${String(baseUrl).replace(/\/+$/, "").replace(/\/api\/v1$/, "")}/api/v1/vault/runtime`, {
+      headers: { authorization: `Bearer ${apiKey}`, accept: "application/json", ...spaceId ? { "x-busabase-space": spaceId } : {} }
+    });
+  } catch {
+    return { secrets: {}, error: "unreachable" };
+  }
+  if (!response.ok) {
+    await response.body?.cancel?.();
+    return { secrets: {}, error: `http-${response.status}` };
+  }
+  const body = await response.json().catch(() => null);
+  const secrets = {};
+  if (body && typeof body === "object") {
+    for (const [name, key] of VAULT_KEYS) {
+      if (typeof body[key] === "string" && body[key]) secrets[name] = body[key];
+    }
+  }
+  return { secrets, error: "" };
+};
+var createSecretsReader = ({ read, now = () => Date.now() }) => {
+  let cached2 = null;
+  let inFlight = null;
+  return {
+    get: async () => {
+      const at = now();
+      if (cached2 && at - cached2.at < (cached2.value.error ? VAULT_ERROR_TTL_MS : VAULT_TTL_MS)) return cached2.value;
+      inFlight ??= read().then((value2) => {
+        cached2 = { value: value2, at: now() };
+        return value2;
+      }).finally(() => {
+        inFlight = null;
+      });
+      return inFlight;
+    },
+    forget: () => {
+      cached2 = null;
+    }
+  };
 };
 
 // src/handler.js
 var MAX_ORDER_BODY_BYTES = 16 * 1024;
+var MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
 var SECURITY_HEADERS = {
   "x-content-type-options": "nosniff",
   "referrer-policy": "strict-origin-when-cross-origin",
   "content-security-policy": "default-src 'self'; img-src 'self' https: data:; style-src 'self'; script-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; object-src 'none'"
+};
+var PAYPAL_HOSTS = ["https://*.paypal.com", "https://*.paypalobjects.com", "https://*.venmo.com"];
+var paypalCsp = (sdkUrl) => {
+  const hosts = [.../* @__PURE__ */ new Set([...PAYPAL_HOSTS, new URL(sdkUrl).origin])].join(" ");
+  return `default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline' ${hosts}; script-src 'self' ${hosts}; connect-src 'self' ${hosts}; frame-src ${hosts}; child-src ${hosts}; form-action 'self'; base-uri 'none'; object-src 'none'`;
 };
 var html = (body, { status = 200, cache = "public, max-age=60", extra = {} } = {}) => new Response(body, {
   status,
@@ -29103,12 +30928,23 @@ var json2 = (data, status = 200) => new Response(JSON.stringify(data), {
 });
 var plain = (body, status = 200, type = "text/plain; charset=utf-8", cache = "public, max-age=300") => new Response(body, { status, headers: { "content-type": type, "cache-control": cache, "x-content-type-options": "nosniff" } });
 var NOT_READY = { cache: "no-store", extra: { "retry-after": "300", "x-robots-tag": "noindex" } };
+var PRIVATE = { cache: "no-store", extra: { "x-robots-tag": "noindex" } };
 var defaultDeps = {
   createClient: createBusabaseClient,
   createRecords: createAirAppRecords,
   fetch: (...args) => fetch(...args),
   now: () => Date.now(),
-  log: console
+  log: console,
+  loadConnect: async (env2) => {
+    if (typeof env2?.SOCKETS?.connect === "function") return (...args) => env2.SOCKETS.connect(...args);
+    try {
+      const sockets = await import("cloudflare:sockets");
+      return typeof sockets.connect === "function" ? sockets.connect : null;
+    } catch {
+      return null;
+    }
+  },
+  sendMail
 };
 var allowedOrigin = (origin, siteOrigin, busabaseBaseUrl) => {
   if (!origin) return true;
@@ -29121,25 +30957,26 @@ var allowedOrigin = (origin, siteOrigin, busabaseBaseUrl) => {
     return false;
   }
 };
-var readLimited = async (request) => {
+var readLimited = async (request, max = MAX_ORDER_BODY_BYTES) => {
   const declared = Number(request.headers.get("content-length") ?? "0");
-  if (declared > MAX_ORDER_BODY_BYTES) return null;
+  if (declared > max) return null;
   const body = await request.text();
-  return new TextEncoder().encode(body).length > MAX_ORDER_BODY_BYTES ? null : body;
+  return new TextEncoder().encode(body).length > max ? null : body;
 };
+var isoNow = (deps) => new Date(deps.now()).toISOString();
 var createHandler = (overrides = {}) => {
   const deps = { ...defaultDeps, ...overrides };
-  const shops = /* @__PURE__ */ new WeakMap();
-  const shopFor = (env2) => {
-    let shop = shops.get(env2);
-    if (!shop) {
+  const sites = /* @__PURE__ */ new WeakMap();
+  const siteFor = (env2) => {
+    let site = sites.get(env2);
+    if (!site) {
       const baseUrl = env2.BUSABASE_BASE_URL;
       const client = deps.createClient({
         baseUrl,
         apiKey: env2.BUSABASE_API_KEY,
         spaceId: env2.BUSABASE_SPACE_ID
       });
-      shop = createShop({
+      const shop = createShop({
         client,
         records: deps.createRecords(client, { appId: "busa-shop" }),
         busabaseOrigin: new URL(baseUrl).origin,
@@ -29148,9 +30985,106 @@ var createHandler = (overrides = {}) => {
         now: deps.now,
         log: deps.log
       });
-      shops.set(env2, shop);
+      const secrets = createSecretsReader({
+        now: deps.now,
+        read: () => readShopSecrets({ baseUrl, apiKey: env2.BUSABASE_API_KEY, spaceId: env2.BUSABASE_SPACE_ID, fetchImpl: deps.fetch })
+      });
+      site = { shop, secrets, paypal: null };
+      sites.set(env2, site);
     }
-    return shop;
+    return site;
+  };
+  const needsSecrets = (settings) => settings.paypalMode !== "off" || Boolean(settings.smtpHost);
+  const secretsFor = async (env2, state) => {
+    if (!env2.BUSABASE_API_KEY || !needsSecrets(state.settings)) return { secrets: {}, error: env2.BUSABASE_API_KEY ? "" : "no-key" };
+    const result = await siteFor(env2).secrets.get();
+    if (result.error && result.error !== "no-key") deps.log.warn?.("busa-shop: Vault runtime values unreadable", result.error);
+    return result;
+  };
+  const paymentsFor = (env2, state, vault) => {
+    const settings = state.settings;
+    const mode = settings.paypalMode;
+    if (mode === "off") return { payment: "request", reason: "off" };
+    if (!env2.BUSABASE_API_KEY) return { payment: "request", reason: "browser-engine" };
+    if (!settings.paypalClientId) return { payment: "request", reason: "no-client-id" };
+    if (!PAYPAL_CURRENCIES.has(settings.currency)) return { payment: "request", reason: "currency-not-supported" };
+    if (state.shipping.status !== "ready") return { payment: "request", reason: "no-shipping-table" };
+    if (!vault.secrets.paypalSecret) return { payment: "request", reason: vault.error ? "vault-unreadable" : "no-secret" };
+    return {
+      payment: "paypal",
+      mode,
+      clientId: settings.paypalClientId,
+      // Test hooks: a deploy never sets these, so the live site always talks to PayPal itself.
+      apiBase: env2.PAYPAL_API_BASE || PAYPAL_API[mode],
+      sdkUrl: env2.PAYPAL_SDK_URL || PAYPAL_SDK[mode],
+      secret: vault.secrets.paypalSecret
+    };
+  };
+  const paypalClientFor = (env2, payments) => {
+    const site = siteFor(env2);
+    const key = `${payments.apiBase}|${payments.clientId}`;
+    if (!site.paypal || site.paypal.key !== key || site.paypal.secret !== payments.secret) {
+      site.paypal = {
+        key,
+        secret: payments.secret,
+        client: createPayPalClient({ apiBase: payments.apiBase, clientId: payments.clientId, clientSecret: payments.secret, fetchImpl: deps.fetch, now: deps.now })
+      };
+    }
+    return site.paypal.client;
+  };
+  const siteInfo = (state, payments) => ({ pages: state.pages ?? [], payment: payments?.payment ?? "request" });
+  const checkoutFor = (state, payments) => ({
+    payment: payments.payment,
+    countries: checkoutCountries(state.settings, state.shipping),
+    shipping: state.shipping
+  });
+  const sendOrderEmails = async ({ env: env2, state, orderId, kind, heloName, problem = "" }) => {
+    if (!env2.BUSABASE_API_KEY || !state.settings.smtpHost) return;
+    const shop = siteFor(env2).shop;
+    try {
+      const vault = await secretsFor(env2, state);
+      const config2 = smtpConfig(state.settings, vault.secrets, { canConnect: true });
+      const order = await shop.findOrder(state, orderId);
+      if (!order) return;
+      let lines;
+      if (!config2.ready) {
+        if (order.emailLog.includes(EMAIL_SKIP_REASONS[config2.reason])) return;
+        lines = [`${isoNow(deps)} ${EMAIL_SKIP_REASONS[config2.reason]}`];
+      } else {
+        const messages = composeEmails(kind, order, state.settings, config2, { problem }).filter(
+          (message) => !new RegExp(`\\bsent ${message.tag} to `).test(order.emailLog)
+        );
+        if (!messages.length) return;
+        const connect = await deps.loadConnect(env2);
+        let results;
+        try {
+          results = await deps.sendMail({
+            connect,
+            host: config2.host,
+            port: config2.port,
+            security: config2.security,
+            username: config2.username,
+            password: config2.password,
+            heloName,
+            messages
+          });
+        } catch (error62) {
+          results = messages.map((message) => ({ tag: message.tag, to: message.to, ok: false, error: error62?.message ?? String(error62) }));
+        }
+        for (const result of results) {
+          if (!result.ok) deps.log.warn?.("busa-shop: email not sent", orderId, result.tag, result.error);
+        }
+        lines = emailLogLines(results, isoNow(deps));
+      }
+      await shop.updateOrder(state, orderId, (current) => ({ fields: { "email-log": appendLogLines(current.emailLog, lines) } }), `Email log for ${orderId}`);
+    } catch (error62) {
+      deps.log.warn?.("busa-shop: email step failed", orderId, error62?.message ?? error62);
+    }
+  };
+  const later = (ctx, work) => {
+    if (ctx?.waitUntil) ctx.waitUntil(work);
+    else work.catch(() => {
+    });
   };
   const assets = async (request, env2, settings) => {
     if (env2.ASSETS?.fetch) {
@@ -29172,10 +31106,22 @@ var createHandler = (overrides = {}) => {
     const byId = new Map(state.catalog.listed.map((product) => [product.id, product]));
     return (Array.isArray(input2.items) ? input2.items : []).map(({ productId, quantity }) => ({ product: byId.get(productId), quantity })).filter((line) => line.product && !line.product.soldOut && Number.isInteger(line.quantity) && line.quantity > 0).map((line) => ({ ...line, quantity: Math.min(line.quantity, line.product.maxQuantity) }));
   };
-  const postOrder = async (request, url2, env2) => {
-    if (!allowedOrigin(request.headers.get("origin"), url2.origin, env2.BUSABASE_BASE_URL)) {
-      return json2({ ok: false, error: "forbidden" }, 403);
+  const crossSite = (request, url2, env2) => !allowedOrigin(request.headers.get("origin"), url2.origin, env2.BUSABASE_BASE_URL);
+  const readJsonBody = async (request) => {
+    const type = (request.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+    if (type !== "application/json") return { error: json2({ ok: false, error: "unsupported_media_type" }, 415) };
+    const raw = await readLimited(request);
+    if (raw === null) return { error: json2({ ok: false, error: "too_large" }, 413) };
+    try {
+      const body = JSON.parse(raw);
+      if (!body || typeof body !== "object" || Array.isArray(body)) return { error: json2({ ok: false, error: "invalid" }, 400) };
+      return { body };
+    } catch {
+      return { error: json2({ ok: false, error: "invalid_json" }, 400) };
     }
+  };
+  const postOrder = async (request, url2, env2, ctx) => {
+    if (crossSite(request, url2, env2)) return json2({ ok: false, error: "forbidden" }, 403);
     const type = (request.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
     const isForm = type === "application/x-www-form-urlencoded";
     if (type !== "application/json" && !isForm) return json2({ ok: false, error: "unsupported_media_type" }, 415);
@@ -29188,28 +31134,39 @@ var createHandler = (overrides = {}) => {
       return json2({ ok: false, error: "invalid_json" }, 400);
     }
     if (!input2 || typeof input2 !== "object" || Array.isArray(input2)) return json2({ ok: false, error: "invalid" }, 400);
-    const shop = shopFor(env2);
+    const shop = siteFor(env2).shop;
     const state = await shop.load();
     if (state.setup !== "ready") {
       return isForm ? notReady(state) : json2({ ok: false, error: "not_ready", setup: state.setup }, 503);
     }
     const { settings } = state;
+    const vault = await secretsFor(env2, state);
+    const payments = paymentsFor(env2, state, vault);
+    const site = siteInfo(state, payments);
     const t = translator(settings.language);
+    const values = {
+      name: input2.name,
+      email: input2.email,
+      phone: input2.phone,
+      country: typeof input2.country === "string" ? input2.country.toUpperCase() : "",
+      address1: input2.address1,
+      address2: input2.address2,
+      city: input2.city,
+      region: input2.region,
+      postalCode: input2.postalCode,
+      note: input2.note
+    };
     const formPage = (props, status) => html(
       orderPage({
         origin: url2.origin,
         settings,
         catalog: state.catalog,
         lines: linesFromInput(input2, state),
-        values: {
-          name: input2.name,
-          email: input2.email,
-          phone: input2.phone,
-          country: typeof input2.country === "string" ? input2.country.toUpperCase() : "",
-          note: input2.note
-        },
+        values,
         orderId: typeof input2.orderId === "string" && input2.orderId ? input2.orderId : newOrderId(),
         ordersReady: Boolean(state.ordersBaseId),
+        checkout: checkoutFor(state, payments),
+        site,
         ...props
       }),
       { status, cache: "no-store" }
@@ -29219,23 +31176,16 @@ var createHandler = (overrides = {}) => {
     }
     if (isHoneypotHit(input2)) {
       const orderId2 = typeof input2.orderId === "string" ? input2.orderId : "";
-      return isForm ? html(thanksPage({ origin: url2.origin, settings, orderId: orderId2, email: String(input2.email ?? "") }), { cache: "no-store" }) : json2({ ok: true, orderId: orderId2 });
+      return isForm ? html(thanksPage({ origin: url2.origin, settings, orderId: orderId2, email: String(input2.email ?? ""), site }), { cache: "no-store" }) : json2({ ok: true, orderId: orderId2, payment: "request" });
     }
-    const verdict = validateOrder(input2, { listed: state.catalog.listed, settings });
+    const verdict = validateOrder(input2, { listed: state.catalog.listed, settings, shipping: state.shipping });
     if (!verdict.ok) {
       if (isForm) {
         const first = verdict.itemErrors?.[0];
         return formPage(
           {
             errors: verdict.errors,
-            values: {
-              name: input2.name,
-              email: input2.email,
-              phone: input2.phone,
-              country: typeof input2.country === "string" ? input2.country.toUpperCase() : "",
-              note: input2.note,
-              errorValues: { name: first?.name ?? "", max: first?.max ?? "", total: verdict.totalText ?? "" }
-            },
+            values: { ...values, errorValues: { name: first?.name ?? "", max: first?.max ?? "", total: verdict.totalText ?? "" } },
             status: verdict.status === 409 ? t("error_price_changed", { total: verdict.totalText }) : t("error_fix")
           },
           verdict.status
@@ -29262,8 +31212,9 @@ var createHandler = (overrides = {}) => {
         verdict.status
       );
     }
+    const payment = payments.payment === "paypal" && paypalValue(verdict.order.total, settings.currency) !== null ? "paypal" : "request";
     try {
-      await shop.createOrder(state, verdict.order);
+      await shop.createOrder(state, verdict.order, { payment });
     } catch (error62) {
       if (!(error62 instanceof ShopUnavailableError)) throw error62;
       const message = [
@@ -29273,13 +31224,301 @@ var createHandler = (overrides = {}) => {
       return isForm ? formPage({ status: message }, 503) : json2({ ok: false, error: "unavailable" }, 503);
     }
     const { orderId, email: email3 } = verdict.order;
-    return isForm ? html(thanksPage({ origin: url2.origin, settings, orderId, email: email3 }), { cache: "no-store" }) : json2({ ok: true, orderId });
+    if (payment === "request") {
+      later(ctx, sendOrderEmails({ env: env2, state, orderId, kind: "request", heloName: url2.hostname }));
+      return isForm ? html(thanksPage({ origin: url2.origin, settings, orderId, email: email3, site }), { cache: "no-store" }) : json2({ ok: true, orderId, payment: "request" });
+    }
+    if (isForm) {
+      const order = await shop.findOrder(state, orderId);
+      if (order) return payPageResponse(url2, state, order, payments);
+    }
+    return json2({ ok: true, orderId, payment: "paypal", payPath: `/pay/${orderId}` });
+  };
+  const payPageResponse = (url2, state, order, payments) => {
+    const showButton = order.status === "awaiting-payment" && payments.payment === "paypal" && order.currency === state.settings.currency;
+    const paypal = showButton ? { clientId: payments.clientId, sdkUrl: payments.sdkUrl } : null;
+    return html(payPage({ origin: url2.origin, settings: state.settings, order, paypal, site: siteInfo(state, payments) }), {
+      cache: "no-store",
+      extra: { ...PRIVATE.extra, ...paypal ? { "content-security-policy": paypalCsp(paypal.sdkUrl) } : {} }
+    });
+  };
+  const getPay = async (url2, env2, orderId) => {
+    const shop = siteFor(env2).shop;
+    const state = await shop.load();
+    if (state.setup !== "ready") return notReady(state);
+    const vault = await secretsFor(env2, state);
+    const payments = paymentsFor(env2, state, vault);
+    const order = ORDER_ID_PATTERN.test(orderId) ? await shop.findOrder(state, orderId) : null;
+    if (!order) return html(notFoundPage({ settings: state.settings, site: siteInfo(state, payments) }), { status: 404, ...PRIVATE });
+    return payPageResponse(url2, state, order, payments);
+  };
+  const paypalContext = async (env2) => {
+    const shop = siteFor(env2).shop;
+    const state = await shop.load();
+    if (state.setup !== "ready") return { error: json2({ ok: false, error: "not_ready", setup: state.setup }, 503) };
+    const vault = await secretsFor(env2, state);
+    const payments = paymentsFor(env2, state, vault);
+    if (payments.payment !== "paypal") return { error: json2({ ok: false, error: "paypal_off", reason: payments.reason }, 409) };
+    return { shop, state, payments, paypal: paypalClientFor(env2, payments) };
+  };
+  const postClientToken = async (request, url2, env2) => {
+    if (crossSite(request, url2, env2)) return json2({ ok: false, error: "forbidden" }, 403);
+    const context = await paypalContext(env2);
+    if (context.error) return context.error;
+    const origin = allowedOrigin(request.headers.get("origin"), url2.origin, env2.BUSABASE_BASE_URL) && request.headers.get("origin") ? request.headers.get("origin") : url2.origin;
+    try {
+      return json2({ ok: true, clientToken: await context.paypal.clientToken(origin) });
+    } catch (failure2) {
+      deps.log.error?.("busa-shop: PayPal client token refused", failure2?.message ?? failure2);
+      return json2({ ok: false, error: "paypal_error" }, 502);
+    }
+  };
+  const REUSABLE_PAYPAL_STATUSES = /* @__PURE__ */ new Set(["CREATED", "SAVED", "APPROVED", "PAYER_ACTION_REQUIRED"]);
+  const postCreatePayPalOrder = async (request, url2, env2) => {
+    if (crossSite(request, url2, env2)) return json2({ ok: false, error: "forbidden" }, 403);
+    const { body, error: error62 } = await readJsonBody(request);
+    if (error62) return error62;
+    const orderId = String(body.orderId ?? "");
+    if (!ORDER_ID_PATTERN.test(orderId)) return json2({ ok: false, error: "invalid" }, 400);
+    const context = await paypalContext(env2);
+    if (context.error) return context.error;
+    const { shop, state, payments, paypal } = context;
+    const order = await shop.findOrder(state, orderId);
+    if (!order) return json2({ ok: false, error: "not_found" }, 404);
+    if (order.status !== "awaiting-payment") return json2({ ok: false, error: "not_payable", status: order.status }, 409);
+    if (order.currency !== state.settings.currency || paypalValue(order.total, order.currency) === null) {
+      return json2({ ok: false, error: "not_payable", status: order.status }, 409);
+    }
+    try {
+      if (order.paypalOrderId) {
+        const existing = await paypal.getOrder(order.paypalOrderId).catch(() => null);
+        const unit = existing?.purchase_units?.[0];
+        if (existing && REUSABLE_PAYPAL_STATUSES.has(existing.status) && ourOrderIdOf(existing) === orderId && sameAmount({ value: unit?.amount?.value, currency: unit?.amount?.currency_code }, { value: order.total, currency: order.currency })) {
+          return json2({ ok: true, id: existing.id });
+        }
+      }
+      const attempt = (order.paymentLog.match(/created PayPal order/g) ?? []).length + 1;
+      const created = await paypal.createOrder(
+        createOrderBody(order, { storeName: state.settings.storeName, locale: { en: "en-US", de: "de-DE", fr: "fr-FR", es: "es-ES" }[state.settings.language] }),
+        `${orderId}-${attempt}`
+      );
+      if (!PAYPAL_ORDER_ID_PATTERN.test(String(created?.id ?? ""))) throw new PayPalError("PayPal answered without an order id");
+      await shop.updateOrder(
+        state,
+        orderId,
+        (current) => ({
+          fields: {
+            "paypal-order-id": created.id,
+            "payment-log": appendLogLines(current.paymentLog, [`${isoNow(deps)} created PayPal order ${created.id} (${payments.mode})`])
+          }
+        }),
+        `PayPal order ${created.id} for ${orderId}`
+      );
+      return json2({ ok: true, id: created.id });
+    } catch (failure2) {
+      if (failure2 instanceof ShopUnavailableError) throw failure2;
+      deps.log.error?.("busa-shop: PayPal order not created", orderId, failure2?.message ?? failure2);
+      return json2({ ok: false, error: "paypal_error", issue: failure2?.issue ?? "" }, 502);
+    }
+  };
+  const applyCapture = async ({ env: env2, ctx, url: url2, state, orderId, paypalOrderId, capture, source }) => {
+    const shop = siteFor(env2).shop;
+    const { result } = await shop.updateOrder(
+      state,
+      orderId,
+      (current) => {
+        const alreadyPaid = ["paid", "shipped", "completed"].includes(current.status);
+        if (alreadyPaid) return null;
+        const line = `${isoNow(deps)} ${source}: capture ${capture.captureId} ${capture.status} for ${capture.amount.value} ${capture.amount.currency}`;
+        const base = {
+          "paypal-order-id": paypalOrderId,
+          "paypal-capture-id": capture.captureId,
+          ...capture.payerEmail ? { "payer-email": capture.payerEmail } : {}
+        };
+        if (capture.status === "PENDING") {
+          return {
+            kind: "pending",
+            fields: {
+              ...base,
+              "payment-problem": `${isoNow(deps).slice(0, 10)}: PayPal is holding this payment (${capture.reason || "pending"}). It is not paid yet: look at it in your PayPal account.`,
+              "payment-log": appendLogLines(current.paymentLog, [`${line} (pending)`])
+            }
+          };
+        }
+        if (capture.status !== "COMPLETED") {
+          return { kind: "declined", fields: { "payment-log": appendLogLines(current.paymentLog, [`${line} (not completed)`]) } };
+        }
+        if (!sameAmount(capture.amount, { value: current.total, currency: current.currency })) {
+          return {
+            kind: "problem",
+            problem: `PayPal captured ${capture.amount.value} ${capture.amount.currency}, but this order is ${current.total} ${current.currency}. Check the payment in PayPal before shipping.`,
+            fields: {
+              ...base,
+              status: "payment-problem",
+              "amount-paid": Number(capture.amount.value) || 0,
+              "payment-problem": `${isoNow(deps).slice(0, 10)}: PayPal captured ${capture.amount.value} ${capture.amount.currency}, but this order is ${current.total} ${current.currency}. Check the payment in PayPal before shipping.`,
+              "payment-log": appendLogLines(current.paymentLog, [`${line}: AMOUNT MISMATCH`])
+            }
+          };
+        }
+        return {
+          kind: "paid",
+          fields: {
+            ...base,
+            status: "paid",
+            "amount-paid": Number(capture.amount.value),
+            "paid-at": capture.createTime || isoNow(deps),
+            "payment-log": appendLogLines(current.paymentLog, [`${line} \u2192 paid`])
+          }
+        };
+      },
+      (decision) => decision.kind === "paid" ? `Paid with PayPal: ${orderId} (capture ${capture.captureId})` : `PayPal ${decision.kind}: ${orderId}`
+    );
+    if (result?.kind === "paid") later(ctx, sendOrderEmails({ env: env2, state, orderId, kind: "paid", heloName: url2.hostname }));
+    if (result?.kind === "problem") later(ctx, sendOrderEmails({ env: env2, state, orderId, kind: "problem", heloName: url2.hostname, problem: result.problem }));
+    return result;
+  };
+  const captureNow = async ({ env: env2, ctx, url: url2, state, paypal, orderId, paypalOrderId, source }) => {
+    const paypalOrder = await paypal.getOrder(paypalOrderId);
+    if (ourOrderIdOf(paypalOrder) !== orderId) return { error: "not_this_order" };
+    let captured = captureOf(paypalOrder);
+    if (!captured || paypalOrder.status !== "COMPLETED") {
+      if (paypalOrder.status !== "APPROVED") return { error: "not_approved", paypalStatus: paypalOrder.status };
+      try {
+        captured = captureOf(await paypal.captureOrder(paypalOrderId, `${orderId}-capture-${deps.now()}`));
+      } catch (failure2) {
+        if (failure2?.issue !== "ORDER_ALREADY_CAPTURED") throw failure2;
+        captured = captureOf(await paypal.getOrder(paypalOrderId));
+      }
+    }
+    if (!captured || !PAYPAL_CAPTURE_ID_PATTERN.test(captured.captureId)) return { error: "no_capture" };
+    const result = await applyCapture({ env: env2, ctx, url: url2, state, orderId, paypalOrderId, capture: captured, source });
+    return { captured, result };
+  };
+  const postCapture = async (request, url2, env2, ctx) => {
+    if (crossSite(request, url2, env2)) return json2({ ok: false, error: "forbidden" }, 403);
+    const { body, error: error62 } = await readJsonBody(request);
+    if (error62) return error62;
+    const orderId = String(body.orderId ?? "");
+    const paypalOrderId = String(body.paypalOrderId ?? "");
+    if (!ORDER_ID_PATTERN.test(orderId) || !PAYPAL_ORDER_ID_PATTERN.test(paypalOrderId)) return json2({ ok: false, error: "invalid" }, 400);
+    const context = await paypalContext(env2);
+    if (context.error) return context.error;
+    const { shop, state, paypal } = context;
+    const order = await shop.findOrder(state, orderId);
+    if (!order) return json2({ ok: false, error: "not_found" }, 404);
+    if (["paid", "shipped", "completed"].includes(order.status)) return json2({ ok: true, status: "paid", orderId });
+    if (order.status !== "awaiting-payment") return json2({ ok: false, error: "not_payable", status: order.status }, 409);
+    try {
+      const outcome = await captureNow({ env: env2, ctx, url: url2, state, paypal, orderId, paypalOrderId, source: "buyer approved" });
+      if (outcome.error) return json2({ ok: false, error: outcome.error }, 409);
+      const { captured, result } = outcome;
+      if (captured.status === "PENDING") return json2({ ok: true, status: "pending", orderId });
+      if (captured.status !== "COMPLETED") return json2({ ok: false, error: "declined" }, 402);
+      if (result?.kind === "problem") return json2({ ok: true, status: "problem", orderId });
+      const after = await shop.findOrder(state, orderId);
+      return json2({
+        ok: true,
+        status: after?.status === "payment-problem" ? "problem" : "paid",
+        orderId,
+        amountText: formatPrice(Number(captured.amount.value), captured.amount.currency, state.settings.language)
+      });
+    } catch (failure2) {
+      if (failure2 instanceof ShopUnavailableError) throw failure2;
+      deps.log.error?.("busa-shop: PayPal capture failed", orderId, failure2?.message ?? failure2);
+      if (failure2?.issue === "INSTRUMENT_DECLINED") return json2({ ok: false, error: "instrument_declined" }, 422);
+      return json2({ ok: false, error: "paypal_error", issue: failure2?.issue ?? "" }, 502);
+    }
+  };
+  const postWebhook = async (request, url2, env2, ctx) => {
+    const raw = await readLimited(request, MAX_WEBHOOK_BODY_BYTES);
+    if (raw === null) return json2({ ok: false, error: "too_large" }, 413);
+    let event;
+    try {
+      event = JSON.parse(raw);
+    } catch {
+      return json2({ ok: false, error: "invalid_json" }, 400);
+    }
+    if (!event || typeof event !== "object" || typeof event.id !== "string") return json2({ ok: false, error: "invalid" }, 400);
+    const shop = siteFor(env2).shop;
+    const state = await shop.load();
+    if (state.setup !== "ready") return json2({ ok: false, error: "not_ready" }, 503);
+    const vault = await secretsFor(env2, state);
+    const payments = paymentsFor(env2, state, vault);
+    if (payments.payment !== "paypal") {
+      deps.log.warn?.("busa-shop: PayPal webhook arrived, but PayPal is not set up here", payments.reason);
+      return json2({ ok: false, error: "paypal_off" }, 503);
+    }
+    if (!state.settings.paypalWebhookId) {
+      deps.log.warn?.("busa-shop: PayPal webhook arrived, but Settings \u203A PayPal webhook ID is empty, so it cannot be verified");
+      return json2({ ok: false, error: "no_webhook_id" }, 503);
+    }
+    const paypal = paypalClientFor(env2, payments);
+    let genuine;
+    try {
+      genuine = await paypal.verifyWebhook({ headers: request.headers, rawBody: raw, webhookId: state.settings.paypalWebhookId });
+    } catch (failure2) {
+      deps.log.error?.("busa-shop: PayPal webhook not verified", failure2?.message ?? failure2);
+      return json2({ ok: false, error: "verify_unavailable" }, 503);
+    }
+    if (!genuine) {
+      deps.log.warn?.("busa-shop: PayPal webhook signature did not verify", event.id);
+      return json2({ ok: false, error: "signature" }, 400);
+    }
+    const type = String(event.event_type ?? "");
+    if (!HANDLED_EVENTS.has(type)) return json2({ ok: true, ignored: type });
+    const ref = eventOrderRef(event);
+    let order = ORDER_ID_PATTERN.test(ref.ourId) ? await shop.findOrder(state, ref.ourId) : null;
+    if (!order && PAYPAL_CAPTURE_ID_PATTERN.test(ref.captureId)) order = await shop.findOrderByCapture(state, ref.captureId);
+    if (!order) {
+      deps.log.warn?.("busa-shop: PayPal webhook for an order this shop does not have", type, event.id);
+      return json2({ ok: true, ignored: "unknown_order" });
+    }
+    if (order.paymentLog.includes(event.id)) return json2({ ok: true, duplicate: true });
+    if (type === "CHECKOUT.ORDER.APPROVED") {
+      const decision = decideWebhook(event, order, { nowIso: isoNow(deps) });
+      if (decision.kind === "capture" && PAYPAL_ORDER_ID_PATTERN.test(ref.paypalOrderId)) {
+        try {
+          await captureNow({ env: env2, ctx, url: url2, state, paypal, orderId: order.orderId, paypalOrderId: ref.paypalOrderId, source: `webhook ${event.id}` });
+        } catch (failure2) {
+          if (failure2 instanceof ShopUnavailableError) throw failure2;
+          deps.log.error?.("busa-shop: capture after approval failed", order.orderId, failure2?.message ?? failure2);
+          return json2({ ok: false, error: "capture_failed" }, 503);
+        }
+      }
+      await shop.updateOrder(
+        state,
+        order.orderId,
+        (current) => current.paymentLog.includes(event.id) ? null : { fields: { "payment-log": appendLogLines(current.paymentLog, [`${isoNow(deps)} PayPal ${event.id} ${type}: ${decision.note}`]) } },
+        `PayPal ${type} for ${order.orderId}`
+      );
+      return json2({ ok: true });
+    }
+    const { result } = await shop.updateOrder(
+      state,
+      order.orderId,
+      (current) => {
+        if (current.paymentLog.includes(event.id)) return null;
+        const decision = decideWebhook(event, current, { nowIso: isoNow(deps) });
+        if (decision.kind === "ignore") return null;
+        return {
+          ...decision,
+          fields: { ...decision.fields, "payment-log": appendLogLines(current.paymentLog, [`${isoNow(deps)} PayPal ${event.id} ${type}: ${decision.note}`]) }
+        };
+      },
+      (decision) => `PayPal ${type} for ${order.orderId}${decision.kind === "paid" ? ": paid" : ""}`
+    );
+    if (result?.kind === "paid") later(ctx, sendOrderEmails({ env: env2, state, orderId: order.orderId, kind: "paid", heloName: url2.hostname }));
+    if (result?.kind === "problem" && result.fields.status === "payment-problem") {
+      later(ctx, sendOrderEmails({ env: env2, state, orderId: order.orderId, kind: "problem", heloName: url2.hostname, problem: result.fields["payment-problem"] }));
+    }
+    return json2({ ok: true });
   };
   const imageRoute = async (request, env2, ctx, productId, index) => {
     const cache = typeof caches !== "undefined" ? caches.default : void 0;
     const hit = cache ? await cache.match(request) : void 0;
     if (hit) return hit;
-    const shop = shopFor(env2);
+    const shop = siteFor(env2).shop;
     const state = await shop.load();
     if (state.setup !== "ready") return plain("Not found", 404, void 0, "no-store");
     const image = await shop.productImage(state, productId, index);
@@ -29296,6 +31535,25 @@ var createHandler = (overrides = {}) => {
     if (cache && ctx?.waitUntil) ctx.waitUntil(cache.put(request, response.clone()));
     return response;
   };
+  const statusBody = async (env2, state) => {
+    if (state.setup !== "ready") return { ok: false, setup: state.setup, products: 0, ordering: false };
+    const vault = await secretsFor(env2, state);
+    const payments = paymentsFor(env2, state, vault);
+    const email3 = smtpConfig(state.settings, vault.secrets, { canConnect: Boolean(env2.BUSABASE_API_KEY) });
+    return {
+      ok: true,
+      setup: state.setup,
+      products: state.catalog.listed.length,
+      ordering: Boolean(state.ordersBaseId) && checkoutCountries(state.settings, state.shipping).length > 0,
+      productsFrom: state.productsFrom,
+      payments: payments.payment === "paypal" ? `paypal-${payments.mode}` : "requests",
+      ...payments.payment === "paypal" ? {} : { paymentsNote: payments.reason },
+      shipping: state.shipping.status === "ready" ? { countries: checkoutCountries(state.settings, state.shipping).length, problems: state.shipping.problems.length } : state.shipping.status,
+      email: email3.ready ? "ready" : email3.reason,
+      pages: state.pages.length,
+      ...unfinishedPages(state.pages).length ? { pagesToFinish: unfinishedPages(state.pages) } : {}
+    };
+  };
   const route = async (request, env2, ctx) => {
     const url2 = new URL(request.url);
     const path = url2.pathname.length > 1 ? url2.pathname.replace(/\/+$/, "") : url2.pathname;
@@ -29304,7 +31562,14 @@ var createHandler = (overrides = {}) => {
     if (path.startsWith("/static/") || path === "/favicon.svg") return assets(request, env2, null);
     if (path === "/api/orders") {
       if (method !== "POST") return json2({ ok: false, error: "method_not_allowed" }, 405);
-      return postOrder(request, url2, env2);
+      return postOrder(request, url2, env2, ctx);
+    }
+    if (path === "/api/paypal/orders" || path === "/api/paypal/capture" || path === "/api/paypal/webhook" || path === "/api/paypal/client-token") {
+      if (method !== "POST") return json2({ ok: false, error: "method_not_allowed" }, 405);
+      if (path === "/api/paypal/orders") return postCreatePayPalOrder(request, url2, env2);
+      if (path === "/api/paypal/client-token") return postClientToken(request, url2, env2);
+      if (path === "/api/paypal/capture") return postCapture(request, url2, env2, ctx);
+      return postWebhook(request, url2, env2, ctx);
     }
     if (!isRead) return plain("Method not allowed", 405, void 0, "no-store");
     if (path === "/robots.txt") return plain(buildRobots(url2.origin));
@@ -29319,24 +31584,26 @@ var createHandler = (overrides = {}) => {
       if (!PRODUCT_ID_PATTERN.test(productId)) return plain("Not found", 404, void 0, "no-store");
       return imageRoute(request, env2, ctx, productId, Number(imageMatch[2]));
     }
-    const isPage = path === "/" || path === "/order" || path.startsWith("/products/") || path === "/sitemap.xml";
+    const payMatch = /^\/pay\/([^/]{1,40})$/.exec(path);
+    if (payMatch) return getPay(url2, env2, payMatch[1]);
+    const isPage = path === "/" || path === "/order" || path.startsWith("/products/") || path.startsWith("/pages/") || path === "/sitemap.xml";
     if (!isPage && path !== "/api/status") return assets(request, env2, null);
-    const state = await shopFor(env2).load();
-    if (path === "/api/status") {
-      return json2({
-        ok: state.setup === "ready",
-        setup: state.setup,
-        products: state.setup === "ready" ? state.catalog.listed.length : 0,
-        ordering: state.setup === "ready" && Boolean(state.ordersBaseId)
-      });
-    }
+    const shop = siteFor(env2).shop;
+    const state = await shop.load();
+    if (path === "/api/status") return json2(await statusBody(env2, state));
     if (state.setup !== "ready") {
       return path === "/sitemap.xml" ? plain("Not ready", 503, void 0, "no-store") : notReady(state);
     }
     const { settings, catalog } = state;
-    if (path === "/") return html(homePage({ origin: url2.origin, settings, catalog }));
-    if (path === "/sitemap.xml") return plain(buildSitemap(url2.origin, catalog.listed), 200, "application/xml; charset=utf-8");
+    const payment = settings.paypalMode !== "off" && settings.paypalClientId && env2.BUSABASE_API_KEY && state.shipping.status === "ready" ? "paypal" : "request";
+    const site = { pages: state.pages, payment };
+    if (path === "/") return html(homePage({ origin: url2.origin, settings, catalog, site }));
+    if (path === "/sitemap.xml") {
+      return plain(buildSitemap(url2.origin, catalog.listed, state.pages), 200, "application/xml; charset=utf-8");
+    }
     if (path === "/order") {
+      const vault = await secretsFor(env2, state);
+      const payments = paymentsFor(env2, state, vault);
       return html(
         orderPage({
           origin: url2.origin,
@@ -29344,10 +31611,21 @@ var createHandler = (overrides = {}) => {
           catalog,
           lines: orderLinesFromQuery(url2, state),
           orderId: newOrderId(),
-          ordersReady: Boolean(state.ordersBaseId)
+          ordersReady: Boolean(state.ordersBaseId),
+          checkout: checkoutFor(state, payments),
+          site: siteInfo(state, payments),
+          // No key: the browser engine (Busabase Cloud Free), the owner's own tab.
+          browserPreview: !env2.BUSABASE_API_KEY
         }),
         { cache: "no-store" }
       );
+    }
+    const pageMatch = /^\/pages\/([^/]+)$/.exec(path);
+    if (pageMatch) {
+      const slug = pageMatch[1].toLowerCase();
+      const page = PAGE_SLUG_PATTERN.test(slug) ? state.pages.find((item) => item.slug === slug) : null;
+      if (page) return html(policyPage({ origin: url2.origin, settings, page, site }));
+      return html(notFoundPage({ settings, site }), { status: 404, cache: "no-store" });
     }
     const productMatch = /^\/products\/([^/]+)$/.exec(path);
     if (productMatch) {
@@ -29358,9 +31636,9 @@ var createHandler = (overrides = {}) => {
         productId = "";
       }
       const product = catalog.listed.find((item) => item.id === productId);
-      if (product) return html(productPage({ origin: url2.origin, settings, product }));
+      if (product) return html(productPage({ origin: url2.origin, settings, product, site }));
     }
-    return html(notFoundPage({ settings }), { status: 404, cache: "no-store" });
+    return html(notFoundPage({ settings, site }), { status: 404, cache: "no-store" });
   };
   return async (request, env2, ctx) => {
     let response;

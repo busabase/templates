@@ -2,27 +2,39 @@
 // which image references a stranger's browser can load. No I/O here, so every
 // rule is unit-tested directly (test/catalog.test.mjs).
 //
-// The shop never stores products. It reads the Products table of the
-// busa-product-hub template (see src/resources.js), whose fields are plain
-// text and numbers plus JSON-in-longtext blocks (`pricing`, `inventory`,
-// `content`, `compliance`). Those blocks are parsed here and nowhere else.
+// The shop reads one Products table (see src/resources.js), in one of two shapes:
 //
-// The selling price is the Products table's `price` (number) and `currency`
-// (text) columns since busa-product-hub 0.4.0, so the owner changes a price by
-// editing a cell. A table made by an earlier install has no such columns and
-// keeps the price in `pricing.current_price` / `pricing.currency`; each value
-// is read from its column and, only while that column is empty, from the JSON.
+// - its own (busa-shop 0.5.0 and later): plain columns an owner edits in the
+//   grid. Status (active / draft / archive), Price, Currency, Stock, Image,
+//   Gallery (one link per line), Description, Highlights (one per line), Specs
+//   ("Label: value" per line, src/details.js), Brand, Model, Warranty, Returns,
+//   Tags (comma-separated). Cost, Source and Notes are the owner's and never read.
+// - a busa-product-hub table (a shop installed before 0.5.0, or Settings ›
+//   "Products table" pointing at one): Lifecycle + Status, and JSON-in-longtext
+//   blocks (`pricing`, `inventory`, `content`, `compliance`). The selling price
+//   is its `price` (number) and `currency` (text) columns since
+//   busa-product-hub 0.4.0; a table made by an earlier install keeps it in
+//   `pricing.current_price` / `pricing.currency`, read only while the column
+//   is empty.
+//
+// `normalizeProduct` turns either into one shape, so the pages never know which
+// table they came from. The JSON blocks are parsed here and nowhere else.
+
+import { parseDetailKeys, parseSpecs } from "./details.js";
+import { SHOP_SHAPE } from "./resources.js";
 
 export const PRODUCT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/;
 export const CURRENCY_PATTERN = /^[A-Z]{3}$/;
 
 // The listing rule, in full. A product is on the website only when ALL hold:
-//   1. lifecycle is `active` or `launch`  (busa-product-hub: launch|active|test|archive)
-//   2. status is `active`, `approved` or `live`
-//   3. it has a name and a URL-safe product id
-//   4. the price is a number above 0: the `price` column, or pricing.current_price while it is empty
-//   5. the currency equals the store currency in Settings: `currency`, or pricing.currency while it is empty
-//   6. Settings › "Only list products with this tag" is empty, or the product has that tag
+//   1. status is `active` (the shop's own table: active|draft|archive), or, in a
+//      busa-product-hub table, status is `active`, `approved` or `live` AND
+//      lifecycle is `active` or `launch` (launch|active|test|archive)
+//   2. it has a name and a URL-safe product id
+//   3. the price is a number above 0: the `price` column, or pricing.current_price while it is empty
+//   4. the currency equals the store currency in Settings: `currency`, or pricing.currency while it is
+//      empty; in the shop's own table an empty Currency is the store currency
+//   5. Settings › "Only list products with this tag" is empty, or the product has that tag
 // Anything else is hidden, and `listingFor` says why, so the daily check can
 // report it. Stock does not hide a product: 0 available shows "Out of stock"
 // and it cannot be ordered.
@@ -72,11 +84,25 @@ const isBlank = (value) => value === null || value === undefined || (typeof valu
 /** A column's value, or the same fact in the JSON of a table made before that column existed. */
 const columnOr = (column, legacy) => (isBlank(column) ? legacy : column);
 
-const asStringList = (value) => {
-  const parsed = parseJson(value, []);
-  if (!Array.isArray(parsed)) return [];
-  return parsed.filter((item) => typeof item === "string" && item.trim()).map((item) => item.trim());
+/**
+ * A list cell: a JSON array (busa-product-hub), or plain text split on
+ * `separators` (the shop's own table: one link per line, tags by commas).
+ */
+const asStringList = (value, separators = null) => {
+  if (Array.isArray(value)) return value.filter((item) => typeof item === "string" && item.trim()).map((item) => item.trim());
+  if (typeof value !== "string" || !value.trim()) return [];
+  const parsed = parseJson(value, null);
+  if (Array.isArray(parsed)) return asStringList(parsed);
+  if (!separators) return [];
+  return value
+    .split(separators)
+    .map((item) => item.trim())
+    .filter(Boolean);
 };
+
+const LINES = /\r?\n/;
+const LINKS = /[\s|]+/;
+const TAGS = /[,，;；|\n]+/;
 
 /**
  * Classify one image reference from the Products table.
@@ -120,14 +146,32 @@ export const classifyImageRef = (ref, busabaseOrigin) => {
   return { kind: "airapp", path: `app/${path}` };
 };
 
-export const normalizeProduct = (record) => {
+/**
+ * One Products row → what the pages need. `shape` is the table's
+ * (src/resources.js): the shop's own plain columns, or a product hub's JSON
+ * blocks. A plain column wins over the same fact in the JSON, so either table
+ * reads the same way.
+ */
+export const normalizeProduct = (record, { shape = "" } = {}) => {
   const fields = record?.fields ?? {};
   const imageRefs = [];
-  for (const ref of [text(fields.image), ...asStringList(fields.gallery)]) {
+  for (const ref of [text(fields.image), ...asStringList(fields.gallery, LINKS)]) {
     if (ref && !imageRefs.includes(ref)) imageRefs.push(ref);
   }
   const pricing = asObject(fields.pricing);
+  const inventory = asObject(fields.inventory);
+  const stock = finiteNumber(fields.stock);
+  if (stock !== null) inventory.available = stock;
+  const content = asObject(fields.content);
+  const specs = parseSpecs(fields.specs);
+  const attributes = { ...asObject(content.attributes), ...specs.attributes };
+  for (const key of ["brand", "model", "warranty", "returns"]) if (text(fields[key])) attributes[key] = text(fields[key]);
+  if (Object.keys(attributes).length) content.attributes = attributes;
+  if (typeof fields.description === "string" && fields.description.trim()) content.description = fields.description.trim();
+  const highlights = asStringList(fields.highlights, LINES);
+  if (highlights.length) content.bullets = highlights;
   return {
+    shape: shape === SHOP_SHAPE ? SHOP_SHAPE : "product-hub",
     recordId: typeof record?.id === "string" ? record.id : "",
     id: text(fields["product-id"]),
     ref: finiteNumber(fields.ref),
@@ -138,13 +182,15 @@ export const normalizeProduct = (record) => {
     lifecycle: lower(fields.lifecycle),
     status: lower(fields.status),
     vendor: text(fields.vendor),
-    tags: asStringList(fields.tags),
+    tags: asStringList(fields.tags, TAGS),
     // The selling price as stored: the column, or the JSON while the column is empty.
     priceValue: columnOr(fields.price, pricing.current_price),
     currencyValue: columnOr(fields.currency, pricing.currency),
     pricing,
-    inventory: asObject(fields.inventory),
-    content: asObject(fields.content),
+    inventory,
+    content,
+    // Labels the owner wrote in Specs beyond the standard ones: shown, after them.
+    specKeys: specs.extraKeys,
     imageRefs,
     updatedAt: text(fields["updated-at"]) || text(record?.updatedAt),
   };
@@ -153,13 +199,16 @@ export const normalizeProduct = (record) => {
 /** Why a product is or is not on the website, plus what the page needs to show it. */
 export const listingFor = (product, settings) => {
   const reasons = [];
-  if (!LISTED_LIFECYCLES.has(product.lifecycle)) reasons.push("lifecycle");
+  const own = product.shape === SHOP_SHAPE;
+  // The shop's own table has one Status; a product hub's has Lifecycle too.
+  if (!own && !LISTED_LIFECYCLES.has(product.lifecycle)) reasons.push("lifecycle");
   if (!LISTED_STATUSES.has(product.status)) reasons.push("status");
   if (!product.name) reasons.push("name");
   if (!PRODUCT_ID_PATTERN.test(product.id)) reasons.push("product-id");
   const price = finiteNumber(product.priceValue);
   if (price === null || price <= 0) reasons.push("price");
-  const currency = text(product.currencyValue).toUpperCase();
+  // One shop, one currency: in its own table an empty Currency is the store's.
+  const currency = text(product.currencyValue).toUpperCase() || (own ? settings.currency : "");
   if (!currency) reasons.push("currency");
   else if (currency !== settings.currency) reasons.push("currency-mismatch");
   if (settings.listedTag && !product.tags.some((tag) => tag.toLowerCase() === settings.listedTag.toLowerCase())) {
@@ -178,12 +227,17 @@ export const listingFor = (product, settings) => {
   };
 };
 
-/** The images the page can show, in order: the hero image first, then the gallery. */
-export const imagesFor = (product, busabaseOrigin) => {
+/**
+ * The images the page can show, in order: the hero image first, then the
+ * gallery. `airapp` says whether a path inside the Product Hub AirApp can be
+ * read (there is one next to the table); without it such a path is left out
+ * rather than shown as a broken picture.
+ */
+export const imagesFor = (product, busabaseOrigin, { airapp = true } = {}) => {
   const images = [];
   for (const ref of product.imageRefs) {
     const image = classifyImageRef(ref, busabaseOrigin);
-    if (!image) continue;
+    if (!image || (image.kind === "airapp" && !airapp)) continue;
     images.push(image);
     if (images.length >= MAX_IMAGES) break;
   }
@@ -267,11 +321,31 @@ export const parseCountryList = (value) => {
   return codes;
 };
 
+/** A select cell as the API returns it: the choice id, or `{ id, name }`. */
+const choice = (value) => (value && typeof value === "object" && !Array.isArray(value) ? lower(value.id ?? value.name) : lower(value));
+
+export const PAYPAL_MODES = ["off", "sandbox", "live"];
+export const SMTP_SECURITY_MODES = ["starttls", "tls", "none"];
+
 export const normalizeSettings = (record) => {
   const fields = record?.fields ?? {};
-  const language = lower(fields.language);
+  const language = choice(fields.language);
   const shipsTo = parseCountryList(fields["ships-to"]);
+  const paypalMode = choice(fields["paypal-mode"]);
+  const smtpSecurity = choice(fields["smtp-security"]);
+  const smtpPort = finiteNumber(fields["smtp-port"]);
   return {
+    // Payments and email. Only the non-secret half lives here: the PayPal
+    // secret and the SMTP password are in the Space Vault (src/vault.js).
+    paypalMode: PAYPAL_MODES.includes(paypalMode) ? paypalMode : "off",
+    paypalClientId: text(fields["paypal-client-id"]),
+    paypalWebhookId: text(fields["paypal-webhook-id"]),
+    smtpHost: text(fields["smtp-host"]).toLowerCase(),
+    smtpPort: smtpPort === null ? null : Math.trunc(smtpPort),
+    smtpSecurity: SMTP_SECURITY_MODES.includes(smtpSecurity) ? smtpSecurity : "starttls",
+    smtpUsername: text(fields["smtp-username"]),
+    emailFrom: text(fields["email-from"]),
+    notifyEmail: text(fields["notify-email"]),
     storeName: text(fields["store-name"]),
     tagline: text(fields.tagline),
     currency: text(fields.currency).toUpperCase(),
@@ -283,6 +357,7 @@ export const normalizeSettings = (record) => {
     demoNotice: fields["demo-notice"] === true || fields["demo-notice"] === "true",
     listedTag: text(fields["listed-tag"]),
     productsBase: text(fields["products-base"]),
+    showDetails: parseDetailKeys(fields["show-details"]),
   };
 };
 
@@ -311,13 +386,13 @@ export const countryName = (code, language = "en") => {
  * Products table, split into listed and hidden, each listed one carrying its
  * price, stock state, images and valid certificates.
  */
-export const buildCatalog = ({ productRecords, certificateRecords, settings, busabaseOrigin, nowMs }) => {
+export const buildCatalog = ({ productRecords, certificateRecords, settings, busabaseOrigin, nowMs, shape = "", airappImages = true }) => {
   const certificates = certificateRecords.map(normalizeCertificate);
   const listed = [];
   const hidden = [];
   const seenIds = new Set();
   for (const record of productRecords) {
-    const product = normalizeProduct(record);
+    const product = normalizeProduct(record, { shape });
     const listing = listingFor(product, settings);
     if (listing.listed && seenIds.has(product.id)) listing.reasons.push("duplicate-id");
     if (!listing.listed || listing.reasons.length) {
@@ -329,7 +404,7 @@ export const buildCatalog = ({ productRecords, certificateRecords, settings, bus
       ...product,
       ...listing,
       priceText: formatPrice(listing.price, listing.currency, settings.language),
-      images: imagesFor(product, busabaseOrigin),
+      images: imagesFor(product, busabaseOrigin, { airapp: airappImages }),
       certificates: validCertificatesFor(product, certificates, nowMs),
     });
   }

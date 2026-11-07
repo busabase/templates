@@ -1,6 +1,9 @@
-// scripts/import-catalog.mjs with the real busabase-sdk against the fake
-// Busabase API: the first run, the idempotent second run, updates that keep the
-// owner's own values, dry runs, and every refusal the summary reports.
+// scripts/import-products.mjs (the one product-list importer) into a
+// busa-product-hub table, with the real busabase-sdk and the toy list in
+// assets/demo, against the fake Busabase API: a shop installed before 0.5.0
+// (no Products of its own) and the hub itself. The first run, the idempotent
+// second run, updates that keep the owner's own values, dry runs, and every
+// refusal the summary reports. The shop's own Products: import-products-shop.test.mjs.
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { copyFile, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
@@ -11,17 +14,18 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { createBusabaseClient, uploadAsset } from "busabase-sdk";
 import { createAirAppRecords } from "busabase-sdk/airapp";
-import { formatSummary, resolveProductHub, runImport } from "../../../scripts/import-catalog.mjs";
+import { formatSummary, resolveTarget, runImport } from "../../../scripts/import-products.mjs";
 import { startFakeBusabase, TEST_KEY } from "./fake-busabase.mjs";
-import { DEMO_DIR, NODES } from "./fixtures.mjs";
+import { DEMO_DIR, NODES, sampleSettingsFields } from "./fixtures.mjs";
 
 const appDir = fileURLToPath(new URL("..", import.meta.url));
-const scriptPath = fileURLToPath(new URL("../../../scripts/import-catalog.mjs", import.meta.url));
+const scriptPath = fileURLToPath(new URL("../../../scripts/import-products.mjs", import.meta.url));
 const hubBase = async (name) =>
   JSON.parse(await readFile(fileURLToPath(new URL(`../../../../busa-product-hub/content/${name}/base.json`, import.meta.url)), "utf8"));
 const hubCertificatesBase = await hubBase("certificates");
 const hubProductsBase = await hubBase("products");
 const sdk = { createBusabaseClient, uploadAsset, createAirAppRecords };
+const SETTINGS = await sampleSettingsFields();
 const CATALOG = `${DEMO_DIR}toy-catalog.csv`;
 const CERTIFICATES = `${DEMO_DIR}toy-certificates.csv`;
 const IMAGES = `${DEMO_DIR}images`;
@@ -45,7 +49,7 @@ const freshState = ({ withToyTypes = true, priceColumn = true } = {}) => {
   const productFieldsDeclared = hubProductsBase.fields.filter((field) => priceColumn || !["price", "currency"].includes(field.slug));
   return {
     nodes: Object.values(NODES),
-    records: { bas_products: [], bas_certificates: [], bas_settings: [], bas_orders: [], bas_reports: [] },
+    records: { bas_products: [], bas_certificates: [], bas_settings: [{ id: "rec_settings", fields: SETTINGS }], bas_orders: [], bas_reports: [] },
     bases: { bas_certificates: { name: "Certificates", fields }, bas_products: { name: "Products", fields: productFieldsDeclared } },
     files: {},
     assets: {},
@@ -66,13 +70,15 @@ beforeEach(() => {
 
 after(async () => api.close());
 
-describe("import-catalog.mjs", () => {
+describe("import-products.mjs: the toy list", () => {
   it("imports products, photos and linked certificates in one run", async () => {
     const summary = await run();
     assert.deepEqual(summary.products, { created: 12, updated: 0, unchanged: 0, skipped: 0, queued: 0 });
     assert.deepEqual(summary.certificates, { created: 39, updated: 0, unchanged: 0, skipped: 0, queued: 0 });
     assert.deepEqual(summary.images, { uploaded: 11, reused: 0, missing: 0 });
     assert.equal(summary.productsTable, "busa-product-hub-products");
+    assert.deepEqual([summary.target, summary.from, summary.storeCurrency], ["product-hub", "product-hub", "USD"]);
+    assert.match(formatSummary(summary), /^Products table: busa-product-hub-products \(Busa Product Hub's, which this shop sells from: it was installed before busa-shop 0\.5\.0/);
 
     const robot = product("tt-walking-robot").fields;
     assert.equal(robot.name, "Walking Robot Buddy");
@@ -326,29 +332,38 @@ describe("import-catalog.mjs", () => {
     assert.match(formatSummary(summary), /12 waiting for review/);
   });
 
-  it("stops with a clear error when Busa Product Hub is not installed or there are two", async () => {
+  it("stops with a clear error when there is no Products table to write, or two", async () => {
     api.state.nodes = api.state.nodes.filter((node) => node.metadata.appId !== "busa-product-hub");
-    await assert.rejects(run(), /Busa Product Hub is not installed in this workspace: no Products table found\. Install the Busa Product Hub template first/);
+    await assert.rejects(run(), /This Busa Shop has no Products table of its own \(it was installed before busa-shop 0\.5\.0.*Install the Busa Shop template again/);
     assert.deepEqual(writes(), []);
+    assert.throws(() => resolveTarget([NODES.unrelated], {}), /No Products table found in this workspace\. Install the Busa Shop template \(it has its own Products table\), or Busa Product Hub/);
     const second = { ...NODES.products, id: "nod_hub2_products", parentId: "nod_hub2", baseId: "bas_products_2", slug: "busa-product-hub-2-products" };
-    assert.throws(() => resolveProductHub([NODES.products, second], ""), /2 Busa Product Hub Products tables .* --products-base/);
-    assert.equal(resolveProductHub([NODES.products, NODES.certificates, second], "busa-product-hub-2-products").productsBaseId, "bas_products_2");
-    assert.equal(resolveProductHub([{ ...NODES.products, metadata: {} }], "").productsBaseId, "bas_products", "default slug when unstamped");
+    assert.throws(() => resolveTarget([NODES.products, second], {}), /2 Busa Product Hub Products tables .* --products-base/);
+    assert.equal(resolveTarget([NODES.products, NODES.certificates, second], { override: "busa-product-hub-2-products" }).productsBaseId, "bas_products_2");
+    assert.equal(resolveTarget([{ ...NODES.products, metadata: {} }], {}).productsBaseId, "bas_products", "default slug when unstamped");
   });
 
-  it("needs BUSABASE_BASE_URL and the catalogue's columns", async () => {
+  it("needs BUSABASE_BASE_URL, a product table and a name column; a list without prices imports without them", async () => {
     await assert.rejects(run({ env: {} }), /Set BUSABASE_BASE_URL/);
     const dir = await mkdtemp(path.join(tmpdir(), "busa-shop-import-"));
     try {
+      await writeFile(path.join(dir, "a.csv"), "foo,bar\n1,2\n");
+      await assert.rejects(run({ catalogPath: path.join(dir, "a.csv"), certificatesPath: "" }), /a\.csv has no product table: no row in the first 20 names a product column.*"foo", "bar"/);
+      await writeFile(path.join(dir, "b.csv"), "sku,price\nA-1,5\n");
+      await assert.rejects(run({ catalogPath: path.join(dir, "b.csv"), certificatesPath: "" }), /b\.csv: no name column/);
+      assert.deepEqual(writes(), []);
       await writeFile(path.join(dir, "c.csv"), "product_id,name\ntt-a,A\n");
-      await assert.rejects(run({ catalogPath: path.join(dir, "c.csv"), certificatesPath: "" }), /missing column\(s\): price, currency/);
+      const summary = await run({ catalogPath: path.join(dir, "c.csv"), certificatesPath: "" });
+      assert.equal(summary.products.created, 1);
+      assert.equal(product("tt-a").fields.price, undefined);
+      assert.match(formatSummary(summary), /\| 2 \| tt-a \| A \| — \| — \| 0 \| created \| price, currency, stock, picture, status, lifecycle, description \|/);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
   });
 });
 
-describe("import-catalog.mjs is self-contained", () => {
+describe("import-products.mjs is self-contained", () => {
   it("imports only Node built-ins and busabase-sdk", async () => {
     const source = await readFile(scriptPath, "utf8");
     const specifiers = [...source.matchAll(/(?:^import\s[^"']*["']([^"']+)["']|import\(["']([^"']+)["']\))/gm)].map((match) => match[1] ?? match[2]);
@@ -359,24 +374,24 @@ describe("import-catalog.mjs is self-contained", () => {
   it("runs as one file in an otherwise empty directory", async () => {
     const dir = await mkdtemp(path.join(tmpdir(), "busa-shop-import-alone-"));
     try {
-      await copyFile(scriptPath, path.join(dir, "import-catalog.mjs"));
+      await copyFile(scriptPath, path.join(dir, "import-products.mjs"));
       await copyFile(CATALOG, path.join(dir, "toy-catalog.csv"));
       await copyFile(CERTIFICATES, path.join(dir, "toy-certificates.csv"));
       await symlink(IMAGES, path.join(dir, "images"));
       const exec = promisify(execFile);
       // Without busabase-sdk installed it says what to do.
-      const missing = await exec(process.execPath, ["import-catalog.mjs", "toy-catalog.csv"], { cwd: dir, env: { ...process.env, ...env() } }).catch((error) => error);
+      const missing = await exec(process.execPath, ["import-products.mjs", "toy-catalog.csv"], { cwd: dir, env: { ...process.env, ...env() } }).catch((error) => error);
       assert.match(missing.stderr, /busabase-sdk is not installed next to this script\. Run `npm i busabase-sdk`/);
       // "npm i busabase-sdk": here, the app's own installed copy.
       await symlink(path.join(appDir, "node_modules"), path.join(dir, "node_modules"));
-      const { stdout } = await exec(process.execPath, ["import-catalog.mjs", "toy-catalog.csv", "--certificates", "toy-certificates.csv"], {
+      const { stdout } = await exec(process.execPath, ["import-products.mjs", "toy-catalog.csv", "--certificates", "toy-certificates.csv"], {
         cwd: dir,
         env: { ...process.env, ...env() },
       });
       assert.match(stdout, /Products: 12 created, 0 updated, 0 unchanged, 0 skipped/);
       assert.match(stdout, /Certificates: 39 created/);
       assert.match(stdout, /Photos: 11 uploaded/);
-      const again = await exec(process.execPath, ["import-catalog.mjs", "toy-catalog.csv", "--certificates", "toy-certificates.csv"], {
+      const again = await exec(process.execPath, ["import-products.mjs", "toy-catalog.csv", "--certificates", "toy-certificates.csv"], {
         cwd: dir,
         env: { ...process.env, ...env() },
       });

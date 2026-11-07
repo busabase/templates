@@ -404,6 +404,7 @@ h2 {
 
 .specs dd {
   margin: 0;
+  white-space: pre-line;
 }
 
 .certs {
@@ -562,11 +563,104 @@ textarea:focus {
   font-size: 14px;
 }
 
-.order-total {
+.order-sums {
+  margin: 14px 0 0;
+}
+
+.order-sums > div {
   display: flex;
   justify-content: space-between;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.order-sums dt {
+  color: var(--muted);
+}
+
+.order-sums dd {
+  margin: 0;
+  text-align: right;
+}
+
+.order-sums .order-total {
+  border-top: 1px solid var(--line);
+  margin-top: 6px;
+  padding-top: 10px;
   font-size: 18px;
-  margin: 16px 0 0;
+}
+
+.order-sums .order-total dt {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.order-details h3 {
+  margin: 24px 0 0;
+  font-size: 16px;
+}
+
+/* ---- Pay page ---- */
+
+.pay-summary {
+  max-width: 560px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 20px 16px;
+  margin-bottom: 20px;
+}
+
+.pay-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pay-items li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.pay-box,
+[data-pay-final] {
+  max-width: 560px;
+}
+
+.pay-box .note.is-error {
+  color: var(--error);
+}
+
+.paypal-buttons {
+  min-height: 48px;
+  margin: 8px 0 12px;
+}
+
+/* ---- Policy pages ---- */
+
+.policy {
+  max-width: 760px;
+}
+
+.policy h2 {
+  margin-top: 28px;
+  font-size: 20px;
+}
+
+.policy h3,
+.policy h4 {
+  margin-top: 20px;
+  font-size: 17px;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  width: 100%;
 }
 
 .field-error {

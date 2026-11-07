@@ -1,9 +1,12 @@
 // Workspace state for tests and the local preview, built from the template's
-// own demo files: the toy list in assets/demo, as scripts/import-catalog.mjs
-// writes it into busa-product-hub, and the Settings row this template installs.
+// own demo files: the toy list in assets/demo, as scripts/import-products.mjs
+// writes it, and the Settings row this template installs. Two workspaces:
+// a shop with its own Products and Certificates (busa-shop 0.5.0 and later,
+// `source: "shop"`), and a shop installed before 0.5.0 that sells from
+// busa-product-hub (`source: "product-hub"`, the default here).
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { parseCsv, planCertificates, planProducts, productFields } from "../../../scripts/import-catalog.mjs";
+import { parseCsv, planCertificates, planProducts, productFields, shopProductFields } from "../../../scripts/import-products.mjs";
 
 const templateRoot = fileURLToPath(new URL("../../../", import.meta.url));
 export const DEMO_DIR = `${templateRoot}assets/demo/`;
@@ -101,18 +104,103 @@ export const NODES = {
   },
 };
 
+/** The Products and Certificates a busa-shop 0.5.0+ install adds to its own folder, next to Settings. */
+export const SHOP_NODES = {
+  products: {
+    id: "nod_shop_products",
+    type: "base",
+    slug: "busa-shop-products",
+    parentId: "nod_shop",
+    baseId: "bas_shop_products",
+    metadata: { appId: "busa-shop", resourceKey: "products", schemaVersion: 2 },
+  },
+  certificates: {
+    id: "nod_shop_certificates",
+    type: "base",
+    slug: "busa-shop-certificates",
+    parentId: "nod_shop",
+    baseId: "bas_shop_certificates",
+    metadata: { appId: "busa-shop", resourceKey: "certificates", schemaVersion: 2 },
+  },
+};
+
+/** The Shipping and Pages a busa-shop 0.6.0+ install adds to its folder. */
+export const CHECKOUT_NODES = {
+  shipping: {
+    id: "nod_shop_shipping",
+    type: "base",
+    slug: "busa-shop-shipping",
+    parentId: "nod_shop",
+    baseId: "bas_shipping",
+    metadata: { appId: "busa-shop", resourceKey: "shipping", schemaVersion: 4 },
+  },
+  pages: {
+    id: "nod_shop_pages",
+    type: "base",
+    slug: "busa-shop-pages",
+    parentId: "nod_shop",
+    baseId: "bas_pages",
+    metadata: { appId: "busa-shop", resourceKey: "pages", schemaVersion: 4 },
+  },
+};
+
+export const sampleRows = async (name) =>
+  (await readNdjson(`${templateRoot}content/${name}/records.ndjson`)).map((row, index) => ({ id: `rec_${name}_${index + 1}`, fields: row.fields }));
+
+/** A workspace with only Busa Shop (0.5.0+) installed: no product hub anywhere. */
+export const SHOP_ONLY_NODES = [...Object.values(NODES).filter((node) => node.metadata.appId !== "busa-product-hub"), ...Object.values(SHOP_NODES)];
+
 /**
  * The demo workspace after the lesson's import: the 12 toys (images uploaded
- * as assets on the Busabase server, so they need the key) plus busa-product-hub's
- * own sample lamp, archived as SKILL.md tells the owner to do. `priceColumn:
- * false` is a product hub installed before 0.4.0: prices in the Pricing JSON.
+ * as assets on the Busabase server, so they need the key). `source: "shop"`:
+ * in the shop's own Products. `source: "product-hub"`: a shop from before
+ * 0.5.0, selling from busa-product-hub, with the hub's own sample lamp
+ * archived; `priceColumn: false` is a product hub installed before 0.4.0:
+ * prices in the Pricing JSON.
  */
-export const demoState = async ({ imageUrl, priceColumn = true }) => {
+export const demoState = async ({ imageUrl, priceColumn = true, source = "product-hub", checkout = source === "shop" }) => {
   const planned = planProducts(parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8"))).products;
   const certificates = planCertificates(
     parseCsv(await readFile(`${DEMO_DIR}toy-certificates.csv`, "utf8")),
     new Set(planned.map((product) => product.productId)),
   ).certificates;
+  const assets = Object.fromEntries(
+    planned.flatMap((product) => product.imageRefs).map((file) => [file, { type: "image/svg+xml", path: `${DEMO_DIR}images/${file}` }]),
+  );
+  const settings = [{ id: "rec_settings", fields: await sampleSettingsFields() }];
+  if (source === "shop") {
+    // The shop's own tables, as the importer writes them: plain columns, no JSON.
+    return {
+      nodes: checkout ? [...SHOP_ONLY_NODES, ...Object.values(CHECKOUT_NODES)] : SHOP_ONLY_NODES,
+      records: {
+        ...(checkout ? { bas_shipping: await sampleRows("shipping"), bas_pages: await sampleRows("pages") } : {}),
+        bas_shop_products: planned.map((product, index) => ({
+          id: `rec_${product.productId}`,
+          fields: {
+            ...shopProductFields(product, {}, product.imageRefs.length ? product.imageRefs.map((file) => ({ file, sha256: "", url: imageUrl(file) })) : null),
+            ref: index + 1,
+          },
+        })),
+        bas_shop_certificates: certificates.map((certificate, index) => ({
+          id: `rec_cert_${index + 1}`,
+          fields: {
+            product: [`rec_${certificate.productId}`],
+            "cert-type": certificate.type,
+            issuer: certificate.issuer,
+            "cert-number": certificate.number,
+            "issued-date": certificate.issued,
+            "expiry-date": certificate.expiry,
+            "source-note": `toy-certificates.csv line ${certificate.line}`,
+          },
+        })),
+        bas_settings: settings,
+        bas_orders: [],
+        bas_reports: [],
+      },
+      files: {},
+      assets,
+    };
+  }
   const productRecords = [
     {
       id: "rec_hub_lamp",
@@ -171,15 +259,11 @@ export const demoState = async ({ imageUrl, priceColumn = true }) => {
     records: {
       bas_products: productRecords,
       bas_certificates: certificateRecords,
-      bas_settings: [{ id: "rec_settings", fields: await sampleSettingsFields() }],
+      bas_settings: settings,
       bas_orders: [],
       bas_reports: [],
     },
     files: {},
-    assets: Object.fromEntries(
-      planned
-        .flatMap((product) => product.imageRefs)
-        .map((file) => [file, { type: "image/svg+xml", path: `${DEMO_DIR}images/${file}` }]),
-    ),
+    assets,
   };
 };

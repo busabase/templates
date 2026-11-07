@@ -29,13 +29,14 @@ const isoDay = (value) => {
   return Number.isFinite(parsed) ? new Date(parsed).toISOString().slice(0, 10) : "";
 };
 
-export const buildSitemap = (origin, products) => {
+export const buildSitemap = (origin, products, pages = []) => {
   const urls = [
     `  <url><loc>${xmlEscape(absoluteUrl(origin, "/"))}</loc></url>`,
     ...products.map((product) => {
       const lastmod = isoDay(product.updatedAt);
       return `  <url><loc>${xmlEscape(absoluteUrl(origin, productPath(product)))}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`;
     }),
+    ...pages.map((page) => `  <url><loc>${xmlEscape(absoluteUrl(origin, `/pages/${page.slug}`))}</loc></url>`),
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>\n`;
 };
@@ -46,6 +47,7 @@ export const buildRobots = (origin) =>
     "Allow: /",
     "Disallow: /api/",
     "Disallow: /order",
+    "Disallow: /pay/",
     `Sitemap: ${absoluteUrl(origin, "/sitemap.xml")}`,
     "",
   ].join("\n");
@@ -54,6 +56,12 @@ export const productDescription = (product) =>
   plainSummary([product.subtitle, typeof product.content.description === "string" ? product.content.description : ""]
     .filter(Boolean)
     .join(". "));
+
+/** The maker's brand from the product's details (a shop reselling REDMI phones is not their brand); empty when not given. */
+const productBrand = (product) => {
+  const brand = product.content?.attributes?.brand;
+  return typeof brand === "string" ? brand.trim() : "";
+};
 
 export const productJsonLd = ({ origin, product, settings }) => {
   const url = absoluteUrl(origin, productPath(product));
@@ -66,7 +74,7 @@ export const productJsonLd = ({ origin, product, settings }) => {
     ...(product.sku ? { sku: product.sku } : {}),
     ...(product.category ? { category: product.category } : {}),
     ...(product.images.length ? { image: absoluteImages(origin, product) } : {}),
-    brand: { "@type": "Brand", name: settings.storeName },
+    brand: { "@type": "Brand", name: productBrand(product) || settings.storeName },
     offers: {
       "@type": "Offer",
       url,

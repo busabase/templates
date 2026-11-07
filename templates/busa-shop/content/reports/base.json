@@ -1,12 +1,12 @@
 {
   "name": "Reports",
   "description": "One row per daily shop check: what the agent found in Products, Certificates, Orders and on the live site, and the owner's feedback. The next check applies feedback on every open report, marks it acknowledged, and records what it changed in Applied feedback. The one row with Sample report ticked is the template's example.",
-  "position": 2,
+  "position": 6,
   "agentPrompts": [
     {
       "key": "run-daily-check",
       "label": "Run today's shop check",
-      "body": "Read the `busa-shop` skill in this folder and follow its \"Daily shop check\" procedure: first apply my open feedback (on the sample report too) and mark those reports acknowledged, then check products, certificates, orders, demo leftovers and the live site, and write today's report. Do not fix product data yourself; list what needs fixing."
+      "body": "Read the `busa-shop` skill in this folder and follow its \"Daily shop check\" procedure: first apply my open feedback (on the sample report too) and mark those reports acknowledged, then check products, certificates, orders and payments, shipping, policy pages, emails, demo leftovers and the live site, and write today's report. Do not fix product data or orders yourself; list what needs fixing."
     },
     {
       "key": "summarize-open-reports",
@@ -119,6 +119,34 @@
           {
             "id": "image-unreachable",
             "name": "Photo does not load"
+          },
+          {
+            "id": "orders-to-ship",
+            "name": "Paid, not shipped"
+          },
+          {
+            "id": "payment-waiting",
+            "name": "Awaiting payment"
+          },
+          {
+            "id": "payment-problem",
+            "name": "Payment problem"
+          },
+          {
+            "id": "email-failed",
+            "name": "Email not sent"
+          },
+          {
+            "id": "shipping-missing",
+            "name": "Shipping not set"
+          },
+          {
+            "id": "policy-unfinished",
+            "name": "Policy page unfinished"
+          },
+          {
+            "id": "checkout-setup",
+            "name": "Payments or email not set up"
           },
           {
             "id": "other",

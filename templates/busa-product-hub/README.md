@@ -35,6 +35,22 @@ all behind an approval-gated review queue.
 - Settings: sanitized seller profile, platform connectors, warehouses,
   review policy, and data-provider state.
 
+## Busa Shop does not need it
+
+Busa Shop (0.5.0 and later) has its own Products and Certificates tables, so a
+seller who only wants a website installs just Busa Shop. This template is for
+export sellers who manage several channels, warehouses, a review queue and
+certificate expiry in one place. To have a Busa Shop website sell from this
+hub's Products instead of its own, write `busa-product-hub-products` (or this
+table's slug) into the shop's Settings › **Products table**; a shop installed
+before 0.5.0 already sells from here.
+
+Products enter through `scripts/import-products.mjs`, the same importer Busa
+Shop ships (this is a byte-identical copy; the canonical file and its tests
+live in `templates/busa-shop`). Its preview's first line names the table it
+writes: here, when no Busa Shop has its own Products, or when the shop's
+Settings point at this table, or with `--products-base busa-product-hub-products`.
+
 ## Running Locally
 
 ```bash
@@ -78,8 +94,13 @@ never drift.
 
 The AirApp reads and writes Busabase only — it never publishes a channel
 listing, changes a price, archives a SKU, or lifts a quality hold by itself.
-Those actions require a human approval record in the review queue; carrying
-them out is the operator's or their agent's job, outside this app. Products,
+Publishing a listing and lifting a quality hold require a human approval
+record in the review queue, and so do the price changes and archiving an
+agent proposes on its own; carrying them out is the operator's or their
+agent's job, outside this app. Products the owner asks their agent in chat to
+take down (下架), or an exact price they give it, are the owner's own decision:
+the agent shows the list, waits for a yes and records the request on the
+change, with no review item (`SKILL.md`, "Take products off sale (下架)"). Products,
 channels, inventory, review items, and certificates enter Busabase through
 the operator's own workflow (directly, through `$busabase`, or through an
 agent), never through the browser. Never commit real seller exports,

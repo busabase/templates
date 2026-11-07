@@ -6,10 +6,10 @@
     "zh-CN": "Busa 独立站"
   },
   "description": {
-    "en": "A public storefront website for a small cross-border seller: it shows the products from Busa Product Hub, takes order requests into an Orders table, and comes with a daily shop check your agent runs and improves from your feedback.",
-    "zh-CN": "面向小型跨境卖家的公开独立站：直接展示 Busa 产品枢纽里的商品，把买家的订单请求写进订单表，并附带一个每日店铺巡检，由你的智能体执行、按你的反馈持续改进。"
+    "en": "A one-install online shop for a small cross-border seller: product management built in (its own Products and Certificates tables, Excel or CSV import with pictures), a public storefront website with a real checkout (delivery address, shipping costs by country, payment with PayPal, or order requests when PayPal is off), order emails over SMTP, policy pages, an Orders table that follows each order from payment to shipping, and a daily shop check your agent runs and improves from your feedback.",
+    "zh-CN": "面向小型跨境卖家的一键开店模板：自带商品管理（店铺自己的商品表和证书表，导入含图片的 Excel 或 CSV），公开独立站带真正的结账（收货地址、按国家计算的运费、PayPal 付款；未开 PayPal 时为订单请求），通过 SMTP 发送订单邮件，自带政策页，订单表跟踪每一单从付款到发货，并附带每日店铺巡检，由你的智能体执行、按你的反馈持续改进。"
   },
-  "version": "0.3.0",
+  "version": "0.6.0",
   "license": "MIT",
   "tags": [
     "ecommerce",
@@ -20,14 +20,18 @@
   ],
   "template": {
     "category": "ecommerce",
-    "schemaVersion": 1,
+    "schemaVersion": 4,
     "airapp": "busa-shop-app",
     "tags": [
       "ecommerce",
       "storefront",
+      "products",
       "orders",
       "cross-border",
-      "website"
+      "website",
+      "checkout",
+      "paypal",
+      "shipping"
     ],
     "screenshots": [
       "assets/screenshots/cover.webp",
@@ -36,15 +40,30 @@
       "assets/screenshots/product.webp",
       "assets/screenshots/product-details.webp",
       "assets/screenshots/order.webp",
+      "assets/screenshots/policy-page.webp",
       "assets/screenshots/order-error.webp",
       "assets/screenshots/thanks.webp",
       "assets/screenshots/setup.webp"
     ],
     "agentPrompts": [
-      "Import this toy list into the product hub: products, photos and certificates. Show me the dry run first.",
-      "Open my shop: check that the website can read my Busa Product Hub products and the shop settings, and tell me what I still have to do before I click Go live.",
-      "Run today's shop check: read my feedback on the last report, then check products, certificates, new orders and the live site, and write one report.",
-      "Handle the new orders on my shop: check items and stock, and draft a confirmation reply for each one for me to send."
+      "Import this product list into my shop's Products (Excel with pictures, or CSV with photos and certificates). Show me the preview first.",
+      "Open my shop: check the products it will list, the settings, shipping costs, policy pages, PayPal and order emails, and tell me what I still have to do before I click Go live.",
+      "Set up PayPal for my shop: tell me what to create in PayPal, what goes into Settings and what I put into the Space Vault myself.",
+      "Run today's shop check: read my feedback on the last report, then check products, certificates, orders and payments, and the live site, and write one report.",
+      "What do I need to ship today? List the paid orders with addresses, and draft replies for any new order requests."
+    ],
+    "vaultNamespace": "busa-shop",
+    "secrets": [
+      {
+        "key": "BUSA_SHOP_PAYPAL_CLIENT_SECRET",
+        "description": "PayPal REST app client secret (sandbox or live, matching Settings › PayPal). Space Vault, marked Runtime.",
+        "required": false
+      },
+      {
+        "key": "BUSA_SHOP_SMTP_PASSWORD",
+        "description": "Password (or app password) of the SMTP account in Settings › SMTP username. Space Vault, marked Runtime.",
+        "required": false
+      }
     ],
     "requires": {
       "airapp": true

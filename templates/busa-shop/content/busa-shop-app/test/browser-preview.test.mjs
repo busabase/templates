@@ -90,14 +90,41 @@ describe("browser-preview.mjs", () => {
         orderId: "ORD-BRWSR7PRVW",
         name: "Mia Jensen",
         email: "mia.jensen@example.com",
+        phone: "+45 12 34 56 78",
         country: "DK",
+        address1: "Eksempelvej 7",
+        city: "Aarhus",
+        postalCode: "8000",
         items: [{ productId: "tt-walking-robot", quantity: 1 }],
         expectedTotal: 24,
       }),
     });
-    assert.deepEqual(await response.json(), { ok: true, orderId: "ORD-BRWSR7PRVW" });
+    assert.deepEqual(await response.json(), { ok: true, orderId: "ORD-BRWSR7PRVW", payment: "request" });
     assert.equal(api.state.records.bas_orders.length, 1);
     assert.equal(api.state.records.bas_orders[0].fields["order-id"], "ORD-BRWSR7PRVW");
+  });
+
+  it("takes order requests even when Settings turn PayPal and email on, and never asks for the Vault", async () => {
+    const settings = api.state.records.bas_settings[0].fields;
+    Object.assign(settings, { "paypal-mode": "sandbox", "paypal-client-id": "AbCdEf123", "smtp-host": "smtp.example.com", "smtp-username": "shop@example.com" });
+    try {
+      // A fresh env (the cache is per env), the way a new preview starts.
+      const { default: worker } = await import("../vendor/worker.js");
+      const env = { BUSABASE_BASE_URL: api.origin, BUSABASE_API_KEY: "", BUSABASE_SPACE_ID: "" };
+      const page = await (await worker.fetch(new Request("http://preview.local/order?add=tt-walking-robot"), env, { waitUntil() {} })).text();
+      assert.match(page, /data-submit>Send order request</);
+      assert.match(page, /"payment":"request"/);
+      assert.match(page, /For the shop owner · 店主可见/, "the owner sees why there is no PayPal here");
+      assert.match(page, /need the Website engine \(Busabase Plus and higher\)/);
+      assert.doesNotMatch(page, /data-submit>Continue to payment|paypal\.com/);
+      const status = JSON.parse(await (await worker.fetch(new Request("http://preview.local/api/status"), env, { waitUntil() {} })).text());
+      assert.equal(status.payments, "requests");
+      assert.equal(status.paymentsNote, "browser-engine");
+      assert.equal(status.email, "browser-engine");
+      assert.ok(!api.log.some((entry) => entry.path === "/api/v1/vault/runtime"), "the browser engine never reads the Vault");
+    } finally {
+      Object.assign(settings, { "paypal-mode": "off", "paypal-client-id": "", "smtp-host": "", "smtp-username": "" });
+    }
   });
 
   it("reads the workspace once for several page views (one env for the server's life)", async () => {

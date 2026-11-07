@@ -1,7 +1,7 @@
 {
   "type": "airapp",
   "name": "Shop Website",
-  "description": "The public storefront (Website engine, write access): home page with the product grid, product pages, an order request form that creates one Orders row per request, sitemap.xml, robots.txt and schema.org Product data. It reads products from Busa Product Hub and its texts from this folder's Settings. On a Free space it runs as a private preview in your own browser tab instead: the same site, as you, with no address and no Go live (going live needs Plus). Edit src/, rebuild vendor/worker.js (the deployed bundle), then Restart and Go live again.",
+  "description": "The public storefront (Website engine, write access): home page with the product grid, product pages, an order request form that creates one Orders row per request, sitemap.xml, robots.txt and schema.org Product data. It lists the products on sale in this folder's Products (or the table Settings › Products table names) and reads its texts from this folder's Settings. On a Free space it runs as a private preview in your own browser tab instead: the same site, as you, with no address and no Go live (going live needs Plus). Edit src/, rebuild vendor/worker.js (the deployed bundle), then Restart and Go live again.",
   "agentPrompts": [
     {
       "key": "preview-site",

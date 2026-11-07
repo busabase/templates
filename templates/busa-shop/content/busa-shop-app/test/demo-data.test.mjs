@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { after, before, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-import { certificateTypeId, parseCsv, planCertificates, planProducts, productFields } from "../../../scripts/import-catalog.mjs";
+import { certificateTypeId, parseCsv, planCertificates, planProducts, productFields, shopProductFields } from "../../../scripts/import-products.mjs";
 import { probeSite } from "../../../scripts/probe-site.mjs";
 import worker from "../vendor/worker.js";
 import { serveWorker } from "../scripts/preview.mjs";
@@ -21,7 +21,7 @@ const readRows = async (path) =>
     .map((line) => JSON.parse(line));
 
 describe("sample rows match their Bases", () => {
-  for (const name of ["orders", "settings", "reports"]) {
+  for (const name of ["orders", "settings", "reports", "shipping", "pages"]) {
     it(`${name}: every value fits its field`, async () => {
       const base = await readJson(`${contentDir}${name}/base.json`);
       const rows = await readRows(`${contentDir}${name}/records.ndjson`);
@@ -61,8 +61,13 @@ describe("sample rows match their Bases", () => {
       assert.match(row.fields["internal-note"], /^Fictional demo data/);
       assert.match(row.fields.email, /@example\.(com|net|org)$/);
       const items = JSON.parse(row.fields.items);
-      const total = items.reduce((sum, item) => sum + item.line_total, 0);
-      assert.equal(Math.round(total * 100) / 100, row.fields.total);
+      const subtotal = items.reduce((sum, item) => sum + item.line_total, 0);
+      assert.equal(Math.round(subtotal * 100) / 100, row.fields.subtotal);
+      assert.equal(Math.round((row.fields.subtotal + row.fields.shipping) * 100) / 100, row.fields.total, `${row.key}: total = items + shipping`);
+      if (row.fields.status === "paid") {
+        assert.equal(row.fields["amount-paid"], row.fields.total);
+        assert.match(row.fields["paypal-capture-id"], /^DEMO/, "a sample PayPal id that cannot be mistaken for a real one");
+      }
     }
   });
 
@@ -110,12 +115,44 @@ describe("sample rows match their Bases", () => {
 });
 
 describe("the toy list", () => {
-  const hubCertificateChoices = async () => {
-    const base = await readJson(`${contentDir}../../busa-product-hub/content/certificates/base.json`);
+  const certificateChoices = async (template) => {
+    const base = await readJson(`${contentDir}../../${template}/content/certificates/base.json`);
     return base.fields.find((field) => field.slug === "cert-type").options.choices;
   };
 
-  it("plans 12 products and 39 certificates, every type an option of busa-product-hub's Certificates table", async () => {
+  it("the shop's Certificates table has the product hub's fields and types, so one importer writes both", async () => {
+    const shop = await readJson(`${contentDir}certificates/base.json`);
+    const hub = await readJson(`${contentDir}../../busa-product-hub/content/certificates/base.json`);
+    assert.deepEqual(shop.fields, hub.fields);
+    assert.equal(shop.fields.find((field) => field.slug === "product").options.targetBaseSlug, "products", "linked to this folder's Products");
+  });
+
+  it("every field the importer writes, and the website reads, is a column of the shop's Products", async () => {
+    const base = await readJson(`${contentDir}products/base.json`);
+    const fields = new Map(base.fields.map((field) => [field.slug, field]));
+    base.fields.forEach((field, index) => assert.equal(field.position, index, `${field.slug} position`));
+    const { products } = planProducts(parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8")), { source: "toy-catalog.csv" });
+    for (const product of products) {
+      const written = { ...shopProductFields(product, {}, [{ file: "a.svg", sha256: "", url: "https://cdn.example/a.svg" }, { file: "b.svg", sha256: "", url: "https://cdn.example/b.svg" }]), ref: 1 };
+      for (const [slug, value] of Object.entries(written)) {
+        const field = fields.get(slug);
+        assert.ok(field, `${product.productId}: ${slug} is not a column`);
+        if (field.type === "number") assert.equal(typeof value, "number", `${slug}`);
+        if (field.type === "select") assert.ok(field.options.choices.some((choice) => choice.id === value), `${slug}=${value}`);
+      }
+    }
+    for (const slug of ["product-id", "name", "status", "price", "currency", "stock", "image", "gallery", "description", "highlights", "specs", "brand", "model", "warranty", "returns", "tags", "ref"]) {
+      assert.ok(fields.has(slug), `the website reads ${slug}`);
+    }
+    assert.deepEqual(fields.get("status").options.choices.map((choice) => choice.id), ["active", "draft", "archive"]);
+    for (const view of base.views) {
+      for (const filter of view.config.filters) assert.ok(fields.has(filter.fieldSlug), `${view.slug} filter`);
+      for (const sort of view.config.sorts) assert.ok(fields.has(sort.fieldSlug), `${view.slug} sort`);
+      for (const slug of view.config.visibleFieldSlugs) assert.ok(fields.has(slug), `${view.slug} shows ${slug}`);
+    }
+  });
+
+  it("plans 12 products and 39 certificates, every type an option of the shop's (and busa-product-hub's) Certificates table", async () => {
     const { products, skipped, notes } = planProducts(parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8")));
     const { certificates } = planCertificates(
       parseCsv(await readFile(`${DEMO_DIR}toy-certificates.csv`, "utf8")),
@@ -124,8 +161,10 @@ describe("the toy list", () => {
     assert.equal(products.length, 12);
     assert.deepEqual(skipped, []);
     assert.equal(certificates.length, 39);
-    const choices = await hubCertificateChoices();
-    for (const cert of certificates) assert.equal(certificateTypeId(choices, cert.type), cert.type, `${cert.productId} ${cert.type}`);
+    for (const template of ["busa-shop", "busa-product-hub"]) {
+      const choices = await certificateChoices(template);
+      for (const cert of certificates) assert.equal(certificateTypeId(choices, cert.type), cert.type, `${template}: ${cert.productId} ${cert.type}`);
+    }
     assert.ok(certificates.every((cert) => !cert.number.includes("·")), "no standard-prefix convention left");
     assert.deepEqual(
       [...new Set(certificates.map((cert) => cert.type))].sort(),
@@ -165,7 +204,7 @@ describe("probe-site.mjs against the running site", () => {
   let site;
   before(async () => {
     api = await startFakeBusabase({ nodes: [], records: {} });
-    Object.assign(api.state, await demoState({ imageUrl: (file) => `${api.origin}/assets/${file}` }));
+    Object.assign(api.state, await demoState({ imageUrl: (file) => `${api.origin}/assets/${file}`, source: "shop" }));
     server = await serveWorker({ worker, port: 0, env: { BUSABASE_BASE_URL: api.origin, BUSABASE_API_KEY: TEST_KEY, BUSABASE_SPACE_ID: "spc_demo" } });
     site = `http://127.0.0.1:${server.address().port}`;
   });

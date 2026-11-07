@@ -1,12 +1,12 @@
 {
   "name": "Settings",
-  "description": "One row: what the shop website shows (store name, tagline, currency, contact, language, ship-to countries) and what the daily shop check uses (required certificates, expiry warning, standing check rules). The website reads it on every refresh, so a change here shows on the live site within about a minute, without a redeploy.",
-  "position": 1,
+  "description": "One row: what the shop website shows (store name, tagline, currency, contact, language, ship-to countries), how it takes payment (PayPal off / sandbox / live, the PayPal client ID and webhook ID) and sends email (SMTP host, port, security, username, sender, where order notifications go), and what the daily shop check uses (required certificates, expiry warning, standing check rules). Never write a password or a secret here: the PayPal client secret and the SMTP password go in the Space Vault (BUSA_SHOP_PAYPAL_CLIENT_SECRET, BUSA_SHOP_SMTP_PASSWORD, marked Runtime). Products table is empty to sell from this folder's Products; write a Busa Product Hub Products table's slug there to sell from it instead. The website reads it on every refresh, so a change here shows on the live site within about a minute, without a redeploy.",
+  "position": 5,
   "agentPrompts": [
     {
       "key": "show-settings",
       "label": "What does my shop show right now?",
-      "body": "Read the `busa-shop` skill in this folder, then tell me the store name, tagline, currency, contact email, language and ship-to countries on record, whether the demo notice is still on, and which Products table the shop is reading.",
+      "body": "Read the `busa-shop` skill in this folder, then tell me the store name, tagline, currency, contact email, language and ship-to countries on record, whether the demo notice is still on, and which Products table the shop is selling from (its own, or the one Settings › Products table names).",
       "intent": "read-only"
     },
     {
@@ -17,7 +17,23 @@
     {
       "key": "prepare-go-live",
       "label": "Get the shop ready to go live",
-      "body": "Read the `busa-shop` skill in this folder and follow \"Open the shop\": check the Products table it reads, the currency, contact email, ship-to countries and demo notice, and tell me exactly what I still have to do before I click Go live."
+      "body": "Read the `busa-shop` skill in this folder and follow \"Open the shop\": check the Products it sells from, the currency, contact email, ship-to countries and demo notice, and tell me exactly what I still have to do before I click Go live."
+    },
+    {
+      "key": "set-up-payments",
+      "label": {
+        "en": "Set up PayPal payments",
+        "zh-CN": "设置 PayPal 收款"
+      },
+      "body": "Read the `busa-shop` skill in this folder and follow \"Payments and orders (收款与订单)\", \"Set up PayPal\": tell me step by step what to create in my PayPal developer account, which values go into Settings (PayPal, client ID, webhook ID) and which one I put into the Space Vault myself (the client secret), then check with /api/status that the shop says PayPal is ready. Never ask me to paste the secret into the chat or a table, and never switch to live unless I tell you to."
+    },
+    {
+      "key": "set-up-email",
+      "label": {
+        "en": "Set up order emails (SMTP)",
+        "zh-CN": "设置订单邮件（SMTP）"
+      },
+      "body": "Read the `busa-shop` skill in this folder and follow \"Payments and orders (收款与订单)\", \"Order emails (邮件, SMTP)\": ask me for my mail provider's SMTP host, port and username and the sender address, write them into Settings after I say yes, tell me to put the SMTP password into the Space Vault myself, and explain how to check that the emails arrive. Never ask me for the password."
     }
   ],
   "fields": [
@@ -122,7 +138,7 @@
     },
     {
       "slug": "products-base",
-      "name": "Products table (id or slug, optional)",
+      "name": "Products table (optional: sell from another table)",
       "type": "text",
       "required": false,
       "position": 10,
@@ -158,6 +174,116 @@
       "type": "longtext",
       "required": false,
       "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "show-details",
+      "name": "Also show these product details",
+      "type": "text",
+      "required": false,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "paypal-mode",
+      "name": "PayPal",
+      "type": "select",
+      "required": false,
+      "position": 16,
+      "options": {
+        "choices": [
+          {
+            "id": "off",
+            "name": "Off: order requests only"
+          },
+          {
+            "id": "sandbox",
+            "name": "Sandbox (test money)"
+          },
+          {
+            "id": "live",
+            "name": "Live (real payments)"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "paypal-client-id",
+      "name": "PayPal client ID",
+      "type": "text",
+      "required": false,
+      "position": 17,
+      "options": {}
+    },
+    {
+      "slug": "paypal-webhook-id",
+      "name": "PayPal webhook ID",
+      "type": "text",
+      "required": false,
+      "position": 18,
+      "options": {}
+    },
+    {
+      "slug": "smtp-host",
+      "name": "SMTP host",
+      "type": "text",
+      "required": false,
+      "position": 19,
+      "options": {}
+    },
+    {
+      "slug": "smtp-port",
+      "name": "SMTP port",
+      "type": "number",
+      "required": false,
+      "position": 20,
+      "options": {}
+    },
+    {
+      "slug": "smtp-security",
+      "name": "SMTP security",
+      "type": "select",
+      "required": false,
+      "position": 21,
+      "options": {
+        "choices": [
+          {
+            "id": "starttls",
+            "name": "STARTTLS (usually port 587)"
+          },
+          {
+            "id": "tls",
+            "name": "TLS (usually port 465)"
+          },
+          {
+            "id": "none",
+            "name": "None: only for a local test mail catcher (no password is sent)"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "smtp-username",
+      "name": "SMTP username",
+      "type": "text",
+      "required": false,
+      "position": 22,
+      "options": {}
+    },
+    {
+      "slug": "email-from",
+      "name": "Send emails from",
+      "type": "email",
+      "required": false,
+      "position": 23,
+      "options": {}
+    },
+    {
+      "slug": "notify-email",
+      "name": "Order notifications to",
+      "type": "email",
+      "required": false,
+      "position": 24,
       "options": {}
     }
   ],
