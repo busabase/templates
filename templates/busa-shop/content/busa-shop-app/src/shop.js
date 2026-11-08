@@ -5,7 +5,7 @@
 //
 //   nodes.list({ types: ["base", "airapp"] })   find the tables (src/resources.js)
 //   records.list  Settings (5 rows), Products (100), Certificates (100),
-//                 Shipping (100), Pages (50)
+//                 Shipping (100), Pages (50), Posts (the newest 100)
 //   records.get   ONE Orders row, by its exact Order ID (or, for a PayPal
 //                 refund, its exact PayPal capture ID)
 //   bases.createChangeRequest    one Orders row per checkout
@@ -21,6 +21,7 @@
 import { buildCatalog, normalizeSettings } from "./catalog.js";
 import { orderFromRecord, orderToFields } from "./orders.js";
 import { buildPages, PAGES_LIMIT } from "./policies.js";
+import { buildPosts, POSTS_LIMIT } from "./posts.js";
 import { resolveProductTables, resolveShopExtras, resolveShopTables, SHOP_APP_ID } from "./resources.js";
 import { buildShippingRates } from "./shipping.js";
 
@@ -46,14 +47,14 @@ const describeError = (error) => error?.status ?? error?.code ?? error?.name ?? 
 const isConflict = (error) => error?.status === 409 || error?.code === "CONFLICT";
 
 /** Read one optional table of this shop: `{ status: "ready", records } | { status: "missing" | "unreadable" }`. */
-const readOptional = async (records, resource, limit, log, label) => {
+const readOptional = async (records, resource, limit, log, label, sort) => {
   if (resource.status === "missing") return { status: "missing", records: [] };
   if (resource.status === "ambiguous") {
     log.warn?.(`busa-shop: more than one ${label} table in this shop's folder`);
     return { status: "unreadable", records: [] };
   }
   try {
-    const page = await records.readPage({ baseId: resource.node.baseId, limit });
+    const page = await records.readPage({ baseId: resource.node.baseId, limit, ...(sort ? { sort } : {}) });
     return { status: "ready", records: page.records };
   } catch (error) {
     log.warn?.(`busa-shop: ${label} unreadable`, describeError(error));
@@ -86,7 +87,7 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
     if (tables.status !== "ready") return { setup: tables.status, settings };
 
     const extras = resolveShopExtras(nodes, shop.settings.node.parentId);
-    const [productsPage, certificateRecords, shippingRead, pagesRead] = await Promise.all([
+    const [productsPage, certificateRecords, shippingRead, pagesRead, postsRead] = await Promise.all([
       records.readPage({
         baseId: tables.productsBaseId,
         limit: PRODUCTS_PAGE,
@@ -106,7 +107,10 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
         : Promise.resolve([]),
       readOptional(records, extras.shipping, SHIPPING_PAGE, log, "Shipping"),
       readOptional(records, extras.pages, PAGES_LIMIT, log, "Pages"),
+      // Newest first, so a shop with more than 100 posts keeps its newest.
+      readOptional(records, extras.posts, POSTS_LIMIT, log, "Posts", { fieldSlug: "published-at", fieldType: "date", direction: "desc" }),
     ]);
+    const blog = buildPosts(postsRead.records, { busabaseOrigin });
 
     const catalog = buildCatalog({
       productRecords: productsPage.records,
@@ -131,6 +135,9 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
           : { status: shippingRead.status, rates: new Map(), problems: [] },
       pages: buildPages(pagesRead.records),
       pagesStatus: pagesRead.status,
+      posts: blog.posts,
+      postProblems: blog.problems,
+      postsStatus: postsRead.status,
       hubAppNodeId: tables.hubAppNodeId,
       moreProducts: Boolean(productsPage.nextCursor),
     };
@@ -296,5 +303,17 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
     }
   };
 
-  return { load, createOrder, findOrder, findOrderByCapture, updateOrder, productImage, appId: SHOP_APP_ID };
+  /** The bytes of a published post's cover when it is a Busabase asset (the site key reads it), or null. */
+  const postCover = async (state, slug) => {
+    const post = (state.posts ?? []).find((item) => item.slug === slug);
+    if (!post?.cover || post.cover.kind !== "busabase") return null;
+    try {
+      return await imageResponse(post.cover.url);
+    } catch (error) {
+      log.warn?.("busa-shop: cover unreadable", slug, describeError(error));
+      return null;
+    }
+  };
+
+  return { load, createOrder, findOrder, findOrderByCapture, updateOrder, productImage, postCover, appId: SHOP_APP_ID };
 };

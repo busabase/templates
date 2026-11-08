@@ -327,6 +327,19 @@ const choice = (value) => (value && typeof value === "object" && !Array.isArray(
 export const PAYPAL_MODES = ["off", "sandbox", "live"];
 export const SMTP_SECURITY_MODES = ["starttls", "tls", "none"];
 
+/** A GA4 measurement ID (`G-…`), also out of a pasted gtag snippet; "" for anything else. */
+export const ga4IdOf = (value) => /\bG-[A-Z0-9]{4,20}\b/i.exec(text(value))?.[0].toUpperCase() ?? "";
+
+/**
+ * A site-verification code: the `content` of the HTML tag Google Search
+ * Console or Bing gives, or the whole tag pasted; "" for anything else.
+ */
+export const verificationOf = (value) => {
+  const raw = text(value);
+  const code = /content\s*=\s*["']([^"']*)["']/i.exec(raw)?.[1] ?? raw;
+  return /^[A-Za-z0-9_-]{8,100}$/.test(code.trim()) ? code.trim() : "";
+};
+
 export const normalizeSettings = (record) => {
   const fields = record?.fields ?? {};
   const language = choice(fields.language);
@@ -358,6 +371,10 @@ export const normalizeSettings = (record) => {
     listedTag: text(fields["listed-tag"]),
     productsBase: text(fields["products-base"]),
     showDetails: parseDetailKeys(fields["show-details"]),
+    // Google (busa-shop 0.7.0): all optional, all empty in a shop installed before.
+    ga4Id: ga4IdOf(fields["ga4-id"]),
+    googleVerification: verificationOf(fields["google-site-verification"]),
+    bingVerification: verificationOf(fields["bing-site-verification"]),
   };
 };
 

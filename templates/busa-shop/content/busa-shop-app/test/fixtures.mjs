@@ -144,6 +144,18 @@ export const CHECKOUT_NODES = {
   },
 };
 
+/** The Posts a busa-shop 0.7.0+ install adds to its folder. */
+export const BLOG_NODES = {
+  posts: {
+    id: "nod_shop_posts",
+    type: "base",
+    slug: "busa-shop-posts",
+    parentId: "nod_shop",
+    baseId: "bas_posts",
+    metadata: { appId: "busa-shop", resourceKey: "posts", schemaVersion: 5 },
+  },
+};
+
 export const sampleRows = async (name) =>
   (await readNdjson(`${templateRoot}content/${name}/records.ndjson`)).map((row, index) => ({ id: `rec_${name}_${index + 1}`, fields: row.fields }));
 
@@ -158,7 +170,7 @@ export const SHOP_ONLY_NODES = [...Object.values(NODES).filter((node) => node.me
  * archived; `priceColumn: false` is a product hub installed before 0.4.0:
  * prices in the Pricing JSON.
  */
-export const demoState = async ({ imageUrl, priceColumn = true, source = "product-hub", checkout = source === "shop" }) => {
+export const demoState = async ({ imageUrl, priceColumn = true, source = "product-hub", checkout = source === "shop", blog = false }) => {
   const planned = planProducts(parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8"))).products;
   const certificates = planCertificates(
     parseCsv(await readFile(`${DEMO_DIR}toy-certificates.csv`, "utf8")),
@@ -171,9 +183,10 @@ export const demoState = async ({ imageUrl, priceColumn = true, source = "produc
   if (source === "shop") {
     // The shop's own tables, as the importer writes them: plain columns, no JSON.
     return {
-      nodes: checkout ? [...SHOP_ONLY_NODES, ...Object.values(CHECKOUT_NODES)] : SHOP_ONLY_NODES,
+      nodes: [...SHOP_ONLY_NODES, ...(checkout ? Object.values(CHECKOUT_NODES) : []), ...(blog ? Object.values(BLOG_NODES) : [])],
       records: {
         ...(checkout ? { bas_shipping: await sampleRows("shipping"), bas_pages: await sampleRows("pages") } : {}),
+        ...(blog ? { bas_posts: await sampleRows("posts") } : {}),
         bas_shop_products: planned.map((product, index) => ({
           id: `rec_${product.productId}`,
           fields: {

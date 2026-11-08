@@ -114,7 +114,12 @@ export const startFakeBusabase = async (state) => {
       const sort = entry.query.sort;
       if (sort?.fieldSlug && (sort.fieldType === "number" || sort.fieldType === "date")) {
         const sign = sort.direction === "desc" ? -1 : 1;
-        rows.sort((a, b) => sign * (Number(a.fields[sort.fieldSlug] ?? Infinity) - Number(b.fields[sort.fieldSlug] ?? Infinity)));
+        const valueOf = (row) => {
+          const value = row.fields[sort.fieldSlug];
+          if (value === undefined || value === null || value === "") return Infinity;
+          return sort.fieldType === "date" ? Date.parse(value) : Number(value);
+        };
+        rows.sort((a, b) => sign * (valueOf(a) - valueOf(b)));
       }
       const limit = Number(entry.query.limit ?? 50);
       const offset = Number(entry.query.cursor ?? 0);

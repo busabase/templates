@@ -27838,7 +27838,15 @@ var en = {
   pay_status_problem: "There is a question about the payment for this order. We will contact you by email.",
   pay_order: "Order {orderId}",
   nav_checkout: "Checkout",
-  footer_policies: "Shop policies"
+  footer_policies: "Shop policies",
+  nav_blog: "Blog",
+  blog_heading: "Blog",
+  blog_empty: "No posts yet.",
+  blog_published: "Published {date}",
+  blog_by: "by {author}",
+  blog_back: "All posts",
+  blog_products: "Products in this post",
+  blog_feed: "RSS feed"
 };
 var de = {
   nav_products: "Produkte",
@@ -27974,7 +27982,15 @@ var de = {
   pay_status_problem: "Zur Zahlung dieser Bestellung gibt es eine Frage. Wir melden uns per E-Mail.",
   pay_order: "Bestellung {orderId}",
   nav_checkout: "Kasse",
-  footer_policies: "Shop-Richtlinien"
+  footer_policies: "Shop-Richtlinien",
+  nav_blog: "Blog",
+  blog_heading: "Blog",
+  blog_empty: "Noch keine Beitr\xE4ge.",
+  blog_published: "Ver\xF6ffentlicht am {date}",
+  blog_by: "von {author}",
+  blog_back: "Alle Beitr\xE4ge",
+  blog_products: "Produkte in diesem Beitrag",
+  blog_feed: "RSS-Feed"
 };
 var fr = {
   nav_products: "Produits",
@@ -28110,7 +28126,15 @@ var fr = {
   pay_status_problem: "Le paiement de cette commande soul\xE8ve une question. Nous vous contacterons par e-mail.",
   pay_order: "Commande {orderId}",
   nav_checkout: "Paiement",
-  footer_policies: "Conditions de la boutique"
+  footer_policies: "Conditions de la boutique",
+  nav_blog: "Blog",
+  blog_heading: "Blog",
+  blog_empty: "Aucun article pour le moment.",
+  blog_published: "Publi\xE9 le {date}",
+  blog_by: "par {author}",
+  blog_back: "Tous les articles",
+  blog_products: "Produits de cet article",
+  blog_feed: "Flux RSS"
 };
 var es = {
   nav_products: "Productos",
@@ -28246,7 +28270,15 @@ var es = {
   pay_status_problem: "Hay una duda sobre el pago de este pedido. Te contactaremos por correo.",
   pay_order: "Pedido {orderId}",
   nav_checkout: "Pago",
-  footer_policies: "Pol\xEDticas de la tienda"
+  footer_policies: "Pol\xEDticas de la tienda",
+  nav_blog: "Blog",
+  blog_heading: "Blog",
+  blog_empty: "Todav\xEDa no hay art\xEDculos.",
+  blog_published: "Publicado el {date}",
+  blog_by: "por {author}",
+  blog_back: "Todos los art\xEDculos",
+  blog_products: "Productos de este art\xEDculo",
+  blog_feed: "Feed RSS"
 };
 var MESSAGES = { en, de, fr, es };
 var translator = (language) => {
@@ -28490,6 +28522,13 @@ var resolveShopExtras = (nodes, shopFolderId) => ({
     appId: SHOP_APP_ID,
     resourceKey: "pages",
     fallbackSlug: "busa-shop-pages",
+    parentId: shopFolderId
+  }),
+  posts: pickResource(nodes, {
+    type: "base",
+    appId: SHOP_APP_ID,
+    resourceKey: "posts",
+    fallbackSlug: "busa-shop-posts",
     parentId: shopFolderId
   })
 });
@@ -28752,6 +28791,12 @@ var parseCountryList = (value2) => {
 var choice = (value2) => value2 && typeof value2 === "object" && !Array.isArray(value2) ? lower(value2.id ?? value2.name) : lower(value2);
 var PAYPAL_MODES = ["off", "sandbox", "live"];
 var SMTP_SECURITY_MODES = ["starttls", "tls", "none"];
+var ga4IdOf = (value2) => /\bG-[A-Z0-9]{4,20}\b/i.exec(text(value2))?.[0].toUpperCase() ?? "";
+var verificationOf = (value2) => {
+  const raw = text(value2);
+  const code = /content\s*=\s*["']([^"']*)["']/i.exec(raw)?.[1] ?? raw;
+  return /^[A-Za-z0-9_-]{8,100}$/.test(code.trim()) ? code.trim() : "";
+};
 var normalizeSettings = (record2) => {
   const fields = record2?.fields ?? {};
   const language = choice(fields.language);
@@ -28782,7 +28827,11 @@ var normalizeSettings = (record2) => {
     demoNotice: fields["demo-notice"] === true || fields["demo-notice"] === "true",
     listedTag: text(fields["listed-tag"]),
     productsBase: text(fields["products-base"]),
-    showDetails: parseDetailKeys(fields["show-details"])
+    showDetails: parseDetailKeys(fields["show-details"]),
+    // Google (busa-shop 0.7.0): all optional, all empty in a shop installed before.
+    ga4Id: ga4IdOf(fields["ga4-id"]),
+    googleVerification: verificationOf(fields["google-site-verification"]),
+    bingVerification: verificationOf(fields["bing-site-verification"])
   };
 };
 var LOCALE_TAGS = { en: "en-US", de: "de-DE", fr: "fr-FR", es: "es-ES" };
@@ -29759,7 +29808,25 @@ var inline = (escaped) => escaped.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (match, 
   const url2 = safeHref(href.replace(/&amp;/g, "&"));
   return url2 ? `<a href="${esc2(url2)}">${label2}</a>` : label2;
 }).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/(^|[\s(])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>").replace(/(^|[\s(])_([^_\s][^_]*)_/g, "$1<em>$2</em>");
-var renderMarkdown = (source) => {
+var TABLE_ROW = /^\s*\|.*\|\s*$/;
+var TABLE_RULE = /^\s*\|(\s*:?-{3,}:?\s*\|)+\s*$/;
+var MAX_TABLE_COLUMNS = 12;
+var tableCells = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
+var tableAt = (lines, start) => {
+  if (!TABLE_ROW.test(lines[start] ?? "") || !TABLE_RULE.test(lines[start + 1] ?? "")) return null;
+  const head = tableCells(lines[start]);
+  if (head.length > MAX_TABLE_COLUMNS) return null;
+  const rows = [];
+  let end = start + 2;
+  while (end < lines.length && TABLE_ROW.test(lines[end])) {
+    rows.push(tableCells(lines[end]));
+    end += 1;
+  }
+  const cells = (row, tag) => head.map((_, column) => `<${tag}>${inline(esc2(row[column] ?? ""))}</${tag}>`).join("");
+  const html2 = `<div class="table-wrap"><table><thead><tr>${cells(head, "th")}</tr></thead><tbody>${rows.map((row) => `<tr>${cells(row, "td")}</tr>`).join("")}</tbody></table></div>`;
+  return { html: html2, end };
+};
+var renderMarkdown = (source, { demoteH1 = false } = {}) => {
   const lines = String(source ?? "").replace(/\r\n?/g, "\n").split("\n");
   const out = [];
   let paragraph = [];
@@ -29772,8 +29839,16 @@ var renderMarkdown = (source) => {
     if (list) out.push(`<${list.tag}>${list.items.map((item) => `<li>${inline(esc2(item))}</li>`).join("")}</${list.tag}>`);
     list = null;
   };
-  for (const raw of lines) {
-    const line = raw.trimEnd();
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index].trimEnd();
+    const table = tableAt(lines, index);
+    if (table) {
+      flushParagraph();
+      flushList();
+      out.push(table.html);
+      index = table.end - 1;
+      continue;
+    }
     const heading = /^(#{1,3})\s+(.+)$/.exec(line.trim());
     const bullet = /^\s*[-*]\s+(.+)$/.exec(line);
     const numbered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
@@ -29783,7 +29858,7 @@ var renderMarkdown = (source) => {
     } else if (heading) {
       flushParagraph();
       flushList();
-      const level = Math.min(heading[1].length + 1, 4);
+      const level = demoteH1 ? Math.max(heading[1].length, 2) : Math.min(heading[1].length + 1, 4);
       out.push(`<h${level}>${inline(esc2(heading[2]))}</h${level}>`);
     } else if (bullet || numbered) {
       flushParagraph();
@@ -29800,9 +29875,167 @@ var renderMarkdown = (source) => {
   flushList();
   return out.join("\n");
 };
-var markdownText = (source) => String(source ?? "").replace(/^#{1,3}\s+/gm, "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/[*_]/g, "").replace(/\s+/g, " ").trim();
+var markdownText = (source) => String(source ?? "").replace(/^\s*\|(\s*:?-{3,}:?\s*\|)+\s*$/gm, "").replace(/\s*\|\s*/g, " ").replace(/^#{1,3}\s+/gm, "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/[*_]/g, "").replace(/\s+/g, " ").trim();
 var pagePath = (page) => `/pages/${page.slug}`;
 var unfinishedPages = (pages) => pages.filter((page) => FILL_IN_MARKER.test(page.body)).map((page) => page.slug);
+
+// src/posts.js
+var POSTS_LIMIT = 100;
+var POST_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,99}$/;
+var BLOG_PATH = "/blog";
+var FEED_PATH = "/blog/rss.xml";
+var FEED_ITEMS = 20;
+var MAX_MENTIONED_PRODUCTS = 4;
+var RESERVED_PREFIXES = ["/api/", "/static/", "/images/", "/blog-covers/", "/pay/", "/products/", "/pages/"];
+var RESERVED_PATHS = /* @__PURE__ */ new Set(["/", "/order", "/blog", "/blog/rss.xml", "/sitemap.xml", "/robots.txt", "/llms.txt", "/favicon.svg"]);
+var normalizePath = (value2) => {
+  let raw = text(value2);
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      raw = new URL(raw).pathname;
+    } catch {
+      return "";
+    }
+  }
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.length > 300 || /[\s\\?#]/.test(raw)) return "";
+  const path = raw.toLowerCase().replace(/\/+$/, "");
+  return path || "/";
+};
+var postAddress = (fields) => {
+  const path = normalizePath(fields?.path);
+  const match = /^\/blog\/([^/]+)$/.exec(path);
+  if (match && POST_SLUG_PATTERN.test(match[1])) return { path, slug: match[1] };
+  const slug = text(fields?.slug).toLowerCase();
+  if (POST_SLUG_PATTERN.test(slug)) return { path: `${BLOG_PATH}/${slug}`, slug };
+  return null;
+};
+var postDate = (value2) => {
+  const raw = text(value2);
+  if (!raw) return null;
+  const ms = Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T00:00:00Z` : raw);
+  return Number.isFinite(ms) ? { day: new Date(ms).toISOString().slice(0, 10), ms } : null;
+};
+var listOf = (value2) => {
+  if (Array.isArray(value2)) return value2;
+  if (typeof value2 === "string" && value2.trim()) {
+    try {
+      const parsed = JSON.parse(value2);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return value2.split(/\n|,/);
+    }
+  }
+  return [];
+};
+var legacyPathsOf = (value2, ownPath) => [...new Set(listOf(value2).map(normalizePath))].filter(
+  (path) => path && path !== ownPath && !RESERVED_PATHS.has(path) && !RESERVED_PREFIXES.some((prefix) => path.startsWith(prefix))
+);
+var coverRef = (value2) => {
+  const first = Array.isArray(value2) ? value2[0] : value2;
+  if (typeof first === "string") return first;
+  if (first && typeof first === "object" && typeof first.url === "string") return first.url;
+  return "";
+};
+var httpsUrl = (value2) => {
+  const raw = text(value2);
+  if (!/^https:\/\//i.test(raw)) return "";
+  try {
+    return new URL(raw).href;
+  } catch {
+    return "";
+  }
+};
+var buildPosts = (records, { busabaseOrigin = "" } = {}) => {
+  const posts = [];
+  const problems = [];
+  const seen = /* @__PURE__ */ new Map();
+  for (const record2 of records ?? []) {
+    const fields = record2?.fields ?? {};
+    if (text(fields.status).toLowerCase() !== "published") continue;
+    const title = text(fields.title);
+    const label2 = title || text(fields.slug) || text(record2?.id) || "?";
+    const body = typeof fields.body === "string" ? fields.body.trim() : "";
+    const address = postAddress(fields);
+    if (!title) {
+      problems.push({ code: "no-title", post: label2 });
+      continue;
+    }
+    if (!body) {
+      problems.push({ code: "no-body", post: label2 });
+      continue;
+    }
+    if (!address) {
+      problems.push({ code: "bad-path", post: label2, path: text(fields.path) });
+      continue;
+    }
+    if (seen.has(address.path)) {
+      problems.push({ code: "duplicate-path", post: label2, path: address.path, kept: seen.get(address.path) });
+      continue;
+    }
+    seen.set(address.path, title);
+    const published = postDate(fields["published-at"]);
+    const updated = postDate(fields["updated-at"]) ?? postDate(record2?.updatedAt);
+    const cover = classifyImageRef(coverRef(fields["cover-image"]), busabaseOrigin);
+    posts.push({
+      recordId: text(record2?.id),
+      path: address.path,
+      slug: address.slug,
+      title,
+      description: text(fields.description),
+      body,
+      cover: cover && cover.kind !== "airapp" ? cover : null,
+      author: text(fields.author),
+      locale: text(fields.locale),
+      publishedAt: published?.day ?? "",
+      updatedAt: updated ? new Date(updated.ms).toISOString() : "",
+      sortMs: published?.ms ?? updated?.ms ?? 0,
+      canonicalUrl: httpsUrl(fields["canonical-url"]),
+      legacyPaths: legacyPathsOf(fields["legacy-paths"], address.path),
+      seoTitle: text(fields["seo-title"]),
+      seoDescription: text(fields["seo-description"]),
+      schemaVersion: finiteNumber(fields["schema-version"]) ?? 1
+    });
+  }
+  posts.sort((a, b) => b.sortMs - a.sortMs || a.title.localeCompare(b.title));
+  return { posts, problems };
+};
+var resolvePostRequest = (posts, rawPath) => {
+  const path = normalizePath(rawPath);
+  if (!path) return null;
+  const post = posts.find((item) => item.path === path);
+  if (post) return rawPath === post.path ? { post } : { redirect: post.path };
+  const moved = posts.find((item) => item.legacyPaths.includes(path));
+  return moved ? { redirect: moved.path } : null;
+};
+var postSummary = (post, max = 200) => {
+  if (post.description) return post.description;
+  const flat = markdownText(post.body).replace(/【fill in[^】]*】/gi, "").trim();
+  if (flat.length <= max) return flat;
+  const cut2 = flat.slice(0, max - 1);
+  const space = cut2.lastIndexOf(" ");
+  return `${space > max * 0.6 ? cut2.slice(0, space) : cut2}\u2026`;
+};
+var mentionedProducts = (post, listed) => {
+  const byId = new Map(listed.map((product) => [product.id, product]));
+  const found = [];
+  for (const match of post.body.matchAll(/\(\/products\/([A-Za-z0-9][A-Za-z0-9._%-]{0,119})\)/g)) {
+    let id;
+    try {
+      id = decodeURIComponent(match[1]);
+    } catch {
+      continue;
+    }
+    const product = byId.get(id);
+    if (product && !found.includes(product)) found.push(product);
+    if (found.length >= MAX_MENTIONED_PRODUCTS) break;
+  }
+  return found;
+};
+var coverSrc = (post) => {
+  if (!post.cover) return "";
+  return post.cover.kind === "direct" ? post.cover.url : `/blog-covers/${encodeURIComponent(post.slug)}`;
+};
+var canonicalElsewhere = (post, origin) => Boolean(post.canonicalUrl) && post.canonicalUrl !== new URL(post.path, origin).href;
 
 // src/seo.js
 var xmlEscape = (value2) => String(value2).replace(/[<>&'"]/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[char]);
@@ -29820,14 +30053,16 @@ var isoDay = (value2) => {
   const parsed = Date.parse(value2 ?? "");
   return Number.isFinite(parsed) ? new Date(parsed).toISOString().slice(0, 10) : "";
 };
-var buildSitemap = (origin, products, pages = []) => {
+var urlEntry = (origin, path, lastmod = "") => `  <url><loc>${xmlEscape(absoluteUrl(origin, path))}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`;
+var indexablePosts = (origin, posts = []) => posts.filter((post) => !canonicalElsewhere(post, origin));
+var buildSitemap = (origin, products, pages = [], posts = []) => {
+  const blog = indexablePosts(origin, posts);
   const urls = [
-    `  <url><loc>${xmlEscape(absoluteUrl(origin, "/"))}</loc></url>`,
-    ...products.map((product) => {
-      const lastmod = isoDay(product.updatedAt);
-      return `  <url><loc>${xmlEscape(absoluteUrl(origin, productPath(product)))}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`;
-    }),
-    ...pages.map((page) => `  <url><loc>${xmlEscape(absoluteUrl(origin, `/pages/${page.slug}`))}</loc></url>`)
+    urlEntry(origin, "/"),
+    ...products.map((product) => urlEntry(origin, productPath(product), isoDay(product.updatedAt))),
+    ...pages.map((page) => urlEntry(origin, `/pages/${page.slug}`)),
+    ...blog.length ? [urlEntry(origin, BLOG_PATH, isoDay(blog[0].updatedAt) || blog[0].publishedAt)] : [],
+    ...blog.map((post) => urlEntry(origin, post.path, isoDay(post.updatedAt) || post.publishedAt))
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -29835,12 +30070,31 @@ ${urls.join("\n")}
 </urlset>
 `;
 };
+var NAMED_CRAWLERS = [
+  "Googlebot",
+  "Google-Extended",
+  "Bingbot",
+  "GPTBot",
+  "OAI-SearchBot",
+  "ChatGPT-User",
+  "ClaudeBot",
+  "Claude-SearchBot",
+  "Claude-User",
+  "PerplexityBot",
+  "Perplexity-User",
+  "Applebot",
+  "Applebot-Extended",
+  "DuckAssistBot"
+];
 var buildRobots = (origin) => [
+  "# Search engines and AI assistants are welcome. A summary for them: /llms.txt",
   "User-agent: *",
+  ...NAMED_CRAWLERS.map((name) => `User-agent: ${name}`),
   "Allow: /",
   "Disallow: /api/",
   "Disallow: /order",
   "Disallow: /pay/",
+  "",
   `Sitemap: ${absoluteUrl(origin, "/sitemap.xml")}`,
   ""
 ].join("\n");
@@ -29849,8 +30103,63 @@ var productBrand = (product) => {
   const brand = product.content?.attributes?.brand;
   return typeof brand === "string" ? brand.trim() : "";
 };
-var productJsonLd = ({ origin, product, settings }) => {
+var deliveryDays = (estimate) => {
+  const match = /(\d{1,3})(?:\s*(?:–|—|-|to|bis|à|a)\s*(\d{1,3}))?\s*(?:business\s+|working\s+|calendar\s+)?(?:days?|tage|jours|días|dias|天|日)/i.exec(String(estimate ?? ""));
+  if (!match) return null;
+  const min = Number(match[1]);
+  const max = match[2] === void 0 ? min : Number(match[2]);
+  return max >= min ? { min, max } : null;
+};
+var shippingDetailsFor = (product, settings, shipping) => {
+  if (!shipping || shipping.status !== "ready") return [];
+  const zones = /* @__PURE__ */ new Map();
+  for (const code of checkoutCountries(settings, shipping)) {
+    const rate = shipping.rates.get(code);
+    if (!zones.has(rate.zone)) zones.set(rate.zone, { rate, countries: [] });
+    zones.get(rate.zone).countries.push(code);
+  }
+  const details = [];
+  for (const { rate, countries } of zones.values()) {
+    const days = deliveryDays(rate.estimate);
+    if (!days) continue;
+    const free = rate.cost === 0 || rate.freeOver !== null && product.price >= rate.freeOver;
+    details.push({
+      "@type": "OfferShippingDetails",
+      shippingRate: { "@type": "MonetaryAmount", value: free ? 0 : rate.cost, currency: rate.currency },
+      shippingDestination: countries.map((code) => ({ "@type": "DefinedRegion", addressCountry: code })),
+      deliveryTime: {
+        "@type": "ShippingDeliveryTime",
+        transitTime: { "@type": "QuantitativeValue", minValue: days.min, maxValue: days.max, unitCode: "DAY" }
+      }
+    });
+  }
+  return details;
+};
+var MAX_RETURN_COUNTRIES = 50;
+var returnPolicyFor = (product, settings, shipping) => {
+  const returns = product.content?.attributes?.returns;
+  if (typeof returns !== "string" || !returns.trim()) return null;
+  const countries = shipping?.status === "ready" ? checkoutCountries(settings, shipping) : [];
+  if (!countries.length || countries.length > MAX_RETURN_COUNTRIES) return null;
+  const applicableCountry = countries.length === 1 ? countries[0] : countries;
+  if (/\bno returns?\b|non-returnable|not returnable|keine rückgabe|不退|不支持退/i.test(returns)) {
+    return { "@type": "MerchantReturnPolicy", applicableCountry, returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted" };
+  }
+  const days = /(\d{1,3})\s*-?\s*(?:days?|tage|jours|días|dias|天|日)/i.exec(returns);
+  if (!days || Number(days[1]) < 1) return null;
+  return {
+    "@type": "MerchantReturnPolicy",
+    applicableCountry,
+    returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+    merchantReturnDays: Number(days[1]),
+    // An online shop: what comes back comes back by post.
+    returnMethod: "https://schema.org/ReturnByMail"
+  };
+};
+var productJsonLd = ({ origin, product, settings, shipping = null }) => {
   const url2 = absoluteUrl(origin, productPath(product));
+  const shippingDetails = shippingDetailsFor(product, settings, shipping);
+  const returnPolicy = returnPolicyFor(product, settings, shipping);
   const data = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -29868,7 +30177,9 @@ var productJsonLd = ({ origin, product, settings }) => {
       priceCurrency: product.currency,
       availability: product.soldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
       itemCondition: "https://schema.org/NewCondition",
-      seller: { "@type": "Organization", name: settings.storeName }
+      seller: { "@type": "Organization", name: settings.storeName },
+      ...shippingDetails.length ? { shippingDetails } : {},
+      ...returnPolicy ? { hasMerchantReturnPolicy: returnPolicy } : {}
     }
   };
   return data;
@@ -29881,6 +30192,145 @@ var storeJsonLd = ({ origin, settings }) => ({
   ...settings.tagline ? { description: settings.tagline } : {},
   ...settings.contactEmail ? { email: settings.contactEmail } : {}
 });
+var postImage = (origin, post, listed = []) => {
+  if (post.cover) return absoluteUrl(origin, coverSrc(post));
+  const product = mentionedProducts(post, listed).find((item) => item.images.length);
+  return product ? absoluteImages(origin, product)[0] : "";
+};
+var postUrl = (origin, post) => post.canonicalUrl || absoluteUrl(origin, post.path);
+var postJsonLd = ({ origin, post, settings, blogLabel = "Blog", listed = [] }) => {
+  const url2 = postUrl(origin, post);
+  const image = postImage(origin, post, listed);
+  const description = post.seoDescription || postSummary(post, 300);
+  const byShop = !post.author || post.author.toLowerCase().includes(settings.storeName.toLowerCase());
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: post.title.slice(0, 110),
+      url: url2,
+      mainEntityOfPage: url2,
+      ...description ? { description } : {},
+      ...image ? { image: [image] } : {},
+      ...post.publishedAt ? { datePublished: post.publishedAt } : {},
+      ...post.updatedAt ? { dateModified: post.updatedAt } : {},
+      ...post.locale ? { inLanguage: post.locale } : {},
+      author: byShop ? { "@type": "Organization", name: post.author || settings.storeName, url: absoluteUrl(origin, "/") } : { "@type": "Person", name: post.author },
+      publisher: { "@type": "Organization", name: settings.storeName, url: absoluteUrl(origin, "/") }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: settings.storeName, item: absoluteUrl(origin, "/") },
+        { "@type": "ListItem", position: 2, name: blogLabel, item: absoluteUrl(origin, BLOG_PATH) },
+        { "@type": "ListItem", position: 3, name: post.title, item: absoluteUrl(origin, post.path) }
+      ]
+    }
+  ];
+};
+var rfc822 = (iso) => {
+  const ms = Date.parse(iso ?? "");
+  return Number.isFinite(ms) ? new Date(ms).toUTCString() : "";
+};
+var buildFeed = ({ origin, settings, posts, blogLabel = "Blog" }) => {
+  const items = indexablePosts(origin, posts).slice(0, FEED_ITEMS);
+  const newest = items[0];
+  const lines = [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">`,
+    `<channel>`,
+    `<title>${xmlEscape(`${settings.storeName} \xB7 ${blogLabel}`)}</title>`,
+    `<link>${xmlEscape(absoluteUrl(origin, BLOG_PATH))}</link>`,
+    `<description>${xmlEscape(settings.tagline || settings.storeName)}</description>`,
+    `<language>${xmlEscape(settings.language || "en")}</language>`,
+    `<atom:link href="${xmlEscape(absoluteUrl(origin, FEED_PATH))}" rel="self" type="application/rss+xml"/>`,
+    ...newest ? [`<lastBuildDate>${rfc822(newest.updatedAt || newest.publishedAt)}</lastBuildDate>`] : [],
+    ...items.map((post) => {
+      const link = absoluteUrl(origin, post.path);
+      const date5 = rfc822(post.publishedAt || post.updatedAt);
+      return [
+        `<item>`,
+        `<title>${xmlEscape(post.title)}</title>`,
+        `<link>${xmlEscape(link)}</link>`,
+        `<guid isPermaLink="true">${xmlEscape(link)}</guid>`,
+        ...date5 ? [`<pubDate>${date5}</pubDate>`] : [],
+        `<description>${xmlEscape(postSummary(post, 300))}</description>`,
+        `</item>`
+      ].join("");
+    }),
+    `</channel>`,
+    `</rss>`,
+    ""
+  ];
+  return lines.join("\n");
+};
+var mdText = (value2) => String(value2 ?? "").replace(/\s+/g, " ").replace(/([[\]])/g, "\\$1").trim();
+var buildLlmsTxt = ({ origin, settings, catalog, shipping, pages = [], posts = [], payment = "request" }) => {
+  const money3 = (amount) => formatPrice(amount, settings.currency, "en");
+  const listed = catalog.listed;
+  const categories = [...new Set(listed.map((product) => product.category).filter(Boolean))];
+  const countries = shipping?.status === "ready" ? checkoutCountries(settings, shipping) : settings.shipsTo;
+  const countryNames = countries.map((code) => countryName(code, "en"));
+  const shipsLine = countries.length > 40 ? "most countries (the checkout lists them)" : countryNames.join(", ");
+  const summary = [
+    settings.tagline ? `${settings.tagline.replace(/[.\s]+$/, "")}.` : "",
+    `An online shop with ${listed.length} product${listed.length === 1 ? "" : "s"} on sale${categories.length ? ` (${categories.join(", ")})` : ""}, priced in ${settings.currency}${countries.length ? `, shipping to ${shipsLine}` : ""}.`
+  ].filter(Boolean).join(" ");
+  const out = [`# ${mdText(settings.storeName)}`, "", `> ${summary}`, ""];
+  if (settings.demoNotice) out.push("Note: this is a demo store. Its products, prices and orders are fictional.", "");
+  if (settings.about) out.push(markdownText(settings.about), "");
+  out.push(
+    `- Website: ${absoluteUrl(origin, "/")}`,
+    `- Currency: ${settings.currency}`,
+    ...countries.length ? [`- Ships to: ${shipsLine}`] : [],
+    `- Payment: ${payment === "paypal" ? "online with PayPal at checkout" : "order requests: the shop confirms the order and payment by email"}`,
+    ...settings.contactEmail ? [`- Contact: ${settings.contactEmail}`] : [],
+    ""
+  );
+  if (shipping?.status === "ready" && countries.length) {
+    const zones = /* @__PURE__ */ new Map();
+    for (const code of countries) {
+      const rate = shipping.rates.get(code);
+      if (!zones.has(rate.zone)) zones.set(rate.zone, { rate, codes: [] });
+      zones.get(rate.zone).codes.push(code);
+    }
+    out.push("## Shipping", "");
+    for (const { rate, codes } of zones.values()) {
+      const parts = [
+        rate.cost === 0 ? "free shipping" : `shipping ${money3(rate.cost)}`,
+        ...rate.cost !== 0 && rate.freeOver !== null ? [`free from an items total of ${money3(rate.freeOver)}`] : [],
+        ...rate.estimate ? [`delivery ${rate.estimate}`] : []
+      ];
+      out.push(`- ${mdText(rate.zone)} (${codes.join(", ")}): ${parts.join(", ")}`);
+    }
+    if (settings.shippingNote) out.push("", markdownText(settings.shippingNote));
+    out.push("");
+  }
+  if (listed.length) {
+    out.push("## Products", "");
+    for (const product of listed) {
+      const notes = [product.priceText, ...product.soldOut ? ["out of stock"] : [], ...product.subtitle ? [product.subtitle] : []];
+      out.push(`- [${mdText(product.name)}](${absoluteUrl(origin, productPath(product))}): ${mdText(notes.join(". "))}`);
+    }
+    out.push("");
+  }
+  if (pages.length) {
+    out.push("## Policies", "");
+    for (const page of pages) out.push(`- [${mdText(page.title)}](${absoluteUrl(origin, pagePath(page))})`);
+    out.push("");
+  }
+  const blog = indexablePosts(origin, posts);
+  if (blog.length) {
+    out.push("## Blog", "");
+    for (const post of blog) {
+      const summaryText = postSummary(post, 200);
+      out.push(`- [${mdText(post.title)}](${absoluteUrl(origin, post.path)})${summaryText ? `: ${mdText(summaryText)}` : ""}`);
+    }
+    out.push("");
+  }
+  return out.join("\n");
+};
 var jsonLdScript = (data) => `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, "\\u003c")}</script>`;
 
 // src/pages.js
@@ -29900,10 +30350,14 @@ var layout = ({
   jsonLd = [],
   noindex = false,
   body,
-  site = {}
+  site = {},
+  lang: pageLang = "",
+  extraMeta = []
 }) => {
-  const lang = settings?.language ?? "en";
+  const lang = pageLang || settings?.language || "en";
   const footerPages = (site.pages ?? []).filter((page) => page.inFooter);
+  const hasBlog = (site.posts ?? []).length > 0;
+  const analytics = site.analytics ?? {};
   const paypal = site.payment === "paypal";
   const storeName = settings?.storeName ?? "";
   const meta3 = [
@@ -29920,19 +30374,27 @@ var layout = ({
     canonical ? `<meta property="og:url" content="${esc3(canonical)}">` : "",
     ogImage ? `<meta property="og:image" content="${esc3(ogImage)}">` : "",
     `<meta name="twitter:card" content="${ogImage ? "summary_large_image" : "summary"}">`,
+    ...extraMeta,
+    hasBlog ? `<link rel="alternate" type="application/rss+xml" title="${esc3(`${storeName} \xB7 ${t("nav_blog")}`)}" href="${FEED_PATH}">` : "",
+    analytics.googleVerification ? `<meta name="google-site-verification" content="${esc3(analytics.googleVerification)}">` : "",
+    analytics.bingVerification ? `<meta name="msvalidate.01" content="${esc3(analytics.bingVerification)}">` : "",
+    // Google Analytics 4: only when Settings names an ID, and only on the public site (src/handler.js decides).
+    analytics.ga4 ? `<meta name="busa-shop-ga4" content="${esc3(analytics.ga4)}">` : "",
+    analytics.ga4 ? `<script type="module" src="/static/analytics.js"></script>` : "",
     `<link rel="icon" href="/favicon.svg" type="image/svg+xml">`,
     `<link rel="stylesheet" href="/static/shop.css">`,
     ...jsonLd.map(jsonLdScript)
   ].filter(Boolean);
   const header = settings ? `<header class="site-header"><div class="wrap header-row">
   <a class="brand" href="/">${esc3(storeName)}</a>
-  <nav class="site-nav"><a href="/#products">${esc3(t("nav_products"))}</a><a class="order-link" href="/order">${esc3(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
+  <nav class="site-nav"><a href="/#products">${esc3(t("nav_products"))}</a>${hasBlog ? `<a href="${BLOG_PATH}">${esc3(t("nav_blog"))}</a>` : ""}<a class="order-link" href="/order">${esc3(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
 </div></header>` : "";
   const notice = settings?.demoNotice ? `<div class="demo-notice" role="note">${esc3(t("demo_notice"))}</div>` : "";
   const footer = settings ? `<footer class="site-footer"><div class="wrap footer-row">
   <p><strong>${esc3(storeName)}</strong>${settings.tagline ? ` \xB7 ${esc3(settings.tagline)}` : ""}</p>
   ${settings.contactEmail ? `<p>${esc3(t("contact"))}: <a href="mailto:${esc3(settings.contactEmail)}">${esc3(settings.contactEmail)}</a></p>` : ""}
   ${footerPages.length ? `<nav class="footer-links" aria-label="${esc3(t("footer_policies"))}">${footerPages.map((page) => `<a href="${esc3(pagePath(page))}">${esc3(page.title)}</a>`).join("")}</nav>` : ""}
+  ${hasBlog ? `<nav class="footer-links footer-blog" aria-label="${esc3(t("nav_blog"))}"><a href="${BLOG_PATH}">${esc3(t("nav_blog"))}</a><a href="${FEED_PATH}">${esc3(t("blog_feed"))}</a></nav>` : ""}
   <p class="muted">${esc3(t(paypal ? "footer_paypal" : "footer_orders"))}</p>
 </div></footer>` : "";
   return `<!doctype html>
@@ -30001,7 +30463,7 @@ ${settings.about ? `<section class="about" aria-labelledby="about-heading"><h2 i
     site
   });
 };
-var productPage = ({ origin, settings, product, site = {} }) => {
+var productPage = ({ origin, settings, product, site = {}, shipping = null }) => {
   const t = translator(settings.language);
   const content = product.content;
   const specs = [
@@ -30045,7 +30507,7 @@ var productPage = ({ origin, settings, product, site = {} }) => {
     canonical: absoluteUrl(origin, productPath(product)),
     ogType: "product",
     ogImage: product.images.length ? absoluteImages(origin, product)[0] : "",
-    jsonLd: [productJsonLd({ origin, product, settings })],
+    jsonLd: [productJsonLd({ origin, product, settings, shipping })],
     body,
     site
   });
@@ -30251,6 +30713,85 @@ var thanksPage = ({ origin, settings, orderId, email: email3, site = {} }) => {
   <p>${esc3(t("thanks_body", { orderId, email: email3 }))}</p>
   <p><a class="button" href="/">${esc3(t("thanks_continue"))}</a></p>
 </section>`,
+    site
+  });
+};
+var formatDay = (day, language) => {
+  const ms = Date.parse(`${day}T00:00:00Z`);
+  if (!Number.isFinite(ms)) return "";
+  return new Intl.DateTimeFormat(localeTag(language), { dateStyle: "long", timeZone: "UTC" }).format(new Date(ms));
+};
+var postMeta = (post, t, language) => {
+  const parts = [
+    post.publishedAt ? `<time datetime="${esc3(post.publishedAt)}">${esc3(t("blog_published", { date: formatDay(post.publishedAt, language) }))}</time>` : "",
+    post.author ? `<span>${esc3(t("blog_by", { author: post.author }))}</span>` : ""
+  ].filter(Boolean);
+  return parts.length ? `<p class="post-meta muted">${parts.join(" \xB7 ")}</p>` : "";
+};
+var postThumb = (post, listed, { eager = false } = {}) => {
+  if (post.cover) {
+    return `<img src="${esc3(coverSrc(post))}" alt="" width="1200" height="630"${eager ? "" : ` loading="lazy"`} decoding="async" referrerpolicy="no-referrer">`;
+  }
+  const product = mentionedProducts(post, listed).find((item) => item.images.length);
+  return product ? `<img src="${esc3(imageSrc(product, product.images[0], 0))}" alt="" width="800" height="800" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : "";
+};
+var blogIndexPage = ({ origin, settings, posts, listed = [], site = {} }) => {
+  const t = translator(settings.language);
+  const list = posts.length ? `<ul class="post-list">${posts.map((post) => {
+    const thumb = postThumb(post, listed);
+    return `<li class="post-card">
+  ${thumb ? `<a class="post-card-media" href="${esc3(post.path)}" tabindex="-1" aria-hidden="true">${thumb}</a>` : ""}
+  <div class="post-card-body">
+    <h2><a href="${esc3(post.path)}">${esc3(post.title)}</a></h2>
+    ${postMeta(post, t, settings.language)}
+    <p>${esc3(postSummary(post))}</p>
+  </div>
+</li>`;
+  }).join("\n")}</ul>` : `<p class="empty">${esc3(t("blog_empty"))}</p>`;
+  return layout({
+    settings,
+    t,
+    title: `${t("blog_heading")} \xB7 ${settings.storeName}`,
+    description: plainSummary(posts.length ? `${settings.storeName}: ${posts.slice(0, 3).map((post) => post.title).join(" \xB7 ")}` : settings.tagline || settings.storeName),
+    canonical: absoluteUrl(origin, BLOG_PATH),
+    noindex: posts.length === 0,
+    body: `<section class="blog"><h1>${esc3(t("blog_heading"))}</h1>
+${list}
+</section>`,
+    site
+  });
+};
+var postPage = ({ origin, settings, post, listed = [], site = {} }) => {
+  const t = translator(settings.language);
+  const products = mentionedProducts(post, listed);
+  const image = postImage(origin, post, listed);
+  const cover = post.cover ? `<figure class="post-cover"><img src="${esc3(coverSrc(post))}" alt="" width="1200" height="630" decoding="async" referrerpolicy="no-referrer"></figure>` : "";
+  const strip = products.length ? `<section class="post-products" aria-labelledby="post-products-heading"><h2 id="post-products-heading">${esc3(t("blog_products"))}</h2><ul class="grid">${products.map((product) => card(product, t)).join("\n")}</ul></section>` : "";
+  return layout({
+    settings,
+    t,
+    title: post.seoTitle || `${post.title} \xB7 ${settings.storeName}`,
+    description: plainSummary(post.seoDescription || postSummary(post, 300) || post.title),
+    canonical: postUrl(origin, post),
+    ogType: "article",
+    ogImage: image,
+    lang: post.locale,
+    extraMeta: [
+      post.publishedAt ? `<meta property="article:published_time" content="${esc3(post.publishedAt)}">` : "",
+      post.updatedAt ? `<meta property="article:modified_time" content="${esc3(post.updatedAt)}">` : ""
+    ],
+    jsonLd: postJsonLd({ origin, post, settings, blogLabel: t("blog_heading"), listed }),
+    body: `<nav class="crumbs" aria-label="Breadcrumb"><a href="${BLOG_PATH}">${esc3(t("blog_heading"))}</a> <span aria-hidden="true">/</span> <span>${esc3(post.title)}</span></nav>
+<article class="post">
+  <h1>${esc3(post.title)}</h1>
+  ${postMeta(post, t, settings.language)}
+  ${cover}
+  <div class="post-body">
+${renderMarkdown(fillPlaceholders(post.body, settings), { demoteH1: true })}
+  </div>
+</article>
+${strip}
+<p class="post-back"><a href="${BLOG_PATH}">\u2190 ${esc3(t("blog_back"))}</a></p>`,
     site
   });
 };
@@ -30655,14 +31196,14 @@ var ShopUnavailableError = class extends Error {
 };
 var describeError = (error62) => error62?.status ?? error62?.code ?? error62?.name ?? "error";
 var isConflict = (error62) => error62?.status === 409 || error62?.code === "CONFLICT";
-var readOptional = async (records, resource, limit, log, label2) => {
+var readOptional = async (records, resource, limit, log, label2, sort) => {
   if (resource.status === "missing") return { status: "missing", records: [] };
   if (resource.status === "ambiguous") {
     log.warn?.(`busa-shop: more than one ${label2} table in this shop's folder`);
     return { status: "unreadable", records: [] };
   }
   try {
-    const page = await records.readPage({ baseId: resource.node.baseId, limit });
+    const page = await records.readPage({ baseId: resource.node.baseId, limit, ...sort ? { sort } : {} });
     return { status: "ready", records: page.records };
   } catch (error62) {
     log.warn?.(`busa-shop: ${label2} unreadable`, describeError(error62));
@@ -30687,7 +31228,7 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
     const tables = resolveProductTables(nodes, settings.productsBase, { shopFolderId: shop.settings.node.parentId });
     if (tables.status !== "ready") return { setup: tables.status, settings };
     const extras = resolveShopExtras(nodes, shop.settings.node.parentId);
-    const [productsPage, certificateRecords, shippingRead, pagesRead] = await Promise.all([
+    const [productsPage, certificateRecords, shippingRead, pagesRead, postsRead] = await Promise.all([
       records.readPage({
         baseId: tables.productsBaseId,
         limit: PRODUCTS_PAGE,
@@ -30700,8 +31241,11 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
         return [];
       }) : Promise.resolve([]),
       readOptional(records, extras.shipping, SHIPPING_PAGE, log, "Shipping"),
-      readOptional(records, extras.pages, PAGES_LIMIT, log, "Pages")
+      readOptional(records, extras.pages, PAGES_LIMIT, log, "Pages"),
+      // Newest first, so a shop with more than 100 posts keeps its newest.
+      readOptional(records, extras.posts, POSTS_LIMIT, log, "Posts", { fieldSlug: "published-at", fieldType: "date", direction: "desc" })
     ]);
+    const blog = buildPosts(postsRead.records, { busabaseOrigin });
     const catalog = buildCatalog({
       productRecords: productsPage.records,
       certificateRecords,
@@ -30722,6 +31266,9 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       shipping: shippingRead.status === "ready" ? { status: "ready", ...buildShippingRates(shippingRead.records, settings) } : { status: shippingRead.status, rates: /* @__PURE__ */ new Map(), problems: [] },
       pages: buildPages(pagesRead.records),
       pagesStatus: pagesRead.status,
+      posts: blog.posts,
+      postProblems: blog.problems,
+      postsStatus: postsRead.status,
       hubAppNodeId: tables.hubAppNodeId,
       moreProducts: Boolean(productsPage.nextCursor)
     };
@@ -30851,7 +31398,17 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       return null;
     }
   };
-  return { load, createOrder, findOrder, findOrderByCapture, updateOrder, productImage: productImage2, appId: SHOP_APP_ID };
+  const postCover = async (state, slug) => {
+    const post = (state.posts ?? []).find((item) => item.slug === slug);
+    if (!post?.cover || post.cover.kind !== "busabase") return null;
+    try {
+      return await imageResponse(post.cover.url);
+    } catch (error62) {
+      log.warn?.("busa-shop: cover unreadable", slug, describeError(error62));
+      return null;
+    }
+  };
+  return { load, createOrder, findOrder, findOrderByCapture, updateOrder, productImage: productImage2, postCover, appId: SHOP_APP_ID };
 };
 
 // src/vault.js
@@ -30918,15 +31475,30 @@ var paypalCsp = (sdkUrl) => {
   const hosts = [.../* @__PURE__ */ new Set([...PAYPAL_HOSTS, new URL(sdkUrl).origin])].join(" ");
   return `default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline' ${hosts}; script-src 'self' ${hosts}; connect-src 'self' ${hosts}; frame-src ${hosts}; child-src ${hosts}; form-action 'self'; base-uri 'none'; object-src 'none'`;
 };
+var ANALYTICS_CSP = "default-src 'self'; img-src 'self' https: data:; style-src 'self'; script-src 'self' https://*.googletagmanager.com; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; form-action 'self'; base-uri 'none'; object-src 'none'";
+var LOADS_ANALYTICS = '<meta name="busa-shop-ga4"';
 var html = (body, { status = 200, cache = "public, max-age=60", extra = {} } = {}) => new Response(body, {
   status,
-  headers: { "content-type": "text/html; charset=utf-8", "cache-control": cache, ...SECURITY_HEADERS, ...extra }
+  headers: {
+    "content-type": "text/html; charset=utf-8",
+    "cache-control": cache,
+    ...SECURITY_HEADERS,
+    ...body.includes(LOADS_ANALYTICS) ? { "content-security-policy": ANALYTICS_CSP } : {},
+    ...extra
+  }
+});
+var isOwnerPreview = (url2, env2) => !env2?.BUSABASE_API_KEY || /-preview$/i.test(url2.hostname.split(".")[0] ?? "");
+var analyticsFor = (url2, env2, settings) => ({
+  ga4: isOwnerPreview(url2, env2) ? "" : settings.ga4Id ?? "",
+  googleVerification: settings.googleVerification ?? "",
+  bingVerification: settings.bingVerification ?? ""
 });
 var json2 = (data, status = 200) => new Response(JSON.stringify(data), {
   status,
   headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...SECURITY_HEADERS }
 });
 var plain = (body, status = 200, type = "text/plain; charset=utf-8", cache = "public, max-age=300") => new Response(body, { status, headers: { "content-type": type, "cache-control": cache, "x-content-type-options": "nosniff" } });
+var redirect = (location) => new Response(null, { status: 301, headers: { location, "cache-control": "public, max-age=300", "x-content-type-options": "nosniff" } });
 var NOT_READY = { cache: "no-store", extra: { "retry-after": "300", "x-robots-tag": "noindex" } };
 var PRIVATE = { cache: "no-store", extra: { "x-robots-tag": "noindex" } };
 var defaultDeps = {
@@ -31032,7 +31604,12 @@ var createHandler = (overrides = {}) => {
     }
     return site.paypal.client;
   };
-  const siteInfo = (state, payments) => ({ pages: state.pages ?? [], payment: payments?.payment ?? "request" });
+  const siteInfo = (state, payments, analytics = null) => ({
+    pages: state.pages ?? [],
+    posts: state.posts ?? [],
+    payment: payments?.payment ?? "request",
+    ...analytics ? { analytics } : {}
+  });
   const checkoutFor = (state, payments) => ({
     payment: payments.payment,
     countries: checkoutCountries(state.settings, state.shipping),
@@ -31142,7 +31719,7 @@ var createHandler = (overrides = {}) => {
     const { settings } = state;
     const vault = await secretsFor(env2, state);
     const payments = paymentsFor(env2, state, vault);
-    const site = siteInfo(state, payments);
+    const site = siteInfo(state, payments, analyticsFor(url2, env2, settings));
     const t = translator(settings.language);
     const values = {
       name: input2.name,
@@ -31535,6 +32112,26 @@ var createHandler = (overrides = {}) => {
     if (cache && ctx?.waitUntil) ctx.waitUntil(cache.put(request, response.clone()));
     return response;
   };
+  const coverRoute = async (request, env2, ctx, slug) => {
+    const cache = typeof caches !== "undefined" ? caches.default : void 0;
+    const hit = cache ? await cache.match(request) : void 0;
+    if (hit) return hit;
+    const shop = siteFor(env2).shop;
+    const state = await shop.load();
+    if (state.setup !== "ready") return plain("Not found", 404, void 0, "no-store");
+    const image = await shop.postCover(state, slug);
+    if (!image) return plain("Not found", 404, void 0, "no-store");
+    const response = new Response(image.body, {
+      headers: {
+        "content-type": image.type,
+        "cache-control": "public, max-age=3600",
+        "x-content-type-options": "nosniff",
+        "content-security-policy": "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox"
+      }
+    });
+    if (cache && ctx?.waitUntil) ctx.waitUntil(cache.put(request, response.clone()));
+    return response;
+  };
   const statusBody = async (env2, state) => {
     if (state.setup !== "ready") return { ok: false, setup: state.setup, products: 0, ordering: false };
     const vault = await secretsFor(env2, state);
@@ -31551,7 +32148,14 @@ var createHandler = (overrides = {}) => {
       shipping: state.shipping.status === "ready" ? { countries: checkoutCountries(state.settings, state.shipping).length, problems: state.shipping.problems.length } : state.shipping.status,
       email: email3.ready ? "ready" : email3.reason,
       pages: state.pages.length,
-      ...unfinishedPages(state.pages).length ? { pagesToFinish: unfinishedPages(state.pages) } : {}
+      ...unfinishedPages(state.pages).length ? { pagesToFinish: unfinishedPages(state.pages) } : {},
+      posts: state.postsStatus === "ready" ? state.posts.length : state.postsStatus,
+      ...state.postProblems?.length ? { postsNotShown: state.postProblems } : {},
+      google: {
+        analytics: Boolean(state.settings.ga4Id),
+        searchConsole: Boolean(state.settings.googleVerification),
+        bing: Boolean(state.settings.bingVerification)
+      }
     };
   };
   const route = async (request, env2, ctx) => {
@@ -31586,20 +32190,55 @@ var createHandler = (overrides = {}) => {
     }
     const payMatch = /^\/pay\/([^/]{1,40})$/.exec(path);
     if (payMatch) return getPay(url2, env2, payMatch[1]);
-    const isPage = path === "/" || path === "/order" || path.startsWith("/products/") || path.startsWith("/pages/") || path === "/sitemap.xml";
-    if (!isPage && path !== "/api/status") return assets(request, env2, null);
+    const coverMatch = /^\/blog-covers\/([^/]{1,100})$/.exec(path);
+    if (coverMatch) {
+      const slug = coverMatch[1].toLowerCase();
+      return POST_SLUG_PATTERN.test(slug) ? coverRoute(request, env2, ctx, slug) : plain("Not found", 404, void 0, "no-store");
+    }
+    const isPage = path === "/" || path === "/order" || path.startsWith("/products/") || path.startsWith("/pages/") || path === "/sitemap.xml" || path === "/llms.txt" || path === BLOG_PATH || path.startsWith(`${BLOG_PATH}/`);
+    if (!isPage && path !== "/api/status") {
+      if (env2.ASSETS?.fetch) {
+        const response = await env2.ASSETS.fetch(request);
+        if (response.status !== 404) return response;
+      }
+      try {
+        const state2 = await siteFor(env2).shop.load();
+        const moved = state2.setup === "ready" ? resolvePostRequest(state2.posts, url2.pathname) : null;
+        if (moved?.redirect) return redirect(moved.redirect);
+        return html(notFoundPage({ settings: state2.settings ?? null, site: state2.setup === "ready" ? siteInfo(state2, null, analyticsFor(url2, env2, state2.settings)) : {} }), { status: 404, cache: "no-store" });
+      } catch {
+        return html(notFoundPage({ settings: null }), { status: 404, cache: "no-store" });
+      }
+    }
     const shop = siteFor(env2).shop;
     const state = await shop.load();
     if (path === "/api/status") return json2(await statusBody(env2, state));
     if (state.setup !== "ready") {
-      return path === "/sitemap.xml" ? plain("Not ready", 503, void 0, "no-store") : notReady(state);
+      return path === "/sitemap.xml" || path === "/llms.txt" || path === FEED_PATH ? plain("Not ready", 503, void 0, "no-store") : notReady(state);
     }
     const { settings, catalog } = state;
     const payment = settings.paypalMode !== "off" && settings.paypalClientId && env2.BUSABASE_API_KEY && state.shipping.status === "ready" ? "paypal" : "request";
-    const site = { pages: state.pages, payment };
+    const analytics = analyticsFor(url2, env2, settings);
+    const site = { pages: state.pages, posts: state.posts, payment, analytics };
     if (path === "/") return html(homePage({ origin: url2.origin, settings, catalog, site }));
     if (path === "/sitemap.xml") {
-      return plain(buildSitemap(url2.origin, catalog.listed, state.pages), 200, "application/xml; charset=utf-8");
+      return plain(buildSitemap(url2.origin, catalog.listed, state.pages, state.posts), 200, "application/xml; charset=utf-8");
+    }
+    if (path === "/llms.txt") {
+      return plain(buildLlmsTxt({ origin: url2.origin, settings, catalog, shipping: state.shipping, pages: state.pages, posts: state.posts, payment }));
+    }
+    if (path === FEED_PATH) {
+      return plain(buildFeed({ origin: url2.origin, settings, posts: state.posts, blogLabel: translator(settings.language)("blog_heading") }), 200, "application/rss+xml; charset=utf-8");
+    }
+    if (path === BLOG_PATH) {
+      if (url2.pathname !== BLOG_PATH) return redirect(BLOG_PATH);
+      return html(blogIndexPage({ origin: url2.origin, settings, posts: state.posts, listed: catalog.listed, site }));
+    }
+    if (path.startsWith(`${BLOG_PATH}/`)) {
+      const found = resolvePostRequest(state.posts, url2.pathname);
+      if (found?.redirect) return redirect(found.redirect);
+      if (found?.post) return html(postPage({ origin: url2.origin, settings, post: found.post, listed: catalog.listed, site }));
+      return html(notFoundPage({ settings, site }), { status: 404, cache: "no-store" });
     }
     if (path === "/order") {
       const vault = await secretsFor(env2, state);
@@ -31613,7 +32252,7 @@ var createHandler = (overrides = {}) => {
           orderId: newOrderId(),
           ordersReady: Boolean(state.ordersBaseId),
           checkout: checkoutFor(state, payments),
-          site: siteInfo(state, payments),
+          site: siteInfo(state, payments, analytics),
           // No key: the browser engine (Busabase Cloud Free), the owner's own tab.
           browserPreview: !env2.BUSABASE_API_KEY
         }),
@@ -31636,7 +32275,7 @@ var createHandler = (overrides = {}) => {
         productId = "";
       }
       const product = catalog.listed.find((item) => item.id === productId);
-      if (product) return html(productPage({ origin: url2.origin, settings, product, site }));
+      if (product) return html(productPage({ origin: url2.origin, settings, product, site, shipping: state.shipping }));
     }
     return html(notFoundPage({ settings, site }), { status: 404, cache: "no-store" });
   };

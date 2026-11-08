@@ -128,6 +128,22 @@ test("busa-shop is found by the words an owner uses about their shop and its pro
   assert.deepEqual(missed, [], `busa-shop's description does not contain: ${missed.join(" / ")}`);
 });
 
+test("busa-shop is found by the words of the SEO/GEO lesson: blog, post, 博客, 文章, SEO", async () => {
+  // Lesson 4 (2026-11): "plan 3 posts that answer questions buyers really ask". The Agent
+  // searches with short words, so each must be a substring of the description.
+  const skill = await skillOf("busa-shop");
+  const queries = ["blog", "Blog", "post", "posts", "blog post", "博客", "文章", "SEO", "GEO", "Google", "Search Console", "Analytics", "AI assistants"];
+  const missed = queries.filter((query) => !skillMatches(skill, query));
+  assert.deepEqual(missed, [], `busa-shop's description does not contain: ${missed.join(" / ")}`);
+  const shop = await promptsOf("busa-shop");
+  const labelled = (query) => shop.filter((prompt) => matches(prompt.labels, query)).map((p) => p.where);
+  for (const query of ["博客", "blog post", "草稿"]) assert.ok(labelled(query).length > 0, `no busa-shop prompt label says ${query}`);
+  assert.ok(labelled("博客").some((where) => where.startsWith("posts/")), "the Posts table itself offers the blog prompts");
+  for (const prompt of shop.filter((p) => matches(p.labels, "博客"))) {
+    assert.ok(matches(prompt.bodies, "skill in this folder"), `${prompt.where}: the body does not say which skill to read`);
+  }
+});
+
 test("busa-shop's Products table carries prompts for each thing an owner asks about products", async () => {
   const shop = await promptsOf("busa-shop");
   const labelled = (query) => shop.filter((prompt) => matches(prompt.labels, query)).map((p) => p.where);

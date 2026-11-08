@@ -10,7 +10,8 @@
 // The Markdown is deliberately small, and everything is escaped first, so a
 // page can never carry HTML or script: `#`/`##`/`###` headings, paragraphs,
 // `-`/`*` and `1.` lists, `**bold**`, `*italic*`, `[text](https://… | /path |
-// mailto:…)` links and line breaks. `{{store_name}}` and `{{contact_email}}`
+// mailto:…)` links, line breaks and `| a | b |` tables (a header row, then a
+// `| --- | --- |` row). Blog posts (src/posts.js) use the same renderer. `{{store_name}}` and `{{contact_email}}`
 // become the Settings values. A 【fill in …】 marker is left as written, so an
 // unfinished page looks unfinished; the daily check reports every published
 // page that still has one.
@@ -78,8 +79,44 @@ const inline = (escaped) =>
     .replace(/(^|[\s(])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>")
     .replace(/(^|[\s(])_([^_\s][^_]*)_/g, "$1<em>$2</em>");
 
-/** Simple Markdown → HTML. Every character of the source is escaped before any tag is added. */
-export const renderMarkdown = (source) => {
+const TABLE_ROW = /^\s*\|.*\|\s*$/;
+const TABLE_RULE = /^\s*\|(\s*:?-{3,}:?\s*\|)+\s*$/;
+const MAX_TABLE_COLUMNS = 12;
+
+const tableCells = (line) =>
+  line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+
+/** A `| a | b |` table starting at `start`: `{ html, end }`, or null when the lines there are not one. */
+const tableAt = (lines, start) => {
+  if (!TABLE_ROW.test(lines[start] ?? "") || !TABLE_RULE.test(lines[start + 1] ?? "")) return null;
+  const head = tableCells(lines[start]);
+  if (head.length > MAX_TABLE_COLUMNS) return null;
+  const rows = [];
+  let end = start + 2;
+  while (end < lines.length && TABLE_ROW.test(lines[end])) {
+    rows.push(tableCells(lines[end]));
+    end += 1;
+  }
+  const cells = (row, tag) =>
+    head.map((_, column) => `<${tag}>${inline(esc(row[column] ?? ""))}</${tag}>`).join("");
+  const html = `<div class="table-wrap"><table><thead><tr>${cells(head, "th")}</tr></thead><tbody>${rows
+    .map((row) => `<tr>${cells(row, "td")}</tr>`)
+    .join("")}</tbody></table></div>`;
+  return { html, end };
+};
+
+/**
+ * Simple Markdown → HTML. Every character of the source is escaped before any tag is added.
+ * A policy page's headings start one level below its title (`#` → h2, `##` → h3). A blog
+ * post (`demoteH1`) reads them as busabase-cms-sdk's renderer does: only `#` is demoted, so
+ * `#` and `##` are both h2 and `###` is h3.
+ */
+export const renderMarkdown = (source, { demoteH1 = false } = {}) => {
   const lines = String(source ?? "").replace(/\r\n?/g, "\n").split("\n");
   const out = [];
   let paragraph = [];
@@ -92,8 +129,16 @@ export const renderMarkdown = (source) => {
     if (list) out.push(`<${list.tag}>${list.items.map((item) => `<li>${inline(esc(item))}</li>`).join("")}</${list.tag}>`);
     list = null;
   };
-  for (const raw of lines) {
-    const line = raw.trimEnd();
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index].trimEnd();
+    const table = tableAt(lines, index);
+    if (table) {
+      flushParagraph();
+      flushList();
+      out.push(table.html);
+      index = table.end - 1;
+      continue;
+    }
     const heading = /^(#{1,3})\s+(.+)$/.exec(line.trim());
     const bullet = /^\s*[-*]\s+(.+)$/.exec(line);
     const numbered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
@@ -104,7 +149,7 @@ export const renderMarkdown = (source) => {
       flushParagraph();
       flushList();
       // A page's own title is its <h1>; Markdown headings start one level below.
-      const level = Math.min(heading[1].length + 1, 4);
+      const level = demoteH1 ? Math.max(heading[1].length, 2) : Math.min(heading[1].length + 1, 4);
       out.push(`<h${level}>${inline(esc(heading[2]))}</h${level}>`);
     } else if (bullet || numbered) {
       flushParagraph();
@@ -125,6 +170,8 @@ export const renderMarkdown = (source) => {
 /** Plain text of a page, for its meta description. */
 export const markdownText = (source) =>
   String(source ?? "")
+    .replace(/^\s*\|(\s*:?-{3,}:?\s*\|)+\s*$/gm, "")
+    .replace(/\s*\|\s*/g, " ")
     .replace(/^#{1,3}\s+/gm, "")
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(/[*_]/g, "")

@@ -1,6 +1,6 @@
 {
   "name": "Busa Shop",
-  "description": "A one-install online shop for a small cross-border seller. Products and Certificates hold the product list in plain columns you edit in the table (no separate product hub needed); the public website (Shop Website) lists what is on sale and has a real checkout: delivery address, shipping by country from Shipping, and payment with PayPal (or order requests when PayPal is off), with order emails over SMTP and policy pages from Pages. Orders follows each order from payment to shipping; Settings holds the texts and the non-secret setup (secrets go in the Space Vault); the daily shop check writes its findings into Reports.",
+  "description": "A one-install online shop for a small cross-border seller. Products and Certificates hold the product list in plain columns you edit in the table (no separate product hub needed); the public website (Shop Website) lists what is on sale and has a real checkout: delivery address, shipping by country from Shipping, and payment with PayPal (or order requests when PayPal is off), with order emails over SMTP and policy pages from Pages. Posts is the shop's blog: drafts the Agent writes from the shop's own facts and the owner publishes, on /blog, in the sitemap, the feed and /llms.txt. Orders follows each order from payment to shipping; Settings holds the texts and the non-secret setup (secrets go in the Space Vault); the daily shop check writes its findings into Reports.",
   "agentPrompts": [
     {
       "key": "import-catalog",
@@ -30,6 +30,14 @@
       "key": "daily-check",
       "label": "Run today's shop check",
       "body": "Read the `busa-shop` skill in this folder and follow its \"Daily shop check\": apply my feedback on the previous report first, then check products, certificates, orders and the live site, and write one new report."
+    },
+    {
+      "key": "write-blog-posts",
+      "label": {
+        "en": "Write blog posts buyers search for (SEO, GEO)",
+        "zh-CN": "写博客文章（SEO、让 AI 引用）"
+      },
+      "body": "Read the `busa-shop` skill in this folder and follow \"Blog posts and landing content (博客文章)\": plan the posts I ask for (three if I do not say) that answer questions buyers in the countries this shop ships to really ask, show me the plan with the facts each post uses and where they come from, and after I pick one write it as a Draft in Posts. Never publish it yourself, never promise free shipping or a warranty my tables do not give, and tell me how I publish it."
     },
     {
       "key": "new-orders",

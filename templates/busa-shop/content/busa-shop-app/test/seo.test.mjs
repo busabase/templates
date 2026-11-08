@@ -28,11 +28,17 @@ describe("sitemap.xml and robots.txt", () => {
     assert.equal((xml.match(/<url>/g) ?? []).length, 3);
   });
 
-  it("keeps crawlers out of the API, the order form and the pay pages, and points at the sitemap", () => {
-    assert.equal(
-      buildRobots(origin),
-      "User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /order\nDisallow: /pay/\nSitemap: https://shop.example/sitemap.xml\n",
-    );
+  it("keeps crawlers out of the API, the order form and the pay pages, welcomes AI assistants by name, and points at the sitemap", () => {
+    const robots = buildRobots(origin);
+    const lines = robots.split("\n");
+    // One group: every crawler, named or not, gets the same rules.
+    const group = lines.slice(lines.indexOf("User-agent: *"), lines.indexOf(""));
+    assert.deepEqual(group.slice(-4), ["Allow: /", "Disallow: /api/", "Disallow: /order", "Disallow: /pay/"]);
+    for (const name of ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-SearchBot", "PerplexityBot", "Google-Extended", "Bingbot", "Applebot-Extended"]) {
+      assert.ok(group.includes(`User-agent: ${name}`), name);
+    }
+    assert.ok(!robots.includes("Disallow: /blog") && !robots.includes("Disallow: /llms.txt") && !robots.includes("Disallow: /images"));
+    assert.match(robots, /\nSitemap: https:\/\/shop\.example\/sitemap\.xml\n$/);
   });
 });
 

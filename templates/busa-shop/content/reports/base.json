@@ -1,7 +1,7 @@
 {
   "name": "Reports",
   "description": "One row per daily shop check: what the agent found in Products, Certificates, Orders and on the live site, and the owner's feedback. The next check applies feedback on every open report, marks it acknowledged, and records what it changed in Applied feedback. The one row with Sample report ticked is the template's example.",
-  "position": 6,
+  "position": 7,
   "agentPrompts": [
     {
       "key": "run-daily-check",

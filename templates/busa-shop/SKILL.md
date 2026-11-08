@@ -1,6 +1,6 @@
 ---
 name: busa-shop
-description: Busa Shop (Busa 独立站) is a one-install online shop for a small cross-border seller, product management built in (商品管理, no 产品枢纽 to install). Its Products and Certificates feed a storefront website with a checkout (shipping by country, PayPal or order requests), order emails over SMTP and policy pages, plus Orders, Settings, Reports and a daily shop check. Use for $busa-shop or /busa-shop, or to open an online shop, 网店 or 独立站; to import products (导入商品, 导入 Excel 商品表, import Excel or CSV, import products from Excel, a product list or 商品表, a PDF or photo); to put products in the shop (把商品放进店, 上架), take them down (下架) or change a price (改价格); to record certificates; to set up payments (收款, 付款, PayPal, 结账, checkout), shipping costs (运费), emails (邮件, SMTP) or policy pages (政策页); to handle orders (订单, what to ship, awaiting payment, payment problems); or to run the daily shop check.
+description: Busa Shop (Busa 独立站) is a one-install online shop for a small cross-border seller, product management built in (商品管理, no 产品枢纽 to install). Its Products and Certificates feed a storefront website with a checkout (shipping by country, PayPal or order requests), order emails over SMTP and policy pages, plus Orders, Settings, Reports and a daily shop check. Use for $busa-shop or /busa-shop, or to open an online shop, 网店 or 独立站; to import products (导入商品, 导入 Excel 商品表, import Excel or CSV, import products from Excel, a product list or 商品表, a PDF or photo); to put products in the shop (把商品放进店, 上架), take them down (下架) or change a price (改价格); to record certificates; to set up payments (收款, 付款, PayPal, 结账, checkout), shipping costs (运费), emails (邮件, SMTP) or policy pages (政策页); to handle orders (订单, what to ship, awaiting payment, payment problems); to write blog posts (博客, 文章, landing content) or improve SEO and GEO (Google, Search Console, Analytics, AI assistants); or to run the daily shop check.
 metadata:
   category: ecommerce
   tags:
@@ -16,6 +16,7 @@ metadata:
       - orders
       - shipping
       - pages
+      - posts
       - settings
       - reports
     risk: local-write
@@ -38,6 +39,14 @@ shop's **policy pages** (Shipping, Returns & warranty, Privacy, Terms,
 Contact) come from the **Pages** table and are linked in the footer. The
 secrets this needs (the PayPal client secret, the SMTP password) live in the
 **Space Vault**, never in a table.
+
+The shop also has a **blog**: the **Posts** table, shown at `/blog`, in the
+sitemap, an RSS feed and `/llms.txt`. An Agent writes a post as a **Draft**
+from the shop's own facts; the owner reads it and publishes it ("Blog posts
+and landing content (博客文章)"). Every page carries what Google and AI
+assistants read (titles, descriptions, schema.org data with prices, shipping
+and returns), and Settings take a Google Analytics 4 ID and the Search Console
+code ("Google and AI assistants (SEO, GEO)").
 
 Until PayPal is set up, and on Busabase Cloud Free, the same checkout sends an
 **order request** instead: the website tells the buyer "we will contact you to
@@ -91,6 +100,15 @@ busa-shop 0.5.0 already does.
   decisions and their consent.
 - Never overwrite a person's text in Owner feedback, Internal note, Reply
   draft or a product's Notes. Add dated lines; do not rewrite history.
+- **Never publish a blog post.** You write a post as a new row with Status
+  **Draft**; the owner reads it and sets Status to **Published** in the Posts
+  table themselves. Never change a published post's text, Path or Status
+  unless the owner asks for exactly that change. If the owner asks you to
+  publish, tell them where the Status cell is.
+- In a post, only facts from this shop's tables: Products, Shipping,
+  Settings, Pages. Never promise free shipping the Shipping table does not
+  give, a warranty or return period the product's row or the Returns page does
+  not state, a delivery date, or anything about another shop.
 
 ## What is in this folder
 
@@ -101,6 +119,7 @@ busa-shop 0.5.0 already does.
 | **Orders** | One row per order. The website creates it at checkout (`awaiting-payment`, or `new` for an order request) and afterwards changes only its payment fields, when PayPal confirms something, and its Email log. Staff do the rest (shipped, completed, cancelled). |
 | **Shipping** | One row per shipping zone: the countries it covers, the cost, an optional free-shipping threshold, the delivery time. Checkout uses it. |
 | **Pages** | The shop's policy pages (Shipping, Returns & warranty, Privacy, Terms, Contact) in simple Markdown, with 【fill in …】 where only the owner can say. |
+| **Posts** | The blog: one row per post (Markdown), busabase-cms-sdk's standard Posts fields. Only Published rows are on the site, at `/blog/<slug>`. |
 | **Settings** | One row: what the website shows, the non-secret half of PayPal and SMTP, and what the daily check uses. |
 | **Reports** | One row per daily shop check, with the owner's feedback. |
 | **Shop Website** (`busa-shop-app`, AirApp, Website engine) | The public site. `vendor/worker.js` is what deploys (the bundle of `src/` with busabase-sdk inside); `src/` is its source. `airapp.json` asks for `write` access because checkout creates Orders rows and records PayPal's confirmations on them. It *prefers* the Website engine: a space without it (Busabase Cloud Free) runs the same bundle as a private preview in the viewer's browser tab (`content/busa-shop-app/scripts/browser-preview.mjs`), with no address and no Go live. |
@@ -206,6 +225,9 @@ payment**, **All orders** (newest first).
 | Certificate expiry warning (days) | daily check | Warn this many days before a certificate expires |
 | Standing check rules | daily check | Rules added from the owner's feedback, one per line, newest last |
 | Also show these product details | website | Only for a product hub table: more of its `content.attributes` keys for the product page, comma-separated (`防水等级, gtin`). The shop's own table needs none: its Specs column is the list |
+| Google Analytics 4 measurement ID | website | Optional `G-…` ID of a GA4 web data stream for the live address. The public site then loads Google's tag on every page; the members-only preview and the browser preview never do. A pasted gtag snippet works too |
+| Google Search Console verification code | website | Optional: the `content` value of the HTML tag Search Console gives for the live address (pasting the whole `<meta …>` tag works too). Every page then carries the tag |
+| Bing Webmaster Tools verification code | website | Optional: the `content` of Bing's `msvalidate.01` tag, the same way |
 
 The website reads Settings at most once a minute, so a change shows on the
 live site within about a minute, with no redeploy. **Never put a password or
@@ -247,6 +269,32 @@ marker is reported by the daily check (`policy-unfinished`). A sixth page,
 **Legal notice** (who runs the shop, its registration or self-declaration,
 tax), installs as a **Draft** and out of the footer: it goes public only when
 the owner fills it in and sets it to published ("Selling legally (法律合规)").
+
+### Posts
+
+One row per blog post, in busabase-cms-sdk's standard Posts fields (so that
+SDK, or a Busa CMS admin, can read the table by its slug): **Path** (the
+address: `/blog/<slug>`), **Title**, **Slug**, **Locale** (`en` for an English
+shop), **Status** (`draft`, `in-review`, `published`, `archived`), **Excerpt**
+(the one-line summary on `/blog`, in the feed and in `/llms.txt`), **Body**
+(Markdown, below), **Cover image** (an attachment, optional), **Attachments**,
+**Author**, **Published at** (the date shown, and the order on `/blog`, newest
+first; it does not schedule anything), **Canonical URL** (only when the post
+was first published on another site), **Legacy paths** (a JSON list of old
+addresses, below), **SEO title**, **SEO description**, **Schema version**
+(`1`). Views: All posts, Drafts, Published.
+
+Only a **Published** row with a title, a body and an address is on the site:
+on `/blog`, at its address, in `/sitemap.xml`, `/blog/rss.xml` and
+`/llms.txt`. A Draft, In review or Archived row is a 404 everywhere. The site
+reads Posts with everything else, so a change shows within about a minute. A
+published row the site cannot show (no title, no body, no usable address, the
+same address twice) is named in `/api/status` under `postsNotShown`.
+
+The template installs two published **sample posts** for the fictional toy
+shop (Author `Tumbleberry Toys (sample)`): archive them when the shop is real.
+A shop installed before busa-shop 0.7.0 has no Posts table and no blog ("Blog
+posts and landing content", "A shop installed before 0.7.0").
 
 ### Reports
 
@@ -364,6 +412,9 @@ up when it starts, using the stamp the installer puts on every node
    of its Settings (fallback slugs `busa-shop-shipping`, `busa-shop-pages`).
    A shop installed before busa-shop 0.6.0 has neither and keeps working:
    order requests with no shipping line, no policy pages, no PayPal.
+5. Posts: stamped `busa-shop` / `posts` in the folder of its Settings
+   (fallback slug `busa-shop-posts`). Without it the shop has no blog and no
+   "Blog" link; everything else works.
 
 A table stamped `busa-shop` is read as the shop's plain columns, any other as
 a product hub's (Lifecycle + Status, JSON blocks). `/api/status` says which:
@@ -959,6 +1010,192 @@ says the money arrived): `paid`. Shipped: "Ship a paid order". Cancelled:
 shipped, remind the owner to lower the product's Stock (orders do not change
 stock).
 
+## Blog posts and landing content (博客文章)
+
+Buyers ask the same questions before they buy: what it costs to ship to my
+country, how long it takes, which phone suits me, what happens if it breaks.
+A post that answers one of them, with this shop's own facts, is what Google
+shows for that question and what an AI assistant quotes. The Agent plans and
+writes; **the owner publishes**.
+
+### Where a post appears
+
+- At its address: its **Path** when that is `/blog/` plus one lowercase slug
+  (letters, digits, hyphens, at most 100), e.g.
+  `/blog/redmi-13c-price-and-shipping-thailand`; otherwise at `/blog/<Slug>`.
+  The same Path with capitals or a trailing slash redirects to it.
+- On `/blog`, newest Published at first, with its Excerpt and picture. The
+  header and footer show a **Blog** link only while at least one post is
+  published.
+- In `/sitemap.xml`, the RSS feed `/blog/rss.xml` and `/llms.txt` (not a post
+  whose Canonical URL names another site).
+- Under the post, **Products in this post**: a card for every product on sale
+  the body links to as `/products/<Product ID>` (at most four).
+- In `<head>`: the SEO title (else "Title · store name"), the SEO description
+  (else the Excerpt), the canonical address, Open Graph `article` tags, and
+  schema.org `BlogPosting` plus a breadcrumb. The picture is the Cover image,
+  else the photo of the first linked product.
+
+### Plan posts
+
+1. Read Settings (store name, language, currency, Ships to), Shipping (zones,
+   costs, Free shipping from, delivery times), the products on sale, the
+   Shipping and Returns & warranty pages, and the posts already there (no
+   second post on the same question).
+2. Propose the number of posts the owner asked for (three if they did not
+   say). For each: the title, the question it answers in the words a buyer in
+   one of the Ships to countries would type, the Path, the products it links
+   to, and **every fact it will use with the table it comes from**. Say which
+   facts are missing (a network band, a duty amount) instead of filling them.
+3. Write nothing until the owner picks.
+
+### Write a draft
+
+1. One new row in Posts, **Status `draft`**, through a Change Request:
+
+   ```bash
+   busabase-cli bases get --slug <Posts slug, usually busa-shop-posts> --output json   # its Base id
+   busabase-cli bases create-change-request --base-id <Posts Base id> --fields-json @post.json \
+     --message "Blog post draft at the owner's request: <title>"
+   ```
+
+   `post.json`: `path`, `title`, `slug` (the Path's last part), `locale`
+   (`en` for an English shop; the SDK's choices are `en`, `zh-CN`, `zh-TW`,
+   `ja`, `pt`), `status: "draft"`, `description` (one sentence), `body`,
+   `author` (the store name unless the owner names someone),
+   `seo-title` (at most 60 characters, with the buyer's words),
+   `seo-description` (at most 155), `schema-version: 1`. Leave
+   `published-at`, `canonical-url` and `legacy-paths` empty.
+2. **Only facts from the tables.** Every price as Products says it, in the
+   shop's currency (do not convert currencies: the tables hold no exchange
+   rate), every spec from Specs, every shipping cost, threshold and delivery
+   time from Shipping (with its country), warranty and returns from the
+   product's Warranty and Returns and the Returns & warranty page, duties and
+   taxes only as the Terms or Shipping page says them. A fact the tables do not
+   hold is left out or written as "ask us", never guessed.
+3. **Never** promise free shipping the Shipping table does not give, a
+   "global" or "international" warranty, a delivery date, the lowest price,
+   an official or authorised status, or a certificate Certificates does not
+   hold; never write about another shop. A page still showing 【fill in …】
+   is not a source.
+4. Link the products by `/products/<Product ID>`, the policy pages by
+   `/pages/<slug>`, other posts by their Path.
+5. The Markdown is the policy pages' small set: `##` and `###` headings,
+   paragraphs, `-` and `1.` lists, `**bold**`, `*italic*`, links, and tables
+   (a header row, then `| --- | --- |`). No HTML and no pictures in the body
+   (the Cover image is the post's picture). A `#` heading becomes the same
+   level as `##`: the post's title is its only `<h1>`.
+6. Write in the shop's language (Settings › Language) unless the owner asks
+   for another.
+7. Read the row back and tell the owner: it is in **Posts › Drafts**, it is
+   not on the site, and to publish it they set its **Status** to
+   **Published** (it then shows within about a minute).
+
+### Check a draft
+
+Compare every price, spec, shipping cost, delivery time, warranty and return
+promise in the draft with the tables and pages it came from, and list each one
+that does not match, plus an empty SEO title, SEO description or Excerpt, a
+Path that is not `/blog/<slug>`, and links to products that are not on sale.
+Change nothing; the owner decides.
+
+### The owner publishes
+
+In Posts, the draft's **Status** cell → **Published**. The website shows it
+within about a minute: on `/blog`, at its address, in the sitemap, the feed
+and `/llms.txt`. Optionally set **Published at** to the date to show (empty =
+no date, ordered by its last change). To take a post down, set Status to
+**Archived** (or back to Draft): it is a 404 within a minute, and search
+engines drop it on their next visit. Google itself takes days to weeks to
+visit a new address; submitting the sitemap in Search Console helps ("Google
+and AI assistants (SEO, GEO)").
+
+### Change a post's address
+
+Change its Path and add the old one to **Legacy paths**, a JSON list such as
+`["/blog/old-address"]`: a visit to an old address is redirected (301) to the
+current one, so links and search results keep working. A legacy path can be
+any path the old site used (`/2025/phones.html`), but never one of this site's
+own routes. Never give a new post an address that another post used.
+
+### Read the posts with busabase-cms-sdk
+
+The fields are the SDK's standard Posts without its two taxonomy relations
+(Categories, Tags), so its reader works on this table by slug:
+
+```js
+import { createBusabaseCms } from "busabase-cms-sdk";
+const cms = createBusabaseCms({ config: { baseUrl, apiKey, spaceId }, baseSlugs: { posts: "busa-shop-posts" } });
+const posts = await cms.posts.list(); // published rows only
+```
+
+Not its Folder mode (`folderId`): that expects Categories, Tags and the SDK's
+own Pages next to Posts, and this folder's Pages are the policy pages.
+
+### A shop installed before 0.7.0
+
+It has no Posts table and no Google fields in Settings; everything else keeps
+working. To add them (owner's yes first): create the Base in the shop's folder
+with the fields of `templates/busa-shop/content/posts/base.json` in
+github.com/busabase/templates, and the three Settings fields:
+
+```bash
+busabase-cli bases create --slug busa-shop-posts --name Posts --parent-node-id <the shop's folder node id> --fields-json @posts-fields.json
+busabase-cli bases create-field --base-id <Settings Base id> --slug ga4-id --name "Google Analytics 4 measurement ID" --field-type text
+busabase-cli bases create-field --base-id <Settings Base id> --slug google-site-verification --name "Google Search Console verification code" --field-type text
+busabase-cli bases create-field --base-id <Settings Base id> --slug bing-site-verification --name "Bing Webmaster Tools verification code" --field-type text
+```
+
+The website finds a Posts table by the slug `busa-shop-posts` in the folder
+of its Settings, and needs a new deploy of 0.7.0's `vendor/worker.js`
+(Restart, then Go live) to read it.
+
+## Google and AI assistants (SEO, GEO)
+
+What the website does by itself, from the tables, on the live address:
+
+- Every page has a title, a description, its canonical address and Open
+  Graph tags; drafts, the order form and payment pages are kept out of search.
+- **schema.org data**: the home page is an `OnlineStore`; a product page is a
+  `Product` with an `Offer` (price, currency, in or out of stock, new), plus
+  **shippingDetails**, one per Shipping zone, for the countries checkout
+  offers (the cost for one unit, 0 when its price reaches Free shipping from;
+  only zones whose Delivery time reads as days, like `6–10 business days`),
+  and **hasMerchantReturnPolicy** when the product's Returns says a number of
+  days (`30-day returns`) or no returns. A post is a `BlogPosting`.
+- `/sitemap.xml`: the home page, every listed product, every published policy
+  page, `/blog` and every post.
+- `/robots.txt`: every crawler is allowed (only `/api/`, `/order`, `/pay/` are
+  off-limits), the search engines' and AI assistants' crawlers are named
+  (Googlebot, Bingbot, GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot,
+  Claude-SearchBot, Claude-User, PerplexityBot, Applebot…), and it links the
+  sitemap.
+- `/llms.txt`: a plain summary for AI assistants: the store, what it sells,
+  where it ships and for how much, payment, contact, every listed product
+  with its price and link, the policy pages and the posts.
+- `/blog/rss.xml`: the newest 20 posts.
+
+What the owner does (tell them; never do it for them):
+
+1. **Google Search Console**: Add property → URL prefix → the live address →
+   HTML tag. Copy the `content` value (or the whole tag) into Settings ›
+   **Google Search Console verification code**, wait a minute, click
+   **Verify**. Then Sitemaps → submit `sitemap.xml`.
+2. **Google Analytics 4**: create a property and a Web data stream for the
+   live address, copy its Measurement ID (`G-…`) into Settings › **Google
+   Analytics 4 measurement ID**. Within a minute the public site loads
+   Google's tag on every page; open the live site in another browser and
+   watch Reports › Realtime. The members-only preview and the Free plan's
+   browser preview never load it, so the owner's own previews never count.
+3. **Bing** (optional): the same with Bing Webmaster Tools'
+   `msvalidate.01` code.
+
+`/api/status` says `"google": { "analytics", "searchConsole", "bing" }`
+true or false (never the values), and the live-site probe says whether the
+home page carries them. Better data makes better results: a Delivery time
+written in days, Returns with a number of days, a Subtitle and Description
+on every product, real photos.
+
 ## Daily shop check
 
 Observe → decide → act → write back. One run applies the owner's open
@@ -1067,6 +1304,9 @@ Live site address is set (step 6 probes it). One line for each:
   `paymentsNote` and what it means: "Set up PayPal", step 5), or `email` is
   not `ready` while Settings › SMTP host is set, or Settings › PayPal is not
   `off` and PayPal webhook ID is empty.
+- `other`, one line per published post that `/api/status` lists under
+  `postsNotShown` (its title and the reason: `no-title`, `no-body`,
+  `bad-path`, `duplicate-path`).
 
 ### 5. Check for demo leftovers
 
@@ -1080,7 +1320,8 @@ Only when Settings › Live site address is set, so the shop is public. One
 - Orders still holds the sample orders (title ends "(fictional demo)", or
   Internal note starts "Fictional demo data");
 - Shipping still has the template's demo rates (Notes start "Fictional demo
-  rate").
+  rate");
+- Posts still has a published sample post (Author ends "(sample)").
 
 The course's own live demo shop will show these on purpose. A real shop
 should not.
@@ -1162,7 +1403,11 @@ write feedback into Owner feedback on this report for the next run.
   runs it), and each stops working if that person leaves the workspace.
 - **The preview runs on real data**: a test order in the preview is a real
   row, and with SMTP set up it sends real emails.
-- **At most the first 100 products** of the Products table are shown.
+- **At most the first 100 products** of the Products table are shown, and the
+  newest 100 rows of Posts (by Published at).
+- **The blog is simple**: no comments, no categories or tags pages, one
+  language per post (the shop's), no scheduled publishing (Published at is
+  only the date shown), no pictures inside the body.
 - **The site shows what the tables say**, up to a minute late (the Vault up
   to five minutes), and stays up with the last good data for up to ten
   minutes if Busabase cannot be reached; after that it shows "temporarily
@@ -1182,14 +1427,17 @@ write feedback into Owner feedback on this report for the next run.
   test keeps the two identical. Its tests run with the website's
   (`content/busa-shop-app`, `npm test`).
 - `probe-site.mjs`: the live-site half of the daily check. Reads the public
-  site only.
+  site only: the home page (and whether it carries the Google Analytics and
+  Search Console tags), `/api/status`, the sitemap (product and post
+  addresses), robots.txt, `/llms.txt` and every product photo.
 
 ## Changing the website
 
 Read `$busabase-app-creator` first. The source is `content/busa-shop-app/src/`
 (`catalog.js` listing, the two table shapes and images, `orders.js` checkout
 validation and the Orders fields written, `shipping.js` the rates rule,
-`policies.js` the Pages table and its Markdown, `paypal.js` PayPal's REST API
+`policies.js` the Pages table and the Markdown pages and posts share,
+`posts.js` which Posts rows are on the site, their addresses and redirects, `paypal.js` PayPal's REST API
 and what each webhook event does, `vault.js` the two Vault values, `smtp.js`
 the SMTP client, `mail.js` the emails, `seo.js`, `pages.js`, `details.js`
 which product details a page shows and how Specs is read, `resources.js`

@@ -663,6 +663,112 @@ textarea:focus {
   width: 100%;
 }
 
+/* Tables in policy pages and posts (Markdown `| a | b |`). */
+.table-wrap {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.table-wrap table {
+  border-collapse: collapse;
+  min-width: 100%;
+  font-size: 15px;
+  background: var(--panel);
+}
+
+.table-wrap th,
+.table-wrap td {
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.table-wrap th {
+  background: var(--accent-soft);
+}
+
+/* ---- Blog ---- */
+
+.blog,
+.post,
+.post-products,
+.post-back {
+  max-width: 760px;
+}
+
+.post-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 20px;
+}
+
+.post-card {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 20px;
+  align-items: start;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.post-card:not(:has(.post-card-media)) {
+  grid-template-columns: 1fr;
+}
+
+.post-card-media img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius-small);
+  background: var(--panel);
+}
+
+.post-card h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.post-card p {
+  margin: 6px 0 0;
+}
+
+.post-meta {
+  font-size: 14px;
+}
+
+.post-cover img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+}
+
+.post-cover {
+  margin: 16px 0 24px;
+}
+
+.post-body h2 {
+  margin-top: 28px;
+  font-size: 22px;
+}
+
+.post-body h3,
+.post-body h4 {
+  margin-top: 20px;
+  font-size: 18px;
+}
+
+.post-products h2 {
+  font-size: 20px;
+}
+
+.post-products .grid {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
 .field-error {
   color: var(--error);
   font-size: 14px;
@@ -771,5 +877,10 @@ textarea:focus {
   .site-nav {
     gap: 14px;
     font-size: 15px;
+  }
+
+  .post-card {
+    grid-template-columns: 96px 1fr;
+    gap: 14px;
   }
 }

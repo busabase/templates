@@ -1,6 +1,6 @@
 # Busa Shop schema
 
-The five Bases this template installs (`content/<base>/base.json` is the
+The Bases this template installs (`content/<base>/base.json` is the
 source; installed slugs are `busa-shop-<folder name>`), the website's routes,
 what the importer writes, and what the website reads when Settings point it
 at a busa-product-hub table instead (or the shop is older than 0.5.0).
@@ -112,6 +112,33 @@ Awaiting payment, Payment problems, Confirmed waiting for payment, All orders.
 | `position` | number | Footer order |
 | `body` | longtext | Simple Markdown; `{{store_name}}`, `{{contact_email}}`; 【fill in …】 markers |
 
+## Posts (`busa-shop-posts`)
+
+busabase-cms-sdk's standard Posts fields (as in busa-cms) without `categories`
+and `tags`; the SDK reads the table with `baseSlugs: { posts: "busa-shop-posts" }`.
+The website reads the newest 100 rows by `published-at` and shows only
+`published` ones (`src/posts.js`).
+
+| Slug | Type | Notes |
+| --- | --- | --- |
+| `path` | text, required | The address: `/blog/<slug>` (lowercase letters, digits, `-`, at most 100); anything else is served at `/blog/<slug field>` |
+| `title` | text, required | The post's `<h1>` |
+| `slug` | text, required | The Path's last part |
+| `locale` | select, required | `en`, `zh-CN`, `zh-TW`, `ja`, `pt` (the SDK's choices); the page's `lang` |
+| `status` | select, required | `draft`, `in-review`, `published`, `archived`; only `published` is on the site |
+| `description` | longtext | Excerpt: on `/blog`, in the feed and `/llms.txt`; the description when SEO description is empty |
+| `body` | markdown, required | The policy pages' Markdown plus `#` read as `##`; `/products/<id>` links add product cards under the post |
+| `cover-image` | attachment (1 image) | The post's picture (a Busabase asset is served at `/blog-covers/<slug>`); empty = the first linked product's photo |
+| `attachments` | attachment | Not shown by the website |
+| `author` | text | Shown under the title; the store name (or empty) makes the publisher the author in JSON-LD |
+| `published-at` | date | Date shown and order on `/blog`; does not schedule |
+| `canonical-url` | url | Only when the post was first published elsewhere: then the canonical link points there and the post stays out of the sitemap, feed and `/llms.txt` |
+| `legacy-paths` | json | `["/old/address"]`: each redirects (301) to the post; never one of the site's own routes |
+| `seo-title` | text | `<title>`; empty = "Title · store name" |
+| `seo-description` | longtext | `<meta name="description">` |
+| `schema-version` | number, required | `1` |
+| `updated-at` | updated time | `dateModified`, sitemap `lastmod` |
+
 ## Settings (`busa-shop-settings`), one row
 
 | Slug | Type | Notes |
@@ -141,6 +168,9 @@ Awaiting payment, Payment problems, Confirmed waiting for payment, All orders.
 | `smtp-username` | text | Usually the full mailbox address |
 | `email-from` | email | From address; empty = the SMTP username |
 | `notify-email` | email | Owner notifications; empty = Contact email |
+| `ga4-id` | text | Optional (0.7.0+): GA4 measurement ID `G-…` (a pasted gtag snippet works); loads gtag.js on the public site only, never in a preview |
+| `google-site-verification` | text | Optional (0.7.0+): Search Console HTML-tag `content` (the whole tag works) |
+| `bing-site-verification` | text | Optional (0.7.0+): Bing `msvalidate.01` `content` |
 
 Secrets are never in Settings: the Space Vault holds `BUSA_SHOP_PAYPAL_CLIENT_SECRET`
 and `BUSA_SHOP_SMTP_PASSWORD` (Secrets, marked Runtime), read by the website at
@@ -178,9 +208,15 @@ runtime through `GET /api/v1/vault/runtime` with its own key.
 | `POST /api/paypal/client-token` | A browser-safe PayPal client token for this domain (SDK fallback) |
 | `POST /api/paypal/webhook` | PayPal's notifications: verified with `verify-webhook-signature` first (`400` if not genuine), applied once; `503` (PayPal retries) when it cannot verify yet |
 | `GET /pages/<slug>` | A published policy page |
-| `GET /api/status` | `{ ok, setup, products, ordering, productsFrom, payments, paymentsNote?, shipping, email, pages, pagesToFinish? }`; readiness only, never a value |
+| `GET /blog` | Published posts, newest `published-at` first; with none, a short note and `noindex` (and no Blog link anywhere) |
+| `GET /blog/<slug>` | A published post (else 404); other spellings of its address and its legacy paths answer `301` to it |
+| `GET /blog/rss.xml` | RSS 2.0, the newest 20 posts |
+| `GET /blog-covers/<slug>` | A published post's cover when it is a Busabase asset, fetched with the key |
+| `GET /llms.txt` | Plain-text summary for AI assistants: store, what it sells, shipping, payment, contact, listed products with prices, published pages and posts |
+| `GET /api/status` | `{ ok, setup, products, ordering, productsFrom, payments, paymentsNote?, shipping, email, pages, pagesToFinish?, posts, postsNotShown?, google: { analytics, searchConsole, bing } }`; readiness only, never a value |
 | `GET /images/<product-id>/<n>` | Image `n` of a listed product, fetched with the key |
-| `GET /sitemap.xml`, `GET /robots.txt` | Home, listed products, published pages; `/api/`, `/order`, `/pay/` disallowed |
+| `GET /sitemap.xml`, `GET /robots.txt` | Sitemap: home, listed products, published pages, `/blog` and posts. robots.txt: one group for every crawler (search engines and AI assistants named), `/api/`, `/order`, `/pay/` disallowed, the sitemap linked |
+| any other path | A post's legacy path → `301`; else 404 |
 | `/static/*`, `/favicon.svg` | Files in `public/` |
 
 `POST /api/orders` answers `200 {ok, orderId, payment, payPath?}`, `400 {errors, itemErrors}`

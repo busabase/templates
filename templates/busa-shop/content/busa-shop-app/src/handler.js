@@ -15,11 +15,13 @@ import {
   validateOrder,
 } from "./orders.js";
 import {
+  blogIndexPage,
   homePage,
   notFoundPage,
   orderPage,
   payPage,
   policyPage,
+  postPage,
   productPage,
   setupPage,
   thanksPage,
@@ -43,7 +45,8 @@ import {
   sameAmount,
 } from "./paypal.js";
 import { PAGE_SLUG_PATTERN, unfinishedPages } from "./policies.js";
-import { buildRobots, buildSitemap } from "./seo.js";
+import { BLOG_PATH, FEED_PATH, POST_SLUG_PATTERN, resolvePostRequest } from "./posts.js";
+import { buildFeed, buildLlmsTxt, buildRobots, buildSitemap } from "./seo.js";
 import { checkoutCountries } from "./shipping.js";
 import { createShop, ShopUnavailableError } from "./shop.js";
 import { sendMail } from "./smtp.js";
@@ -67,11 +70,39 @@ export const paypalCsp = (sdkUrl) => {
   return `default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline' ${hosts}; script-src 'self' ${hosts}; connect-src 'self' ${hosts}; frame-src ${hosts}; child-src ${hosts}; form-action 'self'; base-uri 'none'; object-src 'none'`;
 };
 
+// Google Analytics 4 (gtag.js): Google's own script and the hosts it reports to,
+// as https://developers.google.com/tag-platform/security/guides/csp lists them.
+// Only a page that loads it (Settings › Google Analytics 4 measurement ID, on
+// the public site) gets this policy.
+export const ANALYTICS_CSP =
+  "default-src 'self'; img-src 'self' https: data:; style-src 'self'; script-src 'self' https://*.googletagmanager.com; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; form-action 'self'; base-uri 'none'; object-src 'none'";
+const LOADS_ANALYTICS = '<meta name="busa-shop-ga4"';
+
 const html = (body, { status = 200, cache = "public, max-age=60", extra = {} } = {}) =>
   new Response(body, {
     status,
-    headers: { "content-type": "text/html; charset=utf-8", "cache-control": cache, ...SECURITY_HEADERS, ...extra },
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": cache,
+      ...SECURITY_HEADERS,
+      ...(body.includes(LOADS_ANALYTICS) ? { "content-security-policy": ANALYTICS_CSP } : {}),
+      ...extra,
+    },
   });
+
+/**
+ * The owner's own previews never count as visits: the browser engine (Busabase
+ * Cloud Free) runs with no key, and the members-only preview is served by the
+ * site's `<live script>-preview` script, behind Busabase's preview proxy.
+ */
+export const isOwnerPreview = (url, env) => !env?.BUSABASE_API_KEY || /-preview$/i.test(url.hostname.split(".")[0] ?? "");
+
+/** What the pages put in <head> for Google and Bing: verification tags always, Analytics only on the public site. */
+export const analyticsFor = (url, env, settings) => ({
+  ga4: isOwnerPreview(url, env) ? "" : settings.ga4Id ?? "",
+  googleVerification: settings.googleVerification ?? "",
+  bingVerification: settings.bingVerification ?? "",
+});
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -81,6 +112,9 @@ const json = (data, status = 200) =>
 
 const plain = (body, status = 200, type = "text/plain; charset=utf-8", cache = "public, max-age=300") =>
   new Response(body, { status, headers: { "content-type": type, "cache-control": cache, "x-content-type-options": "nosniff" } });
+
+const redirect = (location) =>
+  new Response(null, { status: 301, headers: { location, "cache-control": "public, max-age=300", "x-content-type-options": "nosniff" } });
 
 const NOT_READY = { cache: "no-store", extra: { "retry-after": "300", "x-robots-tag": "noindex" } };
 const PRIVATE = { cache: "no-store", extra: { "x-robots-tag": "noindex" } };
@@ -213,7 +247,12 @@ export const createHandler = (overrides = {}) => {
     return site.paypal.client;
   };
 
-  const siteInfo = (state, payments) => ({ pages: state.pages ?? [], payment: payments?.payment ?? "request" });
+  const siteInfo = (state, payments, analytics = null) => ({
+    pages: state.pages ?? [],
+    posts: state.posts ?? [],
+    payment: payments?.payment ?? "request",
+    ...(analytics ? { analytics } : {}),
+  });
 
   const checkoutFor = (state, payments) => ({
     payment: payments.payment,
@@ -358,7 +397,7 @@ export const createHandler = (overrides = {}) => {
     const { settings } = state;
     const vault = await secretsFor(env, state);
     const payments = paymentsFor(env, state, vault);
-    const site = siteInfo(state, payments);
+    const site = siteInfo(state, payments, analyticsFor(url, env, settings));
     const t = translator(settings.language);
     const values = {
       name: input.name,
@@ -817,6 +856,28 @@ export const createHandler = (overrides = {}) => {
     return response;
   };
 
+  /** /blog-covers/<slug>: a published post's cover when it is a Busabase asset. */
+  const coverRoute = async (request, env, ctx, slug) => {
+    const cache = typeof caches !== "undefined" ? caches.default : undefined;
+    const hit = cache ? await cache.match(request) : undefined;
+    if (hit) return hit;
+    const shop = siteFor(env).shop;
+    const state = await shop.load();
+    if (state.setup !== "ready") return plain("Not found", 404, undefined, "no-store");
+    const image = await shop.postCover(state, slug);
+    if (!image) return plain("Not found", 404, undefined, "no-store");
+    const response = new Response(image.body, {
+      headers: {
+        "content-type": image.type,
+        "cache-control": "public, max-age=3600",
+        "x-content-type-options": "nosniff",
+        "content-security-policy": "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox",
+      },
+    });
+    if (cache && ctx?.waitUntil) ctx.waitUntil(cache.put(request, response.clone()));
+    return response;
+  };
+
   // ---- /api/status: readiness only, never a value ----
 
   const statusBody = async (env, state) => {
@@ -836,6 +897,13 @@ export const createHandler = (overrides = {}) => {
       email: email.ready ? "ready" : email.reason,
       pages: state.pages.length,
       ...(unfinishedPages(state.pages).length ? { pagesToFinish: unfinishedPages(state.pages) } : {}),
+      posts: state.postsStatus === "ready" ? state.posts.length : state.postsStatus,
+      ...(state.postProblems?.length ? { postsNotShown: state.postProblems } : {}),
+      google: {
+        analytics: Boolean(state.settings.ga4Id),
+        searchConsole: Boolean(state.settings.googleVerification),
+        bing: Boolean(state.settings.bingVerification),
+      },
     };
   };
 
@@ -875,25 +943,69 @@ export const createHandler = (overrides = {}) => {
     const payMatch = /^\/pay\/([^/]{1,40})$/.exec(path);
     if (payMatch) return getPay(url, env, payMatch[1]);
 
+    const coverMatch = /^\/blog-covers\/([^/]{1,100})$/.exec(path);
+    if (coverMatch) {
+      const slug = coverMatch[1].toLowerCase();
+      return POST_SLUG_PATTERN.test(slug) ? coverRoute(request, env, ctx, slug) : plain("Not found", 404, undefined, "no-store");
+    }
+
     const isPage =
-      path === "/" || path === "/order" || path.startsWith("/products/") || path.startsWith("/pages/") || path === "/sitemap.xml";
-    if (!isPage && path !== "/api/status") return assets(request, env, null);
+      path === "/" ||
+      path === "/order" ||
+      path.startsWith("/products/") ||
+      path.startsWith("/pages/") ||
+      path === "/sitemap.xml" ||
+      path === "/llms.txt" ||
+      path === BLOG_PATH ||
+      path.startsWith(`${BLOG_PATH}/`);
+    if (!isPage && path !== "/api/status") {
+      if (env.ASSETS?.fetch) {
+        const response = await env.ASSETS.fetch(request);
+        if (response.status !== 404) return response;
+      }
+      // A blog post's old address (Legacy paths) may be any path the old site used.
+      try {
+        const state = await siteFor(env).shop.load();
+        const moved = state.setup === "ready" ? resolvePostRequest(state.posts, url.pathname) : null;
+        if (moved?.redirect) return redirect(moved.redirect);
+        return html(notFoundPage({ settings: state.settings ?? null, site: state.setup === "ready" ? siteInfo(state, null, analyticsFor(url, env, state.settings)) : {} }), { status: 404, cache: "no-store" });
+      } catch {
+        return html(notFoundPage({ settings: null }), { status: 404, cache: "no-store" });
+      }
+    }
 
     const shop = siteFor(env).shop;
     const state = await shop.load();
     if (path === "/api/status") return json(await statusBody(env, state));
     if (state.setup !== "ready") {
-      return path === "/sitemap.xml" ? plain("Not ready", 503, undefined, "no-store") : notReady(state);
+      return path === "/sitemap.xml" || path === "/llms.txt" || path === FEED_PATH ? plain("Not ready", 503, undefined, "no-store") : notReady(state);
     }
     const { settings, catalog } = state;
     // Product and policy pages are the same for every visitor: they say
     // "PayPal" from Settings alone, without reading the Vault on each view.
     const payment = settings.paypalMode !== "off" && settings.paypalClientId && env.BUSABASE_API_KEY && state.shipping.status === "ready" ? "paypal" : "request";
-    const site = { pages: state.pages, payment };
+    const analytics = analyticsFor(url, env, settings);
+    const site = { pages: state.pages, posts: state.posts, payment, analytics };
 
     if (path === "/") return html(homePage({ origin: url.origin, settings, catalog, site }));
     if (path === "/sitemap.xml") {
-      return plain(buildSitemap(url.origin, catalog.listed, state.pages), 200, "application/xml; charset=utf-8");
+      return plain(buildSitemap(url.origin, catalog.listed, state.pages, state.posts), 200, "application/xml; charset=utf-8");
+    }
+    if (path === "/llms.txt") {
+      return plain(buildLlmsTxt({ origin: url.origin, settings, catalog, shipping: state.shipping, pages: state.pages, posts: state.posts, payment }));
+    }
+    if (path === FEED_PATH) {
+      return plain(buildFeed({ origin: url.origin, settings, posts: state.posts, blogLabel: translator(settings.language)("blog_heading") }), 200, "application/rss+xml; charset=utf-8");
+    }
+    if (path === BLOG_PATH) {
+      if (url.pathname !== BLOG_PATH) return redirect(BLOG_PATH);
+      return html(blogIndexPage({ origin: url.origin, settings, posts: state.posts, listed: catalog.listed, site }));
+    }
+    if (path.startsWith(`${BLOG_PATH}/`)) {
+      const found = resolvePostRequest(state.posts, url.pathname);
+      if (found?.redirect) return redirect(found.redirect);
+      if (found?.post) return html(postPage({ origin: url.origin, settings, post: found.post, listed: catalog.listed, site }));
+      return html(notFoundPage({ settings, site }), { status: 404, cache: "no-store" });
     }
     if (path === "/order") {
       const vault = await secretsFor(env, state);
@@ -907,7 +1019,7 @@ export const createHandler = (overrides = {}) => {
           orderId: newOrderId(),
           ordersReady: Boolean(state.ordersBaseId),
           checkout: checkoutFor(state, payments),
-          site: siteInfo(state, payments),
+          site: siteInfo(state, payments, analytics),
           // No key: the browser engine (Busabase Cloud Free), the owner's own tab.
           browserPreview: !env.BUSABASE_API_KEY,
         }),
@@ -930,7 +1042,7 @@ export const createHandler = (overrides = {}) => {
         productId = "";
       }
       const product = catalog.listed.find((item) => item.id === productId);
-      if (product) return html(productPage({ origin: url.origin, settings, product, site }));
+      if (product) return html(productPage({ origin: url.origin, settings, product, site, shipping: state.shipping }));
     }
     return html(notFoundPage({ settings, site }), { status: 404, cache: "no-store" });
   };
