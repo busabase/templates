@@ -338,7 +338,7 @@
       "key": "write-draft",
       "label": {
         "en": "Write a blog post draft",
-        "zh-CN": "写一篇博客草稿"
+        "zh-CN": "写博客草稿"
       },
       "body": "{target}\n\nRead the `busa-shop` skill in this folder and follow \"Blog posts and landing content (博客文章)\", \"Write a draft\": write the post I chose as ONE new row with Status Draft, using only facts from this shop's Products, Shipping, Settings and Pages. Never set Status to Published, never promise free shipping or a global warranty, and tell me where to read the draft and that I publish it myself."
     },

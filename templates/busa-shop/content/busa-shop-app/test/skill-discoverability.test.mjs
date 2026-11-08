@@ -132,7 +132,7 @@ test("busa-shop is found by the words of the SEO/GEO lesson: blog, post, 博客,
   // Lesson 4 (2026-11): "plan 3 posts that answer questions buyers really ask". The Agent
   // searches with short words, so each must be a substring of the description.
   const skill = await skillOf("busa-shop");
-  const queries = ["blog", "Blog", "post", "posts", "blog post", "博客", "文章", "SEO", "GEO", "Google", "Search Console", "Analytics", "AI assistants"];
+  const queries = ["blog", "Blog", "post", "posts", "blog post", "博客", "文章", "写博客", "SEO", "GEO", "Google", "Search Console", "Analytics", "AI assistants"];
   const missed = queries.filter((query) => !skillMatches(skill, query));
   assert.deepEqual(missed, [], `busa-shop's description does not contain: ${missed.join(" / ")}`);
   const shop = await promptsOf("busa-shop");
