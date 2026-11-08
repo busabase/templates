@@ -9,7 +9,7 @@
     "en": "Ad-campaign command desk: Amazon, Meta, TikTok and Google spend and performance in one place, rule-based anomaly detection, and evidence-backed budget and bid adjustments",
     "zh-CN": "广告投放指挥台：一处汇总 Amazon、Meta、TikTok、Google 的投放支出与效果，规则化异常检测，并给出有依据的预算与出价调整。"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "tags": [
     "ecommerce",

@@ -471,7 +471,7 @@ const DOCUMENTS = [
       "",
       "## 16. Creator 交接",
       "",
-      "`[DECISION]` 本 PRD 已具备具体用户故事、信息架构、状态流、功能需求、权限与隐私、数据对象、首版 IMAP/SMTP Connector、集成路径、完整 UI 状态、埋点、灰度回滚与验收标准，可以交给 Kelly App Skill Creator。每日邮件数量、目标时长和定价仍是非阻断验证 backlog；若它们改变首版用户或范围，再回到 MRD/PRD 修订。",
+      "`[DECISION]` 本 PRD 已具备具体用户故事、信息架构、状态流、功能需求、权限与隐私、数据对象、首版 IMAP/SMTP Connector、集成路径、完整 UI 状态、埋点、灰度回滚与验收标准，可以交给公开的 busabase-app-creator。每日邮件数量、目标时长和定价仍是非阻断验证 backlog；若它们改变首版用户或范围，再回到 MRD/PRD 修订。",
     ].join("\n"),
   }),
   doc("doc-wechat-brd", "idea-wechat", "brd", {
