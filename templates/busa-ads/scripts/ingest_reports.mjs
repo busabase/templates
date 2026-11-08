@@ -28,7 +28,7 @@
 import fs from "node:fs/promises";
 import { createBusabaseClient } from "busabase-sdk";
 import { inspectProvisionedResources } from "busabase-sdk/airapp";
-import { appConfig } from "../content/busa-ads-app/app/js/config.js";
+import { appConfig } from "./lib/config.js";
 
 const PLATFORMS = new Set(["amazon", "meta", "tiktok", "google"]);
 const PLATFORM_NAMES = { amazon: "Amazon Ads", meta: "Meta Ads", tiktok: "TikTok Ads", google: "Google Ads" };

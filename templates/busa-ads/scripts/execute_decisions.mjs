@@ -28,8 +28,8 @@
 // BUSABASE_API_KEY, BUSABASE_SPACE_ID), never the AirApp's ambient session.
 import { createBusabaseClient } from "busabase-sdk";
 import { inspectProvisionedResources } from "busabase-sdk/airapp";
-import { operationFor } from "../content/busa-ads-app/app/js/ads-model.js";
-import { appConfig } from "../content/busa-ads-app/app/js/config.js";
+import { operationFor } from "./lib/ads-model.js";
+import { appConfig } from "./lib/config.js";
 
 function help() {
   console.log(`Usage: node scripts/execute_decisions.mjs [--apply]

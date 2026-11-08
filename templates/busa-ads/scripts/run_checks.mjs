@@ -26,8 +26,8 @@ import {
   detectAnomalies,
   normalizeCampaign,
   skeletonAdjustment,
-} from "../content/busa-ads-app/app/js/ads-model.js";
-import { appConfig } from "../content/busa-ads-app/app/js/config.js";
+} from "./lib/ads-model.js";
+import { appConfig } from "./lib/config.js";
 
 function help() {
   console.log(`Usage: node scripts/run_checks.mjs [--apply]

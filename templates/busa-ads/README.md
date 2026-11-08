@@ -51,12 +51,16 @@ Use the printed URL, then add one of these demo paths:
 
 ## Report Ingestion
 
-`scripts/ingest_reports.mjs` is the single write path for performance data. The agent gathers the data (platform API pulls, report exports, or a CSV you paste) and runs one of:
+`scripts/ingest_reports.mjs` is the single write path for performance data. The agent gathers the data (platform API pulls, report exports, or a CSV you paste) and runs it from the installed Skill directory. Install does not copy the template-root `package.json` and does not install npm dependencies, so install the Skill runtime dependency first:
 
 ```bash
-node skills/busa-ads/scripts/ingest_reports.mjs payload.json --apply
-node skills/busa-ads/scripts/ingest_reports.mjs --csv report.csv --platform amazon --apply
+npm install --prefix scripts --ignore-scripts
+node scripts/ingest_reports.mjs payload.json
+node scripts/ingest_reports.mjs payload.json --apply
+node scripts/ingest_reports.mjs --csv report.csv --platform amazon --apply
 ```
+
+The first command without `--apply` is a dry run. It needs `BUSABASE_BASE_URL`, `BUSABASE_API_KEY`, and `BUSABASE_SPACE_ID`; a missing `busabase-sdk` module means the `npm install` step above has not been run in the Skill directory.
 
 JSON payload shape (see the script header for the full example):
 

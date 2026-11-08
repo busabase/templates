@@ -129,7 +129,8 @@ platform tokens, never Busabase or chat. Write the settings row and platform
 roster with an initial ingest:
 
 ```bash
-node skills/busa-ads/scripts/ingest_reports.mjs payload.json --apply
+npm install --prefix scripts --ignore-scripts
+node scripts/ingest_reports.mjs payload.json --apply
 ```
 
 ## Local App
@@ -202,13 +203,32 @@ never fetches anything itself.
 
 ## Useful Commands
 
+Run these from the installed Skill directory. Install copies `SKILL.md`,
+`references/`, `agents/`, and `scripts/` into the Skill node. It does not copy
+`content/` or the template-root `package.json`, and it does not run `npm install`.
+The scripts' dependency manifest and the config/model they import travel under
+`scripts/`. Install that dependency before the first dry run:
+
 ```bash
-node skills/busa-ads/scripts/ingest_reports.mjs payload.json --apply
-node skills/busa-ads/scripts/ingest_reports.mjs --csv report.csv --platform amazon --apply
-node skills/busa-ads/scripts/run_checks.mjs --apply
-node skills/busa-ads/scripts/execute_decisions.mjs --apply
-pnpm --dir skills/busa-ads/content/busa-ads-app dev
+npm install --prefix scripts --ignore-scripts
+node scripts/ingest_reports.mjs payload.json
+node scripts/ingest_reports.mjs payload.json --apply
+node scripts/ingest_reports.mjs --csv report.csv --platform amazon --apply
+node scripts/run_checks.mjs
+node scripts/run_checks.mjs --apply
+node scripts/execute_decisions.mjs
+node scripts/execute_decisions.mjs --apply
 ```
+
+Without `--apply` every runtime script is a dry run. `setup.mjs`,
+`publish_airapp.mjs`, `sync-content.mjs`, and `sync-skill-runtime.mjs` are
+source-maintenance commands for a full template checkout. The bundled config
+and model are generated from the AirApp source; regenerate them with
+`node scripts/sync-skill-runtime.mjs`, then check with `--check`.
+
+A local preview (`pnpm --dir content/busa-ads-app dev`) requires the full
+`busabase/templates` checkout. `content/` is installed as separate resources
+and is not inside the Skill node.
 
 In normal use, invoke `/busa-ads`, let the skill ingest and check what's
 due, and open the AirApp.

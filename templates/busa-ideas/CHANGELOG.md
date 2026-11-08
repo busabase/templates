@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.4 — 2026-11-08 — Sample PRD names the public builder
+
+The 0.2.3 skill, handoff reference, and AirApp prompt already send a reviewed
+PRD to public `busabase` and `busabase-app-creator`. The installed email-desk
+sample PRD and the matching demo document still said the draft could be handed
+to Kelly App Skill Creator. Both now name the public `busabase-app-creator`.
+No schema, review, or readiness behavior changed.
+
 ## 0.2.3 — 2026-10-24 — Public build handoff from a reviewed Idea
 
 Request: community `injwxy` reports that the advertised follow-up builder is

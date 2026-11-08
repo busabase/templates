@@ -110,14 +110,14 @@
         "Summarize the latest Platforms and flag what needs my attention.",
         "Show me the campaigns wasting the most spend and the adjustment the evidence supports for each."
       ],
-      "version": "0.1.0",
+      "version": "0.1.1",
       "license": "MIT",
       "stats": {
         "folders": 0,
         "docs": 0,
         "bases": 6,
         "records": 3,
-        "files": 31,
+        "files": 36,
         "airapps": 1,
         "skill": true
       }
@@ -1698,7 +1698,7 @@
         "Open the idea vault and show me which ideas are still waiting on my answers.",
         "Take this idea all the way to a PRD, and ask me about anything that's missing first."
       ],
-      "version": "0.2.3",
+      "version": "0.2.4",
       "license": "MIT",
       "stats": {
         "folders": 0,

@@ -50,8 +50,10 @@ reaching PRD or confirming handoff does not create or publish an app. The
 prompt, retry behavior, and how to update an existing Ideas manual.
 
 Template **0.2.3** updates these instructions and the AirApp's Agent prompt.
-The AirApp runtime remains **0.2.2**; there is no new build button or runtime
-code upgrade in this release.
+Template **0.2.4** corrects the installed email-desk sample PRD and the matching
+demo document, which still told the reader to hand the draft to Kelly App Skill
+Creator. Review, question, and handoff behavior are unchanged. There is no new
+build button.
 
 ## App UI Screenshots
 

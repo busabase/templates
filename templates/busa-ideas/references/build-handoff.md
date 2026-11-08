@@ -92,6 +92,17 @@ state. Resume the same source/target/pending request. If results are ambiguous
 or unrecorded, ask which existing artifact to use before creating another; do
 not scan and repurpose similarly named apps.
 
+### Existing Installations (Template 0.2.4)
+
+0.2.3 already points the skill, this reference, and the `handoff-to-build`
+prompt at public `busabase` + `busabase-app-creator`. 0.2.4 only replaces the
+leftover "Kelly App Skill Creator" sentence in the email-desk sample PRD and
+the same sentence in demo mode. New installs receive the corrected sample. An
+existing Space keeps its already merged document; update that one body only if
+the old sentence is still showing. Do not reinstall the sample set, recreate
+Bases, or replace the app for this sentence. Demo mode picks up the new
+sentence when `demo-provider.js` is updated.
+
 ### Existing Installations (Template 0.2.3)
 
 Update the Agent-local Ideas skill and this reference. For a hosted Skill node,
@@ -148,6 +159,14 @@ Busabase Cloud/Desktop 工作空间应用。它不是自动生成应用的按钮
    及下一步，保留旧备注并读回结果；备注本身待审也要说明。没有 `app-skill-name`
    字段，不另建交接表。重试时核对这些已知目标并继续原工作；记录不清就问用户
    指哪个应用，不按相似名称挪用别的应用，也不重复创建。
+
+### 已有安装如何更新（模板 0.2.4）
+
+0.2.3 已经把技能、本参考和 `handoff-to-build` 提示词改为公开的 `busabase` 与
+`busabase-app-creator`。0.2.4 只改正邮件审批台示例 PRD 和演示模式里仍写着
+“Kelly App Skill Creator”的那一句。新安装会带上改正后的示例。已经合并进空间的
+文档不会自动替换；只有这句话还在时，才改这一处正文。不要为此重装整套示例、重建
+数据表或替换整个应用。演示模式在更新 `demo-provider.js` 后显示新句子。
 
 ### 已有安装如何更新
 
