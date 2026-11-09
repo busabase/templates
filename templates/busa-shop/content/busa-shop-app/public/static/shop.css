@@ -392,7 +392,7 @@ h2 {
 
 .specs div {
   display: grid;
-  grid-template-columns: 140px 1fr;
+  grid-template-columns: 140px minmax(0, 1fr);
   gap: 12px;
   padding: 9px 0;
   border-bottom: 1px solid var(--line);
@@ -404,7 +404,9 @@ h2 {
 
 .specs dd {
   margin: 0;
+  min-width: 0;
   white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 .certs {
@@ -645,6 +647,14 @@ textarea:focus {
   max-width: 760px;
 }
 
+/* Long unbroken text — a 5G band list like n1/n3/n5/…/n78, a URL, an email —
+   wraps instead of making the page wider than a phone screen. */
+.product-info,
+.policy,
+.post {
+  overflow-wrap: anywhere;
+}
+
 .policy h2 {
   margin-top: 28px;
   font-size: 20px;
@@ -663,8 +673,10 @@ textarea:focus {
   width: 100%;
 }
 
-/* Tables in policy pages and posts (Markdown `| a | b |`). */
+/* Tables in policy pages and posts (Markdown `| a | b |`). A wide table
+   scrolls inside its own box; it never makes the page wider. */
 .table-wrap {
+  max-width: 100%;
   overflow-x: auto;
   margin: 16px 0;
 }
@@ -682,6 +694,7 @@ textarea:focus {
   padding: 8px 12px;
   text-align: left;
   vertical-align: top;
+  overflow-wrap: break-word;
 }
 
 .table-wrap th {
@@ -845,7 +858,7 @@ textarea:focus {
 @media (max-width: 760px) {
   .product,
   .order-form {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 24px;
   }
 
