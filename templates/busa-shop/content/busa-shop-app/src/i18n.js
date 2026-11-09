@@ -142,6 +142,14 @@ const en = {
   pay_order: "Order {orderId}",
   nav_checkout: "Checkout",
   footer_policies: "Shop policies",
+  nav_blog: "Blog",
+  blog_heading: "Blog",
+  blog_empty: "No posts yet.",
+  blog_published: "Published {date}",
+  blog_by: "by {author}",
+  blog_back: "All posts",
+  blog_products: "Products in this post",
+  blog_feed: "RSS feed",
 };
 
 const de = {
@@ -285,6 +293,14 @@ const de = {
   pay_order: "Bestellung {orderId}",
   nav_checkout: "Kasse",
   footer_policies: "Shop-Richtlinien",
+  nav_blog: "Blog",
+  blog_heading: "Blog",
+  blog_empty: "Noch keine Beiträge.",
+  blog_published: "Veröffentlicht am {date}",
+  blog_by: "von {author}",
+  blog_back: "Alle Beiträge",
+  blog_products: "Produkte in diesem Beitrag",
+  blog_feed: "RSS-Feed",
 };
 
 const fr = {
@@ -428,6 +444,14 @@ const fr = {
   pay_order: "Commande {orderId}",
   nav_checkout: "Paiement",
   footer_policies: "Conditions de la boutique",
+  nav_blog: "Blog",
+  blog_heading: "Blog",
+  blog_empty: "Aucun article pour le moment.",
+  blog_published: "Publié le {date}",
+  blog_by: "par {author}",
+  blog_back: "Tous les articles",
+  blog_products: "Produits de cet article",
+  blog_feed: "Flux RSS",
 };
 
 const es = {
@@ -570,6 +594,14 @@ const es = {
   pay_order: "Pedido {orderId}",
   nav_checkout: "Pago",
   footer_policies: "Políticas de la tienda",
+  nav_blog: "Blog",
+  blog_heading: "Blog",
+  blog_empty: "Todavía no hay artículos.",
+  blog_published: "Publicado el {date}",
+  blog_by: "por {author}",
+  blog_back: "Todos los artículos",
+  blog_products: "Productos de este artículo",
+  blog_feed: "Feed RSS",
 };
 
 export const MESSAGES = { en, de, fr, es };

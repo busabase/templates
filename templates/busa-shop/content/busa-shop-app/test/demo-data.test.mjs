@@ -21,7 +21,7 @@ const readRows = async (path) =>
     .map((line) => JSON.parse(line));
 
 describe("sample rows match their Bases", () => {
-  for (const name of ["orders", "settings", "reports", "shipping", "pages"]) {
+  for (const name of ["orders", "settings", "reports", "shipping", "pages", "posts"]) {
     it(`${name}: every value fits its field`, async () => {
       const base = await readJson(`${contentDir}${name}/base.json`);
       const rows = await readRows(`${contentDir}${name}/records.ndjson`);
@@ -44,7 +44,9 @@ describe("sample rows match their Bases", () => {
           if (field.type === "email") assert.match(value, EMAIL_PATTERN, `${row.key}: ${slug}`);
           if (field.type === "phone") assert.match(value, PHONE_PATTERN, `${row.key}: ${slug}`);
           if (field.type === "date") assert.ok(Number.isFinite(Date.parse(value)), `${row.key}: ${slug}`);
-          if (["text", "longtext", "url"].includes(field.type)) assert.equal(typeof value, "string", `${row.key}: ${slug}`);
+          if (["text", "longtext", "url", "markdown"].includes(field.type)) assert.equal(typeof value, "string", `${row.key}: ${slug}`);
+          // Busabase stores a json field as its text ("Legacy paths must be text" otherwise, and the install stops).
+          if (field.type === "json") assert.doesNotThrow(() => JSON.parse(value), `${row.key}: ${slug} is JSON text`);
         }
       }
       for (const view of base.views) {
@@ -53,6 +55,30 @@ describe("sample rows match their Bases", () => {
       }
     });
   }
+
+  it("posts: busabase-cms-sdk's standard Posts fields (busa-cms mirrors them), without the two taxonomy relations", async () => {
+    // The SDK reads a Posts table by its slug (`baseSlugs.posts`) without needing Categories or
+    // Tags, and relation fields need a target Base this shop does not have. Everything else
+    // (slug, type, required, options, select choices) must stay the SDK's, so its reader and
+    // the Busa CMS admin read these rows as they read their own.
+    const shop = await readJson(`${contentDir}posts/base.json`);
+    const cms = await readJson(`${contentDir}../../busa-cms/content/posts/base.json`);
+    // Order aside: Title comes first here, so the grid's first column and a record's name in its
+    // history are the post's title rather than its address. The SDK matches fields by slug.
+    const shape = (fields) =>
+      fields.map(({ slug, name, type, required, options }) => ({ slug, name, type, required, options })).sort((a, b) => a.slug.localeCompare(b.slug));
+    assert.deepEqual(shape(shop.fields), shape(cms.fields.filter((field) => !["categories", "tags"].includes(field.slug))));
+    assert.equal(shop.fields[0].slug, "title");
+    for (const row of await readRows(`${contentDir}posts/records.ndjson`)) {
+      // busabase-cms-sdk's postFieldsDTOSchema for a published post.
+      assert.match(row.fields.path, /^\/blog\/[a-z0-9-]+$/, row.key);
+      assert.equal(row.fields.status, "published", row.key);
+      assert.ok(row.fields.title && row.fields.slug && row.fields.locale && row.fields.body, row.key);
+      assert.equal(row.fields["schema-version"], 1, row.key);
+      assert.ok(!("canonical-url" in row.fields) || /^https:\/\//.test(row.fields["canonical-url"]), row.key);
+      assert.ok(row.fields.author.includes("(sample)"), `${row.key}: the daily check finds sample posts by their author`);
+    }
+  });
 
   it("every sample order is labelled fictional and uses reserved example domains", async () => {
     for (const row of await readRows(`${contentDir}orders/records.ndjson`)) {
@@ -222,6 +248,11 @@ describe("probe-site.mjs against the running site", () => {
     assert.equal(result.status.products, 10);
     assert.equal(result.sitemap.productUrls, 10);
     assert.equal(result.robots.status, 200);
+    assert.equal(result.robots.sitemap, true);
+    assert.equal(result.llms.status, 200);
+    assert.equal(result.sitemap.postUrls, 0, "a shop from before 0.7.0 has no blog");
+    assert.equal(result.home.googleAnalytics, false);
+    assert.equal(result.home.searchConsole, false);
     // Every photo of every listed product: 8 listed products have photos, the robot two.
     assert.deepEqual(result.productPages, { checked: 10, failed: [] });
     assert.equal(result.images.checked, 9);

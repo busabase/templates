@@ -1,0 +1,355 @@
+{
+  "name": "Posts",
+  "description": "The shop's blog: one row per post, shown at its Path (/blog/<slug>), listed newest Published at first on /blog, in the sitemap, the RSS feed (/blog/rss.xml) and /llms.txt. Only rows whose Status is Published are on the site; a Draft or In review row is a 404 and in no list. Body is simple Markdown (# headings, - lists, **bold**, [links](/products/<product-id>), tables); a link to a product on sale also shows that product under the post. Legacy paths (a JSON list such as [\"/blog/old-address\"]) redirect to the current Path. An Agent writes drafts only, with facts from this shop's tables; the owner reads the draft and sets Status to Published. A change shows on the website within about a minute. The fields follow busabase-cms-sdk's standard Posts, so that SDK can read this table by its slug.",
+  "position": 5,
+  "fields": [
+    {
+      "slug": "title",
+      "name": {
+        "en": "Title",
+        "zh-CN": "标题"
+      },
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "path",
+      "name": {
+        "en": "Path",
+        "zh-CN": "网址"
+      },
+      "type": "text",
+      "required": true,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "slug",
+      "name": {
+        "en": "Slug",
+        "zh-CN": "标识"
+      },
+      "type": "text",
+      "required": true,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "locale",
+      "name": {
+        "en": "Locale",
+        "zh-CN": "语言"
+      },
+      "type": "select",
+      "required": true,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "en",
+            "name": "English"
+          },
+          {
+            "id": "zh-CN",
+            "name": "Simplified Chinese"
+          },
+          {
+            "id": "zh-TW",
+            "name": "Traditional Chinese"
+          },
+          {
+            "id": "ja",
+            "name": "Japanese"
+          },
+          {
+            "id": "pt",
+            "name": "Portuguese"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "status",
+      "name": {
+        "en": "Status",
+        "zh-CN": "状态"
+      },
+      "type": "select",
+      "required": true,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "draft",
+            "name": "Draft"
+          },
+          {
+            "id": "in-review",
+            "name": "In review"
+          },
+          {
+            "id": "published",
+            "name": "Published"
+          },
+          {
+            "id": "archived",
+            "name": "Archived"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "description",
+      "name": {
+        "en": "Excerpt",
+        "zh-CN": "摘要"
+      },
+      "type": "longtext",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "body",
+      "name": {
+        "en": "Body",
+        "zh-CN": "正文"
+      },
+      "type": "markdown",
+      "required": true,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "cover-image",
+      "name": {
+        "en": "Cover image",
+        "zh-CN": "封面图片"
+      },
+      "type": "attachment",
+      "required": false,
+      "position": 7,
+      "options": {
+        "attachment": {
+          "maxFiles": 1,
+          "allowedMimeTypes": [
+            "image/*"
+          ],
+          "maxFileSize": 10485760
+        }
+      }
+    },
+    {
+      "slug": "attachments",
+      "name": {
+        "en": "Attachments",
+        "zh-CN": "附件"
+      },
+      "type": "attachment",
+      "required": false,
+      "position": 8,
+      "options": {
+        "attachment": {
+          "maxFiles": 20,
+          "allowedMimeTypes": [
+            "image/*",
+            "application/pdf"
+          ],
+          "maxFileSize": 20971520
+        }
+      }
+    },
+    {
+      "slug": "author",
+      "name": {
+        "en": "Author",
+        "zh-CN": "作者"
+      },
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "published-at",
+      "name": {
+        "en": "Published at",
+        "zh-CN": "发布时间"
+      },
+      "type": "date",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "canonical-url",
+      "name": {
+        "en": "Canonical URL",
+        "zh-CN": "规范网址"
+      },
+      "type": "url",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "legacy-paths",
+      "name": {
+        "en": "Legacy paths",
+        "zh-CN": "旧网址"
+      },
+      "type": "json",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "seo-title",
+      "name": {
+        "en": "SEO title",
+        "zh-CN": "SEO 标题"
+      },
+      "type": "text",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "seo-description",
+      "name": {
+        "en": "SEO description",
+        "zh-CN": "SEO 描述"
+      },
+      "type": "longtext",
+      "required": false,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "schema-version",
+      "name": {
+        "en": "Schema version",
+        "zh-CN": "结构版本"
+      },
+      "type": "number",
+      "required": true,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "updated-at",
+      "name": {
+        "en": "Updated at",
+        "zh-CN": "更新时间"
+      },
+      "type": "updated_time",
+      "required": false,
+      "position": 16,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all-posts",
+      "name": "All posts",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "published-at",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "path",
+          "published-at",
+          "author",
+          "description"
+        ]
+      }
+    },
+    {
+      "slug": "drafts",
+      "name": "Drafts",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "draft"
+          }
+        ],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "path",
+          "author",
+          "description"
+        ]
+      }
+    },
+    {
+      "slug": "published-posts",
+      "name": "Published",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "published"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "published-at",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "path",
+          "published-at",
+          "seo-title",
+          "seo-description",
+          "cover-image"
+        ]
+      }
+    }
+  ],
+  "agentPrompts": [
+    {
+      "key": "plan-posts",
+      "label": {
+        "en": "Plan blog posts that answer what buyers ask",
+        "zh-CN": "策划博客文章（回答买家真正会问的问题）"
+      },
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-shop` skill in this folder and follow \"Blog posts and landing content (博客文章)\", \"Plan posts\": propose 3 posts that answer questions buyers in the countries this shop ships to really ask before they buy. For each one give the title, the question it answers, the Path, the products it links to and the facts from my tables it will use. Write nothing yet; ask me which one to write."
+    },
+    {
+      "key": "write-draft",
+      "label": {
+        "en": "Write a blog post draft",
+        "zh-CN": "写博客草稿"
+      },
+      "body": "{target}\n\nRead the `busa-shop` skill in this folder and follow \"Blog posts and landing content (博客文章)\", \"Write a draft\": write the post I chose as ONE new row with Status Draft, using only facts from this shop's Products, Shipping, Settings and Pages. Never set Status to Published, never promise free shipping or a global warranty, and tell me where to read the draft and that I publish it myself."
+    },
+    {
+      "key": "check-draft",
+      "label": {
+        "en": "Check a draft before I publish it",
+        "zh-CN": "发布前检查草稿"
+      },
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-shop` skill in this folder and follow \"Blog posts and landing content (博客文章)\", \"Check a draft\": compare every price, spec, shipping cost, delivery time and warranty or return promise in the draft I name with my tables and Pages, and list each one that does not match, plus a missing SEO title, SEO description or excerpt. Change nothing."
+    }
+  ]
+}

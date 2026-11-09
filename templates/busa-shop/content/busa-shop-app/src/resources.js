@@ -69,9 +69,10 @@ export const resolveShopTables = (nodes) => ({
 });
 
 /**
- * Shipping and Pages (busa-shop 0.6.0 and later), in the folder of this
- * shop's Settings. A shop installed before has neither: it keeps taking order
- * requests without a shipping line and shows no policy pages.
+ * Shipping and Pages (busa-shop 0.6.0 and later) and Posts (0.7.0), in the
+ * folder of this shop's Settings. A shop installed before has none of them:
+ * it keeps taking order requests without a shipping line, shows no policy
+ * pages and has no blog.
  */
 export const resolveShopExtras = (nodes, shopFolderId) => ({
   shipping: pickResource(nodes, {
@@ -86,6 +87,13 @@ export const resolveShopExtras = (nodes, shopFolderId) => ({
     appId: SHOP_APP_ID,
     resourceKey: "pages",
     fallbackSlug: "busa-shop-pages",
+    parentId: shopFolderId,
+  }),
+  posts: pickResource(nodes, {
+    type: "base",
+    appId: SHOP_APP_ID,
+    resourceKey: "posts",
+    fallbackSlug: "busa-shop-posts",
     parentId: shopFolderId,
   }),
 });

@@ -27,9 +27,14 @@
 //   POST /api/paypal/client-token a browser-safe PayPal client token (SDK fallback)
 //   POST /api/paypal/webhook      PayPal's notifications, each verified with PayPal first
 //   GET  /pages/<slug>            a published policy page from the Pages table
+//   GET  /blog                    the published posts of the Posts table, newest first
+//   GET  /blog/<slug>             one published post (a draft is a 404); a legacy path,
+//                                 anywhere on the site, redirects (301) to its post
+//   GET  /blog/rss.xml            RSS feed of the newest posts
+//   GET  /blog-covers/<slug>      a published post's cover when it is a Busabase asset
 //   GET  /api/status              readiness for the daily check (never a secret)
 //   GET  /images/<product-id>/<n> image n of a listed product, fetched with the site key
-//   GET  /sitemap.xml, /robots.txt
+//   GET  /sitemap.xml, /robots.txt, /llms.txt
 //   /static/*, /favicon.svg       files in public/, served by the platform
 //
 // Bindings (set by Busabase on every deploy, never written anywhere else):

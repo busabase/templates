@@ -6,10 +6,10 @@
     "zh-CN": "Busa 独立站"
   },
   "description": {
-    "en": "A one-install online shop for a small cross-border seller: product management built in (its own Products and Certificates tables, Excel or CSV import with pictures), a public storefront website with a real checkout (delivery address, shipping costs by country, payment with PayPal, or order requests when PayPal is off), order emails over SMTP, policy pages, an Orders table that follows each order from payment to shipping, and a daily shop check your agent runs and improves from your feedback.",
-    "zh-CN": "面向小型跨境卖家的一键开店模板：自带商品管理（店铺自己的商品表和证书表，导入含图片的 Excel 或 CSV），公开独立站带真正的结账（收货地址、按国家计算的运费、PayPal 付款；未开 PayPal 时为订单请求），通过 SMTP 发送订单邮件，自带政策页，订单表跟踪每一单从付款到发货，并附带每日店铺巡检，由你的智能体执行、按你的反馈持续改进。"
+    "en": "A one-install online shop for a small cross-border seller: product management built in (its own Products and Certificates tables, Excel or CSV import with pictures), a public storefront website with a real checkout (delivery address, shipping costs by country, payment with PayPal, or order requests when PayPal is off), order emails over SMTP, policy pages, a blog your agent drafts from your own facts (you publish), search and AI-assistant basics (sitemap, schema.org prices and shipping, llms.txt, Google Analytics and Search Console), an Orders table that follows each order from payment to shipping, and a daily shop check your agent runs and improves from your feedback.",
+    "zh-CN": "面向小型跨境卖家的一键开店模板：自带商品管理（店铺自己的商品表和证书表，导入含图片的 Excel 或 CSV），公开独立站带真正的结账（收货地址、按国家计算的运费、PayPal 付款；未开 PayPal 时为订单请求），通过 SMTP 发送订单邮件，自带政策页和博客（智能体按店铺真实数据写草稿，你来发布），并具备 SEO 与 GEO 基础（站点地图、含价格与运费的结构化数据、llms.txt、Google Analytics 与 Search Console），订单表跟踪每一单从付款到发货，并附带每日店铺巡检，由你的智能体执行、按你的反馈持续改进。"
   },
-  "version": "0.6.0",
+  "version": "0.7.0",
   "license": "MIT",
   "tags": [
     "ecommerce",
@@ -20,7 +20,7 @@
   ],
   "template": {
     "category": "ecommerce",
-    "schemaVersion": 4,
+    "schemaVersion": 5,
     "airapp": "busa-shop-app",
     "tags": [
       "ecommerce",
@@ -31,7 +31,9 @@
       "website",
       "checkout",
       "paypal",
-      "shipping"
+      "shipping",
+      "blog",
+      "seo"
     ],
     "screenshots": [
       "assets/screenshots/cover.webp",
@@ -50,6 +52,7 @@
       "Open my shop: check the products it will list, the settings, shipping costs, policy pages, PayPal and order emails, and tell me what I still have to do before I click Go live.",
       "Set up PayPal for my shop: tell me what to create in PayPal, what goes into Settings and what I put into the Space Vault myself.",
       "Run today's shop check: read my feedback on the last report, then check products, certificates, orders and payments, and the live site, and write one report.",
+      "Plan 3 blog posts that answer questions buyers in my shipping countries really ask, using only facts from my tables, then write the one I pick as a draft for me to publish.",
       "What do I need to ship today? List the paid orders with addresses, and draft replies for any new order requests."
     ],
     "vaultNamespace": "busa-shop",

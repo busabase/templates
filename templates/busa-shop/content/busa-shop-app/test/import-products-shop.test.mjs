@@ -16,7 +16,7 @@ import { formatSummary, mergeLines, resolveTarget, runImport, SHOP_SPEC_LABELS, 
 import { MESSAGES } from "../src/i18n.js";
 import { specKeyFor } from "../src/details.js";
 import { startFakeBusabase, TEST_KEY } from "./fake-busabase.mjs";
-import { DEMO_DIR, NODES, SHOP_NODES, SHOP_ONLY_NODES, sampleSettingsFields } from "./fixtures.mjs";
+import { BLOG_NODES, DEMO_DIR, NODES, SHOP_NODES, SHOP_ONLY_NODES, sampleRows, sampleSettingsFields } from "./fixtures.mjs";
 
 const templates = new URL("../../../../", import.meta.url);
 const readBase = async (template, name) => JSON.parse(await readFile(new URL(`${template}/content/${name}/base.json`, templates), "utf8"));
@@ -216,6 +216,18 @@ describe("import-products.mjs into the shop's own Products", () => {
     assert.equal(summary.products.created, 12);
     assert.ok(products().every((row) => !("tags" in row.fields)));
     assert.ok(summary.notes.includes('busa-shop-products has no "tags" column, so those values were left out.'));
+  });
+});
+
+describe("the shop's blog (busa-shop 0.7.0)", () => {
+  it("is never read or written by the importer", async () => {
+    api.state.nodes.push(BLOG_NODES.posts);
+    api.state.records.bas_posts = await sampleRows("posts");
+    const before = structuredClone(api.state.records.bas_posts);
+    const summary = await run();
+    assert.equal(summary.products.created, 12);
+    assert.ok(!api.log.some((entry) => entry.query.baseId === "bas_posts" || entry.path.includes("bas_posts")), "no request names Posts");
+    assert.deepEqual(api.state.records.bas_posts, before);
   });
 });
 

@@ -185,6 +185,8 @@ describe("pages", () => {
       shipping: "missing",
       email: "off",
       pages: 0,
+      posts: "missing",
+      google: { analytics: false, searchConsole: false, bing: false },
     });
   });
 

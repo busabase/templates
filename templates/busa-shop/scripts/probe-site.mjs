@@ -4,10 +4,12 @@
 //
 //   node scripts/probe-site.mjs https://<the shop's address>
 //
-// Prints one JSON object: whether the home page, /api/status, /sitemap.xml and
-// robots.txt answer, how long the home page took, how many products the site
-// says it lists, and whether every photo on every listed product page loads
-// (`images.failed` names each one that does not). It only reads.
+// Prints one JSON object: whether the home page, /api/status, /sitemap.xml,
+// robots.txt and /llms.txt answer, how long the home page took, how many
+// products and blog posts the site lists, whether the home page carries the
+// Google Analytics and Search Console tags, and whether every photo on every
+// listed product page loads (`images.failed` names each one that does not).
+// It only reads.
 
 const MAX_PRODUCT_PAGES = 100; // the shop lists at most 100 products
 const PARALLEL = 6;
@@ -43,7 +45,7 @@ export const probeSite = async (siteUrl, { fetchImpl = fetch, now = () => Date.n
     }
   };
 
-  const [home, status, sitemap, robots] = await Promise.all([get("/"), get("/api/status"), get("/sitemap.xml"), get("/robots.txt")]);
+  const [home, status, sitemap, robots, llms] = await Promise.all([get("/"), get("/api/status"), get("/sitemap.xml"), get("/robots.txt"), get("/llms.txt")]);
   let statusJson = null;
   try {
     statusJson = JSON.parse(status.body);
@@ -83,10 +85,17 @@ export const probeSite = async (siteUrl, { fetchImpl = fetch, now = () => Date.n
       charset: /<meta charset="utf-8">/i.test(home.body),
       demoNotice: home.body.includes('class="demo-notice"'),
       setupPage: home.body.includes('class="message setup"'),
+      googleAnalytics: home.body.includes('<meta name="busa-shop-ga4"'),
+      searchConsole: home.body.includes('<meta name="google-site-verification"'),
     },
     status: { status: status.status, ...(statusJson ?? {}) },
-    sitemap: { status: sitemap.status, productUrls: productUrls.length },
-    robots: { status: robots.status },
+    sitemap: {
+      status: sitemap.status,
+      productUrls: productUrls.length,
+      postUrls: [...sitemap.body.matchAll(/<loc>[^<]+\/blog\/[^<]+<\/loc>/g)].length,
+    },
+    robots: { status: robots.status, sitemap: /^Sitemap: /m.test(robots.body) },
+    llms: { status: llms.status },
     productPages: { checked: pages.length, failed: pageErrors },
     images: { checked: checked.length, failed },
   };

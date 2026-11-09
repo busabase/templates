@@ -72,6 +72,9 @@ describe("a shop with its own Products, and no product hub anywhere", () => {
       email: "off",
       pages: 5,
       pagesToFinish: ["shipping", "returns", "privacy", "terms", "contact"],
+      // A shop installed before 0.7.0 has no Posts table and no Google settings.
+      posts: "missing",
+      google: { analytics: false, searchConsole: false, bing: false },
     });
   });
 

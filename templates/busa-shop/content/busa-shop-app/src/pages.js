@@ -2,11 +2,12 @@
 // visitor goes through `esc`; nothing is concatenated raw. Every page carries
 // <meta charset="utf-8"> (Cloudflare serves text/html without a charset).
 
-import { countryName, formatPrice, imageSrc } from "./catalog.js";
+import { countryName, formatPrice, imageSrc, localeTag } from "./catalog.js";
 import { productDetails } from "./details.js";
 import { CLIENT_MESSAGE_KEYS, PAY_MESSAGE_KEYS, translator } from "./i18n.js";
 import { addressRules } from "./orders.js";
 import { fillPlaceholders, markdownText, pagePath, renderMarkdown } from "./policies.js";
+import { BLOG_PATH, coverSrc, FEED_PATH, mentionedProducts, postSummary } from "./posts.js";
 import { clientRates, shippingFor } from "./shipping.js";
 import {
   absoluteImages,
@@ -15,6 +16,9 @@ import {
   plainSummary,
   productDescription,
   productJsonLd,
+  postImage,
+  postJsonLd,
+  postUrl,
   productPath,
   storeJsonLd,
 } from "./seo.js";
@@ -45,9 +49,13 @@ const layout = ({
   noindex = false,
   body,
   site = {},
+  lang: pageLang = "",
+  extraMeta = [],
 }) => {
-  const lang = settings?.language ?? "en";
+  const lang = pageLang || settings?.language || "en";
   const footerPages = (site.pages ?? []).filter((page) => page.inFooter);
+  const hasBlog = (site.posts ?? []).length > 0;
+  const analytics = site.analytics ?? {};
   const paypal = site.payment === "paypal";
   const storeName = settings?.storeName ?? "";
   const meta = [
@@ -64,6 +72,13 @@ const layout = ({
     canonical ? `<meta property="og:url" content="${esc(canonical)}">` : "",
     ogImage ? `<meta property="og:image" content="${esc(ogImage)}">` : "",
     `<meta name="twitter:card" content="${ogImage ? "summary_large_image" : "summary"}">`,
+    ...extraMeta,
+    hasBlog ? `<link rel="alternate" type="application/rss+xml" title="${esc(`${storeName} · ${t("nav_blog")}`)}" href="${FEED_PATH}">` : "",
+    analytics.googleVerification ? `<meta name="google-site-verification" content="${esc(analytics.googleVerification)}">` : "",
+    analytics.bingVerification ? `<meta name="msvalidate.01" content="${esc(analytics.bingVerification)}">` : "",
+    // Google Analytics 4: only when Settings names an ID, and only on the public site (src/handler.js decides).
+    analytics.ga4 ? `<meta name="busa-shop-ga4" content="${esc(analytics.ga4)}">` : "",
+    analytics.ga4 ? `<script type="module" src="/static/analytics.js"></script>` : "",
     `<link rel="icon" href="/favicon.svg" type="image/svg+xml">`,
     `<link rel="stylesheet" href="/static/shop.css">`,
     ...jsonLd.map(jsonLdScript),
@@ -71,7 +86,7 @@ const layout = ({
   const header = settings
     ? `<header class="site-header"><div class="wrap header-row">
   <a class="brand" href="/">${esc(storeName)}</a>
-  <nav class="site-nav"><a href="/#products">${esc(t("nav_products"))}</a><a class="order-link" href="/order">${esc(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
+  <nav class="site-nav"><a href="/#products">${esc(t("nav_products"))}</a>${hasBlog ? `<a href="${BLOG_PATH}">${esc(t("nav_blog"))}</a>` : ""}<a class="order-link" href="/order">${esc(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
 </div></header>`
     : "";
   const notice = settings?.demoNotice ? `<div class="demo-notice" role="note">${esc(t("demo_notice"))}</div>` : "";
@@ -80,6 +95,7 @@ const layout = ({
   <p><strong>${esc(storeName)}</strong>${settings.tagline ? ` · ${esc(settings.tagline)}` : ""}</p>
   ${settings.contactEmail ? `<p>${esc(t("contact"))}: <a href="mailto:${esc(settings.contactEmail)}">${esc(settings.contactEmail)}</a></p>` : ""}
   ${footerPages.length ? `<nav class="footer-links" aria-label="${esc(t("footer_policies"))}">${footerPages.map((page) => `<a href="${esc(pagePath(page))}">${esc(page.title)}</a>`).join("")}</nav>` : ""}
+  ${hasBlog ? `<nav class="footer-links footer-blog" aria-label="${esc(t("nav_blog"))}"><a href="${BLOG_PATH}">${esc(t("nav_blog"))}</a><a href="${FEED_PATH}">${esc(t("blog_feed"))}</a></nav>` : ""}
   <p class="muted">${esc(t(paypal ? "footer_paypal" : "footer_orders"))}</p>
 </div></footer>`
     : "";
@@ -155,7 +171,7 @@ ${settings.about ? `<section class="about" aria-labelledby="about-heading"><h2 i
   });
 };
 
-export const productPage = ({ origin, settings, product, site = {} }) => {
+export const productPage = ({ origin, settings, product, site = {}, shipping = null }) => {
   const t = translator(settings.language);
   const content = product.content;
   const specs = [
@@ -213,7 +229,7 @@ export const productPage = ({ origin, settings, product, site = {} }) => {
     canonical: absoluteUrl(origin, productPath(product)),
     ogType: "product",
     ogImage: product.images.length ? absoluteImages(origin, product)[0] : "",
-    jsonLd: [productJsonLd({ origin, product, settings })],
+    jsonLd: [productJsonLd({ origin, product, settings, shipping })],
     body,
     site,
   });
@@ -471,6 +487,100 @@ export const thanksPage = ({ origin, settings, orderId, email, site = {} }) => {
   <p>${esc(t("thanks_body", { orderId, email }))}</p>
   <p><a class="button" href="/">${esc(t("thanks_continue"))}</a></p>
 </section>`,
+    site,
+  });
+};
+
+const formatDay = (day, language) => {
+  const ms = Date.parse(`${day}T00:00:00Z`);
+  if (!Number.isFinite(ms)) return "";
+  return new Intl.DateTimeFormat(localeTag(language), { dateStyle: "long", timeZone: "UTC" }).format(new Date(ms));
+};
+
+const postMeta = (post, t, language) => {
+  const parts = [
+    post.publishedAt ? `<time datetime="${esc(post.publishedAt)}">${esc(t("blog_published", { date: formatDay(post.publishedAt, language) }))}</time>` : "",
+    post.author ? `<span>${esc(t("blog_by", { author: post.author }))}</span>` : "",
+  ].filter(Boolean);
+  return parts.length ? `<p class="post-meta muted">${parts.join(" · ")}</p>` : "";
+};
+
+const postThumb = (post, listed, { eager = false } = {}) => {
+  if (post.cover) {
+    return `<img src="${esc(coverSrc(post))}" alt="" width="1200" height="630"${eager ? "" : ` loading="lazy"`} decoding="async" referrerpolicy="no-referrer">`;
+  }
+  const product = mentionedProducts(post, listed).find((item) => item.images.length);
+  return product ? `<img src="${esc(imageSrc(product, product.images[0], 0))}" alt="" width="800" height="800" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : "";
+};
+
+/** /blog: every published post, newest first. With none, a short note (and no "Blog" link anywhere else). */
+export const blogIndexPage = ({ origin, settings, posts, listed = [], site = {} }) => {
+  const t = translator(settings.language);
+  const list = posts.length
+    ? `<ul class="post-list">${posts
+        .map((post) => {
+          const thumb = postThumb(post, listed);
+          return `<li class="post-card">
+  ${thumb ? `<a class="post-card-media" href="${esc(post.path)}" tabindex="-1" aria-hidden="true">${thumb}</a>` : ""}
+  <div class="post-card-body">
+    <h2><a href="${esc(post.path)}">${esc(post.title)}</a></h2>
+    ${postMeta(post, t, settings.language)}
+    <p>${esc(postSummary(post))}</p>
+  </div>
+</li>`;
+        })
+        .join("\n")}</ul>`
+    : `<p class="empty">${esc(t("blog_empty"))}</p>`;
+  return layout({
+    settings,
+    t,
+    title: `${t("blog_heading")} · ${settings.storeName}`,
+    description: plainSummary(posts.length ? `${settings.storeName}: ${posts.slice(0, 3).map((post) => post.title).join(" · ")}` : settings.tagline || settings.storeName),
+    canonical: absoluteUrl(origin, BLOG_PATH),
+    noindex: posts.length === 0,
+    body: `<section class="blog"><h1>${esc(t("blog_heading"))}</h1>
+${list}
+</section>`,
+    site,
+  });
+};
+
+/** One published post: Markdown body (rendered like a policy page), its cover, the products it links to. */
+export const postPage = ({ origin, settings, post, listed = [], site = {} }) => {
+  const t = translator(settings.language);
+  const products = mentionedProducts(post, listed);
+  const image = postImage(origin, post, listed);
+  const cover = post.cover
+    ? `<figure class="post-cover"><img src="${esc(coverSrc(post))}" alt="" width="1200" height="630" decoding="async" referrerpolicy="no-referrer"></figure>`
+    : "";
+  const strip = products.length
+    ? `<section class="post-products" aria-labelledby="post-products-heading"><h2 id="post-products-heading">${esc(t("blog_products"))}</h2><ul class="grid">${products.map((product) => card(product, t)).join("\n")}</ul></section>`
+    : "";
+  return layout({
+    settings,
+    t,
+    title: post.seoTitle || `${post.title} · ${settings.storeName}`,
+    description: plainSummary(post.seoDescription || postSummary(post, 300) || post.title),
+    canonical: postUrl(origin, post),
+    ogType: "article",
+    ogImage: image,
+    lang: post.locale,
+    extraMeta: [
+      post.publishedAt ? `<meta property="article:published_time" content="${esc(post.publishedAt)}">` : "",
+      post.updatedAt ? `<meta property="article:modified_time" content="${esc(post.updatedAt)}">` : "",
+    ],
+    jsonLd: postJsonLd({ origin, post, settings, blogLabel: t("blog_heading"), listed }),
+    body: `<nav class="crumbs" aria-label="Breadcrumb"><a href="${BLOG_PATH}">${esc(t("blog_heading"))}</a> <span aria-hidden="true">/</span> <span>${esc(post.title)}</span></nav>
+<article class="post">
+  <h1>${esc(post.title)}</h1>
+  ${postMeta(post, t, settings.language)}
+  ${cover}
+  <div class="post-body">
+${renderMarkdown(fillPlaceholders(post.body, settings), { demoteH1: true })}
+  </div>
+</article>
+${strip}
+<p class="post-back"><a href="${BLOG_PATH}">← ${esc(t("blog_back"))}</a></p>`,
     site,
   });
 };

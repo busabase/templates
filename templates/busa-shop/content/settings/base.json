@@ -1,7 +1,7 @@
 {
   "name": "Settings",
-  "description": "One row: what the shop website shows (store name, tagline, currency, contact, language, ship-to countries), how it takes payment (PayPal off / sandbox / live, the PayPal client ID and webhook ID) and sends email (SMTP host, port, security, username, sender, where order notifications go), and what the daily shop check uses (required certificates, expiry warning, standing check rules). Never write a password or a secret here: the PayPal client secret and the SMTP password go in the Space Vault (BUSA_SHOP_PAYPAL_CLIENT_SECRET, BUSA_SHOP_SMTP_PASSWORD, marked Runtime). Products table is empty to sell from this folder's Products; write a Busa Product Hub Products table's slug there to sell from it instead. The website reads it on every refresh, so a change here shows on the live site within about a minute, without a redeploy.",
-  "position": 5,
+  "description": "One row: what the shop website shows (store name, tagline, currency, contact, language, ship-to countries), how it takes payment (PayPal off / sandbox / live, the PayPal client ID and webhook ID) and sends email (SMTP host, port, security, username, sender, where order notifications go), and what the daily shop check uses (required certificates, expiry warning, standing check rules). Never write a password or a secret here: the PayPal client secret and the SMTP password go in the Space Vault (BUSA_SHOP_PAYPAL_CLIENT_SECRET, BUSA_SHOP_SMTP_PASSWORD, marked Runtime). Products table is empty to sell from this folder's Products; write a Busa Product Hub Products table's slug there to sell from it instead. For Google: Google Analytics 4 measurement ID (G-…, loaded only on the public site, never in a preview), and the Google Search Console and Bing verification codes (the content value of their HTML tag; pasting the whole tag works too), all optional. The website reads it on every refresh, so a change here shows on the live site within about a minute, without a redeploy.",
+  "position": 6,
   "agentPrompts": [
     {
       "key": "show-settings",
@@ -284,6 +284,30 @@
       "type": "email",
       "required": false,
       "position": 24,
+      "options": {}
+    },
+    {
+      "slug": "ga4-id",
+      "name": "Google Analytics 4 measurement ID",
+      "type": "text",
+      "required": false,
+      "position": 25,
+      "options": {}
+    },
+    {
+      "slug": "google-site-verification",
+      "name": "Google Search Console verification code",
+      "type": "text",
+      "required": false,
+      "position": 26,
+      "options": {}
+    },
+    {
+      "slug": "bing-site-verification",
+      "name": "Bing Webmaster Tools verification code",
+      "type": "text",
+      "required": false,
+      "position": 27,
       "options": {}
     }
   ],
