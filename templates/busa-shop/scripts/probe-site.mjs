@@ -9,7 +9,9 @@
 // products and blog posts the site lists, whether the home page carries the
 // Google Analytics and Search Console tags, and whether every photo on every
 // listed product page loads (`images.failed` names each one that does not).
-// It only reads.
+// Since busa-shop 0.8.0 it also asks the MCP endpoint for its tools (the
+// tools/list an AI assistant sends when it connects) and fetches /agents.md,
+// the Google feed and /.well-known/ucp. It only reads.
 
 const MAX_PRODUCT_PAGES = 100; // the shop lists at most 100 products
 const PARALLEL = 6;
@@ -45,7 +47,32 @@ export const probeSite = async (siteUrl, { fetchImpl = fetch, now = () => Date.n
     }
   };
 
-  const [home, status, sitemap, robots, llms] = await Promise.all([get("/"), get("/api/status"), get("/sitemap.xml"), get("/robots.txt"), get("/llms.txt")]);
+  const mcpTools = async () => {
+    const started = now();
+    try {
+      const response = await fetchImpl(new URL("/mcp", origin), {
+        method: "POST",
+        signal: AbortSignal.timeout(timeoutMs),
+        headers: { "user-agent": "busa-shop-daily-check", "content-type": "application/json", accept: "application/json, text/event-stream", "mcp-protocol-version": "2025-11-25" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+      });
+      const body = await response.json().catch(() => null);
+      return { status: response.status, ms: now() - started, tools: (body?.result?.tools ?? []).map((tool) => tool.name) };
+    } catch (error) {
+      return { status: 0, ms: now() - started, tools: [], error: error?.name ?? "error" };
+    }
+  };
+  const [home, status, sitemap, robots, llms, mcp, agentsMd, feed, ucp] = await Promise.all([
+    get("/"),
+    get("/api/status"),
+    get("/sitemap.xml"),
+    get("/robots.txt"),
+    get("/llms.txt"),
+    mcpTools(),
+    get("/agents.md"),
+    get("/feeds/google.xml"),
+    get("/.well-known/ucp"),
+  ]);
   let statusJson = null;
   try {
     statusJson = JSON.parse(status.body);
@@ -96,6 +123,12 @@ export const probeSite = async (siteUrl, { fetchImpl = fetch, now = () => Date.n
     },
     robots: { status: robots.status, sitemap: /^Sitemap: /m.test(robots.body) },
     llms: { status: llms.status },
+    agents: {
+      mcp: { status: mcp.status, ms: mcp.ms, tools: mcp.tools, ...(mcp.error ? { error: mcp.error } : {}) },
+      agentsMd: { status: agentsMd.status },
+      feed: { status: feed.status, items: (feed.body.match(/<item>/g) ?? []).length },
+      ucp: { status: ucp.status },
+    },
     productPages: { checked: pages.length, failed: pageErrors },
     images: { checked: checked.length, failed },
   };

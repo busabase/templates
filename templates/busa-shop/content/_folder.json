@@ -1,6 +1,6 @@
 {
   "name": "Busa Shop",
-  "description": "A one-install online shop for a small cross-border seller. Products and Certificates hold the product list in plain columns you edit in the table (no separate product hub needed); the public website (Shop Website) lists what is on sale and has a real checkout: delivery address, shipping by country from Shipping, and payment with PayPal (or order requests when PayPal is off), with order emails over SMTP and policy pages from Pages. Posts is the shop's blog: drafts the Agent writes from the shop's own facts and the owner publishes, on /blog, in the sitemap, the feed and /llms.txt. Orders follows each order from payment to shipping; Settings holds the texts and the non-secret setup (secrets go in the Space Vault); the daily shop check writes its findings into Reports.",
+  "description": "A one-install online shop for a small cross-border seller. Products and Certificates hold the product list in plain columns you edit in the table (no separate product hub needed); the public website (Shop Website) lists what is on sale and has a real checkout: delivery address, shipping by country from Shipping, and payment with PayPal (or order requests when PayPal is off), with order emails over SMTP and policy pages from Pages. Posts is the shop's blog: drafts the Agent writes from the shop's own facts and the owner publishes, on /blog, in the sitemap, the feed and /llms.txt. On the live address the website is also an MCP server (/mcp) that AI assistants such as Claude and ChatGPT add as a connector to search the catalog and hand buyers a link to its own checkout. Orders follows each order from payment to shipping; Settings holds the texts and the non-secret setup (secrets go in the Space Vault); the daily shop check writes its findings into Reports.",
   "agentPrompts": [
     {
       "key": "import-catalog",
@@ -38,6 +38,15 @@
         "zh-CN": "写博客文章（SEO、让 AI 引用）"
       },
       "body": "Read the `busa-shop` skill in this folder and follow \"Blog posts and landing content (博客文章)\": plan the posts I ask for (three if I do not say) that answer questions buyers in the countries this shop ships to really ask, show me the plan with the facts each post uses and where they come from, and after I pick one write it as a Draft in Posts. Never publish it yourself, never promise free shipping or a warranty my tables do not give, and tell me how I publish it."
+    },
+    {
+      "key": "connect-ai-assistants",
+      "label": {
+        "en": "Let AI assistants sell for me (MCP for Claude, ChatGPT)",
+        "zh-CN": "让 AI 助手帮我卖货（Agent 电商：MCP 接入 Claude、ChatGPT）"
+      },
+      "intent": "read-only",
+      "body": "Read the `busa-shop` skill in this folder and follow \"Agent commerce (AI assistants find and sell your products, Agent 电商)\": tell me my MCP address (Settings › Live site address plus /mcp; if the shop is not live yet, say what Go live needs) and the exact steps to add it to Claude or ChatGPT. Then check it with the MCP Inspector commands in that section: list the tools, search for one of my products with a country I ship to, make the buy link and open it, and tell me what a buyer would see. Change nothing in my tables."
     },
     {
       "key": "new-orders",

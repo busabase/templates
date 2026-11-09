@@ -75,6 +75,8 @@ describe("a shop with its own Products, and no product hub anywhere", () => {
       // A shop installed before 0.7.0 has no Posts table and no Google settings.
       posts: "missing",
       google: { analytics: false, searchConsole: false, bing: false },
+      // The MCP address an owner adds to Claude or ChatGPT (0.8.0).
+      agents: { mcp: "https://tumbleberry-toys.example/mcp" },
     });
   });
 

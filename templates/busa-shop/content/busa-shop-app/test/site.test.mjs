@@ -187,6 +187,8 @@ describe("pages", () => {
       pages: 0,
       posts: "missing",
       google: { analytics: false, searchConsole: false, bing: false },
+      // The MCP address an owner adds to Claude or ChatGPT (0.8.0).
+      agents: { mcp: "https://tumbleberry-toys.example/mcp" },
     });
   });
 

@@ -3566,7 +3566,7 @@ var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
     }
     return propValues;
   });
-  const isObject3 = isObject;
+  const isObject5 = isObject;
   const catchall = def.catchall;
   let value2;
   const memo2 = globalConfig.memoizer;
@@ -3574,7 +3574,7 @@ var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
   inst._zod.parse = (payload, ctx) => {
     value2 ?? (value2 = _normalized.value);
     const input2 = payload.value;
-    if (!isObject3(input2)) {
+    if (!isObject5(input2)) {
       payload.issues.push({
         expected: "object",
         code: "invalid_type",
@@ -3710,7 +3710,7 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
     return doc.compile();
   };
   let fastpass;
-  const isObject3 = isObject;
+  const isObject5 = isObject;
   const jit = !globalConfig.jitless;
   const allowsEval2 = allowsEval;
   const fastEnabled = jit && allowsEval2.value;
@@ -3719,7 +3719,7 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
   inst._zod.parse = (payload, ctx) => {
     value2 ?? (value2 = _normalized.value);
     const input2 = payload.value;
-    if (!isObject3(input2)) {
+    if (!isObject5(input2)) {
       payload.issues.push({
         expected: "object",
         code: "invalid_type",
@@ -28876,6 +28876,1481 @@ var buildCatalog = ({ productRecords, certificateRecords, settings, busabaseOrig
   return { listed, hidden };
 };
 
+// src/policies.js
+var PAGE_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,59}$/;
+var FILL_IN_MARKER = /【fill in[^】]*】/i;
+var PAGES_LIMIT = 50;
+var esc2 = (value2) => String(value2 ?? "").replace(
+  /[&<>"']/g,
+  (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]
+);
+var buildPages = (records) => {
+  const pages = [];
+  const seen = /* @__PURE__ */ new Set();
+  const rows = [...records ?? []].map((record2, index) => ({ record: record2, index, position: finiteNumber(record2?.fields?.position) })).sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || a.index - b.index);
+  for (const { record: record2 } of rows) {
+    const fields = record2?.fields ?? {};
+    const slug = text(fields.slug).toLowerCase();
+    const title = text(fields.title);
+    const status = text(fields.status).toLowerCase();
+    if (status !== "published" || !title || !PAGE_SLUG_PATTERN.test(slug) || seen.has(slug)) continue;
+    seen.add(slug);
+    pages.push({
+      slug,
+      title,
+      body: typeof fields.body === "string" ? fields.body : "",
+      inFooter: fields["in-footer"] === true || fields["in-footer"] === "true",
+      updatedAt: text(record2?.updatedAt)
+    });
+  }
+  return pages;
+};
+var fillPlaceholders = (body, settings) => String(body ?? "").replace(/\{\{\s*store_name\s*\}\}/g, settings.storeName || "").replace(/\{\{\s*contact_email\s*\}\}/g, settings.contactEmail || "\u3010fill in: contact email\u3011");
+var safeHref = (raw) => {
+  const href = raw.trim();
+  if (/^https:\/\/[^\s"'<>]+$/i.test(href)) return href;
+  if (/^mailto:[^\s"'<>]+$/i.test(href)) return href;
+  if (/^\/[A-Za-z0-9._~\-/#?=&%]*$/.test(href) && !href.startsWith("//")) return href;
+  return null;
+};
+var inline = (escaped) => escaped.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (match, label2, href) => {
+  const url2 = safeHref(href.replace(/&amp;/g, "&"));
+  return url2 ? `<a href="${esc2(url2)}">${label2}</a>` : label2;
+}).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/(^|[\s(])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>").replace(/(^|[\s(])_([^_\s][^_]*)_/g, "$1<em>$2</em>");
+var TABLE_ROW = /^\s*\|.*\|\s*$/;
+var TABLE_RULE = /^\s*\|(\s*:?-{3,}:?\s*\|)+\s*$/;
+var MAX_TABLE_COLUMNS = 12;
+var tableCells = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
+var tableAt = (lines, start) => {
+  if (!TABLE_ROW.test(lines[start] ?? "") || !TABLE_RULE.test(lines[start + 1] ?? "")) return null;
+  const head = tableCells(lines[start]);
+  if (head.length > MAX_TABLE_COLUMNS) return null;
+  const rows = [];
+  let end = start + 2;
+  while (end < lines.length && TABLE_ROW.test(lines[end])) {
+    rows.push(tableCells(lines[end]));
+    end += 1;
+  }
+  const cells = (row, tag) => head.map((_, column) => `<${tag}>${inline(esc2(row[column] ?? ""))}</${tag}>`).join("");
+  const html2 = `<div class="table-wrap"><table><thead><tr>${cells(head, "th")}</tr></thead><tbody>${rows.map((row) => `<tr>${cells(row, "td")}</tr>`).join("")}</tbody></table></div>`;
+  return { html: html2, end };
+};
+var renderMarkdown = (source, { demoteH1 = false } = {}) => {
+  const lines = String(source ?? "").replace(/\r\n?/g, "\n").split("\n");
+  const out = [];
+  let paragraph = [];
+  let list = null;
+  const flushParagraph = () => {
+    if (paragraph.length) out.push(`<p>${paragraph.map((line) => inline(esc2(line))).join("<br>")}</p>`);
+    paragraph = [];
+  };
+  const flushList = () => {
+    if (list) out.push(`<${list.tag}>${list.items.map((item) => `<li>${inline(esc2(item))}</li>`).join("")}</${list.tag}>`);
+    list = null;
+  };
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index].trimEnd();
+    const table = tableAt(lines, index);
+    if (table) {
+      flushParagraph();
+      flushList();
+      out.push(table.html);
+      index = table.end - 1;
+      continue;
+    }
+    const heading = /^(#{1,3})\s+(.+)$/.exec(line.trim());
+    const bullet = /^\s*[-*]\s+(.+)$/.exec(line);
+    const numbered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
+    if (!line.trim()) {
+      flushParagraph();
+      flushList();
+    } else if (heading) {
+      flushParagraph();
+      flushList();
+      const level = demoteH1 ? Math.max(heading[1].length, 2) : Math.min(heading[1].length + 1, 4);
+      out.push(`<h${level}>${inline(esc2(heading[2]))}</h${level}>`);
+    } else if (bullet || numbered) {
+      flushParagraph();
+      const tag = bullet ? "ul" : "ol";
+      if (list && list.tag !== tag) flushList();
+      list ??= { tag, items: [] };
+      list.items.push((bullet ?? numbered)[1]);
+    } else {
+      flushList();
+      paragraph.push(line.trim());
+    }
+  }
+  flushParagraph();
+  flushList();
+  return out.join("\n");
+};
+var markdownText = (source) => String(source ?? "").replace(/^\s*\|(\s*:?-{3,}:?\s*\|)+\s*$/gm, "").replace(/\s*\|\s*/g, " ").replace(/^#{1,3}\s+/gm, "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/[*_]/g, "").replace(/\s+/g, " ").trim();
+var pagePath = (page) => `/pages/${page.slug}`;
+var unfinishedPages = (pages) => pages.filter((page) => FILL_IN_MARKER.test(page.body)).map((page) => page.slug);
+
+// src/posts.js
+var POSTS_LIMIT = 100;
+var POST_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,99}$/;
+var BLOG_PATH = "/blog";
+var FEED_PATH = "/blog/rss.xml";
+var FEED_ITEMS = 20;
+var MAX_MENTIONED_PRODUCTS = 4;
+var RESERVED_PREFIXES = ["/api/", "/static/", "/images/", "/blog-covers/", "/pay/", "/products/", "/pages/", "/feeds/", "/.well-known/"];
+var RESERVED_PATHS = /* @__PURE__ */ new Set(["/", "/order", "/blog", "/blog/rss.xml", "/sitemap.xml", "/robots.txt", "/llms.txt", "/favicon.svg", "/mcp", "/agents.md"]);
+var normalizePath = (value2) => {
+  let raw = text(value2);
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      raw = new URL(raw).pathname;
+    } catch {
+      return "";
+    }
+  }
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.length > 300 || /[\s\\?#]/.test(raw)) return "";
+  const path = raw.toLowerCase().replace(/\/+$/, "");
+  return path || "/";
+};
+var postAddress = (fields) => {
+  const path = normalizePath(fields?.path);
+  const match = /^\/blog\/([^/]+)$/.exec(path);
+  if (match && POST_SLUG_PATTERN.test(match[1])) return { path, slug: match[1] };
+  const slug = text(fields?.slug).toLowerCase();
+  if (POST_SLUG_PATTERN.test(slug)) return { path: `${BLOG_PATH}/${slug}`, slug };
+  return null;
+};
+var postDate = (value2) => {
+  const raw = text(value2);
+  if (!raw) return null;
+  const ms = Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T00:00:00Z` : raw);
+  return Number.isFinite(ms) ? { day: new Date(ms).toISOString().slice(0, 10), ms } : null;
+};
+var listOf = (value2) => {
+  if (Array.isArray(value2)) return value2;
+  if (typeof value2 === "string" && value2.trim()) {
+    try {
+      const parsed = JSON.parse(value2);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return value2.split(/\n|,/);
+    }
+  }
+  return [];
+};
+var legacyPathsOf = (value2, ownPath) => [...new Set(listOf(value2).map(normalizePath))].filter(
+  (path) => path && path !== ownPath && !RESERVED_PATHS.has(path) && !RESERVED_PREFIXES.some((prefix) => path.startsWith(prefix))
+);
+var coverRef = (value2) => {
+  const first = Array.isArray(value2) ? value2[0] : value2;
+  if (typeof first === "string") return first;
+  if (first && typeof first === "object" && typeof first.url === "string") return first.url;
+  return "";
+};
+var httpsUrl = (value2) => {
+  const raw = text(value2);
+  if (!/^https:\/\//i.test(raw)) return "";
+  try {
+    return new URL(raw).href;
+  } catch {
+    return "";
+  }
+};
+var buildPosts = (records, { busabaseOrigin = "" } = {}) => {
+  const posts = [];
+  const problems = [];
+  const seen = /* @__PURE__ */ new Map();
+  for (const record2 of records ?? []) {
+    const fields = record2?.fields ?? {};
+    if (text(fields.status).toLowerCase() !== "published") continue;
+    const title = text(fields.title);
+    const label2 = title || text(fields.slug) || text(record2?.id) || "?";
+    const body = typeof fields.body === "string" ? fields.body.trim() : "";
+    const address = postAddress(fields);
+    if (!title) {
+      problems.push({ code: "no-title", post: label2 });
+      continue;
+    }
+    if (!body) {
+      problems.push({ code: "no-body", post: label2 });
+      continue;
+    }
+    if (!address) {
+      problems.push({ code: "bad-path", post: label2, path: text(fields.path) });
+      continue;
+    }
+    if (seen.has(address.path)) {
+      problems.push({ code: "duplicate-path", post: label2, path: address.path, kept: seen.get(address.path) });
+      continue;
+    }
+    seen.set(address.path, title);
+    const published = postDate(fields["published-at"]);
+    const updated = postDate(fields["updated-at"]) ?? postDate(record2?.updatedAt);
+    const cover = classifyImageRef(coverRef(fields["cover-image"]), busabaseOrigin);
+    posts.push({
+      recordId: text(record2?.id),
+      path: address.path,
+      slug: address.slug,
+      title,
+      description: text(fields.description),
+      body,
+      cover: cover && cover.kind !== "airapp" ? cover : null,
+      author: text(fields.author),
+      locale: text(fields.locale),
+      publishedAt: published?.day ?? "",
+      updatedAt: updated ? new Date(updated.ms).toISOString() : "",
+      sortMs: published?.ms ?? updated?.ms ?? 0,
+      canonicalUrl: httpsUrl(fields["canonical-url"]),
+      legacyPaths: legacyPathsOf(fields["legacy-paths"], address.path),
+      seoTitle: text(fields["seo-title"]),
+      seoDescription: text(fields["seo-description"]),
+      schemaVersion: finiteNumber(fields["schema-version"]) ?? 1
+    });
+  }
+  posts.sort((a, b) => b.sortMs - a.sortMs || a.title.localeCompare(b.title));
+  return { posts, problems };
+};
+var resolvePostRequest = (posts, rawPath) => {
+  const path = normalizePath(rawPath);
+  if (!path) return null;
+  const post = posts.find((item) => item.path === path);
+  if (post) return rawPath === post.path ? { post } : { redirect: post.path };
+  const moved = posts.find((item) => item.legacyPaths.includes(path));
+  return moved ? { redirect: moved.path } : null;
+};
+var postSummary = (post, max = 200) => {
+  if (post.description) return post.description;
+  const flat = markdownText(post.body).replace(/【fill in[^】]*】/gi, "").trim();
+  if (flat.length <= max) return flat;
+  const cut2 = flat.slice(0, max - 1);
+  const space = cut2.lastIndexOf(" ");
+  return `${space > max * 0.6 ? cut2.slice(0, space) : cut2}\u2026`;
+};
+var mentionedProducts = (post, listed) => {
+  const byId = new Map(listed.map((product) => [product.id, product]));
+  const found = [];
+  for (const match of post.body.matchAll(/\(\/products\/([A-Za-z0-9][A-Za-z0-9._%-]{0,119})\)/g)) {
+    let id;
+    try {
+      id = decodeURIComponent(match[1]);
+    } catch {
+      continue;
+    }
+    const product = byId.get(id);
+    if (product && !found.includes(product)) found.push(product);
+    if (found.length >= MAX_MENTIONED_PRODUCTS) break;
+  }
+  return found;
+};
+var coverSrc = (post) => {
+  if (!post.cover) return "";
+  return post.cover.kind === "direct" ? post.cover.url : `/blog-covers/${encodeURIComponent(post.slug)}`;
+};
+var canonicalElsewhere = (post, origin) => Boolean(post.canonicalUrl) && post.canonicalUrl !== new URL(post.path, origin).href;
+
+// src/shipping.js
+var COUNTRY_SET2 = new Set(COUNTRY_CODES);
+var centsOf = (amount) => Math.round(amount * 100);
+var buildShippingRates = (records, settings) => {
+  const rates = /* @__PURE__ */ new Map();
+  const problems = [];
+  const rows = [...records ?? []].map((record2, index) => ({ record: record2, index, position: finiteNumber(record2?.fields?.position) })).sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || a.index - b.index);
+  for (const { record: record2 } of rows) {
+    const fields = record2?.fields ?? {};
+    const zone = text(fields.name);
+    const rawCodes = text(fields.countries).toUpperCase().split(/[\s,;，、；]+/).filter(Boolean);
+    const label2 = zone || rawCodes.join(", ") || record2?.id || "?";
+    if (!rawCodes.length) {
+      problems.push({ code: "no-countries", zone: label2 });
+      continue;
+    }
+    const cost = finiteNumber(fields.rate);
+    if (cost === null || cost < 0) {
+      problems.push({ code: "no-rate", zone: label2 });
+      continue;
+    }
+    const currency = text(fields.currency).toUpperCase() || settings.currency;
+    if (currency !== settings.currency) {
+      problems.push({ code: "currency-mismatch", zone: label2, currency });
+      continue;
+    }
+    const freeOver = finiteNumber(fields["free-over"]);
+    for (const code of rawCodes) {
+      if (!COUNTRY_SET2.has(code)) {
+        problems.push({ code: "unknown-country", zone: label2, country: code });
+        continue;
+      }
+      if (rates.has(code)) {
+        problems.push({ code: "duplicate-country", zone: label2, country: code, kept: rates.get(code).zone });
+        continue;
+      }
+      rates.set(code, {
+        zone: label2,
+        country: code,
+        cost: centsOf(cost) / 100,
+        currency,
+        freeOver: freeOver !== null && freeOver > 0 ? centsOf(freeOver) / 100 : null,
+        estimate: text(fields["delivery-estimate"])
+      });
+    }
+  }
+  return { rates, problems };
+};
+var checkoutCountries = (settings, shipping) => {
+  if (shipping.status !== "ready") return settings.shipsTo;
+  return settings.shipsTo.filter((code) => shipping.rates.has(code));
+};
+var shippingFor = (shipping, country, subtotal) => {
+  if (shipping.status === "missing") return { ok: true, cost: null, estimate: "", free: false, unknown: true };
+  if (shipping.status !== "ready") return { ok: false, code: "shipping_unavailable" };
+  const rate = shipping.rates.get(country);
+  if (!rate) return { ok: false, code: "no_shipping" };
+  const free = rate.cost === 0 || rate.freeOver !== null && centsOf(subtotal) >= centsOf(rate.freeOver);
+  return { ok: true, cost: free ? 0 : rate.cost, estimate: rate.estimate, free, zone: rate.zone };
+};
+var clientRates = (shipping, countries) => shipping.status === "ready" ? Object.fromEntries(
+  countries.map((code) => {
+    const rate = shipping.rates.get(code);
+    return [code, { cost: rate.cost, freeOver: rate.freeOver, estimate: rate.estimate }];
+  })
+) : {};
+var NO_POSTAL_CODE = new Set(
+  "AE AG AO AW BF BI BJ BO BS BW BZ CD CF CG CI CK CM DJ DM ER FJ GA GD GH GM GQ GY HK IE JM KI KM KN KP LC ML MO MR MS MW NR NU QA RW SB SC SL SO SR ST SY TF TK TL TO TT TV TZ UG VU YE ZW".split(" ")
+);
+var REGION_REQUIRED = new Set("AR AU BR CA CN IN JP MX US".split(" "));
+
+// src/seo.js
+var xmlEscape = (value2) => String(value2).replace(/[<>&'"]/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[char]);
+var productPath = (product) => `/products/${encodeURIComponent(product.id)}`;
+var absoluteUrl = (origin, pathOrUrl) => new URL(pathOrUrl, origin).href;
+var absoluteImages = (origin, product) => product.images.map((image, index) => absoluteUrl(origin, imageSrc(product, image, index)));
+var plainSummary = (value2, max = 160) => {
+  const flat = String(value2 ?? "").replace(/\s+/g, " ").trim();
+  if (flat.length <= max) return flat;
+  const cut2 = flat.slice(0, max - 1);
+  const space = cut2.lastIndexOf(" ");
+  return `${(space > max * 0.6 ? cut2.slice(0, space) : cut2).replace(/[\s,.;:]+$/, "")}\u2026`;
+};
+var isoDay = (value2) => {
+  const parsed = Date.parse(value2 ?? "");
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString().slice(0, 10) : "";
+};
+var urlEntry = (origin, path, lastmod = "") => `  <url><loc>${xmlEscape(absoluteUrl(origin, path))}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`;
+var indexablePosts = (origin, posts = []) => posts.filter((post) => !canonicalElsewhere(post, origin));
+var buildSitemap = (origin, products, pages = [], posts = []) => {
+  const blog = indexablePosts(origin, posts);
+  const urls = [
+    urlEntry(origin, "/"),
+    ...products.map((product) => urlEntry(origin, productPath(product), isoDay(product.updatedAt))),
+    ...pages.map((page) => urlEntry(origin, `/pages/${page.slug}`)),
+    ...blog.length ? [urlEntry(origin, BLOG_PATH, isoDay(blog[0].updatedAt) || blog[0].publishedAt)] : [],
+    ...blog.map((post) => urlEntry(origin, post.path, isoDay(post.updatedAt) || post.publishedAt))
+  ];
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.join("\n")}
+</urlset>
+`;
+};
+var NAMED_CRAWLERS = [
+  "Googlebot",
+  "Google-Extended",
+  "Bingbot",
+  "GPTBot",
+  "OAI-SearchBot",
+  "ChatGPT-User",
+  "ClaudeBot",
+  "Claude-SearchBot",
+  "Claude-User",
+  "PerplexityBot",
+  "Perplexity-User",
+  "Applebot",
+  "Applebot-Extended",
+  "DuckAssistBot"
+];
+var buildRobots = (origin) => [
+  "# Search engines and AI assistants are welcome. A summary for them: /llms.txt",
+  "User-agent: *",
+  ...NAMED_CRAWLERS.map((name) => `User-agent: ${name}`),
+  "Allow: /",
+  "Disallow: /api/",
+  "Disallow: /order",
+  "Disallow: /pay/",
+  "",
+  `Sitemap: ${absoluteUrl(origin, "/sitemap.xml")}`,
+  ""
+].join("\n");
+var productDescription = (product) => plainSummary([product.subtitle, typeof product.content.description === "string" ? product.content.description : ""].filter(Boolean).join(". "));
+var productBrand = (product) => {
+  const brand = product.content?.attributes?.brand;
+  return typeof brand === "string" ? brand.trim() : "";
+};
+var deliveryDays = (estimate) => {
+  const match = /(\d{1,3})(?:\s*(?:–|—|-|to|bis|à|a)\s*(\d{1,3}))?\s*(?:business\s+|working\s+|calendar\s+)?(?:days?|tage|jours|días|dias|天|日)/i.exec(String(estimate ?? ""));
+  if (!match) return null;
+  const min = Number(match[1]);
+  const max = match[2] === void 0 ? min : Number(match[2]);
+  return max >= min ? { min, max } : null;
+};
+var shippingDetailsFor = (product, settings, shipping) => {
+  if (!shipping || shipping.status !== "ready") return [];
+  const zones = /* @__PURE__ */ new Map();
+  for (const code of checkoutCountries(settings, shipping)) {
+    const rate = shipping.rates.get(code);
+    if (!zones.has(rate.zone)) zones.set(rate.zone, { rate, countries: [] });
+    zones.get(rate.zone).countries.push(code);
+  }
+  const details = [];
+  for (const { rate, countries } of zones.values()) {
+    const days = deliveryDays(rate.estimate);
+    if (!days) continue;
+    const free = rate.cost === 0 || rate.freeOver !== null && product.price >= rate.freeOver;
+    details.push({
+      "@type": "OfferShippingDetails",
+      shippingRate: { "@type": "MonetaryAmount", value: free ? 0 : rate.cost, currency: rate.currency },
+      shippingDestination: countries.map((code) => ({ "@type": "DefinedRegion", addressCountry: code })),
+      deliveryTime: {
+        "@type": "ShippingDeliveryTime",
+        transitTime: { "@type": "QuantitativeValue", minValue: days.min, maxValue: days.max, unitCode: "DAY" }
+      }
+    });
+  }
+  return details;
+};
+var MAX_RETURN_COUNTRIES = 50;
+var returnPolicyFor = (product, settings, shipping) => {
+  const returns = product.content?.attributes?.returns;
+  if (typeof returns !== "string" || !returns.trim()) return null;
+  const countries = shipping?.status === "ready" ? checkoutCountries(settings, shipping) : [];
+  if (!countries.length || countries.length > MAX_RETURN_COUNTRIES) return null;
+  const applicableCountry = countries.length === 1 ? countries[0] : countries;
+  if (/\bno returns?\b|non-returnable|not returnable|keine rückgabe|不退|不支持退/i.test(returns)) {
+    return { "@type": "MerchantReturnPolicy", applicableCountry, returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted" };
+  }
+  const days = /(\d{1,3})\s*-?\s*(?:days?|tage|jours|días|dias|天|日)/i.exec(returns);
+  if (!days || Number(days[1]) < 1) return null;
+  return {
+    "@type": "MerchantReturnPolicy",
+    applicableCountry,
+    returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+    merchantReturnDays: Number(days[1]),
+    // An online shop: what comes back comes back by post.
+    returnMethod: "https://schema.org/ReturnByMail"
+  };
+};
+var productJsonLd = ({ origin, product, settings, shipping = null }) => {
+  const url2 = absoluteUrl(origin, productPath(product));
+  const shippingDetails = shippingDetailsFor(product, settings, shipping);
+  const returnPolicy = returnPolicyFor(product, settings, shipping);
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    url: url2,
+    ...productDescription(product) ? { description: productDescription(product) } : {},
+    ...product.sku ? { sku: product.sku } : {},
+    ...product.category ? { category: product.category } : {},
+    ...product.images.length ? { image: absoluteImages(origin, product) } : {},
+    brand: { "@type": "Brand", name: productBrand(product) || settings.storeName },
+    offers: {
+      "@type": "Offer",
+      url: url2,
+      price: product.price.toFixed(2),
+      priceCurrency: product.currency,
+      availability: product.soldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+      itemCondition: "https://schema.org/NewCondition",
+      seller: { "@type": "Organization", name: settings.storeName },
+      ...shippingDetails.length ? { shippingDetails } : {},
+      ...returnPolicy ? { hasMerchantReturnPolicy: returnPolicy } : {}
+    }
+  };
+  return data;
+};
+var storeJsonLd = ({ origin, settings }) => ({
+  "@context": "https://schema.org",
+  "@type": "OnlineStore",
+  name: settings.storeName,
+  url: absoluteUrl(origin, "/"),
+  ...settings.tagline ? { description: settings.tagline } : {},
+  ...settings.contactEmail ? { email: settings.contactEmail } : {}
+});
+var postImage = (origin, post, listed = []) => {
+  if (post.cover) return absoluteUrl(origin, coverSrc(post));
+  const product = mentionedProducts(post, listed).find((item) => item.images.length);
+  return product ? absoluteImages(origin, product)[0] : "";
+};
+var postUrl = (origin, post) => post.canonicalUrl || absoluteUrl(origin, post.path);
+var postJsonLd = ({ origin, post, settings, blogLabel = "Blog", listed = [] }) => {
+  const url2 = postUrl(origin, post);
+  const image = postImage(origin, post, listed);
+  const description = post.seoDescription || postSummary(post, 300);
+  const byShop = !post.author || post.author.toLowerCase().includes(settings.storeName.toLowerCase());
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: post.title.slice(0, 110),
+      url: url2,
+      mainEntityOfPage: url2,
+      ...description ? { description } : {},
+      ...image ? { image: [image] } : {},
+      ...post.publishedAt ? { datePublished: post.publishedAt } : {},
+      ...post.updatedAt ? { dateModified: post.updatedAt } : {},
+      ...post.locale ? { inLanguage: post.locale } : {},
+      author: byShop ? { "@type": "Organization", name: post.author || settings.storeName, url: absoluteUrl(origin, "/") } : { "@type": "Person", name: post.author },
+      publisher: { "@type": "Organization", name: settings.storeName, url: absoluteUrl(origin, "/") }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: settings.storeName, item: absoluteUrl(origin, "/") },
+        { "@type": "ListItem", position: 2, name: blogLabel, item: absoluteUrl(origin, BLOG_PATH) },
+        { "@type": "ListItem", position: 3, name: post.title, item: absoluteUrl(origin, post.path) }
+      ]
+    }
+  ];
+};
+var rfc822 = (iso) => {
+  const ms = Date.parse(iso ?? "");
+  return Number.isFinite(ms) ? new Date(ms).toUTCString() : "";
+};
+var buildFeed = ({ origin, settings, posts, blogLabel = "Blog" }) => {
+  const items = indexablePosts(origin, posts).slice(0, FEED_ITEMS);
+  const newest = items[0];
+  const lines = [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">`,
+    `<channel>`,
+    `<title>${xmlEscape(`${settings.storeName} \xB7 ${blogLabel}`)}</title>`,
+    `<link>${xmlEscape(absoluteUrl(origin, BLOG_PATH))}</link>`,
+    `<description>${xmlEscape(settings.tagline || settings.storeName)}</description>`,
+    `<language>${xmlEscape(settings.language || "en")}</language>`,
+    `<atom:link href="${xmlEscape(absoluteUrl(origin, FEED_PATH))}" rel="self" type="application/rss+xml"/>`,
+    ...newest ? [`<lastBuildDate>${rfc822(newest.updatedAt || newest.publishedAt)}</lastBuildDate>`] : [],
+    ...items.map((post) => {
+      const link = absoluteUrl(origin, post.path);
+      const date5 = rfc822(post.publishedAt || post.updatedAt);
+      return [
+        `<item>`,
+        `<title>${xmlEscape(post.title)}</title>`,
+        `<link>${xmlEscape(link)}</link>`,
+        `<guid isPermaLink="true">${xmlEscape(link)}</guid>`,
+        ...date5 ? [`<pubDate>${date5}</pubDate>`] : [],
+        `<description>${xmlEscape(postSummary(post, 300))}</description>`,
+        `</item>`
+      ].join("");
+    }),
+    `</channel>`,
+    `</rss>`,
+    ""
+  ];
+  return lines.join("\n");
+};
+var mdText = (value2) => String(value2 ?? "").replace(/\s+/g, " ").replace(/([[\]])/g, "\\$1").trim();
+var buildLlmsTxt = ({ origin, settings, catalog, shipping, pages = [], posts = [], payment = "request" }) => {
+  const money4 = (amount) => formatPrice(amount, settings.currency, "en");
+  const listed = catalog.listed;
+  const categories = [...new Set(listed.map((product) => product.category).filter(Boolean))];
+  const countries = shipping?.status === "ready" ? checkoutCountries(settings, shipping) : settings.shipsTo;
+  const countryNames = countries.map((code) => countryName(code, "en"));
+  const shipsLine = countries.length > 40 ? "most countries (the checkout lists them)" : countryNames.join(", ");
+  const summary = [
+    settings.tagline ? `${settings.tagline.replace(/[.\s]+$/, "")}.` : "",
+    `An online shop with ${listed.length} product${listed.length === 1 ? "" : "s"} on sale${categories.length ? ` (${categories.join(", ")})` : ""}, priced in ${settings.currency}${countries.length ? `, shipping to ${shipsLine}` : ""}.`
+  ].filter(Boolean).join(" ");
+  const out = [`# ${mdText(settings.storeName)}`, "", `> ${summary}`, ""];
+  if (settings.demoNotice) out.push("Note: this is a demo store. Its products, prices and orders are fictional.", "");
+  if (settings.about) out.push(markdownText(settings.about), "");
+  out.push(
+    `- Website: ${absoluteUrl(origin, "/")}`,
+    `- Currency: ${settings.currency}`,
+    ...countries.length ? [`- Ships to: ${shipsLine}`] : [],
+    `- Payment: ${payment === "paypal" ? "online with PayPal at checkout" : "order requests: the shop confirms the order and payment by email"}`,
+    ...settings.contactEmail ? [`- Contact: ${settings.contactEmail}`] : [],
+    "",
+    // busa-shop 0.8.0 (src/agents.js): the same catalog for assistants that call tools or read feeds.
+    "## For AI assistants and agents",
+    "",
+    `- MCP server (no sign-in, read-only): ${absoluteUrl(origin, "/mcp")}. Tools: search_catalog, lookup_catalog, get_product, create_checkout (a link to this shop's checkout page; the buyer pays there).`,
+    `- How to use this shop as an agent: ${absoluteUrl(origin, "/agents.md")}`,
+    `- Product feed (Google Merchant Center format): ${absoluteUrl(origin, "/feeds/google.xml")}`,
+    `- Universal Commerce Protocol profile: ${absoluteUrl(origin, "/.well-known/ucp")}`,
+    ""
+  );
+  if (shipping?.status === "ready" && countries.length) {
+    const zones = /* @__PURE__ */ new Map();
+    for (const code of countries) {
+      const rate = shipping.rates.get(code);
+      if (!zones.has(rate.zone)) zones.set(rate.zone, { rate, codes: [] });
+      zones.get(rate.zone).codes.push(code);
+    }
+    out.push("## Shipping", "");
+    for (const { rate, codes } of zones.values()) {
+      const parts = [
+        rate.cost === 0 ? "free shipping" : `shipping ${money4(rate.cost)}`,
+        ...rate.cost !== 0 && rate.freeOver !== null ? [`free from an items total of ${money4(rate.freeOver)}`] : [],
+        ...rate.estimate ? [`delivery ${rate.estimate}`] : []
+      ];
+      out.push(`- ${mdText(rate.zone)} (${codes.join(", ")}): ${parts.join(", ")}`);
+    }
+    if (settings.shippingNote) out.push("", markdownText(settings.shippingNote));
+    out.push("");
+  }
+  if (listed.length) {
+    out.push("## Products", "");
+    for (const product of listed) {
+      const notes = [product.priceText, ...product.soldOut ? ["out of stock"] : [], ...product.subtitle ? [product.subtitle] : []];
+      out.push(`- [${mdText(product.name)}](${absoluteUrl(origin, productPath(product))}): ${mdText(notes.join(". "))}`);
+    }
+    out.push("");
+  }
+  if (pages.length) {
+    out.push("## Policies", "");
+    for (const page of pages) out.push(`- [${mdText(page.title)}](${absoluteUrl(origin, pagePath(page))})`);
+    out.push("");
+  }
+  const blog = indexablePosts(origin, posts);
+  if (blog.length) {
+    out.push("## Blog", "");
+    for (const post of blog) {
+      const summaryText = postSummary(post, 200);
+      out.push(`- [${mdText(post.title)}](${absoluteUrl(origin, post.path)})${summaryText ? `: ${mdText(summaryText)}` : ""}`);
+    }
+    out.push("");
+  }
+  return out.join("\n");
+};
+var jsonLdScript = (data) => `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, "\\u003c")}</script>`;
+
+// src/agents.js
+var MCP_PATH = "/mcp";
+var AGENTS_PATH = "/agents.md";
+var GOOGLE_FEED_PATH = "/feeds/google.xml";
+var UCP_PROFILE_PATH = "/.well-known/ucp";
+var UCP_VERSION = "2026-08-25";
+var SEARCH_DEFAULT_LIMIT = 10;
+var SEARCH_MAX_LIMIT = 20;
+var LOOKUP_MAX_IDS = 10;
+var CHECKOUT_MAX_LINES = 10;
+var QUERY_MAX_CHARS = 200;
+var FEED_MAX_SHIPPING = 100;
+var FEED_MAX_IMAGES = 10;
+var isObject3 = (value2) => Boolean(value2) && typeof value2 === "object" && !Array.isArray(value2);
+var currencyDigits = (currency) => {
+  try {
+    return new Intl.NumberFormat("en", { style: "currency", currency }).resolvedOptions().maximumFractionDigits ?? 2;
+  } catch {
+    return 2;
+  }
+};
+var toMinor = (amount, currency) => Math.round(amount * 10 ** currencyDigits(currency));
+var fromMinor = (minor, currency) => minor / 10 ** currencyDigits(currency);
+var money = (amount, currency) => formatPrice(amount, currency, "en");
+var ucpPrice = (amount, currency) => ({ amount: toMinor(amount, currency), currency });
+var NAME_TO_CODE = (() => {
+  const map2 = /* @__PURE__ */ new Map();
+  for (const code of COUNTRY_CODES) map2.set(countryName(code, "en").toLowerCase(), code);
+  for (const [name, code] of [
+    ["usa", "US"],
+    ["united states of america", "US"],
+    ["uk", "GB"],
+    ["england", "GB"],
+    ["great britain", "GB"]
+  ]) {
+    map2.set(name, code);
+  }
+  return map2;
+})();
+var countryCodeOf = (value2) => {
+  const raw = text(value2);
+  if (!raw) return "";
+  const upper = raw.toUpperCase();
+  if (/^[A-Z]{2}$/.test(upper) && COUNTRY_CODES.includes(upper)) return upper;
+  return NAME_TO_CODE.get(raw.toLowerCase()) ?? "";
+};
+var countryLabel = (code) => `${countryName(code, "en")} (${code})`;
+var shipsToPhrase = (countries) => countries.length > 12 ? `${countries.length} countries` : countries.map((code) => countryName(code, "en")).join(", ");
+var shippingTo = (state, country, subtotal) => {
+  const { settings, shipping } = state;
+  if (!country) return null;
+  const offered = checkoutCountries(settings, shipping);
+  if (!offered.includes(country)) return { country, ships: false };
+  const rate = shippingFor(shipping, country, subtotal);
+  if (!rate.ok) return { country, ships: false };
+  if (rate.unknown) return { country, ships: true, cost: null, free: false, estimate: "", freeOver: null };
+  return { country, ships: true, cost: rate.cost, free: rate.free, estimate: rate.estimate, zone: rate.zone, freeOver: shipping.rates.get(country)?.freeOver ?? null };
+};
+var shippingSentence = (line, currency) => {
+  if (!line) return "";
+  if (!line.ships) return `Does NOT ship to ${countryLabel(line.country)}.`;
+  const cost = line.cost === null ? "shipping cost confirmed by the shop by email" : line.cost === 0 ? "free shipping" : `shipping ${money(line.cost, currency)}`;
+  const parts = [cost, ...line.estimate ? [`delivery ${line.estimate}`] : []];
+  if (line.cost && line.freeOver !== null) parts.push(`free from an items total of ${money(line.freeOver, currency)}`);
+  return `Ships to ${countryLabel(line.country)}: ${parts.join(", ")}.`;
+};
+var shippingJson = (line, currency) => line ? {
+  country: line.country,
+  ships: line.ships,
+  ...line.ships && line.cost !== null ? { cost: ucpPrice(line.cost, currency), free: line.free } : {},
+  ...line.ships && line.estimate ? { delivery: line.estimate } : {},
+  ...line.ships && line.cost && line.freeOver !== null ? { free_from_items_total: ucpPrice(line.freeOver, currency) } : {}
+} : void 0;
+var detailRows = (product, settings) => productDetails(product.content?.attributes, { extraKeys: [...product.specKeys ?? [], ...settings.showDetails], language: "en" });
+var descriptionOf = (product) => typeof product.content?.description === "string" ? product.content.description.trim() : "";
+var policyLinks = (origin, pages) => {
+  const typeOf = (slug) => ({ privacy: "privacy_policy", terms: "terms_of_service", returns: "refund_policy", shipping: "shipping_policy" })[slug] ?? "";
+  return pages.map((page) => ({ type: typeOf(page.slug) || "policy", title: page.title, url: absoluteUrl(origin, pagePath(page)) }));
+};
+var dutiesNote = (settings) => {
+  const note = text(settings.shippingNote);
+  if (!note) return "";
+  const sentences = note.split(/(?<=[.!?。！？])\s*|\n+/).map((sentence) => sentence.trim()).filter(Boolean);
+  return sentences.filter((sentence) => /\b(dut(y|ies)|customs|import tax(es)?|vat|gst|tariffs?)\b|关税|进口税|税费|清关/i.test(sentence)).join(" ");
+};
+var NO_DUTIES = "The total is the price plus shipping; it includes no import duties or taxes.";
+var productForAgent = (product, state, { origin, country = "", detail = false } = {}) => {
+  const { settings } = state;
+  const currency = product.currency;
+  const price = ucpPrice(product.price, currency);
+  const rows = detailRows(product, settings);
+  const ship = shippingTo(state, country, product.price);
+  const pages = state.pages ?? [];
+  const description = detail ? descriptionOf(product) || product.subtitle || product.name : plainSummary(product.subtitle || descriptionOf(product) || product.name, 200);
+  const metadata = {
+    ...product.subtitle ? { subtitle: product.subtitle } : {},
+    price_text: product.priceText,
+    in_stock: !product.soldOut,
+    specs: Object.fromEntries((detail ? rows : rows.slice(0, 5)).map(([label2, value2]) => [label2, value2])),
+    ...ship ? { shipping: shippingJson(ship, currency) } : {}
+  };
+  if (detail) {
+    if (product.content?.bullets?.length) metadata.highlights = product.content.bullets;
+    if (product.certificates?.length) metadata.certificates = product.certificates.map((item) => ({ type: item.label, valid_until: item.expires }));
+    metadata.shipping_by_country = zonesFor(state).map((zone) => ({
+      zone: zone.zone,
+      countries: zone.countries,
+      ...zone.cost === null ? { cost: null } : { cost: ucpPrice(unitShipping(zone, product.price), currency) },
+      ...zone.estimate ? { delivery: zone.estimate } : {}
+    }));
+    if (settings.shippingNote) metadata.shipping_note = settings.shippingNote;
+    metadata.duties = dutiesNote(settings) || NO_DUTIES;
+  }
+  return {
+    id: product.id,
+    handle: product.id,
+    title: product.name,
+    description: { plain: description },
+    url: absoluteUrl(origin, productPath(product)),
+    ...product.category ? { categories: [{ value: product.category, taxonomy: "merchant" }] } : {},
+    price_range: { min: price, max: price },
+    media: absoluteImages(origin, product).map((url2) => ({ type: "image", url: url2, alt_text: product.name })),
+    variants: [
+      {
+        id: product.id,
+        ...product.sku ? { sku: product.sku } : {},
+        title: product.name,
+        price,
+        availability: { available: !product.soldOut },
+        seller: { name: settings.storeName, ...pages.length ? { links: policyLinks(origin, pages).map(({ type, url: url2 }) => ({ type, url: url2 })) } : {} }
+      }
+    ],
+    metadata
+  };
+};
+var zonesFor = (state) => {
+  const { settings, shipping } = state;
+  const countries = checkoutCountries(settings, shipping);
+  if (shipping.status !== "ready") return countries.length ? [{ zone: "Shipping", countries, cost: null, freeOver: null, estimate: "" }] : [];
+  const zones = /* @__PURE__ */ new Map();
+  for (const code of countries) {
+    const rate = shipping.rates.get(code);
+    if (!zones.has(rate.zone)) zones.set(rate.zone, { zone: rate.zone, countries: [], cost: rate.cost, freeOver: rate.freeOver, estimate: rate.estimate });
+    zones.get(rate.zone).countries.push(code);
+  }
+  return [...zones.values()];
+};
+var unitShipping = (zone, price) => zone.cost === 0 || zone.freeOver !== null && Math.round(price * 100) >= Math.round(zone.freeOver * 100) ? 0 : zone.cost;
+var productLines = (product, state, { origin, country, index = null, detail = false }) => {
+  const rows = detailRows(product, state.settings);
+  const head = `${index === null ? "" : `${index}. `}${product.name} \u2014 ${product.priceText} ${product.currency}${product.soldOut ? " \u2014 OUT OF STOCK" : ""} \u2014 id: ${product.id}`;
+  const lines = [head];
+  if (product.subtitle) lines.push(`   ${product.subtitle}`);
+  const ship = shippingSentence(shippingTo(state, country, product.price), product.currency);
+  if (ship) lines.push(`   ${ship}`);
+  const shownRows = detail ? rows : rows.slice(0, 4);
+  if (shownRows.length) lines.push(`   ${shownRows.map(([label2, value2]) => `${label2}: ${value2}`).join(" \xB7 ")}`);
+  lines.push(`   Page: ${absoluteUrl(origin, productPath(product))}`);
+  const image = absoluteImages(origin, product)[0];
+  if (image) lines.push(`   Photo: ${image}`);
+  return lines;
+};
+var STOP_WORDS = new Set(
+  "a an and any are at be best buy can cheap cheaper cheapest cost costs country deliver delivered delivers delivery do does dollar dollars find for from get give good i in is it item items less like me more my need of on one or over please price priced product products send shop show ship ships shipping some something than that the them this to under up usd want what which with would you your below above".split(" ")
+);
+var queryTokens = (query) => text(query).slice(0, QUERY_MAX_CHARS).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((token) => token && !STOP_WORDS.has(token) && !/^\d+([.,]\d+)?$/.test(token) && (token.length > 1 || /\p{Script=Han}/u.test(token)));
+var tokenForms = (token) => {
+  const forms = [token];
+  if (token.length > 4 && token.endsWith("ies")) forms.push(`${token.slice(0, -3)}y`);
+  else if (token.length > 4 && token.endsWith("es")) forms.push(token.slice(0, -2));
+  if (token.length > 3 && token.endsWith("s")) forms.push(token.slice(0, -1));
+  return forms;
+};
+var haystackOf = (product) => {
+  const attributes = product.content?.attributes ?? {};
+  return [
+    product.name,
+    product.subtitle,
+    product.category,
+    product.id,
+    product.sku,
+    ...product.tags ?? [],
+    descriptionOf(product),
+    ...product.content?.bullets ?? [],
+    ...Object.entries(attributes).flatMap(([key, value2]) => [key, typeof value2 === "string" || typeof value2 === "number" ? String(value2) : ""])
+  ].join(" \n ").toLowerCase();
+};
+var matchScore = (product, tokens) => {
+  const haystack = haystackOf(product);
+  return tokens.filter((token) => tokenForms(token).some((form) => haystack.includes(form))).length;
+};
+var ucpEnvelope = (capability) => ({ version: UCP_VERSION, capabilities: { [capability]: [{ version: UCP_VERSION }] } });
+var encodeCursor = (offset) => btoa(`offset:${offset}`);
+var decodeCursor = (cursor) => {
+  try {
+    const match = /^offset:(\d{1,4})$/.exec(atob(text(cursor)));
+    return match ? Number(match[1]) : 0;
+  } catch {
+    return 0;
+  }
+};
+var intOrNull = (value2) => typeof value2 === "number" && Number.isFinite(value2) ? Math.trunc(value2) : typeof value2 === "string" && /^\d+$/.test(value2.trim()) ? Number(value2) : null;
+var catalogArg = (args) => isObject3(args?.catalog) ? args.catalog : isObject3(args) ? args : {};
+var shopLine = (state, origin) => {
+  const { settings, catalog, shipping } = state;
+  const countries = checkoutCountries(settings, shipping);
+  return `${settings.storeName} (${absoluteUrl(origin, "/")}): ${catalog.listed.length} product${catalog.listed.length === 1 ? "" : "s"} on sale, prices in ${settings.currency}, ships to ${shipsToPhrase(countries) || "no country yet"}.${settings.demoNotice ? " NOTE: this is a demo store; its products and prices are fictional." : ""}`;
+};
+var searchCatalog = (args, state, { origin }) => {
+  const { settings, catalog } = state;
+  const input2 = catalogArg(args);
+  const context = isObject3(input2.context) ? input2.context : {};
+  const filters = isObject3(input2.filters) ? input2.filters : {};
+  const pagination = isObject3(input2.pagination) ? input2.pagination : {};
+  const messages = [];
+  const query = text(input2.query).slice(0, QUERY_MAX_CHARS);
+  const shopWords = `${settings.storeName} ${settings.tagline}`.toLowerCase();
+  const queryWords = queryTokens(query);
+  const broad = queryWords.filter((token) => tokenForms(token).some((form) => shopWords.includes(form)));
+  const tokens = queryWords.filter((token) => !broad.includes(token));
+  const rawCountry = text(context.address_country ?? input2.address_country ?? input2.country);
+  const country = countryCodeOf(rawCountry);
+  if (rawCountry && !country) messages.push({ type: "warning", code: "unknown_country", content: `"${rawCountry.slice(0, 60)}" is not a country this shop knows: send a 2-letter ISO code such as TH or US.` });
+  const offered = checkoutCountries(settings, state.shipping);
+  if (country && !offered.includes(country)) {
+    messages.push({
+      type: "warning",
+      code: "region_restricted",
+      content: `${settings.storeName} does not ship to ${countryLabel(country)}. It ships to: ${offered.map(countryLabel).join(", ") || "no country yet"}.`
+    });
+  }
+  let candidates = catalog.listed;
+  if (filters.available !== false) candidates = candidates.filter((product) => !product.soldOut);
+  const categories = Array.isArray(filters.categories) ? filters.categories.map((item) => text(item).toLowerCase()).filter(Boolean) : [];
+  if (categories.length) candidates = candidates.filter((product) => categories.includes(product.category.toLowerCase()));
+  const price = isObject3(filters.price) ? filters.price : {};
+  const filterCurrency = text(context.currency || price.currency).toUpperCase();
+  let max = intOrNull(price.max);
+  let min = intOrNull(price.min);
+  if ((max !== null || min !== null) && filterCurrency && filterCurrency !== settings.currency) {
+    messages.push({
+      type: "warning",
+      code: "currency_not_supported",
+      content: `This shop prices in ${settings.currency} only, so the ${filterCurrency} price filter was not applied. Convert it to ${settings.currency} minor units and search again.`
+    });
+    max = null;
+    min = null;
+  }
+  if (max !== null) candidates = candidates.filter((product) => toMinor(product.price, product.currency) <= max);
+  if (min !== null) candidates = candidates.filter((product) => toMinor(product.price, product.currency) >= min);
+  const priceText = [
+    ...min !== null ? [`at least ${money(fromMinor(min, settings.currency), settings.currency)}`] : [],
+    ...max !== null ? [`at most ${money(fromMinor(max, settings.currency), settings.currency)}`] : []
+  ].join(" and ");
+  let matched = candidates;
+  if (tokens.length) {
+    const scored = candidates.map((product, order) => ({ product, order, score: matchScore(product, tokens) })).filter((entry) => entry.score > 0);
+    scored.sort((a, b) => b.score - a.score || a.order - b.order);
+    if (scored.length) matched = scored.map((entry) => entry.product);
+    else if (candidates.length) {
+      messages.push({
+        type: "info",
+        code: "no_text_match",
+        content: `No product mentions "${tokens.join(" ")}", so these are all the products that fit the other filters.`
+      });
+    }
+  }
+  const limit = Math.max(1, Math.min(SEARCH_MAX_LIMIT, intOrNull(pagination.limit) ?? SEARCH_DEFAULT_LIMIT));
+  const offset = Math.min(decodeCursor(pagination.cursor), matched.length);
+  const page = matched.slice(offset, offset + limit);
+  const hasNext = offset + limit < matched.length;
+  const products = page.map((product) => productForAgent(product, state, { origin, country }));
+  const lines = [shopLine(state, origin)];
+  const asked = [query ? `"${query}"` : "everything on sale", ...priceText ? [`price ${priceText} (filters.price is in minor units)`] : [], ...country ? [`shipping to ${countryLabel(country)}`] : []];
+  lines.push(`Search: ${asked.join(", ")}. ${matched.length} match${matched.length === 1 ? "" : "es"}${matched.length > page.length ? `, showing ${offset + 1}\u2013${offset + page.length}` : ""}.`);
+  if (broad.length) messages.unshift({ type: "info", code: "broad_query", content: `"${broad.join(" ")}" describes everything ${settings.storeName} sells, so it did not narrow the search.` });
+  if (!page.length && priceText) {
+    messages.push({ type: "info", code: "price_in_minor_units", content: `Nothing on sale at that price. filters.price.max is in minor units: 20000 means ${money(200, settings.currency)}.` });
+  }
+  for (const message of messages) lines.push(`${message.type === "warning" ? "Warning" : "Note"}: ${message.content}`);
+  if (!page.length && !priceText) lines.push("Nothing on sale matches.");
+  page.forEach((product, index) => lines.push(...productLines(product, state, { origin, country, index: offset + index + 1 })));
+  if (hasNext) lines.push(`More results: call search_catalog again with catalog.pagination.cursor = "${encodeCursor(offset + limit)}".`);
+  if (page.length) {
+    lines.push(
+      "To buy: call create_checkout with the product id and the buyer's country. It returns a link to this shop's own checkout page, where the buyer enters the delivery address and pays. Never collect payment or card details in the chat."
+    );
+  }
+  return {
+    text: lines.join("\n"),
+    structured: {
+      ucp: ucpEnvelope("dev.ucp.shopping.catalog.search"),
+      products,
+      pagination: { ...hasNext ? { cursor: encodeCursor(offset + limit) } : {}, has_next_page: hasNext, total_count: matched.length },
+      ...messages.length ? { messages } : {}
+    }
+  };
+};
+var findListed = (state, id) => {
+  const wanted = text(id);
+  return wanted ? state.catalog.listed.find((product) => product.id === wanted || product.sku && product.sku === wanted) ?? null : null;
+};
+var lookupCatalog = (args, state, { origin }) => {
+  const input2 = catalogArg(args);
+  const ids = (Array.isArray(input2.ids) ? input2.ids : typeof input2.ids === "string" ? [input2.ids] : []).map(text).filter(Boolean);
+  if (!ids.length || ids.length > LOOKUP_MAX_IDS) {
+    return { invalid: `catalog.ids must list 1 to ${LOOKUP_MAX_IDS} product ids.` };
+  }
+  const context = isObject3(input2.context) ? input2.context : {};
+  const country = countryCodeOf(context.address_country);
+  const found = [];
+  const missing = [];
+  for (const id of ids) {
+    const product = findListed(state, id);
+    if (!product) missing.push(id);
+    else if (!found.includes(product)) found.push(product);
+  }
+  const messages = missing.map((id) => ({ type: "info", code: "not_found", content: id }));
+  const lines = [shopLine(state, origin)];
+  found.forEach((product, index) => lines.push(...productLines(product, state, { origin, country, index: index + 1 })));
+  if (missing.length) lines.push(`Not on sale here (or no such id): ${missing.join(", ")}.`);
+  return {
+    text: lines.join("\n"),
+    structured: {
+      ucp: ucpEnvelope("dev.ucp.shopping.catalog.lookup"),
+      products: found.map((product) => productForAgent(product, state, { origin, country })),
+      ...messages.length ? { messages } : {}
+    }
+  };
+};
+var notFound = (state, origin, id, capability) => ({
+  isError: true,
+  text: `${shopLine(state, origin)}
+No product with id "${text(id).slice(0, 80)}" is on sale here. Use search_catalog to find the right id; do not retry this one.`,
+  structured: {
+    ucp: { ...ucpEnvelope(capability), status: "error" },
+    messages: [{ type: "error", code: "not_found", content: `No product with id "${text(id).slice(0, 80)}" is on sale.`, severity: "unrecoverable" }]
+  }
+});
+var getProduct = (args, state, { origin }) => {
+  const input2 = catalogArg(args);
+  const id = input2.id ?? input2.product_id ?? args?.id;
+  if (!text(id)) return { invalid: "catalog.id (the product id from search_catalog) is required." };
+  const product = findListed(state, id);
+  if (!product) return notFound(state, origin, id, "dev.ucp.shopping.catalog.lookup");
+  const { settings } = state;
+  const context = isObject3(input2.context) ? input2.context : {};
+  const country = countryCodeOf(context.address_country);
+  const lines = [shopLine(state, origin), ...productLines(product, state, { origin, country, detail: true })];
+  const description = descriptionOf(product);
+  if (description) lines.push("", `Description: ${description}`);
+  if (product.content?.bullets?.length) lines.push("", "Highlights:", ...product.content.bullets.map((item) => `- ${item}`));
+  if (product.certificates?.length) {
+    lines.push("", `Certificates on record (valid): ${product.certificates.map((item) => `${item.label} until ${item.expires}`).join(", ")}.`);
+  }
+  const zones = zonesFor(state);
+  if (zones.length) {
+    lines.push("", "Shipping (for one of this product):");
+    for (const zone of zones) {
+      const cost = zone.cost === null ? "cost confirmed by the shop by email" : unitShipping(zone, product.price) === 0 ? "free" : money(zone.cost, settings.currency);
+      lines.push(`- ${zone.zone} (${zone.countries.join(", ")}): ${cost}${zone.estimate ? `, ${zone.estimate}` : ""}`);
+    }
+  }
+  if (settings.shippingNote) lines.push("", `Shipping note from the shop: ${settings.shippingNote.replace(/\s+/g, " ").trim()}`);
+  lines.push(`Duties and taxes: ${dutiesNote(settings) || NO_DUTIES}`);
+  const pages = state.pages ?? [];
+  if (pages.length) lines.push("", `Policies: ${policyLinks(origin, pages).map((link) => `${link.title} ${link.url}`).join(" \xB7 ")}`);
+  lines.push("", "To buy: call create_checkout with this id and the buyer's country.");
+  return {
+    text: lines.join("\n"),
+    structured: {
+      ucp: ucpEnvelope("dev.ucp.shopping.catalog.lookup"),
+      product: productForAgent(product, state, { origin, country, detail: true })
+    }
+  };
+};
+var orderLink = (origin, lines, country) => {
+  const params = new URLSearchParams();
+  for (const { product, quantity } of lines) {
+    params.append("product", product.id);
+    params.append("qty", String(quantity));
+  }
+  if (country) params.set("country", country);
+  return `${absoluteUrl(origin, "/order")}?${params}`;
+};
+var handoffId = (link) => {
+  let hash2 = 2166136261;
+  for (let index = 0; index < link.length; index += 1) {
+    hash2 ^= link.charCodeAt(index);
+    hash2 = Math.imul(hash2, 16777619) >>> 0;
+  }
+  return `chk_${hash2.toString(36)}`;
+};
+var lineItemsArg = (args) => {
+  const checkout = isObject3(args?.checkout) ? args.checkout : isObject3(args) ? args : {};
+  const raw = Array.isArray(checkout.line_items) ? checkout.line_items : [];
+  const items = raw.filter(isObject3).map((item) => ({ id: text(isObject3(item.item) ? item.item.id : item.id ?? item.product_id), quantity: intOrNull(item.quantity) ?? 1 }));
+  if (!items.length && text(args?.product_id ?? checkout.product_id)) items.push({ id: text(args?.product_id ?? checkout.product_id), quantity: intOrNull(args?.quantity) ?? 1 });
+  const destinations = (Array.isArray(checkout.fulfillment?.methods) ? checkout.fulfillment.methods : []).flatMap((method) => Array.isArray(method?.destinations) ? method.destinations : []);
+  const rawCountry = text(
+    (isObject3(checkout.context) ? checkout.context.address_country : "") || destinations.find((destination) => text(destination?.address_country))?.address_country || args?.country || checkout.country
+  );
+  return { items, rawCountry };
+};
+var createCheckout = (args, state, { origin, payment }) => {
+  const { settings } = state;
+  const { items, rawCountry } = lineItemsArg(args);
+  if (!items.length) return { invalid: "checkout.line_items needs at least one { item: { id }, quantity }." };
+  if (items.length > CHECKOUT_MAX_LINES) return { invalid: `At most ${CHECKOUT_MAX_LINES} line items.` };
+  const capability = "dev.ucp.shopping.checkout";
+  const messages = [];
+  const lines = [];
+  const unavailable = [];
+  for (const item of items) {
+    const product = findListed(state, item.id);
+    if (!product) {
+      unavailable.push({ id: item.id, code: "not_found", content: `No product with id "${item.id.slice(0, 80)}" is on sale.` });
+      continue;
+    }
+    if (product.soldOut || product.maxQuantity < 1) {
+      unavailable.push({ id: item.id, code: "out_of_stock", content: `${product.name} is out of stock.` });
+      continue;
+    }
+    const quantity = Math.max(1, Math.min(product.maxQuantity, item.quantity));
+    if (quantity !== item.quantity) messages.push({ type: "warning", code: "quantity_adjusted", content: `${product.name}: quantity set to ${quantity} (at most ${product.maxQuantity} per order).` });
+    const existing = lines.find((line) => line.product === product);
+    if (existing) existing.quantity = Math.min(product.maxQuantity, existing.quantity + quantity);
+    else lines.push({ product, quantity });
+  }
+  const errorResult = (problems, extraText = "") => ({
+    isError: true,
+    text: [shopLine(state, origin), ...problems.map((problem) => problem.content), extraText, "No link was made. Use search_catalog to find products this shop can sell to the buyer."].filter(Boolean).join("\n"),
+    structured: {
+      ucp: { ...ucpEnvelope(capability), status: "error" },
+      messages: problems.map((problem) => ({ type: "error", code: problem.code, content: problem.content, severity: "unrecoverable" })),
+      continue_url: absoluteUrl(origin, "/")
+    }
+  });
+  if (!lines.length) return errorResult(unavailable);
+  for (const problem of unavailable) messages.push({ type: "warning", code: problem.code, content: `${problem.content} Left out of the link.` });
+  const country = countryCodeOf(rawCountry);
+  const offered = checkoutCountries(settings, state.shipping);
+  if (rawCountry && !country) {
+    return errorResult([{ code: "invalid_country", content: `"${rawCountry.slice(0, 60)}" is not a country: send a 2-letter ISO code such as TH or US.` }]);
+  }
+  if (country && !offered.includes(country)) {
+    return errorResult([{ code: "region_restricted", content: `${settings.storeName} does not ship to ${countryLabel(country)}. It ships to: ${offered.map(countryLabel).join(", ") || "no country yet"}.` }]);
+  }
+  const currency = settings.currency;
+  const subtotalCents = lines.reduce((sum, line) => sum + Math.round(line.product.price * 100) * line.quantity, 0);
+  const subtotal = subtotalCents / 100;
+  const ship = country ? shippingTo(state, country, subtotal) : null;
+  const shippingKnown = Boolean(ship?.ships && ship.cost !== null);
+  const total = (subtotalCents + (shippingKnown ? Math.round(ship.cost * 100) : 0)) / 100;
+  const link = orderLink(origin, lines, country);
+  const duties = dutiesNote(settings);
+  const paypal = payment === "paypal";
+  messages.unshift({
+    type: "error",
+    code: "buyer_handoff",
+    content: paypal ? "The buyer enters the delivery address and pays with PayPal on the shop's own checkout page: open continue_url." : "The buyer enters the delivery address and sends an order request on the shop's own checkout page (continue_url); the shop then confirms the order and how to pay by email.",
+    severity: "requires_buyer_input"
+  });
+  if (!country) messages.push({ type: "info", code: "country_needed", content: "No country given: the shipping cost appears once the buyer picks a country on the page. Ask for the country to quote the total." });
+  messages.push({ type: "info", code: "duties", content: duties || NO_DUTIES });
+  const totals2 = [
+    { type: "subtotal", display_text: "Items", amount: toMinor(subtotal, currency) },
+    ...shippingKnown ? [{ type: "fulfillment", display_text: `Shipping to ${countryName(country, "en")}`, amount: toMinor(ship.cost, currency) }] : [],
+    { type: "total", display_text: shippingKnown ? "Total" : "Total before shipping", amount: toMinor(total, currency) }
+  ];
+  const textLines = [
+    shopLine(state, origin),
+    `Buy link (the shop's own checkout page, already filled in with ${lines.length === 1 ? "this product" : "these products"}${country ? ` and ${countryName(country, "en")}` : ""}):`,
+    link,
+    ...lines.map((line) => `- ${line.product.name} \xD7 ${line.quantity}: ${money(line.product.price * line.quantity, currency)}`),
+    country ? shippingKnown ? `- Shipping to ${countryName(country, "en")}: ${ship.cost === 0 ? "free" : money(ship.cost, currency)}${ship.estimate ? ` (delivery ${ship.estimate})` : ""}` : `- Shipping to ${countryName(country, "en")}: the shop confirms the cost by email` : "- Shipping: shown once the buyer picks a country on the page",
+    `- ${shippingKnown ? "Total" : "Total before shipping"}: ${money(total, currency)} ${currency}`,
+    paypal ? "Payment: with PayPal on that page. Nothing is charged in this chat." : "Payment: this shop takes order requests. The buyer sends the request on that page and the shop replies by email with how to pay. Nothing is charged in this chat.",
+    `Duties and taxes: ${duties || NO_DUTIES}`,
+    ...messages.filter((message) => message.type === "warning").map((message) => `Warning: ${message.content}`),
+    "Give the buyer the link. Do not ask for the address, card or PayPal details in the chat, and do not fill in the order form for them."
+  ];
+  return {
+    text: textLines.join("\n"),
+    structured: {
+      ucp: { ...ucpEnvelope(capability), payment_handlers: {} },
+      id: handoffId(link),
+      status: "requires_escalation",
+      currency,
+      line_items: lines.map((line, index) => ({
+        id: `li_${index + 1}`,
+        item: { id: line.product.id, title: line.product.name, price: toMinor(line.product.price, currency) },
+        quantity: line.quantity,
+        totals: [
+          { type: "subtotal", amount: toMinor(line.product.price * line.quantity, currency) },
+          { type: "total", amount: toMinor(line.product.price * line.quantity, currency) }
+        ]
+      })),
+      ...country ? { context: { address_country: country } } : {},
+      totals: totals2,
+      messages,
+      links: policyLinks(origin, state.pages ?? []).map(({ type, url: url2 }) => ({ type, url: url2 })),
+      continue_url: link
+    }
+  };
+};
+var READ_ONLY = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
+var META_SCHEMA = {
+  type: "object",
+  description: 'Optional UCP request metadata (meta["ucp-agent"].profile). Not needed.'
+};
+var CONTEXT_SCHEMA = {
+  type: "object",
+  description: "Buyer signals.",
+  properties: {
+    address_country: { type: "string", description: "The buyer's country, ISO 3166-1 alpha-2 (TH, PH, VN, US\u2026)." }
+  }
+};
+var toolDefinitions = (state) => {
+  const ready = state?.setup === "ready";
+  const shop = ready ? state.settings.storeName : "this shop";
+  const currency = ready ? state.settings.currency : "the shop's currency";
+  const example = ready && currencyDigits(currency) === 0 ? `20000 = ${money(2e4, currency)}` : ready ? `20000 = ${money(200, currency)}` : "20000 = 200.00";
+  const countries = ready ? checkoutCountries(state.settings, state.shipping) : [];
+  const about = ready ? ` (${state.catalog.listed.length} products on sale, prices in ${currency}, ships to ${shipsToPhrase(countries) || "no country yet"})` : "";
+  return [
+    {
+      name: "search_catalog",
+      title: `Search ${shop}'s products`,
+      description: `Search the products on sale in ${shop}'s online shop${about}. Use it for requests like "find me a phone under $200 that ships to Thailand". Every argument is optional. Put the buyer's country in catalog.context.address_country to learn whether the shop ships there and the shipping cost of each product. catalog.filters.price.max is in MINOR units of ${currency} (${example}). Returns each product's id, name, price, stock, a few specs, its web page and a photo. To buy, call create_checkout: it gives a link to the shop's own checkout page. Payment never happens in the chat. (Universal Commerce Protocol catalog search.)`,
+      inputSchema: {
+        type: "object",
+        properties: {
+          meta: META_SCHEMA,
+          catalog: {
+            type: "object",
+            description: "What to search for.",
+            properties: {
+              query: { type: "string", maxLength: QUERY_MAX_CHARS, description: 'Free text: a product type, brand, model or feature ("phone", "robot toy"). Leave it out to list everything on sale.' },
+              context: {
+                ...CONTEXT_SCHEMA,
+                properties: {
+                  ...CONTEXT_SCHEMA.properties,
+                  currency: { type: "string", description: `ISO 4217 currency of the price filter. This shop prices in ${currency} only.` }
+                }
+              },
+              filters: {
+                type: "object",
+                properties: {
+                  price: {
+                    type: "object",
+                    properties: {
+                      min: { type: "integer", minimum: 0, description: `Lowest price, in minor units of ${currency}.` },
+                      max: { type: "integer", minimum: 0, description: `Highest price, in minor units of ${currency} (${example}).` }
+                    }
+                  },
+                  categories: { type: "array", items: { type: "string" }, description: "Only these categories (as the shop names them)." },
+                  available: { type: "boolean", default: true, description: "Only products in stock (default true)." }
+                }
+              },
+              pagination: {
+                type: "object",
+                properties: {
+                  limit: { type: "integer", minimum: 1, maximum: SEARCH_MAX_LIMIT, default: SEARCH_DEFAULT_LIMIT },
+                  cursor: { type: "string", description: "The cursor a previous search returned, for the next page." }
+                }
+              }
+            }
+          }
+        }
+      },
+      annotations: { title: `Search ${shop}'s products`, ...READ_ONLY }
+    },
+    {
+      name: "lookup_catalog",
+      title: "Look up products by id",
+      description: `Look up to ${LOOKUP_MAX_IDS} of ${shop}'s products by id at once (the ids search_catalog returns). Same fields as search_catalog. (Universal Commerce Protocol catalog lookup.)`,
+      inputSchema: {
+        type: "object",
+        properties: {
+          meta: META_SCHEMA,
+          catalog: {
+            type: "object",
+            properties: {
+              ids: { type: "array", items: { type: "string" }, minItems: 1, maxItems: LOOKUP_MAX_IDS, description: "Product ids." },
+              context: CONTEXT_SCHEMA
+            },
+            required: ["ids"]
+          }
+        },
+        required: ["catalog"]
+      },
+      annotations: { title: "Look up products by id", ...READ_ONLY }
+    },
+    {
+      name: "get_product",
+      title: "Get one product in full",
+      description: `Everything ${shop} says about one product: description, highlights, all specs, warranty and returns, valid certificates, the shipping cost and delivery time for every country it ships to, the shop's shipping note and policies. Give catalog.context.address_country to have that country's shipping spelled out. (Universal Commerce Protocol get_product.)`,
+      inputSchema: {
+        type: "object",
+        properties: {
+          meta: META_SCHEMA,
+          catalog: {
+            type: "object",
+            properties: {
+              id: { type: "string", description: "The product id from search_catalog." },
+              context: CONTEXT_SCHEMA
+            },
+            required: ["id"]
+          }
+        },
+        required: ["catalog"]
+      },
+      annotations: { title: "Get one product in full", ...READ_ONLY }
+    },
+    {
+      name: "create_checkout",
+      title: "Get the buy link",
+      description: `Make the link to buy products on ${shop}'s own website: its checkout page, already filled in with the products, quantities and the buyer's country, plus the total (price + shipping). It does not place an order or take payment, and nothing is saved: the buyer opens the link, types the delivery address and pays there. Give the link to the buyer as it is. Put the buyer's country in checkout.context.address_country. (Universal Commerce Protocol create_checkout; always answers requires_escalation with continue_url.)`,
+      inputSchema: {
+        type: "object",
+        properties: {
+          meta: META_SCHEMA,
+          checkout: {
+            type: "object",
+            properties: {
+              line_items: {
+                type: "array",
+                minItems: 1,
+                maxItems: CHECKOUT_MAX_LINES,
+                items: {
+                  type: "object",
+                  properties: {
+                    item: { type: "object", properties: { id: { type: "string", description: "The product id." } }, required: ["id"] },
+                    quantity: { type: "integer", minimum: 1, default: 1 }
+                  },
+                  required: ["item"]
+                }
+              },
+              context: CONTEXT_SCHEMA
+            },
+            required: ["line_items"]
+          }
+        },
+        required: ["checkout"]
+      },
+      annotations: { title: "Get the buy link", ...READ_ONLY }
+    }
+  ];
+};
+var serverInstructions = (state, origin) => {
+  if (state?.setup !== "ready") return "An online shop built with Busa Shop. It is still being set up: its catalog is not available yet.";
+  const { settings } = state;
+  return [
+    `${settings.storeName}'s online shop (${absoluteUrl(origin, "/")}).${settings.tagline ? ` ${settings.tagline.replace(/[.\s]+$/, "")}.` : ""}`,
+    "These tools read the products on sale and make a link to the shop's own checkout page. They never place an order or take payment: the buyer opens the link, enters the delivery address and pays (or sends an order request) on the shop's website.",
+    `Prices are in ${settings.currency}; price filters use minor units (cents). Never ask the buyer for card or PayPal details.`,
+    ...settings.demoNotice ? ["This is a demo store: its products and prices are fictional."] : []
+  ].join(" ");
+};
+var runTool = (name, args, state, { origin, payment }) => {
+  const input2 = isObject3(args) ? args : {};
+  if (name === "search_catalog") return searchCatalog(input2, state, { origin });
+  if (name === "lookup_catalog") return lookupCatalog(input2, state, { origin });
+  if (name === "get_product") return getProduct(input2, state, { origin });
+  if (name === "create_checkout") return createCheckout(input2, state, { origin, payment });
+  return null;
+};
+var buildUcpProfile = (origin) => ({
+  ucp: {
+    version: UCP_VERSION,
+    services: {
+      "dev.ucp.shopping": [
+        {
+          version: UCP_VERSION,
+          spec: `https://ucp.dev/${UCP_VERSION}/specification/overview/`,
+          transport: "mcp",
+          endpoint: absoluteUrl(origin, MCP_PATH),
+          schema: `https://ucp.dev/${UCP_VERSION}/services/shopping/mcp.openrpc.json`
+        }
+      ]
+    },
+    capabilities: {
+      "dev.ucp.shopping.catalog.search": [
+        {
+          version: UCP_VERSION,
+          spec: `https://ucp.dev/${UCP_VERSION}/specification/shopping/catalog/search`,
+          schema: `https://ucp.dev/${UCP_VERSION}/schemas/shopping/catalog_search.json`
+        }
+      ],
+      "dev.ucp.shopping.catalog.lookup": [
+        {
+          version: UCP_VERSION,
+          spec: `https://ucp.dev/${UCP_VERSION}/specification/shopping/catalog/lookup`,
+          schema: `https://ucp.dev/${UCP_VERSION}/schemas/shopping/catalog_lookup.json`
+        }
+      ]
+    },
+    payment_handlers: {}
+  }
+});
+var feedPrice = (amount, currency) => `${amount.toFixed(currencyDigits(currency))} ${currency}`;
+var GTIN = /^\d{8}$|^\d{12,14}$/;
+var buildGoogleFeed = ({ origin, settings, catalog, shipping }) => {
+  const state = { settings, shipping };
+  const zones = shipping?.status === "ready" ? zonesFor(state) : [];
+  const tag = (name, value2) => value2 === "" || value2 === null || value2 === void 0 ? "" : `<g:${name}>${xmlEscape(value2)}</g:${name}>`;
+  const items = catalog.listed.map((product) => {
+    const images = absoluteImages(origin, product);
+    const description = plainSummary(descriptionOf(product) || product.subtitle || product.name, 5e3);
+    const gtin = String(product.content?.attributes?.gtin ?? "").replace(/[\s-]/g, "");
+    const shippingTags = [];
+    for (const zone of zones) {
+      for (const code of zone.countries) {
+        if (shippingTags.length >= FEED_MAX_SHIPPING) break;
+        const days = deliveryDays(zone.estimate);
+        shippingTags.push(
+          `<g:shipping>${tag("country", code)}${tag("service", zone.zone)}${tag("price", feedPrice(unitShipping(zone, product.price), product.currency))}${days ? `${tag("min_transit_time", days.min)}${tag("max_transit_time", days.max)}` : ""}</g:shipping>`
+        );
+      }
+    }
+    return [
+      "<item>",
+      tag("id", product.id.slice(0, 50)),
+      tag("title", product.name.slice(0, 150)),
+      tag("description", description),
+      tag("link", absoluteUrl(origin, productPath(product))),
+      tag("image_link", images[0] ?? ""),
+      ...images.slice(1, 1 + FEED_MAX_IMAGES).map((url2) => tag("additional_image_link", url2)),
+      tag("availability", product.soldOut ? "out_of_stock" : "in_stock"),
+      tag("price", feedPrice(product.price, product.currency)),
+      tag("condition", "new"),
+      tag("brand", (productBrand(product) || settings.storeName).slice(0, 70)),
+      GTIN.test(gtin) ? tag("gtin", gtin) : tag("identifier_exists", "no"),
+      ...product.category ? [tag("product_type", product.category.slice(0, 750))] : [],
+      ...shippingTags,
+      "</item>"
+    ].filter(Boolean).join("");
+  });
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">',
+    "<channel>",
+    `<title>${xmlEscape(settings.storeName)}</title>`,
+    `<link>${xmlEscape(absoluteUrl(origin, "/"))}</link>`,
+    `<description>${xmlEscape(settings.tagline || settings.storeName)}</description>`,
+    ...items,
+    "</channel>",
+    "</rss>",
+    ""
+  ].join("\n");
+};
+var mdText2 = (value2) => String(value2 ?? "").replace(/\s+/g, " ").trim();
+var buildAgentsMd = ({ origin, settings, catalog, shipping, pages = [], payment = "request" }) => {
+  const state = { settings, shipping, catalog, pages };
+  const mcp = absoluteUrl(origin, MCP_PATH);
+  const countries = checkoutCountries(settings, shipping);
+  const duties = dutiesNote(settings);
+  const out = [
+    `# Agent Instructions \u2014 ${mdText2(settings.storeName)}`,
+    "",
+    `You can help your user find and buy products from ${mdText2(settings.storeName)}'s online shop, ${absoluteUrl(origin, "/")}.${settings.tagline ? ` ${mdText2(settings.tagline).replace(/[.\s]+$/, "")}.` : ""} It has ${catalog.listed.length} product${catalog.listed.length === 1 ? "" : "s"} on sale, priced in ${settings.currency}.`,
+    ...settings.demoNotice ? ["", "Note: this is a demo store. Its products, prices and orders are fictional."] : [],
+    "",
+    "## MCP server \u2014 recommended",
+    "",
+    `Connect to \`${mcp}\`: MCP over Streamable HTTP, no sign-in, read-only. Tools:`,
+    "",
+    "- `search_catalog`: search the products on sale (free text, the buyer's country for shipping costs, a price limit in minor units).",
+    "- `lookup_catalog`: up to 10 products by id.",
+    "- `get_product`: one product in full: specs, warranty, returns, shipping cost per country, certificates.",
+    "- `create_checkout`: the link to this shop's own checkout page, filled in with the products and the buyer's country, and the total (price + shipping).",
+    "",
+    `The tools use the [Universal Commerce Protocol](https://ucp.dev) catalog tool names and shapes; its \`meta\` object is optional here. UCP profile: \`${absoluteUrl(origin, UCP_PROFILE_PATH)}\`.`,
+    "",
+    `- Claude: Customize \u2192 Connectors \u2192 + Add \u2192 Add custom connector \u2192 URL \`${mcp}\` \u2192 No sign in.`,
+    `- ChatGPT (Business, Enterprise and Edu workspaces): Plugins \u2192 + \u2192 Add custom MCP server \u2192 URL \`${mcp}\`.`,
+    "",
+    "## Buying",
+    "",
+    `- Every purchase is completed on this shop's own website. The link from \`create_checkout\` opens ${absoluteUrl(origin, "/order")} with the products and the country filled in; the buyer types the delivery address there and ${payment === "paypal" ? "pays with PayPal" : "sends an order request (the shop then confirms the order and how to pay by email)"}.`,
+    "- Never ask the buyer for card, PayPal or password details in the chat, and never submit the order form for them.",
+    `- Prices are in ${settings.currency}. ${duties || NO_DUTIES}`,
+    "",
+    "## Shop facts",
+    "",
+    `- Website: ${absoluteUrl(origin, "/")}`,
+    `- Currency: ${settings.currency}`,
+    ...countries.length ? [`- Ships to: ${countries.length > 40 ? "most countries (the checkout lists them)" : countries.map(countryLabel).join(", ")}`] : [],
+    `- Payment: ${payment === "paypal" ? "PayPal on the shop's checkout page" : "order requests: the shop confirms the order and payment by email"}`,
+    ...settings.contactEmail ? [`- Contact: ${settings.contactEmail}`] : [],
+    ""
+  ];
+  const zones = zonesFor(state);
+  if (shipping?.status === "ready" && zones.length) {
+    out.push("## Shipping", "");
+    for (const zone of zones) {
+      const parts = [zone.cost === 0 ? "free shipping" : `shipping ${money(zone.cost, settings.currency)}`];
+      if (zone.cost !== 0 && zone.freeOver !== null) parts.push(`free from an items total of ${money(zone.freeOver, settings.currency)}`);
+      if (zone.estimate) parts.push(`delivery ${zone.estimate}`);
+      out.push(`- ${mdText2(zone.zone)} (${zone.countries.join(", ")}): ${parts.join(", ")}`);
+    }
+    if (settings.shippingNote) out.push("", mdText2(settings.shippingNote));
+    out.push("");
+  }
+  if (pages.length) {
+    out.push("## Store policies", "");
+    for (const page of pages) out.push(`- **${mdText2(page.title)}**: ${absoluteUrl(origin, pagePath(page))}`);
+    out.push("");
+  }
+  out.push(
+    "## Read-only browsing",
+    "",
+    "Prefer the MCP tools above. You may also read the public pages:",
+    "",
+    `- \`/llms.txt\`: a plain summary with every product, its price and its page.`,
+    `- \`${GOOGLE_FEED_PATH}\`: every product as a Google Merchant Center feed (price, stock, shipping per country).`,
+    "- `/sitemap.xml`, product pages at `/products/{id}`, the blog at `/blog`.",
+    "",
+    "## Interaction guidelines",
+    "",
+    "- Rate limits: back off on `429` and respect `Retry-After`.",
+    "- Freshness: a change in the shop shows here within about a minute.",
+    "",
+    `- Agent discovery: this document (\`${AGENTS_PATH}\`) describes the shop for agents.`,
+    ""
+  );
+  return out.join("\n");
+};
+
 // src/smtp.js
 var SMTP_SECURITY = ["starttls", "tls", "none"];
 var DEFAULT_TIMEOUT_MS = 15e3;
@@ -29267,12 +30742,12 @@ var smtpConfig = (settings, secrets, { canConnect = true } = {}) => {
     notify
   };
 };
-var money = (amount, settings) => formatPrice(amount, settings.currency, settings.language);
-var lineText = (line, settings) => `${line.quantity} \xD7 ${line.name}${line.sku ? ` (${line.sku})` : ""}: ${money(line.lineTotal, settings)}`;
+var money2 = (amount, settings) => formatPrice(amount, settings.currency, settings.language);
+var lineText = (line, settings) => `${line.quantity} \xD7 ${line.name}${line.sku ? ` (${line.sku})` : ""}: ${money2(line.lineTotal, settings)}`;
 var totals = (order, settings, t, { paid = false } = {}) => [
-  [t.subtotal, money(order.subtotal ?? order.total, settings)],
-  [t.shipping, order.shipping === null || order.shipping === void 0 ? t.shipping_tbc : order.shipping === 0 ? t.shipping_free : money(order.shipping, settings)],
-  [paid ? t.total_paid : t.total, money(paid && Number.isFinite(order.amountPaid) ? order.amountPaid : order.total, settings)]
+  [t.subtotal, money2(order.subtotal ?? order.total, settings)],
+  [t.shipping, order.shipping === null || order.shipping === void 0 ? t.shipping_tbc : order.shipping === 0 ? t.shipping_free : money2(order.shipping, settings)],
+  [paid ? t.total_paid : t.total, money2(paid && Number.isFinite(order.amountPaid) ? order.amountPaid : order.total, settings)]
 ];
 var addressLines = (order) => {
   const address = order.address ?? {};
@@ -29343,7 +30818,7 @@ var composeEmails = (kind, order, settings, config2, { problem = "" } = {}) => {
   };
   const shipTo = { title: t.ship_to, lines: addressLines(order) };
   if (kind === "request") {
-    const total = money(order.total, settings);
+    const total = money2(order.total, settings);
     messages.push({
       ...base,
       tag: "request-received",
@@ -29366,7 +30841,7 @@ var composeEmails = (kind, order, settings, config2, { problem = "" } = {}) => {
       shipTo
     ]);
   } else if (kind === "paid") {
-    const amount = money(Number.isFinite(order.amountPaid) ? order.amountPaid : order.total, settings);
+    const amount = money2(Number.isFinite(order.amountPaid) ? order.amountPaid : order.total, settings);
     const paidRows = [...totals(order, settings, t, { paid: true }), ...order.captureId ? [[t.paypal_id, order.captureId]] : []];
     messages.push({
       ...base,
@@ -29412,76 +30887,193 @@ var EMAIL_SKIP_REASONS = {
   "browser-engine": "no email sent: the private browser preview cannot send email"
 };
 
-// src/shipping.js
-var COUNTRY_SET2 = new Set(COUNTRY_CODES);
-var centsOf = (amount) => Math.round(amount * 100);
-var buildShippingRates = (records, settings) => {
-  const rates = /* @__PURE__ */ new Map();
-  const problems = [];
-  const rows = [...records ?? []].map((record2, index) => ({ record: record2, index, position: finiteNumber(record2?.fields?.position) })).sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || a.index - b.index);
-  for (const { record: record2 } of rows) {
-    const fields = record2?.fields ?? {};
-    const zone = text(fields.name);
-    const rawCodes = text(fields.countries).toUpperCase().split(/[\s,;，、；]+/).filter(Boolean);
-    const label2 = zone || rawCodes.join(", ") || record2?.id || "?";
-    if (!rawCodes.length) {
-      problems.push({ code: "no-countries", zone: label2 });
-      continue;
-    }
-    const cost = finiteNumber(fields.rate);
-    if (cost === null || cost < 0) {
-      problems.push({ code: "no-rate", zone: label2 });
-      continue;
-    }
-    const currency = text(fields.currency).toUpperCase() || settings.currency;
-    if (currency !== settings.currency) {
-      problems.push({ code: "currency-mismatch", zone: label2, currency });
-      continue;
-    }
-    const freeOver = finiteNumber(fields["free-over"]);
-    for (const code of rawCodes) {
-      if (!COUNTRY_SET2.has(code)) {
-        problems.push({ code: "unknown-country", zone: label2, country: code });
-        continue;
+// src/mcp.js
+var MODERN_VERSIONS = ["2026-07-28"];
+var LEGACY_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
+var SUPPORTED_VERSIONS = [...MODERN_VERSIONS, ...LEGACY_VERSIONS];
+var MAX_MCP_BODY_BYTES = 64 * 1024;
+var META_VERSION = "io.modelcontextprotocol/protocolVersion";
+var META_SERVER_INFO = "io.modelcontextprotocol/serverInfo";
+var ERRORS = {
+  PARSE: -32700,
+  INVALID_REQUEST: -32600,
+  METHOD_NOT_FOUND: -32601,
+  INVALID_PARAMS: -32602,
+  INTERNAL: -32603,
+  HEADER_MISMATCH: -32020,
+  UNSUPPORTED_VERSION: -32022,
+  RATE_LIMITED: -32e3
+};
+var CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-expose-headers": "mcp-protocol-version, retry-after"
+};
+var DEFAULT_ALLOWED_HEADERS = "content-type, accept, authorization, mcp-protocol-version, mcp-method, mcp-name, mcp-session-id, last-event-id";
+var jsonResponse = (body, status = 200, extra = {}) => new Response(JSON.stringify(body), {
+  status,
+  headers: {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff",
+    ...CORS,
+    ...extra
+  }
+});
+var rpcError = (id, code, message, data) => ({ jsonrpc: "2.0", ...id === void 0 ? {} : { id }, error: { code, message, ...data === void 0 ? {} : { data } } });
+var accepted = () => new Response(null, { status: 202, headers: { ...CORS, "cache-control": "no-store" } });
+var isObject4 = (value2) => Boolean(value2) && typeof value2 === "object" && !Array.isArray(value2);
+var decodeHeaderValue = (value2) => {
+  const match = /^=\?base64\?([A-Za-z0-9+/=]*)\?=$/.exec(value2 ?? "");
+  if (!match) return value2;
+  try {
+    return new TextDecoder().decode(Uint8Array.from(atob(match[1]), (char) => char.charCodeAt(0)));
+  } catch {
+    return null;
+  }
+};
+var createRateLimiter = ({ limit = 120, windowMs = 6e4, maxKeys = 5e3, now = () => Date.now() } = {}) => {
+  const windows = /* @__PURE__ */ new Map();
+  return (key) => {
+    const at = now();
+    let entry = windows.get(key);
+    if (!entry || at - entry.start >= windowMs) {
+      if (!entry && windows.size >= maxKeys) {
+        for (const [oldKey, old] of windows) if (at - old.start >= windowMs) windows.delete(oldKey);
+        if (windows.size >= maxKeys) windows.delete(windows.keys().next().value);
       }
-      if (rates.has(code)) {
-        problems.push({ code: "duplicate-country", zone: label2, country: code, kept: rates.get(code).zone });
-        continue;
+      entry = { start: at, count: 0 };
+      windows.set(key, entry);
+    }
+    entry.count += 1;
+    return entry.count <= limit ? { ok: true } : { ok: false, retryAfter: Math.max(1, Math.ceil((entry.start + windowMs - at) / 1e3)) };
+  };
+};
+var validOrigin = (origin) => {
+  if (origin === null || origin === "null") return true;
+  try {
+    return ["http:", "https:"].includes(new URL(origin).protocol);
+  } catch {
+    return false;
+  }
+};
+var readBody = async (request) => {
+  const declared = Number(request.headers.get("content-length") ?? "0");
+  if (declared > MAX_MCP_BODY_BYTES) return null;
+  const body = await request.text();
+  return new TextEncoder().encode(body).length > MAX_MCP_BODY_BYTES ? null : body;
+};
+var handleMcp = async (request, server) => {
+  const method = request.method;
+  if (method === "OPTIONS") {
+    const asked = request.headers.get("access-control-request-headers") ?? "";
+    return new Response(null, {
+      status: 204,
+      headers: {
+        ...CORS,
+        "access-control-allow-methods": "POST, GET, OPTIONS",
+        "access-control-allow-headers": /^[A-Za-z0-9\-_, ]{1,1000}$/.test(asked) ? asked : DEFAULT_ALLOWED_HEADERS,
+        "access-control-max-age": "86400"
       }
-      rates.set(code, {
-        zone: label2,
-        country: code,
-        cost: centsOf(cost) / 100,
-        currency,
-        freeOver: freeOver !== null && freeOver > 0 ? centsOf(freeOver) / 100 : null,
-        estimate: text(fields["delivery-estimate"])
+    });
+  }
+  if (method !== "POST") {
+    return new Response(
+      "This is the shop's MCP endpoint for AI assistants (Model Context Protocol, Streamable HTTP). Add this address as a custom connector in Claude or ChatGPT; it answers POST requests only.\n",
+      { status: 405, headers: { ...CORS, allow: "POST, OPTIONS", "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" } }
+    );
+  }
+  if (!validOrigin(request.headers.get("origin"))) return jsonResponse(rpcError(void 0, ERRORS.INVALID_REQUEST, "Invalid Origin header"), 403);
+  const limited = server.limit?.(request);
+  if (limited && !limited.ok) {
+    return jsonResponse(rpcError(void 0, ERRORS.RATE_LIMITED, `Too many requests: try again in ${limited.retryAfter} seconds.`), 429, { "retry-after": String(limited.retryAfter) });
+  }
+  const type = (request.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+  if (type !== "application/json") return jsonResponse(rpcError(void 0, ERRORS.INVALID_REQUEST, "Content-Type must be application/json"), 415);
+  const accept = request.headers.get("accept");
+  if (accept && !/application\/json|application\/\*|\*\/\*/i.test(accept)) {
+    return jsonResponse(rpcError(void 0, ERRORS.INVALID_REQUEST, "Accept must include application/json"), 406);
+  }
+  const raw = await readBody(request);
+  if (raw === null) return jsonResponse(rpcError(void 0, ERRORS.INVALID_REQUEST, "Request body too large"), 413);
+  let message;
+  try {
+    message = JSON.parse(raw);
+  } catch {
+    return jsonResponse(rpcError(null, ERRORS.PARSE, "Parse error"), 400);
+  }
+  if (Array.isArray(message)) return jsonResponse(rpcError(null, ERRORS.INVALID_REQUEST, "Batches are not supported: send one JSON-RPC message per request"), 400);
+  if (!isObject4(message) || message.jsonrpc !== "2.0") return jsonResponse(rpcError(null, ERRORS.INVALID_REQUEST, "Not a JSON-RPC 2.0 message"), 400);
+  if (typeof message.method !== "string") {
+    if ("result" in message || "error" in message) return accepted();
+    return jsonResponse(rpcError(null, ERRORS.INVALID_REQUEST, "Missing method"), 400);
+  }
+  if (!("id" in message)) return accepted();
+  const { id } = message;
+  if (!(typeof id === "string" || typeof id === "number" && Number.isFinite(id))) {
+    return jsonResponse(rpcError(null, ERRORS.INVALID_REQUEST, "The id must be a string or a number"), 400);
+  }
+  const params = isObject4(message.params) ? message.params : {};
+  const meta3 = isObject4(params._meta) ? params._meta : {};
+  const headerVersion = request.headers.get("mcp-protocol-version");
+  if (typeof meta3[META_VERSION] === "string") {
+    const version2 = meta3[META_VERSION];
+    if (!MODERN_VERSIONS.includes(version2)) {
+      return jsonResponse(rpcError(id, ERRORS.UNSUPPORTED_VERSION, "Unsupported protocol version", { supported: SUPPORTED_VERSIONS, requested: version2 }), 400);
+    }
+    const mismatch = (header, expected) => {
+      const value2 = request.headers.get(header);
+      if (value2 === null) return `Missing ${header} header`;
+      const decoded = header === "mcp-name" ? decodeHeaderValue(value2) : value2;
+      return decoded === expected ? "" : `Header mismatch: ${header} header value does not match the request body`;
+    };
+    const problem = mismatch("mcp-protocol-version", version2) || mismatch("mcp-method", message.method) || (["tools/call", "prompts/get"].includes(message.method) ? mismatch("mcp-name", String(params.name ?? "")) : "") || (message.method === "resources/read" ? mismatch("mcp-name", String(params.uri ?? "")) : "");
+    if (problem) return jsonResponse(rpcError(id, ERRORS.HEADER_MISMATCH, problem), 400);
+    return dispatch({ id, method: message.method, params, server, modern: true });
+  }
+  if (message.method !== "initialize" && headerVersion !== null && !LEGACY_VERSIONS.includes(headerVersion)) {
+    if (MODERN_VERSIONS.includes(headerVersion)) {
+      return jsonResponse(rpcError(id, ERRORS.HEADER_MISMATCH, `MCP-Protocol-Version ${headerVersion} needs params._meta["${META_VERSION}"]`), 400);
+    }
+    return jsonResponse(rpcError(id, ERRORS.UNSUPPORTED_VERSION, "Unsupported protocol version", { supported: SUPPORTED_VERSIONS, requested: headerVersion }), 400);
+  }
+  return dispatch({ id, method: message.method, params, server, modern: false });
+};
+var dispatch = async ({ id, method, params, server, modern }) => {
+  const ok = (result) => jsonResponse({ jsonrpc: "2.0", id, result: modern ? { resultType: "complete", ...result } : result });
+  const fail = (code, text2, status = 200) => jsonResponse(rpcError(id, code, text2), status);
+  try {
+    if (method === "initialize" && !modern) {
+      const requested = typeof params.protocolVersion === "string" ? params.protocolVersion : "";
+      return ok({
+        protocolVersion: LEGACY_VERSIONS.includes(requested) ? requested : LEGACY_VERSIONS[0],
+        capabilities: { tools: { listChanged: false } },
+        serverInfo: server.info(),
+        instructions: await server.instructions()
       });
     }
+    if (method === "server/discover") {
+      return ok({
+        supportedVersions: SUPPORTED_VERSIONS,
+        capabilities: { tools: {} },
+        _meta: { [META_SERVER_INFO]: server.info() },
+        instructions: await server.instructions()
+      });
+    }
+    if (method === "ping") return ok({});
+    if (method === "tools/list") return ok({ tools: await server.listTools() });
+    if (method === "tools/call") {
+      if (typeof params.name !== "string" || !params.name) return fail(ERRORS.INVALID_PARAMS, "params.name (the tool) is required");
+      if (params.arguments !== void 0 && !isObject4(params.arguments)) return fail(ERRORS.INVALID_PARAMS, "params.arguments must be an object");
+      const result = await server.callTool(params.name, params.arguments ?? {});
+      if (result === null) return fail(ERRORS.INVALID_PARAMS, `Unknown tool: ${params.name.slice(0, 100)}`);
+      if (result.invalidParams) return fail(ERRORS.INVALID_PARAMS, result.invalidParams);
+      return ok(result);
+    }
+    return fail(ERRORS.METHOD_NOT_FOUND, `Method not found: ${method.slice(0, 100)}`, modern ? 404 : 200);
+  } catch {
+    return fail(ERRORS.INTERNAL, "Internal error", modern ? 500 : 200);
   }
-  return { rates, problems };
 };
-var checkoutCountries = (settings, shipping) => {
-  if (shipping.status !== "ready") return settings.shipsTo;
-  return settings.shipsTo.filter((code) => shipping.rates.has(code));
-};
-var shippingFor = (shipping, country, subtotal) => {
-  if (shipping.status === "missing") return { ok: true, cost: null, estimate: "", free: false, unknown: true };
-  if (shipping.status !== "ready") return { ok: false, code: "shipping_unavailable" };
-  const rate = shipping.rates.get(country);
-  if (!rate) return { ok: false, code: "no_shipping" };
-  const free = rate.cost === 0 || rate.freeOver !== null && centsOf(subtotal) >= centsOf(rate.freeOver);
-  return { ok: true, cost: free ? 0 : rate.cost, estimate: rate.estimate, free, zone: rate.zone };
-};
-var clientRates = (shipping, countries) => shipping.status === "ready" ? Object.fromEntries(
-  countries.map((code) => {
-    const rate = shipping.rates.get(code);
-    return [code, { cost: rate.cost, freeOver: rate.freeOver, estimate: rate.estimate }];
-  })
-) : {};
-var NO_POSTAL_CODE = new Set(
-  "AE AG AO AW BF BI BJ BO BS BW BZ CD CF CG CI CK CM DJ DM ER FJ GA GD GH GM GQ GY HK IE JM KI KM KN KP LC ML MO MR MS MW NR NU QA RW SB SC SL SO SR ST SY TF TK TL TO TT TV TZ UG VU YE ZW".split(" ")
-);
-var REGION_REQUIRED = new Set("AR AU BR CA CN IN JP MX US".split(" "));
 
 // src/orders.js
 var ORDER_ID_PATTERN = /^ORD-[0-9A-HJKMNP-TV-Z]{10}$/;
@@ -29613,7 +31205,7 @@ var validateOrder = (input2, { listed, settings, shipping = { status: "missing" 
     }
   };
 };
-var money2 = (amount) => amount.toFixed(2);
+var money3 = (amount) => amount.toFixed(2);
 var formatShippingAddress = (order) => [
   order.name,
   order.address.line1,
@@ -29624,7 +31216,7 @@ var formatShippingAddress = (order) => [
 ].filter(Boolean).join("\n");
 var orderToFields = (order, { nowIso, payment = "request" }) => {
   const lines = order.lines.map(
-    (line) => `${line.quantity} \xD7 ${line.name}${line.sku ? ` (${line.sku})` : ""} @ ${money2(line.unitPrice)} ${order.currency} = ${money2(line.lineTotal)} ${order.currency}`
+    (line) => `${line.quantity} \xD7 ${line.name}${line.sku ? ` (${line.sku})` : ""} @ ${money3(line.unitPrice)} ${order.currency} = ${money3(line.lineTotal)} ${order.currency}`
   );
   const fields = {
     title: `${order.orderId} \xB7 ${order.name}`,
@@ -29690,8 +31282,8 @@ var orderFromRecord = (record2) => {
   } catch {
     lines = [];
   }
-  const countryLabel = str(fields.country);
-  const country = /\(([A-Z]{2})\)\s*$/.exec(countryLabel)?.[1] ?? "";
+  const countryLabel2 = str(fields.country);
+  const country = /\(([A-Z]{2})\)\s*$/.exec(countryLabel2)?.[1] ?? "";
   return {
     recordId: typeof record2?.id === "string" ? record2.id : "",
     headCommitId: typeof record2?.headCommitId === "string" ? record2.headCommitId : "",
@@ -29702,7 +31294,7 @@ var orderFromRecord = (record2) => {
     email: str(fields.email),
     phone: str(fields.phone),
     country,
-    countryLabel,
+    countryLabel: countryLabel2,
     address: {
       line1: str(fields["address-line1"]),
       line2: str(fields["address-line2"]),
@@ -29766,572 +31358,6 @@ var newOrderId = (random = (bytes) => crypto.getRandomValues(bytes)) => {
   for (const byte of bytes) id += CROCKFORD[byte % 32];
   return id;
 };
-
-// src/policies.js
-var PAGE_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,59}$/;
-var FILL_IN_MARKER = /【fill in[^】]*】/i;
-var PAGES_LIMIT = 50;
-var esc2 = (value2) => String(value2 ?? "").replace(
-  /[&<>"']/g,
-  (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]
-);
-var buildPages = (records) => {
-  const pages = [];
-  const seen = /* @__PURE__ */ new Set();
-  const rows = [...records ?? []].map((record2, index) => ({ record: record2, index, position: finiteNumber(record2?.fields?.position) })).sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || a.index - b.index);
-  for (const { record: record2 } of rows) {
-    const fields = record2?.fields ?? {};
-    const slug = text(fields.slug).toLowerCase();
-    const title = text(fields.title);
-    const status = text(fields.status).toLowerCase();
-    if (status !== "published" || !title || !PAGE_SLUG_PATTERN.test(slug) || seen.has(slug)) continue;
-    seen.add(slug);
-    pages.push({
-      slug,
-      title,
-      body: typeof fields.body === "string" ? fields.body : "",
-      inFooter: fields["in-footer"] === true || fields["in-footer"] === "true",
-      updatedAt: text(record2?.updatedAt)
-    });
-  }
-  return pages;
-};
-var fillPlaceholders = (body, settings) => String(body ?? "").replace(/\{\{\s*store_name\s*\}\}/g, settings.storeName || "").replace(/\{\{\s*contact_email\s*\}\}/g, settings.contactEmail || "\u3010fill in: contact email\u3011");
-var safeHref = (raw) => {
-  const href = raw.trim();
-  if (/^https:\/\/[^\s"'<>]+$/i.test(href)) return href;
-  if (/^mailto:[^\s"'<>]+$/i.test(href)) return href;
-  if (/^\/[A-Za-z0-9._~\-/#?=&%]*$/.test(href) && !href.startsWith("//")) return href;
-  return null;
-};
-var inline = (escaped) => escaped.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (match, label2, href) => {
-  const url2 = safeHref(href.replace(/&amp;/g, "&"));
-  return url2 ? `<a href="${esc2(url2)}">${label2}</a>` : label2;
-}).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/(^|[\s(])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>").replace(/(^|[\s(])_([^_\s][^_]*)_/g, "$1<em>$2</em>");
-var TABLE_ROW = /^\s*\|.*\|\s*$/;
-var TABLE_RULE = /^\s*\|(\s*:?-{3,}:?\s*\|)+\s*$/;
-var MAX_TABLE_COLUMNS = 12;
-var tableCells = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
-var tableAt = (lines, start) => {
-  if (!TABLE_ROW.test(lines[start] ?? "") || !TABLE_RULE.test(lines[start + 1] ?? "")) return null;
-  const head = tableCells(lines[start]);
-  if (head.length > MAX_TABLE_COLUMNS) return null;
-  const rows = [];
-  let end = start + 2;
-  while (end < lines.length && TABLE_ROW.test(lines[end])) {
-    rows.push(tableCells(lines[end]));
-    end += 1;
-  }
-  const cells = (row, tag) => head.map((_, column) => `<${tag}>${inline(esc2(row[column] ?? ""))}</${tag}>`).join("");
-  const html2 = `<div class="table-wrap"><table><thead><tr>${cells(head, "th")}</tr></thead><tbody>${rows.map((row) => `<tr>${cells(row, "td")}</tr>`).join("")}</tbody></table></div>`;
-  return { html: html2, end };
-};
-var renderMarkdown = (source, { demoteH1 = false } = {}) => {
-  const lines = String(source ?? "").replace(/\r\n?/g, "\n").split("\n");
-  const out = [];
-  let paragraph = [];
-  let list = null;
-  const flushParagraph = () => {
-    if (paragraph.length) out.push(`<p>${paragraph.map((line) => inline(esc2(line))).join("<br>")}</p>`);
-    paragraph = [];
-  };
-  const flushList = () => {
-    if (list) out.push(`<${list.tag}>${list.items.map((item) => `<li>${inline(esc2(item))}</li>`).join("")}</${list.tag}>`);
-    list = null;
-  };
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index].trimEnd();
-    const table = tableAt(lines, index);
-    if (table) {
-      flushParagraph();
-      flushList();
-      out.push(table.html);
-      index = table.end - 1;
-      continue;
-    }
-    const heading = /^(#{1,3})\s+(.+)$/.exec(line.trim());
-    const bullet = /^\s*[-*]\s+(.+)$/.exec(line);
-    const numbered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
-    if (!line.trim()) {
-      flushParagraph();
-      flushList();
-    } else if (heading) {
-      flushParagraph();
-      flushList();
-      const level = demoteH1 ? Math.max(heading[1].length, 2) : Math.min(heading[1].length + 1, 4);
-      out.push(`<h${level}>${inline(esc2(heading[2]))}</h${level}>`);
-    } else if (bullet || numbered) {
-      flushParagraph();
-      const tag = bullet ? "ul" : "ol";
-      if (list && list.tag !== tag) flushList();
-      list ??= { tag, items: [] };
-      list.items.push((bullet ?? numbered)[1]);
-    } else {
-      flushList();
-      paragraph.push(line.trim());
-    }
-  }
-  flushParagraph();
-  flushList();
-  return out.join("\n");
-};
-var markdownText = (source) => String(source ?? "").replace(/^\s*\|(\s*:?-{3,}:?\s*\|)+\s*$/gm, "").replace(/\s*\|\s*/g, " ").replace(/^#{1,3}\s+/gm, "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/[*_]/g, "").replace(/\s+/g, " ").trim();
-var pagePath = (page) => `/pages/${page.slug}`;
-var unfinishedPages = (pages) => pages.filter((page) => FILL_IN_MARKER.test(page.body)).map((page) => page.slug);
-
-// src/posts.js
-var POSTS_LIMIT = 100;
-var POST_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,99}$/;
-var BLOG_PATH = "/blog";
-var FEED_PATH = "/blog/rss.xml";
-var FEED_ITEMS = 20;
-var MAX_MENTIONED_PRODUCTS = 4;
-var RESERVED_PREFIXES = ["/api/", "/static/", "/images/", "/blog-covers/", "/pay/", "/products/", "/pages/"];
-var RESERVED_PATHS = /* @__PURE__ */ new Set(["/", "/order", "/blog", "/blog/rss.xml", "/sitemap.xml", "/robots.txt", "/llms.txt", "/favicon.svg"]);
-var normalizePath = (value2) => {
-  let raw = text(value2);
-  if (/^https?:\/\//i.test(raw)) {
-    try {
-      raw = new URL(raw).pathname;
-    } catch {
-      return "";
-    }
-  }
-  if (!raw.startsWith("/") || raw.startsWith("//") || raw.length > 300 || /[\s\\?#]/.test(raw)) return "";
-  const path = raw.toLowerCase().replace(/\/+$/, "");
-  return path || "/";
-};
-var postAddress = (fields) => {
-  const path = normalizePath(fields?.path);
-  const match = /^\/blog\/([^/]+)$/.exec(path);
-  if (match && POST_SLUG_PATTERN.test(match[1])) return { path, slug: match[1] };
-  const slug = text(fields?.slug).toLowerCase();
-  if (POST_SLUG_PATTERN.test(slug)) return { path: `${BLOG_PATH}/${slug}`, slug };
-  return null;
-};
-var postDate = (value2) => {
-  const raw = text(value2);
-  if (!raw) return null;
-  const ms = Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T00:00:00Z` : raw);
-  return Number.isFinite(ms) ? { day: new Date(ms).toISOString().slice(0, 10), ms } : null;
-};
-var listOf = (value2) => {
-  if (Array.isArray(value2)) return value2;
-  if (typeof value2 === "string" && value2.trim()) {
-    try {
-      const parsed = JSON.parse(value2);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return value2.split(/\n|,/);
-    }
-  }
-  return [];
-};
-var legacyPathsOf = (value2, ownPath) => [...new Set(listOf(value2).map(normalizePath))].filter(
-  (path) => path && path !== ownPath && !RESERVED_PATHS.has(path) && !RESERVED_PREFIXES.some((prefix) => path.startsWith(prefix))
-);
-var coverRef = (value2) => {
-  const first = Array.isArray(value2) ? value2[0] : value2;
-  if (typeof first === "string") return first;
-  if (first && typeof first === "object" && typeof first.url === "string") return first.url;
-  return "";
-};
-var httpsUrl = (value2) => {
-  const raw = text(value2);
-  if (!/^https:\/\//i.test(raw)) return "";
-  try {
-    return new URL(raw).href;
-  } catch {
-    return "";
-  }
-};
-var buildPosts = (records, { busabaseOrigin = "" } = {}) => {
-  const posts = [];
-  const problems = [];
-  const seen = /* @__PURE__ */ new Map();
-  for (const record2 of records ?? []) {
-    const fields = record2?.fields ?? {};
-    if (text(fields.status).toLowerCase() !== "published") continue;
-    const title = text(fields.title);
-    const label2 = title || text(fields.slug) || text(record2?.id) || "?";
-    const body = typeof fields.body === "string" ? fields.body.trim() : "";
-    const address = postAddress(fields);
-    if (!title) {
-      problems.push({ code: "no-title", post: label2 });
-      continue;
-    }
-    if (!body) {
-      problems.push({ code: "no-body", post: label2 });
-      continue;
-    }
-    if (!address) {
-      problems.push({ code: "bad-path", post: label2, path: text(fields.path) });
-      continue;
-    }
-    if (seen.has(address.path)) {
-      problems.push({ code: "duplicate-path", post: label2, path: address.path, kept: seen.get(address.path) });
-      continue;
-    }
-    seen.set(address.path, title);
-    const published = postDate(fields["published-at"]);
-    const updated = postDate(fields["updated-at"]) ?? postDate(record2?.updatedAt);
-    const cover = classifyImageRef(coverRef(fields["cover-image"]), busabaseOrigin);
-    posts.push({
-      recordId: text(record2?.id),
-      path: address.path,
-      slug: address.slug,
-      title,
-      description: text(fields.description),
-      body,
-      cover: cover && cover.kind !== "airapp" ? cover : null,
-      author: text(fields.author),
-      locale: text(fields.locale),
-      publishedAt: published?.day ?? "",
-      updatedAt: updated ? new Date(updated.ms).toISOString() : "",
-      sortMs: published?.ms ?? updated?.ms ?? 0,
-      canonicalUrl: httpsUrl(fields["canonical-url"]),
-      legacyPaths: legacyPathsOf(fields["legacy-paths"], address.path),
-      seoTitle: text(fields["seo-title"]),
-      seoDescription: text(fields["seo-description"]),
-      schemaVersion: finiteNumber(fields["schema-version"]) ?? 1
-    });
-  }
-  posts.sort((a, b) => b.sortMs - a.sortMs || a.title.localeCompare(b.title));
-  return { posts, problems };
-};
-var resolvePostRequest = (posts, rawPath) => {
-  const path = normalizePath(rawPath);
-  if (!path) return null;
-  const post = posts.find((item) => item.path === path);
-  if (post) return rawPath === post.path ? { post } : { redirect: post.path };
-  const moved = posts.find((item) => item.legacyPaths.includes(path));
-  return moved ? { redirect: moved.path } : null;
-};
-var postSummary = (post, max = 200) => {
-  if (post.description) return post.description;
-  const flat = markdownText(post.body).replace(/【fill in[^】]*】/gi, "").trim();
-  if (flat.length <= max) return flat;
-  const cut2 = flat.slice(0, max - 1);
-  const space = cut2.lastIndexOf(" ");
-  return `${space > max * 0.6 ? cut2.slice(0, space) : cut2}\u2026`;
-};
-var mentionedProducts = (post, listed) => {
-  const byId = new Map(listed.map((product) => [product.id, product]));
-  const found = [];
-  for (const match of post.body.matchAll(/\(\/products\/([A-Za-z0-9][A-Za-z0-9._%-]{0,119})\)/g)) {
-    let id;
-    try {
-      id = decodeURIComponent(match[1]);
-    } catch {
-      continue;
-    }
-    const product = byId.get(id);
-    if (product && !found.includes(product)) found.push(product);
-    if (found.length >= MAX_MENTIONED_PRODUCTS) break;
-  }
-  return found;
-};
-var coverSrc = (post) => {
-  if (!post.cover) return "";
-  return post.cover.kind === "direct" ? post.cover.url : `/blog-covers/${encodeURIComponent(post.slug)}`;
-};
-var canonicalElsewhere = (post, origin) => Boolean(post.canonicalUrl) && post.canonicalUrl !== new URL(post.path, origin).href;
-
-// src/seo.js
-var xmlEscape = (value2) => String(value2).replace(/[<>&'"]/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[char]);
-var productPath = (product) => `/products/${encodeURIComponent(product.id)}`;
-var absoluteUrl = (origin, pathOrUrl) => new URL(pathOrUrl, origin).href;
-var absoluteImages = (origin, product) => product.images.map((image, index) => absoluteUrl(origin, imageSrc(product, image, index)));
-var plainSummary = (value2, max = 160) => {
-  const flat = String(value2 ?? "").replace(/\s+/g, " ").trim();
-  if (flat.length <= max) return flat;
-  const cut2 = flat.slice(0, max - 1);
-  const space = cut2.lastIndexOf(" ");
-  return `${(space > max * 0.6 ? cut2.slice(0, space) : cut2).replace(/[\s,.;:]+$/, "")}\u2026`;
-};
-var isoDay = (value2) => {
-  const parsed = Date.parse(value2 ?? "");
-  return Number.isFinite(parsed) ? new Date(parsed).toISOString().slice(0, 10) : "";
-};
-var urlEntry = (origin, path, lastmod = "") => `  <url><loc>${xmlEscape(absoluteUrl(origin, path))}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`;
-var indexablePosts = (origin, posts = []) => posts.filter((post) => !canonicalElsewhere(post, origin));
-var buildSitemap = (origin, products, pages = [], posts = []) => {
-  const blog = indexablePosts(origin, posts);
-  const urls = [
-    urlEntry(origin, "/"),
-    ...products.map((product) => urlEntry(origin, productPath(product), isoDay(product.updatedAt))),
-    ...pages.map((page) => urlEntry(origin, `/pages/${page.slug}`)),
-    ...blog.length ? [urlEntry(origin, BLOG_PATH, isoDay(blog[0].updatedAt) || blog[0].publishedAt)] : [],
-    ...blog.map((post) => urlEntry(origin, post.path, isoDay(post.updatedAt) || post.publishedAt))
-  ];
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.join("\n")}
-</urlset>
-`;
-};
-var NAMED_CRAWLERS = [
-  "Googlebot",
-  "Google-Extended",
-  "Bingbot",
-  "GPTBot",
-  "OAI-SearchBot",
-  "ChatGPT-User",
-  "ClaudeBot",
-  "Claude-SearchBot",
-  "Claude-User",
-  "PerplexityBot",
-  "Perplexity-User",
-  "Applebot",
-  "Applebot-Extended",
-  "DuckAssistBot"
-];
-var buildRobots = (origin) => [
-  "# Search engines and AI assistants are welcome. A summary for them: /llms.txt",
-  "User-agent: *",
-  ...NAMED_CRAWLERS.map((name) => `User-agent: ${name}`),
-  "Allow: /",
-  "Disallow: /api/",
-  "Disallow: /order",
-  "Disallow: /pay/",
-  "",
-  `Sitemap: ${absoluteUrl(origin, "/sitemap.xml")}`,
-  ""
-].join("\n");
-var productDescription = (product) => plainSummary([product.subtitle, typeof product.content.description === "string" ? product.content.description : ""].filter(Boolean).join(". "));
-var productBrand = (product) => {
-  const brand = product.content?.attributes?.brand;
-  return typeof brand === "string" ? brand.trim() : "";
-};
-var deliveryDays = (estimate) => {
-  const match = /(\d{1,3})(?:\s*(?:–|—|-|to|bis|à|a)\s*(\d{1,3}))?\s*(?:business\s+|working\s+|calendar\s+)?(?:days?|tage|jours|días|dias|天|日)/i.exec(String(estimate ?? ""));
-  if (!match) return null;
-  const min = Number(match[1]);
-  const max = match[2] === void 0 ? min : Number(match[2]);
-  return max >= min ? { min, max } : null;
-};
-var shippingDetailsFor = (product, settings, shipping) => {
-  if (!shipping || shipping.status !== "ready") return [];
-  const zones = /* @__PURE__ */ new Map();
-  for (const code of checkoutCountries(settings, shipping)) {
-    const rate = shipping.rates.get(code);
-    if (!zones.has(rate.zone)) zones.set(rate.zone, { rate, countries: [] });
-    zones.get(rate.zone).countries.push(code);
-  }
-  const details = [];
-  for (const { rate, countries } of zones.values()) {
-    const days = deliveryDays(rate.estimate);
-    if (!days) continue;
-    const free = rate.cost === 0 || rate.freeOver !== null && product.price >= rate.freeOver;
-    details.push({
-      "@type": "OfferShippingDetails",
-      shippingRate: { "@type": "MonetaryAmount", value: free ? 0 : rate.cost, currency: rate.currency },
-      shippingDestination: countries.map((code) => ({ "@type": "DefinedRegion", addressCountry: code })),
-      deliveryTime: {
-        "@type": "ShippingDeliveryTime",
-        transitTime: { "@type": "QuantitativeValue", minValue: days.min, maxValue: days.max, unitCode: "DAY" }
-      }
-    });
-  }
-  return details;
-};
-var MAX_RETURN_COUNTRIES = 50;
-var returnPolicyFor = (product, settings, shipping) => {
-  const returns = product.content?.attributes?.returns;
-  if (typeof returns !== "string" || !returns.trim()) return null;
-  const countries = shipping?.status === "ready" ? checkoutCountries(settings, shipping) : [];
-  if (!countries.length || countries.length > MAX_RETURN_COUNTRIES) return null;
-  const applicableCountry = countries.length === 1 ? countries[0] : countries;
-  if (/\bno returns?\b|non-returnable|not returnable|keine rückgabe|不退|不支持退/i.test(returns)) {
-    return { "@type": "MerchantReturnPolicy", applicableCountry, returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted" };
-  }
-  const days = /(\d{1,3})\s*-?\s*(?:days?|tage|jours|días|dias|天|日)/i.exec(returns);
-  if (!days || Number(days[1]) < 1) return null;
-  return {
-    "@type": "MerchantReturnPolicy",
-    applicableCountry,
-    returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
-    merchantReturnDays: Number(days[1]),
-    // An online shop: what comes back comes back by post.
-    returnMethod: "https://schema.org/ReturnByMail"
-  };
-};
-var productJsonLd = ({ origin, product, settings, shipping = null }) => {
-  const url2 = absoluteUrl(origin, productPath(product));
-  const shippingDetails = shippingDetailsFor(product, settings, shipping);
-  const returnPolicy = returnPolicyFor(product, settings, shipping);
-  const data = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    url: url2,
-    ...productDescription(product) ? { description: productDescription(product) } : {},
-    ...product.sku ? { sku: product.sku } : {},
-    ...product.category ? { category: product.category } : {},
-    ...product.images.length ? { image: absoluteImages(origin, product) } : {},
-    brand: { "@type": "Brand", name: productBrand(product) || settings.storeName },
-    offers: {
-      "@type": "Offer",
-      url: url2,
-      price: product.price.toFixed(2),
-      priceCurrency: product.currency,
-      availability: product.soldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
-      itemCondition: "https://schema.org/NewCondition",
-      seller: { "@type": "Organization", name: settings.storeName },
-      ...shippingDetails.length ? { shippingDetails } : {},
-      ...returnPolicy ? { hasMerchantReturnPolicy: returnPolicy } : {}
-    }
-  };
-  return data;
-};
-var storeJsonLd = ({ origin, settings }) => ({
-  "@context": "https://schema.org",
-  "@type": "OnlineStore",
-  name: settings.storeName,
-  url: absoluteUrl(origin, "/"),
-  ...settings.tagline ? { description: settings.tagline } : {},
-  ...settings.contactEmail ? { email: settings.contactEmail } : {}
-});
-var postImage = (origin, post, listed = []) => {
-  if (post.cover) return absoluteUrl(origin, coverSrc(post));
-  const product = mentionedProducts(post, listed).find((item) => item.images.length);
-  return product ? absoluteImages(origin, product)[0] : "";
-};
-var postUrl = (origin, post) => post.canonicalUrl || absoluteUrl(origin, post.path);
-var postJsonLd = ({ origin, post, settings, blogLabel = "Blog", listed = [] }) => {
-  const url2 = postUrl(origin, post);
-  const image = postImage(origin, post, listed);
-  const description = post.seoDescription || postSummary(post, 300);
-  const byShop = !post.author || post.author.toLowerCase().includes(settings.storeName.toLowerCase());
-  return [
-    {
-      "@context": "https://schema.org",
-      "@type": "BlogPosting",
-      headline: post.title.slice(0, 110),
-      url: url2,
-      mainEntityOfPage: url2,
-      ...description ? { description } : {},
-      ...image ? { image: [image] } : {},
-      ...post.publishedAt ? { datePublished: post.publishedAt } : {},
-      ...post.updatedAt ? { dateModified: post.updatedAt } : {},
-      ...post.locale ? { inLanguage: post.locale } : {},
-      author: byShop ? { "@type": "Organization", name: post.author || settings.storeName, url: absoluteUrl(origin, "/") } : { "@type": "Person", name: post.author },
-      publisher: { "@type": "Organization", name: settings.storeName, url: absoluteUrl(origin, "/") }
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: settings.storeName, item: absoluteUrl(origin, "/") },
-        { "@type": "ListItem", position: 2, name: blogLabel, item: absoluteUrl(origin, BLOG_PATH) },
-        { "@type": "ListItem", position: 3, name: post.title, item: absoluteUrl(origin, post.path) }
-      ]
-    }
-  ];
-};
-var rfc822 = (iso) => {
-  const ms = Date.parse(iso ?? "");
-  return Number.isFinite(ms) ? new Date(ms).toUTCString() : "";
-};
-var buildFeed = ({ origin, settings, posts, blogLabel = "Blog" }) => {
-  const items = indexablePosts(origin, posts).slice(0, FEED_ITEMS);
-  const newest = items[0];
-  const lines = [
-    `<?xml version="1.0" encoding="UTF-8"?>`,
-    `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">`,
-    `<channel>`,
-    `<title>${xmlEscape(`${settings.storeName} \xB7 ${blogLabel}`)}</title>`,
-    `<link>${xmlEscape(absoluteUrl(origin, BLOG_PATH))}</link>`,
-    `<description>${xmlEscape(settings.tagline || settings.storeName)}</description>`,
-    `<language>${xmlEscape(settings.language || "en")}</language>`,
-    `<atom:link href="${xmlEscape(absoluteUrl(origin, FEED_PATH))}" rel="self" type="application/rss+xml"/>`,
-    ...newest ? [`<lastBuildDate>${rfc822(newest.updatedAt || newest.publishedAt)}</lastBuildDate>`] : [],
-    ...items.map((post) => {
-      const link = absoluteUrl(origin, post.path);
-      const date5 = rfc822(post.publishedAt || post.updatedAt);
-      return [
-        `<item>`,
-        `<title>${xmlEscape(post.title)}</title>`,
-        `<link>${xmlEscape(link)}</link>`,
-        `<guid isPermaLink="true">${xmlEscape(link)}</guid>`,
-        ...date5 ? [`<pubDate>${date5}</pubDate>`] : [],
-        `<description>${xmlEscape(postSummary(post, 300))}</description>`,
-        `</item>`
-      ].join("");
-    }),
-    `</channel>`,
-    `</rss>`,
-    ""
-  ];
-  return lines.join("\n");
-};
-var mdText = (value2) => String(value2 ?? "").replace(/\s+/g, " ").replace(/([[\]])/g, "\\$1").trim();
-var buildLlmsTxt = ({ origin, settings, catalog, shipping, pages = [], posts = [], payment = "request" }) => {
-  const money3 = (amount) => formatPrice(amount, settings.currency, "en");
-  const listed = catalog.listed;
-  const categories = [...new Set(listed.map((product) => product.category).filter(Boolean))];
-  const countries = shipping?.status === "ready" ? checkoutCountries(settings, shipping) : settings.shipsTo;
-  const countryNames = countries.map((code) => countryName(code, "en"));
-  const shipsLine = countries.length > 40 ? "most countries (the checkout lists them)" : countryNames.join(", ");
-  const summary = [
-    settings.tagline ? `${settings.tagline.replace(/[.\s]+$/, "")}.` : "",
-    `An online shop with ${listed.length} product${listed.length === 1 ? "" : "s"} on sale${categories.length ? ` (${categories.join(", ")})` : ""}, priced in ${settings.currency}${countries.length ? `, shipping to ${shipsLine}` : ""}.`
-  ].filter(Boolean).join(" ");
-  const out = [`# ${mdText(settings.storeName)}`, "", `> ${summary}`, ""];
-  if (settings.demoNotice) out.push("Note: this is a demo store. Its products, prices and orders are fictional.", "");
-  if (settings.about) out.push(markdownText(settings.about), "");
-  out.push(
-    `- Website: ${absoluteUrl(origin, "/")}`,
-    `- Currency: ${settings.currency}`,
-    ...countries.length ? [`- Ships to: ${shipsLine}`] : [],
-    `- Payment: ${payment === "paypal" ? "online with PayPal at checkout" : "order requests: the shop confirms the order and payment by email"}`,
-    ...settings.contactEmail ? [`- Contact: ${settings.contactEmail}`] : [],
-    ""
-  );
-  if (shipping?.status === "ready" && countries.length) {
-    const zones = /* @__PURE__ */ new Map();
-    for (const code of countries) {
-      const rate = shipping.rates.get(code);
-      if (!zones.has(rate.zone)) zones.set(rate.zone, { rate, codes: [] });
-      zones.get(rate.zone).codes.push(code);
-    }
-    out.push("## Shipping", "");
-    for (const { rate, codes } of zones.values()) {
-      const parts = [
-        rate.cost === 0 ? "free shipping" : `shipping ${money3(rate.cost)}`,
-        ...rate.cost !== 0 && rate.freeOver !== null ? [`free from an items total of ${money3(rate.freeOver)}`] : [],
-        ...rate.estimate ? [`delivery ${rate.estimate}`] : []
-      ];
-      out.push(`- ${mdText(rate.zone)} (${codes.join(", ")}): ${parts.join(", ")}`);
-    }
-    if (settings.shippingNote) out.push("", markdownText(settings.shippingNote));
-    out.push("");
-  }
-  if (listed.length) {
-    out.push("## Products", "");
-    for (const product of listed) {
-      const notes = [product.priceText, ...product.soldOut ? ["out of stock"] : [], ...product.subtitle ? [product.subtitle] : []];
-      out.push(`- [${mdText(product.name)}](${absoluteUrl(origin, productPath(product))}): ${mdText(notes.join(". "))}`);
-    }
-    out.push("");
-  }
-  if (pages.length) {
-    out.push("## Policies", "");
-    for (const page of pages) out.push(`- [${mdText(page.title)}](${absoluteUrl(origin, pagePath(page))})`);
-    out.push("");
-  }
-  const blog = indexablePosts(origin, posts);
-  if (blog.length) {
-    out.push("## Blog", "");
-    for (const post of blog) {
-      const summaryText = postSummary(post, 200);
-      out.push(`- [${mdText(post.title)}](${absoluteUrl(origin, post.path)})${summaryText ? `: ${mdText(summaryText)}` : ""}`);
-    }
-    out.push("");
-  }
-  return out.join("\n");
-};
-var jsonLdScript = (data) => `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, "\\u003c")}</script>`;
 
 // src/pages.js
 var esc3 = (value2) => String(value2 ?? "").replace(
@@ -30534,12 +31560,12 @@ var orderPage = ({
   <p>PayPal \u5728\u7EBF\u4ED8\u6B3E\u548C\u8BA2\u5355\u90AE\u4EF6\u9700\u8981\u7F51\u7AD9\u5F15\u64CE\uFF08Busabase Plus \u53CA\u4EE5\u4E0A\uFF09\uFF1A\u5B83\u5728\u670D\u52A1\u5668\u4E0A\u4FDD\u7BA1 PayPal \u5BC6\u94A5\u548C\u90AE\u7BB1\u6388\u6743\u7801\uFF0C\u5E76\u80FD\u8FDE\u63A5\u90AE\u4EF6\u670D\u52A1\u5668\u3002\u4F60\u6D4F\u89C8\u5668\u91CC\u7684\u8FD9\u4E2A\u79C1\u6709\u9884\u89C8\u4E24\u8005\u90FD\u6CA1\u6709\uFF0C\u6240\u4EE5\u8FD9\u91CC\u7684\u7ED3\u8D26\u53EA\u6536\u8BA2\u5355\u8BF7\u6C42\u3002\u8FD9\u6BB5\u8BF4\u660E\u53EA\u6709\u4F60\u80FD\u770B\u5230\u3002</p>
 </div>` : "";
   const subtotal = lines.reduce((sum, line) => sum + Math.round(line.product.price * 100) * line.quantity, 0) / 100;
-  const money3 = (amount) => formatPrice(amount, settings.currency, settings.language);
+  const money4 = (amount) => formatPrice(amount, settings.currency, settings.language);
   const country = checkout.countries.includes(values.country) ? values.country : "";
   const rate = country ? shippingFor(checkout.shipping, country, subtotal) : null;
   const shippingKnown = rate?.ok && rate.cost !== null;
   const total = subtotal + (shippingKnown ? rate.cost : 0);
-  const shippingText = !country ? checkout.shipping.status === "missing" ? t("order_shipping_tbc") : t("order_shipping_pick") : rate?.ok ? rate.cost === null ? t("order_shipping_tbc") : rate.cost === 0 ? t("order_shipping_free") : money3(rate.cost) : t(`error_${rate?.code ?? "no_shipping"}`);
+  const shippingText = !country ? checkout.shipping.status === "missing" ? t("order_shipping_tbc") : t("order_shipping_pick") : rate?.ok ? rate.cost === null ? t("order_shipping_tbc") : rate.cost === 0 ? t("order_shipping_free") : money4(rate.cost) : t(`error_${rate?.code ?? "no_shipping"}`);
   const rows = lines.length ? lines.map(
     ({ product, quantity }) => `<div class="order-row" data-product-id="${esc3(product.id)}">
   <span class="order-name">${esc3(product.name)}</span>
@@ -30562,9 +31588,9 @@ var orderPage = ({
     <div data-order-items>${rows}</div>
     ${fieldError("items")}
     <dl class="order-sums">
-      <div><dt>${esc3(t("order_subtotal"))}</dt><dd data-order-subtotal>${esc3(money3(subtotal))}</dd></div>
+      <div><dt>${esc3(t("order_subtotal"))}</dt><dd data-order-subtotal>${esc3(money4(subtotal))}</dd></div>
       <div><dt>${esc3(t("order_shipping"))}</dt><dd data-order-shipping>${esc3(shippingText)}</dd></div>
-      <div class="order-total"><dt>${esc3(t("order_total"))}</dt><dd><strong data-order-total>${esc3(money3(total))}</strong></dd></div>
+      <div class="order-total"><dt>${esc3(t("order_total"))}</dt><dd><strong data-order-total>${esc3(money4(total))}</strong></dd></div>
     </dl>
     <p class="note" data-order-delivery${rate?.ok && rate.estimate ? "" : " hidden"}>${rate?.ok && rate.estimate ? esc3(t("order_delivery", { estimate: rate.estimate })) : ""}</p>
     <p class="note" data-order-free-over hidden></p>
@@ -30645,9 +31671,9 @@ var PAY_STATUS_TEXT = {
 };
 var payPage = ({ origin, settings, order, paypal = null, site = {} }) => {
   const t = translator(settings.language);
-  const money3 = (amount) => formatPrice(amount, order.currency || settings.currency, settings.language);
-  const items = order.lines.map((line) => `<li><span>${esc3(line.quantity)} \xD7 ${esc3(line.name)}</span> <span>${esc3(money3(line.lineTotal))}</span></li>`).join("");
-  const shipping = order.shipping === null ? t("order_shipping_tbc") : order.shipping === 0 ? t("order_shipping_free") : money3(order.shipping);
+  const money4 = (amount) => formatPrice(amount, order.currency || settings.currency, settings.language);
+  const items = order.lines.map((line) => `<li><span>${esc3(line.quantity)} \xD7 ${esc3(line.name)}</span> <span>${esc3(money4(line.lineTotal))}</span></li>`).join("");
+  const shipping = order.shipping === null ? t("order_shipping_tbc") : order.shipping === 0 ? t("order_shipping_free") : money4(order.shipping);
   const awaiting = order.status === "awaiting-payment";
   const state = awaiting ? paypal ? `<div class="pay-box" data-pay-box><p class="note" data-pay-status>${esc3(t("pay_loading"))}</p><div class="paypal-buttons" data-paypal-buttons></div></div>
 <noscript><p class="form-status is-error">${esc3(t("pay_noscript"))}</p></noscript>
@@ -30666,9 +31692,9 @@ ${awaiting ? `<p class="lead">${esc3(t("pay_intro", { orderId: order.orderId }))
 <section class="pay-summary" aria-label="${esc3(t("pay_order", { orderId: order.orderId }))}">
   <ul class="pay-items">${items}</ul>
   <dl class="order-sums">
-    <div><dt>${esc3(t("order_subtotal"))}</dt><dd>${esc3(money3(order.subtotal ?? order.total))}</dd></div>
+    <div><dt>${esc3(t("order_subtotal"))}</dt><dd>${esc3(money4(order.subtotal ?? order.total))}</dd></div>
     <div><dt>${esc3(t("order_shipping"))}</dt><dd>${esc3(shipping)}</dd></div>
-    <div class="order-total"><dt>${esc3(t(awaiting ? "pay_total" : "order_total"))}</dt><dd><strong>${esc3(money3(order.total))}</strong></dd></div>
+    <div class="order-total"><dt>${esc3(t(awaiting ? "pay_total" : "order_total"))}</dt><dd><strong>${esc3(money4(order.total))}</strong></dd></div>
   </dl>
   ${order.deliveryEstimate ? `<p class="note">${esc3(t("order_delivery", { estimate: order.deliveryEstimate }))}</p>` : ""}
 </section>
@@ -31093,7 +32119,7 @@ var decideWebhook = (event, order, { nowIso }) => {
   const resource = event?.resource ?? {};
   const amount = { value: String(resource.amount?.value ?? ""), currency: String(resource.amount?.currency_code ?? "") };
   const expected = { value: order.total, currency: order.currency };
-  const money3 = `${amount.value} ${amount.currency}`.trim();
+  const money4 = `${amount.value} ${amount.currency}`.trim();
   const isPaid = order.status === "paid" || FINAL_STATUSES.has(order.status);
   if (type === "PAYMENT.CAPTURE.COMPLETED") {
     if (isPaid && (!order.captureId || order.captureId === resource.id)) {
@@ -31106,9 +32132,9 @@ var decideWebhook = (event, order, { nowIso }) => {
           status: "payment-problem",
           "paypal-capture-id": String(resource.id ?? ""),
           "amount-paid": Number(amount.value) || 0,
-          "payment-problem": `${nowIso.slice(0, 10)}: PayPal captured ${money3}, but this order is ${paypalValue(order.total, order.currency) ?? order.total} ${order.currency}. Check the payment in PayPal before shipping.`
+          "payment-problem": `${nowIso.slice(0, 10)}: PayPal captured ${money4}, but this order is ${paypalValue(order.total, order.currency) ?? order.total} ${order.currency}. Check the payment in PayPal before shipping.`
         },
-        note: `capture ${resource.id} completed for ${money3}: AMOUNT MISMATCH`
+        note: `capture ${resource.id} completed for ${money4}: AMOUNT MISMATCH`
       };
     }
     return {
@@ -31119,7 +32145,7 @@ var decideWebhook = (event, order, { nowIso }) => {
         "amount-paid": Number(amount.value),
         "paid-at": resource.create_time || nowIso
       },
-      note: `capture ${resource.id} completed for ${money3} \u2192 paid`
+      note: `capture ${resource.id} completed for ${money4} \u2192 paid`
     };
   }
   if (type === "PAYMENT.CAPTURE.PENDING") {
@@ -31158,7 +32184,7 @@ var decideWebhook = (event, order, { nowIso }) => {
         "refunded-amount": refunded,
         ...full ? { status: "refunded" } : {}
       },
-      note: `refund ${resource.id} of ${money3}${full ? " \u2192 refunded" : ` (partial: ${refunded} ${order.currency} refunded in total)`}`
+      note: `refund ${resource.id} of ${money4}${full ? " \u2192 refunded" : ` (partial: ${refunded} ${order.currency} refunded in total)`}`
     };
   }
   if (type === "PAYMENT.CAPTURE.REVERSED") {
@@ -31166,9 +32192,9 @@ var decideWebhook = (event, order, { nowIso }) => {
       kind: "problem",
       fields: {
         status: "payment-problem",
-        "payment-problem": `${nowIso.slice(0, 10)}: PayPal reversed this payment (${money3}): the money went back to the buyer, usually a chargeback or a dispute. Do not ship; open the case in PayPal's Resolution Center.`
+        "payment-problem": `${nowIso.slice(0, 10)}: PayPal reversed this payment (${money4}): the money went back to the buyer, usually a chargeback or a dispute. Do not ship; open the case in PayPal's Resolution Center.`
       },
-      note: `reversal ${resource.id} of ${money3}`
+      note: `reversal ${resource.id} of ${money4}`
     };
   }
   if (type === "CHECKOUT.ORDER.APPROVED") {
@@ -31464,6 +32490,8 @@ var createSecretsReader = ({ read, now = () => Date.now() }) => {
 
 // src/handler.js
 var MAX_ORDER_BODY_BYTES = 16 * 1024;
+var SHOP_VERSION = "0.8.0";
+var MCP_REQUESTS_PER_MINUTE = 120;
 var MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
 var SECURITY_HEADERS = {
   "x-content-type-options": "nosniff",
@@ -31498,6 +32526,22 @@ var json2 = (data, status = 200) => new Response(JSON.stringify(data), {
   headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...SECURITY_HEADERS }
 });
 var plain = (body, status = 200, type = "text/plain; charset=utf-8", cache = "public, max-age=300") => new Response(body, { status, headers: { "content-type": type, "cache-control": cache, "x-content-type-options": "nosniff" } });
+var publicData = (body, type) => {
+  let hash2 = 2166136261;
+  for (let index = 0; index < body.length; index += 1) {
+    hash2 ^= body.charCodeAt(index);
+    hash2 = Math.imul(hash2, 16777619) >>> 0;
+  }
+  return new Response(body, {
+    headers: {
+      "content-type": type,
+      "cache-control": "public, max-age=300",
+      etag: `W/"${hash2.toString(16)}-${body.length.toString(16)}"`,
+      "access-control-allow-origin": "*",
+      "x-content-type-options": "nosniff"
+    }
+  });
+};
 var redirect = (location) => new Response(null, { status: 301, headers: { location, "cache-control": "public, max-age=300", "x-content-type-options": "nosniff" } });
 var NOT_READY = { cache: "no-store", extra: { "retry-after": "300", "x-robots-tag": "noindex" } };
 var PRIVATE = { cache: "no-store", extra: { "x-robots-tag": "noindex" } };
@@ -31539,6 +32583,7 @@ var isoNow = (deps) => new Date(deps.now()).toISOString();
 var createHandler = (overrides = {}) => {
   const deps = { ...defaultDeps, ...overrides };
   const sites = /* @__PURE__ */ new WeakMap();
+  const mcpLimit = createRateLimiter({ limit: deps.mcpRequestsPerMinute ?? MCP_REQUESTS_PER_MINUTE, now: deps.now });
   const siteFor = (env2) => {
     let site = sites.get(env2);
     if (!site) {
@@ -31672,12 +32717,18 @@ var createHandler = (overrides = {}) => {
   };
   const notReady = (state) => html(setupPage({ code: state.setup }), { status: 503, ...NOT_READY });
   const orderLinesFromQuery = (url2, state) => {
-    const productId = url2.searchParams.get("add") ?? "";
-    const product = state.catalog.listed.find((item) => item.id === productId);
-    if (!product || product.soldOut) return [];
-    const qty = Math.trunc(Number(url2.searchParams.get("qty") ?? "1"));
-    const quantity = Number.isFinite(qty) && qty > 0 ? Math.min(qty, product.maxQuantity) : 1;
-    return [{ product, quantity }];
+    const buyLink = url2.searchParams.has("product");
+    const ids = buyLink ? url2.searchParams.getAll("product").slice(0, 10) : [url2.searchParams.get("add") ?? ""];
+    const quantities = url2.searchParams.getAll("qty");
+    const lines = [];
+    ids.forEach((productId, index) => {
+      const product = state.catalog.listed.find((item) => item.id === productId);
+      if (!product || product.soldOut || lines.some((line) => line.product === product)) return;
+      const qty = Math.trunc(Number(quantities[index] ?? "1"));
+      const quantity = Number.isFinite(qty) && qty > 0 ? Math.min(qty, product.maxQuantity) : 1;
+      lines.push({ product, quantity });
+    });
+    return lines;
   };
   const linesFromInput = (input2, state) => {
     const byId = new Map(state.catalog.listed.map((product) => [product.id, product]));
@@ -32132,7 +33183,39 @@ var createHandler = (overrides = {}) => {
     if (cache && ctx?.waitUntil) ctx.waitUntil(cache.put(request, response.clone()));
     return response;
   };
-  const statusBody = async (env2, state) => {
+  const publicPayment = (env2, state) => state.settings.paypalMode !== "off" && state.settings.paypalClientId && env2.BUSABASE_API_KEY && state.shipping.status === "ready" ? "paypal" : "request";
+  const mcpRoute = (request, url2, env2) => {
+    const shop = siteFor(env2).shop;
+    const loadState = async () => {
+      try {
+        return await shop.load();
+      } catch (error62) {
+        if (error62 instanceof ShopUnavailableError) return { setup: "unavailable" };
+        throw error62;
+      }
+    };
+    return handleMcp(request, {
+      info: () => ({ name: "busa-shop", title: "Busa Shop", version: SHOP_VERSION }),
+      instructions: async () => serverInstructions(await loadState(), url2.origin),
+      listTools: async () => toolDefinitions(await loadState()),
+      limit: (incoming) => mcpLimit(incoming.headers.get("cf-connecting-ip") || incoming.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown"),
+      callTool: async (name, args) => {
+        const state = await loadState();
+        if (state.setup !== "ready") {
+          const known = toolDefinitions(state).some((tool) => tool.name === name);
+          if (!known) return null;
+          const textOut = state.setup === "unavailable" ? "The shop's catalog could not be read just now. Try again in a minute." : "This shop is still being set up: its catalog is not available yet.";
+          return { content: [{ type: "text", text: textOut }], isError: true };
+        }
+        const payment = name === "create_checkout" ? paymentsFor(env2, state, await secretsFor(env2, state)).payment : publicPayment(env2, state);
+        const result = runTool(name, args, state, { origin: url2.origin, payment });
+        if (result === null) return null;
+        if (result.invalid) return { invalidParams: result.invalid };
+        return { content: [{ type: "text", text: result.text }], structuredContent: result.structured, ...result.isError ? { isError: true } : {} };
+      }
+    });
+  };
+  const statusBody = async (env2, state, origin) => {
     if (state.setup !== "ready") return { ok: false, setup: state.setup, products: 0, ordering: false };
     const vault = await secretsFor(env2, state);
     const payments = paymentsFor(env2, state, vault);
@@ -32155,7 +33238,9 @@ var createHandler = (overrides = {}) => {
         analytics: Boolean(state.settings.ga4Id),
         searchConsole: Boolean(state.settings.googleVerification),
         bing: Boolean(state.settings.bingVerification)
-      }
+      },
+      // The address an owner adds to Claude or ChatGPT (busa-shop 0.8.0); a public address, not a secret.
+      agents: { mcp: new URL(MCP_PATH, origin).href }
     };
   };
   const route = async (request, env2, ctx) => {
@@ -32175,6 +33260,7 @@ var createHandler = (overrides = {}) => {
       if (path === "/api/paypal/capture") return postCapture(request, url2, env2, ctx);
       return postWebhook(request, url2, env2, ctx);
     }
+    if (path === MCP_PATH) return mcpRoute(request, url2, env2);
     if (!isRead) return plain("Method not allowed", 405, void 0, "no-store");
     if (path === "/robots.txt") return plain(buildRobots(url2.origin));
     const imageMatch = /^\/images\/([^/]{1,240})\/(\d{1,2})$/.exec(path);
@@ -32195,7 +33281,7 @@ var createHandler = (overrides = {}) => {
       const slug = coverMatch[1].toLowerCase();
       return POST_SLUG_PATTERN.test(slug) ? coverRoute(request, env2, ctx, slug) : plain("Not found", 404, void 0, "no-store");
     }
-    const isPage = path === "/" || path === "/order" || path.startsWith("/products/") || path.startsWith("/pages/") || path === "/sitemap.xml" || path === "/llms.txt" || path === BLOG_PATH || path.startsWith(`${BLOG_PATH}/`);
+    const isPage = path === "/" || path === "/order" || path.startsWith("/products/") || path.startsWith("/pages/") || path === "/sitemap.xml" || path === "/llms.txt" || path === AGENTS_PATH || path === GOOGLE_FEED_PATH || path === UCP_PROFILE_PATH || path === BLOG_PATH || path.startsWith(`${BLOG_PATH}/`);
     if (!isPage && path !== "/api/status") {
       if (env2.ASSETS?.fetch) {
         const response = await env2.ASSETS.fetch(request);
@@ -32212,12 +33298,19 @@ var createHandler = (overrides = {}) => {
     }
     const shop = siteFor(env2).shop;
     const state = await shop.load();
-    if (path === "/api/status") return json2(await statusBody(env2, state));
+    if (path === "/api/status") return json2(await statusBody(env2, state, url2.origin));
     if (state.setup !== "ready") {
-      return path === "/sitemap.xml" || path === "/llms.txt" || path === FEED_PATH ? plain("Not ready", 503, void 0, "no-store") : notReady(state);
+      return [
+        "/sitemap.xml",
+        "/llms.txt",
+        FEED_PATH,
+        AGENTS_PATH,
+        GOOGLE_FEED_PATH,
+        UCP_PROFILE_PATH
+      ].includes(path) ? plain("Not ready", 503, void 0, "no-store") : notReady(state);
     }
     const { settings, catalog } = state;
-    const payment = settings.paypalMode !== "off" && settings.paypalClientId && env2.BUSABASE_API_KEY && state.shipping.status === "ready" ? "paypal" : "request";
+    const payment = publicPayment(env2, state);
     const analytics = analyticsFor(url2, env2, settings);
     const site = { pages: state.pages, posts: state.posts, payment, analytics };
     if (path === "/") return html(homePage({ origin: url2.origin, settings, catalog, site }));
@@ -32226,6 +33319,16 @@ var createHandler = (overrides = {}) => {
     }
     if (path === "/llms.txt") {
       return plain(buildLlmsTxt({ origin: url2.origin, settings, catalog, shipping: state.shipping, pages: state.pages, posts: state.posts, payment }));
+    }
+    if (path === AGENTS_PATH) {
+      return plain(buildAgentsMd({ origin: url2.origin, settings, catalog, shipping: state.shipping, pages: state.pages, payment }), 200, "text/markdown; charset=utf-8");
+    }
+    if (path === GOOGLE_FEED_PATH) {
+      return publicData(buildGoogleFeed({ origin: url2.origin, settings, catalog, shipping: state.shipping }), "application/xml; charset=utf-8");
+    }
+    if (path === UCP_PROFILE_PATH) {
+      return publicData(`${JSON.stringify(buildUcpProfile(url2.origin), null, 2)}
+`, "application/json; charset=utf-8");
     }
     if (path === FEED_PATH) {
       return plain(buildFeed({ origin: url2.origin, settings, posts: state.posts, blogLabel: translator(settings.language)("blog_heading") }), 200, "application/rss+xml; charset=utf-8");
@@ -32243,12 +33346,14 @@ var createHandler = (overrides = {}) => {
     if (path === "/order") {
       const vault = await secretsFor(env2, state);
       const payments = paymentsFor(env2, state, vault);
+      const country = countryCodeOf(url2.searchParams.get("country"));
       return html(
         orderPage({
           origin: url2.origin,
           settings,
           catalog,
           lines: orderLinesFromQuery(url2, state),
+          ...country ? { values: { country } } : {},
           orderId: newOrderId(),
           ordersReady: Boolean(state.ordersBaseId),
           checkout: checkoutFor(state, payments),

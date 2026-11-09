@@ -35,6 +35,13 @@
 //   GET  /api/status              readiness for the daily check (never a secret)
 //   GET  /images/<product-id>/<n> image n of a listed product, fetched with the site key
 //   GET  /sitemap.xml, /robots.txt, /llms.txt
+//   POST /mcp                     MCP server for AI assistants (src/mcp.js, src/agents.js): search_catalog,
+//                                 lookup_catalog, get_product, create_checkout (a prefilled /order link);
+//                                 read-only, listed products only; GET/DELETE are 405, OPTIONS a preflight
+//   GET  /agents.md               how an AI agent uses this shop
+//   GET  /.well-known/ucp         Universal Commerce Protocol profile (catalog over /mcp)
+//   GET  /feeds/google.xml        Google Merchant Center product feed
+//   GET  /order?product=<id>&qty=<n>&country=<CC>   the buy link: exactly those products, that country
 //   /static/*, /favicon.svg       files in public/, served by the platform
 //
 // Bindings (set by Busabase on every deploy, never written anywhere else):

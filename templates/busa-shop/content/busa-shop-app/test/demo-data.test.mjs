@@ -250,6 +250,11 @@ describe("probe-site.mjs against the running site", () => {
     assert.equal(result.robots.status, 200);
     assert.equal(result.robots.sitemap, true);
     assert.equal(result.llms.status, 200);
+    assert.deepEqual(result.agents.mcp.tools, ["search_catalog", "lookup_catalog", "get_product", "create_checkout"]);
+    assert.equal(result.agents.mcp.status, 200);
+    assert.equal(result.agents.agentsMd.status, 200);
+    assert.deepEqual(result.agents.feed, { status: 200, items: 10 });
+    assert.equal(result.agents.ucp.status, 200);
     assert.equal(result.sitemap.postUrls, 0, "a shop from before 0.7.0 has no blog");
     assert.equal(result.home.googleAnalytics, false);
     assert.equal(result.home.searchConsole, false);

@@ -3,9 +3,23 @@
 
 import { createBusabaseClient } from "busabase-sdk";
 import { createAirAppRecords } from "busabase-sdk/airapp";
+import {
+  AGENTS_PATH,
+  buildAgentsMd,
+  buildGoogleFeed,
+  buildUcpProfile,
+  countryCodeOf,
+  GOOGLE_FEED_PATH,
+  MCP_PATH,
+  runTool,
+  serverInstructions,
+  toolDefinitions,
+  UCP_PROFILE_PATH,
+} from "./agents.js";
 import { formatPrice, PRODUCT_ID_PATTERN } from "./catalog.js";
 import { translator } from "./i18n.js";
 import { composeEmails, EMAIL_SKIP_REASONS, emailLogLines, smtpConfig } from "./mail.js";
+import { createRateLimiter, handleMcp } from "./mcp.js";
 import {
   appendLogLines,
   isHoneypotHit,
@@ -53,6 +67,9 @@ import { sendMail } from "./smtp.js";
 import { createSecretsReader, readShopSecrets } from "./vault.js";
 
 export const MAX_ORDER_BODY_BYTES = 16 * 1024;
+export const SHOP_VERSION = "0.8.0";
+// MCP requests per minute from one address, counted per Worker isolate (src/mcp.js).
+export const MCP_REQUESTS_PER_MINUTE = 120;
 export const MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
 
 const SECURITY_HEADERS = {
@@ -113,6 +130,24 @@ const json = (data, status = 200) =>
 const plain = (body, status = 200, type = "text/plain; charset=utf-8", cache = "public, max-age=300") =>
   new Response(body, { status, headers: { "content-type": type, "cache-control": cache, "x-content-type-options": "nosniff" } });
 
+/** A public machine-readable document (the feed, the UCP profile): cacheable, readable from any origin, with an ETag. */
+const publicData = (body, type) => {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < body.length; index += 1) {
+    hash ^= body.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return new Response(body, {
+    headers: {
+      "content-type": type,
+      "cache-control": "public, max-age=300",
+      etag: `W/"${hash.toString(16)}-${body.length.toString(16)}"`,
+      "access-control-allow-origin": "*",
+      "x-content-type-options": "nosniff",
+    },
+  });
+};
+
 const redirect = (location) =>
   new Response(null, { status: 301, headers: { location, "cache-control": "public, max-age=300", "x-content-type-options": "nosniff" } });
 
@@ -170,6 +205,7 @@ const isoNow = (deps) => new Date(deps.now()).toISOString();
 export const createHandler = (overrides = {}) => {
   const deps = { ...defaultDeps, ...overrides };
   const sites = new WeakMap();
+  const mcpLimit = createRateLimiter({ limit: deps.mcpRequestsPerMinute ?? MCP_REQUESTS_PER_MINUTE, now: deps.now });
 
   /** Everything kept per env (one env per deploy): the shop, its secrets reader, its PayPal client. */
   const siteFor = (env) => {
@@ -331,13 +367,24 @@ export const createHandler = (overrides = {}) => {
 
   const notReady = (state) => html(setupPage({ code: state.setup }), { status: 503, ...NOT_READY });
 
+  /**
+   * `?add=<id>&qty=<n>` (a product page's Add button without JavaScript), or a
+   * buy link: `?product=<id>&qty=<n>` once per product, from create_checkout
+   * (src/agents.js) or anywhere else. Unknown and sold-out products are left out.
+   */
   const orderLinesFromQuery = (url, state) => {
-    const productId = url.searchParams.get("add") ?? "";
-    const product = state.catalog.listed.find((item) => item.id === productId);
-    if (!product || product.soldOut) return [];
-    const qty = Math.trunc(Number(url.searchParams.get("qty") ?? "1"));
-    const quantity = Number.isFinite(qty) && qty > 0 ? Math.min(qty, product.maxQuantity) : 1;
-    return [{ product, quantity }];
+    const buyLink = url.searchParams.has("product");
+    const ids = buyLink ? url.searchParams.getAll("product").slice(0, 10) : [url.searchParams.get("add") ?? ""];
+    const quantities = url.searchParams.getAll("qty");
+    const lines = [];
+    ids.forEach((productId, index) => {
+      const product = state.catalog.listed.find((item) => item.id === productId);
+      if (!product || product.soldOut || lines.some((line) => line.product === product)) return;
+      const qty = Math.trunc(Number(quantities[index] ?? "1"));
+      const quantity = Number.isFinite(qty) && qty > 0 ? Math.min(qty, product.maxQuantity) : 1;
+      lines.push({ product, quantity });
+    });
+    return lines;
   };
 
   const linesFromInput = (input, state) => {
@@ -878,9 +925,51 @@ export const createHandler = (overrides = {}) => {
     return response;
   };
 
+  // ---- /mcp: the catalog tools for AI assistants (src/agents.js over src/mcp.js) ----
+
+  /** Product and policy pages say "PayPal" from Settings alone; so do the tools. */
+  const publicPayment = (env, state) =>
+    state.settings.paypalMode !== "off" && state.settings.paypalClientId && env.BUSABASE_API_KEY && state.shipping.status === "ready" ? "paypal" : "request";
+
+  const mcpRoute = (request, url, env) => {
+    const shop = siteFor(env).shop;
+    const loadState = async () => {
+      try {
+        return await shop.load();
+      } catch (error) {
+        if (error instanceof ShopUnavailableError) return { setup: "unavailable" };
+        throw error;
+      }
+    };
+    return handleMcp(request, {
+      info: () => ({ name: "busa-shop", title: "Busa Shop", version: SHOP_VERSION }),
+      instructions: async () => serverInstructions(await loadState(), url.origin),
+      listTools: async () => toolDefinitions(await loadState()),
+      limit: (incoming) => mcpLimit(incoming.headers.get("cf-connecting-ip") || incoming.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown"),
+      callTool: async (name, args) => {
+        const state = await loadState();
+        if (state.setup !== "ready") {
+          const known = toolDefinitions(state).some((tool) => tool.name === name);
+          if (!known) return null;
+          const textOut =
+            state.setup === "unavailable"
+              ? "The shop's catalog could not be read just now. Try again in a minute."
+              : "This shop is still being set up: its catalog is not available yet.";
+          return { content: [{ type: "text", text: textOut }], isError: true };
+        }
+        // The buy link must say what its page will do: PayPal only when Settings, the Vault and this engine all allow it.
+        const payment = name === "create_checkout" ? paymentsFor(env, state, await secretsFor(env, state)).payment : publicPayment(env, state);
+        const result = runTool(name, args, state, { origin: url.origin, payment });
+        if (result === null) return null;
+        if (result.invalid) return { invalidParams: result.invalid };
+        return { content: [{ type: "text", text: result.text }], structuredContent: result.structured, ...(result.isError ? { isError: true } : {}) };
+      },
+    });
+  };
+
   // ---- /api/status: readiness only, never a value ----
 
-  const statusBody = async (env, state) => {
+  const statusBody = async (env, state, origin) => {
     if (state.setup !== "ready") return { ok: false, setup: state.setup, products: 0, ordering: false };
     const vault = await secretsFor(env, state);
     const payments = paymentsFor(env, state, vault);
@@ -904,6 +993,8 @@ export const createHandler = (overrides = {}) => {
         searchConsole: Boolean(state.settings.googleVerification),
         bing: Boolean(state.settings.bingVerification),
       },
+      // The address an owner adds to Claude or ChatGPT (busa-shop 0.8.0); a public address, not a secret.
+      agents: { mcp: new URL(MCP_PATH, origin).href },
     };
   };
 
@@ -925,6 +1016,7 @@ export const createHandler = (overrides = {}) => {
       if (path === "/api/paypal/capture") return postCapture(request, url, env, ctx);
       return postWebhook(request, url, env, ctx);
     }
+    if (path === MCP_PATH) return mcpRoute(request, url, env);
     if (!isRead) return plain("Method not allowed", 405, undefined, "no-store");
     if (path === "/robots.txt") return plain(buildRobots(url.origin));
 
@@ -956,6 +1048,9 @@ export const createHandler = (overrides = {}) => {
       path.startsWith("/pages/") ||
       path === "/sitemap.xml" ||
       path === "/llms.txt" ||
+      path === AGENTS_PATH ||
+      path === GOOGLE_FEED_PATH ||
+      path === UCP_PROFILE_PATH ||
       path === BLOG_PATH ||
       path.startsWith(`${BLOG_PATH}/`);
     if (!isPage && path !== "/api/status") {
@@ -976,14 +1071,23 @@ export const createHandler = (overrides = {}) => {
 
     const shop = siteFor(env).shop;
     const state = await shop.load();
-    if (path === "/api/status") return json(await statusBody(env, state));
+    if (path === "/api/status") return json(await statusBody(env, state, url.origin));
     if (state.setup !== "ready") {
-      return path === "/sitemap.xml" || path === "/llms.txt" || path === FEED_PATH ? plain("Not ready", 503, undefined, "no-store") : notReady(state);
+      return [
+        "/sitemap.xml",
+        "/llms.txt",
+        FEED_PATH,
+        AGENTS_PATH,
+        GOOGLE_FEED_PATH,
+        UCP_PROFILE_PATH,
+      ].includes(path)
+        ? plain("Not ready", 503, undefined, "no-store")
+        : notReady(state);
     }
     const { settings, catalog } = state;
     // Product and policy pages are the same for every visitor: they say
     // "PayPal" from Settings alone, without reading the Vault on each view.
-    const payment = settings.paypalMode !== "off" && settings.paypalClientId && env.BUSABASE_API_KEY && state.shipping.status === "ready" ? "paypal" : "request";
+    const payment = publicPayment(env, state);
     const analytics = analyticsFor(url, env, settings);
     const site = { pages: state.pages, posts: state.posts, payment, analytics };
 
@@ -993,6 +1097,16 @@ export const createHandler = (overrides = {}) => {
     }
     if (path === "/llms.txt") {
       return plain(buildLlmsTxt({ origin: url.origin, settings, catalog, shipping: state.shipping, pages: state.pages, posts: state.posts, payment }));
+    }
+    if (path === AGENTS_PATH) {
+      return plain(buildAgentsMd({ origin: url.origin, settings, catalog, shipping: state.shipping, pages: state.pages, payment }), 200, "text/markdown; charset=utf-8");
+    }
+    if (path === GOOGLE_FEED_PATH) {
+      return publicData(buildGoogleFeed({ origin: url.origin, settings, catalog, shipping: state.shipping }), "application/xml; charset=utf-8");
+    }
+    if (path === UCP_PROFILE_PATH) {
+      // UCP: served over HTTPS without a redirect, `public` with max-age of at least 60 s, and a validator.
+      return publicData(`${JSON.stringify(buildUcpProfile(url.origin), null, 2)}\n`, "application/json; charset=utf-8");
     }
     if (path === FEED_PATH) {
       return plain(buildFeed({ origin: url.origin, settings, posts: state.posts, blogLabel: translator(settings.language)("blog_heading") }), 200, "application/rss+xml; charset=utf-8");
@@ -1010,12 +1124,15 @@ export const createHandler = (overrides = {}) => {
     if (path === "/order") {
       const vault = await secretsFor(env, state);
       const payments = paymentsFor(env, state, vault);
+      // A buy link names the buyer's country: the page opens with its shipping cost and total.
+      const country = countryCodeOf(url.searchParams.get("country"));
       return html(
         orderPage({
           origin: url.origin,
           settings,
           catalog,
           lines: orderLinesFromQuery(url, state),
+          ...(country ? { values: { country } } : {}),
           orderId: newOrderId(),
           ordersReady: Boolean(state.ordersBaseId),
           checkout: checkoutFor(state, payments),

@@ -7,7 +7,7 @@ import { markdownText, pagePath } from "./policies.js";
 import { BLOG_PATH, canonicalElsewhere, coverSrc, FEED_ITEMS, FEED_PATH, mentionedProducts, postSummary } from "./posts.js";
 import { checkoutCountries } from "./shipping.js";
 
-const xmlEscape = (value) =>
+export const xmlEscape = (value) =>
   String(value).replace(/[<>&'"]/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[char]);
 
 export const productPath = (product) => `/products/${encodeURIComponent(product.id)}`;
@@ -94,7 +94,7 @@ export const productDescription = (product) =>
     .join(". "));
 
 /** The maker's brand from the product's details (a shop reselling REDMI phones is not their brand); empty when not given. */
-const productBrand = (product) => {
+export const productBrand = (product) => {
   const brand = product.content?.attributes?.brand;
   return typeof brand === "string" ? brand.trim() : "";
 };
@@ -319,6 +319,14 @@ export const buildLlmsTxt = ({ origin, settings, catalog, shipping, pages = [], 
     ...(countries.length ? [`- Ships to: ${shipsLine}`] : []),
     `- Payment: ${payment === "paypal" ? "online with PayPal at checkout" : "order requests: the shop confirms the order and payment by email"}`,
     ...(settings.contactEmail ? [`- Contact: ${settings.contactEmail}`] : []),
+    "",
+    // busa-shop 0.8.0 (src/agents.js): the same catalog for assistants that call tools or read feeds.
+    "## For AI assistants and agents",
+    "",
+    `- MCP server (no sign-in, read-only): ${absoluteUrl(origin, "/mcp")}. Tools: search_catalog, lookup_catalog, get_product, create_checkout (a link to this shop's checkout page; the buyer pays there).`,
+    `- How to use this shop as an agent: ${absoluteUrl(origin, "/agents.md")}`,
+    `- Product feed (Google Merchant Center format): ${absoluteUrl(origin, "/feeds/google.xml")}`,
+    `- Universal Commerce Protocol profile: ${absoluteUrl(origin, "/.well-known/ucp")}`,
     "",
   );
   if (shipping?.status === "ready" && countries.length) {

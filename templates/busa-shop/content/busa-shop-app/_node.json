@@ -1,7 +1,7 @@
 {
   "type": "airapp",
   "name": "Shop Website",
-  "description": "The public storefront (Website engine, write access): home page with the product grid, product pages, an order request form that creates one Orders row per request, sitemap.xml, robots.txt and schema.org Product data. It lists the products on sale in this folder's Products (or the table Settings › Products table names) and reads its texts from this folder's Settings. On a Free space it runs as a private preview in your own browser tab instead: the same site, as you, with no address and no Go live (going live needs Plus). Edit src/, rebuild vendor/worker.js (the deployed bundle), then Restart and Go live again.",
+  "description": "The public storefront (Website engine, write access): home page with the product grid, product pages, an order request form that creates one Orders row per request, sitemap.xml, robots.txt and schema.org Product data, and for AI assistants an MCP server at /mcp (search the catalog, get a prefilled buy link), /agents.md, /.well-known/ucp and a Google Merchant Center feed at /feeds/google.xml. It lists the products on sale in this folder's Products (or the table Settings › Products table names) and reads its texts from this folder's Settings. On a Free space it runs as a private preview in your own browser tab instead: the same site, as you, with no address and no Go live (going live needs Plus). Edit src/, rebuild vendor/worker.js (the deployed bundle), then Restart and Go live again.",
   "agentPrompts": [
     {
       "key": "preview-site",
@@ -19,6 +19,15 @@
       "label": "What happens when I click Go live?",
       "intent": "read-only",
       "body": "Read the `busa-shop` skill in this folder, then explain in plain words what Go live does for this website: the address, the write access it asks for and why, the key it creates in my name, and how to take the site offline again. If this space is on Free, say first that Go live needs Plus and what the private browser preview is."
+    },
+    {
+      "key": "connect-ai-assistants",
+      "label": {
+        "en": "Let AI assistants sell for me (MCP for Claude, ChatGPT)",
+        "zh-CN": "让 AI 助手帮我卖货（Agent 电商：MCP 接入 Claude、ChatGPT）"
+      },
+      "intent": "read-only",
+      "body": "Read the `busa-shop` skill in this folder and follow \"Agent commerce (AI assistants find and sell your products, Agent 电商)\": tell me my MCP address (Settings › Live site address plus /mcp; if the shop is not live yet, say what Go live needs) and the exact steps to add it to Claude or ChatGPT. Then check it with the MCP Inspector commands in that section: list the tools, search for one of my products with a country I ship to, make the buy link and open it, and tell me what a buyer would see. Change nothing in my tables."
     }
   ]
 }
