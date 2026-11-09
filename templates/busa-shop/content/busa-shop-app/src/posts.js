@@ -28,8 +28,8 @@ export const FEED_ITEMS = 20;
 export const MAX_MENTIONED_PRODUCTS = 4;
 
 // Addresses a legacy path may never take over: the site's own routes.
-const RESERVED_PREFIXES = ["/api/", "/static/", "/images/", "/blog-covers/", "/pay/", "/products/", "/pages/"];
-const RESERVED_PATHS = new Set(["/", "/order", "/blog", "/blog/rss.xml", "/sitemap.xml", "/robots.txt", "/llms.txt", "/favicon.svg"]);
+const RESERVED_PREFIXES = ["/api/", "/static/", "/images/", "/blog-covers/", "/pay/", "/products/", "/pages/", "/feeds/", "/.well-known/"];
+const RESERVED_PATHS = new Set(["/", "/order", "/blog", "/blog/rss.xml", "/sitemap.xml", "/robots.txt", "/llms.txt", "/favicon.svg", "/mcp", "/agents.md"]);
 
 /** `/Blog/Some-Post/` → `/blog/some-post`; anything that is not a plain site path → "". */
 export const normalizePath = (value) => {

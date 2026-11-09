@@ -130,7 +130,18 @@ if (dataElement && form) {
 
   // What the page was opened with (?add=…, or rows the server re-rendered) joins the saved request.
   const params = new URLSearchParams(window.location.search);
-  if (params.get("add")) {
+  if (params.has("product")) {
+    // A buy link (an AI assistant's create_checkout, an ad): exactly these products, so the
+    // total matches what the link promised. The country is already chosen by the server.
+    const quantities = params.getAll("qty");
+    writeCart(
+      params
+        .getAll("product")
+        .slice(0, 10)
+        .map((productId, index) => ({ productId, quantity: Math.max(1, Math.trunc(Number(quantities[index])) || 1) })),
+    );
+    history.replaceState(null, "", window.location.pathname);
+  } else if (params.get("add")) {
     addToCart(params.get("add"), Math.max(1, Math.trunc(Number(params.get("qty")) || 1)));
     history.replaceState(null, "", window.location.pathname);
   } else {

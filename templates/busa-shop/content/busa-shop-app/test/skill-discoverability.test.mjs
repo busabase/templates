@@ -166,3 +166,20 @@ test("the import and take-down prompts have Chinese labels search can find", asy
     assert.ok(matches(prompt.bodies, "skill in this folder"), `${prompt.where}: the body does not say which skill to read`);
   }
 });
+
+test("busa-shop is found by the words of the agent-commerce lesson: MCP, ChatGPT, Claude, AI 助手, Agent 电商", async () => {
+  // Lesson 4 (2026-11): a shopper's AI assistant finds the shop's products and hands over a buy link.
+  const skill = await skillOf("busa-shop");
+  const queries = ["MCP", "mcp", "ChatGPT", "Claude", "AI 助手", "Agent 电商", "AI assistants"];
+  const missed = queries.filter((query) => !skillMatches(skill, query));
+  assert.deepEqual(missed, [], `busa-shop's description does not contain: ${missed.join(" / ")}`);
+  const shop = await promptsOf("busa-shop");
+  const labelled = (query) => shop.filter((prompt) => matches(prompt.labels, query)).map((p) => p.where);
+  for (const query of ["MCP", "Claude", "ChatGPT", "AI 助手", "Agent 电商"]) assert.ok(labelled(query).length > 0, `no busa-shop prompt label says ${query}`);
+  assert.ok(labelled("MCP").some((where) => where.startsWith("busa-shop-app/")), "the Shop Website node itself offers the MCP prompt");
+  for (const prompt of shop.filter((p) => matches(p.labels, "MCP"))) {
+    assert.ok(matches(prompt.bodies, "skill in this folder"), `${prompt.where}: the body does not say which skill to read`);
+  }
+  const manual = await readFile(templateUrl("busa-shop", "SKILL.md"), "utf8");
+  assert.match(manual, /^## Agent commerce \(AI assistants find and sell your products, Agent 电商\)$/m);
+});

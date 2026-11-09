@@ -14,7 +14,11 @@ come from **Pages**, and the blog from **Posts** (drafts your agent writes from
 the shop's own facts; you publish them). Every page carries what search engines
 and AI assistants read (schema.org prices, shipping and returns, a sitemap,
 `/llms.txt`), and Settings take a Google Analytics 4 ID and the Search Console
-code. Texts and the non-secret setup are in **Settings**, the
+code. AI assistants can sell for the shop too: the live site is an **MCP
+server** (`/mcp`, public and read-only) that Claude or ChatGPT can add as a
+connector to search the catalog and hand the buyer a prefilled link to the
+shop's own checkout, plus `/agents.md`, a Universal Commerce Protocol profile
+and a Google Merchant Center feed. Texts and the non-secret setup are in **Settings**, the
 PayPal secret and the SMTP password in the Space **Vault**. A daily shop check
 writes **Reports** and applies the owner's feedback on the next run. The
 manual is [`SKILL.md`](SKILL.md).

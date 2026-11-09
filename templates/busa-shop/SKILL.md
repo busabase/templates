@@ -1,6 +1,6 @@
 ---
 name: busa-shop
-description: Busa Shop (Busa 独立站) is a one-install online shop for a small cross-border seller, product management built in (商品管理, no 产品枢纽 to install). Its Products and Certificates feed a storefront website with a checkout (shipping by country, PayPal or order requests), order emails over SMTP and policy pages, plus Orders, Settings, Reports and a daily shop check. Use for $busa-shop or /busa-shop, or to open an online shop, 网店 or 独立站; to import products (导入商品, 导入 Excel 商品表, import Excel or CSV, import products from Excel, a product list or 商品表, a PDF or photo); to put products in the shop (把商品放进店, 上架), take them down (下架) or change a price (改价格); to record certificates; to set up payments (收款, 付款, PayPal, 结账, checkout), shipping costs (运费), emails (邮件, SMTP) or policy pages (政策页); to handle orders (订单, what to ship, awaiting payment, payment problems); to write blog posts (写博客, 写文章, 落地页, landing pages) or improve SEO and GEO (Google, Search Console, Analytics, AI assistants); or to run the daily shop check.
+description: Busa Shop (Busa 独立站) is a one-install online shop for a small cross-border seller with 商品管理 built in (no 产品枢纽 to install). Its Products feed a storefront website with checkout (PayPal or order requests), SMTP order emails, policy pages, Orders, Reports and a daily shop check. Use for $busa-shop or /busa-shop, or to open an online shop, 网店 or 独立站; to import products (导入商品, 导入 Excel 商品表, import Excel or CSV, import products from Excel, a product list or 商品表, a PDF or photo); to put products in the shop (把商品放进店, 上架), take them down (下架) or change a price (改价格); to record certificates; to set up payments (收款, 付款, PayPal, 结账, checkout), shipping costs (运费), emails (邮件, SMTP) or policy pages (政策页); to handle orders (订单, what to ship, awaiting payment, payment problems); to write blog posts (写博客, 写文章, 落地页, landing pages) or improve SEO and GEO (Google, Search Console, Analytics, AI assistants); to let AI 助手 like ChatGPT and Claude find and sell your products over MCP (Agent 电商); or to run the daily shop check.
 metadata:
   category: ecommerce
   tags:
@@ -1196,6 +1196,128 @@ home page carries them. Better data makes better results: a Delivery time
 written in days, Returns with a number of days, a Subtitle and Description
 on every product, real photos.
 
+## Agent commerce (AI assistants find and sell your products, Agent 电商)
+
+A shopper asks their AI assistant "find me a phone under $200 that ships to
+Thailand, and give me the buy link". With this shop's **MCP server** added
+to the assistant, it searches the shop's own catalog, answers with the
+products, prices and the shipping cost to that country, and hands over a
+link to the shop's checkout page with the product and the country already
+filled in. The buyer types the address and pays **on the shop's website**
+(PayPal, or an order request when PayPal is off), never in the chat: Claude
+and ChatGPT do not allow purchases inside a third-party connector, and the
+order form is the only place this shop writes an order.
+
+What the live website serves, by itself, from the tables (busa-shop 0.8.0;
+a shop installed earlier gets it with the new `vendor/worker.js`, Restart,
+then Go live; no table changes):
+
+| Address | What it is |
+| --- | --- |
+| `/mcp` | The MCP server: public, no sign-in, read-only (MCP Streamable HTTP, both the 2025-11-25 and the 2026-07-28 revisions, stateless). |
+| `/agents.md` | How an AI agent uses this shop: the MCP address and tools, how buying works, shipping, policies. |
+| `/.well-known/ucp` | The Universal Commerce Protocol profile: catalog search and lookup over `/mcp`. |
+| `/feeds/google.xml` | Every listed product as a Google Merchant Center feed: price, stock, condition, brand, photos, shipping per country. |
+| `/llms.txt` | Gains a "For AI assistants and agents" section linking the four above. |
+
+The four tools (the Universal Commerce Protocol's names; its `meta` object is
+optional, since Claude and ChatGPT never send it):
+
+- `search_catalog`: free text, the buyer's country (for "ships there?" and
+  the shipping cost of each product), a price limit in **minor units**
+  (cents: 20000 = $200.00), categories, in stock only by default; up to 20
+  results a page. A word in the store's name or tagline ("toys" for
+  Tumbleberry Toys) does not narrow the search.
+- `lookup_catalog`: up to 10 products by id.
+- `get_product`: one product in full: description, highlights, specs,
+  warranty and returns, valid certificates, shipping cost and delivery time
+  per country, Settings › Shipping note, the policy pages.
+- `create_checkout`: the buy link, `https://<address>/order?product=<id>&qty=<n>&country=<CC>`,
+  with the items total, the shipping to that country and the total. It saves
+  nothing. It says PayPal only when PayPal really works on that page
+  (Settings, the Vault secret and Shipping all set), otherwise order requests.
+  It passes on the sentences of Settings › **Shipping note** about import duty
+  or taxes ("Import duty and taxes, if any, are paid by the buyer on
+  delivery."); without one it says the total includes no duties or taxes.
+
+They read only what the website shows: listed products (Status active,
+priced, in the store currency: never a draft, an archived product or one with
+no price), published pages, Shipping and Settings. They never read Orders,
+the Vault or anyone's data. At most 120 MCP requests a minute from one
+address (an answer `429` says when to retry). A change in the tables shows
+within a minute, as on the website.
+
+The buy link opens `/order` with exactly those products (it replaces what the
+buyer's browser had in its order), the country chosen, the shipping and the
+total shown, and the order form as usual. Any page or ad can use the same
+link.
+
+### Add the shop to Claude or ChatGPT (the owner does this)
+
+The MCP address is the **live address** plus `/mcp`
+(`https://<Live site address>/mcp`; `/api/status` shows it as
+`agents.mcp`). It exists only after **Go live** (Plus and higher): the Free
+plan's private browser preview has no address an assistant could reach.
+
+**Claude** (custom connectors, official help:
+support.claude.com/en/articles/11175166): on Free, Pro and Max go to
+**Customize → Connectors**, click **+ Add**, then **Add custom connector**.
+Give it a name (the shop's), paste the MCP address, **Continue**, choose
+**No sign in**, then **Add**. In a chat, click **+** at the lower left →
+**Connectors** and switch the shop on. Free plans allow one custom
+connector. On Team and Enterprise an Owner adds it under **Organization
+settings → Connectors → Add → Custom → Web**, and members click
+**Connect**. Claude connects from Anthropic's servers, so the address must be
+public: the live address is.
+
+**ChatGPT** (official help: help.openai.com/en/articles/12584461): custom MCP
+servers are documented for **Business, Enterprise and Edu** workspaces on
+ChatGPT web; on Business only admins and owners add them. Go to **Plugins**,
+the **+** button, **Add custom MCP server**, enter a name, paste the MCP
+address under **Connection**, no authentication, tick **I understand and want
+to continue**, **Create as a plugin**, install it, then type `@` in a new chat
+and pick it. Whether Plus or Pro accounts can do this is not in OpenAI's
+documentation: look for **Add custom MCP server** on the account before
+promising it.
+
+Say to the owner, plainly: Claude and ChatGPT are not offered in mainland
+China or Hong Kong (each company's supported-regions page); a connector shows
+the shop only to people who added it, not to every user of the assistant; and
+the assistant may still word things its own way, so the shop's tables stay
+the truth.
+
+Test it without an assistant (official MCP Inspector):
+
+```bash
+npx @modelcontextprotocol/inspector --cli https://<address>/mcp --transport http --method tools/list
+npx @modelcontextprotocol/inspector --cli https://<address>/mcp --transport http --method tools/call \
+  --tool-name search_catalog --tool-arg 'catalog={"query":"robot","context":{"address_country":"US"}}'
+```
+
+Then a real prompt, for example in Claude: "Using the <shop> connector, find
+me a <product> under $<price> that ships to <country>, and give me the buy
+link." Open the link it gives in a private window and check the product, the
+country, the shipping and the total.
+
+### Google Merchant Center (optional, the owner does this)
+
+Merchant Center can read `https://<address>/feeds/google.xml`: add a product
+source from a file and have it fetched from that URL on a schedule. The feed
+targets the countries checkout offers, one shipping line per country (cost
+for one item, free past a zone's threshold, transit days when Delivery time
+reads as days). Google wants real photos (JPEG, PNG or WebP; from 2027-01-31
+at least 500 × 500 pixels): the demo's SVG drawings would be refused, and a
+product without a photo has no `image_link`. A product without a barcode is
+sent with `identifier_exists` no; put `Barcode: <EAN/UPC>` in Specs when it
+has one. Whether Google accepts a mainland-China individual without a company
+is not stated in its help: apply and see.
+
+Not done (yet): IndexNow pings to Bing (it needs a key file and something
+that pings on every change; the website has no trigger when a table changes),
+an OpenAI product feed (OpenAI's feed program is waitlisted and US-only), and
+in-chat checkout (ACP, Google's UCP checkout, PayPal's agent products: none
+is open to a small seller outside the US).
+
 ## Daily shop check
 
 Observe → decide → act → write back. One run applies the owner's open
@@ -1330,8 +1452,9 @@ should not.
 
 If Live site address is set: `node scripts/probe-site.mjs <address>` (from this
 skill's files). It opens the site as a stranger: the home page (status, time),
-`/api/status`, the sitemap, robots.txt, and **every photo on every listed
-product page**. Report:
+`/api/status`, the sitemap, robots.txt, **every photo on every listed
+product page**, and (0.8.0) the MCP server's tool list, `/agents.md`, the
+Google feed and `/.well-known/ucp` (under `agents`). Report:
 
 - `site-unreachable` if the home page does not answer 200;
 - `site-mismatch` if `/api/status` is not `ready` or its product count differs
@@ -1339,6 +1462,10 @@ product page**. Report:
   re-probe once before reporting);
 - `image-unreachable`, one line per photo the probe lists under
   `images.failed` (product, URL, what came back).
+
+When `agents.mcp.tools` is not the four tools, or `agents.feed.items`
+differs from the listed products, say so in Live site check (the site may
+still run an older `vendor/worker.js`: Restart, then Go live).
 
 Put a short summary in Live site check. If the address is empty, write "not
 checked: no live site address in Settings" and skip steps 5 and 6 (and the
@@ -1389,6 +1516,12 @@ write feedback into Owner feedback on this report for the next run.
 - **The policy pages are templates, not legal advice.** The owner fills in and
   answers for them.
 - **No custom domain yet**: the address is the one Busabase gives the site.
+- **The MCP server sells nothing by itself.** It finds products and makes a
+  link; the buyer orders and pays on the website. An assistant shows the shop
+  only to people who added it as a connector. Browser-based MCP clients that
+  send extra headers may be stopped by the hosting's CORS preflight, which
+  allows only `Content-Type`; Claude and ChatGPT connect from their servers
+  and are not affected.
 - **Going live needs Plus or higher on Busabase Cloud.** The Website engine is
   not in the Free plan. A Free space gets only the private preview in the
   owner's own browser tab: no address, no Go live, nobody else can see it,
@@ -1429,7 +1562,8 @@ write feedback into Owner feedback on this report for the next run.
 - `probe-site.mjs`: the live-site half of the daily check. Reads the public
   site only: the home page (and whether it carries the Google Analytics and
   Search Console tags), `/api/status`, the sitemap (product and post
-  addresses), robots.txt, `/llms.txt` and every product photo.
+  addresses), robots.txt, `/llms.txt`, every product photo, and the agent
+  addresses: the MCP tool list, `/agents.md`, the Google feed, `/.well-known/ucp`.
 
 ## Changing the website
 
@@ -1437,6 +1571,8 @@ Read `$busabase-app-creator` first. The source is `content/busa-shop-app/src/`
 (`catalog.js` listing, the two table shapes and images, `orders.js` checkout
 validation and the Orders fields written, `shipping.js` the rates rule,
 `policies.js` the Pages table and the Markdown pages and posts share,
+`agents.js` the MCP tools, `/agents.md`, `/.well-known/ucp` and the Google feed,
+`mcp.js` the MCP endpoint (Streamable HTTP, both protocol revisions),
 `posts.js` which Posts rows are on the site, their addresses and redirects, `paypal.js` PayPal's REST API
 and what each webhook event does, `vault.js` the two Vault values, `smtp.js`
 the SMTP client, `mail.js` the emails, `seo.js`, `pages.js`, `details.js`
