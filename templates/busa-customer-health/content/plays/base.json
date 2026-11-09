@@ -1,0 +1,147 @@
+{
+  "name": "Save Plays",
+  "description": "What we will do about an account that is slipping: why it is slipping, the plan, an owner and a date.",
+  "position": 2,
+  "agentPrompts": [
+    {
+      "key": "propose-play",
+      "label": {
+        "en": "Propose a save play for an at-risk account",
+        "zh-CN": "为一个有流失风险的客户提出挽留方案"
+      },
+      "body": {
+        "en": "Read the `busa-customer-health` skill in this folder and follow it. For the account I name, read its signals and score, explain in two or three sentences why it is slipping, and add one save play with a concrete plan, an owner and a due date before its renewal. The owner is the account’s customer success manager unless I say otherwise.",
+        "zh-CN": "先阅读本文件夹里的 `busa-customer-health` Skill，按它的规则做。针对我说的客户，读它的信号和健康分，用两三句话说明为什么在下滑，然后加一条挽留动作，写清具体计划、负责人和续费前的截止日期。负责人默认是该客户的客户成功经理，除非我另有指定。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "chase-plays",
+      "label": {
+        "en": "Which save plays are overdue?",
+        "zh-CN": "哪些挽留动作已经超期"
+      },
+      "body": {
+        "en": "Read the `busa-customer-health` skill in this folder and follow it. List open save plays past their due date with their owner and account, and say whether that account’s score has moved since the play was opened. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-customer-health` Skill，按它的规则做。列出超过截止日期仍未完成的挽留动作、负责人和对应客户，并说明动作开出以后这个客户的健康分有没有变化。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Play",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "account",
+      "name": "Account",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "accounts",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "open",
+            "name": "Open",
+            "color": "amber"
+          },
+          {
+            "id": "in-progress",
+            "name": "In progress",
+            "color": "cyan"
+          },
+          {
+            "id": "done",
+            "name": "Done",
+            "color": "emerald"
+          },
+          {
+            "id": "dropped",
+            "name": "Dropped",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "owner",
+      "name": "Owner",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "due-date",
+      "name": "Due",
+      "type": "date",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "proposed-by",
+      "name": "Proposed by",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "cause",
+      "name": "Why it is slipping",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "plan",
+      "name": "What we will do",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "by-due",
+      "name": "By due date",
+      "description": "Every save play, soonest due first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "due-date",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "account",
+          "status",
+          "owner",
+          "due-date"
+        ]
+      }
+    }
+  ]
+}
