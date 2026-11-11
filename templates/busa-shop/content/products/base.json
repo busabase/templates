@@ -1,6 +1,6 @@
 {
   "name": "Products",
-  "description": "The shop's products, one row per product, in plain columns you edit in the table. The website lists a product when Status is On sale (active), it has a Name, a Product ID (its page address) and a Price above 0, and its Currency is the shop's (an empty Currency means the shop's, Settings › Currency). Stock: empty means unknown, 0 shows Out of stock. Specs: one \"Label: value\" per line (Battery: 5000 mAh), shown as the product's details. Cost, Source and Notes are for you only: the website never reads them. Position orders the products on the site (empty goes last). A change shows on the website within about a minute.",
+  "description": "The shop's products, one row per product, in plain columns you edit in the table. The website lists a product when Status is On sale (active), it has a Name, a Product ID (its page address) and a Price above 0, and its Currency is the shop's (an empty Currency means the shop's, Settings › Currency). Stock: empty means unknown, 0 shows Out of stock. Main photo and More photos hold the pictures themselves: drop the files into the cell. Specs: one \"Label: value\" per line (Battery: 5000 mAh), shown as the product's details. Cost, Source and Notes are for you only: the website never reads them. Position orders the products on the site (empty goes last). A change shows on the website within about a minute.",
   "position": 0,
   "agentPrompts": [
     {
@@ -55,11 +55,35 @@
       "options": {}
     },
     {
+      "slug": "main-photo",
+      "name": "Main photo",
+      "type": "attachment",
+      "required": false,
+      "options": {
+        "attachment": {
+          "maxFiles": 1,
+          "allowedMimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            "image/gif",
+            "image/avif",
+            "image/svg+xml"
+          ]
+        },
+        "help": {
+          "description": "The product's main picture: on its card, at the top of its page, in search results and in the Google and AI-assistant feeds. Drop or upload one JPEG, PNG or WebP. A square picture of at least 800 × 800 px looks best.",
+          "example": "walking-robot.jpg"
+        }
+      },
+      "position": 1
+    },
+    {
       "slug": "product-id",
       "name": "Product ID",
       "type": "text",
       "required": true,
-      "position": 1,
+      "position": 2,
       "options": {}
     },
     {
@@ -67,7 +91,7 @@
       "name": "Status",
       "type": "select",
       "required": false,
-      "position": 2,
+      "position": 3,
       "options": {
         "choices": [
           {
@@ -90,7 +114,7 @@
       "name": "Price",
       "type": "number",
       "required": false,
-      "position": 3,
+      "position": 4,
       "options": {}
     },
     {
@@ -98,7 +122,7 @@
       "name": "Currency",
       "type": "text",
       "required": false,
-      "position": 4,
+      "position": 5,
       "options": {}
     },
     {
@@ -106,7 +130,7 @@
       "name": "Stock",
       "type": "number",
       "required": false,
-      "position": 5,
+      "position": 6,
       "options": {}
     },
     {
@@ -114,7 +138,7 @@
       "name": "Category",
       "type": "text",
       "required": false,
-      "position": 6,
+      "position": 7,
       "options": {}
     },
     {
@@ -122,7 +146,7 @@
       "name": "Brand",
       "type": "text",
       "required": false,
-      "position": 7,
+      "position": 8,
       "options": {}
     },
     {
@@ -130,7 +154,7 @@
       "name": "Model",
       "type": "text",
       "required": false,
-      "position": 8,
+      "position": 9,
       "options": {}
     },
     {
@@ -138,24 +162,32 @@
       "name": "Subtitle",
       "type": "text",
       "required": false,
-      "position": 9,
-      "options": {}
-    },
-    {
-      "slug": "image",
-      "name": "Image URL",
-      "type": "text",
-      "required": false,
       "position": 10,
       "options": {}
     },
     {
-      "slug": "gallery",
-      "name": "More photos (one link per line)",
-      "type": "longtext",
+      "slug": "more-photos",
+      "name": "More photos",
+      "type": "attachment",
       "required": false,
-      "position": 11,
-      "options": {}
+      "options": {
+        "attachment": {
+          "maxFiles": 11,
+          "allowedMimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            "image/gif",
+            "image/avif",
+            "image/svg+xml"
+          ]
+        },
+        "help": {
+          "description": "More pictures for the product page, shown after the Main photo (the page shows up to 8 in all). The box, the back, the product in use.",
+          "example": "walking-robot-box.jpg"
+        }
+      },
+      "position": 11
     },
     {
       "slug": "description",
@@ -267,13 +299,13 @@
         ],
         "visibleFieldSlugs": [
           "name",
+          "main-photo",
           "product-id",
           "status",
           "price",
           "currency",
           "stock",
-          "category",
-          "image"
+          "category"
         ]
       }
     },
@@ -291,13 +323,13 @@
         ],
         "visibleFieldSlugs": [
           "name",
+          "main-photo",
           "product-id",
           "status",
           "price",
           "currency",
           "stock",
-          "category",
-          "image"
+          "category"
         ]
       }
     }

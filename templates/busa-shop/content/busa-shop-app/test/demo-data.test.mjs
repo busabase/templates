@@ -9,7 +9,7 @@ import { probeSite } from "../../../scripts/probe-site.mjs";
 import worker from "../vendor/worker.js";
 import { serveWorker } from "../scripts/preview.mjs";
 import { startFakeBusabase, TEST_KEY } from "./fake-busabase.mjs";
-import { DEMO_DIR, demoState } from "./fixtures.mjs";
+import { DEMO_DIR, demoState, photo } from "./fixtures.mjs";
 import { EMAIL_PATTERN, ORDER_ID_PATTERN, PHONE_PATTERN, WEBSITE_ORDER_FIELDS } from "../src/orders.js";
 
 const contentDir = fileURLToPath(new URL("../../", import.meta.url));
@@ -159,18 +159,27 @@ describe("the toy list", () => {
     base.fields.forEach((field, index) => assert.equal(field.position, index, `${field.slug} position`));
     const { products } = planProducts(parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8")), { source: "toy-catalog.csv" });
     for (const product of products) {
-      const written = { ...shopProductFields(product, {}, [{ file: "a.svg", sha256: "", url: "https://cdn.example/a.svg" }, { file: "b.svg", sha256: "", url: "https://cdn.example/b.svg" }]), ref: 1 };
+      const written = { ...shopProductFields(product, {}, [photo("a.svg", "https://cdn.example/a.svg"), photo("b.svg", "https://cdn.example/b.svg")]), ref: 1 };
       for (const [slug, value] of Object.entries(written)) {
         const field = fields.get(slug);
         assert.ok(field, `${product.productId}: ${slug} is not a column`);
         if (field.type === "number") assert.equal(typeof value, "number", `${slug}`);
+        if (field.type === "attachment") {
+          assert.ok(Array.isArray(value) && value.every((file) => file.attachmentId && file.url), `${slug} holds uploaded files`);
+          assert.ok(value.length <= field.options.attachment.maxFiles, `${slug} fits its ${field.options.attachment.maxFiles} files`);
+        }
         if (field.type === "select") assert.ok(field.options.choices.some((choice) => choice.id === value), `${slug}=${value}`);
       }
     }
-    for (const slug of ["product-id", "name", "status", "price", "currency", "stock", "image", "gallery", "description", "highlights", "specs", "brand", "model", "warranty", "returns", "tags", "ref"]) {
+    for (const slug of ["product-id", "name", "status", "price", "currency", "stock", "main-photo", "more-photos", "description", "highlights", "specs", "brand", "model", "warranty", "returns", "tags", "ref"]) {
       assert.ok(fields.has(slug), `the website reads ${slug}`);
     }
     assert.deepEqual(fields.get("status").options.choices.map((choice) => choice.id), ["active", "draft", "archive"]);
+    for (const slug of ["main-photo", "more-photos"]) {
+      assert.equal(fields.get(slug).type, "attachment", `${slug}: pictures are files in the cell, not links`);
+      assert.ok(fields.get(slug).options.attachment.allowedMimeTypes.every((type) => type.startsWith("image/")), `${slug} takes pictures only`);
+    }
+    assert.ok(!fields.has("image") && !fields.has("gallery"), "no link columns for pictures in a new install");
     for (const view of base.views) {
       for (const filter of view.config.filters) assert.ok(fields.has(filter.fieldSlug), `${view.slug} filter`);
       for (const sort of view.config.sorts) assert.ok(fields.has(sort.fieldSlug), `${view.slug} sort`);

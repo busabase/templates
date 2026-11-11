@@ -170,6 +170,14 @@ export const SHOP_ONLY_NODES = [...Object.values(NODES).filter((node) => node.me
  * archived; `priceColumn: false` is a product hub installed before 0.4.0:
  * prices in the Pricing JSON.
  */
+/** One picture as the importer passes it on: its link, and the attachment its upload made (busa-shop 0.9.0 and later). */
+export const photo = (file, url) => ({
+  file,
+  sha256: "",
+  url,
+  attachment: { assetId: `ast_${file}`, attachmentId: `att_${file}`, url, fileName: file, mimeType: "image/svg+xml", size: 1024 },
+});
+
 export const demoState = async ({ imageUrl, priceColumn = true, source = "product-hub", checkout = source === "shop", blog = false }) => {
   const planned = planProducts(parseCsv(await readFile(`${DEMO_DIR}toy-catalog.csv`, "utf8"))).products;
   const certificates = planCertificates(
@@ -190,7 +198,7 @@ export const demoState = async ({ imageUrl, priceColumn = true, source = "produc
         bas_shop_products: planned.map((product, index) => ({
           id: `rec_${product.productId}`,
           fields: {
-            ...shopProductFields(product, {}, product.imageRefs.length ? product.imageRefs.map((file) => ({ file, sha256: "", url: imageUrl(file) })) : null),
+            ...shopProductFields(product, {}, product.imageRefs.length ? product.imageRefs.map((file) => photo(file, imageUrl(file))) : null),
             ref: index + 1,
           },
         })),
