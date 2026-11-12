@@ -4230,7 +4230,7 @@
         "Let AI assistants sell for my shop: tell me my MCP address and how to add it to Claude or ChatGPT, then check that it finds my products and gives a working buy link.",
         "What do I need to ship today? List the paid orders with addresses, and draft replies for any new order requests."
       ],
-      "version": "0.9.0",
+      "version": "0.9.1",
       "license": "MIT",
       "stats": {
         "folders": 0,
