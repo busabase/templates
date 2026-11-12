@@ -94,10 +94,12 @@ busa-shop 0.5.0 already does.
   writing the exact price they give, you do after showing them the change
   ("Manage products"). A price you would suggest, or a product you think
   should go, you only tell the owner about; you do not write it.
-- Never click Run, Restart or Go live, never change `site.access` in
-  `content/busa-shop-app/airapp.json`, and never copy either of the site's
-  keys anywhere. Running the preview and going live are the owner's
-  decisions and their consent.
+- Never deploy the preview or go live on your own initiative, never change
+  `site.access` in `content/busa-shop-app/airapp.json`, and never copy either
+  of the site's keys anywhere. Running the preview and going live are the
+  owner's decisions and their consent. When the owner asks you to
+  (「帮我重启上线」「上线」), tell them what "Open the shop" step 5 says first,
+  then do it yourself ("Publish the website for the owner").
 - Never overwrite a person's text in Owner feedback, Internal note, Reply
   draft or a product's Notes. Add dated lines; do not rewrite history.
 - **Never publish a blog post.** You write a post as a new row with Status
@@ -755,8 +757,9 @@ folder with its own Products), and you import the product list into it.
    can do in this workspace, not only these tables, and the website's code is
    the only thing between a stranger and that. Turning Public off, or moving
    the app to Trash, cuts the live site off." The owner clicks **Go live**
-   (「上线」); you do not. The header then shows **Live** (「已上线」) and the
-   message "The site is live." (「网站已上线。」).
+   (「上线」), or asks you to: then follow "Publish the website for the
+   owner". The header then shows **Live** (「已上线」) and the message "The
+   site is live." (「网站已上线。」).
 6. **Write the live address into Settings › Live site address**, so the daily
    check can test it. The owner finds it under **More actions → Settings**
    (「更多操作」→「设置」): **Address** (「地址」), with the **Public**
@@ -765,9 +768,35 @@ folder with its own Products), and you import the product list into it.
    ("Set up PayPal", step 6): webhooks only arrive after Go live. Live
    payments only when the owner says so.
 8. **After any change to the website's code**, the live address keeps serving
-   the old version until the owner clicks **Restart** (a new preview of the
-   new files) and then **Go live** again. Changes to Settings and to products
+   the old version until a new preview of the new files is deployed and goes
+   live: the owner clicks **Restart** and then **Go live**, or asks you to
+   ("Publish the website for the owner"). Changes to Settings and to products
    need no redeploy.
+
+### Publish the website for the owner (重启、上线)
+
+Only when the owner asks, and after you told them step 5. Use the Shop Website
+node's id (the AirApp in this folder, stamp `resourceKey: busa-shop-app`) and
+the owner's own credential: the live site's key is created in the name of
+whoever goes live.
+
+```bash
+SITE=<Shop Website node id>
+H=(-H "Authorization: Bearer $BUSABASE_API_KEY" -H "x-busabase-space: $BUSABASE_SPACE_ID")
+curl -s "$BUSABASE_BASE_URL/api/v1/airapps/$SITE/site" "${H[@]}"                  # what is live, previewStale
+curl -s -X POST "$BUSABASE_BASE_URL/api/v1/airapps/$SITE/site/preview" "${H[@]}"  # Restart: preview the current files
+curl -s -X POST "$BUSABASE_BASE_URL/api/v1/airapps/$SITE/site/go-live" "${H[@]}"  # Go live: publish that preview
+```
+
+The same actions are MCP `airapps_site_state`, `airapps_site_deploy_preview`,
+`airapps_site_go_live`, and `busabase-cli airapps site-deploy-preview` /
+`site-go-live --node-id <id>` in a busabase-cli newer than 1.3.1. Read each
+`outcome`: `ok`; `preview-stale` (the files changed after the preview: deploy
+the preview again, never publish another way); `no-preview`; `blocked`
+(`state.blockers` names why the files cannot deploy). Then check the live
+address with `node scripts/probe-site.mjs <address>` and tell the owner what
+went live. A 403 means the credential cannot write to the app: the owner
+goes live themselves.
 
 ## Payments and orders (收款与订单)
 
@@ -1180,8 +1209,9 @@ keeps working. To move it to 0.9.0 (owner's yes first; the order matters,
 because the live website reads the link columns until it runs 0.9.0):
 
 1. **Website first.** Update the Shop Website node's files to 0.9.0's (at
-   least `src/catalog.js` and the rebuilt `vendor/worker.js`), then the owner
-   clicks **Restart** (a new preview of the new files) and **Go live**. 0.9.0 reads the photo cells and, while they
+   least `src/catalog.js` and the rebuilt `vendor/worker.js`), then deploy a
+   new preview and go live: the owner clicks **Restart** and **Go live**, or
+   asks you to ("Publish the website for the owner"). 0.9.0 reads the photo cells and, while they
    are empty, the old links, so nothing disappears.
 2. **Add the two photo columns** to Products, with the field definitions of
    `templates/busa-shop/content/products/base.json` (`main-photo`,
