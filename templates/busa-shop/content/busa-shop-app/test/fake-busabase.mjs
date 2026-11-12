@@ -213,6 +213,35 @@ export const startFakeBusabase = async (state) => {
       if (key) idempotency.set(key, response);
       return send(200, response);
     }
+    // App users (buyer login), only when the test sets `state.appUsers`; a
+    // Busabase without them answers 404, like a server from before they shipped.
+    // `state.appUsers.answers[<endpoint>]` = { status, body } overrides one answer.
+    const appUser = /^\/api\/v1\/app-users\/(?:apps\/([^/]+)\/settings|(send-code|verify|session|sign-out|records\/query))$/.exec(url.pathname);
+    if (appUser && state.appUsers) {
+      const users = state.appUsers;
+      entry.session = req.headers["x-busabase-app-user-session"] ?? "";
+      const endpoint = appUser[1] ? "settings" : appUser[2];
+      const input = body ? JSON.parse(body) : {};
+      entry.input = input;
+      const override = users.answers?.[endpoint];
+      if (override) return send(override.status, override.body);
+      if (endpoint === "settings") {
+        const appId = decodeURIComponent(appUser[1]);
+        return send(200, { appId, enabled: false, appName: "", ownerFields: {}, ...(users.settings?.[appId] ?? {}) });
+      }
+      if (endpoint === "send-code") return send(200, { ok: true, resendAfterSeconds: 60 });
+      if (endpoint === "verify") {
+        const user = users.byEmail?.[input.email];
+        if (!user || input.code !== user.code) return send(400, { code: "INVALID_CODE", attemptsLeft: 4 });
+        return send(200, { sessionToken: user.token, expiresAt: "2026-12-12T00:00:00.000Z", user: { id: user.id, email: input.email } });
+      }
+      const user = Object.entries(users.byEmail ?? {}).find(([, candidate]) => candidate.token === entry.session);
+      if (endpoint === "sign-out") return send(200, { ok: true });
+      if (!user) return send(401, { code: "APP_USER_SESSION_INVALID" });
+      if (endpoint === "session") return send(200, { user: { id: user[1].id, email: user[0] } });
+      // records/query: the platform filters by the owner field; the fake returns what the test put there.
+      return send(200, { records: users.records?.[user[1].id] ?? [], nextCursor: users.nextCursor ?? null });
+    }
     const file = /^\/api\/v1\/file-trees\/([^/]+)\/files\/(.+)$/.exec(url.pathname);
     if (req.method === "GET" && file) {
       const found = state.files?.[decodeURIComponent(file[1])]?.[decodeURIComponent(file[2])];

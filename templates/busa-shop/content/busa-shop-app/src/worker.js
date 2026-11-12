@@ -42,6 +42,11 @@
 //   GET  /.well-known/ucp         Universal Commerce Protocol profile (catalog over /mcp)
 //   GET  /feeds/google.xml        Google Merchant Center product feed
 //   GET  /order?product=<id>&qty=<n>&country=<CC>   the buy link: exactly those products, that country
+//   GET  /account                 buyer login (email → 6-digit code) or, signed in, "My orders" (src/account.js);
+//                                 a "not available" page (404) while Busabase's buyer login is off for this site
+//   POST /account/send-code       plain form posts, each answered with a page or a 303 back to /account;
+//   POST /account/verify          the session is the HttpOnly cookie busa_shop_session, sent on to
+//   POST /account/sign-out        Busabase's /api/v1/app-users/* only as x-busabase-app-user-session
 //   /static/*, /favicon.svg       files in public/, served by the platform
 //
 // Bindings (set by Busabase on every deploy, never written anywhere else):

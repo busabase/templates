@@ -384,6 +384,19 @@
       "required": false,
       "position": 35,
       "options": {}
+    },
+    {
+      "slug": "customer-account",
+      "name": "Customer account",
+      "type": "text",
+      "required": false,
+      "position": 36,
+      "options": {
+        "help": {
+          "description": "Who placed this order while signed in to the shop's buyer login (My orders at /account): their app-user id, written by the website at checkout. Empty for a guest order. Buyer login's owner field: a buyer sees exactly the orders whose Customer account is theirs. Never edit it by hand.",
+          "example": "apu_9f2c41d7"
+        }
+      }
     }
   ],
   "views": [

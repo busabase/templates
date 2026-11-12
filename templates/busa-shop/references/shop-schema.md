@@ -81,6 +81,7 @@ ones are shown; never the number).
 | `items` | longtext | website | JSON `[{product_id, sku, name, quantity, unit_price, line_total}]` |
 | `created-at` | date (with time) | website | ISO timestamp |
 | `source` | text | website | `website` (staff may enter `email`, `phone`, … for orders taken elsewhere) |
+| `customer-account` | text | website | busa-shop 0.10.0. The signed-in buyer's app-user id (Busabase app users), from the session Busabase checked, never from the form; empty for a guest order. Buyer login's owner field for Orders: a buyer's My orders are the rows where it is their id |
 
 The website creates a row through `bases.createChangeRequest` with
 `submittedBy: "busa-shop"` and `idempotencyKey: <order-id>`, and changes it
@@ -214,7 +215,9 @@ runtime through `GET /api/v1/vault/runtime` with its own key.
 | `GET /blog/rss.xml` | RSS 2.0, the newest 20 posts |
 | `GET /blog-covers/<slug>` | A published post's cover when it is a Busabase asset, fetched with the key |
 | `GET /llms.txt` | Plain-text summary for AI assistants: store, what it sells, shipping, payment, contact, listed products with prices, published pages and posts |
-| `GET /api/status` | `{ ok, setup, products, ordering, productsFrom, payments, paymentsNote?, shipping, email, pages, pagesToFinish?, posts, postsNotShown?, google: { analytics, searchConsole, bing } }`; readiness only, never a value |
+| `GET /api/status` | `{ ok, setup, products, ordering, productsFrom, payments, paymentsNote?, shipping, email, pages, pagesToFinish?, posts, postsNotShown?, google: { analytics, searchConsole, bing }, agents: { mcp }, accounts }`; readiness only, never a value. `accounts`: `on`, or why buyer login is off (`disabled`, `not-supported`, `no-app`, `no-key`, `http-<status>`, `unreachable`) |
+| `GET /account` | Buyer login (email, then the 6-digit code) or, signed in, My orders: order number, date, items, total, status, read through Busabase's `POST /api/v1/app-users/records/query` with the buyer's session; `no-store`, `noindex`. `404` "Customer accounts are not available" while login is off or unknown |
+| `POST /account/send-code`, `POST /account/verify`, `POST /account/sign-out` | Plain form posts (`application/x-www-form-urlencoded`, cross-site refused), passed on to Busabase's `/api/v1/app-users/send-code`, `/verify`, `/sign-out` with the site's key; success is `303` to `/account`. Verify sets `busa_shop_session` (HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000); sign-out clears it. Errors are the page again: `400` wrong code (tries left) or not an email, `410` expired code, `403` disabled buyer, `429` too soon (seconds to wait) or a daily limit, `503` Busabase unreachable |
 | `GET /images/<product-id>/<n>` | Image `n` of a listed product, fetched with the key |
 | `GET /sitemap.xml`, `GET /robots.txt` | Sitemap: home, listed products, published pages, `/blog` and posts. robots.txt: one group for every crawler (search engines and AI assistants named), `/api/`, `/order`, `/pay/` disallowed, the sitemap linked |
 | any other path | A post's legacy path → `301`; else 404 |

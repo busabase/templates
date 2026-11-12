@@ -102,7 +102,10 @@ main.wrap {
 
 .site-nav {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 20px;
+  min-width: 0;
   font-weight: 600;
 }
 
@@ -855,6 +858,87 @@ textarea:focus {
   margin: 6px 0;
 }
 
+/* ---- Account: buyer login and My orders ---- */
+
+.account {
+  max-width: 760px;
+  overflow-wrap: anywhere;
+}
+
+.account-form {
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+  max-width: 420px;
+  margin: 16px 0;
+}
+
+.account-form label {
+  display: block;
+  width: 100%;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.account-form label input {
+  margin-top: 6px;
+  font-weight: 400;
+}
+
+.account-who,
+.account-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.account-who p {
+  margin: 0;
+}
+
+.account-more form {
+  margin: 0;
+}
+
+.account-more a,
+.account-more .link-button {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.account-orders {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.account-orders th,
+.account-orders td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.account-orders th {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.account-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.account-note {
+  max-width: 720px;
+}
+
 @media (max-width: 760px) {
   .product,
   .order-form {
@@ -890,6 +974,35 @@ textarea:focus {
   .site-nav {
     gap: 14px;
     font-size: 15px;
+  }
+
+  /* My orders: one card per order, each cell under its column name. */
+  .account-orders thead {
+    display: none;
+  }
+
+  .account-orders,
+  .account-orders tbody,
+  .account-orders tr,
+  .account-orders td {
+    display: block;
+  }
+
+  .account-orders tr {
+    border-bottom: 1px solid var(--line);
+    padding: 6px 0;
+  }
+
+  .account-orders td {
+    border: 0;
+    padding: 4px 12px;
+  }
+
+  .account-orders td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
   }
 
   .post-card {

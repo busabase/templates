@@ -189,6 +189,8 @@ describe("pages", () => {
       google: { analytics: false, searchConsole: false, bing: false },
       // The MCP address an owner adds to Claude or ChatGPT (0.8.0).
       agents: { mcp: "https://tumbleberry-toys.example/mcp" },
+      // No Shop Website node in this workspace list: no buyer login (busa-shop 0.10.0).
+      accounts: "no-app",
     });
   });
 

@@ -1,6 +1,7 @@
 // The data side of the site: one bounded read plan, cached in the Worker's
 // memory, the order lookups and writes, and the image fetch. Everything that
-// talks to Busabase is here (and src/vault.js for the two secrets), and it only
+// talks to Busabase is here (and src/vault.js for the two secrets, and
+// src/account.js for buyer login and a buyer's own orders), and it only
 // ever calls these procedures:
 //
 //   nodes.list({ types: ["base", "airapp"] })   find the tables (src/resources.js)
@@ -22,7 +23,7 @@ import { buildCatalog, normalizeSettings } from "./catalog.js";
 import { orderFromRecord, orderToFields } from "./orders.js";
 import { buildPages, PAGES_LIMIT } from "./policies.js";
 import { buildPosts, POSTS_LIMIT } from "./posts.js";
-import { resolveProductTables, resolveShopExtras, resolveShopTables, SHOP_APP_ID } from "./resources.js";
+import { resolveProductTables, resolveShopApp, resolveShopExtras, resolveShopTables, SHOP_APP_ID } from "./resources.js";
 import { buildShippingRates } from "./shipping.js";
 
 export const CATALOG_TTL_MS = 60_000; // a change in the workspace shows within a minute
@@ -87,6 +88,7 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
     if (tables.status !== "ready") return { setup: tables.status, settings };
 
     const extras = resolveShopExtras(nodes, shop.settings.node.parentId);
+    const app = resolveShopApp(nodes, shop.settings.node.parentId);
     const [productsPage, certificateRecords, shippingRead, pagesRead, postsRead] = await Promise.all([
       records.readPage({
         baseId: tables.productsBaseId,
@@ -127,6 +129,8 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
       catalog,
       productsFrom: tables.shape,
       ordersBaseId: shop.orders.status === "found" ? shop.orders.node.baseId : null,
+      // This website's own AirApp node: the app buyers sign in to (src/account.js). null → no buyer login.
+      appNodeId: app.status === "found" ? app.node.id : null,
       // `ready` with rates, or `missing` (a shop from before 0.6.0: order
       // requests without a shipping line) or `unreadable` (ordering pauses).
       shipping:
@@ -166,9 +170,13 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
     }
   };
 
-  /** Create one Orders row. The order id is the idempotency key: the same id twice is one record. */
-  const createOrder = async (state, order, { payment = "request" } = {}) => {
-    const fields = orderToFields(order, { nowIso: new Date(now()).toISOString(), payment });
+  /**
+   * Create one Orders row. The order id is the idempotency key: the same id
+   * twice is one record. `customerAccount` is the signed-in buyer's app-user
+   * id (src/account.js), written into Customer account; "" for a guest.
+   */
+  const createOrder = async (state, order, { payment = "request", customerAccount = "" } = {}) => {
+    const fields = orderToFields(order, { nowIso: new Date(now()).toISOString(), payment, customerAccount });
     try {
       const outcome = await records.createRecord({
         baseId: state.ordersBaseId,
@@ -178,6 +186,13 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
       });
       return { status: outcome.status, recordId: outcome.recordId ?? null };
     } catch (error) {
+      // An Orders table without Customer account (a shop from before 0.10.0
+      // whose owner switched buyer login on): the order matters more than the
+      // link to the account, so it is saved as a guest order.
+      if (customerAccount && (error?.status === 400 || error?.status === 422)) {
+        log.warn?.("busa-shop: order saved without Customer account (does Orders have the customer-account field?)", order.orderId);
+        return createOrder(state, order, { payment });
+      }
       log.error?.("busa-shop: order not saved", order.orderId, describeError(error));
       throw new ShopUnavailableError("The order could not be saved", error);
     }
