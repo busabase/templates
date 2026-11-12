@@ -79,3 +79,10 @@ describe("a product page fits a phone screen", () => {
     assert.match(info, new RegExp(`<dl class="specs">[\\s\\S]*<dd>${BANDS.replace(/[/]/g, "\\/")}</dd>`));
   });
 });
+
+describe("the header fits a phone screen", () => {
+  it("nav links wrap instead of pushing the page wider (Products, Blog, Account, Your order)", () => {
+    assert.deepEqual(declarations(top, ".site-nav", "flex-wrap"), ["wrap"]);
+    assert.deepEqual(declarations(top, ".site-nav", "min-width"), ["0"]);
+  });
+});

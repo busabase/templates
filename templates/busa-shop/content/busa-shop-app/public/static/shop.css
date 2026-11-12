@@ -102,7 +102,10 @@ main.wrap {
 
 .site-nav {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 20px;
+  min-width: 0;
   font-weight: 600;
 }
 
