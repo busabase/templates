@@ -28640,6 +28640,14 @@ var asStringList = (value2, separators = null) => {
 var LINES = /\r?\n/;
 var LINKS = /[\s|]+/;
 var TAGS = /[,，;；|\n]+/;
+var attachmentUrls = (value2) => (Array.isArray(value2) ? value2 : value2 ? [value2] : []).map((item) => typeof item === "string" ? item.trim() : item && typeof item === "object" && typeof item.url === "string" ? item.url.trim() : "").filter(Boolean);
+var photoRefsOf = (fields) => {
+  const photos = [...attachmentUrls(fields["main-photo"]), ...attachmentUrls(fields["more-photos"])];
+  const refs = photos.length ? photos : [text(fields.image), ...asStringList(fields.gallery, LINKS)];
+  const unique = [];
+  for (const ref of refs) if (ref && !unique.includes(ref)) unique.push(ref);
+  return unique;
+};
 var classifyImageRef = (ref, busabaseOrigin) => {
   const value2 = text(ref);
   if (!value2 || value2.length > 2e3) return null;
@@ -28671,10 +28679,7 @@ var classifyImageRef = (ref, busabaseOrigin) => {
 };
 var normalizeProduct = (record2, { shape = "" } = {}) => {
   const fields = record2?.fields ?? {};
-  const imageRefs = [];
-  for (const ref of [text(fields.image), ...asStringList(fields.gallery, LINKS)]) {
-    if (ref && !imageRefs.includes(ref)) imageRefs.push(ref);
-  }
+  const imageRefs = photoRefsOf(fields);
   const pricing = asObject(fields.pricing);
   const inventory = asObject(fields.inventory);
   const stock = finiteNumber(fields.stock);
@@ -32490,7 +32495,7 @@ var createSecretsReader = ({ read, now = () => Date.now() }) => {
 
 // src/handler.js
 var MAX_ORDER_BODY_BYTES = 16 * 1024;
-var SHOP_VERSION = "0.8.0";
+var SHOP_VERSION = "0.9.0";
 var MCP_REQUESTS_PER_MINUTE = 120;
 var MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
 var SECURITY_HEADERS = {

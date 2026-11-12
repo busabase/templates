@@ -203,6 +203,56 @@ describe("image references", () => {
     assert.equal(imageSrc(product, images[0], 0), "https://cdn.example/a.png");
     assert.equal(imageSrc(product, images[1], 1), "/images/toy-1/1");
   });
+
+  const attachment = (url, fileName = url.split("/").pop()) => ({
+    attachmentId: `att_${fileName}`,
+    assetId: `ast_${fileName}`,
+    url,
+    fileName,
+    mimeType: "image/png",
+    size: 1024,
+  });
+
+  it("reads Main photo, then More photos, from attachment cells", () => {
+    const product = normalizeProduct(
+      record({
+        "main-photo": [attachment("https://files.example/main.png")],
+        "more-photos": [attachment(`${BUSABASE}/api/v1/assets/ast_2/content`), attachment("https://files.example/main.png")],
+      }),
+    );
+    assert.deepEqual(product.imageRefs, ["https://files.example/main.png", `${BUSABASE}/api/v1/assets/ast_2/content`]);
+    const images = imagesFor(product, BUSABASE);
+    assert.deepEqual(
+      images.map((image) => image.kind),
+      ["direct", "busabase"],
+    );
+    // A file on the Busabase server itself goes through the site's image route, never as a raw link.
+    assert.equal(imageSrc(product, images[1], 1), "/images/toy-1/1");
+  });
+
+  it("ignores the old link columns once a photo cell holds a picture", () => {
+    const product = normalizeProduct(
+      record({
+        "main-photo": [],
+        "more-photos": [attachment("https://files.example/side.png")],
+        image: "https://cdn.example/old.png",
+        gallery: "https://cdn.example/old-2.png",
+      }),
+    );
+    assert.deepEqual(product.imageRefs, ["https://files.example/side.png"]);
+  });
+
+  it("falls back to Image and Gallery links while both photo cells are empty (an older shop, a product hub)", () => {
+    const product = normalizeProduct(
+      record({ "main-photo": null, "more-photos": [], image: "https://cdn.example/old.png", gallery: "https://cdn.example/old-2.png\nhttps://cdn.example/old.png" }),
+    );
+    assert.deepEqual(product.imageRefs, ["https://cdn.example/old.png", "https://cdn.example/old-2.png"]);
+  });
+
+  it("skips attachment entries without a usable link", () => {
+    const product = normalizeProduct(record({ "main-photo": [{ attachmentId: "att_x" }, null, "https://cdn.example/a.png"] }));
+    assert.deepEqual(product.imageRefs, ["https://cdn.example/a.png"]);
+  });
 });
 
 describe("certificates", () => {

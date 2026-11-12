@@ -5,10 +5,12 @@
 // The shop reads one Products table (see src/resources.js), in one of two shapes:
 //
 // - its own (busa-shop 0.5.0 and later): plain columns an owner edits in the
-//   grid. Status (active / draft / archive), Price, Currency, Stock, Image,
-//   Gallery (one link per line), Description, Highlights (one per line), Specs
-//   ("Label: value" per line, src/details.js), Brand, Model, Warranty, Returns,
-//   Tags (comma-separated). Cost, Source and Notes are the owner's and never read.
+//   grid. Status (active / draft / archive), Price, Currency, Stock, Main photo
+//   and More photos (attachment cells, busa-shop 0.9.0 and later; a shop from
+//   before keeps links in Image and Gallery, one per line), Description,
+//   Highlights (one per line), Specs ("Label: value" per line, src/details.js),
+//   Brand, Model, Warranty, Returns, Tags (comma-separated). Cost, Source and
+//   Notes are the owner's and never read.
 // - a busa-product-hub table (a shop installed before 0.5.0, or Settings ›
 //   "Products table" pointing at one): Lifecycle + Status, and JSON-in-longtext
 //   blocks (`pricing`, `inventory`, `content`, `compliance`). The selling price
@@ -105,9 +107,35 @@ const LINKS = /[\s|]+/;
 const TAGS = /[,，;；|\n]+/;
 
 /**
+ * The links of an attachment cell, in its order: each file's `url` (the shape
+ * the API returns: `{ attachmentId, url, fileName, mimeType, size }`). A plain
+ * string is taken as a link too, so a cell that held one before still reads.
+ */
+export const attachmentUrls = (value) =>
+  (Array.isArray(value) ? value : value ? [value] : [])
+    .map((item) => (typeof item === "string" ? item.trim() : item && typeof item === "object" && typeof item.url === "string" ? item.url.trim() : ""))
+    .filter(Boolean);
+
+/**
+ * A product's pictures, main one first. Main photo and More photos (the
+ * shop's attachment cells) win; Image and Gallery (links: a busa-product-hub
+ * table, or a shop from before busa-shop 0.9.0 not yet moved over) are read
+ * only while both photo cells are empty, so a half-moved row never shows a
+ * picture twice.
+ */
+export const photoRefsOf = (fields) => {
+  const photos = [...attachmentUrls(fields["main-photo"]), ...attachmentUrls(fields["more-photos"])];
+  const refs = photos.length ? photos : [text(fields.image), ...asStringList(fields.gallery, LINKS)];
+  const unique = [];
+  for (const ref of refs) if (ref && !unique.includes(ref)) unique.push(ref);
+  return unique;
+};
+
+/**
  * Classify one image reference from the Products table.
  *
- * busa-product-hub's `image` / `gallery` are plain text, so a value can be:
+ * An attachment's `url`, or a link in busa-product-hub's (or an older
+ * shop's) `image` / `gallery`, so a value can be:
  * - an `https://` URL on another host (an uploaded asset's public URL, a CDN):
  *   the browser loads it directly — `direct`;
  * - a URL on the Busabase server itself (or a root-relative `/api/...` path):
@@ -154,10 +182,7 @@ export const classifyImageRef = (ref, busabaseOrigin) => {
  */
 export const normalizeProduct = (record, { shape = "" } = {}) => {
   const fields = record?.fields ?? {};
-  const imageRefs = [];
-  for (const ref of [text(fields.image), ...asStringList(fields.gallery, LINKS)]) {
-    if (ref && !imageRefs.includes(ref)) imageRefs.push(ref);
-  }
+  const imageRefs = photoRefsOf(fields);
   const pricing = asObject(fields.pricing);
   const inventory = asObject(fields.inventory);
   const stock = finiteNumber(fields.stock);

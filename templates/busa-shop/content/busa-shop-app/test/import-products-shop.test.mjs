@@ -12,7 +12,7 @@ import { after, before, beforeEach, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createBusabaseClient, uploadAsset } from "busabase-sdk";
 import { createAirAppRecords } from "busabase-sdk/airapp";
-import { formatSummary, mergeLines, resolveTarget, runImport, SHOP_SPEC_LABELS, shopStatusFor } from "../../../scripts/import-products.mjs";
+import { formatMoveSummary, formatSummary, mergeLines, resolveTarget, runImport, runMovePhotos, SHOP_SPEC_LABELS, shopStatusFor } from "../../../scripts/import-products.mjs";
 import { MESSAGES } from "../src/i18n.js";
 import { specKeyFor } from "../src/details.js";
 import { startFakeBusabase, TEST_KEY } from "./fake-busabase.mjs";
@@ -96,9 +96,18 @@ describe("import-products.mjs into the shop's own Products", () => {
     assert.match(formatSummary(summary), /^Products table: busa-shop-products \(the shop's own Products\)/);
 
     const robot = product("tt-walking-robot").fields;
-    assert.match(robot.image, new RegExp(`^${api.origin}/assets/k\\d+-walking-robot\\.svg$`));
-    assert.match(robot.gallery, new RegExp(`^${api.origin}/assets/k\\d+-walking-robot-box\\.svg$`), "More photos: one link per line, the main photo not repeated");
-    const { image, gallery, ...rest } = robot;
+    // Pictures are the shop's own files in the two attachment cells, as uploadAsset returned them.
+    assert.equal(robot["main-photo"].length, 1);
+    assert.match(robot["main-photo"][0].url, new RegExp(`^${api.origin}/assets/k\\d+-walking-robot\\.svg$`));
+    assert.deepEqual(Object.keys(robot["main-photo"][0]).sort(), ["assetId", "attachmentId", "fileName", "mimeType", "size", "url"]);
+    assert.deepEqual([robot["main-photo"][0].fileName, robot["main-photo"][0].mimeType], ["walking-robot.svg", "image/svg+xml"]);
+    assert.deepEqual(
+      robot["more-photos"].map((file) => file.fileName),
+      ["walking-robot-box.svg"],
+      "More photos: the rest, the main photo not repeated",
+    );
+    assert.equal(robot.image, undefined, "no links written");
+    const { "main-photo": main, "more-photos": more, ...rest } = robot;
     assert.deepEqual(rest, {
       "product-id": "tt-walking-robot",
       sku: "TT-ROB-01",
@@ -125,7 +134,7 @@ describe("import-products.mjs into the shop's own Products", () => {
     for (const row of products()) for (const slug of Object.keys(row.fields)) assert.ok(slugs.has(slug), `${slug} is a column of the shop's Products`);
     assert.equal(product("tt-magnetic-tiles").fields.status, "draft", "launch + draft in the list is a draft");
     assert.equal(product("tt-xylophone").fields.price, undefined, "no price in the list, none written");
-    assert.equal(product("tt-chef-kitchen").fields.image, undefined);
+    assert.equal(product("tt-chef-kitchen").fields["main-photo"], undefined);
 
     const robotCerts = api.state.records.bas_shop_certificates.filter((row) => row.fields.product[0] === product("tt-walking-robot").id);
     assert.deepEqual(robotCerts.map((row) => row.fields["cert-type"]).sort(), ["ASTM F963", "CPSIA / CPC", "EN 71", "UKCA"]);
@@ -216,6 +225,99 @@ describe("import-products.mjs into the shop's own Products", () => {
     assert.equal(summary.products.created, 12);
     assert.ok(products().every((row) => !("tags" in row.fields)));
     assert.ok(summary.notes.includes('busa-shop-products has no "tags" column, so those values were left out.'));
+  });
+});
+
+describe("pictures are the shop's own files (busa-shop 0.9.0)", () => {
+  // A 1 × 1 PNG, served by a supplier's CDN under a link with no file extension.
+  const PNG = Buffer.from(
+    "89504e470d0a1a0a0000000d4948445200000001000000010806000000" + "1f15c4890000000d4944415478da63f8ffff3f0005fe02fea7d6a4f00000000049454e44ae426082",
+    "hex",
+  );
+  const cdn = (url, init) => {
+    if (!String(url).startsWith("https://cdn.example/")) return fetch(url, init);
+    if (String(url).endsWith("/front")) return Promise.resolve(new Response(PNG, { headers: { "content-type": "image/png" } }));
+    return Promise.resolve(new Response("gone", { status: 404 }));
+  };
+  const linkSdk = { ...sdk, fetch: cdn };
+  // Products as busa-shop 0.8.0 installed it: links in Image URL and More photos, no photo cells.
+  const oldShopFields = () => [
+    ...structuredClone(shopProductsBase.fields).filter((field) => field.type !== "attachment"),
+    { slug: "image", name: "Image URL", type: "text", options: {} },
+    { slug: "gallery", name: "More photos (one link per line)", type: "longtext", options: {} },
+  ];
+
+  it("downloads a link in the list and keeps it as the shop's own file; a dead link is left out and named", async () => {
+    await withCsv(
+      (csv) => csv.replace("walking-robot.svg,walking-robot-box.svg", "https://cdn.example/robot/front,https://cdn.example/robot/gone.png"),
+      async (catalogPath) => {
+        const summary = await run({ catalogPath, sdk: linkSdk });
+        const robot = product("tt-walking-robot").fields;
+        assert.deepEqual(
+          robot["main-photo"].map((file) => [file.fileName, file.mimeType]),
+          [["front.png", "image/png"]],
+          "named from the link, its type from the download",
+        );
+        assert.match(robot["main-photo"][0].url, new RegExp(`^${api.origin}/assets/`), "the shop's own copy, not the supplier's link");
+        assert.equal(robot["more-photos"], undefined);
+        assert.ok(summary.notes.some((note) => note.includes("could not download https://cdn.example/robot/gone.png")));
+        api.log.length = 0;
+        const again = await run({ catalogPath, sdk: linkSdk });
+        assert.deepEqual([again.products.unchanged, again.images.uploaded], [12, 0], "the same picture is recognised by its bytes");
+        assert.ok(!writes().some((entry) => entry.path.includes("/records/")));
+      },
+    );
+  });
+
+  it("a shop from before 0.9.0, without the photo columns, still gets links in Image URL and More photos", async () => {
+    api.state.bases.bas_shop_products.fields = oldShopFields();
+    const summary = await run();
+    assert.equal(summary.photoColumns, false);
+    const robot = product("tt-walking-robot").fields;
+    assert.match(robot.image, new RegExp(`^${api.origin}/assets/k\\d+-walking-robot\\.svg$`));
+    assert.match(robot.gallery, new RegExp(`^${api.origin}/assets/k\\d+-walking-robot-box\\.svg$`));
+    assert.equal(robot["main-photo"], undefined);
+  });
+
+  it("--move-photos moves an older shop's links into Main photo and More photos, once, and names what it could not use", async () => {
+    api.state.bases.bas_shop_products.fields = oldShopFields();
+    await run();
+    product("tt-walking-robot").fields.gallery += "\nhttps://cdn.example/robot/gone.png";
+    const links = JSON.stringify(api.state.records.bas_shop_products.map((row) => [row.fields.image, row.fields.gallery]));
+    await assert.rejects(runMovePhotos({ env: env(), sdk: linkSdk }), /add the two columns first/);
+
+    // The upgrade adds the two photo columns next to the old link columns.
+    api.state.bases.bas_shop_products.fields = [...oldShopFields(), ...structuredClone(shopProductsBase.fields).filter((field) => field.type === "attachment")];
+    api.log.length = 0;
+    const dry = await runMovePhotos({ env: env(), sdk: linkSdk, dryRun: true });
+    assert.deepEqual(dry.products, { moved: 10, alreadyMoved: 0, noLinks: 2, queued: 0 });
+    assert.deepEqual(writes(), [], "a dry run writes and uploads nothing");
+    assert.match(formatMoveSummary(dry), /^Dry run, nothing was written or uploaded\. Products table: busa-shop-products/);
+
+    const moved = await runMovePhotos({ env: env(), sdk: linkSdk });
+    assert.deepEqual(moved.products, { moved: 10, alreadyMoved: 0, noLinks: 2, queued: 0 });
+    assert.deepEqual(moved.images, { uploaded: 11, reused: 0, failed: 1 });
+    const robot = product("tt-walking-robot").fields;
+    assert.deepEqual(
+      [...robot["main-photo"], ...robot["more-photos"]].map((file) => file.fileName),
+      ["tt-walking-robot-1.svg", "tt-walking-robot-2.svg"],
+      "named after the product, main photo first",
+    );
+    assert.ok([...robot["main-photo"], ...robot["more-photos"]].every((file) => file.attachmentId && file.url.startsWith(`${api.origin}/assets/`)));
+    assert.match(formatMoveSummary(moved), /could not download: https:\/\/cdn\.example\/robot\/gone\.png/);
+    assert.equal(
+      JSON.stringify(api.state.records.bas_shop_products.map((row) => [row.fields.image, row.fields.gallery])),
+      links,
+      "the old link cells are left as they were",
+    );
+    const updates = writes().filter((entry) => entry.path.includes("/records/"));
+    assert.equal(updates.length, 10);
+    assert.ok(updates.every((entry) => Object.keys(JSON.parse(entry.body).fields).join() === "main-photo,more-photos"));
+
+    api.log.length = 0;
+    const again = await runMovePhotos({ env: env(), sdk: linkSdk });
+    assert.deepEqual(again.products, { moved: 0, alreadyMoved: 10, noLinks: 2, queued: 0 });
+    assert.deepEqual(writes(), []);
   });
 });
 

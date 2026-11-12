@@ -21,8 +21,9 @@ by `ref` (Position), never writes them.
 | `category` | text | yes | Search data only (schema.org `category`), not shown as text |
 | `brand`, `model` | text | yes | First two Details lines; `brand` is also schema.org `brand` |
 | `subtitle` | text | yes | Under the name on the card and the product page |
-| `image` | text | yes | Main photo URL (see SKILL.md "Product images") |
-| `gallery` | longtext | yes | More photo URLs, one per line (a JSON array is read too) |
+| `main-photo` | attachment (1 image) | yes | Main photo: the file's `url` (see SKILL.md "Product images"). Since 0.9.0 |
+| `more-photos` | attachment (up to 11 images) | yes | More photos, after the main one; the page shows 8 in all. Since 0.9.0 |
+| `image`, `gallery` | text, longtext | while both photo cells are empty | Only in a shop installed before 0.9.0: the main photo's link, more links one per line. Deleted once the photos are moved ("A shop installed before 0.9.0") |
 | `description` | longtext | yes | Paragraphs separated by a blank line |
 | `highlights` | longtext | yes | One per line, shown as a list (at most 8) |
 | `specs` | longtext | yes | One `Label: value` per line; known labels become Details keys (`src/details.js`, `parseSpecs`), others are shown as written, after them |
@@ -239,12 +240,14 @@ the stored value alone.
 
 | Base | Fields it may write |
 | --- | --- |
-| Products (the shop's) | `product-id`, `name`, `sku`, `subtitle`, `category`, `status` (from the sheet's Status and Lifecycle: on sale → `active`, draft/test → `draft`, 下架/archive → `archive`), `price`, `currency`, `stock`, `cost` (cost, or landed cost when there is none), `brand`, `model`, `warranty`, `returns`, `description`, `highlights`, `tags`, `specs` and `notes` (lines merged by label: a line about the same thing gets the new value under the label already there, new lines are appended, none is removed), `source`, `image` + `gallery` (the uploaded pictures: main, then the rest one per line); `ref` on create |
+| Products (the shop's) | `product-id`, `name`, `sku`, `subtitle`, `category`, `status` (from the sheet's Status and Lifecycle: on sale → `active`, draft/test → `draft`, 下架/archive → `archive`), `price`, `currency`, `stock`, `cost` (cost, or landed cost when there is none), `brand`, `model`, `warranty`, `returns`, `description`, `highlights`, `tags`, `specs` and `notes` (lines merged by label: a line about the same thing gets the new value under the label already there, new lines are appended, none is removed), `source`, `main-photo` + `more-photos` (the uploaded pictures as files, main first; a link in the list is downloaded and uploaded too); in a shop from before 0.9.0 without them, `image` + `gallery` (the uploaded pictures' links, the rest one per line); `ref` on create |
 | Certificates | `product`, `cert-type`, `cert-number`, `issuer`, `issued-date`, `expiry-date`, `source-note` (`<file> › <sheet> row <n>`, plus the row's Source/备注) |
 
 A column it writes but the table no longer has (the owner deleted it) is left
 out, and the summary says so. A picture is not uploaded again when the
-product already shows one with the same bytes (it reads the stored URLs back).
+product already shows one with the same bytes (it reads the stored files back).
+`--move-photos` writes only `main-photo` + `more-photos`, on rows where both
+are empty, from their `image` / `gallery` links.
 Into a busa-product-hub table it writes that template's shape instead
 (busa-product-hub's `references/product-hub-schema.md`, "Written by
 `scripts/import-products.mjs`").

@@ -42,8 +42,14 @@
 // - Pictures, three ways: https links in an image column, file names found in an
 //   images folder, and pictures inside the workbook: floating pictures placed on
 //   a product's row, Excel's "Place in Cell" pictures, and WPS's in-cell
-//   pictures (DISPIMG). Uploaded through the SDK (`uploadAsset`); their public
-//   URLs go into `image` / `gallery`.
+//   pictures (DISPIMG). Uploaded through the SDK (`uploadAsset`). In the
+//   shop's own Products (busa-shop 0.9.0 and later) they become files in the
+//   Main photo / More photos attachment cells, and a link is downloaded and
+//   stored the same way, so the shop never depends on someone else's server;
+//   in a product hub, or a shop from before 0.9.0, their public URLs go into
+//   `image` / `gallery` as before.
+// - `--move-photos`: in a shop upgraded to 0.9.0, moves each row's Image URL /
+//   More photos links into the new attachment cells (see `runMovePhotos`).
 // - Certificates from a Certificates sheet (or a separate file), and from
 //   certificate columns on the product sheet ("FCC ID", "CE 证书编号").
 // - Finds the tables by the stamp the template installer writes
@@ -84,6 +90,8 @@ const PAGE = 100;
 const MAX_PAGES = 50; // 5,000 rows: far beyond a small seller's catalogue; refuse rather than half-read
 const MAX_PICTURES = 12; // per product: the gallery a website can show
 const MIME = { ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif", ".avif": "image/avif" };
+/** The shop's picture cells (busa-shop 0.9.0 and later): attachment cells, main photo first. */
+export const PHOTO_FIELDS = ["main-photo", "more-photos"];
 
 class InputError extends Error {}
 
@@ -1463,7 +1471,12 @@ const JSON_PRICE_KEYS = ["current_price", "price", "currency"];
 export const hasPriceColumn = (base) => (base?.fields ?? []).some((field) => field.slug === "price");
 
 /** True when `next` would store the same thing as `current` for that field. */
+/** The files of an attachment cell, as comparable keys (the same file stored again has the same attachmentId or URL). */
+const fileKeys = (value) =>
+  JSON.stringify((Array.isArray(value) ? value : []).map((item) => (item && typeof item === "object" ? (item.attachmentId ?? item.url ?? "") : String(item ?? ""))));
+
 const sameValue = (slug, current, next) => {
+  if (PHOTO_FIELDS.includes(slug)) return fileKeys(current) === fileKeys(next);
   if (JSON_FIELDS.has(slug) && /^[[{]/.test(typeof next === "string" ? next.trim() : "")) {
     const parse = (value) => (typeof value === "string" ? (value.trim() ? JSON.parse(value) : null) : value ?? null);
     try {
@@ -1620,9 +1633,12 @@ export const mergeLines = (stored, entries) => {
  * grid. The details a shopper reads go into Brand, Model, Warranty, Returns
  * and Specs; everything else the sheet says (supplier, trade terms, unknown
  * columns) into Notes, which the website never reads. `images` as for
- * `productFields`.
+ * `productFields`, each also carrying the `attachment` its upload made.
+ * `photoColumns`: the table has Main photo and More photos (busa-shop 0.9.0
+ * and later), so pictures are files there; without them (a shop from before)
+ * they are links in Image and More photos, as then.
  */
-export const shopProductFields = (planned, existing = {}, images = null) => {
+export const shopProductFields = (planned, existing = {}, images = null, { photoColumns = true } = {}) => {
   const fields = { "product-id": planned.productId };
   for (const slug of ["sku", "name", "subtitle", "category"]) if (planned.text[slug]) fields[slug] = planned.text[slug];
   const fill = planned.fill ?? {};
@@ -1660,7 +1676,12 @@ export const shopProductFields = (planned, existing = {}, images = null) => {
   ].filter(([label, value]) => label && value);
   if (notes.length) fields.notes = mergeLines(existing.notes, notes);
   if (planned.source) fields.source = planned.source;
-  if (images?.length) {
+  const files = photoColumns ? (images ?? []).filter((image) => image.attachment) : [];
+  if (files.length) {
+    fields["main-photo"] = [files[0].attachment];
+    // The list names this product's pictures: More photos becomes the rest of them (cleared only if it held some).
+    if (files.length > 1 || asList(existing["more-photos"]).length) fields["more-photos"] = files.slice(1).map((image) => image.attachment);
+  } else if (!photoColumns && images?.length) {
     fields.image = images[0].url;
     // The list names this product's pictures: More photos becomes the rest of them (cleared only if it held some).
     if (images.length > 1 || !blank(existing.gallery)) {
@@ -1712,6 +1733,80 @@ const pickSheet = (book, wanted, finder, label) => {
 };
 
 // ------------------------------------------------------------- running ----
+
+/** What an attachment cell stores for one uploaded picture: what `uploadAsset` returns. */
+export const attachmentOf = (asset) => ({
+  ...(asset.assetId ? { assetId: asset.assetId } : {}),
+  attachmentId: asset.attachmentId,
+  url: asset.url,
+  fileName: asset.fileName,
+  mimeType: asset.mimeType,
+  size: asset.size,
+});
+
+/** The files in a row's photo cells, main photo first (only entries with a link). */
+export const photoFilesOf = (fields) =>
+  PHOTO_FIELDS.flatMap((slug) => asList(fields[slug])).filter((item) => item && typeof item === "object" && typeof item.url === "string" && item.url);
+
+/** The links in a row's Image / More photos (Gallery) text cells, main first. */
+export const photoLinksOf = (fields) => {
+  const gallery = String(fields.gallery ?? "").trim();
+  const links = [fields.image, ...(gallery.startsWith("[") ? asList(gallery) : gallery.split(/[\s|]+/))].map((ref) => clean(ref));
+  return [...new Set(links.filter((ref) => /^https?:\/\//i.test(ref)))];
+};
+
+/** Whether the website has a picture to show for this row: a photo cell, or a link the site still reads. */
+const hasPicture = (fields) => photoFilesOf(fields).length > 0 || !blank(fields.image) || !blank(fields.gallery);
+
+const EXTENSION_OF = Object.fromEntries(Object.entries(MIME).filter(([ext]) => ext !== ".jpeg").map(([ext, type]) => [type, ext]));
+
+/** A file name for a downloaded link: its own, given the extension of what was downloaded when it has none. */
+const linkFileName = (url, type, productId) => {
+  const base = decodeURIComponent(path.basename(new URL(url).pathname)).replace(/[^\w.\-]+/g, "-").replace(/^-+|-+$/g, "") || `${productId}-photo`;
+  return MIME[path.extname(base).toLowerCase()] ? base : `${base}${EXTENSION_OF[type] ?? ""}`;
+};
+
+/**
+ * Reading pictures back: by link, with the key only ever sent to the Busabase
+ * server itself, never to another host (and a redirect is followed without
+ * it). `storedPictures` lists what a row already holds, each known by the
+ * SHA-256 of its bytes, so the same picture is never uploaded twice.
+ */
+const pictureReader = ({ env, fetchImpl, photoColumns }) => {
+  const busabaseOrigin = new URL(env.BUSABASE_BASE_URL).origin;
+  const authFor = (url) =>
+    new URL(url).origin === busabaseOrigin && env.BUSABASE_API_KEY
+      ? { authorization: `Bearer ${env.BUSABASE_API_KEY}`, ...(env.BUSABASE_SPACE_ID ? { "x-busabase-space": env.BUSABASE_SPACE_ID } : {}) }
+      : {};
+  const fetchPicture = async (url) => {
+    try {
+      let response = await fetchImpl(url, { headers: authFor(url), redirect: "manual" });
+      const location = response.headers.get("location");
+      if (response.status >= 300 && response.status < 400 && location) {
+        await response.body?.cancel?.();
+        const next = new URL(location, url).href;
+        response = await fetchImpl(next, { headers: authFor(next) });
+      }
+      if (!response.ok) return null;
+      const bytes = Buffer.from(await response.arrayBuffer());
+      const type = String(response.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+      return bytes.length ? { bytes, type } : null;
+    } catch {
+      return null;
+    }
+  };
+  const storedPictures = async (fields) => {
+    const stored = photoColumns ? photoFilesOf(fields).map((attachment) => ({ url: attachment.url, attachment })) : photoLinksOf(fields).map((url) => ({ url }));
+    const known = [];
+    for (const { url, attachment } of stored) {
+      if (known.some((item) => item.url === url)) continue;
+      const picture = await fetchPicture(url);
+      if (picture) known.push({ file: attachment?.fileName ?? path.basename(new URL(url).pathname), sha256: sha256(picture.bytes), url, ...(attachment ? { attachment } : {}) });
+    }
+    return known;
+  };
+  return { fetchPicture, storedPictures };
+};
 
 const readAll = async (records, baseId) => {
   const rows = [];
@@ -1855,6 +1950,8 @@ export const runImport = async ({
   const productsTable = await client.bases.get({ baseId: hub.productsBaseId });
   const priceColumn = shop || hasPriceColumn(productsTable);
   const tableColumns = new Set((productsTable?.fields ?? []).map((field) => field.slug));
+  // busa-shop 0.9.0 and later: pictures are files in Main photo / More photos.
+  const photoColumns = shop && tableColumns.has("main-photo");
   if (allCertificates.length && !hub.certificatesBaseId) {
     throw new Error(`No Certificates table next to ${hub.productsSlug}. Install ${shop ? "Busa Shop" : "Busa Product Hub"} completely, or run without certificates.`);
   }
@@ -1867,6 +1964,7 @@ export const runImport = async ({
     shopFound: shopSettings.status !== "missing",
     storeCurrency,
     priceColumn,
+    photoColumns,
     file: fileName,
     sheet: csv ? "" : productSheet.name,
     headerRow: table.headerRow,
@@ -1910,39 +2008,8 @@ export const runImport = async ({
   }
 
   // The shop's table keeps no list of uploaded files: a stored picture is
-  // known by the SHA-256 of its bytes, read back from its URL (the key only
-  // ever goes to the Busabase server itself).
-  const busabaseOrigin = new URL(env.BUSABASE_BASE_URL).origin;
-  const fetchImpl = sdk?.fetch ?? globalThis.fetch;
-  const authFor = (url) =>
-    new URL(url).origin === busabaseOrigin && env.BUSABASE_API_KEY
-      ? { authorization: `Bearer ${env.BUSABASE_API_KEY}`, ...(env.BUSABASE_SPACE_ID ? { "x-busabase-space": env.BUSABASE_SPACE_ID } : {}) }
-      : {};
-  const storedPicture = async (url) => {
-    try {
-      let response = await fetchImpl(url, { headers: authFor(url), redirect: "manual" });
-      const location = response.headers.get("location");
-      if (response.status >= 300 && response.status < 400 && location) {
-        await response.body?.cancel?.();
-        const next = new URL(location, url).href;
-        response = await fetchImpl(next, { headers: authFor(next) });
-      }
-      if (!response.ok) return null;
-      const bytes = Buffer.from(await response.arrayBuffer());
-      return bytes.length ? bytes : null;
-    } catch {
-      return null;
-    }
-  };
-  const storedPictures = async (fields) => {
-    const known = [];
-    for (const url of [clean(fields.image), ...String(fields.gallery ?? "").split(/[\s|]+/)].filter((ref) => /^https?:\/\//i.test(ref))) {
-      if (known.some((item) => item.url === url)) continue;
-      const bytes = await storedPicture(url);
-      if (bytes) known.push({ file: path.basename(new URL(url).pathname), sha256: sha256(bytes), url });
-    }
-    return known;
-  };
+  // known by the SHA-256 of its bytes, read back from its URL.
+  const { fetchPicture, storedPictures } = pictureReader({ env, fetchImpl: sdk?.fetch ?? globalThis.fetch, photoColumns });
   const productRecordIds = new Map();
   const nowIso = () => now().toISOString();
 
@@ -1971,7 +2038,7 @@ export const runImport = async ({
 
     let images = null;
     const hashes = new Set();
-    const upload = async ({ file, bytes, label }) => {
+    const upload = async ({ file, bytes, label, type = "" }) => {
       const hash = sha256(bytes);
       if (hashes.has(hash)) {
         row.pictures.push({ label, status: "same picture again" });
@@ -1983,9 +2050,9 @@ export const runImport = async ({
       if (already) {
         summary.images.reused += 1;
         row.pictures.push({ label, status: "already uploaded" });
-        return { file: already.file ?? file, sha256: hash, url: already.url };
+        return { file: already.file ?? file, sha256: hash, url: already.url, ...(already.attachment ? { attachment: already.attachment } : {}) };
       }
-      const mimeType = MIME[path.extname(file).toLowerCase()];
+      const mimeType = MIME[path.extname(file).toLowerCase()] ?? (Object.values(MIME).includes(type) ? type : undefined);
       if (!mimeType) {
         summary.images.missing += 1;
         row.pictures.push({ label, status: "not usable" });
@@ -1994,15 +2061,30 @@ export const runImport = async ({
       }
       summary.images.uploaded += 1;
       row.pictures.push({ label, status: dryRun ? "to upload" : "uploaded" });
-      if (dryRun) return { file, sha256: hash, url: `(would upload ${file})` };
+      if (dryRun) return { file, sha256: hash, url: `(would upload ${file})`, attachment: { url: `(would upload ${file})`, fileName: file } };
       const asset = await uploadAsset(client, new Uint8Array(bytes), { fileName: file, mimeType, context: "record-field" });
-      return { file, sha256: hash, url: asset.url };
+      return { file, sha256: hash, url: asset.url, attachment: attachmentOf(asset) };
+    };
+    // A link in the list. In the shop's photo cells it becomes the shop's own file: downloaded, then uploaded.
+    const fromLink = async (url, label) => {
+      if (!photoColumns) {
+        row.pictures.push({ label, status: "link" });
+        return { file: url, sha256: "", url };
+      }
+      const picture = await fetchPicture(url);
+      if (!picture) {
+        summary.images.missing += 1;
+        row.pictures.push({ label, status: "could not download" });
+        summary.notes.push(`${planned.productId}: could not download ${url}, left out. Check that it opens in a private browser window, or give the picture file itself.`);
+        return null;
+      }
+      return upload({ file: linkFileName(url, picture.type, planned.productId), bytes: picture.bytes, label, type: picture.type });
     };
     const found = [];
     for (const ref of planned.imageRefs) {
       if (/^https:\/\//i.test(ref)) {
-        found.push({ file: ref, sha256: "", url: ref });
-        row.pictures.push({ label: "link", status: "link" });
+        const image = await fromLink(ref, "link");
+        if (image) found.push(image);
         continue;
       }
       if (/^http:\/\//i.test(ref)) {
@@ -2026,8 +2108,8 @@ export const runImport = async ({
     let embedded = 0;
     for (const picture of planned.pictures) {
       if (picture.kind === "image-formula") {
-        found.push({ file: picture.url, sha256: "", url: picture.url });
-        row.pictures.push({ label: `${picture.cell} ${PICTURE_KIND[picture.kind]}`, status: "link" });
+        const image = await fromLink(picture.url, `${picture.cell} ${PICTURE_KIND[picture.kind]}`);
+        if (image) found.push(image);
         continue;
       }
       embedded += 1;
@@ -2042,7 +2124,7 @@ export const runImport = async ({
       images = unique.length ? unique.slice(0, MAX_PICTURES) : null;
     }
 
-    const next = keepColumns(shop ? shopProductFields(planned, stored, images) : productFields(planned, stored, images, { priceColumn }));
+    const next = keepColumns(shop ? shopProductFields(planned, stored, images, { photoColumns }) : productFields(planned, stored, images, { priceColumn }));
     const after = { ...stored, ...next };
     row.currency = String((priceColumn ? after.currency : asObject(after.pricing).currency) ?? "");
     row.currencyFrom = planned.currency ? planned.currencyFrom : row.currency ? (fill.currency === row.currency ? "--currency" : "table") : "";
@@ -2052,7 +2134,7 @@ export const runImport = async ({
     if (blank(storedPrice)) row.empty.push("price");
     if (!row.currency && !(shop && storeCurrency)) row.empty.push("currency");
     if (row.stock === null) row.empty.push("stock");
-    if (blank(after.image)) row.empty.push("picture");
+    if (!hasPicture(after)) row.empty.push("picture");
     if (blank(after.status)) row.empty.push("status");
     if (!shop && blank(after.lifecycle)) row.empty.push("lifecycle");
     if (!(shop ? clean(after.description) : asObject(after.content).description)) row.empty.push("description");
@@ -2203,6 +2285,139 @@ export const runImport = async ({
     summary.notes.push(`${hub.productsSlug} has no ${[...droppedColumns].map((slug) => `"${slug}"`).join(", ")} column, so those values were left out.`);
   }
   return summary;
+};
+
+/**
+ * `--move-photos`: a shop installed before busa-shop 0.9.0 kept its pictures
+ * as links in Image URL and More photos (text). Once Main photo and More
+ * photos (attachment cells) are added to its Products, this moves each row's
+ * links into them: each picture is downloaded (with the key only when it is on
+ * the Busabase server itself) and stored as one of the shop's files, the main
+ * one first. A row whose photo cells already hold a picture is left alone, so
+ * running it again changes nothing. The old link cells are not touched: the
+ * website reads them only while both photo cells are empty, and the owner
+ * deletes the two old columns after checking.
+ */
+export const runMovePhotos = async ({ productsBase = "", dryRun = false, env = process.env, sdk }) => {
+  if (!env.BUSABASE_BASE_URL) throw new Error("Set BUSABASE_BASE_URL (and BUSABASE_API_KEY, BUSABASE_SPACE_ID for Busabase Cloud).");
+  const { createBusabaseClient, uploadAsset, createAirAppRecords } = sdk ?? (await loadSdk());
+  const client = createBusabaseClient({
+    baseUrl: env.BUSABASE_BASE_URL,
+    ...(env.BUSABASE_API_KEY ? { apiKey: env.BUSABASE_API_KEY } : {}),
+    ...(env.BUSABASE_SPACE_ID ? { spaceId: env.BUSABASE_SPACE_ID } : {}),
+  });
+  const nodes = (await client.nodes.list({ types: ["base"] })) ?? [];
+  const shopSettings = findShopSettings(nodes);
+  if (shopSettings.status === "ambiguous" && !productsBase) {
+    throw new Error(`This workspace has more than one Busa Shop (${shopSettings.nodes.map((node) => node.slug).join(", ")}). Name the Products table with --products-base <slug>.`);
+  }
+  const hub = resolveTarget(nodes, {
+    override: productsBase,
+    shopFolderId: shopSettings.status === "found" ? shopSettings.node.parentId : undefined,
+    shopFound: shopSettings.status !== "missing",
+  });
+  const table = await client.bases.get({ baseId: hub.productsBaseId });
+  const columns = new Set((table?.fields ?? []).map((field) => field.slug));
+  if (hub.shape !== SHOP_SHAPE || !PHOTO_FIELDS.every((slug) => columns.has(slug))) {
+    throw new InputError(
+      `${hub.productsSlug} has no Main photo and More photos columns. --move-photos is for a Busa Shop's own Products after its upgrade to 0.9.0: add the two columns first (the busa-shop skill, "A shop installed before 0.9.0").`,
+    );
+  }
+  const records = createAirAppRecords(client, { appId: IMPORTER_IDS[SHOP_SHAPE] });
+  const { fetchPicture } = pictureReader({ env, fetchImpl: sdk?.fetch ?? globalThis.fetch, photoColumns: true });
+  const summary = {
+    dryRun,
+    productsTable: hub.productsSlug,
+    rows: [],
+    products: { moved: 0, alreadyMoved: 0, noLinks: 0, queued: 0 },
+    images: { uploaded: 0, reused: 0, failed: 0 },
+  };
+  for (const record of await readAll(records, hub.productsBaseId)) {
+    const fields = record.fields ?? {};
+    const productId = String(fields["product-id"] ?? record.id);
+    const links = photoLinksOf(fields);
+    if (photoFilesOf(fields).length) {
+      summary.products.alreadyMoved += 1;
+      continue;
+    }
+    if (!links.length) {
+      summary.products.noLinks += 1;
+      continue;
+    }
+    const row = { productId, name: String(fields.name ?? ""), pictures: [], action: "" };
+    summary.rows.push(row);
+    const files = [];
+    const hashes = new Map();
+    for (const url of links) {
+      const picture = await fetchPicture(url);
+      // Named after the product (a stored link ends in a content hash): tt-walking-robot-1.svg, -2…
+      const ext = picture ? path.extname(linkFileName(url, picture.type, productId)).toLowerCase() : "";
+      const fileName = `${productId.replace(/[^\w.-]+/g, "-")}-${files.length + 1}${ext}`;
+      const mimeType = picture ? (MIME[ext] ?? (Object.values(MIME).includes(picture.type) ? picture.type : "")) : "";
+      if (!picture || !mimeType) {
+        summary.images.failed += 1;
+        row.pictures.push({ url, status: picture ? "not a picture this shop shows" : "could not download" });
+        continue;
+      }
+      const hash = sha256(picture.bytes);
+      if (hashes.has(hash)) {
+        row.pictures.push({ url, status: "same picture again" });
+        continue;
+      }
+      hashes.set(hash, true);
+      if (dryRun) {
+        summary.images.uploaded += 1;
+        row.pictures.push({ url, status: "to store" });
+        files.push({ url, fileName });
+        continue;
+      }
+      const asset = await uploadAsset(client, new Uint8Array(picture.bytes), { fileName, mimeType, context: "record-field" });
+      summary.images.uploaded += 1;
+      row.pictures.push({ url, status: "stored" });
+      files.push(attachmentOf(asset));
+    }
+    if (!files.length) {
+      row.action = "nothing usable, left as it was";
+      continue;
+    }
+    const next = { "main-photo": files.slice(0, 1), "more-photos": files.slice(1, MAX_PICTURES) };
+    if (dryRun) {
+      summary.products.moved += 1;
+      row.action = "move";
+      continue;
+    }
+    const outcome = await records.updateRecord({
+      recordId: record.id,
+      baseCommitId: record.headCommitId,
+      fields: next,
+      message: `Move the photos of ${productId} from links into Main photo and More photos (busa-shop 0.9.0)`,
+    });
+    if (outcome.status === "queued") {
+      summary.products.queued += 1;
+      row.action = "waiting for review";
+    } else {
+      summary.products.moved += 1;
+      row.action = "moved";
+    }
+  }
+  return summary;
+};
+
+export const formatMoveSummary = (summary) => {
+  const verb = summary.dryRun ? "would be " : "";
+  const out = [
+    `${summary.dryRun ? "Dry run, nothing was written or uploaded. " : ""}Products table: ${summary.productsTable}`,
+    `Products: ${summary.products.moved} ${verb}moved, ${summary.products.alreadyMoved} already have photos, ${summary.products.noLinks} have no picture links${summary.products.queued ? `, ${summary.products.queued} waiting for review` : ""}`,
+    `Pictures: ${summary.images.uploaded} ${summary.dryRun ? "to store" : "stored"}, ${summary.images.failed} could not be used`,
+  ];
+  for (const row of summary.rows) {
+    out.push(`- ${row.productId}${row.name ? ` (${row.name})` : ""}: ${row.action}`);
+    for (const picture of row.pictures) out.push(`    ${picture.status}: ${picture.url}`);
+  }
+  if (!summary.dryRun && summary.products.moved) {
+    out.push("Open the website and check the photos. Then delete the old Image URL and More photos (one link per line) columns: the website no longer reads them for a product that has a photo.");
+  }
+  return out.join("\n");
 };
 
 // ----------------------------------------------------------- preview ----
@@ -2538,7 +2753,14 @@ first line names the table. Needs: npm i busabase-sdk
   --source "<text>"            where this data came from, kept on each product (default: file › sheet)
   --products-base <id|slug>    write this Products table instead (e.g. busa-product-hub-products)
   --json                       print the summary as JSON
-  --write-template <file.xlsx> write the blank bilingual template spreadsheet and stop (no Busabase needed)`;
+  --write-template <file.xlsx> write the blank bilingual template spreadsheet and stop (no Busabase needed)
+
+       node import-products.mjs --move-photos [--dry-run] [--products-base <id|slug>] [--json]
+
+A shop installed before busa-shop 0.9.0, after its Products got the Main photo
+and More photos columns: moves each product's picture links (Image URL, More
+photos) into them as the shop's own files. Rows that already have a photo are
+left alone.`;
 
 export const main = async (argv, { log = console.log, ...options } = {}) => {
   const valueOf = (name) => {
@@ -2556,6 +2778,11 @@ export const main = async (argv, { log = console.log, ...options } = {}) => {
     await mkdir(path.dirname(path.resolve(template)), { recursive: true });
     await writeFile(template, templateWorkbook());
     log(`Wrote ${template}: sheets "商品 Products", "认证 Certificates" and "说明 How to fill". Fill it in, then: node import-products.mjs ${path.basename(template)} --dry-run`);
+    return 0;
+  }
+  if (argv.includes("--move-photos")) {
+    const moved = await runMovePhotos({ productsBase: valueOf("--products-base") ?? "", dryRun: argv.includes("--dry-run"), ...options });
+    log(argv.includes("--json") ? JSON.stringify(moved, null, 2) : formatMoveSummary(moved));
     return 0;
   }
   const catalogPath = argv.find((arg, index) => !arg.startsWith("--") && !flagsWithValues.has(argv[index - 1]));

@@ -131,7 +131,7 @@ Field-by-field reference: [`references/shop-schema.md`](references/shop-schema.m
 
 One row per product. The columns an owner meets first are the ones the
 website uses most; the table's **On sale** and **All products** views show
-Name, Product ID, Status, Price, Currency, Stock, Category and Image URL.
+Name, Main photo, Product ID, Status, Price, Currency, Stock and Category.
 
 | Column | What it means |
 | --- | --- |
@@ -144,8 +144,8 @@ Name, Product ID, Status, Price, Currency, Stock, Category and Image URL.
 | **Subtitle** | Under the name, on the card and the product page |
 | **Brand**, **Model** | The first two lines of the product page's Details; Brand is also the product's brand in its search data |
 | **Category** | Not shown as text: only in the page's search data (schema.org `category`), and for the owner's own sorting |
-| **Image URL** | The main photo: an `https://` address |
-| **More photos** | More `https://` addresses, one per line |
+| **Main photo** | The main picture, as a file in the cell (attachment, one): drop or upload it in the table |
+| **More photos** | More pictures for the product page, as files (attachment, up to 11), after the Main photo |
 | **Description** | Paragraphs, separated by a blank line |
 | **Highlights** | One selling point per line, shown as a list |
 | **Specs** | The product's details, one `Label: value` per line (`Battery: 5110 mAh`). See "Product details on the page" |
@@ -203,6 +203,15 @@ Views: **To ship** (paid, oldest payment first), **New order requests**,
 payment**, **All orders** (newest first).
 
 ### Settings (one row)
+
+One row holds every setting, so the website and the daily check read typed,
+checked values (a currency, a PayPal mode, an email address). People see it a
+group at a time: the table opens on the **Store** view, and **Payments
+(PayPal)**, **Order emails (SMTP)**, **Google and search** and **Products and
+daily check** each show the store name plus their own columns (**All
+settings** shows every one). Each column carries its own help (what it is
+for, an example), the same as the Meaning below. When the owner asks to change
+a setting, write that one cell; never add a second row.
 
 | Field | Used by | Meaning |
 | --- | --- | --- |
@@ -371,25 +380,34 @@ do not add one whose values are internal (a supplier, a cost, a sales script).
 
 ## Product images
 
-**Image URL** and **More photos** are plain text, so the website decides per
-value (`classifyImageRef` in `src/catalog.js`):
+A product's pictures are **files** in two attachment cells of Products: **Main
+photo** (one) and **More photos** (up to 11). The owner drops them into the
+cell in the table; the importer uploads them the same way. Each file's `url`
+is what the website shows, main photo first, at most 8 on a page.
 
-- **An `https://` URL on another host** (an uploaded file's public address, a
-  CDN): the buyer's browser loads it directly. It must open in a private
-  browser window without signing in; the daily check tests one.
-- **A URL on the Busabase server itself**: a stranger cannot load it, so the
-  website serves it at `/images/<product-id>/<n>`, fetching it with its key.
-  That route answers only for image *n* of a **listed** product; any other id,
-  a hidden product or an index out of range is a 404, and the key is only ever
-  sent to the Busabase server, never to another host.
+Two older places hold **links** (plain text) instead, and the website still
+reads them, but only while a row's Main photo and More photos are both empty:
+**Image** / **Gallery** in a Busa Product Hub table, and **Image URL** / **More
+photos (one link per line)** in a shop installed before 0.9.0 that has not
+moved its photos yet ("A shop installed before 0.9.0").
+
+Either way the website decides per link (`classifyImageRef` in
+`src/catalog.js`):
+
+- **An `https://` URL on another host** (an uploaded file's public address on
+  Busabase Cloud, a CDN): the buyer's browser loads it directly. It must open
+  in a private browser window without signing in; the daily check tests one.
+- **A URL on the Busabase server itself** (a self-hosted or Desktop file): a
+  stranger cannot load it, so the website serves it at
+  `/images/<product-id>/<n>`, fetching it with its key. That route answers
+  only for image *n* of a **listed** product; any other id, a hidden product
+  or an index out of range is a 404, and the key is only ever sent to the
+  Busabase server, never to another host.
 - **A path inside the Product Hub AirApp** (`./assets/product-images/…`, a
   product hub's own sample data): served the same way, only when the shop
   sells from a product hub table.
 - Anything else (`http://` elsewhere, `data:`, other paths) is ignored. A
   listed product without a usable image shows "Photo coming soon".
-
-The importer uploads pictures and writes their public `https://` addresses,
-which is the first case.
 
 ## How the website finds its tables
 
@@ -491,8 +509,8 @@ owner's own files, or from one page the owner points to (below).
    run the preview again.
 4. **Import and read back.** The same command without `--dry-run` (then take
    down the old products the owner confirmed, if any). Then read Products
-   back: the number of products, a few prices, and that each picture URL
-   opens. If the summary says "waiting for review", the credential cannot
+   back: the number of products, a few prices, and that each product has
+   its Main photo. If the summary says "waiting for review", the credential cannot
    write here: tell the owner who can approve it.
 
 Running it again changes nothing; after the owner edits the sheet it changes
@@ -549,16 +567,20 @@ What the importer understands:
   memory, colour) so two colours of one phone stay two products. Made IDs are
   marked `*` in the preview: they change if the name changes, so suggest an ID
   column when the owner will edit the sheet and import again.
-- **Pictures.** An `https://` link in an image column is used as it is
-  (`http://` is left out). A file name is read from `--images` (default
-  `images/` next to the file) and uploaded. Pictures inside the workbook are
+- **Pictures.** They become files in Main photo and More photos. An `https://`
+  link in an image column is downloaded and stored as the shop's own file, so
+  the shop never depends on a supplier's server (`http://` is left out; a link
+  that does not download is left out and named). A file name is read from
+  `--images` (default `images/` next to the file) and uploaded. Pictures inside the workbook are
   uploaded too: a floating picture belongs to the row its top-left corner is
   in (a corner in the lower half of a row counts for the next row, which is
   where LibreOffice puts pictures it re-measured), Excel's **Place in Cell**
   pictures and WPS's in-cell pictures (`=DISPIMG(…)`) to their cell, and
-  `=IMAGE("https://…")` is used as a link. The first picture is the main one,
-  the rest More photos, at most 12, the same picture once. A picture already
-  on the product (the same bytes) is not uploaded again. Not read, and said
+  `=IMAGE("https://…")` is downloaded like a link. The first picture is the
+  Main photo, the rest More photos, at most 12, the same picture once. A
+  picture already on the product (the same bytes) is not uploaded again. In a
+  product hub table, or a shop from before 0.9.0 without the two photo cells,
+  links stay links and uploads go in as their public addresses, as before. Not read, and said
   so: linked (not embedded) pictures, EMF/WMF/TIFF/BMP files, pictures on a
   row with no product.
 - **Refuses** an old `.xls`, `.ods`, `.numbers`, a PDF or a password-protected
@@ -1149,6 +1171,41 @@ busabase-cli bases create-field --base-id <Settings Base id> --slug bing-site-ve
 The website finds a Posts table by the slug `busa-shop-posts` in the folder
 of its Settings, and needs a new deploy of 0.7.0's `vendor/worker.js`
 (Restart, then Go live) to read it.
+
+### A shop installed before 0.9.0
+
+Its Products keep pictures as links in **Image URL** and **More photos (one
+link per line)**, and its Settings show all 28 columns in one row. Everything
+keeps working. To move it to 0.9.0 (owner's yes first; the order matters,
+because the live website reads the link columns until it runs 0.9.0):
+
+1. **Website first.** Update the Shop Website node's files to 0.9.0's (at
+   least `src/catalog.js` and the rebuilt `vendor/worker.js`), then the owner
+   clicks **Restart** (a new preview of the new files) and **Go live**. 0.9.0 reads the photo cells and, while they
+   are empty, the old links, so nothing disappears.
+2. **Add the two photo columns** to Products, with the field definitions of
+   `templates/busa-shop/content/products/base.json` (`main-photo`,
+   `more-photos`: attachment, images only, 1 and 11 files, with their help).
+   `POST /api/v1/bases/<Products Base id>/fields` takes each definition as it
+   is. Put Main photo in the views in place of Image URL.
+3. **Move the photos**, preview first:
+   `node import-products.mjs --move-photos --dry-run`, then without
+   `--dry-run`. Each row's links are downloaded and stored as files named
+   after the product (`tt-walking-robot-1.svg`, `-2`…), main first. A row that
+   already has a photo is left alone, so it can run again. It names each link
+   it could not download.
+4. **Check the website** (`node probe-site.mjs <live address>`: no
+   `images.failed`), then **delete the two old columns** (Image URL, More
+   photos (one link per line)) with the owner's yes. The record history keeps
+   the old links.
+5. **Settings**: add each field's help and the six views of
+   `templates/busa-shop/content/settings/base.json` (Store, Payments (PayPal),
+   Order emails (SMTP), Google and search, Products and daily check, All
+   settings), Store first. Nothing in the row changes.
+
+The folder keeps saying `version: 0.8.0` in its metadata: the installer writes
+it, and the API does not let anyone change a folder's version afterwards.
+What runs is what the steps above changed.
 
 ## Google and AI assistants (SEO, GEO)
 
