@@ -1,6 +1,6 @@
 ---
 name: busa-shop
-description: Busa Shop (Busa 独立站) is a one-install online shop for a small cross-border seller with 商品管理 built in (no 产品枢纽 to install). Its Products feed a storefront website with checkout (PayPal or order requests), SMTP order emails, policy pages, Orders, Reports and a daily shop check. Use for $busa-shop or /busa-shop, or to open an online shop, 网店 or 独立站; to import products (导入商品, 导入 Excel 商品表, import Excel or CSV, import products from Excel, a product list or 商品表, a PDF or photo); to put products in the shop (把商品放进店, 上架), take them down (下架) or change a price (改价格); to record certificates; to set up payments (收款, 付款, PayPal, 结账, checkout), shipping costs (运费), emails (邮件, SMTP) or policy pages (政策页); to handle orders (订单, what to ship, awaiting payment, payment problems); to write blog posts (写博客, 写文章, 落地页, landing pages) or improve SEO and GEO (Google, Search Console, Analytics, AI assistants); to let AI 助手 like ChatGPT and Claude find and sell your products over MCP (Agent 电商); or to run the daily shop check.
+description: Busa Shop (Busa 独立站) is a one-install online shop for a small cross-border seller with 商品管理 built in (no 产品枢纽 to install). Its Products feed a storefront website with checkout (PayPal or order requests), SMTP order emails, policy pages, Orders and Reports. Use for $busa-shop or /busa-shop, or to open an online shop, 网店 or 独立站; to import products (导入商品, 导入 Excel 商品表, import Excel or CSV, import products from Excel, a product list or 商品表, a PDF or photo); to put products in the shop (把商品放进店, 上架), take them down (下架) or change a price (改价格); to record certificates; to set up payments (收款, 付款, PayPal, 结账, checkout), shipping costs (运费), emails (邮件, SMTP) or policy pages (政策页); to handle orders (订单, what to ship, payment problems); to write blog posts (写博客, 写文章, 落地页, landing pages) or improve SEO and GEO (Google, Search Console, Analytics, AI assistants); to let AI 助手 like ChatGPT and Claude find and sell your products over MCP (Agent 电商); for buyer login (买家登录, My orders); or to run the daily shop check.
 metadata:
   category: ecommerce
   tags:
@@ -190,7 +190,9 @@ Staff only, never read or written by the website: **Tracking number**,
 the address in parts (line 1, line 2, city, state / province, postal code),
 **Country** (`Denmark (DK)`), **Items (JSON)** (product id, sku, name,
 quantity, unit price, line total), **Customer note**, **Created at**,
-**Source** (`website`).
+**Source** (`website`), and **Customer account** (busa-shop 0.10.0: the
+signed-in buyer's id when buyer login is on, empty for a guest; "Buyer
+accounts (My orders, 买家登录)").
 
 Status, and who sets it ("Payments and orders" has the whole lifecycle):
 `awaiting-payment` → `paid` → `shipped` → `completed` for a PayPal order;
@@ -1375,6 +1377,131 @@ an OpenAI product feed (OpenAI's feed program is waitlisted and US-only), and
 in-chat checkout (ACP, Google's UCP checkout, PayPal's agent products: none
 is open to a small seller outside the US).
 
+## Buyer accounts (My orders, 买家登录)
+
+A buyer who ordered before asks "where is my order?". With **buyer login**
+on, the shop's header shows **Account**: the buyer types their email, gets a
+6-digit code in their inbox, types it, and sees **My orders**, the orders
+they placed while signed in, newest first: order number (a link to its
+`/pay/<order id>` page), date, items (name and quantity), total and status in
+plain words ("Awaiting payment", "Shipped"). No password, nothing to set up
+for the buyer, and checkout stays exactly the same for anyone who never signs
+in (busa-shop 0.10.0).
+
+It is **off until the owner switches it on**, and it needs a Busabase that
+has app users (Busabase's buyer-login endpoints, `/api/v1/app-users/*`) and
+the Website engine (Go live, Plus and higher): the Free plan's browser
+preview has no key to ask Busabase with, so it never shows Account. While it
+is off, unknown (an older Busabase answers 404) or Busabase cannot be asked,
+the site hides every link to it, `/account` is a short "Customer accounts are
+not available" page, and everything else, checkout included, works as before.
+`/api/status` says which: `accounts` is `on`, or why not (`disabled`,
+`not-supported` for a Busabase without app users, `no-app` when the site
+cannot find its own Shop Website node, `no-key` on the browser engine).
+
+### Switch it on (the owner decides; you make the call)
+
+Ask the owner first: it lets strangers create sign-ins in this space (one per
+email address, no seat, no access to anything in Busabase) and makes
+Busabase email them codes. Then, with a key whose owner can **manage** the
+Shop Website node (the owner's own key, or a Space admin's; never the site's
+`Site: Shop Website` key):
+
+1. Find the **Shop Website** node id (`busabase-cli nodes list`, type
+   `airapp`, slug `busa-shop-app` in this folder) and the **Orders** Base id.
+2. Check that Orders has the **Customer account** column (`customer-account`,
+   text). A shop installed before 0.10.0 does not: see "A shop installed
+   before 0.10.0" below.
+3. Turn login on for the website, naming Customer account as the Orders
+   owner field and the shop's name as the name in the emails:
+
+   ```bash
+   curl -X PUT "$BUSABASE_BASE_URL/api/v1/app-users/apps/<Shop Website node id>/settings" \
+     -H "Authorization: Bearer $BUSABASE_API_KEY" -H "x-busabase-space: <space id>" \
+     -H "content-type: application/json" \
+     -d '{"enabled": true, "appName": "<Settings › Store name>", "ownerFields": {"<Orders Base id>": "customer-account"}}'
+   ```
+
+   It answers the settings back; `GET` on the same address reads them.
+4. Within a minute the live site shows **Account** (the site reads the
+   setting at most once a minute). Check `/api/status` (`accounts: "on"`),
+   then sign in once yourself with a real inbox: ask for a code, type it,
+   place an order request while signed in, and see it under My orders.
+
+To switch it off: the same `PUT` with `"enabled": false`. Existing sessions
+stop working, Account disappears within a minute, orders keep their Customer
+account.
+
+### What buyers see, and what they never see
+
+- **Sign in**: `/account`, an email box. "We sent a 6-digit code to …; it
+  works for 10 minutes; not there? check your spam." A new code can be asked
+  for after a minute (the page says how many seconds to wait); at most 10
+  codes per address a day and 1000 per space a day. A wrong code says how
+  many tries are left (5 per code); an expired or used-up code says to ask
+  for a new one. A buyer the owner disabled is told so. The pages are plain
+  forms and work without JavaScript.
+- **Signed in**: My orders, and on the checkout page "Signed in as …: this
+  order will appear under My orders". An order placed while signed in gets the
+  buyer's id in **Customer account**; the website takes it from the session
+  Busabase checked, never from the form. Signing in stays for 30 days, until
+  **Sign out**, or until the owner disables the buyer.
+- **Never shown**: anything but order number, date, items, total, currency
+  and status. Internal note, Reply draft, Tracking number, the address, the
+  payment and email logs, PayPal ids and any product cost stay staff-only,
+  whatever else the row holds (`src/account.js` `BUYER_ORDER_FIELDS` is the
+  whole list).
+- **Guest orders** (placed without signing in, or before login was on) are
+  not listed, even when the email matches: an email typed into a checkout
+  proves nothing about who typed it. Do not fill in Customer account by hand
+  to "move" an order; if the owner wants one linked, they decide, and you
+  write exactly the app-user id Busabase shows for that buyer.
+
+### Privacy, and what you may do
+
+- The buyer's sign-in lives in Busabase, not in a table: email address, when
+  they last signed in, which shop. Their orders are the Orders rows as before.
+- The website keeps the session in a cookie `busa_shop_session` (HttpOnly,
+  Secure, SameSite=Lax, 30 days) and sends it only to Busabase; it reads a
+  buyer's orders through Busabase's `records/query`, which returns only the
+  rows whose Customer account is that buyer's id, never the Orders table
+  read with the site's key.
+- Busabase sends the code emails itself, in the shop's name (`appName`).
+  They are not the shop's SMTP emails and are not in any Email log.
+- Listing, disabling, enabling or deleting buyers is a Space admin's job, in
+  Busabase (`GET /api/v1/app-users?appId=<Shop Website node id>`,
+  `POST /api/v1/app-users/<id>/disable`, `…/enable`, `DELETE …`). You do any
+  of these only when the owner names the buyer and the action. Deleting a
+  buyer deletes their sign-in, never their orders. A privacy request ("delete
+  my data") is the owner's to answer: the orders may have to be kept for
+  accounting.
+- Never sign in as a buyer, never ask a buyer for their code, and never put a
+  session token anywhere.
+
+### A shop installed before 0.10.0
+
+Its Orders have no Customer account column and its website no Account page;
+everything keeps working, and login stays off. To add it (owner's yes first;
+website first, as for 0.9.0):
+
+1. Update the Shop Website node's files to 0.10.0's (`src/` and the rebuilt
+   `vendor/worker.js`), then the owner clicks **Restart** and **Go live**.
+2. Add the column to Orders with the definition in
+   `templates/busa-shop/content/orders/base.json`
+   (`customer-account`, text, with its help):
+
+   ```bash
+   busabase-cli bases create-field --base-id <Orders Base id> --slug customer-account --name "Customer account" --field-type text
+   ```
+
+   (or `POST /api/v1/bases/<Orders Base id>/fields` with the definition as it is).
+   Existing orders stay empty there: they are guest orders.
+3. Switch login on ("Switch it on", above).
+
+A website that writes Customer account into an Orders table without the
+column (login switched on before step 2) saves the order as a guest order and
+logs `order saved without Customer account`: the order is never lost.
+
 ## Daily shop check
 
 Observe → decide → act → write back. One run applies the owner's open
@@ -1604,6 +1731,10 @@ write feedback into Owner feedback on this report for the next run.
   unavailable".
 - **Certificates are shown as recorded.** The website cannot check the
   documents; an expired one is hidden, nothing more.
+- **Buyer login is email codes only** (no passwords, no Google or Apple
+  sign-in), shows only orders placed while signed in, and lets a buyer see,
+  not change or cancel, an order. It needs a Busabase with app users and the
+  Website engine; it is off until the owner switches it on.
 - **One shop per workspace.** With two Busa Shop folders the website and the
   importer stop and ask which one (`settings-ambiguous`).
 
@@ -1635,7 +1766,8 @@ and what each webhook event does, `vault.js` the two Vault values, `smtp.js`
 the SMTP client, `mail.js` the emails, `seo.js`, `pages.js`, `details.js`
 which product details a page shows and how Specs is read, `resources.js`
 table lookup, `shop.js` the only code that calls Busabase besides the Vault
-read, `handler.js` routes). Then, in
+read and `account.js` (buyer login and My orders through Busabase's app-user
+endpoints), `handler.js` routes). Then, in
 that folder:
 
 ```bash

@@ -51,6 +51,22 @@ address and no **Go live**, and nobody else can open it. Orders you place there
 are real Orders rows. Upgrading the space to Plus switches the same node to the
 Website engine, with Go live.
 
+## Buyer accounts (My orders)
+
+With buyer login switched on, the header shows **Account**: a buyer types
+their email, gets a 6-digit code from Busabase, and sees **My orders**, the
+orders they placed while signed in (order number, date, items, total,
+status; never the staff columns). No passwords; guest checkout is unchanged.
+An order placed while signed in carries the buyer's app-user id in Orders ›
+**Customer account**, the owner field Busabase filters on. It is off until
+the owner's agent switches it on (`PUT /api/v1/app-users/apps/<Shop Website
+node id>/settings` with `ownerFields: { "<Orders Base id>": "customer-account" }`,
+`enabled: true` and the shop's name as `appName`), needs a Busabase that has
+app users and the Website engine, and hides itself whenever it is off or
+Busabase does not offer it. The manual's "Buyer accounts (My orders, 买家登录)"
+has the steps, what buyers see, the privacy notes, and how a shop installed
+before 0.10.0 adds the column.
+
 ## Busa Product Hub is optional
 
 Busa Shop no longer needs [`busa-product-hub`](../busa-product-hub). That

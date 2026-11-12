@@ -9354,8 +9354,8 @@ function ko_default() {
 }
 
 // node_modules/zod/v4/locales/lt.js
-var capitalizeFirstCharacter = (text2) => {
-  return text2.charAt(0).toUpperCase() + text2.slice(1);
+var capitalizeFirstCharacter = (text3) => {
+  return text3.charAt(0).toUpperCase() + text3.slice(1);
 };
 function getUnitTypeFromNumber(number4) {
   const abs = Math.abs(number4);
@@ -20088,11 +20088,11 @@ function intercept(interceptors, options, main) {
   };
   return next(options, 0);
 }
-function parseEmptyableJSON(text2) {
-  if (!text2) {
+function parseEmptyableJSON(text3) {
+  if (!text3) {
     return void 0;
   }
-  return JSON.parse(text2);
+  return JSON.parse(text3);
 }
 function stringifyJSON(value2) {
   return JSON.stringify(value2);
@@ -20858,15 +20858,15 @@ function toStandardBody(re, options = {}) {
       }
       const contentType = re.headers.get("content-type");
       if (!contentType || contentType.startsWith("application/json")) {
-        const text2 = await re.text();
-        return parseEmptyableJSON(text2);
+        const text3 = await re.text();
+        return parseEmptyableJSON(text3);
       }
       if (contentType.startsWith("multipart/form-data")) {
         return await re.formData();
       }
       if (contentType.startsWith("application/x-www-form-urlencoded")) {
-        const text2 = await re.text();
-        return new URLSearchParams(text2);
+        const text3 = await re.text();
+        return new URLSearchParams(text3);
       }
       if (contentType.startsWith("text/event-stream")) {
         return toEventIterator(re.body, options);
@@ -23497,7 +23497,7 @@ var AGENT_PROMPT_CONTEXT_LIMITS = {
   maxContexts: 20,
   maxTotalTextBytes: 2097152
 };
-var agentPromptUtf8Bytes = (text2) => new TextEncoder().encode(text2).length;
+var agentPromptUtf8Bytes = (text3) => new TextEncoder().encode(text3).length;
 var identifier = external_exports.string().min(1).max(AGENT_PROMPT_CONTEXT_LIMITS.maxIdentifierChars);
 var label = external_exports.string().min(1).max(AGENT_PROMPT_CONTEXT_LIMITS.maxLabelChars);
 var AgentPromptSegmentSchema = external_exports.object({
@@ -27846,7 +27846,57 @@ var en = {
   blog_by: "by {author}",
   blog_back: "All posts",
   blog_products: "Products in this post",
-  blog_feed: "RSS feed"
+  blog_feed: "RSS feed",
+  // Buyer accounts (src/account.js, /account): busa-shop 0.10.0.
+  nav_account: "Account",
+  account_title: "Your account",
+  account_intro: "Sign in with your email address to see your orders. There is no password: we email you a 6-digit code.",
+  account_email_label: "Email address",
+  account_send_code: "Email me a code",
+  account_code_title: "Enter your code",
+  account_code_sent: "We sent a 6-digit code to {email}. It works for 10 minutes. Not there after a minute? Check your spam or junk folder.",
+  account_code_label: "6-digit code",
+  account_verify: "Sign in",
+  account_resend: "Send a new code",
+  account_other_email: "Use another email address",
+  account_wait: "A code was sent a moment ago. Please wait {seconds} seconds before asking for another one.",
+  account_daily_limit: "Too many codes were sent to this address today. Please try again tomorrow, or use the last code you received.",
+  account_shop_limit: "This shop cannot send more sign-in codes today. Please try again tomorrow.",
+  account_wrong_code: "That code is not right. You have {attempts} more tries.",
+  account_wrong_code_one: "That code is not right. You have 1 more try.",
+  account_no_attempts: "That code is not right, and this code cannot be tried again. Ask for a new code.",
+  account_expired: "This code has expired or was already used. Ask for a new one.",
+  account_user_disabled: "This account has been disabled. Please contact the shop if you think this is a mistake.",
+  account_invalid_email: "Please enter a valid email address.",
+  account_invalid_code: "Please enter the 6 digits from the email.",
+  account_error: "Sign-in is not working just now. Please try again in a few minutes. Your orders are safe.",
+  account_unavailable_title: "Customer accounts are not available",
+  account_unavailable_body: "This shop does not offer customer accounts at the moment. You can still order as usual: your order emails have everything you need.",
+  account_signed_in_as: "Signed in as {email}",
+  account_sign_out: "Sign out",
+  account_signed_out: "You are signed out.",
+  account_session_ended: "Your sign-in has ended. Please sign in again.",
+  account_orders_heading: "My orders",
+  account_orders_empty: "No orders yet. Orders you place while signed in will show up here.",
+  account_orders_note: "Orders placed without signing in are not listed here; their emails have the details.",
+  account_orders_unavailable: "Your orders cannot be shown just now. Please try again later.",
+  account_more: "Older orders",
+  account_checkout_signed_in: "Signed in as {email}: this order will appear under My orders.",
+  account_checkout_sign_in: "Have an account? Sign in to see this order later under My orders.",
+  col_order: "Order",
+  col_date: "Date",
+  col_items: "Items",
+  col_total: "Total",
+  col_status: "Status",
+  status_new: "Order request received",
+  "status_awaiting-payment": "Awaiting payment",
+  status_confirmed: "Confirmed, awaiting payment",
+  status_paid: "Paid",
+  status_shipped: "Shipped",
+  status_completed: "Completed",
+  status_cancelled: "Cancelled",
+  status_refunded: "Refunded",
+  "status_payment-problem": "Payment being checked"
 };
 var de = {
   nav_products: "Produkte",
@@ -27990,7 +28040,57 @@ var de = {
   blog_by: "von {author}",
   blog_back: "Alle Beitr\xE4ge",
   blog_products: "Produkte in diesem Beitrag",
-  blog_feed: "RSS-Feed"
+  blog_feed: "RSS-Feed",
+  // Buyer accounts (src/account.js, /account): busa-shop 0.10.0.
+  nav_account: "Konto",
+  account_title: "Ihr Konto",
+  account_intro: "Melden Sie sich mit Ihrer E-Mail-Adresse an, um Ihre Bestellungen zu sehen. Ein Passwort gibt es nicht: Wir schicken Ihnen einen 6-stelligen Code per E-Mail.",
+  account_email_label: "E-Mail-Adresse",
+  account_send_code: "Code per E-Mail senden",
+  account_code_title: "Code eingeben",
+  account_code_sent: "Wir haben einen 6-stelligen Code an {email} geschickt. Er gilt 10 Minuten. Nach einer Minute noch nicht da? Sehen Sie im Spam-Ordner nach.",
+  account_code_label: "6-stelliger Code",
+  account_verify: "Anmelden",
+  account_resend: "Neuen Code senden",
+  account_other_email: "Andere E-Mail-Adresse verwenden",
+  account_wait: "Gerade wurde ein Code gesendet. Bitte warten Sie {seconds} Sekunden, bevor Sie einen neuen anfordern.",
+  account_daily_limit: "An diese Adresse wurden heute zu viele Codes gesendet. Bitte versuchen Sie es morgen wieder oder verwenden Sie den letzten Code.",
+  account_shop_limit: "Dieser Shop kann heute keine Anmeldecodes mehr senden. Bitte versuchen Sie es morgen wieder.",
+  account_wrong_code: "Der Code stimmt nicht. Sie haben noch {attempts} Versuche.",
+  account_wrong_code_one: "Der Code stimmt nicht. Sie haben noch 1 Versuch.",
+  account_no_attempts: "Der Code stimmt nicht und kann nicht noch einmal versucht werden. Fordern Sie einen neuen Code an.",
+  account_expired: "Dieser Code ist abgelaufen oder wurde schon verwendet. Fordern Sie einen neuen an.",
+  account_user_disabled: "Dieses Konto wurde deaktiviert. Bitte wenden Sie sich an den Shop, wenn Sie das f\xFCr einen Fehler halten.",
+  account_invalid_email: "Bitte geben Sie eine g\xFCltige E-Mail-Adresse ein.",
+  account_invalid_code: "Bitte geben Sie die 6 Ziffern aus der E-Mail ein.",
+  account_error: "Die Anmeldung funktioniert gerade nicht. Bitte versuchen Sie es in ein paar Minuten noch einmal. Ihre Bestellungen sind sicher.",
+  account_unavailable_title: "Kundenkonten sind nicht verf\xFCgbar",
+  account_unavailable_body: "Dieser Shop bietet derzeit keine Kundenkonten an. Sie k\xF6nnen wie gewohnt bestellen: Ihre Bestell-E-Mails enthalten alles Wichtige.",
+  account_signed_in_as: "Angemeldet als {email}",
+  account_sign_out: "Abmelden",
+  account_signed_out: "Sie sind abgemeldet.",
+  account_session_ended: "Ihre Anmeldung ist abgelaufen. Bitte melden Sie sich erneut an.",
+  account_orders_heading: "Meine Bestellungen",
+  account_orders_empty: "Noch keine Bestellungen. Was Sie angemeldet bestellen, erscheint hier.",
+  account_orders_note: "Bestellungen ohne Anmeldung erscheinen hier nicht; ihre E-Mails enthalten die Details.",
+  account_orders_unavailable: "Ihre Bestellungen k\xF6nnen gerade nicht angezeigt werden. Bitte versuchen Sie es sp\xE4ter noch einmal.",
+  account_more: "\xC4ltere Bestellungen",
+  account_checkout_signed_in: "Angemeldet als {email}: Diese Bestellung erscheint unter \u201EMeine Bestellungen\u201C.",
+  account_checkout_sign_in: "Sie haben ein Konto? Melden Sie sich an, um diese Bestellung sp\xE4ter unter \u201EMeine Bestellungen\u201C zu sehen.",
+  col_order: "Bestellung",
+  col_date: "Datum",
+  col_items: "Artikel",
+  col_total: "Summe",
+  col_status: "Status",
+  status_new: "Bestellanfrage eingegangen",
+  "status_awaiting-payment": "Wartet auf Zahlung",
+  status_confirmed: "Best\xE4tigt, wartet auf Zahlung",
+  status_paid: "Bezahlt",
+  status_shipped: "Versendet",
+  status_completed: "Abgeschlossen",
+  status_cancelled: "Storniert",
+  status_refunded: "Erstattet",
+  "status_payment-problem": "Zahlung wird gepr\xFCft"
 };
 var fr = {
   nav_products: "Produits",
@@ -28134,7 +28234,57 @@ var fr = {
   blog_by: "par {author}",
   blog_back: "Tous les articles",
   blog_products: "Produits de cet article",
-  blog_feed: "Flux RSS"
+  blog_feed: "Flux RSS",
+  // Buyer accounts (src/account.js, /account): busa-shop 0.10.0.
+  nav_account: "Compte",
+  account_title: "Votre compte",
+  account_intro: "Connectez-vous avec votre adresse e-mail pour voir vos commandes. Pas de mot de passe : nous vous envoyons un code \xE0 6 chiffres par e-mail.",
+  account_email_label: "Adresse e-mail",
+  account_send_code: "M'envoyer un code",
+  account_code_title: "Saisissez votre code",
+  account_code_sent: "Nous avons envoy\xE9 un code \xE0 6 chiffres \xE0 {email}. Il est valable 10 minutes. Toujours rien apr\xE8s une minute ? Regardez dans vos courriers ind\xE9sirables.",
+  account_code_label: "Code \xE0 6 chiffres",
+  account_verify: "Se connecter",
+  account_resend: "Envoyer un nouveau code",
+  account_other_email: "Utiliser une autre adresse e-mail",
+  account_wait: "Un code vient d'\xEAtre envoy\xE9. Merci d'attendre {seconds} secondes avant d'en demander un autre.",
+  account_daily_limit: "Trop de codes ont \xE9t\xE9 envoy\xE9s \xE0 cette adresse aujourd'hui. R\xE9essayez demain, ou utilisez le dernier code re\xE7u.",
+  account_shop_limit: "Cette boutique ne peut plus envoyer de codes de connexion aujourd'hui. R\xE9essayez demain.",
+  account_wrong_code: "Ce code n'est pas le bon. Il vous reste {attempts} essais.",
+  account_wrong_code_one: "Ce code n'est pas le bon. Il vous reste 1 essai.",
+  account_no_attempts: "Ce code n'est pas le bon et ne peut plus \xEAtre essay\xE9. Demandez un nouveau code.",
+  account_expired: "Ce code a expir\xE9 ou a d\xE9j\xE0 servi. Demandez-en un nouveau.",
+  account_user_disabled: "Ce compte a \xE9t\xE9 d\xE9sactiv\xE9. Contactez la boutique si vous pensez qu'il s'agit d'une erreur.",
+  account_invalid_email: "Veuillez saisir une adresse e-mail valide.",
+  account_invalid_code: "Veuillez saisir les 6 chiffres re\xE7us par e-mail.",
+  account_error: "La connexion ne fonctionne pas pour le moment. R\xE9essayez dans quelques minutes. Vos commandes ne sont pas perdues.",
+  account_unavailable_title: "Les comptes clients ne sont pas disponibles",
+  account_unavailable_body: "Cette boutique ne propose pas de comptes clients pour le moment. Vous pouvez commander comme d'habitude : vos e-mails de commande contiennent tout le n\xE9cessaire.",
+  account_signed_in_as: "Connect\xE9 avec {email}",
+  account_sign_out: "Se d\xE9connecter",
+  account_signed_out: "Vous \xEAtes d\xE9connect\xE9.",
+  account_session_ended: "Votre connexion a expir\xE9. Veuillez vous reconnecter.",
+  account_orders_heading: "Mes commandes",
+  account_orders_empty: "Aucune commande pour l'instant. Les commandes pass\xE9es en \xE9tant connect\xE9 appara\xEEtront ici.",
+  account_orders_note: "Les commandes pass\xE9es sans connexion n'apparaissent pas ici ; leurs e-mails contiennent les d\xE9tails.",
+  account_orders_unavailable: "Vos commandes ne peuvent pas \xEAtre affich\xE9es pour le moment. R\xE9essayez plus tard.",
+  account_more: "Commandes plus anciennes",
+  account_checkout_signed_in: "Connect\xE9 avec {email} : cette commande appara\xEEtra dans Mes commandes.",
+  account_checkout_sign_in: "Vous avez un compte ? Connectez-vous pour retrouver cette commande dans Mes commandes.",
+  col_order: "Commande",
+  col_date: "Date",
+  col_items: "Articles",
+  col_total: "Total",
+  col_status: "Statut",
+  status_new: "Demande de commande re\xE7ue",
+  "status_awaiting-payment": "En attente de paiement",
+  status_confirmed: "Confirm\xE9e, en attente de paiement",
+  status_paid: "Pay\xE9e",
+  status_shipped: "Exp\xE9di\xE9e",
+  status_completed: "Termin\xE9e",
+  status_cancelled: "Annul\xE9e",
+  status_refunded: "Rembours\xE9e",
+  "status_payment-problem": "Paiement en cours de v\xE9rification"
 };
 var es = {
   nav_products: "Productos",
@@ -28278,7 +28428,57 @@ var es = {
   blog_by: "por {author}",
   blog_back: "Todos los art\xEDculos",
   blog_products: "Productos de este art\xEDculo",
-  blog_feed: "Feed RSS"
+  blog_feed: "Feed RSS",
+  // Buyer accounts (src/account.js, /account): busa-shop 0.10.0.
+  nav_account: "Cuenta",
+  account_title: "Tu cuenta",
+  account_intro: "Inicia sesi\xF3n con tu correo para ver tus pedidos. No hay contrase\xF1a: te enviamos un c\xF3digo de 6 d\xEDgitos por correo.",
+  account_email_label: "Correo electr\xF3nico",
+  account_send_code: "Enviarme un c\xF3digo",
+  account_code_title: "Introduce tu c\xF3digo",
+  account_code_sent: "Hemos enviado un c\xF3digo de 6 d\xEDgitos a {email}. Sirve durante 10 minutos. \xBFNo ha llegado despu\xE9s de un minuto? Revisa la carpeta de spam.",
+  account_code_label: "C\xF3digo de 6 d\xEDgitos",
+  account_verify: "Iniciar sesi\xF3n",
+  account_resend: "Enviar un c\xF3digo nuevo",
+  account_other_email: "Usar otro correo",
+  account_wait: "Acabamos de enviar un c\xF3digo. Espera {seconds} segundos antes de pedir otro.",
+  account_daily_limit: "Se han enviado demasiados c\xF3digos a esta direcci\xF3n hoy. Int\xE9ntalo ma\xF1ana o usa el \xFAltimo c\xF3digo que recibiste.",
+  account_shop_limit: "Esta tienda no puede enviar m\xE1s c\xF3digos de acceso hoy. Int\xE9ntalo ma\xF1ana.",
+  account_wrong_code: "El c\xF3digo no es correcto. Te quedan {attempts} intentos.",
+  account_wrong_code_one: "El c\xF3digo no es correcto. Te queda 1 intento.",
+  account_no_attempts: "El c\xF3digo no es correcto y ya no se puede volver a probar. Pide un c\xF3digo nuevo.",
+  account_expired: "Este c\xF3digo ha caducado o ya se us\xF3. Pide uno nuevo.",
+  account_user_disabled: "Esta cuenta est\xE1 desactivada. Contacta con la tienda si crees que es un error.",
+  account_invalid_email: "Introduce un correo electr\xF3nico v\xE1lido.",
+  account_invalid_code: "Introduce los 6 d\xEDgitos del correo.",
+  account_error: "El inicio de sesi\xF3n no funciona ahora mismo. Int\xE9ntalo dentro de unos minutos. Tus pedidos est\xE1n a salvo.",
+  account_unavailable_title: "Las cuentas de cliente no est\xE1n disponibles",
+  account_unavailable_body: "Esta tienda no ofrece cuentas de cliente por ahora. Puedes pedir como siempre: los correos de tu pedido tienen todo lo que necesitas.",
+  account_signed_in_as: "Sesi\xF3n iniciada como {email}",
+  account_sign_out: "Cerrar sesi\xF3n",
+  account_signed_out: "Has cerrado la sesi\xF3n.",
+  account_session_ended: "Tu sesi\xF3n ha terminado. Vuelve a iniciar sesi\xF3n.",
+  account_orders_heading: "Mis pedidos",
+  account_orders_empty: "Todav\xEDa no hay pedidos. Los pedidos que hagas con la sesi\xF3n iniciada aparecer\xE1n aqu\xED.",
+  account_orders_note: "Los pedidos hechos sin iniciar sesi\xF3n no aparecen aqu\xED; sus correos tienen los detalles.",
+  account_orders_unavailable: "No se pueden mostrar tus pedidos ahora mismo. Int\xE9ntalo m\xE1s tarde.",
+  account_more: "Pedidos anteriores",
+  account_checkout_signed_in: "Sesi\xF3n iniciada como {email}: este pedido aparecer\xE1 en Mis pedidos.",
+  account_checkout_sign_in: "\xBFTienes cuenta? Inicia sesi\xF3n para ver este pedido m\xE1s tarde en Mis pedidos.",
+  col_order: "Pedido",
+  col_date: "Fecha",
+  col_items: "Art\xEDculos",
+  col_total: "Total",
+  col_status: "Estado",
+  status_new: "Solicitud de pedido recibida",
+  "status_awaiting-payment": "Pendiente de pago",
+  status_confirmed: "Confirmado, pendiente de pago",
+  status_paid: "Pagado",
+  status_shipped: "Enviado",
+  status_completed: "Completado",
+  status_cancelled: "Cancelado",
+  status_refunded: "Reembolsado",
+  "status_payment-problem": "Pago en revisi\xF3n"
 };
 var MESSAGES = { en, de, fr, es };
 var translator = (language) => {
@@ -28531,6 +28731,13 @@ var resolveShopExtras = (nodes, shopFolderId) => ({
     fallbackSlug: "busa-shop-posts",
     parentId: shopFolderId
   })
+});
+var resolveShopApp = (nodes, shopFolderId) => pickResource(nodes, {
+  type: "airapp",
+  appId: SHOP_APP_ID,
+  resourceKey: "busa-shop-app",
+  fallbackSlug: "busa-shop-app",
+  parentId: shopFolderId
 });
 var siblingSlug = (slug, resourceKey) => slug.endsWith("-products") ? `${slug.slice(0, -"-products".length)}-${resourceKey}` : "";
 var resolveProductTables = (nodes, override, { shopFolderId } = {}) => {
@@ -28881,6 +29088,570 @@ var buildCatalog = ({ productRecords, certificateRecords, settings, busabaseOrig
   return { listed, hidden };
 };
 
+// src/shipping.js
+var COUNTRY_SET2 = new Set(COUNTRY_CODES);
+var centsOf = (amount) => Math.round(amount * 100);
+var buildShippingRates = (records, settings) => {
+  const rates = /* @__PURE__ */ new Map();
+  const problems = [];
+  const rows = [...records ?? []].map((record2, index) => ({ record: record2, index, position: finiteNumber(record2?.fields?.position) })).sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || a.index - b.index);
+  for (const { record: record2 } of rows) {
+    const fields = record2?.fields ?? {};
+    const zone = text(fields.name);
+    const rawCodes = text(fields.countries).toUpperCase().split(/[\s,;，、；]+/).filter(Boolean);
+    const label2 = zone || rawCodes.join(", ") || record2?.id || "?";
+    if (!rawCodes.length) {
+      problems.push({ code: "no-countries", zone: label2 });
+      continue;
+    }
+    const cost = finiteNumber(fields.rate);
+    if (cost === null || cost < 0) {
+      problems.push({ code: "no-rate", zone: label2 });
+      continue;
+    }
+    const currency = text(fields.currency).toUpperCase() || settings.currency;
+    if (currency !== settings.currency) {
+      problems.push({ code: "currency-mismatch", zone: label2, currency });
+      continue;
+    }
+    const freeOver = finiteNumber(fields["free-over"]);
+    for (const code of rawCodes) {
+      if (!COUNTRY_SET2.has(code)) {
+        problems.push({ code: "unknown-country", zone: label2, country: code });
+        continue;
+      }
+      if (rates.has(code)) {
+        problems.push({ code: "duplicate-country", zone: label2, country: code, kept: rates.get(code).zone });
+        continue;
+      }
+      rates.set(code, {
+        zone: label2,
+        country: code,
+        cost: centsOf(cost) / 100,
+        currency,
+        freeOver: freeOver !== null && freeOver > 0 ? centsOf(freeOver) / 100 : null,
+        estimate: text(fields["delivery-estimate"])
+      });
+    }
+  }
+  return { rates, problems };
+};
+var checkoutCountries = (settings, shipping) => {
+  if (shipping.status !== "ready") return settings.shipsTo;
+  return settings.shipsTo.filter((code) => shipping.rates.has(code));
+};
+var shippingFor = (shipping, country, subtotal) => {
+  if (shipping.status === "missing") return { ok: true, cost: null, estimate: "", free: false, unknown: true };
+  if (shipping.status !== "ready") return { ok: false, code: "shipping_unavailable" };
+  const rate = shipping.rates.get(country);
+  if (!rate) return { ok: false, code: "no_shipping" };
+  const free = rate.cost === 0 || rate.freeOver !== null && centsOf(subtotal) >= centsOf(rate.freeOver);
+  return { ok: true, cost: free ? 0 : rate.cost, estimate: rate.estimate, free, zone: rate.zone };
+};
+var clientRates = (shipping, countries) => shipping.status === "ready" ? Object.fromEntries(
+  countries.map((code) => {
+    const rate = shipping.rates.get(code);
+    return [code, { cost: rate.cost, freeOver: rate.freeOver, estimate: rate.estimate }];
+  })
+) : {};
+var NO_POSTAL_CODE = new Set(
+  "AE AG AO AW BF BI BJ BO BS BW BZ CD CF CG CI CK CM DJ DM ER FJ GA GD GH GM GQ GY HK IE JM KI KM KN KP LC ML MO MR MS MW NR NU QA RW SB SC SL SO SR ST SY TF TK TL TO TT TV TZ UG VU YE ZW".split(" ")
+);
+var REGION_REQUIRED = new Set("AR AU BR CA CN IN JP MX US".split(" "));
+
+// src/orders.js
+var ORDER_ID_PATTERN = /^ORD-[0-9A-HJKMNP-TV-Z]{10}$/;
+var EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+var PHONE_PATTERN = /^\+?[\d\s().-]{6,}$/;
+var LIMITS = { name: 100, email: 200, phone: 40, note: 1e3, items: 20, address: 300, city: 120, region: 120, postalCode: 20 };
+var CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
+var CONTROL_OR_NEWLINE = /[\u0000-\u001F\u007F]/;
+var field = (value2) => typeof value2 === "string" ? value2.trim() : "";
+var singleLine = (errors, key, raw, { max, required: required2, pattern }) => {
+  const value2 = field(raw).replace(/\s+/g, " ");
+  if (!value2) {
+    if (required2) errors[key] = "required";
+    return "";
+  }
+  if (value2.length > max) errors[key] = "too_long";
+  else if (CONTROL_OR_NEWLINE.test(value2)) errors[key] = "invalid";
+  else if (pattern && !pattern.test(value2)) errors[key] = "invalid";
+  return value2;
+};
+var parseItems = (raw) => {
+  if (!Array.isArray(raw)) return null;
+  const merged = /* @__PURE__ */ new Map();
+  for (const item of raw) {
+    if (!item || typeof item !== "object") return null;
+    const productId = typeof item.productId === "string" ? item.productId.trim() : "";
+    const quantity = typeof item.quantity === "string" ? Number(item.quantity) : item.quantity;
+    if (!PRODUCT_ID_PATTERN.test(productId) || !Number.isInteger(quantity)) return null;
+    if (quantity === 0) continue;
+    if (quantity < 0) return null;
+    merged.set(productId, (merged.get(productId) ?? 0) + quantity);
+  }
+  return [...merged].map(([productId, quantity]) => ({ productId, quantity }));
+};
+var cents = (amount) => Math.round(amount * 100);
+var addressRules = (country) => ({ region: REGION_REQUIRED.has(country), postalCode: !NO_POSTAL_CODE.has(country) });
+var validateOrder = (input2, { listed, settings, shipping = { status: "missing" } }) => {
+  const body = input2 && typeof input2 === "object" && !Array.isArray(input2) ? input2 : {};
+  const errors = {};
+  const itemErrors = [];
+  const orderId = field(body.orderId);
+  if (!ORDER_ID_PATTERN.test(orderId)) errors.orderId = "invalid";
+  const name = singleLine(errors, "name", body.name, { max: LIMITS.name, required: true });
+  const email3 = singleLine(errors, "email", body.email, { max: LIMITS.email, required: true, pattern: EMAIL_PATTERN });
+  if (errors.email === "invalid") errors.email = "invalid_email";
+  const phone = singleLine(errors, "phone", body.phone, { max: LIMITS.phone, required: true, pattern: PHONE_PATTERN });
+  if (errors.phone === "invalid") errors.phone = "invalid_phone";
+  const country = field(body.country).toUpperCase();
+  const countries = checkoutCountries(settings, shipping);
+  if (!country) errors.country = "required";
+  else if (!countries.includes(country)) errors.country = settings.shipsTo.includes(country) ? "no_shipping" : "invalid_country";
+  const rules = addressRules(errors.country ? "" : country);
+  const line1 = singleLine(errors, "address1", body.address1, { max: LIMITS.address, required: true });
+  const line2 = singleLine(errors, "address2", body.address2, { max: LIMITS.address, required: false });
+  const city = singleLine(errors, "city", body.city, { max: LIMITS.city, required: true });
+  const region = singleLine(errors, "region", body.region, { max: LIMITS.region, required: rules.region });
+  const postalCode = singleLine(errors, "postalCode", body.postalCode, { max: LIMITS.postalCode, required: rules.postalCode });
+  const note = field(body.note).replace(/\r\n?/g, "\n");
+  if (note.length > LIMITS.note) errors.note = "too_long";
+  else if (CONTROL.test(note)) errors.note = "invalid";
+  const items = parseItems(body.items);
+  const lines = [];
+  if (items === null) errors.items = "invalid";
+  else if (items.length === 0) errors.items = "items_empty";
+  else if (items.length > LIMITS.items) errors.items = "too_many_items";
+  else {
+    const byId = new Map(listed.map((product) => [product.id, product]));
+    for (const { productId, quantity } of items) {
+      const product = byId.get(productId);
+      if (!product) {
+        itemErrors.push({ productId, code: "not_available" });
+        continue;
+      }
+      if (product.soldOut) {
+        itemErrors.push({ productId, code: "sold_out", name: product.name });
+        continue;
+      }
+      if (quantity > product.maxQuantity) {
+        itemErrors.push({ productId, code: "too_many", name: product.name, max: product.maxQuantity });
+        continue;
+      }
+      lines.push({ product, quantity });
+    }
+    if (itemErrors.length) errors.items = itemErrors[0].code;
+  }
+  const currency = settings.currency;
+  const subtotalCents = lines.reduce((sum, line) => sum + cents(line.product.price) * line.quantity, 0);
+  const rate = errors.country ? null : shippingFor(shipping, country, subtotalCents / 100);
+  if (rate && !rate.ok) errors.country = rate.code;
+  if (Object.keys(errors).length) {
+    return { ok: false, status: 400, errors, itemErrors };
+  }
+  const shippingCents = rate.cost === null ? 0 : cents(rate.cost);
+  const total = (subtotalCents + shippingCents) / 100;
+  const expected = body.expectedTotal;
+  if (typeof expected === "number" && Number.isFinite(expected) && Math.abs(expected - total) > 4e-3) {
+    return {
+      ok: false,
+      status: 409,
+      errors: { items: "price_changed" },
+      itemErrors,
+      total,
+      totalText: formatPrice(total, currency, settings.language)
+    };
+  }
+  return {
+    ok: true,
+    order: {
+      orderId,
+      name,
+      email: email3,
+      phone,
+      country,
+      address: { line1, line2, city, region, postalCode, country },
+      note,
+      currency,
+      subtotal: subtotalCents / 100,
+      shipping: rate.cost === null ? null : shippingCents / 100,
+      deliveryEstimate: rate.estimate ?? "",
+      total,
+      lines: lines.map(({ product, quantity }) => ({
+        productId: product.id,
+        sku: product.sku,
+        name: product.name,
+        quantity,
+        unitPrice: product.price,
+        lineTotal: cents(product.price) * quantity / 100
+      }))
+    }
+  };
+};
+var money = (amount) => amount.toFixed(2);
+var formatShippingAddress = (order) => [
+  order.name,
+  order.address.line1,
+  order.address.line2,
+  [order.address.postalCode, order.address.city].filter(Boolean).join(" "),
+  order.address.region,
+  `${countryName(order.country, "en")} (${order.country})`
+].filter(Boolean).join("\n");
+var orderToFields = (order, { nowIso, payment = "request", customerAccount = "" }) => {
+  const lines = order.lines.map(
+    (line) => `${line.quantity} \xD7 ${line.name}${line.sku ? ` (${line.sku})` : ""} @ ${money(line.unitPrice)} ${order.currency} = ${money(line.lineTotal)} ${order.currency}`
+  );
+  const fields = {
+    title: `${order.orderId} \xB7 ${order.name}`,
+    "order-id": order.orderId,
+    status: payment === "paypal" ? "awaiting-payment" : "new",
+    "payment-method": payment === "paypal" ? "paypal" : "request",
+    "customer-name": order.name,
+    email: order.email,
+    country: `${countryName(order.country, "en")} (${order.country})`,
+    "address-line1": order.address.line1,
+    city: order.address.city,
+    "shipping-address": formatShippingAddress(order),
+    "items-summary": lines.join("\n"),
+    items: JSON.stringify(
+      order.lines.map((line) => ({
+        product_id: line.productId,
+        sku: line.sku,
+        name: line.name,
+        quantity: line.quantity,
+        unit_price: line.unitPrice,
+        line_total: line.lineTotal
+      }))
+    ),
+    subtotal: order.subtotal,
+    total: order.total,
+    currency: order.currency,
+    "created-at": nowIso,
+    source: "website"
+  };
+  if (order.shipping !== null && order.shipping !== void 0) fields.shipping = order.shipping;
+  if (order.deliveryEstimate) fields["delivery-estimate"] = order.deliveryEstimate;
+  if (order.phone) fields.phone = order.phone;
+  if (order.address.line2) fields["address-line2"] = order.address.line2;
+  if (order.address.region) fields.region = order.address.region;
+  if (order.address.postalCode) fields["postal-code"] = order.address.postalCode;
+  if (order.note) fields["customer-note"] = order.note;
+  if (customerAccount) fields["customer-account"] = customerAccount;
+  return fields;
+};
+var numberOrNull = (value2) => {
+  const parsed = typeof value2 === "string" && value2.trim() !== "" ? Number(value2) : value2;
+  return typeof parsed === "number" && Number.isFinite(parsed) ? parsed : null;
+};
+var str = (value2) => typeof value2 === "string" ? value2.trim() : typeof value2 === "number" ? String(value2) : "";
+var selectValue = (value2) => {
+  if (value2 && typeof value2 === "object" && !Array.isArray(value2)) return str(value2.id ?? value2.name).toLowerCase();
+  return str(value2).toLowerCase();
+};
+var orderFromRecord = (record2) => {
+  const fields = record2?.fields ?? {};
+  let lines = [];
+  try {
+    const parsed = JSON.parse(typeof fields.items === "string" ? fields.items : "[]");
+    if (Array.isArray(parsed)) {
+      lines = parsed.filter((line) => line && typeof line === "object").map((line) => ({
+        productId: str(line.product_id),
+        sku: str(line.sku),
+        name: str(line.name),
+        quantity: Number(line.quantity) || 0,
+        unitPrice: numberOrNull(line.unit_price) ?? 0,
+        lineTotal: numberOrNull(line.line_total) ?? 0
+      }));
+    }
+  } catch {
+    lines = [];
+  }
+  const countryLabel2 = str(fields.country);
+  const country = /\(([A-Z]{2})\)\s*$/.exec(countryLabel2)?.[1] ?? "";
+  return {
+    recordId: typeof record2?.id === "string" ? record2.id : "",
+    headCommitId: typeof record2?.headCommitId === "string" ? record2.headCommitId : "",
+    orderId: str(fields["order-id"]),
+    status: selectValue(fields.status),
+    paymentMethod: selectValue(fields["payment-method"]) || "request",
+    name: str(fields["customer-name"]),
+    email: str(fields.email),
+    phone: str(fields.phone),
+    country,
+    countryLabel: countryLabel2,
+    address: {
+      line1: str(fields["address-line1"]),
+      line2: str(fields["address-line2"]),
+      city: str(fields.city),
+      region: str(fields.region),
+      postalCode: str(fields["postal-code"]),
+      country
+    },
+    note: typeof fields["customer-note"] === "string" ? fields["customer-note"] : "",
+    lines,
+    subtotal: numberOrNull(fields.subtotal),
+    shipping: numberOrNull(fields.shipping),
+    total: numberOrNull(fields.total) ?? 0,
+    currency: str(fields.currency).toUpperCase(),
+    deliveryEstimate: str(fields["delivery-estimate"]),
+    paypalOrderId: str(fields["paypal-order-id"]),
+    captureId: str(fields["paypal-capture-id"]),
+    amountPaid: numberOrNull(fields["amount-paid"]),
+    refundedAmount: numberOrNull(fields["refunded-amount"]) ?? 0,
+    paymentLog: typeof fields["payment-log"] === "string" ? fields["payment-log"] : "",
+    emailLog: typeof fields["email-log"] === "string" ? fields["email-log"] : "",
+    paymentProblem: str(fields["payment-problem"]),
+    createdAt: str(fields["created-at"])
+  };
+};
+var appendLogLines = (current, lines, max = 12e3) => {
+  const next = [String(current ?? "").trimEnd(), ...lines].filter(Boolean).join("\n");
+  return next.length > max ? next.slice(next.length - max).replace(/^[^\n]*\n/, "") : next;
+};
+var orderInputFromForm = (form) => {
+  const items = [];
+  for (const [key, value2] of form.entries()) {
+    if (!key.startsWith("qty.")) continue;
+    const quantity = Number(value2);
+    items.push({ productId: key.slice(4), quantity: Number.isFinite(quantity) ? Math.trunc(quantity) : Number.NaN });
+  }
+  const rawExpected = form.get("expectedTotal");
+  const expected = rawExpected !== null && rawExpected.trim() !== "" ? Number(rawExpected) : Number.NaN;
+  return {
+    orderId: form.get("orderId") ?? "",
+    name: form.get("name") ?? "",
+    email: form.get("email") ?? "",
+    phone: form.get("phone") ?? "",
+    country: form.get("country") ?? "",
+    address1: form.get("address1") ?? "",
+    address2: form.get("address2") ?? "",
+    city: form.get("city") ?? "",
+    region: form.get("region") ?? "",
+    postalCode: form.get("postalCode") ?? "",
+    note: form.get("note") ?? "",
+    website: form.get("company_url") ?? "",
+    items,
+    ...Number.isFinite(expected) ? { expectedTotal: expected } : {}
+  };
+};
+var isHoneypotHit = (input2) => typeof input2?.website === "string" && input2.website.trim() !== "";
+var CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+var newOrderId = (random = (bytes) => crypto.getRandomValues(bytes)) => {
+  const bytes = random(new Uint8Array(10));
+  let id = "ORD-";
+  for (const byte of bytes) id += CROCKFORD[byte % 32];
+  return id;
+};
+
+// src/account.js
+var SESSION_COOKIE = "busa_shop_session";
+var PENDING_COOKIE = "busa_shop_login";
+var SESSION_MAX_AGE = 30 * 24 * 60 * 60;
+var PENDING_MAX_AGE = 15 * 60;
+var SETTINGS_TTL_MS = 6e4;
+var SETTINGS_ERROR_TTL_MS = 3e4;
+var ORDERS_PAGE = 20;
+var SESSION_TOKEN_PATTERN = /^[A-Za-z0-9_-]{20,256}$/;
+var CODE_PATTERN = /^\d{6}$/;
+var CURSOR_PATTERN = /^[A-Za-z0-9_.:=+/-]{1,200}$/;
+var apiRoot = (baseUrl) => String(baseUrl).replace(/\/+$/, "").replace(/\/api\/v1$/, "");
+var parseCookies = (header) => {
+  const out = /* @__PURE__ */ new Map();
+  for (const part of String(header ?? "").split(";")) {
+    const index = part.indexOf("=");
+    if (index < 1) continue;
+    const name = part.slice(0, index).trim();
+    if (!out.has(name)) out.set(name, part.slice(index + 1).trim());
+  }
+  return out;
+};
+var sessionTokenOf = (request) => {
+  const value2 = parseCookies(request.headers.get("cookie")).get(SESSION_COOKIE) ?? "";
+  return SESSION_TOKEN_PATTERN.test(value2) ? value2 : "";
+};
+var pendingEmailOf = (request) => {
+  let value2 = parseCookies(request.headers.get("cookie")).get(PENDING_COOKIE) ?? "";
+  try {
+    value2 = decodeURIComponent(value2);
+  } catch {
+    return "";
+  }
+  return normalizeEmail(value2) ?? "";
+};
+var cookie = (name, value2, maxAge, path = "/") => `${name}=${value2}; HttpOnly; Secure; SameSite=Lax; Path=${path}; Max-Age=${maxAge}`;
+var sessionCookie = (sessionToken) => cookie(SESSION_COOKIE, sessionToken, SESSION_MAX_AGE);
+var clearSessionCookie = () => cookie(SESSION_COOKIE, "", 0);
+var pendingCookie = (email3) => cookie(PENDING_COOKIE, encodeURIComponent(email3), PENDING_MAX_AGE);
+var clearPendingCookie = () => cookie(PENDING_COOKIE, "", 0);
+var normalizeEmail = (value2) => {
+  const email3 = typeof value2 === "string" ? value2.trim().toLowerCase() : "";
+  if (!email3 || email3.length > LIMITS.email || !EMAIL_PATTERN.test(email3)) return null;
+  return email3;
+};
+var normalizeCode = (value2) => {
+  const code = typeof value2 === "string" ? value2.replace(/[\s-]/g, "") : "";
+  return CODE_PATTERN.test(code) ? code : null;
+};
+var BUYER_ORDER_FIELDS = ["order-id", "created-at", "items", "items-summary", "total", "currency", "status"];
+var BUYER_STATUSES = /* @__PURE__ */ new Set(["new", "awaiting-payment", "confirmed", "paid", "shipped", "completed", "cancelled", "refunded", "payment-problem"]);
+var text2 = (value2) => typeof value2 === "string" ? value2.trim() : typeof value2 === "number" ? String(value2) : "";
+var selectId = (value2) => (value2 && typeof value2 === "object" && !Array.isArray(value2) ? text2(value2.id ?? value2.name) : text2(value2)).toLowerCase();
+var numberOrNull2 = (value2) => {
+  const parsed = typeof value2 === "string" && value2.trim() !== "" ? Number(value2) : value2;
+  return typeof parsed === "number" && Number.isFinite(parsed) ? parsed : null;
+};
+var buyerItems = (fields) => {
+  try {
+    const parsed = JSON.parse(typeof fields.items === "string" ? fields.items : "");
+    if (Array.isArray(parsed)) {
+      const lines = parsed.filter((line) => line && typeof line === "object" && text2(line.name)).slice(0, 50).map((line) => ({ name: text2(line.name), quantity: Math.max(0, Math.trunc(Number(line.quantity) || 0)) }));
+      if (lines.length) return lines;
+    }
+  } catch {
+  }
+  return text2(fields["items-summary"]).split("\n").map((line) => line.trim()).filter(Boolean).slice(0, 50).map((line) => {
+    const match = /^(\d+)\s*[×x]\s*(.+?)(?:\s*\([^()]*\))?\s*(?:@.*)?$/.exec(line);
+    return match ? { name: match[2].trim(), quantity: Number(match[1]) } : { name: line, quantity: 0 };
+  });
+};
+var buyerOrderFromRecord = (record2) => {
+  const source = record2?.fields && typeof record2.fields === "object" ? record2.fields : {};
+  const fields = Object.fromEntries(BUYER_ORDER_FIELDS.map((slug) => [slug, source[slug]]));
+  const status = selectId(fields.status);
+  const created = text2(fields["created-at"]) || text2(record2?.createdAt);
+  return {
+    orderId: text2(fields["order-id"]),
+    createdAt: Number.isFinite(Date.parse(created)) ? new Date(Date.parse(created)).toISOString() : "",
+    items: buyerItems(fields),
+    total: numberOrNull2(fields.total),
+    currency: text2(fields.currency).toUpperCase(),
+    status: BUYER_STATUSES.has(status) ? status : ""
+  };
+};
+var errorCode = (body) => body && typeof body === "object" && typeof body.code === "string" ? body.code : "";
+var wholeSeconds = (value2, fallback) => {
+  const seconds = Math.ceil(Number(value2));
+  return Number.isFinite(seconds) && seconds > 0 ? Math.min(seconds, 86400) : fallback;
+};
+var createAccounts = ({ baseUrl, apiKey, spaceId, fetchImpl = fetch, now = () => Date.now(), log = console }) => {
+  const root = apiRoot(baseUrl);
+  const cache = /* @__PURE__ */ new Map();
+  const call = async (method, path, { body, session: session2 } = {}) => {
+    const headers = {
+      authorization: `Bearer ${apiKey}`,
+      accept: "application/json",
+      ...spaceId ? { "x-busabase-space": spaceId } : {},
+      ...body ? { "content-type": "application/json" } : {},
+      ...session2 ? { "x-busabase-app-user-session": session2 } : {}
+    };
+    let response;
+    try {
+      response = await fetchImpl(`${root}${path}`, { method, headers, ...body ? { body: JSON.stringify(body) } : {} });
+    } catch {
+      return { status: 0, body: null };
+    }
+    const data = await response.json().catch(() => null);
+    return { status: response.status, body: data };
+  };
+  const settings = async (appId) => {
+    if (!apiKey || !appId) return { enabled: false, reason: apiKey ? "no-app" : "no-key" };
+    const at = now();
+    const hit = cache.get(appId);
+    if (hit && at - hit.at < hit.ttl) return hit.value;
+    const { status, body } = await call("GET", `/api/v1/app-users/apps/${encodeURIComponent(appId)}/settings`);
+    let value2;
+    let ttl = SETTINGS_TTL_MS;
+    if (status === 200 && body && typeof body === "object") {
+      value2 = {
+        enabled: body.enabled === true,
+        appName: typeof body.appName === "string" ? body.appName : "",
+        ownerFields: body.ownerFields && typeof body.ownerFields === "object" ? body.ownerFields : {},
+        ...body.enabled === true ? {} : { reason: "disabled" }
+      };
+    } else if (status === 404) {
+      value2 = { enabled: false, reason: "not-supported" };
+    } else {
+      if (status !== 401 && status !== 403) log.warn?.("busa-shop: app-user settings unreadable", status || "unreachable");
+      value2 = { enabled: false, reason: status ? `http-${status}` : "unreachable" };
+      ttl = SETTINGS_ERROR_TTL_MS;
+    }
+    cache.set(appId, { value: value2, at: now(), ttl });
+    return value2;
+  };
+  const forget = (appId) => cache.delete(appId);
+  const sendCode = async ({ appId, email: email3, locale }) => {
+    const { status, body } = await call("POST", "/api/v1/app-users/send-code", { body: { appId, email: email3, ...locale ? { locale } : {} } });
+    if (status === 200) return { ok: true, resendAfterSeconds: wholeSeconds(body?.resendAfterSeconds, 60) };
+    if (status === 429) {
+      const reason = ["cooldown", "email_daily_limit", "space_daily_limit"].includes(body?.reason) ? body.reason : "cooldown";
+      return { error: "rate_limited", reason, retryAfterSeconds: wholeSeconds(body?.retryAfterSeconds, 60) };
+    }
+    if (status === 403 && errorCode(body) === "APP_LOGIN_DISABLED") {
+      forget(appId);
+      return { error: "disabled" };
+    }
+    if (status === 400) return { error: "invalid_email" };
+    log.warn?.("busa-shop: sign-in code not sent", status || "unreachable", errorCode(body));
+    return { error: "unavailable" };
+  };
+  const verify = async ({ appId, email: email3, code }) => {
+    const { status, body } = await call("POST", "/api/v1/app-users/verify", { body: { appId, email: email3, code } });
+    if (status === 200) {
+      const token = typeof body?.sessionToken === "string" ? body.sessionToken : "";
+      const user = body?.user && typeof body.user.id === "string" ? { id: body.user.id, email: text2(body.user.email) } : null;
+      if (SESSION_TOKEN_PATTERN.test(token) && user) return { ok: true, sessionToken: token, user };
+      log.warn?.("busa-shop: sign-in answered without a usable session");
+      return { error: "unavailable" };
+    }
+    const answer = errorCode(body);
+    if (status === 400 && answer === "INVALID_CODE") {
+      const left = Math.trunc(Number(body?.attemptsLeft));
+      return { error: "invalid_code", attemptsLeft: Number.isFinite(left) && left > 0 ? left : 0 };
+    }
+    if (status === 410 || answer === "CODE_EXPIRED") return { error: "expired" };
+    if (status === 403 && answer === "APP_USER_DISABLED") return { error: "user_disabled" };
+    if (status === 403 && answer === "APP_LOGIN_DISABLED") {
+      forget(appId);
+      return { error: "disabled" };
+    }
+    log.warn?.("busa-shop: sign-in not verified", status || "unreachable", answer);
+    return { error: "unavailable" };
+  };
+  const session = async ({ appId, token }) => {
+    if (!token) return { error: "invalid" };
+    const { status, body } = await call("GET", `/api/v1/app-users/session?appId=${encodeURIComponent(appId)}`, { session: token });
+    if (status === 200 && body?.user && typeof body.user.id === "string" && body.user.id) {
+      return { user: { id: body.user.id, email: text2(body.user.email) } };
+    }
+    if (status === 401) return { error: "invalid" };
+    log.warn?.("busa-shop: app-user session unreadable", status || "unreachable");
+    return { error: "unavailable" };
+  };
+  const signOut = async ({ appId, token }) => {
+    if (!token) return { ok: true };
+    const { status } = await call("POST", "/api/v1/app-users/sign-out", { body: { appId }, session: token });
+    return status === 200 || status === 401 ? { ok: true } : { error: "unavailable" };
+  };
+  const queryRecords = async ({ appId, baseId, token, limit = ORDERS_PAGE, cursor }) => {
+    const { status, body } = await call("POST", "/api/v1/app-users/records/query", {
+      body: { appId, baseId, limit, ...cursor ? { cursor } : {} },
+      session: token
+    });
+    if (status === 200 && Array.isArray(body?.records)) {
+      return { records: body.records, nextCursor: typeof body.nextCursor === "string" && CURSOR_PATTERN.test(body.nextCursor) ? body.nextCursor : null };
+    }
+    if (status === 401) return { error: "invalid" };
+    if (status === 403 && errorCode(body) === "NO_OWNER_FIELD") {
+      log.warn?.("busa-shop: buyer login is on, but no owner field is set for Orders (customer-account)");
+      return { error: "no_owner_field" };
+    }
+    log.warn?.("busa-shop: buyer's orders unreadable", status || "unreachable", errorCode(body));
+    return { error: "unavailable" };
+  };
+  return { settings, forget, sendCode, verify, session, signOut, queryRecords };
+};
+
 // src/policies.js
 var PAGE_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,59}$/;
 var FILL_IN_MARKER = /【fill in[^】]*】/i;
@@ -29150,77 +29921,6 @@ var coverSrc = (post) => {
   return post.cover.kind === "direct" ? post.cover.url : `/blog-covers/${encodeURIComponent(post.slug)}`;
 };
 var canonicalElsewhere = (post, origin) => Boolean(post.canonicalUrl) && post.canonicalUrl !== new URL(post.path, origin).href;
-
-// src/shipping.js
-var COUNTRY_SET2 = new Set(COUNTRY_CODES);
-var centsOf = (amount) => Math.round(amount * 100);
-var buildShippingRates = (records, settings) => {
-  const rates = /* @__PURE__ */ new Map();
-  const problems = [];
-  const rows = [...records ?? []].map((record2, index) => ({ record: record2, index, position: finiteNumber(record2?.fields?.position) })).sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || a.index - b.index);
-  for (const { record: record2 } of rows) {
-    const fields = record2?.fields ?? {};
-    const zone = text(fields.name);
-    const rawCodes = text(fields.countries).toUpperCase().split(/[\s,;，、；]+/).filter(Boolean);
-    const label2 = zone || rawCodes.join(", ") || record2?.id || "?";
-    if (!rawCodes.length) {
-      problems.push({ code: "no-countries", zone: label2 });
-      continue;
-    }
-    const cost = finiteNumber(fields.rate);
-    if (cost === null || cost < 0) {
-      problems.push({ code: "no-rate", zone: label2 });
-      continue;
-    }
-    const currency = text(fields.currency).toUpperCase() || settings.currency;
-    if (currency !== settings.currency) {
-      problems.push({ code: "currency-mismatch", zone: label2, currency });
-      continue;
-    }
-    const freeOver = finiteNumber(fields["free-over"]);
-    for (const code of rawCodes) {
-      if (!COUNTRY_SET2.has(code)) {
-        problems.push({ code: "unknown-country", zone: label2, country: code });
-        continue;
-      }
-      if (rates.has(code)) {
-        problems.push({ code: "duplicate-country", zone: label2, country: code, kept: rates.get(code).zone });
-        continue;
-      }
-      rates.set(code, {
-        zone: label2,
-        country: code,
-        cost: centsOf(cost) / 100,
-        currency,
-        freeOver: freeOver !== null && freeOver > 0 ? centsOf(freeOver) / 100 : null,
-        estimate: text(fields["delivery-estimate"])
-      });
-    }
-  }
-  return { rates, problems };
-};
-var checkoutCountries = (settings, shipping) => {
-  if (shipping.status !== "ready") return settings.shipsTo;
-  return settings.shipsTo.filter((code) => shipping.rates.has(code));
-};
-var shippingFor = (shipping, country, subtotal) => {
-  if (shipping.status === "missing") return { ok: true, cost: null, estimate: "", free: false, unknown: true };
-  if (shipping.status !== "ready") return { ok: false, code: "shipping_unavailable" };
-  const rate = shipping.rates.get(country);
-  if (!rate) return { ok: false, code: "no_shipping" };
-  const free = rate.cost === 0 || rate.freeOver !== null && centsOf(subtotal) >= centsOf(rate.freeOver);
-  return { ok: true, cost: free ? 0 : rate.cost, estimate: rate.estimate, free, zone: rate.zone };
-};
-var clientRates = (shipping, countries) => shipping.status === "ready" ? Object.fromEntries(
-  countries.map((code) => {
-    const rate = shipping.rates.get(code);
-    return [code, { cost: rate.cost, freeOver: rate.freeOver, estimate: rate.estimate }];
-  })
-) : {};
-var NO_POSTAL_CODE = new Set(
-  "AE AG AO AW BF BI BJ BO BS BW BZ CD CF CG CI CK CM DJ DM ER FJ GA GD GH GM GQ GY HK IE JM KI KM KN KP LC ML MO MR MS MW NR NU QA RW SB SC SL SO SR ST SY TF TK TL TO TT TV TZ UG VU YE ZW".split(" ")
-);
-var REGION_REQUIRED = new Set("AR AU BR CA CN IN JP MX US".split(" "));
 
 // src/seo.js
 var xmlEscape = (value2) => String(value2).replace(/[<>&'"]/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[char]);
@@ -29549,7 +30249,7 @@ var currencyDigits = (currency) => {
 };
 var toMinor = (amount, currency) => Math.round(amount * 10 ** currencyDigits(currency));
 var fromMinor = (minor, currency) => minor / 10 ** currencyDigits(currency);
-var money = (amount, currency) => formatPrice(amount, currency, "en");
+var money2 = (amount, currency) => formatPrice(amount, currency, "en");
 var ucpPrice = (amount, currency) => ({ amount: toMinor(amount, currency), currency });
 var NAME_TO_CODE = (() => {
   const map2 = /* @__PURE__ */ new Map();
@@ -29587,9 +30287,9 @@ var shippingTo = (state, country, subtotal) => {
 var shippingSentence = (line, currency) => {
   if (!line) return "";
   if (!line.ships) return `Does NOT ship to ${countryLabel(line.country)}.`;
-  const cost = line.cost === null ? "shipping cost confirmed by the shop by email" : line.cost === 0 ? "free shipping" : `shipping ${money(line.cost, currency)}`;
+  const cost = line.cost === null ? "shipping cost confirmed by the shop by email" : line.cost === 0 ? "free shipping" : `shipping ${money2(line.cost, currency)}`;
   const parts = [cost, ...line.estimate ? [`delivery ${line.estimate}`] : []];
-  if (line.cost && line.freeOver !== null) parts.push(`free from an items total of ${money(line.freeOver, currency)}`);
+  if (line.cost && line.freeOver !== null) parts.push(`free from an items total of ${money2(line.freeOver, currency)}`);
   return `Ships to ${countryLabel(line.country)}: ${parts.join(", ")}.`;
 };
 var shippingJson = (line, currency) => line ? {
@@ -29777,8 +30477,8 @@ var searchCatalog = (args, state, { origin }) => {
   if (max !== null) candidates = candidates.filter((product) => toMinor(product.price, product.currency) <= max);
   if (min !== null) candidates = candidates.filter((product) => toMinor(product.price, product.currency) >= min);
   const priceText = [
-    ...min !== null ? [`at least ${money(fromMinor(min, settings.currency), settings.currency)}`] : [],
-    ...max !== null ? [`at most ${money(fromMinor(max, settings.currency), settings.currency)}`] : []
+    ...min !== null ? [`at least ${money2(fromMinor(min, settings.currency), settings.currency)}`] : [],
+    ...max !== null ? [`at most ${money2(fromMinor(max, settings.currency), settings.currency)}`] : []
   ].join(" and ");
   let matched = candidates;
   if (tokens.length) {
@@ -29803,7 +30503,7 @@ var searchCatalog = (args, state, { origin }) => {
   lines.push(`Search: ${asked.join(", ")}. ${matched.length} match${matched.length === 1 ? "" : "es"}${matched.length > page.length ? `, showing ${offset + 1}\u2013${offset + page.length}` : ""}.`);
   if (broad.length) messages.unshift({ type: "info", code: "broad_query", content: `"${broad.join(" ")}" describes everything ${settings.storeName} sells, so it did not narrow the search.` });
   if (!page.length && priceText) {
-    messages.push({ type: "info", code: "price_in_minor_units", content: `Nothing on sale at that price. filters.price.max is in minor units: 20000 means ${money(200, settings.currency)}.` });
+    messages.push({ type: "info", code: "price_in_minor_units", content: `Nothing on sale at that price. filters.price.max is in minor units: 20000 means ${money2(200, settings.currency)}.` });
   }
   for (const message of messages) lines.push(`${message.type === "warning" ? "Warning" : "Note"}: ${message.content}`);
   if (!page.length && !priceText) lines.push("Nothing on sale matches.");
@@ -29885,7 +30585,7 @@ var getProduct = (args, state, { origin }) => {
   if (zones.length) {
     lines.push("", "Shipping (for one of this product):");
     for (const zone of zones) {
-      const cost = zone.cost === null ? "cost confirmed by the shop by email" : unitShipping(zone, product.price) === 0 ? "free" : money(zone.cost, settings.currency);
+      const cost = zone.cost === null ? "cost confirmed by the shop by email" : unitShipping(zone, product.price) === 0 ? "free" : money2(zone.cost, settings.currency);
       lines.push(`- ${zone.zone} (${zone.countries.join(", ")}): ${cost}${zone.estimate ? `, ${zone.estimate}` : ""}`);
     }
   }
@@ -30000,9 +30700,9 @@ var createCheckout = (args, state, { origin, payment }) => {
     shopLine(state, origin),
     `Buy link (the shop's own checkout page, already filled in with ${lines.length === 1 ? "this product" : "these products"}${country ? ` and ${countryName(country, "en")}` : ""}):`,
     link,
-    ...lines.map((line) => `- ${line.product.name} \xD7 ${line.quantity}: ${money(line.product.price * line.quantity, currency)}`),
-    country ? shippingKnown ? `- Shipping to ${countryName(country, "en")}: ${ship.cost === 0 ? "free" : money(ship.cost, currency)}${ship.estimate ? ` (delivery ${ship.estimate})` : ""}` : `- Shipping to ${countryName(country, "en")}: the shop confirms the cost by email` : "- Shipping: shown once the buyer picks a country on the page",
-    `- ${shippingKnown ? "Total" : "Total before shipping"}: ${money(total, currency)} ${currency}`,
+    ...lines.map((line) => `- ${line.product.name} \xD7 ${line.quantity}: ${money2(line.product.price * line.quantity, currency)}`),
+    country ? shippingKnown ? `- Shipping to ${countryName(country, "en")}: ${ship.cost === 0 ? "free" : money2(ship.cost, currency)}${ship.estimate ? ` (delivery ${ship.estimate})` : ""}` : `- Shipping to ${countryName(country, "en")}: the shop confirms the cost by email` : "- Shipping: shown once the buyer picks a country on the page",
+    `- ${shippingKnown ? "Total" : "Total before shipping"}: ${money2(total, currency)} ${currency}`,
     paypal ? "Payment: with PayPal on that page. Nothing is charged in this chat." : "Payment: this shop takes order requests. The buyer sends the request on that page and the shop replies by email with how to pay. Nothing is charged in this chat.",
     `Duties and taxes: ${duties || NO_DUTIES}`,
     ...messages.filter((message) => message.type === "warning").map((message) => `Warning: ${message.content}`),
@@ -30048,7 +30748,7 @@ var toolDefinitions = (state) => {
   const ready = state?.setup === "ready";
   const shop = ready ? state.settings.storeName : "this shop";
   const currency = ready ? state.settings.currency : "the shop's currency";
-  const example = ready && currencyDigits(currency) === 0 ? `20000 = ${money(2e4, currency)}` : ready ? `20000 = ${money(200, currency)}` : "20000 = 200.00";
+  const example = ready && currencyDigits(currency) === 0 ? `20000 = ${money2(2e4, currency)}` : ready ? `20000 = ${money2(200, currency)}` : "20000 = 200.00";
   const countries = ready ? checkoutCountries(state.settings, state.shipping) : [];
   const about = ready ? ` (${state.catalog.listed.length} products on sale, prices in ${currency}, ships to ${shipsToPhrase(countries) || "no country yet"})` : "";
   return [
@@ -30323,8 +31023,8 @@ var buildAgentsMd = ({ origin, settings, catalog, shipping, pages = [], payment 
   if (shipping?.status === "ready" && zones.length) {
     out.push("## Shipping", "");
     for (const zone of zones) {
-      const parts = [zone.cost === 0 ? "free shipping" : `shipping ${money(zone.cost, settings.currency)}`];
-      if (zone.cost !== 0 && zone.freeOver !== null) parts.push(`free from an items total of ${money(zone.freeOver, settings.currency)}`);
+      const parts = [zone.cost === 0 ? "free shipping" : `shipping ${money2(zone.cost, settings.currency)}`];
+      if (zone.cost !== 0 && zone.freeOver !== null) parts.push(`free from an items total of ${money2(zone.freeOver, settings.currency)}`);
       if (zone.estimate) parts.push(`delivery ${zone.estimate}`);
       out.push(`- ${mdText2(zone.zone)} (${zone.countries.join(", ")}): ${parts.join(", ")}`);
     }
@@ -30368,8 +31068,8 @@ var SmtpError = class extends Error {
   }
 };
 var encoder = new TextEncoder();
-var toBase64 = (text2) => {
-  const bytes = encoder.encode(text2);
+var toBase64 = (text3) => {
+  const bytes = encoder.encode(text3);
   let binary = "";
   for (let index = 0; index < bytes.length; index += 32768) {
     binary += String.fromCharCode(...bytes.subarray(index, index + 32768));
@@ -30381,12 +31081,12 @@ var UNSAFE_HEADER = /[\r\n\u0000]/;
 var ADDRESS = /^[^\s<>()",;:\\@]+@[^\s<>()",;:\\@]+\.[^\s<>()",;:\\@]+$/;
 var isSafeAddress = (address) => typeof address === "string" && address.length <= 254 && ADDRESS.test(address);
 var encodeHeaderWords = (value2) => {
-  const text2 = String(value2 ?? "");
-  if (UNSAFE_HEADER.test(text2)) throw new SmtpError("header value contains a line break");
-  if (/^[\x20-\x7e]*$/.test(text2) && text2.length <= 70 && !/=\?/.test(text2)) return text2;
+  const text3 = String(value2 ?? "");
+  if (UNSAFE_HEADER.test(text3)) throw new SmtpError("header value contains a line break");
+  if (/^[\x20-\x7e]*$/.test(text3) && text3.length <= 70 && !/=\?/.test(text3)) return text3;
   const words = [];
   let chunk = "";
-  for (const char of text2) {
+  for (const char of text3) {
     if (encoder.encode(chunk + char).length > 45) {
       words.push(`=?UTF-8?B?${toBase64(chunk)}?=`);
       chunk = "";
@@ -30406,7 +31106,7 @@ var randomToken = () => {
   const bytes = crypto.getRandomValues(new Uint8Array(12));
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 };
-var buildMessage = ({ from, fromName, to, replyTo, subject, text: text2, html: html2, now = /* @__PURE__ */ new Date() }) => {
+var buildMessage = ({ from, fromName, to, replyTo, subject, text: text3, html: html2, now = /* @__PURE__ */ new Date() }) => {
   const domain2 = from.split("@")[1] ?? "localhost";
   const boundary = `busa-shop-${randomToken()}`;
   const headers = [
@@ -30422,7 +31122,7 @@ var buildMessage = ({ from, fromName, to, replyTo, subject, text: text2, html: h
     `Content-Type: multipart/alternative; boundary="${boundary}"`
   ];
   const part = (type, body) => [`--${boundary}`, `Content-Type: ${type}; charset=UTF-8`, "Content-Transfer-Encoding: base64", "", wrap76(toBase64(body))].join("\r\n");
-  return [...headers, "", part("text/plain", text2), part("text/html", html2 ?? ""), `--${boundary}--`, ""].join("\r\n");
+  return [...headers, "", part("text/plain", text3), part("text/html", html2 ?? ""), `--${boundary}--`, ""].join("\r\n");
 };
 var dotStuff = (message) => `${message.replace(/\r?\n/g, "\r\n").replace(/^\./gm, "..")}\r
 .\r
@@ -30747,12 +31447,12 @@ var smtpConfig = (settings, secrets, { canConnect = true } = {}) => {
     notify
   };
 };
-var money2 = (amount, settings) => formatPrice(amount, settings.currency, settings.language);
-var lineText = (line, settings) => `${line.quantity} \xD7 ${line.name}${line.sku ? ` (${line.sku})` : ""}: ${money2(line.lineTotal, settings)}`;
+var money3 = (amount, settings) => formatPrice(amount, settings.currency, settings.language);
+var lineText = (line, settings) => `${line.quantity} \xD7 ${line.name}${line.sku ? ` (${line.sku})` : ""}: ${money3(line.lineTotal, settings)}`;
 var totals = (order, settings, t, { paid = false } = {}) => [
-  [t.subtotal, money2(order.subtotal ?? order.total, settings)],
-  [t.shipping, order.shipping === null || order.shipping === void 0 ? t.shipping_tbc : order.shipping === 0 ? t.shipping_free : money2(order.shipping, settings)],
-  [paid ? t.total_paid : t.total, money2(paid && Number.isFinite(order.amountPaid) ? order.amountPaid : order.total, settings)]
+  [t.subtotal, money3(order.subtotal ?? order.total, settings)],
+  [t.shipping, order.shipping === null || order.shipping === void 0 ? t.shipping_tbc : order.shipping === 0 ? t.shipping_free : money3(order.shipping, settings)],
+  [paid ? t.total_paid : t.total, money3(paid && Number.isFinite(order.amountPaid) ? order.amountPaid : order.total, settings)]
 ];
 var addressLines = (order) => {
   const address = order.address ?? {};
@@ -30767,7 +31467,7 @@ var addressLines = (order) => {
 };
 var render = ({ t, settings, greeting, intro, sections, closing }) => {
   const footer = [settings.contactEmail ? fill(t.questions, { email: settings.contactEmail }) : t.questions_reply, settings.storeName].filter(Boolean);
-  const text2 = [
+  const text3 = [
     greeting,
     "",
     ...intro,
@@ -30792,7 +31492,7 @@ ${closing.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("\n")}
 <p>${footer.map(escapeHtml).join("<br>")}</p>
 <p style="color:#777;font-size:12px">${escapeHtml(fill(t.auto_note, { store: settings.storeName }))}</p>
 </body></html>`;
-  return { text: text2, html: html2 };
+  return { text: text3, html: html2 };
 };
 var composeEmails = (kind, order, settings, config2, { problem = "" } = {}) => {
   const t = EMAIL_MESSAGES[settings.language] ?? en2;
@@ -30823,7 +31523,7 @@ var composeEmails = (kind, order, settings, config2, { problem = "" } = {}) => {
   };
   const shipTo = { title: t.ship_to, lines: addressLines(order) };
   if (kind === "request") {
-    const total = money2(order.total, settings);
+    const total = money3(order.total, settings);
     messages.push({
       ...base,
       tag: "request-received",
@@ -30846,7 +31546,7 @@ var composeEmails = (kind, order, settings, config2, { problem = "" } = {}) => {
       shipTo
     ]);
   } else if (kind === "paid") {
-    const amount = money2(Number.isFinite(order.amountPaid) ? order.amountPaid : order.total, settings);
+    const amount = money3(Number.isFinite(order.amountPaid) ? order.amountPaid : order.total, settings);
     const paidRows = [...totals(order, settings, t, { paid: true }), ...order.captureId ? [[t.paypal_id, order.captureId]] : []];
     messages.push({
       ...base,
@@ -31045,7 +31745,7 @@ var handleMcp = async (request, server) => {
 };
 var dispatch = async ({ id, method, params, server, modern }) => {
   const ok = (result) => jsonResponse({ jsonrpc: "2.0", id, result: modern ? { resultType: "complete", ...result } : result });
-  const fail = (code, text2, status = 200) => jsonResponse(rpcError(id, code, text2), status);
+  const fail = (code, text3, status = 200) => jsonResponse(rpcError(id, code, text3), status);
   try {
     if (method === "initialize" && !modern) {
       const requested = typeof params.protocolVersion === "string" ? params.protocolVersion : "";
@@ -31078,290 +31778,6 @@ var dispatch = async ({ id, method, params, server, modern }) => {
   } catch {
     return fail(ERRORS.INTERNAL, "Internal error", modern ? 500 : 200);
   }
-};
-
-// src/orders.js
-var ORDER_ID_PATTERN = /^ORD-[0-9A-HJKMNP-TV-Z]{10}$/;
-var EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-var PHONE_PATTERN = /^\+?[\d\s().-]{6,}$/;
-var LIMITS = { name: 100, email: 200, phone: 40, note: 1e3, items: 20, address: 300, city: 120, region: 120, postalCode: 20 };
-var CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
-var CONTROL_OR_NEWLINE = /[\u0000-\u001F\u007F]/;
-var field = (value2) => typeof value2 === "string" ? value2.trim() : "";
-var singleLine = (errors, key, raw, { max, required: required2, pattern }) => {
-  const value2 = field(raw).replace(/\s+/g, " ");
-  if (!value2) {
-    if (required2) errors[key] = "required";
-    return "";
-  }
-  if (value2.length > max) errors[key] = "too_long";
-  else if (CONTROL_OR_NEWLINE.test(value2)) errors[key] = "invalid";
-  else if (pattern && !pattern.test(value2)) errors[key] = "invalid";
-  return value2;
-};
-var parseItems = (raw) => {
-  if (!Array.isArray(raw)) return null;
-  const merged = /* @__PURE__ */ new Map();
-  for (const item of raw) {
-    if (!item || typeof item !== "object") return null;
-    const productId = typeof item.productId === "string" ? item.productId.trim() : "";
-    const quantity = typeof item.quantity === "string" ? Number(item.quantity) : item.quantity;
-    if (!PRODUCT_ID_PATTERN.test(productId) || !Number.isInteger(quantity)) return null;
-    if (quantity === 0) continue;
-    if (quantity < 0) return null;
-    merged.set(productId, (merged.get(productId) ?? 0) + quantity);
-  }
-  return [...merged].map(([productId, quantity]) => ({ productId, quantity }));
-};
-var cents = (amount) => Math.round(amount * 100);
-var addressRules = (country) => ({ region: REGION_REQUIRED.has(country), postalCode: !NO_POSTAL_CODE.has(country) });
-var validateOrder = (input2, { listed, settings, shipping = { status: "missing" } }) => {
-  const body = input2 && typeof input2 === "object" && !Array.isArray(input2) ? input2 : {};
-  const errors = {};
-  const itemErrors = [];
-  const orderId = field(body.orderId);
-  if (!ORDER_ID_PATTERN.test(orderId)) errors.orderId = "invalid";
-  const name = singleLine(errors, "name", body.name, { max: LIMITS.name, required: true });
-  const email3 = singleLine(errors, "email", body.email, { max: LIMITS.email, required: true, pattern: EMAIL_PATTERN });
-  if (errors.email === "invalid") errors.email = "invalid_email";
-  const phone = singleLine(errors, "phone", body.phone, { max: LIMITS.phone, required: true, pattern: PHONE_PATTERN });
-  if (errors.phone === "invalid") errors.phone = "invalid_phone";
-  const country = field(body.country).toUpperCase();
-  const countries = checkoutCountries(settings, shipping);
-  if (!country) errors.country = "required";
-  else if (!countries.includes(country)) errors.country = settings.shipsTo.includes(country) ? "no_shipping" : "invalid_country";
-  const rules = addressRules(errors.country ? "" : country);
-  const line1 = singleLine(errors, "address1", body.address1, { max: LIMITS.address, required: true });
-  const line2 = singleLine(errors, "address2", body.address2, { max: LIMITS.address, required: false });
-  const city = singleLine(errors, "city", body.city, { max: LIMITS.city, required: true });
-  const region = singleLine(errors, "region", body.region, { max: LIMITS.region, required: rules.region });
-  const postalCode = singleLine(errors, "postalCode", body.postalCode, { max: LIMITS.postalCode, required: rules.postalCode });
-  const note = field(body.note).replace(/\r\n?/g, "\n");
-  if (note.length > LIMITS.note) errors.note = "too_long";
-  else if (CONTROL.test(note)) errors.note = "invalid";
-  const items = parseItems(body.items);
-  const lines = [];
-  if (items === null) errors.items = "invalid";
-  else if (items.length === 0) errors.items = "items_empty";
-  else if (items.length > LIMITS.items) errors.items = "too_many_items";
-  else {
-    const byId = new Map(listed.map((product) => [product.id, product]));
-    for (const { productId, quantity } of items) {
-      const product = byId.get(productId);
-      if (!product) {
-        itemErrors.push({ productId, code: "not_available" });
-        continue;
-      }
-      if (product.soldOut) {
-        itemErrors.push({ productId, code: "sold_out", name: product.name });
-        continue;
-      }
-      if (quantity > product.maxQuantity) {
-        itemErrors.push({ productId, code: "too_many", name: product.name, max: product.maxQuantity });
-        continue;
-      }
-      lines.push({ product, quantity });
-    }
-    if (itemErrors.length) errors.items = itemErrors[0].code;
-  }
-  const currency = settings.currency;
-  const subtotalCents = lines.reduce((sum, line) => sum + cents(line.product.price) * line.quantity, 0);
-  const rate = errors.country ? null : shippingFor(shipping, country, subtotalCents / 100);
-  if (rate && !rate.ok) errors.country = rate.code;
-  if (Object.keys(errors).length) {
-    return { ok: false, status: 400, errors, itemErrors };
-  }
-  const shippingCents = rate.cost === null ? 0 : cents(rate.cost);
-  const total = (subtotalCents + shippingCents) / 100;
-  const expected = body.expectedTotal;
-  if (typeof expected === "number" && Number.isFinite(expected) && Math.abs(expected - total) > 4e-3) {
-    return {
-      ok: false,
-      status: 409,
-      errors: { items: "price_changed" },
-      itemErrors,
-      total,
-      totalText: formatPrice(total, currency, settings.language)
-    };
-  }
-  return {
-    ok: true,
-    order: {
-      orderId,
-      name,
-      email: email3,
-      phone,
-      country,
-      address: { line1, line2, city, region, postalCode, country },
-      note,
-      currency,
-      subtotal: subtotalCents / 100,
-      shipping: rate.cost === null ? null : shippingCents / 100,
-      deliveryEstimate: rate.estimate ?? "",
-      total,
-      lines: lines.map(({ product, quantity }) => ({
-        productId: product.id,
-        sku: product.sku,
-        name: product.name,
-        quantity,
-        unitPrice: product.price,
-        lineTotal: cents(product.price) * quantity / 100
-      }))
-    }
-  };
-};
-var money3 = (amount) => amount.toFixed(2);
-var formatShippingAddress = (order) => [
-  order.name,
-  order.address.line1,
-  order.address.line2,
-  [order.address.postalCode, order.address.city].filter(Boolean).join(" "),
-  order.address.region,
-  `${countryName(order.country, "en")} (${order.country})`
-].filter(Boolean).join("\n");
-var orderToFields = (order, { nowIso, payment = "request" }) => {
-  const lines = order.lines.map(
-    (line) => `${line.quantity} \xD7 ${line.name}${line.sku ? ` (${line.sku})` : ""} @ ${money3(line.unitPrice)} ${order.currency} = ${money3(line.lineTotal)} ${order.currency}`
-  );
-  const fields = {
-    title: `${order.orderId} \xB7 ${order.name}`,
-    "order-id": order.orderId,
-    status: payment === "paypal" ? "awaiting-payment" : "new",
-    "payment-method": payment === "paypal" ? "paypal" : "request",
-    "customer-name": order.name,
-    email: order.email,
-    country: `${countryName(order.country, "en")} (${order.country})`,
-    "address-line1": order.address.line1,
-    city: order.address.city,
-    "shipping-address": formatShippingAddress(order),
-    "items-summary": lines.join("\n"),
-    items: JSON.stringify(
-      order.lines.map((line) => ({
-        product_id: line.productId,
-        sku: line.sku,
-        name: line.name,
-        quantity: line.quantity,
-        unit_price: line.unitPrice,
-        line_total: line.lineTotal
-      }))
-    ),
-    subtotal: order.subtotal,
-    total: order.total,
-    currency: order.currency,
-    "created-at": nowIso,
-    source: "website"
-  };
-  if (order.shipping !== null && order.shipping !== void 0) fields.shipping = order.shipping;
-  if (order.deliveryEstimate) fields["delivery-estimate"] = order.deliveryEstimate;
-  if (order.phone) fields.phone = order.phone;
-  if (order.address.line2) fields["address-line2"] = order.address.line2;
-  if (order.address.region) fields.region = order.address.region;
-  if (order.address.postalCode) fields["postal-code"] = order.address.postalCode;
-  if (order.note) fields["customer-note"] = order.note;
-  return fields;
-};
-var numberOrNull = (value2) => {
-  const parsed = typeof value2 === "string" && value2.trim() !== "" ? Number(value2) : value2;
-  return typeof parsed === "number" && Number.isFinite(parsed) ? parsed : null;
-};
-var str = (value2) => typeof value2 === "string" ? value2.trim() : typeof value2 === "number" ? String(value2) : "";
-var selectValue = (value2) => {
-  if (value2 && typeof value2 === "object" && !Array.isArray(value2)) return str(value2.id ?? value2.name).toLowerCase();
-  return str(value2).toLowerCase();
-};
-var orderFromRecord = (record2) => {
-  const fields = record2?.fields ?? {};
-  let lines = [];
-  try {
-    const parsed = JSON.parse(typeof fields.items === "string" ? fields.items : "[]");
-    if (Array.isArray(parsed)) {
-      lines = parsed.filter((line) => line && typeof line === "object").map((line) => ({
-        productId: str(line.product_id),
-        sku: str(line.sku),
-        name: str(line.name),
-        quantity: Number(line.quantity) || 0,
-        unitPrice: numberOrNull(line.unit_price) ?? 0,
-        lineTotal: numberOrNull(line.line_total) ?? 0
-      }));
-    }
-  } catch {
-    lines = [];
-  }
-  const countryLabel2 = str(fields.country);
-  const country = /\(([A-Z]{2})\)\s*$/.exec(countryLabel2)?.[1] ?? "";
-  return {
-    recordId: typeof record2?.id === "string" ? record2.id : "",
-    headCommitId: typeof record2?.headCommitId === "string" ? record2.headCommitId : "",
-    orderId: str(fields["order-id"]),
-    status: selectValue(fields.status),
-    paymentMethod: selectValue(fields["payment-method"]) || "request",
-    name: str(fields["customer-name"]),
-    email: str(fields.email),
-    phone: str(fields.phone),
-    country,
-    countryLabel: countryLabel2,
-    address: {
-      line1: str(fields["address-line1"]),
-      line2: str(fields["address-line2"]),
-      city: str(fields.city),
-      region: str(fields.region),
-      postalCode: str(fields["postal-code"]),
-      country
-    },
-    note: typeof fields["customer-note"] === "string" ? fields["customer-note"] : "",
-    lines,
-    subtotal: numberOrNull(fields.subtotal),
-    shipping: numberOrNull(fields.shipping),
-    total: numberOrNull(fields.total) ?? 0,
-    currency: str(fields.currency).toUpperCase(),
-    deliveryEstimate: str(fields["delivery-estimate"]),
-    paypalOrderId: str(fields["paypal-order-id"]),
-    captureId: str(fields["paypal-capture-id"]),
-    amountPaid: numberOrNull(fields["amount-paid"]),
-    refundedAmount: numberOrNull(fields["refunded-amount"]) ?? 0,
-    paymentLog: typeof fields["payment-log"] === "string" ? fields["payment-log"] : "",
-    emailLog: typeof fields["email-log"] === "string" ? fields["email-log"] : "",
-    paymentProblem: str(fields["payment-problem"]),
-    createdAt: str(fields["created-at"])
-  };
-};
-var appendLogLines = (current, lines, max = 12e3) => {
-  const next = [String(current ?? "").trimEnd(), ...lines].filter(Boolean).join("\n");
-  return next.length > max ? next.slice(next.length - max).replace(/^[^\n]*\n/, "") : next;
-};
-var orderInputFromForm = (form) => {
-  const items = [];
-  for (const [key, value2] of form.entries()) {
-    if (!key.startsWith("qty.")) continue;
-    const quantity = Number(value2);
-    items.push({ productId: key.slice(4), quantity: Number.isFinite(quantity) ? Math.trunc(quantity) : Number.NaN });
-  }
-  const rawExpected = form.get("expectedTotal");
-  const expected = rawExpected !== null && rawExpected.trim() !== "" ? Number(rawExpected) : Number.NaN;
-  return {
-    orderId: form.get("orderId") ?? "",
-    name: form.get("name") ?? "",
-    email: form.get("email") ?? "",
-    phone: form.get("phone") ?? "",
-    country: form.get("country") ?? "",
-    address1: form.get("address1") ?? "",
-    address2: form.get("address2") ?? "",
-    city: form.get("city") ?? "",
-    region: form.get("region") ?? "",
-    postalCode: form.get("postalCode") ?? "",
-    note: form.get("note") ?? "",
-    website: form.get("company_url") ?? "",
-    items,
-    ...Number.isFinite(expected) ? { expectedTotal: expected } : {}
-  };
-};
-var isHoneypotHit = (input2) => typeof input2?.website === "string" && input2.website.trim() !== "";
-var CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-var newOrderId = (random = (bytes) => crypto.getRandomValues(bytes)) => {
-  const bytes = random(new Uint8Array(10));
-  let id = "ORD-";
-  for (const byte of bytes) id += CROCKFORD[byte % 32];
-  return id;
 };
 
 // src/pages.js
@@ -31418,7 +31834,7 @@ var layout = ({
   ].filter(Boolean);
   const header = settings ? `<header class="site-header"><div class="wrap header-row">
   <a class="brand" href="/">${esc3(storeName)}</a>
-  <nav class="site-nav"><a href="/#products">${esc3(t("nav_products"))}</a>${hasBlog ? `<a href="${BLOG_PATH}">${esc3(t("nav_blog"))}</a>` : ""}<a class="order-link" href="/order">${esc3(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
+  <nav class="site-nav"><a href="/#products">${esc3(t("nav_products"))}</a>${hasBlog ? `<a href="${BLOG_PATH}">${esc3(t("nav_blog"))}</a>` : ""}${site.account ? `<a class="account-link" href="/account">${esc3(t("nav_account"))}</a>` : ""}<a class="order-link" href="/order">${esc3(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
 </div></header>` : "";
   const notice = settings?.demoNotice ? `<div class="demo-notice" role="note">${esc3(t("demo_notice"))}</div>` : "";
   const footer = settings ? `<footer class="site-footer"><div class="wrap footer-row">
@@ -31556,10 +31972,12 @@ var orderPage = ({
   ordersReady = true,
   checkout = { payment: "request", countries: settings.shipsTo, shipping: { status: "missing", rates: /* @__PURE__ */ new Map() } },
   site = {},
-  browserPreview = false
+  browserPreview = false,
+  buyer = null
 }) => {
   const t = translator(settings.language);
   const paypal = checkout.payment === "paypal";
+  const accountNote = site.account ? buyer ? `<p class="note account-note">${esc3(t("account_checkout_signed_in", { email: buyer.email }))}</p>` : `<p class="note account-note"><a href="/account">${esc3(t("account_checkout_sign_in"))}</a></p>` : "";
   const ownerNote = browserPreview ? `<div class="owner-box" role="note"><h2>For the shop owner \xB7 \u5E97\u4E3B\u53EF\u89C1</h2>
   <p>Online payment with PayPal and the order emails need the Website engine (Busabase Plus and higher): it keeps the PayPal secret and the mail password on the server and can open a mail connection. This private preview in your own browser has neither, so checkout takes order requests here. Nobody else sees this note.</p>
   <p>PayPal \u5728\u7EBF\u4ED8\u6B3E\u548C\u8BA2\u5355\u90AE\u4EF6\u9700\u8981\u7F51\u7AD9\u5F15\u64CE\uFF08Busabase Plus \u53CA\u4EE5\u4E0A\uFF09\uFF1A\u5B83\u5728\u670D\u52A1\u5668\u4E0A\u4FDD\u7BA1 PayPal \u5BC6\u94A5\u548C\u90AE\u7BB1\u6388\u6743\u7801\uFF0C\u5E76\u80FD\u8FDE\u63A5\u90AE\u4EF6\u670D\u52A1\u5668\u3002\u4F60\u6D4F\u89C8\u5668\u91CC\u7684\u8FD9\u4E2A\u79C1\u6709\u9884\u89C8\u4E24\u8005\u90FD\u6CA1\u6709\uFF0C\u6240\u4EE5\u8FD9\u91CC\u7684\u7ED3\u8D26\u53EA\u6536\u8BA2\u5355\u8BF7\u6C42\u3002\u8FD9\u6BB5\u8BF4\u660E\u53EA\u6709\u4F60\u80FD\u770B\u5230\u3002</p>
@@ -31650,6 +32068,7 @@ var orderPage = ({
   };
   const body = `<h1>${esc3(t(paypal ? "checkout_title" : "order_title"))}</h1>
 <p class="lead">${esc3(t(paypal ? "checkout_intro" : "order_intro"))}</p>
+${accountNote}
 ${ownerNote}
 ${form}
 <script type="application/json" id="shop-data">${JSON.stringify(clientData).replace(/</g, "\\u003c")}</script>`;
@@ -31823,6 +32242,80 @@ ${renderMarkdown(fillPlaceholders(post.body, settings), { demoteH1: true })}
 </article>
 ${strip}
 <p class="post-back"><a href="${BLOG_PATH}">\u2190 ${esc3(t("blog_back"))}</a></p>`,
+    site
+  });
+};
+var formatOrderDate = (iso, language) => {
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return "";
+  return new Intl.DateTimeFormat(localeTag(language), { dateStyle: "medium", timeZone: "UTC" }).format(new Date(ms));
+};
+var accountMessage = (message) => message ? `<div class="form-status${message.error ? " is-error" : ""}" role="${message.error ? "alert" : "status"}">${esc3(message.text)}</div>` : "";
+var accountPage = ({ origin, settings, site = {}, view }) => {
+  const t = translator(settings.language);
+  const money4 = (amount, currency) => amount === null ? "" : formatPrice(amount, currency || settings.currency, settings.language);
+  let body;
+  if (view.kind === "unavailable") {
+    body = `<section class="message account"><h1>${esc3(t("account_unavailable_title"))}</h1><p>${esc3(t("account_unavailable_body"))}</p>${settings.contactEmail ? `<p>${esc3(t("contact"))}: <a href="mailto:${esc3(settings.contactEmail)}">${esc3(settings.contactEmail)}</a></p>` : ""}<p><a class="button" href="/">${esc3(t("back_home"))}</a></p></section>`;
+  } else if (view.kind === "orders") {
+    const rows = view.orders.map(
+      (order) => `<tr>
+  <td data-label="${esc3(t("col_order"))}"><a href="/pay/${esc3(order.orderId)}">${esc3(order.orderId)}</a></td>
+  <td data-label="${esc3(t("col_date"))}">${order.createdAt ? `<time datetime="${esc3(order.createdAt)}">${esc3(formatOrderDate(order.createdAt, settings.language))}</time>` : ""}</td>
+  <td data-label="${esc3(t("col_items"))}"><ul class="account-items">${order.items.map((item) => `<li>${item.quantity ? `${esc3(item.quantity)} \xD7 ` : ""}${esc3(item.name)}</li>`).join("")}</ul></td>
+  <td data-label="${esc3(t("col_total"))}">${esc3(money4(order.total, order.currency))}</td>
+  <td data-label="${esc3(t("col_status"))}">${order.status ? esc3(t(`status_${order.status}`)) : ""}</td>
+</tr>`
+    ).join("\n");
+    const list = view.orders.length ? `<table class="account-orders">
+<thead><tr><th scope="col">${esc3(t("col_order"))}</th><th scope="col">${esc3(t("col_date"))}</th><th scope="col">${esc3(t("col_items"))}</th><th scope="col">${esc3(t("col_total"))}</th><th scope="col">${esc3(t("col_status"))}</th></tr></thead>
+<tbody>
+${rows}
+</tbody>
+</table>
+${view.nextCursor ? `<p><a href="/account?cursor=${encodeURIComponent(view.nextCursor)}">${esc3(t("account_more"))}</a></p>` : ""}` : view.unavailable ? "" : `<p class="empty">${esc3(t("account_orders_empty"))}</p>`;
+    body = `<section class="account">
+  <h1>${esc3(t("account_orders_heading"))}</h1>
+  <div class="account-who">
+    <p>${esc3(t("account_signed_in_as", { email: view.user.email }))}</p>
+    <form method="post" action="/account/sign-out"><button class="link-button" type="submit">${esc3(t("account_sign_out"))}</button></form>
+  </div>
+  ${accountMessage(view.message)}
+  ${list}
+  <p class="note">${esc3(t("account_orders_note"))}</p>
+</section>`;
+  } else if (view.kind === "code") {
+    body = `<section class="account">
+  <h1>${esc3(t("account_code_title"))}</h1>
+  ${accountMessage(view.message)}
+  <form class="account-form" method="post" action="/account/verify">
+    <input type="hidden" name="email" value="${esc3(view.email)}">
+    <label>${esc3(t("account_code_label"))}<input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" required autofocus></label>
+    <button class="button" type="submit">${esc3(t("account_verify"))}</button>
+  </form>
+  <div class="account-more">
+    <form method="post" action="/account/send-code"><input type="hidden" name="email" value="${esc3(view.email)}"><button class="link-button" type="submit">${esc3(t("account_resend"))}</button></form>
+    <a href="/account?change=email">${esc3(t("account_other_email"))}</a>
+  </div>
+</section>`;
+  } else {
+    body = `<section class="account">
+  <h1>${esc3(t("account_title"))}</h1>
+  <p class="lead">${esc3(t("account_intro"))}</p>
+  ${accountMessage(view.message)}
+  <form class="account-form" method="post" action="/account/send-code">
+    <label>${esc3(t("account_email_label"))}<input name="email" type="email" autocomplete="email" maxlength="200" required value="${esc3(view.email ?? "")}"></label>
+    <button class="button" type="submit">${esc3(t("account_send_code"))}</button>
+  </form>
+</section>`;
+  }
+  return layout({
+    settings,
+    t,
+    title: `${t(view.kind === "orders" ? "account_orders_heading" : "account_title")} \xB7 ${settings.storeName}`,
+    canonical: absoluteUrl(origin, "/account"),
+    noindex: true,
+    body,
     site
   });
 };
@@ -32259,6 +32752,7 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
     const tables = resolveProductTables(nodes, settings.productsBase, { shopFolderId: shop.settings.node.parentId });
     if (tables.status !== "ready") return { setup: tables.status, settings };
     const extras = resolveShopExtras(nodes, shop.settings.node.parentId);
+    const app = resolveShopApp(nodes, shop.settings.node.parentId);
     const [productsPage, certificateRecords, shippingRead, pagesRead, postsRead] = await Promise.all([
       records.readPage({
         baseId: tables.productsBaseId,
@@ -32292,6 +32786,8 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       catalog,
       productsFrom: tables.shape,
       ordersBaseId: shop.orders.status === "found" ? shop.orders.node.baseId : null,
+      // This website's own AirApp node: the app buyers sign in to (src/account.js). null → no buyer login.
+      appNodeId: app.status === "found" ? app.node.id : null,
       // `ready` with rates, or `missing` (a shop from before 0.6.0: order
       // requests without a shipping line) or `unreadable` (ordering pauses).
       shipping: shippingRead.status === "ready" ? { status: "ready", ...buildShippingRates(shippingRead.records, settings) } : { status: shippingRead.status, rates: /* @__PURE__ */ new Map(), problems: [] },
@@ -32323,8 +32819,8 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       throw new ShopUnavailableError("The workspace could not be read", error62);
     }
   };
-  const createOrder = async (state, order, { payment = "request" } = {}) => {
-    const fields = orderToFields(order, { nowIso: new Date(now()).toISOString(), payment });
+  const createOrder = async (state, order, { payment = "request", customerAccount = "" } = {}) => {
+    const fields = orderToFields(order, { nowIso: new Date(now()).toISOString(), payment, customerAccount });
     try {
       const outcome = await records.createRecord({
         baseId: state.ordersBaseId,
@@ -32334,6 +32830,10 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       });
       return { status: outcome.status, recordId: outcome.recordId ?? null };
     } catch (error62) {
+      if (customerAccount && (error62?.status === 400 || error62?.status === 422)) {
+        log.warn?.("busa-shop: order saved without Customer account (does Orders have the customer-account field?)", order.orderId);
+        return createOrder(state, order, { payment });
+      }
       log.error?.("busa-shop: order not saved", order.orderId, describeError(error62));
       throw new ShopUnavailableError("The order could not be saved", error62);
     }
@@ -32495,7 +32995,7 @@ var createSecretsReader = ({ read, now = () => Date.now() }) => {
 
 // src/handler.js
 var MAX_ORDER_BODY_BYTES = 16 * 1024;
-var SHOP_VERSION = "0.9.0";
+var SHOP_VERSION = "0.10.0";
 var MCP_REQUESTS_PER_MINUTE = 120;
 var MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
 var SECURITY_HEADERS = {
@@ -32548,6 +33048,11 @@ var publicData = (body, type) => {
   });
 };
 var redirect = (location) => new Response(null, { status: 301, headers: { location, "cache-control": "public, max-age=300", "x-content-type-options": "nosniff" } });
+var withCookies = (response, cookies = []) => {
+  for (const cookie2 of cookies) response.headers.append("set-cookie", cookie2);
+  return response;
+};
+var seeOther = (location, cookies = []) => withCookies(new Response(null, { status: 303, headers: { location, "cache-control": "no-store", "x-content-type-options": "nosniff" } }), cookies);
 var NOT_READY = { cache: "no-store", extra: { "retry-after": "300", "x-robots-tag": "noindex" } };
 var PRIVATE = { cache: "no-store", extra: { "x-robots-tag": "noindex" } };
 var defaultDeps = {
@@ -32611,7 +33116,15 @@ var createHandler = (overrides = {}) => {
         now: deps.now,
         read: () => readShopSecrets({ baseUrl, apiKey: env2.BUSABASE_API_KEY, spaceId: env2.BUSABASE_SPACE_ID, fetchImpl: deps.fetch })
       });
-      site = { shop, secrets, paypal: null };
+      const accounts = createAccounts({
+        baseUrl,
+        apiKey: env2.BUSABASE_API_KEY,
+        spaceId: env2.BUSABASE_SPACE_ID,
+        fetchImpl: deps.fetch,
+        now: deps.now,
+        log: deps.log
+      });
+      site = { shop, secrets, accounts, paypal: null };
       sites.set(env2, site);
     }
     return site;
@@ -32654,12 +33167,33 @@ var createHandler = (overrides = {}) => {
     }
     return site.paypal.client;
   };
-  const siteInfo = (state, payments, analytics = null) => ({
+  const siteInfo = (state, payments, analytics = null, account = false) => ({
     pages: state.pages ?? [],
     posts: state.posts ?? [],
     payment: payments?.payment ?? "request",
-    ...analytics ? { analytics } : {}
+    ...analytics ? { analytics } : {},
+    account
   });
+  const loginFor = async (env2, state) => {
+    if (!env2.BUSABASE_API_KEY || !state.appNodeId) return { enabled: false, reason: env2.BUSABASE_API_KEY ? "no-app" : "no-key" };
+    try {
+      return await siteFor(env2).accounts.settings(state.appNodeId);
+    } catch (error62) {
+      deps.log.warn?.("busa-shop: buyer login settings unreadable", error62?.message ?? error62);
+      return { enabled: false, reason: "error" };
+    }
+  };
+  const accountOn = async (env2, state) => (await loginFor(env2, state)).enabled === true;
+  const buyerFor = async (request, env2, state) => {
+    const token = sessionTokenOf(request);
+    if (!token || !await accountOn(env2, state)) return null;
+    try {
+      const who = await siteFor(env2).accounts.session({ appId: state.appNodeId, token });
+      return who.user ?? null;
+    } catch {
+      return null;
+    }
+  };
   const checkoutFor = (state, payments) => ({
     payment: payments.payment,
     countries: checkoutCountries(state.settings, state.shipping),
@@ -32775,7 +33309,7 @@ var createHandler = (overrides = {}) => {
     const { settings } = state;
     const vault = await secretsFor(env2, state);
     const payments = paymentsFor(env2, state, vault);
-    const site = siteInfo(state, payments, analyticsFor(url2, env2, settings));
+    const site = siteInfo(state, payments, analyticsFor(url2, env2, settings), await accountOn(env2, state));
     const t = translator(settings.language);
     const values = {
       name: input2.name,
@@ -32846,8 +33380,9 @@ var createHandler = (overrides = {}) => {
       );
     }
     const payment = payments.payment === "paypal" && paypalValue(verdict.order.total, settings.currency) !== null ? "paypal" : "request";
+    const buyer = await buyerFor(request, env2, state);
     try {
-      await shop.createOrder(state, verdict.order, { payment });
+      await shop.createOrder(state, verdict.order, { payment, customerAccount: buyer?.id ?? "" });
     } catch (error62) {
       if (!(error62 instanceof ShopUnavailableError)) throw error62;
       const message = [
@@ -32863,14 +33398,14 @@ var createHandler = (overrides = {}) => {
     }
     if (isForm) {
       const order = await shop.findOrder(state, orderId);
-      if (order) return payPageResponse(url2, state, order, payments);
+      if (order) return payPageResponse(url2, state, order, payments, site.account);
     }
     return json2({ ok: true, orderId, payment: "paypal", payPath: `/pay/${orderId}` });
   };
-  const payPageResponse = (url2, state, order, payments) => {
+  const payPageResponse = (url2, state, order, payments, account = false) => {
     const showButton = order.status === "awaiting-payment" && payments.payment === "paypal" && order.currency === state.settings.currency;
     const paypal = showButton ? { clientId: payments.clientId, sdkUrl: payments.sdkUrl } : null;
-    return html(payPage({ origin: url2.origin, settings: state.settings, order, paypal, site: siteInfo(state, payments) }), {
+    return html(payPage({ origin: url2.origin, settings: state.settings, order, paypal, site: siteInfo(state, payments, null, account) }), {
       cache: "no-store",
       extra: { ...PRIVATE.extra, ...paypal ? { "content-security-policy": paypalCsp(paypal.sdkUrl) } : {} }
     });
@@ -32882,8 +33417,9 @@ var createHandler = (overrides = {}) => {
     const vault = await secretsFor(env2, state);
     const payments = paymentsFor(env2, state, vault);
     const order = ORDER_ID_PATTERN.test(orderId) ? await shop.findOrder(state, orderId) : null;
-    if (!order) return html(notFoundPage({ settings: state.settings, site: siteInfo(state, payments) }), { status: 404, ...PRIVATE });
-    return payPageResponse(url2, state, order, payments);
+    const account = await accountOn(env2, state);
+    if (!order) return html(notFoundPage({ settings: state.settings, site: siteInfo(state, payments, null, account) }), { status: 404, ...PRIVATE });
+    return payPageResponse(url2, state, order, payments, account);
   };
   const paypalContext = async (env2) => {
     const shop = siteFor(env2).shop;
@@ -33220,6 +33756,127 @@ var createHandler = (overrides = {}) => {
       }
     });
   };
+  const accountContext = async (url2, env2) => {
+    const state = await siteFor(env2).shop.load();
+    if (state.setup !== "ready") return { error: notReady(state) };
+    const enabled = await accountOn(env2, state);
+    const site = siteInfo(state, { payment: publicPayment(env2, state) }, analyticsFor(url2, env2, state.settings), enabled);
+    return { state, enabled, site, accounts: siteFor(env2).accounts, appId: state.appNodeId };
+  };
+  const accountResponse = (url2, context, view, { status = 200, cookies = [] } = {}) => withCookies(html(accountPage({ origin: url2.origin, settings: context.state.settings, site: context.site, view }), { status, ...PRIVATE }), cookies);
+  const unavailableAccount = (url2, context, cookies = []) => accountResponse(url2, context, { kind: "unavailable" }, { status: 404, cookies });
+  const readAccountForm = async (request) => {
+    const type = (request.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+    if (type !== "application/x-www-form-urlencoded") return null;
+    const raw = await readLimited(request, 4 * 1024);
+    return raw === null ? null : new URLSearchParams(raw);
+  };
+  const getAccount = async (request, url2, env2) => {
+    const context = await accountContext(url2, env2);
+    if (context.error) return context.error;
+    if (!context.enabled) return unavailableAccount(url2, context);
+    const { state, accounts, appId } = context;
+    const t = translator(state.settings.language);
+    const token = sessionTokenOf(request);
+    let signedOutMessage = null;
+    const cookies = [];
+    if (token) {
+      const who = await accounts.session({ appId, token });
+      if (who.user) {
+        const cursorParam = url2.searchParams.get("cursor") ?? "";
+        const page = state.ordersBaseId ? await accounts.queryRecords({ appId, baseId: state.ordersBaseId, token, ...CURSOR_PATTERN.test(cursorParam) ? { cursor: cursorParam } : {} }) : { error: "unavailable" };
+        if (page.error !== "invalid") {
+          const orders = page.error ? [] : page.records.map(buyerOrderFromRecord).filter((order) => order.orderId);
+          return accountResponse(url2, context, {
+            kind: "orders",
+            user: who.user,
+            orders,
+            nextCursor: page.nextCursor ?? null,
+            unavailable: Boolean(page.error),
+            message: page.error ? { text: t("account_orders_unavailable"), error: true } : null
+          });
+        }
+      } else if (who.error === "unavailable") {
+        return accountResponse(url2, context, { kind: "email", message: { text: t("account_error"), error: true } }, { status: 503 });
+      }
+      cookies.push(clearSessionCookie());
+      signedOutMessage = { text: t("account_session_ended"), error: false };
+    }
+    const pending = url2.searchParams.get("change") === "email" ? "" : pendingEmailOf(request);
+    if (url2.searchParams.get("change") === "email") cookies.push(clearPendingCookie());
+    if (pending) {
+      return accountResponse(url2, context, { kind: "code", email: pending, message: { text: t("account_code_sent", { email: pending }), error: false } }, { cookies });
+    }
+    const notice = url2.searchParams.get("notice") === "signed-out" ? { text: t("account_signed_out"), error: false } : null;
+    return accountResponse(url2, context, { kind: "email", message: signedOutMessage ?? notice }, { cookies });
+  };
+  const postSendCode = async (request, url2, env2) => {
+    if (crossSite(request, url2, env2)) return plain("Forbidden", 403, void 0, "no-store");
+    const form = await readAccountForm(request);
+    if (!form) return plain("Unsupported request", 415, void 0, "no-store");
+    const context = await accountContext(url2, env2);
+    if (context.error) return context.error;
+    if (!context.enabled) return unavailableAccount(url2, context);
+    const t = translator(context.state.settings.language);
+    const typed = String(form.get("email") ?? "").slice(0, 300);
+    const email3 = normalizeEmail(typed);
+    if (!email3) {
+      return accountResponse(url2, context, { kind: "email", email: typed, message: { text: t("account_invalid_email"), error: true } }, { status: 400 });
+    }
+    const sent = await context.accounts.sendCode({ appId: context.appId, email: email3, locale: context.state.settings.language });
+    if (sent.ok) return seeOther("/account", [pendingCookie(email3)]);
+    if (sent.error === "rate_limited") {
+      if (sent.reason === "space_daily_limit") {
+        return accountResponse(url2, context, { kind: "email", email: email3, message: { text: t("account_shop_limit"), error: true } }, { status: 429 });
+      }
+      const text3 = sent.reason === "email_daily_limit" ? t("account_daily_limit") : t("account_wait", { seconds: sent.retryAfterSeconds });
+      return accountResponse(url2, context, { kind: "code", email: email3, message: { text: text3, error: true } }, { status: 429, cookies: [pendingCookie(email3)] });
+    }
+    if (sent.error === "disabled") return unavailableAccount(url2, { ...context, site: { ...context.site, account: false } });
+    if (sent.error === "invalid_email") {
+      return accountResponse(url2, context, { kind: "email", email: email3, message: { text: t("account_invalid_email"), error: true } }, { status: 400 });
+    }
+    return accountResponse(url2, context, { kind: "email", email: email3, message: { text: t("account_error"), error: true } }, { status: 503 });
+  };
+  const postVerify = async (request, url2, env2) => {
+    if (crossSite(request, url2, env2)) return plain("Forbidden", 403, void 0, "no-store");
+    const form = await readAccountForm(request);
+    if (!form) return plain("Unsupported request", 415, void 0, "no-store");
+    const context = await accountContext(url2, env2);
+    if (context.error) return context.error;
+    if (!context.enabled) return unavailableAccount(url2, context);
+    const t = translator(context.state.settings.language);
+    const email3 = normalizeEmail(String(form.get("email") ?? "").slice(0, 300)) ?? pendingEmailOf(request);
+    if (!email3) return accountResponse(url2, context, { kind: "email", message: { text: t("account_invalid_email"), error: true } }, { status: 400 });
+    const codeView = (text3, status) => accountResponse(url2, context, { kind: "code", email: email3, message: { text: text3, error: true } }, { status });
+    const code = normalizeCode(String(form.get("code") ?? "").slice(0, 20));
+    if (!code) return codeView(t("account_invalid_code"), 400);
+    const result = await context.accounts.verify({ appId: context.appId, email: email3, code });
+    if (result.ok) return seeOther("/account", [sessionCookie(result.sessionToken), clearPendingCookie()]);
+    if (result.error === "invalid_code") {
+      const left = result.attemptsLeft;
+      return codeView(left > 1 ? t("account_wrong_code", { attempts: left }) : left === 1 ? t("account_wrong_code_one") : t("account_no_attempts"), 400);
+    }
+    if (result.error === "expired") return codeView(t("account_expired"), 410);
+    if (result.error === "user_disabled") {
+      return accountResponse(url2, context, { kind: "email", message: { text: t("account_user_disabled"), error: true } }, { status: 403, cookies: [clearPendingCookie()] });
+    }
+    if (result.error === "disabled") return unavailableAccount(url2, { ...context, site: { ...context.site, account: false } });
+    return codeView(t("account_error"), 503);
+  };
+  const postSignOut = async (request, url2, env2) => {
+    if (crossSite(request, url2, env2)) return plain("Forbidden", 403, void 0, "no-store");
+    const token = sessionTokenOf(request);
+    if (token && env2.BUSABASE_API_KEY) {
+      try {
+        const state = await siteFor(env2).shop.load();
+        if (state.setup === "ready" && state.appNodeId) await siteFor(env2).accounts.signOut({ appId: state.appNodeId, token });
+      } catch (error62) {
+        deps.log.warn?.("busa-shop: sign-out not sent to Busabase", error62?.message ?? error62);
+      }
+    }
+    return seeOther("/account?notice=signed-out", [clearSessionCookie(), clearPendingCookie()]);
+  };
   const statusBody = async (env2, state, origin) => {
     if (state.setup !== "ready") return { ok: false, setup: state.setup, products: 0, ordering: false };
     const vault = await secretsFor(env2, state);
@@ -33245,7 +33902,9 @@ var createHandler = (overrides = {}) => {
         bing: Boolean(state.settings.bingVerification)
       },
       // The address an owner adds to Claude or ChatGPT (busa-shop 0.8.0); a public address, not a secret.
-      agents: { mcp: new URL(MCP_PATH, origin).href }
+      agents: { mcp: new URL(MCP_PATH, origin).href },
+      // Buyer login (busa-shop 0.10.0): "on", or why it is off (disabled, not-supported, no-app, no-key, http-…).
+      accounts: await loginFor(env2, state).then((login) => login.enabled ? "on" : login.reason ?? "off")
     };
   };
   const route = async (request, env2, ctx) => {
@@ -33266,7 +33925,14 @@ var createHandler = (overrides = {}) => {
       return postWebhook(request, url2, env2, ctx);
     }
     if (path === MCP_PATH) return mcpRoute(request, url2, env2);
+    if (path === "/account/send-code" || path === "/account/verify" || path === "/account/sign-out") {
+      if (method !== "POST") return plain("Method not allowed", 405, void 0, "no-store");
+      if (path === "/account/send-code") return postSendCode(request, url2, env2);
+      if (path === "/account/verify") return postVerify(request, url2, env2);
+      return postSignOut(request, url2, env2);
+    }
     if (!isRead) return plain("Method not allowed", 405, void 0, "no-store");
+    if (path === "/account") return getAccount(request, url2, env2);
     if (path === "/robots.txt") return plain(buildRobots(url2.origin));
     const imageMatch = /^\/images\/([^/]{1,240})\/(\d{1,2})$/.exec(path);
     if (imageMatch) {
@@ -33317,7 +33983,9 @@ var createHandler = (overrides = {}) => {
     const { settings, catalog } = state;
     const payment = publicPayment(env2, state);
     const analytics = analyticsFor(url2, env2, settings);
-    const site = { pages: state.pages, posts: state.posts, payment, analytics };
+    const machine = ["/sitemap.xml", "/llms.txt", AGENTS_PATH, GOOGLE_FEED_PATH, UCP_PROFILE_PATH, FEED_PATH].includes(path);
+    const account = machine ? false : await accountOn(env2, state);
+    const site = { pages: state.pages, posts: state.posts, payment, analytics, account };
     if (path === "/") return html(homePage({ origin: url2.origin, settings, catalog, site }));
     if (path === "/sitemap.xml") {
       return plain(buildSitemap(url2.origin, catalog.listed, state.pages, state.posts), 200, "application/xml; charset=utf-8");
@@ -33362,9 +34030,10 @@ var createHandler = (overrides = {}) => {
           orderId: newOrderId(),
           ordersReady: Boolean(state.ordersBaseId),
           checkout: checkoutFor(state, payments),
-          site: siteInfo(state, payments, analytics),
+          site: siteInfo(state, payments, analytics, account),
           // No key: the browser engine (Busabase Cloud Free), the owner's own tab.
-          browserPreview: !env2.BUSABASE_API_KEY
+          browserPreview: !env2.BUSABASE_API_KEY,
+          buyer: account ? await buyerFor(request, env2, state) : null
         }),
         { cache: "no-store" }
       );

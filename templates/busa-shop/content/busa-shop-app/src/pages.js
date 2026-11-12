@@ -86,7 +86,7 @@ const layout = ({
   const header = settings
     ? `<header class="site-header"><div class="wrap header-row">
   <a class="brand" href="/">${esc(storeName)}</a>
-  <nav class="site-nav"><a href="/#products">${esc(t("nav_products"))}</a>${hasBlog ? `<a href="${BLOG_PATH}">${esc(t("nav_blog"))}</a>` : ""}<a class="order-link" href="/order">${esc(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
+  <nav class="site-nav"><a href="/#products">${esc(t("nav_products"))}</a>${hasBlog ? `<a href="${BLOG_PATH}">${esc(t("nav_blog"))}</a>` : ""}${site.account ? `<a class="account-link" href="/account">${esc(t("nav_account"))}</a>` : ""}<a class="order-link" href="/order">${esc(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
 </div></header>`
     : "";
   const notice = settings?.demoNotice ? `<div class="demo-notice" role="note">${esc(t("demo_notice"))}</div>` : "";
@@ -257,9 +257,16 @@ export const orderPage = ({
   checkout = { payment: "request", countries: settings.shipsTo, shipping: { status: "missing", rates: new Map() } },
   site = {},
   browserPreview = false,
+  buyer = null,
 }) => {
   const t = translator(settings.language);
   const paypal = checkout.payment === "paypal";
+  // Buyer login on: say whether this order will be under My orders (`buyer` is the signed-in buyer, or null).
+  const accountNote = site.account
+    ? buyer
+      ? `<p class="note account-note">${esc(t("account_checkout_signed_in", { email: buyer.email }))}</p>`
+      : `<p class="note account-note"><a href="/account">${esc(t("account_checkout_sign_in"))}</a></p>`
+    : "";
   // Only the owner ever sees the browser engine's private preview, so it can say what the plan allows.
   const ownerNote = browserPreview
     ? `<div class="owner-box" role="note"><h2>For the shop owner · 店主可见</h2>
@@ -373,6 +380,7 @@ export const orderPage = ({
   };
   const body = `<h1>${esc(t(paypal ? "checkout_title" : "order_title"))}</h1>
 <p class="lead">${esc(t(paypal ? "checkout_intro" : "order_intro"))}</p>
+${accountNote}
 ${ownerNote}
 ${form}
 <script type="application/json" id="shop-data">${JSON.stringify(clientData).replace(/</g, "\\u003c")}</script>`;
@@ -581,6 +589,100 @@ ${renderMarkdown(fillPlaceholders(post.body, settings), { demoteH1: true })}
 </article>
 ${strip}
 <p class="post-back"><a href="${BLOG_PATH}">← ${esc(t("blog_back"))}</a></p>`,
+    site,
+  });
+};
+
+// ---- /account: buyer login and "My orders" (src/account.js) ----
+
+const formatOrderDate = (iso, language) => {
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return "";
+  return new Intl.DateTimeFormat(localeTag(language), { dateStyle: "medium", timeZone: "UTC" }).format(new Date(ms));
+};
+
+const accountMessage = (message) =>
+  message ? `<div class="form-status${message.error ? " is-error" : ""}" role="${message.error ? "alert" : "status"}">${esc(message.text)}</div>` : "";
+
+/**
+ * The account page. `view` is one of:
+ *   { kind: "email", email?, message? }            the email form (signed out)
+ *   { kind: "code", email, message? }              the code form, after a code was sent
+ *   { kind: "orders", user, orders, nextCursor?, message? }   My orders (signed in)
+ *   { kind: "unavailable" }                        login is off: a friendly note, nothing to fill in
+ * `message` is `{ text, error }`. Every form is a plain POST that works without JavaScript.
+ */
+export const accountPage = ({ origin, settings, site = {}, view }) => {
+  const t = translator(settings.language);
+  const money = (amount, currency) => (amount === null ? "" : formatPrice(amount, currency || settings.currency, settings.language));
+  let body;
+  if (view.kind === "unavailable") {
+    body = `<section class="message account"><h1>${esc(t("account_unavailable_title"))}</h1><p>${esc(t("account_unavailable_body"))}</p>${settings.contactEmail ? `<p>${esc(t("contact"))}: <a href="mailto:${esc(settings.contactEmail)}">${esc(settings.contactEmail)}</a></p>` : ""}<p><a class="button" href="/">${esc(t("back_home"))}</a></p></section>`;
+  } else if (view.kind === "orders") {
+    const rows = view.orders
+      .map(
+        (order) => `<tr>
+  <td data-label="${esc(t("col_order"))}"><a href="/pay/${esc(order.orderId)}">${esc(order.orderId)}</a></td>
+  <td data-label="${esc(t("col_date"))}">${order.createdAt ? `<time datetime="${esc(order.createdAt)}">${esc(formatOrderDate(order.createdAt, settings.language))}</time>` : ""}</td>
+  <td data-label="${esc(t("col_items"))}"><ul class="account-items">${order.items.map((item) => `<li>${item.quantity ? `${esc(item.quantity)} × ` : ""}${esc(item.name)}</li>`).join("")}</ul></td>
+  <td data-label="${esc(t("col_total"))}">${esc(money(order.total, order.currency))}</td>
+  <td data-label="${esc(t("col_status"))}">${order.status ? esc(t(`status_${order.status}`)) : ""}</td>
+</tr>`,
+      )
+      .join("\n");
+    const list = view.orders.length
+      ? `<table class="account-orders">
+<thead><tr><th scope="col">${esc(t("col_order"))}</th><th scope="col">${esc(t("col_date"))}</th><th scope="col">${esc(t("col_items"))}</th><th scope="col">${esc(t("col_total"))}</th><th scope="col">${esc(t("col_status"))}</th></tr></thead>
+<tbody>
+${rows}
+</tbody>
+</table>
+${view.nextCursor ? `<p><a href="/account?cursor=${encodeURIComponent(view.nextCursor)}">${esc(t("account_more"))}</a></p>` : ""}`
+      : view.unavailable
+        ? ""
+        : `<p class="empty">${esc(t("account_orders_empty"))}</p>`;
+    body = `<section class="account">
+  <h1>${esc(t("account_orders_heading"))}</h1>
+  <div class="account-who">
+    <p>${esc(t("account_signed_in_as", { email: view.user.email }))}</p>
+    <form method="post" action="/account/sign-out"><button class="link-button" type="submit">${esc(t("account_sign_out"))}</button></form>
+  </div>
+  ${accountMessage(view.message)}
+  ${list}
+  <p class="note">${esc(t("account_orders_note"))}</p>
+</section>`;
+  } else if (view.kind === "code") {
+    body = `<section class="account">
+  <h1>${esc(t("account_code_title"))}</h1>
+  ${accountMessage(view.message)}
+  <form class="account-form" method="post" action="/account/verify">
+    <input type="hidden" name="email" value="${esc(view.email)}">
+    <label>${esc(t("account_code_label"))}<input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" required autofocus></label>
+    <button class="button" type="submit">${esc(t("account_verify"))}</button>
+  </form>
+  <div class="account-more">
+    <form method="post" action="/account/send-code"><input type="hidden" name="email" value="${esc(view.email)}"><button class="link-button" type="submit">${esc(t("account_resend"))}</button></form>
+    <a href="/account?change=email">${esc(t("account_other_email"))}</a>
+  </div>
+</section>`;
+  } else {
+    body = `<section class="account">
+  <h1>${esc(t("account_title"))}</h1>
+  <p class="lead">${esc(t("account_intro"))}</p>
+  ${accountMessage(view.message)}
+  <form class="account-form" method="post" action="/account/send-code">
+    <label>${esc(t("account_email_label"))}<input name="email" type="email" autocomplete="email" maxlength="200" required value="${esc(view.email ?? "")}"></label>
+    <button class="button" type="submit">${esc(t("account_send_code"))}</button>
+  </form>
+</section>`;
+  }
+  return layout({
+    settings,
+    t,
+    title: `${t(view.kind === "orders" ? "account_orders_heading" : "account_title")} · ${settings.storeName}`,
+    canonical: absoluteUrl(origin, "/account"),
+    noindex: true,
+    body,
     site,
   });
 };

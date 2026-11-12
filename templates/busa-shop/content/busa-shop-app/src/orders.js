@@ -60,6 +60,9 @@ export const WEBSITE_ORDER_FIELDS = [
   "customer-note",
   "created-at",
   "source",
+  // The signed-in buyer's app-user id (busa-shop 0.10.0): Busabase's owner field for
+  // "My orders". Written only at checkout, only from the session, and left out for a guest.
+  "customer-account",
 ];
 
 // What the website may change later on its own orders, and only after PayPal
@@ -255,9 +258,10 @@ export const formatShippingAddress = (order) =>
 /**
  * The Orders record the website creates: only WEBSITE_ORDER_FIELDS, empty
  * optional ones left out. `payment` is `paypal` (status awaiting-payment) or
- * `request` (status new).
+ * `request` (status new). `customerAccount` is the signed-in buyer's app-user
+ * id from their session (never from the form); a guest's order has none.
  */
-export const orderToFields = (order, { nowIso, payment = "request" }) => {
+export const orderToFields = (order, { nowIso, payment = "request", customerAccount = "" }) => {
   const lines = order.lines.map(
     (line) =>
       `${line.quantity} × ${line.name}${line.sku ? ` (${line.sku})` : ""} @ ${money(line.unitPrice)} ${order.currency} = ${money(line.lineTotal)} ${order.currency}`,
@@ -297,6 +301,7 @@ export const orderToFields = (order, { nowIso, payment = "request" }) => {
   if (order.address.region) fields.region = order.address.region;
   if (order.address.postalCode) fields["postal-code"] = order.address.postalCode;
   if (order.note) fields["customer-note"] = order.note;
+  if (customerAccount) fields["customer-account"] = customerAccount;
   return fields;
 };
 

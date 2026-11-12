@@ -98,7 +98,21 @@ export const resolveShopExtras = (nodes, shopFolderId) => ({
   }),
 });
 
-const siblingSlug = (slug, resourceKey) =>
+/**
+ * This website's own AirApp node, in the folder of this shop's Settings: the
+ * `appId` Busabase's app-user endpoints (buyer login, src/account.js) take.
+ * Missing or ambiguous → no buyer login, everything else as before.
+ */
+export const resolveShopApp = (nodes, shopFolderId) =>
+  pickResource(nodes, {
+    type: "airapp",
+    appId: SHOP_APP_ID,
+    resourceKey: "busa-shop-app",
+    fallbackSlug: "busa-shop-app",
+    parentId: shopFolderId,
+  });
+
+const siblingSlug =(slug, resourceKey) =>
   slug.endsWith("-products") ? `${slug.slice(0, -"-products".length)}-${resourceKey}` : "";
 
 /**
