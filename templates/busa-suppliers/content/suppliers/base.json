@@ -1,0 +1,270 @@
+{
+  "name": "Suppliers",
+  "description": "Every supplier with its annual spend, contract end, the five measures behind its score, and the score itself.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "rescore",
+      "label": {
+        "en": "Re-score this supplier from its latest measures",
+        "zh-CN": "用最新指标给这家供应商重新打分"
+      },
+      "body": {
+        "en": "Read the `busa-suppliers` skill in this folder and follow it. For the supplier I name, read its five measures, compute the score and rating by the skill’s rule, and update `score`, `rating`, `scored-by`, `scored-on` and a one-sentence `summary`. Propose an action if it turned at risk and has none open.",
+        "zh-CN": "先阅读本文件夹里的 `busa-suppliers` Skill，按它的规则做。针对我说的供应商，读它的五项指标，按 Skill 的规则算评分和评级，更新 `score`、`rating`、`scored-by`、`scored-on` 和一句话的 `summary`。如果变成有风险且没有进行中的改进措施，提一条。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "supplier-brief",
+      "label": {
+        "en": "Brief me on this supplier before a negotiation",
+        "zh-CN": "谈判前给我讲讲这家供应商"
+      },
+      "body": {
+        "en": "Read the `busa-suppliers` skill in this folder and follow it. For the supplier I name, give a one-screen brief: annual spend, contract end, the score with each of its five parts, the last five signals and who wrote them, open actions, the backup supplier, and two points worth raising. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-suppliers` Skill，按它的规则做。针对我说的供应商，给一屏简报：年采购额、合同到期日、评分及五项得分、最近五条信号及写入者、进行中的改进措施、备选供应商，以及谈判中值得提的两点。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Supplier",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "category",
+      "name": "Category",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "green-coffee",
+            "name": "Green coffee",
+            "color": "cyan"
+          },
+          {
+            "id": "dairy",
+            "name": "Dairy & oat",
+            "color": "slate"
+          },
+          {
+            "id": "packaging",
+            "name": "Packaging",
+            "color": "slate"
+          },
+          {
+            "id": "food",
+            "name": "Food",
+            "color": "slate"
+          },
+          {
+            "id": "equipment",
+            "name": "Equipment",
+            "color": "slate"
+          },
+          {
+            "id": "logistics",
+            "name": "Logistics",
+            "color": "slate"
+          },
+          {
+            "id": "services",
+            "name": "Services",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "buyer",
+      "name": "Buyer",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "annual-spend",
+      "name": "Annual spend (USD)",
+      "type": "number",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "contract",
+      "name": "Contract",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "contract-end",
+      "name": "Contract ends",
+      "type": "date",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "on-time-pct",
+      "name": "On-time deliveries, last 90 days (%)",
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "defect-pct",
+      "name": "Rejected at inspection, last 90 days (%)",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "price-variance-pct",
+      "name": "Invoiced price vs. contract (%)",
+      "type": "number",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "invoice-match-pct",
+      "name": "Invoices matched first time (%)",
+      "type": "number",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "response-days",
+      "name": "Days to answer an issue",
+      "type": "number",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "score",
+      "name": "Supplier score",
+      "type": "number",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "rating",
+      "name": "Rating",
+      "type": "select",
+      "required": false,
+      "position": 12,
+      "options": {
+        "choices": [
+          {
+            "id": "preferred",
+            "name": "Preferred",
+            "color": "emerald"
+          },
+          {
+            "id": "watch",
+            "name": "Watch",
+            "color": "amber"
+          },
+          {
+            "id": "at-risk",
+            "name": "At risk",
+            "color": "rose"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "backup",
+      "name": "Backup supplier",
+      "type": "text",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "scored-by",
+      "name": "Last scored by",
+      "type": "text",
+      "required": false,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "scored-on",
+      "name": "Last scored",
+      "type": "date",
+      "required": false,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "summary",
+      "name": "Latest word",
+      "type": "longtext",
+      "required": false,
+      "position": 16,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "All suppliers",
+      "description": "Every supplier with its rating and contract end",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "name",
+          "category",
+          "buyer",
+          "annual-spend",
+          "contract-end",
+          "score",
+          "rating"
+        ]
+      }
+    },
+    {
+      "slug": "at-risk",
+      "name": "At risk",
+      "description": "Suppliers rated at risk",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "rating",
+            "operator": "equals",
+            "value": "at-risk"
+          }
+        ],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "name",
+          "buyer",
+          "annual-spend",
+          "contract-end",
+          "score",
+          "summary"
+        ]
+      }
+    }
+  ]
+}

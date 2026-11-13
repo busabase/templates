@@ -1,0 +1,56 @@
+{
+  "type": "airapp",
+  "name": "Supplier Scorecard",
+  "description": "Every supplier scored the same way, kept current by agents from deliveries, inspections, prices, invoices and response times, with the spend at risk and the actions to fix it.",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "ask-risk",
+      "label": {
+        "en": "Which suppliers put our supply at risk, and how much spend is exposed?",
+        "zh-CN": "哪些供应商会影响供货，涉及多少采购额"
+      },
+      "body": {
+        "en": "Read the `busa-suppliers` skill in this folder and follow it. Answer as the head of procurement: total annual spend with at-risk suppliers, then every at-risk supplier, soonest contract end first, with its score, the measure that hurt it most, whether it has a backup, and the open action. Then watch suppliers whose contract ends in the next 90 days. Keep it to one screen. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-suppliers` Skill，按它的规则做。以采购负责人的口吻回答：先说有风险供应商的年采购额总数，再按合同到期日从近到远列出每家有风险的供应商，附评分、拉低最多的指标、有没有备选供应商和对应的改进措施；然后列出未来 90 天内合同到期的关注供应商。控制在一屏以内。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "weekly-scan",
+      "label": {
+        "en": "Run this week’s supplier scan",
+        "zh-CN": "跑本周供应商扫描"
+      },
+      "body": {
+        "en": "Read the `busa-suppliers` skill in this folder and follow it. For each supplier, read deliveries, inspection results, invoiced prices, invoice matching and response times from their sources, write a signal for anything that moved, re-score it by the skill’s rule, propose an action for anything newly at risk, and then write this week’s procurement review as a draft.",
+        "zh-CN": "先阅读本文件夹里的 `busa-suppliers` Skill，按它的规则做。为每家供应商从数据来源读取交付、质检、发票单价、发票匹配和响应时间，有变动的写一条信号，按 Skill 的规则重新打分，新变成有风险的提一条改进措施，最后写一份本周采购周报草稿。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "write-review",
+      "label": {
+        "en": "Write this Monday’s procurement review",
+        "zh-CN": "写本周一的采购周报"
+      },
+      "body": {
+        "en": "Read the `busa-suppliers` skill in this folder and follow it. Write the procurement review for last Monday to Sunday: a one-line headline, spend at risk, every at-risk supplier with its cause and action, watch suppliers whose contract ends in the next 90 days, and what changed since last week.",
+        "zh-CN": "先阅读本文件夹里的 `busa-suppliers` Skill，按它的规则做。写上周一到周日的采购周报：一句话结论、有风险的采购额、每家有风险供应商的原因和改进措施、未来 90 天内合同到期的关注供应商、与上周相比的变化。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "contracts",
+      "label": {
+        "en": "Which contracts ending in the next 90 days need a decision?",
+        "zh-CN": "未来 90 天到期的合同里哪些要做决定"
+      },
+      "body": {
+        "en": "Read the `busa-suppliers` skill in this folder and follow it. List every supplier whose contract ends in the next 90 days, soonest first, with its annual spend, score and rating; for each, say renew, renegotiate or re-source, and why, in one line. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-suppliers` Skill，按它的规则做。按日期列出未来 90 天内合同到期的所有供应商，附年采购额、评分和评级；每家用一句话说明建议续约、重新谈判还是换供应商，以及理由。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ]
+}
