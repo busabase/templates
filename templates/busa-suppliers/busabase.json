@@ -1,0 +1,49 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-suppliers",
+  "displayName": {
+    "en": "Supplier Scorecard",
+    "zh-CN": "采购与供应商"
+  },
+  "description": {
+    "en": "Agents read every supplier's deliveries, inspections, prices, invoices and response times, score each one by one rule, and flag the spend at risk before contracts come up, with an action for every red supplier.",
+    "zh-CN": "Agent 读取每家供应商的交付、质检、发票单价、发票匹配和响应时间，按同一条规则打分，在合同到期前就标出有风险的采购额——每家红灯供应商都有改进措施，每周一自动出采购周报。"
+  },
+  "version": "0.1.0",
+  "license": "MIT",
+  "tags": [
+    "procurement",
+    "suppliers",
+    "vendor-management",
+    "supplier-scorecard",
+    "risk:gated-write"
+  ],
+  "template": {
+    "category": "operations",
+    "schemaVersion": 1,
+    "airapp": "busa-suppliers-app",
+    "tags": [
+      "procurement",
+      "suppliers",
+      "supply-chain",
+      "multi-agent",
+      "operations"
+    ],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/supplier.webp",
+      "assets/screenshots/signals.webp",
+      "assets/screenshots/procurement-review.webp"
+    ],
+    "agentPrompts": [
+      "Which suppliers put our supply at risk, and how much spend is exposed?",
+      "Run this week's supplier scan.",
+      "Write this Monday's procurement review."
+    ],
+    "secrets": [],
+    "requires": {
+      "airapp": true
+    }
+  }
+}
