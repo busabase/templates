@@ -775,6 +775,52 @@
       }
     },
     {
+      "subdir": "templates/busa-customer-health",
+      "name": "busa-customer-health",
+      "displayName": {
+        "en": "Customer Health",
+        "zh-CN": "客户健康与流失预警"
+      },
+      "description": {
+        "en": "Agents read every customer's usage, urgent tickets, NPS and billing, score each account's health by one rule, and flag the revenue at risk months before renewal — with a save play for every red account and a Monday retention review.",
+        "zh-CN": "Agent 读取每个客户的用量、紧急工单、NPS 和账单，按同一条规则给客户打健康分，在续费前几个月就标出有流失风险的年收入——每个红灯客户都有挽留动作，每周一自动出留存周报。"
+      },
+      "category": "sales-crm",
+      "risk": "gated-write",
+      "tags": [
+        "customer-success",
+        "churn",
+        "retention",
+        "health-score",
+        "risk:gated-write",
+        "multi-agent",
+        "saas"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/account.webp",
+        "assets/screenshots/signals.webp",
+        "assets/screenshots/retention-review.webp"
+      ],
+      "agentPrompts": [
+        "Which customers might churn, and how much revenue is at risk?",
+        "Run this week's health scan for every account.",
+        "Write this Monday's retention review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 51,
+        "files": 28,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-dealflow",
       "name": "busa-dealflow",
       "displayName": {
