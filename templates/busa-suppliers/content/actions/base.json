@@ -1,0 +1,147 @@
+{
+  "name": "Supplier Actions",
+  "description": "What we will do about a supplier that is slipping: the cause, the plan, an owner and a date.",
+  "position": 2,
+  "agentPrompts": [
+    {
+      "key": "propose-action",
+      "label": {
+        "en": "Propose an action for an at-risk supplier",
+        "zh-CN": "为一家有风险的供应商提出改进措施"
+      },
+      "body": {
+        "en": "Read the `busa-suppliers` skill in this folder and follow it. For the supplier I name, read its signals and score, explain in two or three sentences why it is slipping, and add one action with a concrete plan, an owner and a due date before its contract ends. The owner is the supplier’s buyer unless I say otherwise.",
+        "zh-CN": "先阅读本文件夹里的 `busa-suppliers` Skill，按它的规则做。针对我说的供应商，读它的信号和评分，用两三句话说明为什么在下滑，然后加一条改进措施，写清具体计划、负责人和合同到期前的截止日期。负责人默认是这家供应商的采购负责人，除非我另有指定。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "chase-actions",
+      "label": {
+        "en": "Which supplier actions are overdue?",
+        "zh-CN": "哪些改进措施已经超期"
+      },
+      "body": {
+        "en": "Read the `busa-suppliers` skill in this folder and follow it. List open actions past their due date with their owner and supplier, and say whether that supplier’s score has moved since the action was opened. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-suppliers` Skill，按它的规则做。列出超过截止日期仍未完成的改进措施、负责人和对应供应商，并说明措施开出以后这家供应商的评分有没有变化。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Action",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "supplier",
+      "name": "Supplier",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "suppliers",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "open",
+            "name": "Open",
+            "color": "amber"
+          },
+          {
+            "id": "in-progress",
+            "name": "In progress",
+            "color": "cyan"
+          },
+          {
+            "id": "done",
+            "name": "Done",
+            "color": "emerald"
+          },
+          {
+            "id": "dropped",
+            "name": "Dropped",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "owner",
+      "name": "Owner",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "due-date",
+      "name": "Due",
+      "type": "date",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "proposed-by",
+      "name": "Proposed by",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "cause",
+      "name": "Why it is slipping",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "plan",
+      "name": "What we will do",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "by-due",
+      "name": "By due date",
+      "description": "Every action, soonest due first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "due-date",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "supplier",
+          "status",
+          "owner",
+          "due-date"
+        ]
+      }
+    }
+  ]
+}

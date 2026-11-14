@@ -1,0 +1,258 @@
+{
+  "name": "Accounts",
+  "description": "Every paying customer with its revenue, renewal date, the five signals behind its health score, and the score itself.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "rescore",
+      "label": {
+        "en": "Re-score this account from its latest signals",
+        "zh-CN": "用最新信号给这个客户重新打分"
+      },
+      "body": {
+        "en": "Read the `busa-customer-health` skill in this folder and follow it. For the account I name, read its five signal fields, compute the health score and light by the skill’s rule, and update `health-score`, `health`, `scored-by`, `scored-on` and a one-sentence `summary`. Open a save play if it turned at risk and has none.",
+        "zh-CN": "先阅读本文件夹里的 `busa-customer-health` Skill，按它的规则做。针对我说的客户，读它的五个信号字段，按 Skill 的规则算健康分和状态，更新 `health-score`、`health`、`scored-by`、`scored-on` 和一句话的 `summary`。如果变成有流失风险且还没有挽留动作，开一条。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "account-brief",
+      "label": {
+        "en": "Brief me on this account before a call",
+        "zh-CN": "通话前给我讲讲这个客户"
+      },
+      "body": {
+        "en": "Read the `busa-customer-health` skill in this folder and follow it. For the account I name, give a one-screen brief: revenue, renewal date, the score with each of its five parts, the last five signals and who wrote them, open save plays, and two questions worth asking on the call. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-customer-health` Skill，按它的规则做。针对我说的客户，给一屏简报：年收入、续费日期、健康分及五项得分、最近五条信号及写入者、未完成的挽留动作，以及通话里值得问的两个问题。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Account",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "segment",
+      "name": "Segment",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "enterprise",
+            "name": "Enterprise",
+            "color": "cyan"
+          },
+          {
+            "id": "mid-market",
+            "name": "Mid-market",
+            "color": "slate"
+          },
+          {
+            "id": "smb",
+            "name": "Small business",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "csm",
+      "name": "Customer success manager",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "arr",
+      "name": "ARR (USD)",
+      "type": "number",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "plan",
+      "name": "Plan",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "renewal-date",
+      "name": "Renewal date",
+      "type": "date",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "seats-licensed",
+      "name": "Seats paid for",
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "seats-active",
+      "name": "Active seats (last 30 days)",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "seats-active-prior",
+      "name": "Active seats (30 days before)",
+      "type": "number",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "urgent-tickets",
+      "name": "Open urgent tickets",
+      "type": "number",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "nps",
+      "name": "Latest NPS answer (0–10)",
+      "type": "number",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "days-overdue",
+      "name": "Invoice days overdue",
+      "type": "number",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "health-score",
+      "name": "Health score",
+      "type": "number",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "health",
+      "name": "Health",
+      "type": "select",
+      "required": false,
+      "position": 13,
+      "options": {
+        "choices": [
+          {
+            "id": "healthy",
+            "name": "Healthy",
+            "color": "emerald"
+          },
+          {
+            "id": "watch",
+            "name": "Watch",
+            "color": "amber"
+          },
+          {
+            "id": "at-risk",
+            "name": "At risk",
+            "color": "rose"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "champion",
+      "name": "Champion",
+      "type": "text",
+      "required": false,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "scored-by",
+      "name": "Last scored by",
+      "type": "text",
+      "required": false,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "scored-on",
+      "name": "Last scored",
+      "type": "date",
+      "required": false,
+      "position": 16,
+      "options": {}
+    },
+    {
+      "slug": "summary",
+      "name": "Latest word",
+      "type": "longtext",
+      "required": false,
+      "position": 17,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "All accounts",
+      "description": "Every account with its health and renewal",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "name",
+          "segment",
+          "csm",
+          "arr",
+          "renewal-date",
+          "health-score",
+          "health"
+        ]
+      }
+    },
+    {
+      "slug": "at-risk",
+      "name": "At risk",
+      "description": "Accounts whose health is at risk",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "health",
+            "operator": "equals",
+            "value": "at-risk"
+          }
+        ],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "name",
+          "csm",
+          "arr",
+          "renewal-date",
+          "health-score",
+          "summary"
+        ]
+      }
+    }
+  ]
+}

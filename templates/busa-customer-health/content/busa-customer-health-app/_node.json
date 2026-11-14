@@ -1,0 +1,56 @@
+{
+  "type": "airapp",
+  "name": "Customer Health",
+  "description": "Every customer’s health score, kept current by agents from usage, support, NPS and billing, with the revenue at risk and the plays to save it.",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "ask-churn",
+      "label": {
+        "en": "Which customers might churn, and how much revenue is at risk?",
+        "zh-CN": "哪些客户可能流失，涉及多少年收入"
+      },
+      "body": {
+        "en": "Read the `busa-customer-health` skill in this folder and follow it. Answer as the head of customer success: total ARR at risk, then every at-risk account, soonest renewal first, with its score, the signal that hurt it most, and the open save play. Then watch accounts renewing in the next 90 days. Keep it to one screen. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-customer-health` Skill，按它的规则做。以客户成功负责人的口吻回答：先说有风险的年收入总额，再按续费日期从近到远列出每个有流失风险的客户，附健康分、拉低最多的信号和对应的挽留动作；然后列出未来 90 天内续费的关注客户。控制在一屏以内。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "weekly-scan",
+      "label": {
+        "en": "Run this week’s health scan for every account",
+        "zh-CN": "为所有客户跑本周健康扫描"
+      },
+      "body": {
+        "en": "Read the `busa-customer-health` skill in this folder and follow it. For each account, read its usage, urgent tickets, latest NPS answer and invoice status from their sources, write a signal for anything that moved, re-score it by the skill’s rule, open a save play for anything newly at risk, and then write this week’s retention review as a draft.",
+        "zh-CN": "先阅读本文件夹里的 `busa-customer-health` Skill，按它的规则做。为每个客户从数据来源读取用量、紧急工单、最近一次 NPS 和账单状态，有变动的写一条信号，按 Skill 的规则重新打分，新变成有流失风险的开一条挽留动作，最后写一份本周留存周报草稿。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "write-review",
+      "label": {
+        "en": "Write this Monday’s retention review",
+        "zh-CN": "写本周一的留存周报"
+      },
+      "body": {
+        "en": "Read the `busa-customer-health` skill in this folder and follow it. Write the retention review for last Monday to Sunday: a one-line headline, ARR at risk, every at-risk account with its cause and play, watch accounts renewing in the next 90 days, and what changed since last week.",
+        "zh-CN": "先阅读本文件夹里的 `busa-customer-health` Skill，按它的规则做。写上周一到周日的留存周报：一句话结论、有风险的年收入、每个有流失风险客户的原因和挽留动作、未来 90 天内续费的关注客户、与上周相比的变化。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "renewals",
+      "label": {
+        "en": "Which renewals in the next 90 days need help?",
+        "zh-CN": "未来 90 天的续费里哪些需要帮忙"
+      },
+      "body": {
+        "en": "Read the `busa-customer-health` skill in this folder and follow it. List every account renewing in the next 90 days, soonest first, with its ARR, score and light; for each that is not healthy, say what would most improve its score and whether a save play exists. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-customer-health` Skill，按它的规则做。按日期列出未来 90 天内续费的所有客户，附年收入、健康分和状态；对不健康的客户，说明最能提高健康分的是哪一项，以及是否已有挽留动作。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ]
+}

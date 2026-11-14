@@ -1,0 +1,142 @@
+{
+  "name": "Retention Reviews",
+  "description": "The Monday retention review an agent writes from the records above: revenue at risk, every red account, every renewal coming up.",
+  "position": 3,
+  "agentPrompts": [
+    {
+      "key": "write-review",
+      "label": {
+        "en": "Write this Monday’s retention review",
+        "zh-CN": "写本周一的留存周报"
+      },
+      "body": {
+        "en": "Read the `busa-customer-health` skill in this folder and follow it. Write the retention review for last Monday to Sunday from the accounts, signals and save plays: a one-line headline, ARR at risk and how it changed, every at-risk account with its cause and play, watch accounts renewing in the next 90 days, and what changed since last week. Save it as a draft.",
+        "zh-CN": "先阅读本文件夹里的 `busa-customer-health` Skill，按它的规则做。根据客户、信号和挽留动作，写上周一到周日的留存周报：一句话结论、有风险的年收入及变化、每个有流失风险客户的原因和挽留动作、未来 90 天内续费的关注客户、与上周相比的变化。保存为草稿。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "compare-weeks",
+      "label": {
+        "en": "What got better or worse since last week?",
+        "zh-CN": "和上周比哪些变好了、哪些变差了"
+      },
+      "body": {
+        "en": "Read the `busa-customer-health` skill in this folder and follow it. Compare the two latest reviews and the signals between them: which accounts changed light, how ARR at risk moved, and which save plays closed. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-customer-health` Skill，按它的规则做。对比最近两份周报和期间的信号：哪些客户换了灯、有风险的年收入怎么变、哪些挽留动作完成了。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Review",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "draft",
+            "name": "Draft",
+            "color": "amber"
+          },
+          {
+            "id": "final",
+            "name": "Final",
+            "color": "emerald"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "period-start",
+      "name": "From",
+      "type": "date",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "period-end",
+      "name": "To",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "headline",
+      "name": "Headline",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "arr-at-risk",
+      "name": "ARR at risk (USD)",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "at-risk-count",
+      "name": "Accounts at risk",
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "written-by",
+      "name": "Written by",
+      "type": "text",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "body",
+      "name": "Review",
+      "type": "markdown",
+      "required": false,
+      "position": 8,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest",
+      "name": "Latest first",
+      "description": "Every retention review, newest first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "period-end",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "period-end",
+          "arr-at-risk",
+          "headline"
+        ]
+      }
+    }
+  ]
+}
