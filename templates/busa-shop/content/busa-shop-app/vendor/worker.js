@@ -1300,8 +1300,8 @@ function uint8ArrayToBase64(bytes) {
   }
   return btoa(binaryString);
 }
-function base64urlToUint8Array(base64url3) {
-  const base643 = base64url3.replace(/-/g, "+").replace(/_/g, "/");
+function base64urlToUint8Array(base64url4) {
+  const base643 = base64url4.replace(/-/g, "+").replace(/_/g, "/");
   const padding = "=".repeat((4 - base643.length % 4) % 4);
   return base64ToUint8Array(base643 + padding);
 }
@@ -27862,6 +27862,10 @@ var en = {
   account_wait: "A code was sent a moment ago. Please wait {seconds} seconds before asking for another one.",
   account_daily_limit: "Too many codes were sent to this address today. Please try again tomorrow, or use the last code you received.",
   account_shop_limit: "This shop cannot send more sign-in codes today. Please try again tomorrow.",
+  account_ip_hourly_limit: "Too many sign-in codes were asked for from your network in the last hour. Please try again in about {minutes} minutes.",
+  account_ip_daily_limit: "Too many sign-in codes were asked for from your network today. Please try again tomorrow, or from another connection.",
+  account_form_stale: "This page was open for a while. Please check your email address and send the form again.",
+  account_honeypot_label: "Leave this field empty",
   account_wrong_code: "That code is not right. You have {attempts} more tries.",
   account_wrong_code_one: "That code is not right. You have 1 more try.",
   account_no_attempts: "That code is not right, and this code cannot be tried again. Ask for a new code.",
@@ -28056,6 +28060,10 @@ var de = {
   account_wait: "Gerade wurde ein Code gesendet. Bitte warten Sie {seconds} Sekunden, bevor Sie einen neuen anfordern.",
   account_daily_limit: "An diese Adresse wurden heute zu viele Codes gesendet. Bitte versuchen Sie es morgen wieder oder verwenden Sie den letzten Code.",
   account_shop_limit: "Dieser Shop kann heute keine Anmeldecodes mehr senden. Bitte versuchen Sie es morgen wieder.",
+  account_ip_hourly_limit: "Aus Ihrem Netzwerk wurden in der letzten Stunde zu viele Anmeldecodes angefordert. Bitte versuchen Sie es in etwa {minutes} Minuten wieder.",
+  account_ip_daily_limit: "Aus Ihrem Netzwerk wurden heute zu viele Anmeldecodes angefordert. Bitte versuchen Sie es morgen wieder oder \xFCber eine andere Verbindung.",
+  account_form_stale: "Diese Seite war eine Weile ge\xF6ffnet. Bitte pr\xFCfen Sie Ihre E-Mail-Adresse und senden Sie das Formular erneut.",
+  account_honeypot_label: "Dieses Feld leer lassen",
   account_wrong_code: "Der Code stimmt nicht. Sie haben noch {attempts} Versuche.",
   account_wrong_code_one: "Der Code stimmt nicht. Sie haben noch 1 Versuch.",
   account_no_attempts: "Der Code stimmt nicht und kann nicht noch einmal versucht werden. Fordern Sie einen neuen Code an.",
@@ -28250,6 +28258,10 @@ var fr = {
   account_wait: "Un code vient d'\xEAtre envoy\xE9. Merci d'attendre {seconds} secondes avant d'en demander un autre.",
   account_daily_limit: "Trop de codes ont \xE9t\xE9 envoy\xE9s \xE0 cette adresse aujourd'hui. R\xE9essayez demain, ou utilisez le dernier code re\xE7u.",
   account_shop_limit: "Cette boutique ne peut plus envoyer de codes de connexion aujourd'hui. R\xE9essayez demain.",
+  account_ip_hourly_limit: "Trop de codes de connexion ont \xE9t\xE9 demand\xE9s depuis votre r\xE9seau au cours de la derni\xE8re heure. R\xE9essayez dans environ {minutes} minutes.",
+  account_ip_daily_limit: "Trop de codes de connexion ont \xE9t\xE9 demand\xE9s depuis votre r\xE9seau aujourd'hui. R\xE9essayez demain, ou depuis une autre connexion.",
+  account_form_stale: "Cette page est rest\xE9e ouverte un moment. V\xE9rifiez votre adresse e-mail et renvoyez le formulaire.",
+  account_honeypot_label: "Laissez ce champ vide",
   account_wrong_code: "Ce code n'est pas le bon. Il vous reste {attempts} essais.",
   account_wrong_code_one: "Ce code n'est pas le bon. Il vous reste 1 essai.",
   account_no_attempts: "Ce code n'est pas le bon et ne peut plus \xEAtre essay\xE9. Demandez un nouveau code.",
@@ -28444,6 +28456,10 @@ var es = {
   account_wait: "Acabamos de enviar un c\xF3digo. Espera {seconds} segundos antes de pedir otro.",
   account_daily_limit: "Se han enviado demasiados c\xF3digos a esta direcci\xF3n hoy. Int\xE9ntalo ma\xF1ana o usa el \xFAltimo c\xF3digo que recibiste.",
   account_shop_limit: "Esta tienda no puede enviar m\xE1s c\xF3digos de acceso hoy. Int\xE9ntalo ma\xF1ana.",
+  account_ip_hourly_limit: "Se han pedido demasiados c\xF3digos de acceso desde tu red en la \xFAltima hora. Int\xE9ntalo de nuevo en unos {minutes} minutos.",
+  account_ip_daily_limit: "Se han pedido demasiados c\xF3digos de acceso desde tu red hoy. Int\xE9ntalo ma\xF1ana o desde otra conexi\xF3n.",
+  account_form_stale: "Esta p\xE1gina llevaba un rato abierta. Revisa tu direcci\xF3n de correo y vuelve a enviar el formulario.",
+  account_honeypot_label: "Deja este campo vac\xEDo",
   account_wrong_code: "El c\xF3digo no es correcto. Te quedan {attempts} intentos.",
   account_wrong_code_one: "El c\xF3digo no es correcto. Te queda 1 intento.",
   account_no_attempts: "El c\xF3digo no es correcto y ya no se puede volver a probar. Pide un c\xF3digo nuevo.",
@@ -29493,6 +29509,46 @@ var normalizeCode = (value2) => {
   const code = typeof value2 === "string" ? value2.replace(/[\s-]/g, "") : "";
   return CODE_PATTERN.test(code) ? code : null;
 };
+var HONEYPOT_FIELD = "referral";
+var FORM_TIME_FIELD = "form_time";
+var FORM_MIN_AGE_MS = 1500;
+var FORM_MAX_AGE_MS = 6 * 60 * 60 * 1e3;
+var FORM_TIME_LABEL = "busa-shop/account-form/v1";
+var base64url3 = (bytes) => btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+var createFormGuard = ({ secret, now = () => Date.now() } = {}) => {
+  const keyBytes = secret ? new TextEncoder().encode(String(secret)) : crypto.getRandomValues(new Uint8Array(32));
+  let keyPromise;
+  const key = () => {
+    keyPromise ??= crypto.subtle.importKey("raw", keyBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    return keyPromise;
+  };
+  const sign = async (ms) => base64url3(await crypto.subtle.sign("HMAC", await key(), new TextEncoder().encode(`${FORM_TIME_LABEL}:${ms}`)));
+  const stamp = async () => {
+    const ms = Math.trunc(now());
+    return `${ms}.${await sign(ms)}`;
+  };
+  const check2 = async (value2) => {
+    const match = /^(\d{1,16})\.([A-Za-z0-9_-]{43})$/.exec(typeof value2 === "string" ? value2 : "");
+    if (!match) return "invalid";
+    const expected = await sign(Number(match[1]));
+    let diff = expected.length ^ match[2].length;
+    for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ match[2].charCodeAt(i);
+    if (diff) return "invalid";
+    const age = now() - Number(match[1]);
+    if (age < 0) return "invalid";
+    if (age < FORM_MIN_AGE_MS) return "too_fast";
+    if (age > FORM_MAX_AGE_MS) return "expired";
+    return "ok";
+  };
+  return { stamp, check: check2 };
+};
+var IP_PATTERN = /^[0-9A-Fa-f:.]{2,45}$/;
+var clientIpOf = (request) => {
+  const cf = (request.headers.get("cf-connecting-ip") ?? "").trim();
+  if (IP_PATTERN.test(cf)) return cf;
+  const first = (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
+  return IP_PATTERN.test(first) ? first : "";
+};
 var BUYER_ORDER_FIELDS = ["order-id", "created-at", "items", "items-summary", "total", "currency", "status"];
 var BUYER_STATUSES = /* @__PURE__ */ new Set(["new", "awaiting-payment", "confirmed", "paid", "shipped", "completed", "cancelled", "refunded", "payment-problem"]);
 var text2 = (value2) => typeof value2 === "string" ? value2.trim() : typeof value2 === "number" ? String(value2) : "";
@@ -29529,6 +29585,7 @@ var buyerOrderFromRecord = (record2) => {
     status: BUYER_STATUSES.has(status) ? status : ""
   };
 };
+var SEND_CODE_LIMITS = ["cooldown", "ip_hourly_limit", "ip_daily_limit", "email_daily_limit", "space_daily_limit"];
 var errorCode = (body) => body && typeof body === "object" && typeof body.code === "string" ? body.code : "";
 var wholeSeconds = (value2, fallback) => {
   const seconds = Math.ceil(Number(value2));
@@ -29537,13 +29594,14 @@ var wholeSeconds = (value2, fallback) => {
 var createAccounts = ({ baseUrl, apiKey, spaceId, fetchImpl = fetch, now = () => Date.now(), log = console }) => {
   const root = apiRoot(baseUrl);
   const cache = /* @__PURE__ */ new Map();
-  const call = async (method, path, { body, session: session2 } = {}) => {
+  const call = async (method, path, { body, session: session2, ip } = {}) => {
     const headers = {
       authorization: `Bearer ${apiKey}`,
       accept: "application/json",
       ...spaceId ? { "x-busabase-space": spaceId } : {},
       ...body ? { "content-type": "application/json" } : {},
-      ...session2 ? { "x-busabase-app-user-session": session2 } : {}
+      ...session2 ? { "x-busabase-app-user-session": session2 } : {},
+      ...ip ? { "x-busabase-app-user-ip": ip } : {}
     };
     let response;
     try {
@@ -29580,11 +29638,11 @@ var createAccounts = ({ baseUrl, apiKey, spaceId, fetchImpl = fetch, now = () =>
     return value2;
   };
   const forget = (appId) => cache.delete(appId);
-  const sendCode = async ({ appId, email: email3, locale }) => {
-    const { status, body } = await call("POST", "/api/v1/app-users/send-code", { body: { appId, email: email3, ...locale ? { locale } : {} } });
+  const sendCode = async ({ appId, email: email3, locale, ip }) => {
+    const { status, body } = await call("POST", "/api/v1/app-users/send-code", { body: { appId, email: email3, ...locale ? { locale } : {} }, ip });
     if (status === 200) return { ok: true, resendAfterSeconds: wholeSeconds(body?.resendAfterSeconds, 60) };
     if (status === 429) {
-      const reason = ["cooldown", "email_daily_limit", "space_daily_limit"].includes(body?.reason) ? body.reason : "cooldown";
+      const reason = SEND_CODE_LIMITS.includes(body?.reason) ? body.reason : "cooldown";
       return { error: "rate_limited", reason, retryAfterSeconds: wholeSeconds(body?.retryAfterSeconds, 60) };
     }
     if (status === 403 && errorCode(body) === "APP_LOGIN_DISABLED") {
@@ -32251,6 +32309,7 @@ var formatOrderDate = (iso, language) => {
   return new Intl.DateTimeFormat(localeTag(language), { dateStyle: "medium", timeZone: "UTC" }).format(new Date(ms));
 };
 var accountMessage = (message) => message ? `<div class="form-status${message.error ? " is-error" : ""}" role="${message.error ? "alert" : "status"}">${esc3(message.text)}</div>` : "";
+var formTimeInput = (view) => view.formTime ? `<input type="hidden" name="${FORM_TIME_FIELD}" value="${esc3(view.formTime)}">` : "";
 var accountPage = ({ origin, settings, site = {}, view }) => {
   const t = translator(settings.language);
   const money4 = (amount, currency) => amount === null ? "" : formatPrice(amount, currency || settings.currency, settings.language);
@@ -32294,7 +32353,7 @@ ${view.nextCursor ? `<p><a href="/account?cursor=${encodeURIComponent(view.nextC
     <button class="button" type="submit">${esc3(t("account_verify"))}</button>
   </form>
   <div class="account-more">
-    <form method="post" action="/account/send-code"><input type="hidden" name="email" value="${esc3(view.email)}"><button class="link-button" type="submit">${esc3(t("account_resend"))}</button></form>
+    <form method="post" action="/account/send-code"><input type="hidden" name="email" value="${esc3(view.email)}">${formTimeInput(view)}<button class="link-button" type="submit">${esc3(t("account_resend"))}</button></form>
     <a href="/account?change=email">${esc3(t("account_other_email"))}</a>
   </div>
 </section>`;
@@ -32305,6 +32364,8 @@ ${view.nextCursor ? `<p><a href="/account?cursor=${encodeURIComponent(view.nextC
   ${accountMessage(view.message)}
   <form class="account-form" method="post" action="/account/send-code">
     <label>${esc3(t("account_email_label"))}<input name="email" type="email" autocomplete="email" maxlength="200" required value="${esc3(view.email ?? "")}"></label>
+    ${formTimeInput(view)}
+    <div class="account-extra" aria-hidden="true"><label>${esc3(t("account_honeypot_label"))}<input name="${HONEYPOT_FIELD}" type="text" tabindex="-1" autocomplete="off" value=""></label></div>
     <button class="button" type="submit">${esc3(t("account_send_code"))}</button>
   </form>
 </section>`;
@@ -32995,7 +33056,7 @@ var createSecretsReader = ({ read, now = () => Date.now() }) => {
 
 // src/handler.js
 var MAX_ORDER_BODY_BYTES = 16 * 1024;
-var SHOP_VERSION = "0.10.0";
+var SHOP_VERSION = "0.10.1";
 var MCP_REQUESTS_PER_MINUTE = 120;
 var MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
 var SECURITY_HEADERS = {
@@ -33124,7 +33185,8 @@ var createHandler = (overrides = {}) => {
         now: deps.now,
         log: deps.log
       });
-      site = { shop, secrets, accounts, paypal: null };
+      const formGuard = createFormGuard({ secret: env2.BUSABASE_API_KEY, now: deps.now });
+      site = { shop, secrets, accounts, formGuard, paypal: null };
       sites.set(env2, site);
     }
     return site;
@@ -33761,9 +33823,12 @@ var createHandler = (overrides = {}) => {
     if (state.setup !== "ready") return { error: notReady(state) };
     const enabled = await accountOn(env2, state);
     const site = siteInfo(state, { payment: publicPayment(env2, state) }, analyticsFor(url2, env2, state.settings), enabled);
-    return { state, enabled, site, accounts: siteFor(env2).accounts, appId: state.appNodeId };
+    return { state, enabled, site, accounts: siteFor(env2).accounts, formGuard: siteFor(env2).formGuard, appId: state.appNodeId };
   };
-  const accountResponse = (url2, context, view, { status = 200, cookies = [] } = {}) => withCookies(html(accountPage({ origin: url2.origin, settings: context.state.settings, site: context.site, view }), { status, ...PRIVATE }), cookies);
+  const accountResponse = async (url2, context, view, { status = 200, cookies = [] } = {}) => {
+    const formTime = view.kind === "email" || view.kind === "code" ? await context.formGuard.stamp() : "";
+    return withCookies(html(accountPage({ origin: url2.origin, settings: context.state.settings, site: context.site, view: { ...view, formTime } }), { status, ...PRIVATE }), cookies);
+  };
   const unavailableAccount = (url2, context, cookies = []) => accountResponse(url2, context, { kind: "unavailable" }, { status: 404, cookies });
   const readAccountForm = async (request) => {
     const type = (request.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
@@ -33823,12 +33888,17 @@ var createHandler = (overrides = {}) => {
     if (!email3) {
       return accountResponse(url2, context, { kind: "email", email: typed, message: { text: t("account_invalid_email"), error: true } }, { status: 400 });
     }
-    const sent = await context.accounts.sendCode({ appId: context.appId, email: email3, locale: context.state.settings.language });
+    const formTime = await context.formGuard.check(form.get(FORM_TIME_FIELD));
+    if (String(form.get(HONEYPOT_FIELD) ?? "") !== "" || formTime === "too_fast") return seeOther("/account", [pendingCookie(email3)]);
+    if (formTime !== "ok") {
+      return accountResponse(url2, context, { kind: "email", email: email3, message: { text: t("account_form_stale"), error: true } }, { status: 400 });
+    }
+    const sent = await context.accounts.sendCode({ appId: context.appId, email: email3, locale: context.state.settings.language, ip: clientIpOf(request) });
     if (sent.ok) return seeOther("/account", [pendingCookie(email3)]);
     if (sent.error === "rate_limited") {
-      if (sent.reason === "space_daily_limit") {
-        return accountResponse(url2, context, { kind: "email", email: email3, message: { text: t("account_shop_limit"), error: true } }, { status: 429 });
-      }
+      const minutes = Math.max(1, Math.ceil(sent.retryAfterSeconds / 60));
+      const tooMany = { space_daily_limit: t("account_shop_limit"), ip_hourly_limit: t("account_ip_hourly_limit", { minutes }), ip_daily_limit: t("account_ip_daily_limit") }[sent.reason];
+      if (tooMany) return accountResponse(url2, context, { kind: "email", email: email3, message: { text: tooMany, error: true } }, { status: 429 });
       const text3 = sent.reason === "email_daily_limit" ? t("account_daily_limit") : t("account_wait", { seconds: sent.retryAfterSeconds });
       return accountResponse(url2, context, { kind: "code", email: email3, message: { text: text3, error: true } }, { status: 429, cookies: [pendingCookie(email3)] });
     }

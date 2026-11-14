@@ -1,11 +1,12 @@
-// Buyer login and "My orders" (busa-shop 0.10.0), end to end through the
+// Buyer login and "My orders" (busa-shop 0.10.0; abuse protection 0.10.1), end to end through the
 // DEPLOYED bundle (vendor/worker.js) against a fake Busabase whose app-user
 // endpoints answer the way the platform's contract says: the email form, the
 // code, the session cookie, My orders read through records/query (never the
 // Orders table with the site key), sign-out, checkout writing Customer
 // account, and a shop that keeps working when login is off or unknown.
 import assert from "node:assert/strict";
-import { after, before, beforeEach, describe, it } from "node:test";
+import { readFile } from "node:fs/promises";
+import { after, afterEach, before, beforeEach, describe, it } from "node:test";
 import worker from "../vendor/worker.js";
 import { startFakeBusabase, TEST_KEY } from "./fake-busabase.mjs";
 import { demoState, SHOP_APP_NODE } from "./fixtures.mjs";
@@ -26,6 +27,24 @@ const call = async (path, init = {}) => {
 };
 const form = (path, fields, headers = {}) =>
   call(path, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", origin: SITE, ...headers }, body: new URLSearchParams(fields).toString() });
+
+// The Worker reads Date.now(); tests move it forward instead of sleeping.
+const realNow = Date.now;
+let clockOffset = 0;
+
+/** The send-code form's hidden fields as the page rendered them (the signed render time). */
+const renderedForm = async (headers = {}) => {
+  const page = await call("/account", { headers });
+  return Object.fromEntries([...page.text.matchAll(/<input type="hidden" name="(form_time)" value="([^"]+)">/g)].map((match) => [match[1], match[2]]));
+};
+
+/** What a person does: open /account, take a couple of seconds to type, send. The honeypot goes along empty, as a browser sends it. */
+const sendCode = async (fields, headers = {}, { typingMs = 2000 } = {}) => {
+  const hidden = await renderedForm();
+  clockOffset += typingMs;
+  api.log.length = 0;
+  return form("/account/send-code", { ...hidden, referral: "", ...fields }, headers);
+};
 
 const appUserCalls = (endpoint) => api.log.filter((entry) => entry.path.startsWith("/api/v1/app-users/") && entry.path.endsWith(endpoint));
 
@@ -91,8 +110,14 @@ beforeEach(() => {
   };
   api.log.length = 0;
   api.reset();
+  clockOffset = 0;
+  Date.now = () => realNow() + clockOffset;
   // A fresh env per test is a fresh Worker: nothing cached from the test before.
   env = { BUSABASE_BASE_URL: api.origin, BUSABASE_API_KEY: TEST_KEY, BUSABASE_SPACE_ID: "spc_demo", BUSABASE_AIRAPP_RUNTIME: "site" };
+});
+
+afterEach(() => {
+  Date.now = realNow;
 });
 
 after(() => api.close());
@@ -115,7 +140,7 @@ describe("buyer login", () => {
   });
 
   it("send-code passes the email on and the code form says to check the inbox (and spam)", async () => {
-    const sent = await form("/account/send-code", { email: "  Mia.Jensen@Example.com " });
+    const sent = await sendCode({ email: "  Mia.Jensen@Example.com " });
     assert.equal(sent.status, 303);
     assert.equal(sent.response.headers.get("location"), "/account");
     const pending = sent.cookies.find((cookie) => cookie.startsWith("busa_shop_login="));
@@ -143,14 +168,14 @@ describe("buyer login", () => {
 
   it("a code asked for too soon says how many seconds to wait", async () => {
     api.state.appUsers.answers["send-code"] = { status: 429, body: { code: "RATE_LIMITED", retryAfterSeconds: 42, reason: "cooldown" } };
-    const page = await form("/account/send-code", { email: MIA });
+    const page = await sendCode({ email: MIA });
     assert.equal(page.status, 429);
     assert.match(page.text, /wait 42 seconds/);
     assert.match(page.text, /action="\/account\/verify"/, "the code sent before still works");
     api.state.appUsers.answers["send-code"] = { status: 429, body: { code: "RATE_LIMITED", retryAfterSeconds: 3600, reason: "email_daily_limit" } };
-    assert.match((await form("/account/send-code", { email: MIA })).text, /Too many codes were sent to this address today/);
+    assert.match((await sendCode({ email: MIA })).text, /Too many codes were sent to this address today/);
     api.state.appUsers.answers["send-code"] = { status: 429, body: { code: "RATE_LIMITED", retryAfterSeconds: 3600, reason: "space_daily_limit" } };
-    assert.match((await form("/account/send-code", { email: MIA })).text, /cannot send more sign-in codes today/);
+    assert.match((await sendCode({ email: MIA })).text, /cannot send more sign-in codes today/);
   });
 
   it("the right code sets the session cookie and goes to My orders", async () => {
@@ -251,6 +276,138 @@ describe("buyer login", () => {
   });
 });
 
+describe("send-code abuse protection (busa-shop 0.10.1)", () => {
+  const sentIp = () => {
+    const calls = appUserCalls("/send-code");
+    assert.equal(calls.length, 1, "Busabase was asked once");
+    return calls[0].ip;
+  };
+
+  it("forwards CF-Connecting-IP, preferred over X-Forwarded-For", async () => {
+    const sent = await sendCode({ email: MIA }, { "cf-connecting-ip": "198.51.100.23", "x-forwarded-for": "203.0.113.7, 10.0.0.1" });
+    assert.equal(sent.status, 303);
+    assert.equal(sentIp(), "198.51.100.23");
+  });
+
+  it("without CF-Connecting-IP, forwards the first X-Forwarded-For hop", async () => {
+    await sendCode({ email: MIA }, { "x-forwarded-for": " 203.0.113.7 , 10.0.0.1, 172.16.0.9" });
+    assert.equal(sentIp(), "203.0.113.7");
+    await sendCode({ email: MIA }, { "x-forwarded-for": "2001:db8::1, 10.0.0.1" });
+    assert.equal(sentIp(), "2001:db8::1");
+  });
+
+  it("with neither header, sends no IP header at all", async () => {
+    await sendCode({ email: MIA });
+    assert.equal(sentIp(), null);
+  });
+
+  it("never takes the IP from the form body", async () => {
+    await sendCode({ email: MIA, ip: "192.0.2.66", "x-busabase-app-user-ip": "192.0.2.66", "cf-connecting-ip": "192.0.2.66" });
+    assert.equal(sentIp(), null);
+    await sendCode({ email: MIA, ip: "192.0.2.66" }, { "cf-connecting-ip": "198.51.100.23" });
+    assert.equal(sentIp(), "198.51.100.23");
+    // Junk in the header is not passed on either.
+    await sendCode({ email: MIA }, { "cf-connecting-ip": "<script>", "x-forwarded-for": "not an ip" });
+    assert.equal(sentIp(), null);
+  });
+
+  it("sends the shop's language as locale", async () => {
+    api.state.records.bas_settings[0].fields.language = "de";
+    const sent = await sendCode({ email: MIA });
+    assert.equal(sent.status, 303);
+    assert.equal(JSON.parse(appUserCalls("/send-code")[0].body).locale, "de");
+  });
+
+  it("explains the per-network limits, in every language", async () => {
+    const expected = {
+      en: [/from your network in the last hour\. Please try again in about 45 minutes\./, /from your network today\. Please try again tomorrow/],
+      de: [/in der letzten Stunde zu viele Anmeldecodes angefordert\. Bitte versuchen Sie es in etwa 45 Minuten/, /heute zu viele Anmeldecodes angefordert/],
+      fr: [/au cours de la dernière heure\. Réessayez dans environ 45 minutes/, /depuis votre réseau aujourd(&#39;|')hui/],
+      es: [/en la última hora\. Inténtalo de nuevo en unos 45 minutos/, /desde tu red hoy/],
+    };
+    for (const [language, [hourly, daily]] of Object.entries(expected)) {
+      api.state.records.bas_settings[0].fields.language = language;
+      env = { ...env };
+      api.state.appUsers.answers["send-code"] = { status: 429, body: { code: "RATE_LIMITED", retryAfterSeconds: 2700, reason: "ip_hourly_limit" } };
+      const hourlyPage = await sendCode({ email: MIA });
+      assert.equal(hourlyPage.status, 429);
+      assert.match(hourlyPage.text, hourly, language);
+      assert.match(hourlyPage.text, /action="\/account\/send-code"/, "the email form, to try again later");
+      api.state.appUsers.answers["send-code"] = { status: 429, body: { code: "RATE_LIMITED", retryAfterSeconds: 50000, reason: "ip_daily_limit" } };
+      const dailyPage = await sendCode({ email: MIA });
+      assert.equal(dailyPage.status, 429);
+      assert.match(dailyPage.text, daily, language);
+      assert.doesNotMatch(dailyPage.text, /wait \d+ seconds/, "not the cooldown message");
+    }
+  });
+
+  it("the email form has a hidden honeypot and a signed render time, and needs no JavaScript", async () => {
+    const page = await call("/account");
+    const formHtml = /<form class="account-form" method="post" action="\/account\/send-code">([\s\S]*?)<\/form>/.exec(page.text)[1];
+    assert.match(formHtml, /<div class="account-extra" aria-hidden="true"><label>Leave this field empty<input name="referral" type="text" tabindex="-1" autocomplete="off" value=""><\/label><\/div>/);
+    assert.match(formHtml, /<input type="hidden" name="form_time" value="\d+\.[A-Za-z0-9_-]{43}">/);
+    assert.doesNotMatch(formHtml, /<script/);
+    const css = await readFile(new URL("../public/static/shop.css", import.meta.url), "utf8");
+    assert.match(css, /\.account-extra \{[^}]*position: absolute;[^}]*left: -10000px;[^}]*overflow: hidden;/, "off-screen for everyone");
+  });
+
+  it("a filled honeypot gets the same answer as a sent code, and Busabase is not asked", async () => {
+    const real = await sendCode({ email: MIA });
+    const bot = await sendCode({ email: MIA, referral: "https://spam.example" });
+    assert.equal(appUserCalls("/send-code").length, 0, "no code sent for the bot");
+    assert.equal(bot.status, real.status);
+    assert.equal(bot.response.headers.get("location"), real.response.headers.get("location"));
+    assert.deepEqual(bot.cookies, real.cookies);
+    assert.equal(bot.text, real.text);
+    const next = await call("/account", { headers: { cookie: bot.cookies[0].split(";")[0] } });
+    assert.match(next.text, /We sent a 6-digit code to mia\.jensen@example\.com/);
+  });
+
+  it("a post faster than 1.5 s after the page was shown gets the fake success, and Busabase is not asked", async () => {
+    const fast = await sendCode({ email: MIA }, {}, { typingMs: 300 });
+    assert.equal(fast.status, 303);
+    assert.equal(fast.response.headers.get("location"), "/account");
+    assert.ok(fast.cookies.some((cookie) => cookie.startsWith("busa_shop_login=")));
+    assert.equal(appUserCalls("/send-code").length, 0);
+  });
+
+  it("a person who takes 2 s gets a real code", async () => {
+    const sent = await sendCode({ email: MIA }, {}, { typingMs: 2000 });
+    assert.equal(sent.status, 303);
+    assert.equal(appUserCalls("/send-code").length, 1);
+  });
+
+  it("a missing, forged or hours-old render time shows the form again with a fresh one, and Busabase is not asked", async () => {
+    const hidden = await renderedForm();
+    const [ms] = hidden.form_time.split(".");
+    clockOffset += 5000;
+    for (const fields of [{}, { form_time: `${ms}.${"A".repeat(43)}` }, { form_time: `${Number(ms) - 60000}.${hidden.form_time.split(".")[1]}` }, { form_time: "garbage" }]) {
+      api.log.length = 0;
+      const page = await form("/account/send-code", { email: MIA, referral: "", ...fields });
+      assert.equal(page.status, 400, JSON.stringify(fields));
+      assert.match(page.text, /This page was open for a while/);
+      assert.match(page.text, /name="form_time" value="\d+\./);
+      assert.match(page.text, /value="mia\.jensen@example\.com"/, "the email is kept");
+      assert.equal(appUserCalls("/send-code").length, 0);
+    }
+    clockOffset += 7 * 60 * 60 * 1000;
+    const stale = await form("/account/send-code", { email: MIA, referral: "", ...hidden });
+    assert.equal(stale.status, 400);
+    assert.equal(appUserCalls("/send-code").length, 0);
+  });
+
+  it("the code page's 'Send a new code' carries a render time too", async () => {
+    const page = await call("/account", { headers: { cookie: `busa_shop_login=${encodeURIComponent(MIA)}` } });
+    const resend = /<div class="account-more">\s*<form method="post" action="\/account\/send-code">([\s\S]*?)<\/form>/.exec(page.text)[1];
+    const formTime = /name="form_time" value="([^"]+)"/.exec(resend)[1];
+    clockOffset += 3000;
+    api.log.length = 0;
+    const sent = await form("/account/send-code", { email: MIA, form_time: formTime });
+    assert.equal(sent.status, 303);
+    assert.equal(appUserCalls("/send-code").length, 1);
+  });
+});
+
 describe("checkout and buyer login", () => {
   it("signed in, the order is written with Customer account = the buyer's id", async () => {
     const page = await call("/order", { headers: { cookie: COOKIE } });
@@ -310,7 +467,7 @@ describe("when buyer login is off or unknown, the shop works without it", () => 
       assert.match(account.text, /Customer accounts are not available/);
       assert.match(account.text, /You can still order as usual/);
       assert.doesNotMatch(account.text, /<form/);
-      const sent = await form("/account/send-code", { email: MIA });
+      const sent = await sendCode({ email: MIA });
       assert.equal(sent.status, 404);
       assert.equal(appUserCalls("/send-code").length, 0);
       const order = await call("/order", { headers: { cookie: COOKIE } });
@@ -340,7 +497,7 @@ describe("when buyer login is off or unknown, the shop works without it", () => 
   it("Busabase switching login off between pages shows the not-available page on send-code", async () => {
     await call("/account");
     api.state.appUsers.answers["send-code"] = { status: 403, body: { code: "APP_LOGIN_DISABLED" } };
-    const page = await form("/account/send-code", { email: MIA });
+    const page = await sendCode({ email: MIA });
     assert.equal(page.status, 404);
     assert.match(page.text, /Customer accounts are not available/);
   });

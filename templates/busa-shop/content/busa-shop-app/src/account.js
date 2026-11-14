@@ -8,7 +8,7 @@
 // `x-busabase-space`, never from the visitor's browser.
 //
 //   GET  /api/v1/app-users/apps/<app>/settings   is login enabled? (cached, src/handler.js hides all account UI otherwise)
-//   POST /api/v1/app-users/send-code             { appId, email, locale }
+//   POST /api/v1/app-users/send-code             { appId, email, locale } + x-busabase-app-user-ip: the buyer's IP
 //   POST /api/v1/app-users/verify                { appId, email, code } → session token + user
 //   GET  /api/v1/app-users/session?appId=        who the session belongs to
 //   POST /api/v1/app-users/sign-out              { appId }
@@ -90,6 +90,86 @@ export const normalizeCode = (value) => {
   return CODE_PATTERN.test(code) ? code : null;
 };
 
+// ---- Keeping bots off the email form ----
+//
+// Every code Busabase sends is a real email from the platform's address, so a
+// script filling the form with random addresses costs the shop its daily
+// quota and the platform its sender reputation. Busabase limits per email,
+// per space and (from the IP this site forwards) per network. The form adds
+// two cheap checks of its own that need no JavaScript and no third party:
+//
+// - a honeypot: a text field a person never sees (off-screen, aria-hidden,
+//   out of the tab order, autocomplete off). Bots that fill every field fill it.
+// - a signed render time: the page carries `<ms>.<HMAC>` in a hidden field,
+//   and a post less than FORM_MIN_AGE_MS after it was rendered is a script.
+//
+// Either one gets exactly the answer a real request gets (the redirect to
+// "check your email"), with no call to Busabase, so a bot learns nothing.
+
+export const HONEYPOT_FIELD = "referral";
+export const FORM_TIME_FIELD = "form_time";
+export const FORM_MIN_AGE_MS = 1500;
+// Long enough for a tab left open over lunch; a stale page is shown again with a fresh time, not refused.
+export const FORM_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+const FORM_TIME_LABEL = "busa-shop/account-form/v1";
+
+const base64url = (bytes) => btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+/**
+ * Signs and checks the render time. The HMAC key is the site's Busabase API
+ * key (the one secret every deployed Worker has; HMAC output does not reveal
+ * it, and the label keeps these signatures from meaning anything elsewhere).
+ * Without a key (the browser engine, where accounts are off anyway) a random
+ * key per isolate is used: signatures then only hold within one isolate.
+ */
+export const createFormGuard = ({ secret, now = () => Date.now() } = {}) => {
+  const keyBytes = secret ? new TextEncoder().encode(String(secret)) : crypto.getRandomValues(new Uint8Array(32));
+  let keyPromise;
+  const key = () => {
+    keyPromise ??= crypto.subtle.importKey("raw", keyBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    return keyPromise;
+  };
+  const sign = async (ms) => base64url(await crypto.subtle.sign("HMAC", await key(), new TextEncoder().encode(`${FORM_TIME_LABEL}:${ms}`)));
+
+  /** The hidden field's value for a form rendered now. */
+  const stamp = async () => {
+    const ms = Math.trunc(now());
+    return `${ms}.${await sign(ms)}`;
+  };
+
+  /** "ok", "too_fast", "expired" or "invalid" (missing, forged, from the future). */
+  const check = async (value) => {
+    const match = /^(\d{1,16})\.([A-Za-z0-9_-]{43})$/.exec(typeof value === "string" ? value : "");
+    if (!match) return "invalid";
+    const expected = await sign(Number(match[1]));
+    // Compare in full, whatever differs first.
+    let diff = expected.length ^ match[2].length;
+    for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ match[2].charCodeAt(i);
+    if (diff) return "invalid";
+    const age = now() - Number(match[1]);
+    if (age < 0) return "invalid";
+    if (age < FORM_MIN_AGE_MS) return "too_fast";
+    if (age > FORM_MAX_AGE_MS) return "expired";
+    return "ok";
+  };
+
+  return { stamp, check };
+};
+
+const IP_PATTERN = /^[0-9A-Fa-f:.]{2,45}$/;
+
+/**
+ * The buyer's IP for Busabase's per-network limits: Cloudflare's
+ * CF-Connecting-IP, else the first X-Forwarded-For hop, else "" (not sent).
+ * Only request headers set on the way in; never anything from the form.
+ */
+export const clientIpOf = (request) => {
+  const cf = (request.headers.get("cf-connecting-ip") ?? "").trim();
+  if (IP_PATTERN.test(cf)) return cf;
+  const first = (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
+  return IP_PATTERN.test(first) ? first : "";
+};
+
 // ---- What a buyer may see of their own order ----
 
 // The only Orders fields "My orders" shows. Everything else on the row (the
@@ -150,6 +230,9 @@ export const buyerOrderFromRecord = (record) => {
 
 // ---- The Busabase client ----
 
+// Busabase's 429 reasons for send-code, in the order it checks them. Anything else reads as "cooldown".
+export const SEND_CODE_LIMITS = ["cooldown", "ip_hourly_limit", "ip_daily_limit", "email_daily_limit", "space_daily_limit"];
+
 const errorCode = (body) => (body && typeof body === "object" && typeof body.code === "string" ? body.code : "");
 const wholeSeconds = (value, fallback) => {
   const seconds = Math.ceil(Number(value));
@@ -166,13 +249,14 @@ export const createAccounts = ({ baseUrl, apiKey, spaceId, fetchImpl = fetch, no
   const root = apiRoot(baseUrl);
   const cache = new Map(); // appId → { value, at, ttl }
 
-  const call = async (method, path, { body, session } = {}) => {
+  const call = async (method, path, { body, session, ip } = {}) => {
     const headers = {
       authorization: `Bearer ${apiKey}`,
       accept: "application/json",
       ...(spaceId ? { "x-busabase-space": spaceId } : {}),
       ...(body ? { "content-type": "application/json" } : {}),
       ...(session ? { "x-busabase-app-user-session": session } : {}),
+      ...(ip ? { "x-busabase-app-user-ip": ip } : {}),
     };
     let response;
     try {
@@ -214,11 +298,12 @@ export const createAccounts = ({ baseUrl, apiKey, spaceId, fetchImpl = fetch, no
 
   const forget = (appId) => cache.delete(appId);
 
-  const sendCode = async ({ appId, email, locale }) => {
-    const { status, body } = await call("POST", "/api/v1/app-users/send-code", { body: { appId, email, ...(locale ? { locale } : {}) } });
+  /** `ip` is the buyer's (clientIpOf), for Busabase's per-network limits; without it they are skipped. */
+  const sendCode = async ({ appId, email, locale, ip }) => {
+    const { status, body } = await call("POST", "/api/v1/app-users/send-code", { body: { appId, email, ...(locale ? { locale } : {}) }, ip });
     if (status === 200) return { ok: true, resendAfterSeconds: wholeSeconds(body?.resendAfterSeconds, 60) };
     if (status === 429) {
-      const reason = ["cooldown", "email_daily_limit", "space_daily_limit"].includes(body?.reason) ? body.reason : "cooldown";
+      const reason = SEND_CODE_LIMITS.includes(body?.reason) ? body.reason : "cooldown";
       return { error: "rate_limited", reason, retryAfterSeconds: wholeSeconds(body?.retryAfterSeconds, 60) };
     }
     if (status === 403 && errorCode(body) === "APP_LOGIN_DISABLED") {

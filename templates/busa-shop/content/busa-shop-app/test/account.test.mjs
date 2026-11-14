@@ -6,6 +6,10 @@ import {
   BUYER_ORDER_FIELDS,
   buyerOrderFromRecord,
   clearSessionCookie,
+  clientIpOf,
+  createAccounts,
+  createFormGuard,
+  FORM_MIN_AGE_MS,
   normalizeCode,
   normalizeEmail,
   parseCookies,
@@ -66,5 +70,61 @@ describe("account helpers", () => {
     assert.equal(normalizeCode("123-456"), "123456");
     assert.equal(normalizeCode("12345"), null);
     assert.equal(normalizeCode("12a456"), null);
+  });
+});
+
+describe("send-code abuse protection helpers", () => {
+  it("the render time: too fast, ok, expired, forged, from another key", async () => {
+    let clock = 1_800_000_000_000;
+    const guard = createFormGuard({ secret: "site-key", now: () => clock });
+    const stamp = await guard.stamp();
+    assert.match(stamp, /^1800000000000\.[A-Za-z0-9_-]{43}$/);
+    assert.equal(await guard.check(stamp), "too_fast");
+    clock += FORM_MIN_AGE_MS - 1;
+    assert.equal(await guard.check(stamp), "too_fast");
+    clock += 1;
+    assert.equal(await guard.check(stamp), "ok");
+    clock += 7 * 60 * 60 * 1000;
+    assert.equal(await guard.check(stamp), "expired");
+    const other = createFormGuard({ secret: "another-site-key", now: () => clock });
+    assert.equal(await other.check(stamp), "invalid", "signed with another site's key");
+    assert.equal(await guard.check(`${Number(stamp.split(".")[0]) - 5000}.${stamp.split(".")[1]}`), "invalid", "an earlier time with the same signature");
+    for (const junk of [undefined, null, "", "123", "abc.def"]) assert.equal(await guard.check(junk), "invalid");
+    const future = createFormGuard({ secret: "site-key", now: () => clock + 60_000 });
+    assert.equal(await guard.check(await future.stamp()), "invalid", "a time from the future");
+  });
+
+  it("the client IP comes from CF-Connecting-IP, else the first X-Forwarded-For hop", () => {
+    const req = (headers) => new Request("https://shop.example/account/send-code", { headers });
+    assert.equal(clientIpOf(req({ "cf-connecting-ip": "198.51.100.23", "x-forwarded-for": "203.0.113.7" })), "198.51.100.23");
+    assert.equal(clientIpOf(req({ "x-forwarded-for": "203.0.113.7, 10.0.0.1" })), "203.0.113.7");
+    assert.equal(clientIpOf(req({ "cf-connecting-ip": "bad value", "x-forwarded-for": "203.0.113.7" })), "203.0.113.7");
+    assert.equal(clientIpOf(req({})), "");
+  });
+
+  it("sendCode sends the IP header and keeps the per-network 429 reasons", async () => {
+    const seen = [];
+    const answers = [
+      { status: 200, body: { ok: true, resendAfterSeconds: 60 } },
+      { status: 429, body: { code: "RATE_LIMITED", retryAfterSeconds: 1200, reason: "ip_hourly_limit" } },
+      { status: 429, body: { code: "RATE_LIMITED", retryAfterSeconds: 40000, reason: "ip_daily_limit" } },
+      { status: 429, body: { code: "RATE_LIMITED", retryAfterSeconds: 10, reason: "something_new" } },
+    ];
+    const accounts = createAccounts({
+      baseUrl: "https://busabase.example",
+      apiKey: "k",
+      spaceId: "spc",
+      fetchImpl: async (url, init) => {
+        seen.push(init.headers);
+        const { status, body } = answers.shift();
+        return new Response(JSON.stringify(body), { status });
+      },
+    });
+    assert.deepEqual(await accounts.sendCode({ appId: "a", email: "m@example.com", locale: "en", ip: "203.0.113.7" }), { ok: true, resendAfterSeconds: 60 });
+    assert.equal(seen[0]["x-busabase-app-user-ip"], "203.0.113.7");
+    assert.equal((await accounts.sendCode({ appId: "a", email: "m@example.com" })).reason, "ip_hourly_limit");
+    assert.equal("x-busabase-app-user-ip" in seen[1], false, "no IP, no header");
+    assert.equal((await accounts.sendCode({ appId: "a", email: "m@example.com" })).reason, "ip_daily_limit");
+    assert.equal((await accounts.sendCode({ appId: "a", email: "m@example.com" })).reason, "cooldown", "an unknown reason reads as the cooldown");
   });
 });

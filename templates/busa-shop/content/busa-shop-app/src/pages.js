@@ -2,6 +2,7 @@
 // visitor goes through `esc`; nothing is concatenated raw. Every page carries
 // <meta charset="utf-8"> (Cloudflare serves text/html without a charset).
 
+import { FORM_TIME_FIELD, HONEYPOT_FIELD } from "./account.js";
 import { countryName, formatPrice, imageSrc, localeTag } from "./catalog.js";
 import { productDetails } from "./details.js";
 import { CLIENT_MESSAGE_KEYS, PAY_MESSAGE_KEYS, translator } from "./i18n.js";
@@ -612,6 +613,9 @@ const accountMessage = (message) =>
  *   { kind: "unavailable" }                        login is off: a friendly note, nothing to fill in
  * `message` is `{ text, error }`. Every form is a plain POST that works without JavaScript.
  */
+// The signed render time (src/account.js createFormGuard) every send-code form posts back.
+const formTimeInput = (view) => (view.formTime ? `<input type="hidden" name="${FORM_TIME_FIELD}" value="${esc(view.formTime)}">` : "");
+
 export const accountPage = ({ origin, settings, site = {}, view }) => {
   const t = translator(settings.language);
   const money = (amount, currency) => (amount === null ? "" : formatPrice(amount, currency || settings.currency, settings.language));
@@ -661,7 +665,7 @@ ${view.nextCursor ? `<p><a href="/account?cursor=${encodeURIComponent(view.nextC
     <button class="button" type="submit">${esc(t("account_verify"))}</button>
   </form>
   <div class="account-more">
-    <form method="post" action="/account/send-code"><input type="hidden" name="email" value="${esc(view.email)}"><button class="link-button" type="submit">${esc(t("account_resend"))}</button></form>
+    <form method="post" action="/account/send-code"><input type="hidden" name="email" value="${esc(view.email)}">${formTimeInput(view)}<button class="link-button" type="submit">${esc(t("account_resend"))}</button></form>
     <a href="/account?change=email">${esc(t("account_other_email"))}</a>
   </div>
 </section>`;
@@ -672,6 +676,8 @@ ${view.nextCursor ? `<p><a href="/account?cursor=${encodeURIComponent(view.nextC
   ${accountMessage(view.message)}
   <form class="account-form" method="post" action="/account/send-code">
     <label>${esc(t("account_email_label"))}<input name="email" type="email" autocomplete="email" maxlength="200" required value="${esc(view.email ?? "")}"></label>
+    ${formTimeInput(view)}
+    <div class="account-extra" aria-hidden="true"><label>${esc(t("account_honeypot_label"))}<input name="${HONEYPOT_FIELD}" type="text" tabindex="-1" autocomplete="off" value=""></label></div>
     <button class="button" type="submit">${esc(t("account_send_code"))}</button>
   </form>
 </section>`;

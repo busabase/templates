@@ -885,6 +885,16 @@ textarea:focus {
   font-weight: 400;
 }
 
+/* The honeypot field (src/account.js): off-screen for everyone, never shown. */
+.account-extra {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .account-who,
 .account-more {
   display: flex;

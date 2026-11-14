@@ -7,8 +7,12 @@ import {
   buyerOrderFromRecord,
   clearPendingCookie,
   clearSessionCookie,
+  clientIpOf,
   createAccounts,
+  createFormGuard,
   CURSOR_PATTERN,
+  FORM_TIME_FIELD,
+  HONEYPOT_FIELD,
   normalizeCode,
   normalizeEmail,
   pendingCookie,
@@ -81,7 +85,7 @@ import { sendMail } from "./smtp.js";
 import { createSecretsReader, readShopSecrets } from "./vault.js";
 
 export const MAX_ORDER_BODY_BYTES = 16 * 1024;
-export const SHOP_VERSION = "0.10.0";
+export const SHOP_VERSION = "0.10.1";
 // MCP requests per minute from one address, counted per Worker isolate (src/mcp.js).
 export const MCP_REQUESTS_PER_MINUTE = 120;
 export const MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
@@ -262,7 +266,8 @@ export const createHandler = (overrides = {}) => {
         now: deps.now,
         log: deps.log,
       });
-      site = { shop, secrets, accounts, paypal: null };
+      const formGuard = createFormGuard({ secret: env.BUSABASE_API_KEY, now: deps.now });
+      site = { shop, secrets, accounts, formGuard, paypal: null };
       sites.set(env, site);
     }
     return site;
@@ -1048,11 +1053,14 @@ export const createHandler = (overrides = {}) => {
     if (state.setup !== "ready") return { error: notReady(state) };
     const enabled = await accountOn(env, state);
     const site = siteInfo(state, { payment: publicPayment(env, state) }, analyticsFor(url, env, state.settings), enabled);
-    return { state, enabled, site, accounts: siteFor(env).accounts, appId: state.appNodeId };
+    return { state, enabled, site, accounts: siteFor(env).accounts, formGuard: siteFor(env).formGuard, appId: state.appNodeId };
   };
 
-  const accountResponse = (url, context, view, { status = 200, cookies = [] } = {}) =>
-    withCookies(html(accountPage({ origin: url.origin, settings: context.state.settings, site: context.site, view }), { status, ...PRIVATE }), cookies);
+  // Every page with a send-code form carries a freshly signed render time (src/account.js createFormGuard).
+  const accountResponse = async (url, context, view, { status = 200, cookies = [] } = {}) => {
+    const formTime = view.kind === "email" || view.kind === "code" ? await context.formGuard.stamp() : "";
+    return withCookies(html(accountPage({ origin: url.origin, settings: context.state.settings, site: context.site, view: { ...view, formTime } }), { status, ...PRIVATE }), cookies);
+  };
 
   const unavailableAccount = (url, context, cookies = []) => accountResponse(url, context, { kind: "unavailable" }, { status: 404, cookies });
 
@@ -1119,12 +1127,19 @@ export const createHandler = (overrides = {}) => {
     if (!email) {
       return accountResponse(url, context, { kind: "email", email: typed, message: { text: t("account_invalid_email"), error: true } }, { status: 400 });
     }
-    const sent = await context.accounts.sendCode({ appId: context.appId, email, locale: context.state.settings.language });
+    // A bot (honeypot filled, or posted faster than a person types): the very answer a sent code gets, and nothing sent.
+    const formTime = await context.formGuard.check(form.get(FORM_TIME_FIELD));
+    if (String(form.get(HONEYPOT_FIELD) ?? "") !== "" || formTime === "too_fast") return seeOther("/account", [pendingCookie(email)]);
+    // No time, a forged one, or a page open for hours: show the form again (with a fresh time) and ask to send again.
+    if (formTime !== "ok") {
+      return accountResponse(url, context, { kind: "email", email, message: { text: t("account_form_stale"), error: true } }, { status: 400 });
+    }
+    const sent = await context.accounts.sendCode({ appId: context.appId, email, locale: context.state.settings.language, ip: clientIpOf(request) });
     if (sent.ok) return seeOther("/account", [pendingCookie(email)]);
     if (sent.error === "rate_limited") {
-      if (sent.reason === "space_daily_limit") {
-        return accountResponse(url, context, { kind: "email", email, message: { text: t("account_shop_limit"), error: true } }, { status: 429 });
-      }
+      const minutes = Math.max(1, Math.ceil(sent.retryAfterSeconds / 60));
+      const tooMany = { space_daily_limit: t("account_shop_limit"), ip_hourly_limit: t("account_ip_hourly_limit", { minutes }), ip_daily_limit: t("account_ip_daily_limit") }[sent.reason];
+      if (tooMany) return accountResponse(url, context, { kind: "email", email, message: { text: tooMany, error: true } }, { status: 429 });
       // The code sent before still works: keep the code form, with how long to wait for another.
       const text = sent.reason === "email_daily_limit" ? t("account_daily_limit") : t("account_wait", { seconds: sent.retryAfterSeconds });
       return accountResponse(url, context, { kind: "code", email, message: { text, error: true } }, { status: 429, cookies: [pendingCookie(email)] });

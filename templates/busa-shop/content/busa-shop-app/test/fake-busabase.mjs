@@ -220,6 +220,8 @@ export const startFakeBusabase = async (state) => {
     if (appUser && state.appUsers) {
       const users = state.appUsers;
       entry.session = req.headers["x-busabase-app-user-session"] ?? "";
+      // The buyer's IP the site forwards for per-network limits; null when the header is absent.
+      entry.ip = req.headers["x-busabase-app-user-ip"] ?? null;
       const endpoint = appUser[1] ? "settings" : appUser[2];
       const input = body ? JSON.parse(body) : {};
       entry.input = input;

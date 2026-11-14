@@ -1467,10 +1467,19 @@ account.
 - **Sign in**: `/account`, an email box. "We sent a 6-digit code to …; it
   works for 10 minutes; not there? check your spam." A new code can be asked
   for after a minute (the page says how many seconds to wait); at most 10
-  codes per address a day and 1000 per space a day. A wrong code says how
+  codes per address a day and 1000 per space a day (returning buyers are
+  exempt from that one), and at most 5 an hour and 20 a day from one network:
+  the website passes the buyer's IP to Busabase (busa-shop 0.10.1), and the
+  page says when to try again. A wrong code says how
   many tries are left (5 per code); an expired or used-up code says to ask
   for a new one. A buyer the owner disabled is told so. The pages are plain
   forms and work without JavaScript.
+- **Bots**: the email form has a field no person sees and a signed time it
+  was shown. A filled field, or a post under 1.5 s after the page opened, gets
+  the normal "check your email" page and no code is sent (busa-shop 0.10.1).
+  A page left open over 6 hours just asks to send again. If an owner reports
+  "the page says a code was sent but nothing came", ask whether a password
+  manager or autofill tool filled extra fields, then check spam as usual.
 - **Signed in**: My orders, and on the checkout page "Signed in as …: this
   order will appear under My orders". An order placed while signed in gets the
   buyer's id in **Customer account**; the website takes it from the session
