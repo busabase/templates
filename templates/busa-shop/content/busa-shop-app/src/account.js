@@ -12,8 +12,9 @@
 //   POST /api/v1/app-users/verify                { appId, email, code } → session token + user
 //   GET  /api/v1/app-users/session?appId=        who the session belongs to
 //   POST /api/v1/app-users/sign-out              { appId }
-//   POST /api/v1/app-users/records/query         { appId, baseId, limit, cursor }: the session user's
-//                                                Orders rows; Busabase filters by the owner field
+//   POST /api/v1/app-users/records/query         { appId, baseId, ownerField, limit, cursor }: the session
+//                                                user's Orders rows; the shop names the column
+//                                                (customer-account), Busabase fills in the verified id
 //
 // `<app>` is this website's own AirApp node (src/resources.js resolveShopApp).
 // The session token travels in `x-busabase-app-user-session`, and between the
@@ -23,7 +24,7 @@
 // login switched off, Busabase unreachable, or the browser engine (no key) all
 // mean "no account UI", and checkout goes on as a guest checkout.
 
-import { EMAIL_PATTERN, LIMITS } from "./orders.js";
+import { EMAIL_PATTERN, LIMITS, OWNER_FIELD } from "./orders.js";
 
 export const SESSION_COOKIE = "busa_shop_session";
 // The email a code was just sent to, so the code form can name it after the redirect.
@@ -268,7 +269,7 @@ export const createAccounts = ({ baseUrl, apiKey, spaceId, fetchImpl = fetch, no
     return { status: response.status, body: data };
   };
 
-  /** `{ enabled, appName, ownerFields }`; `enabled: false` with a `reason` when login is off or cannot be asked about. */
+  /** `{ enabled, appName }`; `enabled: false` with a `reason` when login is off or cannot be asked about. */
   const settings = async (appId) => {
     if (!apiKey || !appId) return { enabled: false, reason: apiKey ? "no-app" : "no-key" };
     const at = now();
@@ -281,7 +282,6 @@ export const createAccounts = ({ baseUrl, apiKey, spaceId, fetchImpl = fetch, no
       value = {
         enabled: body.enabled === true,
         appName: typeof body.appName === "string" ? body.appName : "",
-        ownerFields: body.ownerFields && typeof body.ownerFields === "object" ? body.ownerFields : {},
         ...(body.enabled === true ? {} : { reason: "disabled" }),
       };
     } else if (status === 404) {
@@ -357,18 +357,21 @@ export const createAccounts = ({ baseUrl, apiKey, spaceId, fetchImpl = fetch, no
     return status === 200 || status === 401 ? { ok: true } : { error: "unavailable" };
   };
 
-  /** The session user's rows of one Base, as Busabase filters them: `{ records, nextCursor }` or `{ error }`. */
-  const queryRecords = async ({ appId, baseId, token, limit = ORDERS_PAGE, cursor }) => {
+  /**
+   * The session user's rows of one Base, as Busabase filters them: `{ records, nextCursor }` or `{ error }`.
+   * `ownerField` is the column holding the buyer's app-user id; Busabase supplies the id itself.
+   */
+  const queryRecords = async ({ appId, baseId, token, ownerField = OWNER_FIELD, limit = ORDERS_PAGE, cursor }) => {
     const { status, body } = await call("POST", "/api/v1/app-users/records/query", {
-      body: { appId, baseId, limit, ...(cursor ? { cursor } : {}) },
+      body: { appId, baseId, ownerField, limit, ...(cursor ? { cursor } : {}) },
       session: token,
     });
     if (status === 200 && Array.isArray(body?.records)) {
       return { records: body.records, nextCursor: typeof body.nextCursor === "string" && CURSOR_PATTERN.test(body.nextCursor) ? body.nextCursor : null };
     }
     if (status === 401) return { error: "invalid" };
-    if (status === 403 && errorCode(body) === "NO_OWNER_FIELD") {
-      log.warn?.("busa-shop: buyer login is on, but no owner field is set for Orders (customer-account)");
+    if (status === 400 && errorCode(body) === "INVALID_OWNER_FIELD") {
+      log.warn?.(`busa-shop: buyer login is on, but Orders has no text column ${ownerField} (an install from before 0.10.0?)`);
       return { error: "no_owner_field" };
     }
     log.warn?.("busa-shop: buyer's orders unreadable", status || "unreachable", errorCode(body));

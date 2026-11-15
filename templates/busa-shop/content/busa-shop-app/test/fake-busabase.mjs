@@ -204,6 +204,9 @@ export const startFakeBusabase = async (state) => {
       const id = `rec_${nextId++}`;
       let response;
       if (options.failCreates === "certificates" && baseId === "bas_certificates") return send(503, { code: "SERVICE_UNAVAILABLE", message: "down" });
+      // An older install whose table lacks some columns: `missingFields[baseId]` = slugs the Base does not have.
+      const missing = (options.missingFields?.[baseId] ?? []).filter((slug) => slug in (input.fields ?? {}));
+      if (missing.length > 0) return send(400, { code: "BAD_REQUEST", message: `Unknown field: ${missing[0]}` });
       if (options.queueCreates) {
         response = { id: `cr_${id}`, status: "in_review", materialized: false };
       } else {
@@ -229,7 +232,7 @@ export const startFakeBusabase = async (state) => {
       if (override) return send(override.status, override.body);
       if (endpoint === "settings") {
         const appId = decodeURIComponent(appUser[1]);
-        return send(200, { appId, enabled: false, appName: "", ownerFields: {}, ...(users.settings?.[appId] ?? {}) });
+        return send(200, { appId, enabled: false, appName: "", ...(users.settings?.[appId] ?? {}) });
       }
       if (endpoint === "send-code") return send(200, { ok: true, resendAfterSeconds: 60 });
       if (endpoint === "verify") {
@@ -241,8 +244,19 @@ export const startFakeBusabase = async (state) => {
       if (endpoint === "sign-out") return send(200, { ok: true });
       if (!user) return send(401, { code: "APP_USER_SESSION_INVALID" });
       if (endpoint === "session") return send(200, { user: { id: user[1].id, email: user[0] } });
-      // records/query: the platform filters by the owner field; the fake returns what the test put there.
-      return send(200, { records: users.records?.[user[1].id] ?? [], nextCursor: users.nextCursor ?? null });
+      // records/query: the app names the owner column (`ownerField`, required, a text
+      // column of that Base; `users.ownerFields[baseId]` lists the valid ones, default
+      // customer-account) and the platform matches it to the session's user id. The fake
+      // returns the rows the test put there, checked against that column.
+      if (typeof input.ownerField !== "string" || !input.ownerField) {
+        return send(400, { code: "BAD_REQUEST", message: "Input validation failed: ownerField is required" });
+      }
+      const valid = users.ownerFields?.[input.baseId] ?? ["customer-account"];
+      if (!valid.includes(input.ownerField)) {
+        return send(400, { code: "INVALID_OWNER_FIELD", error: `ownerField "${input.ownerField}" is not a text field of this Base` });
+      }
+      const rows = (users.records?.[user[1].id] ?? []).filter((row) => row.fields?.[input.ownerField] === user[1].id);
+      return send(200, { records: rows, nextCursor: users.nextCursor ?? null });
     }
     const file = /^\/api\/v1\/file-trees\/([^/]+)\/files\/(.+)$/.exec(url.pathname);
     if (req.method === "GET" && file) {

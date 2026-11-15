@@ -1438,29 +1438,47 @@ Shop Website node (the owner's own key, or a Space admin's; never the site's
 `Site: Shop Website` key):
 
 1. Find the **Shop Website** node id (`busabase-cli nodes list`, type
-   `airapp`, slug `busa-shop-app` in this folder) and the **Orders** Base id.
-2. Check that Orders has the **Customer account** column (`customer-account`,
-   text). A shop installed before 0.10.0 does not: see "A shop installed
-   before 0.10.0" below.
-3. Turn login on for the website, naming Customer account as the Orders
-   owner field and the shop's name as the name in the emails:
+   `airapp`, slug `busa-shop-app` in this folder).
+2. Check that Orders has the **Customer account** (`customer-account`) and
+   **Customer email (signed-in)** (`customer-email`) columns, both text. A shop
+   installed before 0.10.0 has neither: see "A shop installed before 0.10.0"
+   below.
+3. Turn login on for the website, with the shop's name as the name in the
+   emails:
 
    ```bash
-   curl -X PUT "$BUSABASE_BASE_URL/api/v1/app-users/apps/<Shop Website node id>/settings" \
-     -H "Authorization: Bearer $BUSABASE_API_KEY" -H "x-busabase-space: <space id>" \
-     -H "content-type: application/json" \
-     -d '{"enabled": true, "appName": "<Settings › Store name>", "ownerFields": {"<Orders Base id>": "customer-account"}}'
+   busabase-cli app-users put-settings --app-id <Shop Website node id> --enabled --app-name "<Settings › Store name>"
    ```
 
-   It answers the settings back; `GET` on the same address reads them.
+   (or the owner turns on **Let people sign in to this app** in the Shop
+   Website's **Settings → User sign-in**). That is the whole setting: there is
+   nothing to choose about tables or columns. `busabase-cli app-users
+   get-settings --app-id <Shop Website node id>` reads it back.
 4. Within a minute the live site shows **Account** (the site reads the
    setting at most once a minute). Check `/api/status` (`accounts: "on"`),
    then sign in once yourself with a real inbox: ask for a code, type it,
    place an order request while signed in, and see it under My orders.
 
-To switch it off: the same `PUT` with `"enabled": false`. Existing sessions
-stop working, Account disappears within a minute, orders keep their Customer
-account.
+To switch it off: `busabase-cli app-users put-settings --app-id <Shop Website
+node id> --no-enabled` (or the same toggle). Existing sessions stop working,
+Account disappears within a minute, orders keep their Customer account and
+Customer email.
+
+**The two columns.** Which orders are a buyer's is decided by the website, not
+by a Busabase setting: on My orders it asks Busabase's `records/query` for the
+Orders rows whose `customer-account` matches the signed-in buyer
+(`ownerField: "customer-account"`), and Busabase fills in the buyer's id from
+the verified sign-in, so no one can ask for someone else's orders.
+
+- **Customer account** holds the buyer's app-user id (`apu_…`). It is for
+  matching, not for people to read.
+- **Customer email (signed-in)** holds the same buyer's verified email, for
+  people: it says who placed the order. It can differ from **Email**, which is
+  whatever address the buyer typed into the order form (a gift, a work
+  address).
+
+Both are written by the website at checkout from the sign-in Busabase checked,
+never from the form, and both stay empty for a guest order.
 
 ### What buyers see, and what they never see
 
@@ -1482,8 +1500,9 @@ account.
   manager or autofill tool filled extra fields, then check spam as usual.
 - **Signed in**: My orders, and on the checkout page "Signed in as …: this
   order will appear under My orders". An order placed while signed in gets the
-  buyer's id in **Customer account**; the website takes it from the session
-  Busabase checked, never from the form. Signing in stays for 30 days, until
+  buyer's id in **Customer account** and their verified email in **Customer
+  email (signed-in)**; the website takes both from the session Busabase
+  checked, never from the form. Signing in stays for 30 days, until
   **Sign out**, or until the owner disables the buyer.
 - **Never shown**: anything but order number, date, items, total, currency
   and status. Internal note, Reply draft, Tracking number, the address, the
@@ -1494,7 +1513,8 @@ account.
   not listed, even when the email matches: an email typed into a checkout
   proves nothing about who typed it. Do not fill in Customer account by hand
   to "move" an order; if the owner wants one linked, they decide, and you
-  write exactly the app-user id Busabase shows for that buyer.
+  write exactly the app-user id Busabase shows for that buyer (and their
+  email in Customer email (signed-in)).
 
 ### Privacy, and what you may do
 
@@ -1502,9 +1522,9 @@ account.
   they last signed in, which shop. Their orders are the Orders rows as before.
 - The website keeps the session in a cookie `busa_shop_session` (HttpOnly,
   Secure, SameSite=Lax, 30 days) and sends it only to Busabase; it reads a
-  buyer's orders through Busabase's `records/query`, which returns only the
-  rows whose Customer account is that buyer's id, never the Orders table
-  read with the site's key.
+  buyer's orders through Busabase's `records/query` with `ownerField:
+  "customer-account"`, which returns only the rows whose Customer account is
+  that buyer's verified id, never the Orders table read with the site's key.
 - Busabase sends the code emails itself, in the shop's name (`appName`).
   They are not the shop's SMTP emails and are not in any Email log.
 - Listing, disabling, enabling or deleting buyers is a Space admin's job, in
@@ -1519,27 +1539,33 @@ account.
 
 ### A shop installed before 0.10.0
 
-Its Orders have no Customer account column and its website no Account page;
+Its Orders have no Customer account or Customer email (signed-in) column and
+its website no Account page;
 everything keeps working, and login stays off. To add it (owner's yes first;
 website first, as for 0.9.0):
 
-1. Update the Shop Website node's files to 0.10.0's (`src/` and the rebuilt
-   `vendor/worker.js`), then the owner clicks **Restart** and **Go live**.
-2. Add the column to Orders with the definition in
+1. Update the Shop Website node's files to this version's (`src/` and the
+   rebuilt `vendor/worker.js`), then the owner clicks **Restart** and **Go live**.
+2. Add the two columns to Orders with the definitions in
    `templates/busa-shop/content/orders/base.json`
-   (`customer-account`, text, with its help):
+   (`customer-account` and `customer-email`, text, with their help):
 
    ```bash
    busabase-cli bases create-field --base-id <Orders Base id> --slug customer-account --name "Customer account" --field-type text
+   busabase-cli bases create-field --base-id <Orders Base id> --slug customer-email --name "Customer email (signed-in)" --field-type text
    ```
 
-   (or `POST /api/v1/bases/<Orders Base id>/fields` with the definition as it is).
-   Existing orders stay empty there: they are guest orders.
+   (or `POST /api/v1/bases/<Orders Base id>/fields` with each definition as it
+   is). Existing orders stay empty there: they are guest orders. An Orders
+   table that already has Customer account needs only the second.
 3. Switch login on ("Switch it on", above).
 
-A website that writes Customer account into an Orders table without the
-column (login switched on before step 2) saves the order as a guest order and
-logs `order saved without Customer account`: the order is never lost.
+A website that writes these columns into an Orders table without them (login
+switched on before step 2) never loses the order: without Customer email it
+saves the order with Customer account only and logs `order saved without
+Customer email`; without Customer account too it saves a guest order and logs
+`order saved without Customer account`. My orders then says the orders cannot
+be shown until Customer account exists.
 
 ## Daily shop check
 
