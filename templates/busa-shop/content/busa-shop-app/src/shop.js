@@ -172,11 +172,12 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
 
   /**
    * Create one Orders row. The order id is the idempotency key: the same id
-   * twice is one record. `customerAccount` is the signed-in buyer's app-user
-   * id (src/account.js), written into Customer account; "" for a guest.
+   * twice is one record. `customerAccount` / `customerEmail` are the
+   * signed-in buyer's app-user id and verified email (src/account.js), written
+   * into Customer account / Customer email (signed-in); "" for a guest.
    */
-  const createOrder = async (state, order, { payment = "request", customerAccount = "" } = {}) => {
-    const fields = orderToFields(order, { nowIso: new Date(now()).toISOString(), payment, customerAccount });
+  const createOrder = async (state, order, { payment = "request", customerAccount = "", customerEmail = "" } = {}) => {
+    const fields = orderToFields(order, { nowIso: new Date(now()).toISOString(), payment, customerAccount, customerEmail });
     try {
       const outcome = await records.createRecord({
         baseId: state.ordersBaseId,
@@ -186,9 +187,14 @@ export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl 
       });
       return { status: outcome.status, recordId: outcome.recordId ?? null };
     } catch (error) {
-      // An Orders table without Customer account (a shop from before 0.10.0
-      // whose owner switched buyer login on): the order matters more than the
-      // link to the account, so it is saved as a guest order.
+      // An Orders table from an older install: the order matters more than
+      // the link to the account. Without Customer email (signed-in) (0.10.0
+      // installs) the order keeps Customer account; without Customer account
+      // too (before 0.10.0) it is saved as a guest order.
+      if (fields["customer-email"] && (error?.status === 400 || error?.status === 422)) {
+        log.warn?.("busa-shop: order saved without Customer email (does Orders have the customer-email field?)", order.orderId);
+        return createOrder(state, order, { payment, customerAccount });
+      }
       if (customerAccount && (error?.status === 400 || error?.status === 422)) {
         log.warn?.("busa-shop: order saved without Customer account (does Orders have the customer-account field?)", order.orderId);
         return createOrder(state, order, { payment });

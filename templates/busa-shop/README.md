@@ -58,14 +58,17 @@ their email, gets a 6-digit code from Busabase, and sees **My orders**, the
 orders they placed while signed in (order number, date, items, total,
 status; never the staff columns). No passwords; guest checkout is unchanged.
 An order placed while signed in carries the buyer's app-user id in Orders ›
-**Customer account**, the owner field Busabase filters on. It is off until
-the owner's agent switches it on (`PUT /api/v1/app-users/apps/<Shop Website
-node id>/settings` with `ownerFields: { "<Orders Base id>": "customer-account" }`,
-`enabled: true` and the shop's name as `appName`), needs a Busabase that has
-app users and the Website engine, and hides itself whenever it is off or
-Busabase does not offer it. The manual's "Buyer accounts (My orders, 买家登录)"
-has the steps, what buyers see, the privacy notes, and how a shop installed
-before 0.10.0 adds the column.
+**Customer account** (what My orders matches on: the website asks Busabase
+for the rows whose `customer-account` is the signed-in buyer, and Busabase
+fills in the verified id) and their verified email in **Customer email
+(signed-in)** (for people to read). It is off until the owner switches it on
+(`busabase-cli app-users put-settings --app-id <Shop Website node id>
+--enabled --app-name "<shop name>"`, or **Settings → User sign-in** on the
+Shop Website node), needs a Busabase that has app users and the Website
+engine, and hides itself whenever it is off or Busabase does not offer it.
+The manual's "Buyer accounts (My orders, 买家登录)" has the steps, what buyers
+see, the privacy notes, and how a shop installed before 0.10.0 adds the
+columns.
 
 ## Busa Product Hub is optional
 

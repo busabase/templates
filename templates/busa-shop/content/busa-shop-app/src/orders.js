@@ -60,10 +60,20 @@ export const WEBSITE_ORDER_FIELDS = [
   "customer-note",
   "created-at",
   "source",
-  // The signed-in buyer's app-user id (busa-shop 0.10.0): Busabase's owner field for
-  // "My orders". Written only at checkout, only from the session, and left out for a guest.
+  // The signed-in buyer's app-user id (busa-shop 0.10.0): the column "My orders"
+  // matches on (OWNER_FIELD). Written only at checkout, only from the session,
+  // and left out for a guest.
   "customer-account",
+  // The signed-in buyer's verified email, for people to read: same rules.
+  "customer-email",
 ];
+
+/**
+ * The Orders column that holds the signed-in buyer's app-user id. The shop
+ * names it on every My orders read (`ownerField` on records/query); Busabase
+ * fills in the id from the verified session, so nobody can ask for another's.
+ */
+export const OWNER_FIELD = "customer-account";
 
 // What the website may change later on its own orders, and only after PayPal
 // says so (a capture it made, or a verified webhook), plus its email log.
@@ -258,10 +268,11 @@ export const formatShippingAddress = (order) =>
 /**
  * The Orders record the website creates: only WEBSITE_ORDER_FIELDS, empty
  * optional ones left out. `payment` is `paypal` (status awaiting-payment) or
- * `request` (status new). `customerAccount` is the signed-in buyer's app-user
- * id from their session (never from the form); a guest's order has none.
+ * `request` (status new). `customerAccount` / `customerEmail` are the
+ * signed-in buyer's app-user id and verified email from their session (never
+ * from the form); a guest's order has neither.
  */
-export const orderToFields = (order, { nowIso, payment = "request", customerAccount = "" }) => {
+export const orderToFields = (order, { nowIso, payment = "request", customerAccount = "", customerEmail = "" }) => {
   const lines = order.lines.map(
     (line) =>
       `${line.quantity} × ${line.name}${line.sku ? ` (${line.sku})` : ""} @ ${money(line.unitPrice)} ${order.currency} = ${money(line.lineTotal)} ${order.currency}`,
@@ -302,6 +313,7 @@ export const orderToFields = (order, { nowIso, payment = "request", customerAcco
   if (order.address.postalCode) fields["postal-code"] = order.address.postalCode;
   if (order.note) fields["customer-note"] = order.note;
   if (customerAccount) fields["customer-account"] = customerAccount;
+  if (customerAccount && customerEmail) fields["customer-email"] = customerEmail;
   return fields;
 };
 

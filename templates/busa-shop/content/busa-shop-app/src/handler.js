@@ -590,10 +590,10 @@ export const createHandler = (overrides = {}) => {
 
     // PayPal needs an amount it can write exactly (no decimals in JPY, HUF, TWD).
     const payment = payments.payment === "paypal" && paypalValue(verdict.order.total, settings.currency) !== null ? "paypal" : "request";
-    // Signed in: the order goes under the buyer's My orders. The id comes from the session Busabase checked, never from the form.
+    // Signed in: the order goes under the buyer's My orders. The id and email come from the session Busabase checked, never from the form.
     const buyer = await buyerFor(request, env, state);
     try {
-      await shop.createOrder(state, verdict.order, { payment, customerAccount: buyer?.id ?? "" });
+      await shop.createOrder(state, verdict.order, { payment, customerAccount: buyer?.id ?? "", customerEmail: buyer?.email ?? "" });
     } catch (error) {
       if (!(error instanceof ShopUnavailableError)) throw error;
       const message = [

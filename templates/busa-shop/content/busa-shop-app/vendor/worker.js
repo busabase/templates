@@ -29164,6 +29164,7 @@ var ORDER_ID_PATTERN = /^ORD-[0-9A-HJKMNP-TV-Z]{10}$/;
 var EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 var PHONE_PATTERN = /^\+?[\d\s().-]{6,}$/;
 var LIMITS = { name: 100, email: 200, phone: 40, note: 1e3, items: 20, address: 300, city: 120, region: 120, postalCode: 20 };
+var OWNER_FIELD = "customer-account";
 var CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
 var CONTROL_OR_NEWLINE = /[\u0000-\u001F\u007F]/;
 var field = (value2) => typeof value2 === "string" ? value2.trim() : "";
@@ -29298,7 +29299,7 @@ var formatShippingAddress = (order) => [
   order.address.region,
   `${countryName(order.country, "en")} (${order.country})`
 ].filter(Boolean).join("\n");
-var orderToFields = (order, { nowIso, payment = "request", customerAccount = "" }) => {
+var orderToFields = (order, { nowIso, payment = "request", customerAccount = "", customerEmail = "" }) => {
   const lines = order.lines.map(
     (line) => `${line.quantity} \xD7 ${line.name}${line.sku ? ` (${line.sku})` : ""} @ ${money(line.unitPrice)} ${order.currency} = ${money(line.lineTotal)} ${order.currency}`
   );
@@ -29338,6 +29339,7 @@ var orderToFields = (order, { nowIso, payment = "request", customerAccount = "" 
   if (order.address.postalCode) fields["postal-code"] = order.address.postalCode;
   if (order.note) fields["customer-note"] = order.note;
   if (customerAccount) fields["customer-account"] = customerAccount;
+  if (customerAccount && customerEmail) fields["customer-email"] = customerEmail;
   return fields;
 };
 var numberOrNull = (value2) => {
@@ -29566,7 +29568,6 @@ var createAccounts = ({ baseUrl, apiKey, spaceId, fetchImpl = fetch, now = () =>
       value2 = {
         enabled: body.enabled === true,
         appName: typeof body.appName === "string" ? body.appName : "",
-        ownerFields: body.ownerFields && typeof body.ownerFields === "object" ? body.ownerFields : {},
         ...body.enabled === true ? {} : { reason: "disabled" }
       };
     } else if (status === 404) {
@@ -29633,17 +29634,17 @@ var createAccounts = ({ baseUrl, apiKey, spaceId, fetchImpl = fetch, now = () =>
     const { status } = await call("POST", "/api/v1/app-users/sign-out", { body: { appId }, session: token });
     return status === 200 || status === 401 ? { ok: true } : { error: "unavailable" };
   };
-  const queryRecords = async ({ appId, baseId, token, limit = ORDERS_PAGE, cursor }) => {
+  const queryRecords = async ({ appId, baseId, token, ownerField = OWNER_FIELD, limit = ORDERS_PAGE, cursor }) => {
     const { status, body } = await call("POST", "/api/v1/app-users/records/query", {
-      body: { appId, baseId, limit, ...cursor ? { cursor } : {} },
+      body: { appId, baseId, ownerField, limit, ...cursor ? { cursor } : {} },
       session: token
     });
     if (status === 200 && Array.isArray(body?.records)) {
       return { records: body.records, nextCursor: typeof body.nextCursor === "string" && CURSOR_PATTERN.test(body.nextCursor) ? body.nextCursor : null };
     }
     if (status === 401) return { error: "invalid" };
-    if (status === 403 && errorCode(body) === "NO_OWNER_FIELD") {
-      log.warn?.("busa-shop: buyer login is on, but no owner field is set for Orders (customer-account)");
+    if (status === 400 && errorCode(body) === "INVALID_OWNER_FIELD") {
+      log.warn?.(`busa-shop: buyer login is on, but Orders has no text column ${ownerField} (an install from before 0.10.0?)`);
       return { error: "no_owner_field" };
     }
     log.warn?.("busa-shop: buyer's orders unreadable", status || "unreachable", errorCode(body));
@@ -32819,8 +32820,8 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       throw new ShopUnavailableError("The workspace could not be read", error62);
     }
   };
-  const createOrder = async (state, order, { payment = "request", customerAccount = "" } = {}) => {
-    const fields = orderToFields(order, { nowIso: new Date(now()).toISOString(), payment, customerAccount });
+  const createOrder = async (state, order, { payment = "request", customerAccount = "", customerEmail = "" } = {}) => {
+    const fields = orderToFields(order, { nowIso: new Date(now()).toISOString(), payment, customerAccount, customerEmail });
     try {
       const outcome = await records.createRecord({
         baseId: state.ordersBaseId,
@@ -32830,6 +32831,10 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, 
       });
       return { status: outcome.status, recordId: outcome.recordId ?? null };
     } catch (error62) {
+      if (fields["customer-email"] && (error62?.status === 400 || error62?.status === 422)) {
+        log.warn?.("busa-shop: order saved without Customer email (does Orders have the customer-email field?)", order.orderId);
+        return createOrder(state, order, { payment, customerAccount });
+      }
       if (customerAccount && (error62?.status === 400 || error62?.status === 422)) {
         log.warn?.("busa-shop: order saved without Customer account (does Orders have the customer-account field?)", order.orderId);
         return createOrder(state, order, { payment });
@@ -33382,7 +33387,7 @@ var createHandler = (overrides = {}) => {
     const payment = payments.payment === "paypal" && paypalValue(verdict.order.total, settings.currency) !== null ? "paypal" : "request";
     const buyer = await buyerFor(request, env2, state);
     try {
-      await shop.createOrder(state, verdict.order, { payment, customerAccount: buyer?.id ?? "" });
+      await shop.createOrder(state, verdict.order, { payment, customerAccount: buyer?.id ?? "", customerEmail: buyer?.email ?? "" });
     } catch (error62) {
       if (!(error62 instanceof ShopUnavailableError)) throw error62;
       const message = [

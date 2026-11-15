@@ -84,7 +84,7 @@ beforeEach(() => {
   Object.assign(api.state, structuredClone(pristine));
   api.state.records.bas_orders = [];
   api.state.appUsers = {
-    settings: { [SHOP_APP_NODE.id]: { enabled: true, appName: "Tumbleberry Toys", ownerFields: { bas_orders: "customer-account" } } },
+    settings: { [SHOP_APP_NODE.id]: { enabled: true, appName: "Tumbleberry Toys" } },
     byEmail: { [MIA]: { id: MIA_ID, code: "123456", token: MIA_TOKEN } },
     records: { [MIA_ID]: [miaOrder] },
     answers: {},
@@ -201,7 +201,8 @@ describe("buyer login", () => {
     assert.equal(query.method, "POST");
     assert.equal(query.session, MIA_TOKEN);
     assert.equal(query.auth, `Bearer ${TEST_KEY}`);
-    assert.deepEqual(JSON.parse(query.body), { appId: SHOP_APP_NODE.id, baseId: "bas_orders", limit: 20 });
+    // The shop names the owner column; Busabase fills in the id from the session, so the body carries no id.
+    assert.deepEqual(JSON.parse(query.body), { appId: SHOP_APP_NODE.id, baseId: "bas_orders", ownerField: "customer-account", limit: 20 });
     // Never the Orders table with the site's key, filtered here.
     assert.ok(!api.log.some((entry) => entry.query?.baseId === "bas_orders"), "the Orders table itself is not read");
   });
@@ -215,10 +216,11 @@ describe("buyer login", () => {
     assert.equal(JSON.parse(appUserCalls("/records/query")[0].body).cursor, "c_20");
   });
 
-  it("no orders yet says so; an owner field Busabase does not know says the orders cannot be shown", async () => {
+  it("no orders yet says so; an Orders table without the owner column says the orders cannot be shown", async () => {
     api.state.appUsers.records = {};
     assert.match((await call("/account", { headers: { cookie: COOKIE } })).text, /No orders yet/);
-    api.state.appUsers.answers["records/query"] = { status: 403, body: { code: "NO_OWNER_FIELD" } };
+    // An install from before 0.10.0: Orders has no customer-account column.
+    api.state.appUsers.ownerFields = { bas_orders: [] };
     const page = await call("/account", { headers: { cookie: COOKIE } });
     assert.equal(page.status, 200);
     assert.match(page.text, /cannot be shown just now/);
@@ -252,26 +254,58 @@ describe("buyer login", () => {
 });
 
 describe("checkout and buyer login", () => {
-  it("signed in, the order is written with Customer account = the buyer's id", async () => {
+  it("signed in, the order is written with Customer account = the buyer's id and Customer email = their verified email", async () => {
     const page = await call("/order", { headers: { cookie: COOKIE } });
     assert.match(page.text, /Signed in as mia\.jensen@example\.com: this order will appear under My orders\./);
-    const saved = await postOrder(checkout(), { cookie: COOKIE });
+    // The buyer types another address into the form: the order's Email follows the form, Customer email the sign-in.
+    const saved = await postOrder(checkout({ email: "gift.for.mum@example.org", customerEmail: "attacker@example.com" }), { cookie: COOKIE });
     assert.equal(saved.status, 200, saved.text);
     const row = api.state.records.bas_orders.find((candidate) => candidate.fields["order-id"] === "ORD-7K2M9QX4PT");
     assert.equal(row.fields["customer-account"], MIA_ID);
+    assert.equal(row.fields["customer-email"], MIA);
+    assert.equal(row.fields.email, "gift.for.mum@example.org");
+  });
+
+  it("an older Orders table still takes the order: without Customer email it keeps the account, without both it is a guest order", async () => {
+    api.options.missingFields = { bas_orders: ["customer-email"] };
+    try {
+      const saved = await postOrder(checkout(), { cookie: COOKIE });
+      assert.equal(saved.status, 200, saved.text);
+      const [row] = api.state.records.bas_orders;
+      assert.equal(row.fields["customer-account"], MIA_ID);
+      assert.equal("customer-email" in row.fields, false);
+
+      api.options.missingFields = { bas_orders: ["customer-email", "customer-account"] };
+      const older = await postOrder(checkout({ orderId: "ORD-7K2M9QX4PV" }), { cookie: COOKIE });
+      assert.equal(older.status, 200, older.text);
+      const oldRow = api.state.records.bas_orders[1];
+      assert.equal(oldRow.fields["order-id"], "ORD-7K2M9QX4PV");
+      assert.equal("customer-account" in oldRow.fields, false);
+      assert.equal("customer-email" in oldRow.fields, false);
+    } finally {
+      api.options.missingFields = undefined;
+    }
   });
 
   it("a guest order (no cookie, or a session Busabase does not know) has no Customer account", async () => {
     const guest = await postOrder(checkout());
     assert.equal(guest.status, 200, guest.text);
     assert.equal("customer-account" in api.state.records.bas_orders[0].fields, false);
+    assert.equal("customer-email" in api.state.records.bas_orders[0].fields, false);
     const forged = await postOrder(checkout({ orderId: "ORD-7K2M9QX4PV" }), { cookie: "busa_shop_session=someone-elses-0123456789abcdef" });
     assert.equal(forged.status, 200, forged.text);
     assert.equal("customer-account" in api.state.records.bas_orders[1].fields, false);
     // A form field can never set it.
-    const sneaky = await postOrder({ ...checkout({ orderId: "ORD-7K2M9QX4PW" }), "customer-account": MIA_ID, customerAccount: MIA_ID });
+    const sneaky = await postOrder({
+      ...checkout({ orderId: "ORD-7K2M9QX4PW" }),
+      "customer-account": MIA_ID,
+      customerAccount: MIA_ID,
+      "customer-email": MIA,
+      customerEmail: MIA,
+    });
     assert.equal(sneaky.status, 200, sneaky.text);
     assert.equal("customer-account" in api.state.records.bas_orders[2].fields, false);
+    assert.equal("customer-email" in api.state.records.bas_orders[2].fields, false);
   });
 
   it("the pay page still opens by order id, with or without a session", async () => {

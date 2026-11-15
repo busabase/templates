@@ -81,7 +81,8 @@ ones are shown; never the number).
 | `items` | longtext | website | JSON `[{product_id, sku, name, quantity, unit_price, line_total}]` |
 | `created-at` | date (with time) | website | ISO timestamp |
 | `source` | text | website | `website` (staff may enter `email`, `phone`, … for orders taken elsewhere) |
-| `customer-account` | text | website | busa-shop 0.10.0. The signed-in buyer's app-user id (Busabase app users), from the session Busabase checked, never from the form; empty for a guest order. Buyer login's owner field for Orders: a buyer's My orders are the rows where it is their id |
+| `customer-account` | text | website | busa-shop 0.10.0. The signed-in buyer's app-user id (Busabase app users), from the session Busabase checked, never from the form; empty for a guest order. What My orders matches on: the website reads `records/query` with `ownerField: "customer-account"` and Busabase fills in the verified id, so a buyer's My orders are the rows where it is their id |
+| `customer-email` | text | website | busa-shop 0.10.0. "Customer email (signed-in)": the signed-in buyer's verified email, from the same session, never from the form; empty for a guest order. For people to read (who placed it); can differ from `email`, the address typed in the form |
 
 The website creates a row through `bases.createChangeRequest` with
 `submittedBy: "busa-shop"` and `idempotencyKey: <order-id>`, and changes it
