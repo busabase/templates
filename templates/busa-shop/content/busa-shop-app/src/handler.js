@@ -85,7 +85,7 @@ import { sendMail } from "./smtp.js";
 import { createSecretsReader, readShopSecrets } from "./vault.js";
 
 export const MAX_ORDER_BODY_BYTES = 16 * 1024;
-export const SHOP_VERSION = "0.10.1";
+export const SHOP_VERSION = "0.10.2";
 // MCP requests per minute from one address, counted per Worker isolate (src/mcp.js).
 export const MCP_REQUESTS_PER_MINUTE = 120;
 export const MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
@@ -953,9 +953,29 @@ export const createHandler = (overrides = {}) => {
 
   // ---- Images ----
 
+  // Workers for Platforms isolates may open named caches but cannot use the
+  // default cache. Caching is optional: a storage failure must not hide a photo.
+  const cachedImage = async (request) => {
+    try {
+      if (typeof caches === "undefined") return {};
+      const cache = await caches.open("busa-shop-images-v1");
+      return { cache, hit: await cache.match(request) };
+    } catch {
+      return {};
+    }
+  };
+
+  const cacheImage = (cache, request, response, ctx) => {
+    if (!cache || !ctx?.waitUntil) return;
+    try {
+      ctx.waitUntil(Promise.resolve(cache.put(request, response.clone())).catch(() => {}));
+    } catch {
+      // Some runtimes refuse a put synchronously, or have no usable lifetime.
+    }
+  };
+
   const imageRoute = async (request, env, ctx, productId, index) => {
-    const cache = typeof caches !== "undefined" ? caches.default : undefined;
-    const hit = cache ? await cache.match(request) : undefined;
+    const { cache, hit } = await cachedImage(request);
     if (hit) return hit;
     const shop = siteFor(env).shop;
     const state = await shop.load();
@@ -971,14 +991,13 @@ export const createHandler = (overrides = {}) => {
         "content-security-policy": "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox",
       },
     });
-    if (cache && ctx?.waitUntil) ctx.waitUntil(cache.put(request, response.clone()));
+    cacheImage(cache, request, response, ctx);
     return response;
   };
 
   /** /blog-covers/<slug>: a published post's cover when it is a Busabase asset. */
   const coverRoute = async (request, env, ctx, slug) => {
-    const cache = typeof caches !== "undefined" ? caches.default : undefined;
-    const hit = cache ? await cache.match(request) : undefined;
+    const { cache, hit } = await cachedImage(request);
     if (hit) return hit;
     const shop = siteFor(env).shop;
     const state = await shop.load();
@@ -993,7 +1012,7 @@ export const createHandler = (overrides = {}) => {
         "content-security-policy": "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox",
       },
     });
-    if (cache && ctx?.waitUntil) ctx.waitUntil(cache.put(request, response.clone()));
+    cacheImage(cache, request, response, ctx);
     return response;
   };
 
