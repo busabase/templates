@@ -1,0 +1,150 @@
+{
+  "name": "Onboarding Reviews",
+  "description": "The Monday onboarding review an agent writes from the records above: who is at risk, who starts soon without a laptop, what changed.",
+  "position": 3,
+  "agentPrompts": [
+    {
+      "key": "write-review",
+      "label": {
+        "en": "Write this Monday’s onboarding review",
+        "zh-CN": "写本周一的入职周报"
+      },
+      "body": {
+        "en": "Read the `busa-onboarding` skill in this folder and follow it. Write the onboarding review for last Monday to Sunday from the new hires, signals and actions: a one-line headline, how many are on track, every at-risk new hire with where they are stuck and the action, everyone starting in the next 14 days who is not ready, and what changed since last week. Save it as a draft.",
+        "zh-CN": "先阅读本文件夹里的 `busa-onboarding` Skill，按它的规则做。根据新员工、信号和跟进措施，写上周一到周日的入职周报：一句话结论、顺利人数、每位有风险新员工卡在哪里和对应措施、未来 14 天内入职但还没准备好的人、与上周相比的变化。保存为草稿。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "compare-weeks",
+      "label": {
+        "en": "What got better or worse since last week?",
+        "zh-CN": "和上周比哪些变好了、哪些变差了"
+      },
+      "body": {
+        "en": "Read the `busa-onboarding` skill in this folder and follow it. Compare the two latest reviews and the signals between them: which new hires changed status, how the at-risk count moved, and which actions closed. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-onboarding` Skill，按它的规则做。对比最近两份周报和期间的信号：哪些新员工换了状态、有风险人数怎么变、哪些跟进措施完成了。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Review",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "draft",
+            "name": "Draft",
+            "color": "amber"
+          },
+          {
+            "id": "final",
+            "name": "Final",
+            "color": "emerald"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "period-start",
+      "name": "From",
+      "type": "date",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "period-end",
+      "name": "To",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "headline",
+      "name": "Headline",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "on-track-count",
+      "name": "On track",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "at-risk-count",
+      "name": "At risk",
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "not-ready-count",
+      "name": "Starting soon, not ready",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "written-by",
+      "name": "Written by",
+      "type": "text",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "body",
+      "name": "Review",
+      "type": "markdown",
+      "required": false,
+      "position": 9,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest",
+      "name": "Latest first",
+      "description": "Every onboarding review, newest first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "period-end",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "period-end",
+          "at-risk-count",
+          "headline"
+        ]
+      }
+    }
+  ]
+}

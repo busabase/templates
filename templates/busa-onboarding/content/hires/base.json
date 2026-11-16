@@ -1,0 +1,280 @@
+{
+  "name": "New Hires",
+  "description": "Everyone from signed offer to day 90: start date, manager and buddy, the five measures behind their onboarding score, and the score itself.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "rescore",
+      "label": {
+        "en": "Re-score this new hire from their latest measures",
+        "zh-CN": "用最新指标给这位新员工重新打分"
+      },
+      "body": {
+        "en": "Read the `busa-onboarding` skill in this folder and follow it. For the new hire I name, read their five measures, compute the score and status by the skill’s rule, and update `score`, `status`, `scored-by`, `scored-on` and a one-sentence `summary`. Propose an action if they turned at risk and have none open.",
+        "zh-CN": "先阅读本文件夹里的 `busa-onboarding` Skill，按它的规则做。针对我说的新员工，读他的五项指标，按 Skill 的规则算评分和状态，更新 `score`、`status`、`scored-by`、`scored-on` 和一句话的 `summary`。如果变成有风险且没有进行中的跟进措施，提一条。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "hire-brief",
+      "label": {
+        "en": "Brief me before my 1:1 with this new hire",
+        "zh-CN": "和这位新员工 1:1 之前给我讲讲"
+      },
+      "body": {
+        "en": "Read the `busa-onboarding` skill in this folder and follow it. For the new hire I name, give a one-screen brief: role, start date and which day they are on, the score with each of its five parts, the last five signals and who wrote them, open actions, and two questions worth asking. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-onboarding` Skill，按它的规则做。针对我说的新员工，给一屏简报：岗位、入职日期和今天是第几天、评分及五项得分、最近五条信号及写入者、进行中的跟进措施，以及值得问的两个问题。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "New hire",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "role",
+      "name": "Role",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "team",
+      "name": "Team",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "engineering",
+            "name": "Engineering",
+            "color": "cyan"
+          },
+          {
+            "id": "sales",
+            "name": "Sales",
+            "color": "slate"
+          },
+          {
+            "id": "support",
+            "name": "Customer success",
+            "color": "slate"
+          },
+          {
+            "id": "design",
+            "name": "Design",
+            "color": "slate"
+          },
+          {
+            "id": "marketing",
+            "name": "Marketing",
+            "color": "slate"
+          },
+          {
+            "id": "operations",
+            "name": "Operations",
+            "color": "slate"
+          },
+          {
+            "id": "finance",
+            "name": "Finance",
+            "color": "slate"
+          },
+          {
+            "id": "people",
+            "name": "People",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "manager",
+      "name": "Manager",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "buddy",
+      "name": "Buddy",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "start-date",
+      "name": "Start date",
+      "type": "date",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "location",
+      "name": "Location",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "access-pct",
+      "name": "Accounts and equipment ready, of those due (%)",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "paperwork-pct",
+      "name": "Paperwork done, of what is due (%)",
+      "type": "number",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "training-pct",
+      "name": "Training done, of what is due (%)",
+      "type": "number",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "checkins-missed",
+      "name": "1:1s missed, last 30 days",
+      "type": "number",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "pulse",
+      "name": "Latest pulse (1–5)",
+      "type": "number",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "score",
+      "name": "Onboarding score",
+      "type": "number",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 13,
+      "options": {
+        "choices": [
+          {
+            "id": "on-track",
+            "name": "On track",
+            "color": "emerald"
+          },
+          {
+            "id": "watch",
+            "name": "Watch",
+            "color": "amber"
+          },
+          {
+            "id": "at-risk",
+            "name": "At risk",
+            "color": "rose"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "scored-by",
+      "name": "Last scored by",
+      "type": "text",
+      "required": false,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "scored-on",
+      "name": "Last scored",
+      "type": "date",
+      "required": false,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "summary",
+      "name": "Latest word",
+      "type": "longtext",
+      "required": false,
+      "position": 16,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "All new hires",
+      "description": "Everyone from signed offer to day 90, with their status",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "start-date",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "name",
+          "role",
+          "team",
+          "manager",
+          "start-date",
+          "score",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "at-risk",
+      "name": "At risk",
+      "description": "New hires whose onboarding is at risk",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "at-risk"
+          }
+        ],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "name",
+          "role",
+          "manager",
+          "start-date",
+          "score",
+          "summary"
+        ]
+      }
+    }
+  ]
+}
