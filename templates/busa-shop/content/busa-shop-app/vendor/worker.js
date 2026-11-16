@@ -33061,7 +33061,7 @@ var createSecretsReader = ({ read, now = () => Date.now() }) => {
 
 // src/handler.js
 var MAX_ORDER_BODY_BYTES = 16 * 1024;
-var SHOP_VERSION = "0.10.1";
+var SHOP_VERSION = "0.10.2";
 var MCP_REQUESTS_PER_MINUTE = 120;
 var MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
 var SECURITY_HEADERS = {
@@ -33750,9 +33750,25 @@ var createHandler = (overrides = {}) => {
     }
     return json2({ ok: true });
   };
+  const cachedImage = async (request) => {
+    try {
+      if (typeof caches === "undefined") return {};
+      const cache = await caches.open("busa-shop-images-v1");
+      return { cache, hit: await cache.match(request) };
+    } catch {
+      return {};
+    }
+  };
+  const cacheImage = (cache, request, response, ctx) => {
+    if (!cache || !ctx?.waitUntil) return;
+    try {
+      ctx.waitUntil(Promise.resolve(cache.put(request, response.clone())).catch(() => {
+      }));
+    } catch {
+    }
+  };
   const imageRoute = async (request, env2, ctx, productId, index) => {
-    const cache = typeof caches !== "undefined" ? caches.default : void 0;
-    const hit = cache ? await cache.match(request) : void 0;
+    const { cache, hit } = await cachedImage(request);
     if (hit) return hit;
     const shop = siteFor(env2).shop;
     const state = await shop.load();
@@ -33768,12 +33784,11 @@ var createHandler = (overrides = {}) => {
         "content-security-policy": "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox"
       }
     });
-    if (cache && ctx?.waitUntil) ctx.waitUntil(cache.put(request, response.clone()));
+    cacheImage(cache, request, response, ctx);
     return response;
   };
   const coverRoute = async (request, env2, ctx, slug) => {
-    const cache = typeof caches !== "undefined" ? caches.default : void 0;
-    const hit = cache ? await cache.match(request) : void 0;
+    const { cache, hit } = await cachedImage(request);
     if (hit) return hit;
     const shop = siteFor(env2).shop;
     const state = await shop.load();
@@ -33788,7 +33803,7 @@ var createHandler = (overrides = {}) => {
         "content-security-policy": "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox"
       }
     });
-    if (cache && ctx?.waitUntil) ctx.waitUntil(cache.put(request, response.clone()));
+    cacheImage(cache, request, response, ctx);
     return response;
   };
   const publicPayment = (env2, state) => state.settings.paypalMode !== "off" && state.settings.paypalClientId && env2.BUSABASE_API_KEY && state.shipping.status === "ready" ? "paypal" : "request";
