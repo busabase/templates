@@ -4,6 +4,23 @@
 import { createBusabaseClient } from "busabase-sdk";
 import { createAirAppRecords } from "busabase-sdk/airapp";
 import {
+  buyerOrderFromRecord,
+  clearPendingCookie,
+  clearSessionCookie,
+  clientIpOf,
+  createAccounts,
+  createFormGuard,
+  CURSOR_PATTERN,
+  FORM_TIME_FIELD,
+  HONEYPOT_FIELD,
+  normalizeCode,
+  normalizeEmail,
+  pendingCookie,
+  pendingEmailOf,
+  sessionCookie,
+  sessionTokenOf,
+} from "./account.js";
+import {
   AGENTS_PATH,
   buildAgentsMd,
   buildGoogleFeed,
@@ -29,6 +46,7 @@ import {
   validateOrder,
 } from "./orders.js";
 import {
+  accountPage,
   blogIndexPage,
   homePage,
   notFoundPage,
@@ -67,7 +85,7 @@ import { sendMail } from "./smtp.js";
 import { createSecretsReader, readShopSecrets } from "./vault.js";
 
 export const MAX_ORDER_BODY_BYTES = 16 * 1024;
-export const SHOP_VERSION = "0.9.0";
+export const SHOP_VERSION = "0.10.1";
 // MCP requests per minute from one address, counted per Worker isolate (src/mcp.js).
 export const MCP_REQUESTS_PER_MINUTE = 120;
 export const MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
@@ -151,6 +169,16 @@ const publicData = (body, type) => {
 const redirect = (location) =>
   new Response(null, { status: 301, headers: { location, "cache-control": "public, max-age=300", "x-content-type-options": "nosniff" } });
 
+/** A response with these Set-Cookie headers added (one header each). */
+const withCookies = (response, cookies = []) => {
+  for (const cookie of cookies) response.headers.append("set-cookie", cookie);
+  return response;
+};
+
+/** After a form post: go to `location` (a fixed path of this site), never cached. */
+const seeOther = (location, cookies = []) =>
+  withCookies(new Response(null, { status: 303, headers: { location, "cache-control": "no-store", "x-content-type-options": "nosniff" } }), cookies);
+
 const NOT_READY = { cache: "no-store", extra: { "retry-after": "300", "x-robots-tag": "noindex" } };
 const PRIVATE = { cache: "no-store", extra: { "x-robots-tag": "noindex" } };
 
@@ -230,7 +258,16 @@ export const createHandler = (overrides = {}) => {
         now: deps.now,
         read: () => readShopSecrets({ baseUrl, apiKey: env.BUSABASE_API_KEY, spaceId: env.BUSABASE_SPACE_ID, fetchImpl: deps.fetch }),
       });
-      site = { shop, secrets, paypal: null };
+      const accounts = createAccounts({
+        baseUrl,
+        apiKey: env.BUSABASE_API_KEY,
+        spaceId: env.BUSABASE_SPACE_ID,
+        fetchImpl: deps.fetch,
+        now: deps.now,
+        log: deps.log,
+      });
+      const formGuard = createFormGuard({ secret: env.BUSABASE_API_KEY, now: deps.now });
+      site = { shop, secrets, accounts, formGuard, paypal: null };
       sites.set(env, site);
     }
     return site;
@@ -283,12 +320,44 @@ export const createHandler = (overrides = {}) => {
     return site.paypal.client;
   };
 
-  const siteInfo = (state, payments, analytics = null) => ({
+  const siteInfo = (state, payments, analytics = null, account = false) => ({
     pages: state.pages ?? [],
     posts: state.posts ?? [],
     payment: payments?.payment ?? "request",
     ...(analytics ? { analytics } : {}),
+    account,
   });
+
+  // ---- Buyer login (src/account.js): on only when Busabase says so ----
+
+  /**
+   * Busabase's app-user settings for this website, cached a minute: `{ enabled }`.
+   * Off on the browser engine (no key), without the website's own node, on a
+   * Busabase without app users (404), and whenever it cannot be asked.
+   */
+  const loginFor = async (env, state) => {
+    if (!env.BUSABASE_API_KEY || !state.appNodeId) return { enabled: false, reason: env.BUSABASE_API_KEY ? "no-app" : "no-key" };
+    try {
+      return await siteFor(env).accounts.settings(state.appNodeId);
+    } catch (error) {
+      deps.log.warn?.("busa-shop: buyer login settings unreadable", error?.message ?? error);
+      return { enabled: false, reason: "error" };
+    }
+  };
+
+  const accountOn = async (env, state) => (await loginFor(env, state)).enabled === true;
+
+  /** The signed-in buyer of this request (`{ id, email }`), or null: a guest, login off, or anything failing. */
+  const buyerFor = async (request, env, state) => {
+    const token = sessionTokenOf(request);
+    if (!token || !(await accountOn(env, state))) return null;
+    try {
+      const who = await siteFor(env).accounts.session({ appId: state.appNodeId, token });
+      return who.user ?? null;
+    } catch {
+      return null;
+    }
+  };
 
   const checkoutFor = (state, payments) => ({
     payment: payments.payment,
@@ -444,7 +513,7 @@ export const createHandler = (overrides = {}) => {
     const { settings } = state;
     const vault = await secretsFor(env, state);
     const payments = paymentsFor(env, state, vault);
-    const site = siteInfo(state, payments, analyticsFor(url, env, settings));
+    const site = siteInfo(state, payments, analyticsFor(url, env, settings), await accountOn(env, state));
     const t = translator(settings.language);
     const values = {
       name: input.name,
@@ -526,8 +595,10 @@ export const createHandler = (overrides = {}) => {
 
     // PayPal needs an amount it can write exactly (no decimals in JPY, HUF, TWD).
     const payment = payments.payment === "paypal" && paypalValue(verdict.order.total, settings.currency) !== null ? "paypal" : "request";
+    // Signed in: the order goes under the buyer's My orders. The id and email come from the session Busabase checked, never from the form.
+    const buyer = await buyerFor(request, env, state);
     try {
-      await shop.createOrder(state, verdict.order, { payment });
+      await shop.createOrder(state, verdict.order, { payment, customerAccount: buyer?.id ?? "", customerEmail: buyer?.email ?? "" });
     } catch (error) {
       if (!(error instanceof ShopUnavailableError)) throw error;
       const message = [
@@ -547,17 +618,17 @@ export const createHandler = (overrides = {}) => {
     }
     if (isForm) {
       const order = await shop.findOrder(state, orderId);
-      if (order) return payPageResponse(url, state, order, payments);
+      if (order) return payPageResponse(url, state, order, payments, site.account);
     }
     return json({ ok: true, orderId, payment: "paypal", payPath: `/pay/${orderId}` });
   };
 
   // ---- GET /pay/<order id> ----
 
-  const payPageResponse = (url, state, order, payments) => {
+  const payPageResponse = (url, state, order, payments, account = false) => {
     const showButton = order.status === "awaiting-payment" && payments.payment === "paypal" && order.currency === state.settings.currency;
     const paypal = showButton ? { clientId: payments.clientId, sdkUrl: payments.sdkUrl } : null;
-    return html(payPage({ origin: url.origin, settings: state.settings, order, paypal, site: siteInfo(state, payments) }), {
+    return html(payPage({ origin: url.origin, settings: state.settings, order, paypal, site: siteInfo(state, payments, null, account) }), {
       cache: "no-store",
       extra: { ...PRIVATE.extra, ...(paypal ? { "content-security-policy": paypalCsp(paypal.sdkUrl) } : {}) },
     });
@@ -570,8 +641,9 @@ export const createHandler = (overrides = {}) => {
     const vault = await secretsFor(env, state);
     const payments = paymentsFor(env, state, vault);
     const order = ORDER_ID_PATTERN.test(orderId) ? await shop.findOrder(state, orderId) : null;
-    if (!order) return html(notFoundPage({ settings: state.settings, site: siteInfo(state, payments) }), { status: 404, ...PRIVATE });
-    return payPageResponse(url, state, order, payments);
+    const account = await accountOn(env, state);
+    if (!order) return html(notFoundPage({ settings: state.settings, site: siteInfo(state, payments, null, account) }), { status: 404, ...PRIVATE });
+    return payPageResponse(url, state, order, payments, account);
   };
 
   // ---- PayPal: create, capture, webhook ----
@@ -967,6 +1039,160 @@ export const createHandler = (overrides = {}) => {
     });
   };
 
+  // ---- /account: buyer login and My orders (src/account.js) ----
+  //
+  // Plain HTML forms, no JavaScript needed: POST, then 303 back to /account.
+  // The session token stays in the HttpOnly cookie and goes to Busabase only
+  // as `x-busabase-app-user-session`; a buyer's orders come from Busabase's
+  // records/query, which returns the rows whose Customer account is that
+  // buyer's id, never from the Orders table read with the site's key.
+
+  /** The shop and whether buyer login is on, for one /account request; or the response to give instead. */
+  const accountContext = async (url, env) => {
+    const state = await siteFor(env).shop.load();
+    if (state.setup !== "ready") return { error: notReady(state) };
+    const enabled = await accountOn(env, state);
+    const site = siteInfo(state, { payment: publicPayment(env, state) }, analyticsFor(url, env, state.settings), enabled);
+    return { state, enabled, site, accounts: siteFor(env).accounts, formGuard: siteFor(env).formGuard, appId: state.appNodeId };
+  };
+
+  // Every page with a send-code form carries a freshly signed render time (src/account.js createFormGuard).
+  const accountResponse = async (url, context, view, { status = 200, cookies = [] } = {}) => {
+    const formTime = view.kind === "email" || view.kind === "code" ? await context.formGuard.stamp() : "";
+    return withCookies(html(accountPage({ origin: url.origin, settings: context.state.settings, site: context.site, view: { ...view, formTime } }), { status, ...PRIVATE }), cookies);
+  };
+
+  const unavailableAccount = (url, context, cookies = []) => accountResponse(url, context, { kind: "unavailable" }, { status: 404, cookies });
+
+  const readAccountForm = async (request) => {
+    const type = (request.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+    if (type !== "application/x-www-form-urlencoded") return null;
+    const raw = await readLimited(request, 4 * 1024);
+    return raw === null ? null : new URLSearchParams(raw);
+  };
+
+  const getAccount = async (request, url, env) => {
+    const context = await accountContext(url, env);
+    if (context.error) return context.error;
+    if (!context.enabled) return unavailableAccount(url, context);
+    const { state, accounts, appId } = context;
+    const t = translator(state.settings.language);
+    const token = sessionTokenOf(request);
+    let signedOutMessage = null;
+    const cookies = [];
+    if (token) {
+      const who = await accounts.session({ appId, token });
+      if (who.user) {
+        const cursorParam = url.searchParams.get("cursor") ?? "";
+        const page = state.ordersBaseId
+          ? await accounts.queryRecords({ appId, baseId: state.ordersBaseId, token, ...(CURSOR_PATTERN.test(cursorParam) ? { cursor: cursorParam } : {}) })
+          : { error: "unavailable" };
+        if (page.error !== "invalid") {
+          const orders = page.error ? [] : page.records.map(buyerOrderFromRecord).filter((order) => order.orderId);
+          return accountResponse(url, context, {
+            kind: "orders",
+            user: who.user,
+            orders,
+            nextCursor: page.nextCursor ?? null,
+            unavailable: Boolean(page.error),
+            message: page.error ? { text: t("account_orders_unavailable"), error: true } : null,
+          });
+        }
+      } else if (who.error === "unavailable") {
+        return accountResponse(url, context, { kind: "email", message: { text: t("account_error"), error: true } }, { status: 503 });
+      }
+      // Expired, revoked or disabled: forget the cookie and sign in again.
+      cookies.push(clearSessionCookie());
+      signedOutMessage = { text: t("account_session_ended"), error: false };
+    }
+    const pending = url.searchParams.get("change") === "email" ? "" : pendingEmailOf(request);
+    if (url.searchParams.get("change") === "email") cookies.push(clearPendingCookie());
+    if (pending) {
+      return accountResponse(url, context, { kind: "code", email: pending, message: { text: t("account_code_sent", { email: pending }), error: false } }, { cookies });
+    }
+    const notice = url.searchParams.get("notice") === "signed-out" ? { text: t("account_signed_out"), error: false } : null;
+    return accountResponse(url, context, { kind: "email", message: signedOutMessage ?? notice }, { cookies });
+  };
+
+  const postSendCode = async (request, url, env) => {
+    if (crossSite(request, url, env)) return plain("Forbidden", 403, undefined, "no-store");
+    const form = await readAccountForm(request);
+    if (!form) return plain("Unsupported request", 415, undefined, "no-store");
+    const context = await accountContext(url, env);
+    if (context.error) return context.error;
+    if (!context.enabled) return unavailableAccount(url, context);
+    const t = translator(context.state.settings.language);
+    const typed = String(form.get("email") ?? "").slice(0, 300);
+    const email = normalizeEmail(typed);
+    if (!email) {
+      return accountResponse(url, context, { kind: "email", email: typed, message: { text: t("account_invalid_email"), error: true } }, { status: 400 });
+    }
+    // A bot (honeypot filled, or posted faster than a person types): the very answer a sent code gets, and nothing sent.
+    const formTime = await context.formGuard.check(form.get(FORM_TIME_FIELD));
+    if (String(form.get(HONEYPOT_FIELD) ?? "") !== "" || formTime === "too_fast") return seeOther("/account", [pendingCookie(email)]);
+    // No time, a forged one, or a page open for hours: show the form again (with a fresh time) and ask to send again.
+    if (formTime !== "ok") {
+      return accountResponse(url, context, { kind: "email", email, message: { text: t("account_form_stale"), error: true } }, { status: 400 });
+    }
+    const sent = await context.accounts.sendCode({ appId: context.appId, email, locale: context.state.settings.language, ip: clientIpOf(request) });
+    if (sent.ok) return seeOther("/account", [pendingCookie(email)]);
+    if (sent.error === "rate_limited") {
+      const minutes = Math.max(1, Math.ceil(sent.retryAfterSeconds / 60));
+      const tooMany = { space_daily_limit: t("account_shop_limit"), ip_hourly_limit: t("account_ip_hourly_limit", { minutes }), ip_daily_limit: t("account_ip_daily_limit") }[sent.reason];
+      if (tooMany) return accountResponse(url, context, { kind: "email", email, message: { text: tooMany, error: true } }, { status: 429 });
+      // The code sent before still works: keep the code form, with how long to wait for another.
+      const text = sent.reason === "email_daily_limit" ? t("account_daily_limit") : t("account_wait", { seconds: sent.retryAfterSeconds });
+      return accountResponse(url, context, { kind: "code", email, message: { text, error: true } }, { status: 429, cookies: [pendingCookie(email)] });
+    }
+    if (sent.error === "disabled") return unavailableAccount(url, { ...context, site: { ...context.site, account: false } });
+    if (sent.error === "invalid_email") {
+      return accountResponse(url, context, { kind: "email", email, message: { text: t("account_invalid_email"), error: true } }, { status: 400 });
+    }
+    return accountResponse(url, context, { kind: "email", email, message: { text: t("account_error"), error: true } }, { status: 503 });
+  };
+
+  const postVerify = async (request, url, env) => {
+    if (crossSite(request, url, env)) return plain("Forbidden", 403, undefined, "no-store");
+    const form = await readAccountForm(request);
+    if (!form) return plain("Unsupported request", 415, undefined, "no-store");
+    const context = await accountContext(url, env);
+    if (context.error) return context.error;
+    if (!context.enabled) return unavailableAccount(url, context);
+    const t = translator(context.state.settings.language);
+    const email = normalizeEmail(String(form.get("email") ?? "").slice(0, 300)) ?? pendingEmailOf(request);
+    if (!email) return accountResponse(url, context, { kind: "email", message: { text: t("account_invalid_email"), error: true } }, { status: 400 });
+    const codeView = (text, status) => accountResponse(url, context, { kind: "code", email, message: { text, error: true } }, { status });
+    const code = normalizeCode(String(form.get("code") ?? "").slice(0, 20));
+    if (!code) return codeView(t("account_invalid_code"), 400);
+    const result = await context.accounts.verify({ appId: context.appId, email, code });
+    if (result.ok) return seeOther("/account", [sessionCookie(result.sessionToken), clearPendingCookie()]);
+    if (result.error === "invalid_code") {
+      const left = result.attemptsLeft;
+      return codeView(left > 1 ? t("account_wrong_code", { attempts: left }) : left === 1 ? t("account_wrong_code_one") : t("account_no_attempts"), 400);
+    }
+    if (result.error === "expired") return codeView(t("account_expired"), 410);
+    if (result.error === "user_disabled") {
+      return accountResponse(url, context, { kind: "email", message: { text: t("account_user_disabled"), error: true } }, { status: 403, cookies: [clearPendingCookie()] });
+    }
+    if (result.error === "disabled") return unavailableAccount(url, { ...context, site: { ...context.site, account: false } });
+    return codeView(t("account_error"), 503);
+  };
+
+  const postSignOut = async (request, url, env) => {
+    if (crossSite(request, url, env)) return plain("Forbidden", 403, undefined, "no-store");
+    const token = sessionTokenOf(request);
+    if (token && env.BUSABASE_API_KEY) {
+      try {
+        const state = await siteFor(env).shop.load();
+        // Ended on Busabase too, not only forgotten here; whatever it answers, the cookie goes.
+        if (state.setup === "ready" && state.appNodeId) await siteFor(env).accounts.signOut({ appId: state.appNodeId, token });
+      } catch (error) {
+        deps.log.warn?.("busa-shop: sign-out not sent to Busabase", error?.message ?? error);
+      }
+    }
+    return seeOther("/account?notice=signed-out", [clearSessionCookie(), clearPendingCookie()]);
+  };
+
   // ---- /api/status: readiness only, never a value ----
 
   const statusBody = async (env, state, origin) => {
@@ -995,6 +1221,8 @@ export const createHandler = (overrides = {}) => {
       },
       // The address an owner adds to Claude or ChatGPT (busa-shop 0.8.0); a public address, not a secret.
       agents: { mcp: new URL(MCP_PATH, origin).href },
+      // Buyer login (busa-shop 0.10.0): "on", or why it is off (disabled, not-supported, no-app, no-key, http-…).
+      accounts: await loginFor(env, state).then((login) => (login.enabled ? "on" : login.reason ?? "off")),
     };
   };
 
@@ -1017,7 +1245,14 @@ export const createHandler = (overrides = {}) => {
       return postWebhook(request, url, env, ctx);
     }
     if (path === MCP_PATH) return mcpRoute(request, url, env);
+    if (path === "/account/send-code" || path === "/account/verify" || path === "/account/sign-out") {
+      if (method !== "POST") return plain("Method not allowed", 405, undefined, "no-store");
+      if (path === "/account/send-code") return postSendCode(request, url, env);
+      if (path === "/account/verify") return postVerify(request, url, env);
+      return postSignOut(request, url, env);
+    }
     if (!isRead) return plain("Method not allowed", 405, undefined, "no-store");
+    if (path === "/account") return getAccount(request, url, env);
     if (path === "/robots.txt") return plain(buildRobots(url.origin));
 
     const imageMatch = /^\/images\/([^/]{1,240})\/(\d{1,2})$/.exec(path);
@@ -1089,7 +1324,10 @@ export const createHandler = (overrides = {}) => {
     // "PayPal" from Settings alone, without reading the Vault on each view.
     const payment = publicPayment(env, state);
     const analytics = analyticsFor(url, env, settings);
-    const site = { pages: state.pages, posts: state.posts, payment, analytics };
+    // The Account link, on the pages people read (not the feeds and machine documents).
+    const machine = ["/sitemap.xml", "/llms.txt", AGENTS_PATH, GOOGLE_FEED_PATH, UCP_PROFILE_PATH, FEED_PATH].includes(path);
+    const account = machine ? false : await accountOn(env, state);
+    const site = { pages: state.pages, posts: state.posts, payment, analytics, account };
 
     if (path === "/") return html(homePage({ origin: url.origin, settings, catalog, site }));
     if (path === "/sitemap.xml") {
@@ -1136,9 +1374,10 @@ export const createHandler = (overrides = {}) => {
           orderId: newOrderId(),
           ordersReady: Boolean(state.ordersBaseId),
           checkout: checkoutFor(state, payments),
-          site: siteInfo(state, payments, analytics),
+          site: siteInfo(state, payments, analytics, account),
           // No key: the browser engine (Busabase Cloud Free), the owner's own tab.
           browserPreview: !env.BUSABASE_API_KEY,
+          buyer: account ? await buyerFor(request, env, state) : null,
         }),
         { cache: "no-store" },
       );

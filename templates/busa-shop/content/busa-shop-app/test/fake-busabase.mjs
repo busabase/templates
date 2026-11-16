@@ -204,6 +204,9 @@ export const startFakeBusabase = async (state) => {
       const id = `rec_${nextId++}`;
       let response;
       if (options.failCreates === "certificates" && baseId === "bas_certificates") return send(503, { code: "SERVICE_UNAVAILABLE", message: "down" });
+      // An older install whose table lacks some columns: `missingFields[baseId]` = slugs the Base does not have.
+      const missing = (options.missingFields?.[baseId] ?? []).filter((slug) => slug in (input.fields ?? {}));
+      if (missing.length > 0) return send(400, { code: "BAD_REQUEST", message: `Unknown field: ${missing[0]}` });
       if (options.queueCreates) {
         response = { id: `cr_${id}`, status: "in_review", materialized: false };
       } else {
@@ -212,6 +215,48 @@ export const startFakeBusabase = async (state) => {
       }
       if (key) idempotency.set(key, response);
       return send(200, response);
+    }
+    // App users (buyer login), only when the test sets `state.appUsers`; a
+    // Busabase without them answers 404, like a server from before they shipped.
+    // `state.appUsers.answers[<endpoint>]` = { status, body } overrides one answer.
+    const appUser = /^\/api\/v1\/app-users\/(?:apps\/([^/]+)\/settings|(send-code|verify|session|sign-out|records\/query))$/.exec(url.pathname);
+    if (appUser && state.appUsers) {
+      const users = state.appUsers;
+      entry.session = req.headers["x-busabase-app-user-session"] ?? "";
+      // The buyer's IP the site forwards for per-network limits; null when the header is absent.
+      entry.ip = req.headers["x-busabase-app-user-ip"] ?? null;
+      const endpoint = appUser[1] ? "settings" : appUser[2];
+      const input = body ? JSON.parse(body) : {};
+      entry.input = input;
+      const override = users.answers?.[endpoint];
+      if (override) return send(override.status, override.body);
+      if (endpoint === "settings") {
+        const appId = decodeURIComponent(appUser[1]);
+        return send(200, { appId, enabled: false, appName: "", ...(users.settings?.[appId] ?? {}) });
+      }
+      if (endpoint === "send-code") return send(200, { ok: true, resendAfterSeconds: 60 });
+      if (endpoint === "verify") {
+        const user = users.byEmail?.[input.email];
+        if (!user || input.code !== user.code) return send(400, { code: "INVALID_CODE", attemptsLeft: 4 });
+        return send(200, { sessionToken: user.token, expiresAt: "2026-12-12T00:00:00.000Z", user: { id: user.id, email: input.email } });
+      }
+      const user = Object.entries(users.byEmail ?? {}).find(([, candidate]) => candidate.token === entry.session);
+      if (endpoint === "sign-out") return send(200, { ok: true });
+      if (!user) return send(401, { code: "APP_USER_SESSION_INVALID" });
+      if (endpoint === "session") return send(200, { user: { id: user[1].id, email: user[0] } });
+      // records/query: the app names the owner column (`ownerField`, required, a text
+      // column of that Base; `users.ownerFields[baseId]` lists the valid ones, default
+      // customer-account) and the platform matches it to the session's user id. The fake
+      // returns the rows the test put there, checked against that column.
+      if (typeof input.ownerField !== "string" || !input.ownerField) {
+        return send(400, { code: "BAD_REQUEST", message: "Input validation failed: ownerField is required" });
+      }
+      const valid = users.ownerFields?.[input.baseId] ?? ["customer-account"];
+      if (!valid.includes(input.ownerField)) {
+        return send(400, { code: "INVALID_OWNER_FIELD", error: `ownerField "${input.ownerField}" is not a text field of this Base` });
+      }
+      const rows = (users.records?.[user[1].id] ?? []).filter((row) => row.fields?.[input.ownerField] === user[1].id);
+      return send(200, { records: rows, nextCursor: users.nextCursor ?? null });
     }
     const file = /^\/api\/v1\/file-trees\/([^/]+)\/files\/(.+)$/.exec(url.pathname);
     if (req.method === "GET" && file) {

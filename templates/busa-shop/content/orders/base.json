@@ -384,6 +384,32 @@
       "required": false,
       "position": 35,
       "options": {}
+    },
+    {
+      "slug": "customer-account",
+      "name": "Customer account",
+      "type": "text",
+      "required": false,
+      "position": 36,
+      "options": {
+        "help": {
+          "description": "Who placed this order while signed in to the shop's buyer login (My orders at /account): their app-user id, written by the website at checkout. Empty for a guest order. My orders matches on this column: a buyer sees exactly the orders whose Customer account is theirs. Never edit it by hand. To see who it is, read Customer email (signed-in).",
+          "example": "apu_9f2c41d7"
+        }
+      }
+    },
+    {
+      "slug": "customer-email",
+      "name": "Customer email (signed-in)",
+      "type": "text",
+      "required": false,
+      "position": 37,
+      "options": {
+        "help": {
+          "description": "The verified email of the buyer who was signed in when they placed this order, written by the website at checkout from their sign-in, never from the order form. Empty for a guest order. The human-readable twin of Customer account: use it to see who placed the order; it can differ from Email if the buyer typed another address in the form.",
+          "example": "mia.jensen@example.com"
+        }
+      }
     }
   ],
   "views": [

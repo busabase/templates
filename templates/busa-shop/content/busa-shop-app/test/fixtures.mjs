@@ -156,6 +156,16 @@ export const BLOG_NODES = {
   },
 };
 
+/** The Shop Website's own AirApp node: the app buyers sign in to (busa-shop 0.10.0 buyer login). */
+export const SHOP_APP_NODE = {
+  id: "nod_shop_app",
+  type: "airapp",
+  slug: "busa-shop-app",
+  parentId: "nod_shop",
+  baseId: null,
+  metadata: { appId: "busa-shop", resourceKey: "busa-shop-app", schemaVersion: 5 },
+};
+
 export const sampleRows = async (name) =>
   (await readNdjson(`${templateRoot}content/${name}/records.ndjson`)).map((row, index) => ({ id: `rec_${name}_${index + 1}`, fields: row.fields }));
 

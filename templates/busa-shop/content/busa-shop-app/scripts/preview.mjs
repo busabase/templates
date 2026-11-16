@@ -51,7 +51,12 @@ export const serveWorker = async ({ worker, env, port = 8787, host = "127.0.0.1"
     });
     // Work handed to waitUntil (the emails) keeps running after the answer, as on the platform.
     const response = await worker.fetch(request, bindings, { waitUntil: (promise) => promise.catch((error) => console.error("waitUntil:", error?.message ?? error)) });
-    res.writeHead(response.status, Object.fromEntries(response.headers));
+    // Set-Cookie stays one header per cookie (the account pages set two at once); folded into one, the browser keeps neither.
+    const cookies = response.headers.getSetCookie();
+    res.writeHead(response.status, {
+      ...Object.fromEntries([...response.headers].filter(([name]) => name !== "set-cookie")),
+      ...(cookies.length ? { "set-cookie": cookies } : {}),
+    });
     res.end(response.body ? Buffer.from(await response.arrayBuffer()) : undefined);
   });
   await new Promise((resolve) => server.listen(port, host, resolve));
