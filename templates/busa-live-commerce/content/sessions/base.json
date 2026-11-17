@@ -1,0 +1,286 @@
+{
+  "name": "Live Sessions",
+  "description": "Every live-selling session from two weeks before it airs to 30 days after: channel, host, producer, hero product, the GMV target, the five measures behind its score, and the score itself.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "rescore",
+      "label": {
+        "en": "Re-score this session from its latest measures",
+        "zh-CN": "用最新指标给这场直播重新打分"
+      },
+      "body": {
+        "en": "Read the `busa-live-commerce` skill in this folder and follow it. For the session I name, read its five measures, compute the score and status by the skill’s rule, and update `score`, `status`, `scored-by`, `scored-on` and a one-sentence `summary`. Propose an action if it turned at risk and has none open.",
+        "zh-CN": "先阅读本文件夹里的 `busa-live-commerce` Skill，按它的规则做。针对我说的场次，读它的五项指标，按 Skill 的规则算评分和状态，更新 `score`、`status`、`scored-by`、`scored-on` 和一句话的 `summary`。如果变成有风险且没有进行中的跟进措施，提一条。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "session-brief",
+      "label": {
+        "en": "Brief me on this session",
+        "zh-CN": "给我讲讲这场直播"
+      },
+      "body": {
+        "en": "Read the `busa-live-commerce` skill in this folder and follow it. For the session I name, give a one-screen brief: channel, host, live date, hero product, GMV against target, the score with each of its five parts, the last five signals and who wrote them, open actions, and two things to fix before the next session. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-live-commerce` Skill，按它的规则做。针对我说的场次，给一屏简报：渠道、主播、开播日期、主推品、GMV 对比目标、评分及五项得分、最近五条信号及写入者、进行中的跟进措施，以及下一场之前要改的两件事。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Session",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "channel",
+      "name": "Channel",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "tiktok-shop",
+            "name": "TikTok Shop",
+            "color": "cyan"
+          },
+          {
+            "id": "douyin",
+            "name": "Douyin",
+            "color": "slate"
+          },
+          {
+            "id": "taobao-live",
+            "name": "Taobao Live",
+            "color": "slate"
+          },
+          {
+            "id": "kuaishou",
+            "name": "Kuaishou",
+            "color": "slate"
+          },
+          {
+            "id": "xiaohongshu",
+            "name": "Xiaohongshu",
+            "color": "slate"
+          },
+          {
+            "id": "shopee-live",
+            "name": "Shopee Live",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "host",
+      "name": "Host",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "producer",
+      "name": "Producer",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "live-date",
+      "name": "Live date",
+      "type": "date",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "slot",
+      "name": "Time slot",
+      "type": "text",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "hero-product",
+      "name": "Hero product",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "target-gmv",
+      "name": "GMV target ($)",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "gmv",
+      "name": "GMV ($)",
+      "type": "number",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "stock-pct",
+      "name": "Stock in the warehouse, of planned units (%)",
+      "type": "number",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "prep-pct",
+      "name": "Pre-live checklist done (%)",
+      "type": "number",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "gmv-pct",
+      "name": "GMV vs target (%)",
+      "type": "number",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "conversion-pct",
+      "name": "Viewers who bought (%)",
+      "type": "number",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "refund-pct",
+      "name": "Refunded within 7 days (%)",
+      "type": "number",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "score",
+      "name": "Session score",
+      "type": "number",
+      "required": false,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 15,
+      "options": {
+        "choices": [
+          {
+            "id": "on-track",
+            "name": "On track",
+            "color": "emerald"
+          },
+          {
+            "id": "watch",
+            "name": "Watch",
+            "color": "amber"
+          },
+          {
+            "id": "at-risk",
+            "name": "At risk",
+            "color": "rose"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "scored-by",
+      "name": "Last scored by",
+      "type": "text",
+      "required": false,
+      "position": 16,
+      "options": {}
+    },
+    {
+      "slug": "scored-on",
+      "name": "Last scored",
+      "type": "date",
+      "required": false,
+      "position": 17,
+      "options": {}
+    },
+    {
+      "slug": "summary",
+      "name": "Latest word",
+      "type": "longtext",
+      "required": false,
+      "position": 18,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "All sessions",
+      "description": "Every session on the desk, latest live date first, with its status",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "live-date",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "channel",
+          "host",
+          "live-date",
+          "gmv",
+          "score",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "at-risk",
+      "name": "At risk",
+      "description": "Sessions whose score is under 50",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "at-risk"
+          }
+        ],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "title",
+          "channel",
+          "producer",
+          "live-date",
+          "score",
+          "summary"
+        ]
+      }
+    }
+  ]
+}
