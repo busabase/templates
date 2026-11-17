@@ -1,0 +1,54 @@
+{
+  "name": "Live Commerce Desk",
+  "description": "Every live-selling session across TikTok Shop, Douyin, Taobao Live, Kuaishou, Xiaohongshu and Shopee Live, scored the same way and kept current by agents from the warehouse, the pre-live checklist, shop analytics and after-sales, with the actions that fix the ones that slip.",
+  "agentPrompts": [
+    {
+      "key": "ask-risk",
+      "label": {
+        "en": "Which sessions are slipping, and what goes live this week without stock?",
+        "zh-CN": "哪些场次出了问题，本周哪场要开播却还没备好货"
+      },
+      "body": {
+        "en": "Read the `busa-live-commerce` skill in this folder and follow it. Answer as the head of live commerce: GMV in the last 30 days against target and how many sessions are on track, then every at-risk session, latest first, with its score, the measure that hurt most, and the open action. Then every session going live in the next 7 days that is not ready, and what is missing. Keep it to one screen. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-live-commerce` Skill，按它的规则做。以直播电商负责人的口吻回答：先说近 30 天 GMV 对比目标、多少场次顺利，再按日期从近到远列出每场有风险的直播，附评分、拉低最多的指标和对应的跟进措施；然后列出未来 7 天要开播但还没准备好的场次，以及缺什么。控制在一屏以内。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "weekly-scan",
+      "label": {
+        "en": "Run this week’s live scan",
+        "zh-CN": "跑本周直播扫描"
+      },
+      "body": {
+        "en": "Read the `busa-live-commerce` skill in this folder and follow it. For each session, read stock, the pre-live checklist, GMV, conversion and refunds from their sources, write a signal for anything that moved, re-score it by the skill’s rule, propose an action for any session newly at risk or not ready, and then write this week’s live review as a draft.",
+        "zh-CN": "先阅读本文件夹里的 `busa-live-commerce` Skill，按它的规则做。为每场直播从数据来源读取备货、开播准备、GMV、转化率和退款率，有变动的写一条信号，按 Skill 的规则重新打分，新变成有风险或未就绪的提一条跟进措施，最后写一份本周直播周报草稿。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "write-review",
+      "label": {
+        "en": "Write this Monday’s live review",
+        "zh-CN": "写本周一的直播周报"
+      },
+      "body": {
+        "en": "Read the `busa-live-commerce` skill in this folder and follow it. Write the live review for last Monday to Sunday: a one-line headline, GMV in the week against target, how many sessions are on track, every at-risk session with what went wrong and the action, every session going live in the next 7 days without its stock, and what changed since last week.",
+        "zh-CN": "先阅读本文件夹里的 `busa-live-commerce` Skill，按它的规则做。写上周一到周日的直播周报：一句话结论、本周 GMV 对比目标、顺利场次数、每场有风险的直播出了什么问题和对应措施、未来 7 天要开播但还没备好货的场次、与上周相比的变化。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "go-live-check",
+      "label": {
+        "en": "Is every session in the next 7 days ready to go live?",
+        "zh-CN": "未来 7 天的场次都准备好开播了吗"
+      },
+      "body": {
+        "en": "Read the `busa-live-commerce` skill in this folder and follow it. List every session whose live date is in the next 7 days, soonest first, with what is still missing — stock, product cards, coupons, script, samples — who owns each gap, and whether it will be fixed before the session airs. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-live-commerce` Skill，按它的规则做。按日期列出未来 7 天内开播的每场直播，写清还缺什么——备货、商品卡、优惠券、脚本、样品——每一项由谁负责，能不能在开播前补上。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ]
+}

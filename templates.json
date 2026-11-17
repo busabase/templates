@@ -2686,6 +2686,52 @@
       }
     },
     {
+      "subdir": "templates/busa-live-commerce",
+      "name": "busa-live-commerce",
+      "displayName": {
+        "en": "Live Commerce Desk",
+        "zh-CN": "直播电商运营"
+      },
+      "description": {
+        "en": "Agents read stock, pre-live checklists, GMV, conversion and refunds for every live session, score each by one rule, and flag sessions that go live without stock.",
+        "zh-CN": "Agent 读取每场直播的备货、开播准备、GMV、转化率和退款率，按同一条规则打分，及早标出哪场出了问题、哪场备货不足就要开播——每个问题都有跟进措施，每周一自动出直播周报。"
+      },
+      "category": "ecommerce",
+      "risk": "gated-write",
+      "tags": [
+        "live-commerce",
+        "livestream",
+        "ecommerce",
+        "tiktok-shop",
+        "risk:gated-write",
+        "multi-agent",
+        "gmv"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/session.webp",
+        "assets/screenshots/signals.webp",
+        "assets/screenshots/live-review.webp"
+      ],
+      "agentPrompts": [
+        "Which sessions are slipping, and what goes live this week without stock?",
+        "Run this week's live scan.",
+        "Write this Monday's live review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 61,
+        "files": 28,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-local-model-lab",
       "name": "busa-local-model-lab",
       "displayName": {

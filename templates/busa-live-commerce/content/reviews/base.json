@@ -1,0 +1,158 @@
+{
+  "name": "Live Reviews",
+  "description": "The Monday live-commerce review an agent writes from the records above: GMV against target, which sessions slipped and why, what goes live this week without stock.",
+  "position": 3,
+  "agentPrompts": [
+    {
+      "key": "write-review",
+      "label": {
+        "en": "Write this Monday’s live review",
+        "zh-CN": "写本周一的直播周报"
+      },
+      "body": {
+        "en": "Read the `busa-live-commerce` skill in this folder and follow it. Write the live review for last Monday to Sunday from the sessions, signals and actions: a one-line headline, GMV in the week against target, how many sessions are on track, every at-risk session with what went wrong and the action, every session going live in the next 7 days without its stock, and what changed since last week. Save it as a draft.",
+        "zh-CN": "先阅读本文件夹里的 `busa-live-commerce` Skill，按它的规则做。根据场次、信号和跟进措施，写上周一到周日的直播周报：一句话结论、本周 GMV 对比目标、顺利场次数、每场有风险的直播出了什么问题和对应措施、未来 7 天要开播但还没备好货的场次、与上周相比的变化。保存为草稿。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "compare-weeks",
+      "label": {
+        "en": "What got better or worse since last week?",
+        "zh-CN": "和上周比哪些变好了、哪些变差了"
+      },
+      "body": {
+        "en": "Read the `busa-live-commerce` skill in this folder and follow it. Compare the two latest reviews and the signals between them: GMV, which sessions changed status, how the at-risk count moved, and which actions closed. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-live-commerce` Skill，按它的规则做。对比最近两份周报和期间的信号：GMV、哪些场次换了状态、有风险场次数怎么变、哪些跟进措施完成了。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Review",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "draft",
+            "name": "Draft",
+            "color": "amber"
+          },
+          {
+            "id": "final",
+            "name": "Final",
+            "color": "emerald"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "period-start",
+      "name": "From",
+      "type": "date",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "period-end",
+      "name": "To",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "headline",
+      "name": "Headline",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "week-gmv",
+      "name": "GMV in the week ($)",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "on-track-count",
+      "name": "On track",
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "at-risk-count",
+      "name": "At risk",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "not-ready-count",
+      "name": "Going live soon, not ready",
+      "type": "number",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "written-by",
+      "name": "Written by",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "body",
+      "name": "Review",
+      "type": "markdown",
+      "required": false,
+      "position": 10,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest",
+      "name": "Latest first",
+      "description": "Every live review, newest first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "period-end",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "period-end",
+          "week-gmv",
+          "headline"
+        ]
+      }
+    }
+  ]
+}
