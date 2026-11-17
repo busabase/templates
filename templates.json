@@ -3449,6 +3449,51 @@
       }
     },
     {
+      "subdir": "templates/busa-onboarding",
+      "name": "busa-onboarding",
+      "displayName": {
+        "en": "Onboarding Desk",
+        "zh-CN": "新员工入职"
+      },
+      "description": {
+        "en": "Agents read IT tickets, paperwork, training, 1:1s and pulse surveys for every new hire, score each by one rule, and flag who is stuck or starts without a laptop.",
+        "zh-CN": "Agent 读取每位新员工的 IT 工单、入职手续、培训、1:1 和脉搏问卷，按同一条规则打分，及早标出谁卡住了、谁下周一入职还没拿到电脑——每个卡住的人都有跟进措施，每周一自动出入职周报。"
+      },
+      "category": "hr",
+      "risk": "gated-write",
+      "tags": [
+        "onboarding",
+        "new-hires",
+        "hr",
+        "people-ops",
+        "risk:gated-write",
+        "multi-agent"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/new-hire.webp",
+        "assets/screenshots/signals.webp",
+        "assets/screenshots/onboarding-review.webp"
+      ],
+      "agentPrompts": [
+        "Which new hires are stuck, and who starts next week without a laptop?",
+        "Run this week's onboarding scan.",
+        "Write this Monday's onboarding review."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 0,
+        "bases": 4,
+        "records": 60,
+        "files": 28,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-pe-diligence",
       "name": "busa-pe-diligence",
       "displayName": "Busa PE Diligence",

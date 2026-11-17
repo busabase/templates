@@ -1,0 +1,56 @@
+{
+  "type": "airapp",
+  "name": "Onboarding Desk",
+  "description": "Every new hire from signed offer to day 90, scored the same way and kept current by agents from IT tickets, HR paperwork, training, 1:1s and pulse surveys, with the actions that unstick them.",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "ask-risk",
+      "label": {
+        "en": "Which new hires are stuck, and who starts next week without a laptop?",
+        "zh-CN": "哪些新员工卡住了，谁下周入职还没拿到电脑"
+      },
+      "body": {
+        "en": "Read the `busa-onboarding` skill in this folder and follow it. Answer as the head of People: how many new hires are on track, then every at-risk new hire, earliest start first, with their score, the measure that hurt most, and the open action. Then everyone starting in the next 14 days who is not ready, and what is missing. Keep it to one screen. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-onboarding` Skill，按它的规则做。以人力负责人的口吻回答：先说多少新员工进展顺利，再按入职日期从早到晚列出每位有风险的新员工，附评分、拉低最多的指标和对应的跟进措施；然后列出未来 14 天内入职但还没准备好的人，以及缺什么。控制在一屏以内。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "weekly-scan",
+      "label": {
+        "en": "Run this week’s onboarding scan",
+        "zh-CN": "跑本周入职扫描"
+      },
+      "body": {
+        "en": "Read the `busa-onboarding` skill in this folder and follow it. For each new hire, read accounts and equipment, paperwork, training, 1:1s and pulse from their sources, write a signal for anything that moved, re-score them by the skill’s rule, propose an action for anyone newly at risk, and then write this week’s onboarding review as a draft.",
+        "zh-CN": "先阅读本文件夹里的 `busa-onboarding` Skill，按它的规则做。为每位新员工从数据来源读取账号设备、入职手续、培训、1:1 和脉搏问卷，有变动的写一条信号，按 Skill 的规则重新打分，新变成有风险的提一条跟进措施，最后写一份本周入职周报草稿。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "write-review",
+      "label": {
+        "en": "Write this Monday’s onboarding review",
+        "zh-CN": "写本周一的入职周报"
+      },
+      "body": {
+        "en": "Read the `busa-onboarding` skill in this folder and follow it. Write the onboarding review for last Monday to Sunday: a one-line headline, how many are on track, every at-risk new hire with where they are stuck and the action, everyone starting in the next 14 days who is not ready, and what changed since last week.",
+        "zh-CN": "先阅读本文件夹里的 `busa-onboarding` Skill，按它的规则做。写上周一到周日的入职周报：一句话结论、顺利人数、每位有风险新员工卡在哪里和对应措施、未来 14 天内入职但还没准备好的人、与上周相比的变化。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "day-one",
+      "label": {
+        "en": "Is everyone starting in the next 14 days ready for day one?",
+        "zh-CN": "未来 14 天入职的人第一天都准备好了吗"
+      },
+      "body": {
+        "en": "Read the `busa-onboarding` skill in this folder and follow it. List everyone whose start date is in the next 14 days, soonest first, with what is still missing — accounts, equipment, paperwork — who owns each gap, and whether it will be done before day one. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-onboarding` Skill，按它的规则做。按日期列出未来 14 天内入职的每个人，写清还缺什么——账号、设备、入职手续——每一项由谁负责，能不能在入职第一天之前办好。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ]
+}
