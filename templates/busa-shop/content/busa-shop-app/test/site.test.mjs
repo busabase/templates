@@ -86,7 +86,7 @@ describe("pages", () => {
     assert.match(text, /<meta property="og:image" content="https:\/\/tumbleberry-toys\.example\/images\/tt-walking-robot\/0">/);
     assert.match(text, /"@type":"OnlineStore"/);
     assert.match(text, /class="demo-notice"/);
-    const cards = [...text.matchAll(/<li class="card">[\s\S]*?<h3>([^<]+)<\/h3>/g)].map((match) => match[1]);
+    const cards = [...text.matchAll(/<li class="card"[^>]*>[\s\S]*?<h3>([^<]+)<\/h3>/g)].map((match) => match[1]);
     assert.deepEqual(cards, [
       "Walking Robot Buddy",
       "Rainbow Stacking Blocks",
@@ -101,7 +101,7 @@ describe("pages", () => {
     ]);
     assert.doesNotMatch(text, /Rainbow Xylophone|Magnetic Building Tiles|Aurora Desk Lamp/);
     assert.match(text, /\$24\.00/);
-    assert.match(text, /Dino Explorer Figures<\/h3>[\s\S]*?Out of stock/);
+    assert.match((text.match(/<li class="card"[^>]*>[\s\S]*?<\/li>/g) || []).find((card) => card.includes("Dino Explorer Figures")) || "", /Out of stock/);
     assert.match(text, /Photo coming soon/);
     assert.match(text, /we will contact you|Nothing is charged on this site/i);
     assert.ok(response.headers.get("content-security-policy").includes("script-src 'self'"));
@@ -223,7 +223,7 @@ describe("prices", () => {
     assert.equal(JSON.parse(robotRow().fields.pricing).current_price, 24);
     const home = await call("/");
     assert.equal(home.status, 200);
-    assert.equal([...home.text.matchAll(/<li class="card">/g)].length, 10, "the same ten products as with the column");
+    assert.equal([...home.text.matchAll(/<li class="card"[^>]*>/g)].length, 10, "the same ten products as with the column");
     assert.match((await call("/products/tt-walking-robot")).text, /<p class="price price-large">\$24\.00<\/p>/);
     const status = JSON.parse((await call("/api/status")).text);
     assert.deepEqual([status.setup, status.products], ["ready", 10]);
@@ -242,7 +242,7 @@ describe("product details", () => {
     api.state.records.bas_products.push({ id: "rec_test_phone", fields: { ...productFields(phone, {}, null), ref: 99, "updated-at": "2026-11-06T08:00:00.000Z" } });
   };
   const settingsRow = () => api.state.records.bas_settings[0];
-  const detailRows = (text) => [...text.matchAll(/<div><dt>([^<]*)<\/dt><dd>([^<]*)<\/dd><\/div>/g)].map((match) => [match[1], match[2]]);
+  const detailRows = (text) => [...(text.match(/<dl class="specs">([\s\S]*?)<\/dl>/)?.[1] || "").matchAll(/<div><dt>([^<]*)<\/dt><dd>([^<]*)<\/dd><\/div>/g)].map((match) => [match[1], match[2]]);
 
   it("a phone page lists its specs in order, and none of the trade or unknown columns", async () => {
     addPhone();
@@ -264,7 +264,8 @@ describe("product details", () => {
       ["In the box", "Phone | 33W charger | USB-C cable | Case"],
       ["Warranty", "1-year warranty"],
     ]);
-    for (const hidden of ["8517.13", "China", "IP54", "LIVE-SCRIPT-ONLY", "防水等级", "MOQ"]) assert.ok(!text.includes(hidden), hidden);
+    assert.doesNotMatch(text, /<dt>Country of origin<\/dt>/);
+    for (const hidden of ["8517.13", "IP54", "LIVE-SCRIPT-ONLY", "防水等级", "MOQ"]) assert.ok(!text.includes(hidden), hidden);
     const jsonLd = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(text)[1]);
     assert.deepEqual(jsonLd.brand, { "@type": "Brand", name: "Xinghe" }, "the maker's brand, not the store's name");
     assert.equal(jsonLd.offers.seller.name, "Tumbleberry Toys");

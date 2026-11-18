@@ -133,7 +133,7 @@ describe("checkout with PayPal", () => {
   it("shows shipping by country and asks for a real delivery address", async () => {
     const { status, text } = await call("/order?add=tt-walking-robot");
     assert.equal(status, 200);
-    assert.match(text, /<h1>Checkout<\/h1>/);
+    assert.match(text, /<h1 class="checkout-title">Checkout<\/h1>/);
     assert.match(text, /data-submit>Continue to payment</);
     for (const name of ["name", "email", "phone", "address1", "address2", "city", "region", "postalCode"]) assert.match(text, new RegExp(`name="${name}"`));
     assert.match(text, /<option value="DK">Denmark<\/option>/);

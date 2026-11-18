@@ -19886,7 +19886,7 @@ function toArray(value2) {
 }
 var ORPC_NAME = "orpc";
 var ORPC_SHARED_PACKAGE_NAME = "@orpc/shared";
-var ORPC_SHARED_PACKAGE_VERSION = "1.16.1";
+var ORPC_SHARED_PACKAGE_VERSION = "1.16.2";
 var AbortError = class extends Error {
   constructor(...rest) {
     super(...rest);
@@ -20175,9 +20175,9 @@ function tryDecodeURIComponent(value2) {
   }
 }
 
-// node_modules/@orpc/client/dist/shared/client.D_0j2fRr.mjs
+// node_modules/@orpc/client/dist/shared/client.DeR0HTYb.mjs
 var ORPC_CLIENT_PACKAGE_NAME = "@orpc/client";
-var ORPC_CLIENT_PACKAGE_VERSION = "1.16.1";
+var ORPC_CLIENT_PACKAGE_VERSION = "1.16.2";
 var RECURSIVE_CLIENT_UNWRAP_KEYS = /* @__PURE__ */ new Set([
   /**
    * Commonly used by libraries to bind functions to a specific `this`
@@ -20962,7 +20962,7 @@ function toStandardLazyResponse(response, options = {}) {
   };
 }
 
-// node_modules/@orpc/client/dist/shared/client.BPI7fHX3.mjs
+// node_modules/@orpc/client/dist/shared/client.BmCiDGqJ.mjs
 var CompositeStandardLinkPlugin = class {
   plugins;
   constructor(plugins = []) {
@@ -27705,6 +27705,67 @@ function createAirAppRecords(client, options = {}) {
 
 // src/i18n.js
 var en = {
+  storefront_image: "Image {number} of {total}",
+  storefront_added: "Added to your order",
+  storefront_skip: "Skip to content",
+  storefront_shop: "Shop products",
+  storefront_shipping: "Shipping",
+  storefront_about: "Our approach",
+  storefront_search: "Search products",
+  storefront_hero_eyebrow: "A considered collection",
+  storefront_hero_title: "Better finds. Less guesswork.",
+  storefront_hero_body: "Discover our collection with the details that matter. Compare products, explore the specifications, and know what you\u2019re ordering.",
+  storefront_explore: "Explore products",
+  storefront_how: "How we work",
+  storefront_featured: "In focus",
+  storefront_edition: "China edition",
+  storefront_edition_note: "Check network compatibility, software and warranty details before you order.",
+  storefront_details_upfront: "The details, upfront",
+  storefront_before_order: "Read the product details, shipping information and shop policies before you order.",
+  storefront_destinations: "Our destinations",
+  storefront_more_destinations: "+{count} more",
+  storefront_catalog_eyebrow: "Find your next everyday essential",
+  storefront_catalog_title: "Good finds. Clear choices.",
+  storefront_catalog_intro: "Explore the collection. Compare the details. Find the one that fits.",
+  storefront_all_brands: "All brands",
+  storefront_filter_label: "Filter by brand",
+  storefront_search_placeholder: "Search products, brands or details\u2026",
+  storefront_sort: "Sort by",
+  storefront_sort_featured: "Default order",
+  storefront_sort_low: "Price: low to high",
+  storefront_sort_high: "Price: high to low",
+  storefront_sort_name: "Name: A\u2013Z",
+  storefront_count: "{count} products",
+  storefront_count_one: "{count} product",
+  storefront_empty_title: "No products found",
+  storefront_empty_body: "Try another search or brand, or clear your filters to see the full collection.",
+  storefront_reset: "Clear filters",
+  storefront_view: "View product",
+  storefront_ram: "{value} RAM",
+  storefront_buying_eyebrow: "A little clarity goes a long way",
+  storefront_buying_title: "Know the details. Then make it yours.",
+  storefront_buying_specs: "Details before decisions",
+  storefront_buying_specs_body: "Explore each product\u2019s features, specifications and available options before choosing.",
+  storefront_buying_edition: "Find the right fit",
+  storefront_buying_edition_body: "The details make the difference. Check dimensions, materials, compatibility and any product-specific terms that apply.",
+  storefront_buying_order: "An order, without surprises",
+  storefront_shipping_title: "From our shop, to your everyday.",
+  storefront_shipping_body: "Choose your destination at checkout to check shipping availability and cost before you send your order.",
+  storefront_shipping_policy: "Read shipping information",
+  storefront_footer_line: "Considered products. Clearly explained.",
+  storefront_footer_explore: "Explore",
+  storefront_footer_help: "Before you order",
+  storefront_footer_account: "Your shop",
+  storefront_product_overview: "At a glance",
+  storefront_product_details: "The details, in full",
+  storefront_product_description: "About this product",
+  storefront_product_specs_link: "See full details",
+  storefront_product_full_name: "Listed product",
+  storefront_breadcrumb: "Breadcrumb",
+  storefront_checkout_eyebrow: "One step closer",
+  storefront_checkout_step1: "01 \xB7 Delivery details",
+  storefront_checkout_step2: "02 \xB7 Order summary",
+  storefront_account_eyebrow: "Your personal corner",
   nav_products: "Products",
   nav_order: "Your order",
   demo_notice: "Demo store: the products, prices and certificates on this site are fictional. Orders placed here are test orders.",
@@ -27903,6 +27964,67 @@ var en = {
   "status_payment-problem": "Payment being checked"
 };
 var de = {
+  storefront_image: "Bild {number} von {total}",
+  storefront_added: "Zu Ihrer Bestellung hinzugef\xFCgt",
+  storefront_skip: "Zum Inhalt springen",
+  storefront_shop: "Produkte entdecken",
+  storefront_shipping: "Versand",
+  storefront_about: "Unser Ansatz",
+  storefront_search: "Produkte suchen",
+  storefront_hero_eyebrow: "Eine sorgf\xE4ltige Auswahl",
+  storefront_hero_title: "Gute Funde. Klare Entscheidungen.",
+  storefront_hero_body: "Entdecken Sie unser Sortiment mit den Details, die z\xE4hlen. Vergleichen Sie Produkte und Eigenschaften und wissen Sie genau, was Sie bestellen.",
+  storefront_explore: "Produkte entdecken",
+  storefront_how: "So funktioniert es",
+  storefront_featured: "Im Fokus",
+  storefront_edition: "China-Version",
+  storefront_edition_note: "Pr\xFCfen Sie vor der Bestellung Netzkompatibilit\xE4t, Software und Garantiebedingungen.",
+  storefront_details_upfront: "Alle Details im Blick",
+  storefront_before_order: "Lesen Sie vor der Bestellung die Produktdetails, Versandinformationen und Shopbedingungen.",
+  storefront_destinations: "Unsere Lieferl\xE4nder",
+  storefront_more_destinations: "+{count} weitere",
+  storefront_catalog_eyebrow: "Finden Sie Ihren n\xE4chsten Alltagsbegleiter",
+  storefront_catalog_title: "Gute Produkte. Klare Auswahl.",
+  storefront_catalog_intro: "Entdecken Sie das Sortiment. Vergleichen Sie die Details. Finden Sie das passende Produkt.",
+  storefront_all_brands: "Alle Marken",
+  storefront_filter_label: "Nach Marke filtern",
+  storefront_search_placeholder: "Produkte, Marken oder Details suchen\u2026",
+  storefront_sort: "Sortieren nach",
+  storefront_sort_featured: "Standardsortierung",
+  storefront_sort_low: "Preis: aufsteigend",
+  storefront_sort_high: "Preis: absteigend",
+  storefront_sort_name: "Name: A\u2013Z",
+  storefront_count: "{count} Produkte",
+  storefront_count_one: "{count} Produkt",
+  storefront_empty_title: "Keine Produkte gefunden",
+  storefront_empty_body: "Versuchen Sie eine andere Suche oder Marke oder setzen Sie die Filter zur\xFCck, um das gesamte Sortiment zu sehen.",
+  storefront_reset: "Filter zur\xFCcksetzen",
+  storefront_view: "Produkt ansehen",
+  storefront_ram: "{value} RAM",
+  storefront_buying_eyebrow: "Mit Klarheit f\xE4llt die Wahl leichter",
+  storefront_buying_title: "Erst die Details. Dann Ihre Wahl.",
+  storefront_buying_specs: "Details vor der Entscheidung",
+  storefront_buying_specs_body: "Informieren Sie sich vor der Auswahl \xFCber Merkmale, technische Daten und verf\xFCgbare Optionen.",
+  storefront_buying_edition: "Das passende Produkt finden",
+  storefront_buying_edition_body: "Details machen den Unterschied. Pr\xFCfen Sie Ma\xDFe, Materialien, Kompatibilit\xE4t und die jeweiligen Produktbedingungen.",
+  storefront_buying_order: "Bestellen ohne \xDCberraschungen",
+  storefront_shipping_title: "Aus unserem Shop in Ihren Alltag.",
+  storefront_shipping_body: "W\xE4hlen Sie beim Bestellen Ihr Lieferland, um Verf\xFCgbarkeit und Versandkosten zu pr\xFCfen, bevor Sie Ihre Bestellung senden.",
+  storefront_shipping_policy: "Versandinformationen lesen",
+  storefront_footer_line: "Sorgf\xE4ltig ausgew\xE4hlt. Verst\xE4ndlich erkl\xE4rt.",
+  storefront_footer_explore: "Entdecken",
+  storefront_footer_help: "Vor Ihrer Bestellung",
+  storefront_footer_account: "Ihr Shop",
+  storefront_product_overview: "Auf einen Blick",
+  storefront_product_details: "Alle Details",
+  storefront_product_description: "\xDCber dieses Produkt",
+  storefront_product_specs_link: "Alle Details ansehen",
+  storefront_product_full_name: "Produktbezeichnung",
+  storefront_breadcrumb: "Seitennavigation",
+  storefront_checkout_eyebrow: "Ein Schritt n\xE4her",
+  storefront_checkout_step1: "01 \xB7 Lieferangaben",
+  storefront_checkout_step2: "02 \xB7 Bestell\xFCbersicht",
+  storefront_account_eyebrow: "Ihr pers\xF6nlicher Bereich",
   nav_products: "Produkte",
   nav_order: "Ihre Bestellung",
   demo_notice: "Demo-Shop: Produkte, Preise und Zertifikate auf dieser Seite sind frei erfunden. Bestellungen hier sind Testbestellungen.",
@@ -28101,6 +28223,67 @@ var de = {
   "status_payment-problem": "Zahlung wird gepr\xFCft"
 };
 var fr = {
+  storefront_image: "Image {number} sur {total}",
+  storefront_added: "Ajout\xE9 \xE0 votre commande",
+  storefront_skip: "Aller au contenu",
+  storefront_shop: "Voir les produits",
+  storefront_shipping: "Livraison",
+  storefront_about: "Notre approche",
+  storefront_search: "Rechercher des produits",
+  storefront_hero_eyebrow: "Une s\xE9lection r\xE9fl\xE9chie",
+  storefront_hero_title: "De belles trouvailles. Des choix \xE9clair\xE9s.",
+  storefront_hero_body: "D\xE9couvrez notre collection et les d\xE9tails qui comptent. Comparez les produits, consultez leurs caract\xE9ristiques et sachez exactement ce que vous commandez.",
+  storefront_explore: "Explorer les produits",
+  storefront_how: "Comment \xE7a marche",
+  storefront_featured: "\xC0 d\xE9couvrir",
+  storefront_edition: "Version Chine",
+  storefront_edition_note: "Avant de commander, v\xE9rifiez la compatibilit\xE9 r\xE9seau, le logiciel et les conditions de garantie.",
+  storefront_details_upfront: "Les d\xE9tails, en toute clart\xE9",
+  storefront_before_order: "Avant de commander, lisez les d\xE9tails du produit, les informations de livraison et les conditions de la boutique.",
+  storefront_destinations: "Nos destinations",
+  storefront_more_destinations: "+{count} autres",
+  storefront_catalog_eyebrow: "Trouvez votre prochain essentiel du quotidien",
+  storefront_catalog_title: "De bons produits. Un choix clair.",
+  storefront_catalog_intro: "Explorez la collection. Comparez les d\xE9tails. Trouvez le produit qui vous correspond.",
+  storefront_all_brands: "Toutes les marques",
+  storefront_filter_label: "Filtrer par marque",
+  storefront_search_placeholder: "Rechercher un produit, une marque, un d\xE9tail\u2026",
+  storefront_sort: "Trier par",
+  storefront_sort_featured: "Ordre par d\xE9faut",
+  storefront_sort_low: "Prix croissant",
+  storefront_sort_high: "Prix d\xE9croissant",
+  storefront_sort_name: "Nom : A\u2013Z",
+  storefront_count: "{count} produits",
+  storefront_count_one: "{count} produit",
+  storefront_empty_title: "Aucun produit trouv\xE9",
+  storefront_empty_body: "Essayez une autre recherche ou marque, ou effacez les filtres pour voir toute la collection.",
+  storefront_reset: "Effacer les filtres",
+  storefront_view: "Voir le produit",
+  storefront_ram: "{value} de RAM",
+  storefront_buying_eyebrow: "Un peu de clart\xE9 change tout",
+  storefront_buying_title: "Les d\xE9tails d\u2019abord. Le choix ensuite.",
+  storefront_buying_specs: "S\u2019informer avant de choisir",
+  storefront_buying_specs_body: "Consultez les caract\xE9ristiques, les sp\xE9cifications et les options disponibles de chaque produit avant de choisir.",
+  storefront_buying_edition: "Trouver ce qui vous convient",
+  storefront_buying_edition_body: "Les d\xE9tails font la diff\xE9rence. V\xE9rifiez les dimensions, les mat\xE9riaux, la compatibilit\xE9 et les conditions propres au produit.",
+  storefront_buying_order: "Une commande sans surprise",
+  storefront_shipping_title: "De notre boutique \xE0 votre quotidien.",
+  storefront_shipping_body: "Choisissez votre destination lors de la commande pour v\xE9rifier la disponibilit\xE9 et les frais de livraison avant de l\u2019envoyer.",
+  storefront_shipping_policy: "Consulter les informations de livraison",
+  storefront_footer_line: "Des produits choisis. Des d\xE9tails expliqu\xE9s.",
+  storefront_footer_explore: "Explorer",
+  storefront_footer_help: "Avant de commander",
+  storefront_footer_account: "Votre boutique",
+  storefront_product_overview: "En un coup d\u2019\u0153il",
+  storefront_product_details: "Tous les d\xE9tails",
+  storefront_product_description: "\xC0 propos de ce produit",
+  storefront_product_specs_link: "Voir tous les d\xE9tails",
+  storefront_product_full_name: "D\xE9signation du produit",
+  storefront_breadcrumb: "Fil d\u2019Ariane",
+  storefront_checkout_eyebrow: "Encore un pas",
+  storefront_checkout_step1: "01 \xB7 Coordonn\xE9es de livraison",
+  storefront_checkout_step2: "02 \xB7 R\xE9capitulatif",
+  storefront_account_eyebrow: "Votre espace personnel",
   nav_products: "Produits",
   nav_order: "Votre commande",
   demo_notice: "Boutique de d\xE9monstration : les produits, prix et certificats de ce site sont fictifs. Les commandes pass\xE9es ici sont des commandes de test.",
@@ -28299,6 +28482,67 @@ var fr = {
   "status_payment-problem": "Paiement en cours de v\xE9rification"
 };
 var es = {
+  storefront_image: "Imagen {number} de {total}",
+  storefront_added: "A\xF1adido a tu pedido",
+  storefront_skip: "Ir al contenido",
+  storefront_shop: "Ver productos",
+  storefront_shipping: "Env\xEDos",
+  storefront_about: "Nuestro enfoque",
+  storefront_search: "Buscar productos",
+  storefront_hero_eyebrow: "Una selecci\xF3n cuidada",
+  storefront_hero_title: "Buenos hallazgos. Decisiones claras.",
+  storefront_hero_body: "Descubre nuestra colecci\xF3n y los detalles que importan. Compara productos, consulta sus caracter\xEDsticas y ten claro lo que vas a pedir.",
+  storefront_explore: "Explorar productos",
+  storefront_how: "C\xF3mo funciona",
+  storefront_featured: "Destacado",
+  storefront_edition: "Versi\xF3n china",
+  storefront_edition_note: "Antes de hacer el pedido, comprueba la compatibilidad de red, el software y las condiciones de garant\xEDa.",
+  storefront_details_upfront: "Los detalles, claros desde el principio",
+  storefront_before_order: "Antes de hacer el pedido, consulta los detalles del producto, la informaci\xF3n de env\xEDo y las condiciones de la tienda.",
+  storefront_destinations: "Nuestros destinos",
+  storefront_more_destinations: "+{count} m\xE1s",
+  storefront_catalog_eyebrow: "Encuentra tu pr\xF3ximo imprescindible",
+  storefront_catalog_title: "Buenos productos. Opciones claras.",
+  storefront_catalog_intro: "Explora la colecci\xF3n. Compara los detalles. Encuentra lo que encaja contigo.",
+  storefront_all_brands: "Todas las marcas",
+  storefront_filter_label: "Filtrar por marca",
+  storefront_search_placeholder: "Buscar productos, marcas o detalles\u2026",
+  storefront_sort: "Ordenar por",
+  storefront_sort_featured: "Orden predeterminado",
+  storefront_sort_low: "Precio: menor a mayor",
+  storefront_sort_high: "Precio: mayor a menor",
+  storefront_sort_name: "Nombre: A\u2013Z",
+  storefront_count: "{count} productos",
+  storefront_count_one: "{count} producto",
+  storefront_empty_title: "No se encontraron productos",
+  storefront_empty_body: "Prueba otra b\xFAsqueda o marca, o borra los filtros para ver toda la colecci\xF3n.",
+  storefront_reset: "Borrar filtros",
+  storefront_view: "Ver producto",
+  storefront_ram: "{value} de RAM",
+  storefront_buying_eyebrow: "Un poco de claridad marca la diferencia",
+  storefront_buying_title: "Primero los detalles. Despu\xE9s, tu elecci\xF3n.",
+  storefront_buying_specs: "Inf\xF3rmate antes de decidir",
+  storefront_buying_specs_body: "Consulta las caracter\xEDsticas, especificaciones y opciones disponibles de cada producto antes de elegir.",
+  storefront_buying_edition: "Encuentra lo que necesitas",
+  storefront_buying_edition_body: "Los detalles marcan la diferencia. Comprueba las dimensiones, los materiales, la compatibilidad y las condiciones espec\xEDficas del producto.",
+  storefront_buying_order: "Un pedido sin sorpresas",
+  storefront_shipping_title: "De nuestra tienda a tu d\xEDa a d\xEDa.",
+  storefront_shipping_body: "Elige tu destino al hacer el pedido para comprobar la disponibilidad y el coste del env\xEDo antes de enviarlo.",
+  storefront_shipping_policy: "Consultar la informaci\xF3n de env\xEDo",
+  storefront_footer_line: "Productos cuidados. Detalles claros.",
+  storefront_footer_explore: "Explorar",
+  storefront_footer_help: "Antes de hacer el pedido",
+  storefront_footer_account: "Tu tienda",
+  storefront_product_overview: "De un vistazo",
+  storefront_product_details: "Todos los detalles",
+  storefront_product_description: "Acerca de este producto",
+  storefront_product_specs_link: "Ver todos los detalles",
+  storefront_product_full_name: "Nombre del producto",
+  storefront_breadcrumb: "Ruta de navegaci\xF3n",
+  storefront_checkout_eyebrow: "Un paso m\xE1s cerca",
+  storefront_checkout_step1: "01 \xB7 Datos de entrega",
+  storefront_checkout_step2: "02 \xB7 Resumen del pedido",
+  storefront_account_eyebrow: "Tu espacio personal",
   nav_products: "Productos",
   nav_order: "Tu pedido",
   demo_notice: "Tienda de demostraci\xF3n: los productos, precios y certificados de este sitio son ficticios. Los pedidos hechos aqu\xED son pedidos de prueba.",
@@ -28505,6 +28749,7 @@ var translator = (language) => {
   };
 };
 var CLIENT_MESSAGE_KEYS = [
+  "order_browse",
   "order_remove",
   "order_empty",
   "order_total",
@@ -28711,18 +28956,20 @@ var pickResource = (nodes, { type, appId, resourceKey, fallbackSlug, parentId })
   if (matches.length === 0) return { status: "missing" };
   return { status: "ambiguous", nodes: matches };
 };
-var resolveShopTables = (nodes) => ({
+var resolveShopTables = (nodes, { shopFolderId } = {}) => ({
   settings: pickResource(nodes, {
     type: "base",
     appId: SHOP_APP_ID,
     resourceKey: "settings",
-    fallbackSlug: "busa-shop-settings"
+    fallbackSlug: "busa-shop-settings",
+    parentId: shopFolderId
   }),
   orders: pickResource(nodes, {
     type: "base",
     appId: SHOP_APP_ID,
     resourceKey: "orders",
-    fallbackSlug: "busa-shop-orders"
+    fallbackSlug: "busa-shop-orders",
+    parentId: shopFolderId
   })
 });
 var resolveShopExtras = (nodes, shopFolderId) => ({
@@ -31891,18 +32138,22 @@ var layout = ({
     `<link rel="stylesheet" href="/static/shop.css">`,
     ...jsonLd.map(jsonLdScript)
   ].filter(Boolean);
-  const header = settings ? `<header class="site-header"><div class="wrap header-row">
-  <a class="brand" href="/">${esc3(storeName)}</a>
-  <nav class="site-nav"><a href="/#products">${esc3(t("nav_products"))}</a>${hasBlog ? `<a href="${BLOG_PATH}">${esc3(t("nav_blog"))}</a>` : ""}${site.account ? `<a class="account-link" href="/account">${esc3(t("nav_account"))}</a>` : ""}<a class="order-link" href="/order">${esc3(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
+  const initials = (storeName || "Shop").split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join("");
+  const shippingPage = footerPages.find((page) => /shipping/i.test(page.slug ?? page.path ?? ""));
+  const shippingHref = shippingPage ? pagePath(shippingPage) : "/#shipping";
+  const header = settings ? `<a class="skip-link" href="#main-content">${esc3(t("storefront_skip"))}</a>
+<header class="site-header"><div class="wrap header-row">
+  <a class="brand" href="/" aria-label="${esc3(storeName)}"><span class="brand-mark" aria-hidden="true">${esc3(initials)}</span><span>${esc3(storeName)}</span></a>
+  <nav class="site-nav" aria-label="${esc3(t("storefront_footer_explore"))}"><a class="nav-shop" href="/#products">${esc3(t("storefront_shop"))}</a><a href="${esc3(shippingHref)}">${esc3(t("storefront_shipping"))}</a><a href="/#how-we-work">${esc3(t("storefront_about"))}</a>${hasBlog ? `<a href="${BLOG_PATH}">${esc3(t("nav_blog"))}</a>` : ""}</nav>
+  <nav class="header-actions" aria-label="${esc3(t("storefront_footer_account"))}"><a class="icon-link search-link" data-header-search href="/#products" aria-label="${esc3(t("storefront_search"))}">${icon("search")}</a>${site.account ? `<a class="icon-link account-link" href="/account">${icon("user")}<span>${esc3(t("nav_account"))}</span></a>` : ""}<a class="icon-link order-link" href="/order" aria-label="${esc3(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}">${icon("bag")}<span class="cart-label">${esc3(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}</span><span class="cart-count" data-cart-count hidden></span></a></nav>
 </div></header>` : "";
   const notice = settings?.demoNotice ? `<div class="demo-notice" role="note">${esc3(t("demo_notice"))}</div>` : "";
-  const footer = settings ? `<footer class="site-footer"><div class="wrap footer-row">
-  <p><strong>${esc3(storeName)}</strong>${settings.tagline ? ` \xB7 ${esc3(settings.tagline)}` : ""}</p>
-  ${settings.contactEmail ? `<p>${esc3(t("contact"))}: <a href="mailto:${esc3(settings.contactEmail)}">${esc3(settings.contactEmail)}</a></p>` : ""}
-  ${footerPages.length ? `<nav class="footer-links" aria-label="${esc3(t("footer_policies"))}">${footerPages.map((page) => `<a href="${esc3(pagePath(page))}">${esc3(page.title)}</a>`).join("")}</nav>` : ""}
-  ${hasBlog ? `<nav class="footer-links footer-blog" aria-label="${esc3(t("nav_blog"))}"><a href="${BLOG_PATH}">${esc3(t("nav_blog"))}</a><a href="${FEED_PATH}">${esc3(t("blog_feed"))}</a></nav>` : ""}
-  <p class="muted">${esc3(t(paypal ? "footer_paypal" : "footer_orders"))}</p>
-</div></footer>` : "";
+  const footer = settings ? `<footer class="site-footer"><div class="wrap footer-grid">
+  <div class="footer-brand"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">${esc3(initials)}</span><span>${esc3(storeName)}</span></a><p>${esc3(settings.tagline || t("storefront_footer_line"))}</p>${settings.contactEmail ? `<a href="mailto:${esc3(settings.contactEmail)}">${esc3(settings.contactEmail)}</a>` : ""}</div>
+  <div><h2>${esc3(t("storefront_footer_explore"))}</h2><nav class="footer-links"><a href="/#products">${esc3(t("storefront_shop"))}</a><a href="/#how-we-work">${esc3(t("storefront_how"))}</a>${hasBlog ? `<a href="${BLOG_PATH}">${esc3(t("nav_blog"))}</a><a href="${FEED_PATH}">${esc3(t("blog_feed"))}</a>` : ""}</nav></div>
+  ${footerPages.length ? `<div><h2>${esc3(t("storefront_footer_help"))}</h2><nav class="footer-links" aria-label="${esc3(t("footer_policies"))}">${footerPages.map((page) => `<a href="${esc3(pagePath(page))}">${esc3(page.title)}</a>`).join("")}</nav></div>` : ""}
+  <div><h2>${esc3(t("storefront_footer_account"))}</h2><nav class="footer-links">${site.account ? `<a href="/account">${esc3(t("nav_account"))}</a>` : ""}<a href="/order">${esc3(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}</a><a href="${esc3(shippingHref)}">${esc3(t("storefront_shipping"))}</a></nav></div>
+</div><div class="wrap footer-bottom"><span>\xA9 ${(/* @__PURE__ */ new Date()).getUTCFullYear()} ${esc3(storeName)}</span><span>${esc3(t(paypal ? "footer_paypal" : "footer_orders"))}</span></div></footer>` : "";
   return `<!doctype html>
 <html lang="${esc3(lang)}">
 <head>
@@ -31911,7 +32162,7 @@ ${meta3.join("\n")}
 <body>
 ${notice}
 ${header}
-<main class="wrap">
+<main class="wrap" id="main-content">
 ${body}
 </main>
 ${footer}
@@ -31927,83 +32178,108 @@ var productImage = (product, t, { index = 0, className = "", eager = false } = {
   }
   return `<img class="${className}" src="${esc3(imageSrc(product, image, index))}" alt="${esc3(product.name)}" width="800" height="800"${eager ? "" : ` loading="lazy"`} decoding="async" referrerpolicy="no-referrer">`;
 };
-var card = (product, t) => `<li class="card">
+var icon = (name) => {
+  const paths = {
+    search: '<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/>',
+    user: '<circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/>',
+    bag: '<path d="M5 7h14l1 14H4L5 7Z"/><path d="M8.5 8V5a3.5 3.5 0 0 1 7 0v3"/>',
+    arrow: '<path d="M4 12h16m-6-6 6 6-6 6"/>',
+    truck: '<path d="M3 6h11v11H3V6Zm11 4h4l3 4v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>'
+  };
+  return `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] ?? paths.arrow}</svg>`;
+};
+var displayProduct = (product, t) => {
+  const attributes = product.content?.attributes ?? {};
+  const model = detailValue(attributes.model) || product.name;
+  const brand = detailValue(attributes.brand);
+  const variant = [
+    detailValue(attributes.memory) ? t("storefront_ram", { value: detailValue(attributes.memory) }) : "",
+    detailValue(attributes.storage),
+    detailValue(attributes.color),
+    detailValue(attributes.age_grade) ? `${t("spec_age_grade")}: ${detailValue(attributes.age_grade)}` : ""
+  ].filter(Boolean).join(" \xB7 ");
+  const highlights = [detailValue(attributes.screen).split(",")[0], detailValue(attributes.battery), detailValue(attributes.materials)].filter(Boolean).slice(0, 2);
+  const chinaEdition = /\bchina[- ](?:version|edition)\b/i.test([product.name, detailValue(attributes.edition), detailValue(attributes.version), detailValue(attributes.os)].join(" "));
+  return { attributes, model, brand, variant, highlights, chinaEdition };
+};
+var card = (product, t) => {
+  const view = displayProduct(product, t);
+  return `<li class="card" data-catalog-product data-brand="${esc3(view.brand)}" data-price="${product.price}" data-search="${esc3([product.name, view.brand, view.model, view.variant].join(" ").toLowerCase())}" data-name="${esc3(view.model)}">
   <a class="card-link" href="${esc3(productPath(product))}">
-    <div class="card-media">${productImage(product, t)}</div>
+    <div class="card-media">${product.soldOut ? `<span class="availability">${esc3(t("sold_out"))}</span>` : ""}${productImage(product, t)}<span class="card-arrow">${icon("arrow")}</span></div>
     <div class="card-body">
-      <h3>${esc3(product.name)}</h3>
-      ${product.subtitle ? `<p class="subtitle">${esc3(product.subtitle)}</p>` : ""}
-      <p class="price">${esc3(product.priceText)}${product.soldOut ? ` <span class="badge">${esc3(t("sold_out"))}</span>` : ""}</p>
+      ${view.brand ? `<p class="product-brand">${esc3(view.brand)}</p>` : ""}
+      <h3>${esc3(view.model)}</h3>
+      ${view.model !== product.name ? `<span class="visually-hidden">${esc3(product.name)}</span>` : ""}
+      ${view.variant ? `<p class="variant">${esc3(view.variant)}</p>` : product.subtitle ? `<p class="subtitle">${esc3(product.subtitle)}</p>` : ""}
+      ${view.highlights.length ? `<p class="card-highlights">${view.highlights.map(esc3).join('<span aria-hidden="true"> / </span>')}</p>` : ""}
+      <div class="card-bottom"><p class="price">${esc3(product.priceText)} <span class="currency-code">${esc3(product.currency)}</span></p><span class="card-details">${esc3(t("storefront_view"))}</span></div>
     </div>
   </a>
 </li>`;
+};
 var homePage = ({ origin, settings, catalog, site = {} }) => {
   const paypal = site.payment === "paypal";
   const t = translator(settings.language);
   const title = settings.tagline ? `${settings.storeName} \xB7 ${settings.tagline}` : settings.storeName;
   const description = plainSummary(settings.about || settings.tagline || settings.storeName);
   const firstImage = catalog.listed.find((product) => product.images.length);
-  const grid = catalog.listed.length ? `<ul class="grid">${catalog.listed.map((product) => card(product, t)).join("\n")}</ul>` : `<p class="empty">${esc3(t("products_empty"))}</p>`;
-  const body = `<section class="hero">
-  <h1>${esc3(settings.storeName)}</h1>
-  ${settings.tagline ? `<p class="tagline">${esc3(settings.tagline)}</p>` : ""}
+  const featured = catalog.listed.find((product) => !product.soldOut && product.images.length) || firstImage;
+  const featuredView = featured ? displayProduct(featured, t) : null;
+  const brands = [...new Set(catalog.listed.map((product) => displayProduct(product, t).brand).filter(Boolean))];
+  const grid = catalog.listed.length ? `<ul class="grid" data-catalog-grid>${catalog.listed.map((product) => card(product, t)).join("\n")}</ul>` : `<p class="empty">${esc3(t("products_empty"))}</p>`;
+  const destinations = (settings.shipsTo ?? []).map((code) => countryName(code, settings.language));
+  const shippingPage = (site.pages ?? []).find((page) => /shipping/i.test(page.slug ?? page.path ?? ""));
+  const body = `<section class="hero storefront-hero">
+  <div class="hero-copy"><p class="eyebrow">${esc3(t("storefront_hero_eyebrow"))}</p><h1>${esc3(t("storefront_hero_title"))}</h1><p class="hero-intro">${esc3(t("storefront_hero_body"))}</p><div class="hero-actions"><a class="button" href="#products">${esc3(t("storefront_explore"))}${icon("arrow")}</a><a class="text-link" href="#how-we-work">${esc3(t("storefront_how"))}<span aria-hidden="true">\u2197</span></a></div><p class="hero-note"><span class="edition-dot" aria-hidden="true"></span>${esc3(t("storefront_details_upfront"))}<span aria-hidden="true"> \xB7 </span>${esc3(t("storefront_before_order"))}</p></div>
+  ${featured ? `<a class="hero-product" href="${esc3(productPath(featured))}"><div class="hero-product-top"><span>${esc3(t("storefront_featured"))}</span>${featured.soldOut || featuredView.chinaEdition ? `<span class="feature-edition">${esc3(t(featured.soldOut ? "sold_out" : "storefront_edition"))}</span>` : ""}</div><div class="hero-device">${productImage(featured, t, { eager: true })}</div><div class="hero-product-caption"><div><span class="product-brand">${esc3(featuredView.brand)}</span><h2>${esc3(featuredView.model)}</h2><p>${esc3(featuredView.variant)}</p></div><div class="hero-product-price"><span class="price">${esc3(featured.priceText)}</span><span class="currency-code">${esc3(featured.currency)}</span><span class="feature-arrow">${icon("arrow")}</span></div></div></a>` : ""}
 </section>
-<section id="products" aria-labelledby="products-heading">
-  <h2 id="products-heading">${esc3(t("products_heading"))}</h2>
+${destinations.length ? `<aside class="destination-strip"><span>${icon("truck")}<strong>${esc3(t("storefront_destinations"))}</strong></span><p>${destinations.slice(0, 4).map(esc3).join('<span aria-hidden="true"> \xB7 </span>')}${destinations.length > 4 ? ` <span class="more-destinations">${esc3(t("storefront_more_destinations", { count: destinations.length - 4 }))}</span>` : ""}</p><a href="#shipping">${esc3(t("storefront_shipping"))}<span aria-hidden="true">\u2197</span></a></aside>` : ""}
+<section id="products" class="catalog-section" aria-labelledby="products-heading" data-catalog>
+  <div class="section-heading"><div><p class="eyebrow">${esc3(t("storefront_catalog_eyebrow"))}</p><h2 id="products-heading">${esc3(t("storefront_catalog_title"))}</h2><p class="section-intro">${esc3(t("storefront_catalog_intro"))}</p></div><p class="catalog-count" data-catalog-count aria-live="polite" data-template="${esc3(t("storefront_count"))}" data-template-one="${esc3(t("storefront_count_one"))}">${esc3(t(catalog.listed.length === 1 ? "storefront_count_one" : "storefront_count", { count: catalog.listed.length }))}</p></div>
+  ${catalog.listed.length ? `<div class="catalog-controls" data-catalog-controls hidden><div class="brand-filters" role="group" aria-label="${esc3(t("storefront_filter_label"))}"><button class="filter-chip" type="button" data-brand-filter="" aria-pressed="true">${esc3(t("storefront_all_brands"))}</button>${brands.map((brand) => `<button class="filter-chip" type="button" data-brand-filter="${esc3(brand)}" aria-pressed="false">${esc3(brand)}</button>`).join("")}</div><div class="catalog-tools"><button class="filter-reset" data-catalog-reset type="button" hidden>${esc3(t("storefront_reset"))}</button><label class="catalog-search">${icon("search")}<span class="visually-hidden">${esc3(t("storefront_search"))}</span><input type="search" id="catalog-search" data-catalog-search placeholder="${esc3(t("storefront_search_placeholder"))}" autocomplete="off"></label><label class="catalog-sort"><span class="visually-hidden">${esc3(t("storefront_sort"))}</span><select data-catalog-sort><option value="featured">${esc3(t("storefront_sort_featured"))}</option><option value="price-asc">${esc3(t("storefront_sort_low"))}</option><option value="price-desc">${esc3(t("storefront_sort_high"))}</option><option value="name">${esc3(t("storefront_sort_name"))}</option></select></label></div></div>` : ""}
   ${grid}
+  <div class="catalog-empty" data-catalog-empty hidden><span class="empty-symbol">${icon("search")}</span><h3>${esc3(t("storefront_empty_title"))}</h3><p>${esc3(t("storefront_empty_body"))}</p><button class="button button-secondary" type="button" data-catalog-reset>${esc3(t("storefront_reset"))}</button></div>
 </section>
-<section class="how" aria-labelledby="how-heading">
-  <h2 id="how-heading">${esc3(t("how_heading"))}</h2>
-  <ol>${(paypal ? ["how_paypal_1", "how_paypal_2", "how_paypal_3"] : ["how_1", "how_2", "how_3"]).map((key) => `<li>${esc3(t(key))}</li>`).join("")}</ol>
-</section>
-${settings.about ? `<section class="about" aria-labelledby="about-heading"><h2 id="about-heading">${esc3(t("about_heading"))}</h2>${paragraphs(settings.about)}</section>` : ""}`;
-  return layout({
-    settings,
-    t,
-    title,
-    description,
-    canonical: absoluteUrl(origin, "/"),
-    ogImage: firstImage ? absoluteImages(origin, firstImage)[0] : "",
-    jsonLd: [storeJsonLd({ origin, settings })],
-    body,
-    site
-  });
+<section class="buying-guide" aria-labelledby="how-heading" id="how-we-work"><div class="section-heading"><div><p class="eyebrow">${esc3(t("storefront_buying_eyebrow"))}</p><h2 id="how-heading">${esc3(t("storefront_buying_title"))}</h2></div></div><div class="guide-grid"><article><span class="guide-number">01</span><h3>${esc3(t("storefront_buying_specs"))}</h3><p>${esc3(t("storefront_buying_specs_body"))}</p></article><article><span class="guide-number">02</span><h3>${esc3(t("storefront_buying_edition"))}</h3><p>${esc3(t("storefront_buying_edition_body"))}</p></article><article><span class="guide-number">03</span><h3>${esc3(t("storefront_buying_order"))}</h3><ol>${(paypal ? ["how_paypal_1", "how_paypal_2", "how_paypal_3"] : ["how_1", "how_2", "how_3"]).map((key) => `<li>${esc3(t(key))}</li>`).join("")}</ol></article></div></section>
+<section class="shipping-feature" id="shipping"><div><p class="eyebrow">${esc3(t("storefront_shipping"))}</p><h2>${esc3(t("storefront_shipping_title"))}</h2><p>${esc3(t("storefront_shipping_body"))}</p>${shippingPage ? `<a class="text-link" href="${esc3(pagePath(shippingPage))}">${esc3(t("storefront_shipping_policy"))}${icon("arrow")}</a>` : ""}</div><div class="shipping-destinations">${destinations.map((name, index) => `<div><span class="destination-index">0${index + 1}</span><span>${esc3(name)}</span>${icon("arrow")}</div>`).join("")}</div></section>
+${settings.about ? `<section class="about" id="about" aria-labelledby="about-heading"><p class="eyebrow">${esc3(settings.storeName)}</p><h2 id="about-heading">${esc3(t("about_heading"))}</h2>${paragraphs(settings.about)}</section>` : ""}`;
+  return layout({ settings, t, title, description, canonical: absoluteUrl(origin, "/"), ogImage: firstImage ? absoluteImages(origin, firstImage)[0] : "", jsonLd: [storeJsonLd({ origin, settings })], body, site });
 };
 var productPage = ({ origin, settings, product, site = {}, shipping = null }) => {
   const t = translator(settings.language);
   const content = product.content;
+  const view = displayProduct(product, t);
+  const overview = ["storage", "memory", "screen", "battery", "age_grade", "materials", "dimensions", "batteries"].filter((key) => detailValue(view.attributes[key])).slice(0, 4);
   const specs = [
     ...product.sku ? [[t("spec_sku"), product.sku]] : [],
     ...productDetails(content.attributes, { extraKeys: [...product.specKeys ?? [], ...settings.showDetails], language: settings.language })
   ];
   const bullets = Array.isArray(content.bullets) ? content.bullets.filter((item) => typeof item === "string" && item.trim()).slice(0, 8) : [];
   const thumbs = product.images.length > 1 ? `<ul class="thumbs">${product.images.map(
-    (image, index) => `<li><a href="${esc3(imageSrc(product, image, index))}" data-gallery-thumb><img src="${esc3(imageSrc(product, image, index))}" alt="" width="120" height="120" loading="lazy" referrerpolicy="no-referrer"></a></li>`
+    (image, index) => `<li><a href="${esc3(imageSrc(product, image, index))}" data-gallery-thumb aria-label="${esc3(t("storefront_image", { number: index + 1, total: product.images.length }))}" aria-current="${index === 0 ? "true" : "false"}"><img src="${esc3(imageSrc(product, image, index))}" alt="" width="120" height="120" loading="lazy" referrerpolicy="no-referrer"></a></li>`
   ).join("")}</ul>` : "";
-  const buy = product.soldOut ? `<p class="badge badge-large">${esc3(t("sold_out"))}</p>` : `<form class="add-form" action="/order" method="get" data-add-form>
+  const buy = product.soldOut ? `<p class="badge badge-large">${esc3(t("sold_out"))}</p>` : `<form class="add-form" action="/order" method="get" data-add-form data-added-message="${esc3(t("storefront_added"))}">
   <input type="hidden" name="add" value="${esc3(product.id)}">
   <label class="qty">${esc3(t("quantity"))} <input type="number" name="qty" min="1" max="${product.maxQuantity}" value="1" inputmode="numeric"></label>
   <button class="button" type="submit">${esc3(t("add_to_order"))}</button>
 </form>`;
   const certificates = product.certificates.length ? `<h2>${esc3(t("certificates_heading"))}</h2>
 <ul class="certs">${product.certificates.map((cert) => `<li><strong>${esc3(cert.label)}</strong> <span class="muted">${esc3(t("valid_until", { date: cert.expires }))}</span></li>`).join("")}</ul>` : "";
-  const body = `<nav class="crumbs" aria-label="Breadcrumb"><a href="/#products">${esc3(t("nav_products"))}</a> <span aria-hidden="true">/</span> <span>${esc3(product.name)}</span></nav>
+  const body = `<nav class="crumbs" aria-label="${esc3(t("storefront_breadcrumb"))}"><a href="/#products">${esc3(t("nav_products"))}</a> <span aria-hidden="true">/</span> <span>${esc3(view.model)}</span></nav>
 <article class="product">
-  <div class="gallery">
-    <div class="gallery-main" data-gallery-main>${productImage(product, t, { eager: true })}</div>
-    ${thumbs}
-  </div>
+  <div class="gallery"><div class="gallery-main" data-gallery-main>${productImage(product, t, { eager: true })}</div>${thumbs}</div>
   <div class="product-info">
-    <h1>${esc3(product.name)}</h1>
+    <p class="eyebrow">${esc3(view.brand)}</p><h1>${esc3(view.model)}</h1>
+    ${view.variant ? `<p class="product-variant">${esc3(view.variant)}</p>` : ""}
+    ${view.model !== product.name ? `<p class="listed-model visually-hidden">${esc3(t("storefront_product_full_name"))}: ${esc3(product.name)}</p>` : ""}
     ${product.subtitle ? `<p class="subtitle">${esc3(product.subtitle)}</p>` : ""}
-    <p class="price price-large">${esc3(product.priceText)}</p>
-    ${buy}
-    <p class="note">${esc3(t(site.payment === "paypal" ? "paypal_note" : "no_payment_note"))}</p>
-    ${typeof content.description === "string" ? `<div class="description">${paragraphs(content.description)}</div>` : ""}
-    ${bullets.length ? `<ul class="bullets">${bullets.map((item) => `<li>${esc3(item)}</li>`).join("")}</ul>` : ""}
-    ${specs.length ? `<h2>${esc3(t("details_heading"))}</h2><dl class="specs">${specs.map(([label2, value2]) => `<div><dt>${esc3(label2)}</dt><dd>${esc3(value2)}</dd></div>`).join("")}</dl>` : ""}
-    ${certificates}
+    <div class="product-price-row"><p class="price price-large">${esc3(product.priceText)}</p><span class="currency-code">${esc3(product.currency)}</span></div>
+    ${overview.length ? `<dl class="spec-overview" aria-label="${esc3(t("storefront_product_overview"))}">${overview.map((key) => `<div><dt>${esc3(t(`spec_${key}`))}</dt><dd>${esc3(detailValue(view.attributes[key]).split(",")[0])}</dd></div>`).join("")}</dl>` : ""}
+    <div class="product-purchase">${buy}<p class="note">${esc3(t(site.payment === "paypal" ? "paypal_note" : "no_payment_note"))}</p></div>
+    <div class="edition-callout"><span class="edition-dot" aria-hidden="true"></span><div><strong>${esc3(t(view.chinaEdition ? "storefront_edition" : "storefront_details_upfront"))}</strong><p>${esc3(t(view.chinaEdition ? "storefront_edition_note" : "storefront_before_order"))}</p><a href="#model-details">${esc3(t("storefront_product_specs_link"))}<span aria-hidden="true"> \u2197</span></a></div></div>
   </div>
+  <section class="model-story" id="model-details"><div class="model-description"><p class="eyebrow">${esc3(t("storefront_product_details"))}</p><h2>${esc3(t("storefront_product_description"))}</h2>${typeof content.description === "string" ? `<div class="description">${paragraphs(content.description)}</div>` : ""}${bullets.length ? `<ul class="bullets">${bullets.map((item) => `<li>${esc3(item)}</li>`).join("")}</ul>` : ""}${certificates}</div><div class="model-specifications">${specs.length ? `<h2>${esc3(t("details_heading"))}</h2><dl class="specs">${specs.map(([label2, value2]) => `<div><dt>${esc3(label2)}</dt><dd>${esc3(value2)}</dd></div>`).join("")}</dl>` : ""}</div></section>
 </article>`;
   return layout({
     settings,
@@ -32066,7 +32342,8 @@ var orderPage = ({
   <input type="hidden" name="orderId" value="${esc3(orderId)}">
   <input type="hidden" name="expectedTotal" value="${country && rate?.ok ? total.toFixed(2) : ""}">
   <section class="order-items" aria-labelledby="items-heading">
-    <h2 id="items-heading">${esc3(t("order_items"))}</h2>
+    <p class="cart-feedback" role="status" data-cart-feedback hidden>${esc3(t("storefront_added"))}</p>
+    <p class="eyebrow">${esc3(t("storefront_checkout_step2"))}</p><h2 id="items-heading">${esc3(t("order_items"))}</h2>
     <div data-order-items>${rows}</div>
     ${fieldError("items")}
     <dl class="order-sums">
@@ -32078,7 +32355,7 @@ var orderPage = ({
     <p class="note" data-order-free-over hidden></p>
   </section>
   <section class="order-details" aria-labelledby="details-heading">
-    <h2 id="details-heading">${esc3(t("order_details"))}</h2>
+    <p class="eyebrow">${esc3(t("storefront_checkout_step1"))}</p><h2 id="details-heading">${esc3(t("order_details"))}</h2>
     ${input2("name", "field_name", { autocomplete: "name", required: true, maxlength: 100 })}
     ${input2("email", "field_email", { autocomplete: "email", required: true, maxlength: 200, type: "email" })}
     ${input2("phone", "field_phone", { autocomplete: "tel", required: true, maxlength: 40, type: "tel" })}
@@ -32125,7 +32402,7 @@ var orderPage = ({
     })),
     messages: Object.fromEntries(CLIENT_MESSAGE_KEYS.map((key) => [key, t(key)]))
   };
-  const body = `<h1>${esc3(t(paypal ? "checkout_title" : "order_title"))}</h1>
+  const body = `<p class="eyebrow checkout-eyebrow">${esc3(t("storefront_checkout_eyebrow"))}</p><h1 class="checkout-title">${esc3(t(paypal ? "checkout_title" : "order_title"))}</h1>
 <p class="lead">${esc3(t(paypal ? "checkout_intro" : "order_intro"))}</p>
 ${accountNote}
 ${ownerNote}
@@ -32290,7 +32567,7 @@ var postPage = ({ origin, settings, post, listed = [], site = {} }) => {
       post.updatedAt ? `<meta property="article:modified_time" content="${esc3(post.updatedAt)}">` : ""
     ],
     jsonLd: postJsonLd({ origin, post, settings, blogLabel: t("blog_heading"), listed }),
-    body: `<nav class="crumbs" aria-label="Breadcrumb"><a href="${BLOG_PATH}">${esc3(t("blog_heading"))}</a> <span aria-hidden="true">/</span> <span>${esc3(post.title)}</span></nav>
+    body: `<nav class="crumbs" aria-label="${esc3(t("storefront_breadcrumb"))}"><a href="${BLOG_PATH}">${esc3(t("blog_heading"))}</a> <span aria-hidden="true">/</span> <span>${esc3(post.title)}</span></nav>
 <article class="post">
   <h1>${esc3(post.title)}</h1>
   ${postMeta(post, t, settings.language)}
@@ -32334,8 +32611,8 @@ ${rows}
 </tbody>
 </table>
 ${view.nextCursor ? `<p><a href="/account?cursor=${encodeURIComponent(view.nextCursor)}">${esc3(t("account_more"))}</a></p>` : ""}` : view.unavailable ? "" : `<p class="empty">${esc3(t("account_orders_empty"))}</p>`;
-    body = `<section class="account">
-  <h1>${esc3(t("account_orders_heading"))}</h1>
+    body = `<section class="account account-history">
+  <p class="eyebrow">${esc3(t("storefront_account_eyebrow"))}</p><h1>${esc3(t("account_orders_heading"))}</h1>
   <div class="account-who">
     <p>${esc3(t("account_signed_in_as", { email: view.user.email }))}</p>
     <form method="post" action="/account/sign-out"><button class="link-button" type="submit">${esc3(t("account_sign_out"))}</button></form>
@@ -32345,8 +32622,8 @@ ${view.nextCursor ? `<p><a href="/account?cursor=${encodeURIComponent(view.nextC
   <p class="note">${esc3(t("account_orders_note"))}</p>
 </section>`;
   } else if (view.kind === "code") {
-    body = `<section class="account">
-  <h1>${esc3(t("account_code_title"))}</h1>
+    body = `<section class="account account-sign-in">
+  <p class="eyebrow">${esc3(t("storefront_account_eyebrow"))}</p><h1>${esc3(t("account_code_title"))}</h1>
   ${accountMessage(view.message)}
   <form class="account-form" method="post" action="/account/verify">
     <input type="hidden" name="email" value="${esc3(view.email)}">
@@ -32359,8 +32636,8 @@ ${view.nextCursor ? `<p><a href="/account?cursor=${encodeURIComponent(view.nextC
   </div>
 </section>`;
   } else {
-    body = `<section class="account">
-  <h1>${esc3(t("account_title"))}</h1>
+    body = `<section class="account account-sign-in">
+  <p class="eyebrow">${esc3(t("storefront_account_eyebrow"))}</p><h1>${esc3(t("account_title"))}</h1>
   <p class="lead">${esc3(t("account_intro"))}</p>
   ${accountMessage(view.message)}
   <form class="account-form" method="post" action="/account/send-code">
@@ -32796,12 +33073,12 @@ var readOptional = async (records, resource, limit, log, label2, sort) => {
     return { status: "unreadable", records: [] };
   }
 };
-var createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, now = () => Date.now(), log = console }) => {
+var createShop = ({ client, records, busabaseOrigin, apiKey, shopFolderId, fetchImpl = fetch, now = () => Date.now(), log = console }) => {
   let cached2 = null;
   let inFlight = null;
   const readCatalog = async () => {
     const nodes = await client.nodes.list({ types: ["base", "airapp"] }) ?? [];
-    const shop = resolveShopTables(nodes);
+    const shop = resolveShopTables(nodes, { shopFolderId });
     if (shop.settings.status !== "found") {
       return { setup: shop.settings.status === "ambiguous" ? "settings-ambiguous" : "settings-missing" };
     }
@@ -33061,7 +33338,7 @@ var createSecretsReader = ({ read, now = () => Date.now() }) => {
 
 // src/handler.js
 var MAX_ORDER_BODY_BYTES = 16 * 1024;
-var SHOP_VERSION = "0.10.2";
+var SHOP_VERSION = "0.11.0";
 var MCP_REQUESTS_PER_MINUTE = 120;
 var MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
 var SECURITY_HEADERS = {
@@ -33170,6 +33447,7 @@ var createHandler = (overrides = {}) => {
         spaceId: env2.BUSABASE_SPACE_ID
       });
       const shop = createShop({
+        shopFolderId: deps.shopFolderId,
         client,
         records: deps.createRecords(client, { appId: "busa-shop" }),
         busabaseOrigin: new URL(baseUrl).origin,

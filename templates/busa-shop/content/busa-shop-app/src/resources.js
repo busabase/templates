@@ -53,18 +53,21 @@ export const pickResource = (nodes, { type, appId, resourceKey, fallbackSlug, pa
   return { status: "ambiguous", nodes: matches };
 };
 
-export const resolveShopTables = (nodes) => ({
+/** Optional installed-instance binding; missing or ambiguous resources never fall back to another shop. */
+export const resolveShopTables = (nodes, { shopFolderId } = {}) => ({
   settings: pickResource(nodes, {
     type: "base",
     appId: SHOP_APP_ID,
     resourceKey: "settings",
     fallbackSlug: "busa-shop-settings",
+    parentId: shopFolderId,
   }),
   orders: pickResource(nodes, {
     type: "base",
     appId: SHOP_APP_ID,
     resourceKey: "orders",
     fallbackSlug: "busa-shop-orders",
+    parentId: shopFolderId,
   }),
 });
 

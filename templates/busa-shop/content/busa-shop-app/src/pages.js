@@ -4,7 +4,7 @@
 
 import { FORM_TIME_FIELD, HONEYPOT_FIELD } from "./account.js";
 import { countryName, formatPrice, imageSrc, localeTag } from "./catalog.js";
-import { productDetails } from "./details.js";
+import { detailValue, productDetails } from "./details.js";
 import { CLIENT_MESSAGE_KEYS, PAY_MESSAGE_KEYS, translator } from "./i18n.js";
 import { addressRules } from "./orders.js";
 import { fillPlaceholders, markdownText, pagePath, renderMarkdown } from "./policies.js";
@@ -84,21 +84,25 @@ const layout = ({
     `<link rel="stylesheet" href="/static/shop.css">`,
     ...jsonLd.map(jsonLdScript),
   ].filter(Boolean);
+  const initials = (storeName || "Shop").split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join("");
+  const shippingPage = footerPages.find((page) => /shipping/i.test(page.slug ?? page.path ?? ""));
+  const shippingHref = shippingPage ? pagePath(shippingPage) : "/#shipping";
   const header = settings
-    ? `<header class="site-header"><div class="wrap header-row">
-  <a class="brand" href="/">${esc(storeName)}</a>
-  <nav class="site-nav"><a href="/#products">${esc(t("nav_products"))}</a>${hasBlog ? `<a href="${BLOG_PATH}">${esc(t("nav_blog"))}</a>` : ""}${site.account ? `<a class="account-link" href="/account">${esc(t("nav_account"))}</a>` : ""}<a class="order-link" href="/order">${esc(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}<span class="cart-count" data-cart-count hidden></span></a></nav>
+    ? `<a class="skip-link" href="#main-content">${esc(t("storefront_skip"))}</a>
+<header class="site-header"><div class="wrap header-row">
+  <a class="brand" href="/" aria-label="${esc(storeName)}"><span class="brand-mark" aria-hidden="true">${esc(initials)}</span><span>${esc(storeName)}</span></a>
+  <nav class="site-nav" aria-label="${esc(t("storefront_footer_explore"))}"><a class="nav-shop" href="/#products">${esc(t("storefront_shop"))}</a><a href="${esc(shippingHref)}">${esc(t("storefront_shipping"))}</a><a href="/#how-we-work">${esc(t("storefront_about"))}</a>${hasBlog ? `<a href="${BLOG_PATH}">${esc(t("nav_blog"))}</a>` : ""}</nav>
+  <nav class="header-actions" aria-label="${esc(t("storefront_footer_account"))}"><a class="icon-link search-link" data-header-search href="/#products" aria-label="${esc(t("storefront_search"))}">${icon("search")}</a>${site.account ? `<a class="icon-link account-link" href="/account">${icon("user")}<span>${esc(t("nav_account"))}</span></a>` : ""}<a class="icon-link order-link" href="/order" aria-label="${esc(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}">${icon("bag")}<span class="cart-label">${esc(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}</span><span class="cart-count" data-cart-count hidden></span></a></nav>
 </div></header>`
     : "";
   const notice = settings?.demoNotice ? `<div class="demo-notice" role="note">${esc(t("demo_notice"))}</div>` : "";
   const footer = settings
-    ? `<footer class="site-footer"><div class="wrap footer-row">
-  <p><strong>${esc(storeName)}</strong>${settings.tagline ? ` · ${esc(settings.tagline)}` : ""}</p>
-  ${settings.contactEmail ? `<p>${esc(t("contact"))}: <a href="mailto:${esc(settings.contactEmail)}">${esc(settings.contactEmail)}</a></p>` : ""}
-  ${footerPages.length ? `<nav class="footer-links" aria-label="${esc(t("footer_policies"))}">${footerPages.map((page) => `<a href="${esc(pagePath(page))}">${esc(page.title)}</a>`).join("")}</nav>` : ""}
-  ${hasBlog ? `<nav class="footer-links footer-blog" aria-label="${esc(t("nav_blog"))}"><a href="${BLOG_PATH}">${esc(t("nav_blog"))}</a><a href="${FEED_PATH}">${esc(t("blog_feed"))}</a></nav>` : ""}
-  <p class="muted">${esc(t(paypal ? "footer_paypal" : "footer_orders"))}</p>
-</div></footer>`
+    ? `<footer class="site-footer"><div class="wrap footer-grid">
+  <div class="footer-brand"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">${esc(initials)}</span><span>${esc(storeName)}</span></a><p>${esc(settings.tagline || t("storefront_footer_line"))}</p>${settings.contactEmail ? `<a href="mailto:${esc(settings.contactEmail)}">${esc(settings.contactEmail)}</a>` : ""}</div>
+  <div><h2>${esc(t("storefront_footer_explore"))}</h2><nav class="footer-links"><a href="/#products">${esc(t("storefront_shop"))}</a><a href="/#how-we-work">${esc(t("storefront_how"))}</a>${hasBlog ? `<a href="${BLOG_PATH}">${esc(t("nav_blog"))}</a><a href="${FEED_PATH}">${esc(t("blog_feed"))}</a>` : ""}</nav></div>
+  ${footerPages.length ? `<div><h2>${esc(t("storefront_footer_help"))}</h2><nav class="footer-links" aria-label="${esc(t("footer_policies"))}">${footerPages.map((page) => `<a href="${esc(pagePath(page))}">${esc(page.title)}</a>`).join("")}</nav></div>` : ""}
+  <div><h2>${esc(t("storefront_footer_account"))}</h2><nav class="footer-links">${site.account ? `<a href="/account">${esc(t("nav_account"))}</a>` : ""}<a href="/order">${esc(t(site.payment === "paypal" ? "nav_checkout" : "nav_order"))}</a><a href="${esc(shippingHref)}">${esc(t("storefront_shipping"))}</a></nav></div>
+</div><div class="wrap footer-bottom"><span>© ${new Date().getUTCFullYear()} ${esc(storeName)}</span><span>${esc(t(paypal ? "footer_paypal" : "footer_orders"))}</span></div></footer>`
     : "";
   return `<!doctype html>
 <html lang="${esc(lang)}">
@@ -108,7 +112,7 @@ ${meta.join("\n")}
 <body>
 ${notice}
 ${header}
-<main class="wrap">
+<main class="wrap" id="main-content">
 ${body}
 </main>
 ${footer}
@@ -126,16 +130,48 @@ const productImage = (product, t, { index = 0, className = "", eager = false } =
   return `<img class="${className}" src="${esc(imageSrc(product, image, index))}" alt="${esc(product.name)}" width="800" height="800"${eager ? "" : ` loading="lazy"`} decoding="async" referrerpolicy="no-referrer">`;
 };
 
-const card = (product, t) => `<li class="card">
+const icon = (name) => {
+  const paths = {
+    search: '<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/>',
+    user: '<circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/>',
+    bag: '<path d="M5 7h14l1 14H4L5 7Z"/><path d="M8.5 8V5a3.5 3.5 0 0 1 7 0v3"/>',
+    arrow: '<path d="M4 12h16m-6-6 6 6-6 6"/>',
+    truck: '<path d="M3 6h11v11H3V6Zm11 4h4l3 4v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',
+  };
+  return `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] ?? paths.arrow}</svg>`;
+};
+
+const displayProduct = (product, t) => {
+  const attributes = product.content?.attributes ?? {};
+  const model = detailValue(attributes.model) || product.name;
+  const brand = detailValue(attributes.brand);
+  const variant = [
+    detailValue(attributes.memory) ? t("storefront_ram", { value: detailValue(attributes.memory) }) : "",
+    detailValue(attributes.storage), detailValue(attributes.color),
+    detailValue(attributes.age_grade) ? `${t("spec_age_grade")}: ${detailValue(attributes.age_grade)}` : "",
+  ].filter(Boolean).join(" · ");
+  const highlights = [detailValue(attributes.screen).split(",")[0], detailValue(attributes.battery), detailValue(attributes.materials)].filter(Boolean).slice(0, 2);
+  // A manufacturing country is not an edition. Only an explicit product name or edition/software description qualifies.
+  const chinaEdition = /\bchina[- ](?:version|edition)\b/i.test([product.name, detailValue(attributes.edition), detailValue(attributes.version), detailValue(attributes.os)].join(" "));
+  return { attributes, model, brand, variant, highlights, chinaEdition };
+};
+
+const card = (product, t) => {
+  const view = displayProduct(product, t);
+  return `<li class="card" data-catalog-product data-brand="${esc(view.brand)}" data-price="${product.price}" data-search="${esc([product.name, view.brand, view.model, view.variant].join(" ").toLowerCase())}" data-name="${esc(view.model)}">
   <a class="card-link" href="${esc(productPath(product))}">
-    <div class="card-media">${productImage(product, t)}</div>
+    <div class="card-media">${product.soldOut ? `<span class="availability">${esc(t("sold_out"))}</span>` : ""}${productImage(product, t)}<span class="card-arrow">${icon("arrow")}</span></div>
     <div class="card-body">
-      <h3>${esc(product.name)}</h3>
-      ${product.subtitle ? `<p class="subtitle">${esc(product.subtitle)}</p>` : ""}
-      <p class="price">${esc(product.priceText)}${product.soldOut ? ` <span class="badge">${esc(t("sold_out"))}</span>` : ""}</p>
+      ${view.brand ? `<p class="product-brand">${esc(view.brand)}</p>` : ""}
+      <h3>${esc(view.model)}</h3>
+      ${view.model !== product.name ? `<span class="visually-hidden">${esc(product.name)}</span>` : ""}
+      ${view.variant ? `<p class="variant">${esc(view.variant)}</p>` : product.subtitle ? `<p class="subtitle">${esc(product.subtitle)}</p>` : ""}
+      ${view.highlights.length ? `<p class="card-highlights">${view.highlights.map(esc).join("<span aria-hidden=\"true\"> / </span>")}</p>` : ""}
+      <div class="card-bottom"><p class="price">${esc(product.priceText)} <span class="currency-code">${esc(product.currency)}</span></p><span class="card-details">${esc(t("storefront_view"))}</span></div>
     </div>
   </a>
 </li>`;
+};
 
 export const homePage = ({ origin, settings, catalog, site = {} }) => {
   const paypal = site.payment === "paypal";
@@ -143,38 +179,36 @@ export const homePage = ({ origin, settings, catalog, site = {} }) => {
   const title = settings.tagline ? `${settings.storeName} · ${settings.tagline}` : settings.storeName;
   const description = plainSummary(settings.about || settings.tagline || settings.storeName);
   const firstImage = catalog.listed.find((product) => product.images.length);
+  const featured = catalog.listed.find((product) => !product.soldOut && product.images.length) || firstImage;
+  const featuredView = featured ? displayProduct(featured, t) : null;
+  const brands = [...new Set(catalog.listed.map((product) => displayProduct(product, t).brand).filter(Boolean))];
   const grid = catalog.listed.length
-    ? `<ul class="grid">${catalog.listed.map((product) => card(product, t)).join("\n")}</ul>`
+    ? `<ul class="grid" data-catalog-grid>${catalog.listed.map((product) => card(product, t)).join("\n")}</ul>`
     : `<p class="empty">${esc(t("products_empty"))}</p>`;
-  const body = `<section class="hero">
-  <h1>${esc(settings.storeName)}</h1>
-  ${settings.tagline ? `<p class="tagline">${esc(settings.tagline)}</p>` : ""}
+  const destinations = (settings.shipsTo ?? []).map((code) => countryName(code, settings.language));
+  const shippingPage = (site.pages ?? []).find((page) => /shipping/i.test(page.slug ?? page.path ?? ""));
+  const body = `<section class="hero storefront-hero">
+  <div class="hero-copy"><p class="eyebrow">${esc(t("storefront_hero_eyebrow"))}</p><h1>${esc(t("storefront_hero_title"))}</h1><p class="hero-intro">${esc(t("storefront_hero_body"))}</p><div class="hero-actions"><a class="button" href="#products">${esc(t("storefront_explore"))}${icon("arrow")}</a><a class="text-link" href="#how-we-work">${esc(t("storefront_how"))}<span aria-hidden="true">↗</span></a></div><p class="hero-note"><span class="edition-dot" aria-hidden="true"></span>${esc(t("storefront_details_upfront"))}<span aria-hidden="true"> · </span>${esc(t("storefront_before_order"))}</p></div>
+  ${featured ? `<a class="hero-product" href="${esc(productPath(featured))}"><div class="hero-product-top"><span>${esc(t("storefront_featured"))}</span>${featured.soldOut || featuredView.chinaEdition ? `<span class="feature-edition">${esc(t(featured.soldOut ? "sold_out" : "storefront_edition"))}</span>` : ""}</div><div class="hero-device">${productImage(featured, t, { eager: true })}</div><div class="hero-product-caption"><div><span class="product-brand">${esc(featuredView.brand)}</span><h2>${esc(featuredView.model)}</h2><p>${esc(featuredView.variant)}</p></div><div class="hero-product-price"><span class="price">${esc(featured.priceText)}</span><span class="currency-code">${esc(featured.currency)}</span><span class="feature-arrow">${icon("arrow")}</span></div></div></a>` : ""}
 </section>
-<section id="products" aria-labelledby="products-heading">
-  <h2 id="products-heading">${esc(t("products_heading"))}</h2>
+${destinations.length ? `<aside class="destination-strip"><span>${icon("truck")}<strong>${esc(t("storefront_destinations"))}</strong></span><p>${destinations.slice(0, 4).map(esc).join('<span aria-hidden="true"> · </span>')}${destinations.length > 4 ? ` <span class="more-destinations">${esc(t("storefront_more_destinations", {count: destinations.length - 4}))}</span>` : ""}</p><a href="#shipping">${esc(t("storefront_shipping"))}<span aria-hidden="true">↗</span></a></aside>` : ""}
+<section id="products" class="catalog-section" aria-labelledby="products-heading" data-catalog>
+  <div class="section-heading"><div><p class="eyebrow">${esc(t("storefront_catalog_eyebrow"))}</p><h2 id="products-heading">${esc(t("storefront_catalog_title"))}</h2><p class="section-intro">${esc(t("storefront_catalog_intro"))}</p></div><p class="catalog-count" data-catalog-count aria-live="polite" data-template="${esc(t("storefront_count"))}" data-template-one="${esc(t("storefront_count_one"))}">${esc(t(catalog.listed.length === 1 ? "storefront_count_one" : "storefront_count", { count: catalog.listed.length }))}</p></div>
+  ${catalog.listed.length ? `<div class="catalog-controls" data-catalog-controls hidden><div class="brand-filters" role="group" aria-label="${esc(t("storefront_filter_label"))}"><button class="filter-chip" type="button" data-brand-filter="" aria-pressed="true">${esc(t("storefront_all_brands"))}</button>${brands.map((brand) => `<button class="filter-chip" type="button" data-brand-filter="${esc(brand)}" aria-pressed="false">${esc(brand)}</button>`).join("")}</div><div class="catalog-tools"><button class="filter-reset" data-catalog-reset type="button" hidden>${esc(t("storefront_reset"))}</button><label class="catalog-search">${icon("search")}<span class="visually-hidden">${esc(t("storefront_search"))}</span><input type="search" id="catalog-search" data-catalog-search placeholder="${esc(t("storefront_search_placeholder"))}" autocomplete="off"></label><label class="catalog-sort"><span class="visually-hidden">${esc(t("storefront_sort"))}</span><select data-catalog-sort><option value="featured">${esc(t("storefront_sort_featured"))}</option><option value="price-asc">${esc(t("storefront_sort_low"))}</option><option value="price-desc">${esc(t("storefront_sort_high"))}</option><option value="name">${esc(t("storefront_sort_name"))}</option></select></label></div></div>` : ""}
   ${grid}
+  <div class="catalog-empty" data-catalog-empty hidden><span class="empty-symbol">${icon("search")}</span><h3>${esc(t("storefront_empty_title"))}</h3><p>${esc(t("storefront_empty_body"))}</p><button class="button button-secondary" type="button" data-catalog-reset>${esc(t("storefront_reset"))}</button></div>
 </section>
-<section class="how" aria-labelledby="how-heading">
-  <h2 id="how-heading">${esc(t("how_heading"))}</h2>
-  <ol>${(paypal ? ["how_paypal_1", "how_paypal_2", "how_paypal_3"] : ["how_1", "how_2", "how_3"]).map((key) => `<li>${esc(t(key))}</li>`).join("")}</ol>
-</section>
-${settings.about ? `<section class="about" aria-labelledby="about-heading"><h2 id="about-heading">${esc(t("about_heading"))}</h2>${paragraphs(settings.about)}</section>` : ""}`;
-  return layout({
-    settings,
-    t,
-    title,
-    description,
-    canonical: absoluteUrl(origin, "/"),
-    ogImage: firstImage ? absoluteImages(origin, firstImage)[0] : "",
-    jsonLd: [storeJsonLd({ origin, settings })],
-    body,
-    site,
-  });
+<section class="buying-guide" aria-labelledby="how-heading" id="how-we-work"><div class="section-heading"><div><p class="eyebrow">${esc(t("storefront_buying_eyebrow"))}</p><h2 id="how-heading">${esc(t("storefront_buying_title"))}</h2></div></div><div class="guide-grid"><article><span class="guide-number">01</span><h3>${esc(t("storefront_buying_specs"))}</h3><p>${esc(t("storefront_buying_specs_body"))}</p></article><article><span class="guide-number">02</span><h3>${esc(t("storefront_buying_edition"))}</h3><p>${esc(t("storefront_buying_edition_body"))}</p></article><article><span class="guide-number">03</span><h3>${esc(t("storefront_buying_order"))}</h3><ol>${(paypal ? ["how_paypal_1", "how_paypal_2", "how_paypal_3"] : ["how_1", "how_2", "how_3"]).map((key) => `<li>${esc(t(key))}</li>`).join("")}</ol></article></div></section>
+<section class="shipping-feature" id="shipping"><div><p class="eyebrow">${esc(t("storefront_shipping"))}</p><h2>${esc(t("storefront_shipping_title"))}</h2><p>${esc(t("storefront_shipping_body"))}</p>${shippingPage ? `<a class="text-link" href="${esc(pagePath(shippingPage))}">${esc(t("storefront_shipping_policy"))}${icon("arrow")}</a>` : ""}</div><div class="shipping-destinations">${destinations.map((name, index) => `<div><span class="destination-index">0${index + 1}</span><span>${esc(name)}</span>${icon("arrow")}</div>`).join("")}</div></section>
+${settings.about ? `<section class="about" id="about" aria-labelledby="about-heading"><p class="eyebrow">${esc(settings.storeName)}</p><h2 id="about-heading">${esc(t("about_heading"))}</h2>${paragraphs(settings.about)}</section>` : ""}`;
+  return layout({ settings, t, title, description, canonical: absoluteUrl(origin, "/"), ogImage: firstImage ? absoluteImages(origin, firstImage)[0] : "", jsonLd: [storeJsonLd({ origin, settings })], body, site });
 };
 
 export const productPage = ({ origin, settings, product, site = {}, shipping = null }) => {
   const t = translator(settings.language);
   const content = product.content;
+  const view = displayProduct(product, t);
+  const overview = ["storage", "memory", "screen", "battery", "age_grade", "materials", "dimensions", "batteries"].filter((key) => detailValue(view.attributes[key])).slice(0, 4);
   const specs = [
     ...(product.sku ? [[t("spec_sku"), product.sku]] : []),
     ...productDetails(content.attributes, { extraKeys: [...(product.specKeys ?? []), ...settings.showDetails], language: settings.language }),
@@ -187,13 +221,13 @@ export const productPage = ({ origin, settings, product, site = {}, shipping = n
       ? `<ul class="thumbs">${product.images
           .map(
             (image, index) =>
-              `<li><a href="${esc(imageSrc(product, image, index))}" data-gallery-thumb><img src="${esc(imageSrc(product, image, index))}" alt="" width="120" height="120" loading="lazy" referrerpolicy="no-referrer"></a></li>`,
+              `<li><a href="${esc(imageSrc(product, image, index))}" data-gallery-thumb aria-label="${esc(t("storefront_image", {number:index + 1,total:product.images.length}))}" aria-current="${index === 0 ? "true" : "false"}"><img src="${esc(imageSrc(product, image, index))}" alt="" width="120" height="120" loading="lazy" referrerpolicy="no-referrer"></a></li>`,
           )
           .join("")}</ul>`
       : "";
   const buy = product.soldOut
     ? `<p class="badge badge-large">${esc(t("sold_out"))}</p>`
-    : `<form class="add-form" action="/order" method="get" data-add-form>
+    : `<form class="add-form" action="/order" method="get" data-add-form data-added-message="${esc(t("storefront_added"))}">
   <input type="hidden" name="add" value="${esc(product.id)}">
   <label class="qty">${esc(t("quantity"))} <input type="number" name="qty" min="1" max="${product.maxQuantity}" value="1" inputmode="numeric"></label>
   <button class="button" type="submit">${esc(t("add_to_order"))}</button>
@@ -204,23 +238,20 @@ export const productPage = ({ origin, settings, product, site = {}, shipping = n
         .map((cert) => `<li><strong>${esc(cert.label)}</strong> <span class="muted">${esc(t("valid_until", { date: cert.expires }))}</span></li>`)
         .join("")}</ul>`
     : "";
-  const body = `<nav class="crumbs" aria-label="Breadcrumb"><a href="/#products">${esc(t("nav_products"))}</a> <span aria-hidden="true">/</span> <span>${esc(product.name)}</span></nav>
+  const body = `<nav class="crumbs" aria-label="${esc(t("storefront_breadcrumb"))}"><a href="/#products">${esc(t("nav_products"))}</a> <span aria-hidden="true">/</span> <span>${esc(view.model)}</span></nav>
 <article class="product">
-  <div class="gallery">
-    <div class="gallery-main" data-gallery-main>${productImage(product, t, { eager: true })}</div>
-    ${thumbs}
-  </div>
+  <div class="gallery"><div class="gallery-main" data-gallery-main>${productImage(product, t, { eager: true })}</div>${thumbs}</div>
   <div class="product-info">
-    <h1>${esc(product.name)}</h1>
+    <p class="eyebrow">${esc(view.brand)}</p><h1>${esc(view.model)}</h1>
+    ${view.variant ? `<p class="product-variant">${esc(view.variant)}</p>` : ""}
+    ${view.model !== product.name ? `<p class="listed-model visually-hidden">${esc(t("storefront_product_full_name"))}: ${esc(product.name)}</p>` : ""}
     ${product.subtitle ? `<p class="subtitle">${esc(product.subtitle)}</p>` : ""}
-    <p class="price price-large">${esc(product.priceText)}</p>
-    ${buy}
-    <p class="note">${esc(t(site.payment === "paypal" ? "paypal_note" : "no_payment_note"))}</p>
-    ${typeof content.description === "string" ? `<div class="description">${paragraphs(content.description)}</div>` : ""}
-    ${bullets.length ? `<ul class="bullets">${bullets.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>` : ""}
-    ${specs.length ? `<h2>${esc(t("details_heading"))}</h2><dl class="specs">${specs.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>` : ""}
-    ${certificates}
+    <div class="product-price-row"><p class="price price-large">${esc(product.priceText)}</p><span class="currency-code">${esc(product.currency)}</span></div>
+    ${overview.length ? `<dl class="spec-overview" aria-label="${esc(t("storefront_product_overview"))}">${overview.map((key) => `<div><dt>${esc(t(`spec_${key}`))}</dt><dd>${esc(detailValue(view.attributes[key]).split(",")[0])}</dd></div>`).join("")}</dl>` : ""}
+    <div class="product-purchase">${buy}<p class="note">${esc(t(site.payment === "paypal" ? "paypal_note" : "no_payment_note"))}</p></div>
+    <div class="edition-callout"><span class="edition-dot" aria-hidden="true"></span><div><strong>${esc(t(view.chinaEdition ? "storefront_edition" : "storefront_details_upfront"))}</strong><p>${esc(t(view.chinaEdition ? "storefront_edition_note" : "storefront_before_order"))}</p><a href="#model-details">${esc(t("storefront_product_specs_link"))}<span aria-hidden="true"> ↗</span></a></div></div>
   </div>
+  <section class="model-story" id="model-details"><div class="model-description"><p class="eyebrow">${esc(t("storefront_product_details"))}</p><h2>${esc(t("storefront_product_description"))}</h2>${typeof content.description === "string" ? `<div class="description">${paragraphs(content.description)}</div>` : ""}${bullets.length ? `<ul class="bullets">${bullets.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>` : ""}${certificates}</div><div class="model-specifications">${specs.length ? `<h2>${esc(t("details_heading"))}</h2><dl class="specs">${specs.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>` : ""}</div></section>
 </article>`;
   return layout({
     settings,
@@ -319,7 +350,8 @@ export const orderPage = ({
   <input type="hidden" name="orderId" value="${esc(orderId)}">
   <input type="hidden" name="expectedTotal" value="${country && rate?.ok ? total.toFixed(2) : ""}">
   <section class="order-items" aria-labelledby="items-heading">
-    <h2 id="items-heading">${esc(t("order_items"))}</h2>
+    <p class="cart-feedback" role="status" data-cart-feedback hidden>${esc(t("storefront_added"))}</p>
+    <p class="eyebrow">${esc(t("storefront_checkout_step2"))}</p><h2 id="items-heading">${esc(t("order_items"))}</h2>
     <div data-order-items>${rows}</div>
     ${fieldError("items")}
     <dl class="order-sums">
@@ -331,7 +363,7 @@ export const orderPage = ({
     <p class="note" data-order-free-over hidden></p>
   </section>
   <section class="order-details" aria-labelledby="details-heading">
-    <h2 id="details-heading">${esc(t("order_details"))}</h2>
+    <p class="eyebrow">${esc(t("storefront_checkout_step1"))}</p><h2 id="details-heading">${esc(t("order_details"))}</h2>
     ${input("name", "field_name", { autocomplete: "name", required: true, maxlength: 100 })}
     ${input("email", "field_email", { autocomplete: "email", required: true, maxlength: 200, type: "email" })}
     ${input("phone", "field_phone", { autocomplete: "tel", required: true, maxlength: 40, type: "tel" })}
@@ -379,7 +411,7 @@ export const orderPage = ({
     })),
     messages: Object.fromEntries(CLIENT_MESSAGE_KEYS.map((key) => [key, t(key)])),
   };
-  const body = `<h1>${esc(t(paypal ? "checkout_title" : "order_title"))}</h1>
+  const body = `<p class="eyebrow checkout-eyebrow">${esc(t("storefront_checkout_eyebrow"))}</p><h1 class="checkout-title">${esc(t(paypal ? "checkout_title" : "order_title"))}</h1>
 <p class="lead">${esc(t(paypal ? "checkout_intro" : "order_intro"))}</p>
 ${accountNote}
 ${ownerNote}
@@ -579,7 +611,7 @@ export const postPage = ({ origin, settings, post, listed = [], site = {} }) => 
       post.updatedAt ? `<meta property="article:modified_time" content="${esc(post.updatedAt)}">` : "",
     ],
     jsonLd: postJsonLd({ origin, post, settings, blogLabel: t("blog_heading"), listed }),
-    body: `<nav class="crumbs" aria-label="Breadcrumb"><a href="${BLOG_PATH}">${esc(t("blog_heading"))}</a> <span aria-hidden="true">/</span> <span>${esc(post.title)}</span></nav>
+    body: `<nav class="crumbs" aria-label="${esc(t("storefront_breadcrumb"))}"><a href="${BLOG_PATH}">${esc(t("blog_heading"))}</a> <span aria-hidden="true">/</span> <span>${esc(post.title)}</span></nav>
 <article class="post">
   <h1>${esc(post.title)}</h1>
   ${postMeta(post, t, settings.language)}
@@ -645,8 +677,8 @@ ${view.nextCursor ? `<p><a href="/account?cursor=${encodeURIComponent(view.nextC
       : view.unavailable
         ? ""
         : `<p class="empty">${esc(t("account_orders_empty"))}</p>`;
-    body = `<section class="account">
-  <h1>${esc(t("account_orders_heading"))}</h1>
+    body = `<section class="account account-history">
+  <p class="eyebrow">${esc(t("storefront_account_eyebrow"))}</p><h1>${esc(t("account_orders_heading"))}</h1>
   <div class="account-who">
     <p>${esc(t("account_signed_in_as", { email: view.user.email }))}</p>
     <form method="post" action="/account/sign-out"><button class="link-button" type="submit">${esc(t("account_sign_out"))}</button></form>
@@ -656,8 +688,8 @@ ${view.nextCursor ? `<p><a href="/account?cursor=${encodeURIComponent(view.nextC
   <p class="note">${esc(t("account_orders_note"))}</p>
 </section>`;
   } else if (view.kind === "code") {
-    body = `<section class="account">
-  <h1>${esc(t("account_code_title"))}</h1>
+    body = `<section class="account account-sign-in">
+  <p class="eyebrow">${esc(t("storefront_account_eyebrow"))}</p><h1>${esc(t("account_code_title"))}</h1>
   ${accountMessage(view.message)}
   <form class="account-form" method="post" action="/account/verify">
     <input type="hidden" name="email" value="${esc(view.email)}">
@@ -670,8 +702,8 @@ ${view.nextCursor ? `<p><a href="/account?cursor=${encodeURIComponent(view.nextC
   </div>
 </section>`;
   } else {
-    body = `<section class="account">
-  <h1>${esc(t("account_title"))}</h1>
+    body = `<section class="account account-sign-in">
+  <p class="eyebrow">${esc(t("storefront_account_eyebrow"))}</p><h1>${esc(t("account_title"))}</h1>
   <p class="lead">${esc(t("account_intro"))}</p>
   ${accountMessage(view.message)}
   <form class="account-form" method="post" action="/account/send-code">

@@ -19,8 +19,8 @@ const call = async (path, init = {}) => {
   const response = await worker.fetch(new Request(new URL(path, SITE), init), envFor(), { waitUntil() {} });
   return { response, status: response.status, text: await response.text() };
 };
-const cards = (text) => [...text.matchAll(/<li class="card">[\s\S]*?<h3>([^<]+)<\/h3>/g)].map((match) => match[1]);
-const detailRows = (text) => [...text.matchAll(/<div><dt>([^<]*)<\/dt><dd>([^<]*)<\/dd><\/div>/g)].map((match) => [match[1], match[2]]);
+const cards = (text) => [...text.matchAll(/<li class="card"[^>]*>[\s\S]*?<h3>([^<]+)<\/h3>/g)].map((match) => match[1]);
+const detailRows = (text) => [...(text.match(/<dl class="specs">([\s\S]*?)<\/dl>/)?.[1] || "").matchAll(/<div><dt>([^<]*)<\/dt><dd>([^<]*)<\/dd><\/div>/g)].map((match) => [match[1], match[2]]);
 const row = (id) => api.state.records.bas_shop_products.find((record) => record.fields["product-id"] === id);
 const settings = () => api.state.records.bas_settings[0].fields;
 
@@ -56,7 +56,7 @@ describe("a shop with its own Products, and no product hub anywhere", () => {
       "Bubble Machine",
     ]);
     assert.doesNotMatch(text, /Rainbow Xylophone|Magnetic Building Tiles/, "no price; a draft");
-    assert.match(text, /Dino Explorer Figures<\/h3>[\s\S]*?Out of stock/);
+    assert.match((text.match(/<li class="card"[^>]*>[\s\S]*?<\/li>/g) || []).find((card) => card.includes("Dino Explorer Figures")) || "", /Out of stock/);
     const bases = api.log.filter((entry) => entry.path === "/api/v1/records").map((entry) => entry.query.baseId);
     assert.deepEqual(bases.sort(), ["bas_pages", "bas_settings", "bas_shipping", "bas_shop_certificates", "bas_shop_products"]);
     assert.deepEqual(api.log.find((entry) => entry.query.baseId === "bas_shop_products").query.sort, { fieldSlug: "ref", fieldType: "number", direction: "asc" });

@@ -67,13 +67,13 @@ const readOptional = async (records, resource, limit, log, label, sort) => {
  * One shop per Worker isolate. `client` is a busabase-sdk client and `records`
  * the SDK's `createAirAppRecords(client, …)` helpers; tests pass fakes.
  */
-export const createShop = ({ client, records, busabaseOrigin, apiKey, fetchImpl = fetch, now = () => Date.now(), log = console }) => {
+export const createShop = ({ client, records, busabaseOrigin, apiKey, shopFolderId, fetchImpl = fetch, now = () => Date.now(), log = console }) => {
   let cached = null; // { value, at }
   let inFlight = null;
 
   const readCatalog = async () => {
     const nodes = (await client.nodes.list({ types: ["base", "airapp"] })) ?? [];
-    const shop = resolveShopTables(nodes);
+    const shop = resolveShopTables(nodes, { shopFolderId });
     if (shop.settings.status !== "found") {
       return { setup: shop.settings.status === "ambiguous" ? "settings-ambiguous" : "settings-missing" };
     }

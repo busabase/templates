@@ -1407,6 +1407,55 @@ an OpenAI product feed (OpenAI's feed program is waitlisted and US-only), and
 in-chat checkout (ACP, Google's UCP checkout, PayPal's agent products: none
 is open to a small seller outside the US).
 
+## Storefront browsing (0.11.0)
+
+The homepage presents the shop's real collection, with one orderable product
+with a picture in focus when available. Product names, prices, pictures,
+variants and specifications still come from the tables. The template invents
+no reviews, discounts, guarantees, stock or payment availability. A product
+explicitly described as a **China version / China edition** gets a reminder
+to check software, network compatibility and warranty; toys and other
+products do not acquire that label from their manufacturing country.
+
+With JavaScript, customers can search the products already shown, filter by
+brand, sort by price or name, and clear the filters. The result count and
+empty state update together. Search (`q`), brand (`brand`) and sort (`sort`)
+are saved in the URL and restored on refresh or browser history navigation;
+these controls make no additional API calls. Without JavaScript, all listed
+products and their ordinary product links remain visible. The storefront's
+interface is localized in English, German, French and Spanish; product data
+stays in the language the owner wrote.
+
+Product pages separate a readable model and variant from the full description
+and specifications. The original product name stays in metadata and in the
+page. Adding an item still opens the order page; it now confirms the addition
+there. An empty order links back to the collection. Quantities, shipping,
+totals, payment and buyer-account behavior are unchanged.
+
+### More than one shop in a workspace
+
+By default, two matching Settings tables still stop the website with
+`settings-ambiguous`: it never picks a store on a customer's behalf. For an
+owner who intentionally keeps multiple shops in one workspace, configure
+**that installed website's source** in `src/worker.js`:
+
+```js
+const handler = createHandler({ shopFolderId: "<the installed shop folder id>" });
+```
+
+Use the exact parent Folder id of that Shop Website, rebuild
+`vendor/worker.js`, and preview and publish the changed site with the owner's
+permission. This binds Settings and Orders to that folder; the existing
+sibling lookup finds its Products, policies and login app. A missing folder
+or missing Settings table stops the site rather than reading another shop.
+This is application resource selection, not a new platform permission rule;
+the explicit Products table override keeps its existing meaning.
+
+Never put an installed workspace's real ids in the shared template. Preserve
+this instance setting when upgrading a configured website. The importer has
+its own existing target selection and still refuses ambiguous Settings; a
+website binding does not silently configure the importer.
+
 ## Buyer accounts (My orders, 买家登录)
 
 A buyer who ordered before asks "where is my order?". With **buyer login**
@@ -1800,8 +1849,10 @@ write feedback into Owner feedback on this report for the next run.
   sign-in), shows only orders placed while signed in, and lets a buyer see,
   not change or cancel, an order. It needs a Busabase with app users and the
   Website engine; it is off until the owner switches it on.
-- **One shop per workspace.** With two Busa Shop folders the website and the
-  importer stop and ask which one (`settings-ambiguous`).
+- **A shop must be unambiguous.** By default, two Busa Shop folders stop the
+  website and importer (`settings-ambiguous`). An owner can explicitly bind
+  an installed website to its Folder ("More than one shop in a workspace");
+  the importer keeps its own existing target selection.
 
 ## Helpers in `scripts/`
 

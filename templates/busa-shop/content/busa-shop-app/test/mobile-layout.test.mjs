@@ -17,18 +17,26 @@ const BANDS = "5G: n1/n3/n5/n8/n20/n28/n38/n40/n41/n48/n77/n78";
 /** The CSS outside and inside `@media (max-width: 760px)`, comments removed. */
 const split = (source) => {
   const text = source.replace(/\/\*[\s\S]*?\*\//g, "");
-  const start = text.indexOf("@media (max-width: 760px)");
-  assert.ok(start >= 0, "shop.css has the phone media query");
-  let depth = 0;
-  let end = text.indexOf("{", start);
-  for (let i = end; i < text.length; i++) {
-    if (text[i] === "{") depth++;
-    if (text[i] === "}" && --depth === 0) {
-      end = i;
-      break;
+  let top = "";
+  let phone = "";
+  let cursor = 0;
+  const media = /@media\s*([^{}]+)\{/g;
+  let match;
+  while ((match = media.exec(text))) {
+    top += text.slice(cursor, match.index);
+    let depth = 1;
+    let end = media.lastIndex;
+    for (; end < text.length && depth; end++) {
+      if (text[end] === "{") depth++;
+      else if (text[end] === "}") depth--;
     }
+    if (/max-width:\s*760px/.test(match[1])) phone += text.slice(media.lastIndex, end - 1);
+    cursor = end;
+    media.lastIndex = end;
   }
-  return { top: text.slice(0, start) + text.slice(end + 1), phone: text.slice(text.indexOf("{", start) + 1, end) };
+  top += text.slice(cursor);
+  assert.ok(phone, "shop.css has the phone media query");
+  return { top, phone };
 };
 
 /** Every declaration of `property` in rules whose selector list includes `selector`. */
@@ -43,7 +51,9 @@ describe("a product page fits a phone screen", () => {
   it("a spec value breaks a long unbroken word instead of widening the page", () => {
     assert.deepEqual(declarations(top, ".specs dd", "overflow-wrap"), ["anywhere"]);
     assert.deepEqual(declarations(top, ".specs dd", "min-width"), ["0"]);
-    assert.deepEqual(declarations(top, ".specs div", "grid-template-columns"), ["140px minmax(0, 1fr)"]);
+    const columns = declarations(top + phone, ".specs div", "grid-template-columns");
+    assert.ok(columns.length > 0, "specifications declare their column layout");
+    assert.ok(columns.every((value) => /^\d+px minmax\(0, 1fr\)$/.test(value)), "each specification layout keeps its value column shrinkable");
   });
 
   it("the product text, policy pages and posts wrap long words (URLs, emails, band lists)", () => {
@@ -53,8 +63,11 @@ describe("a product page fits a phone screen", () => {
   });
 
   it("the one-column phone layout cannot be pushed wider than the screen", () => {
-    assert.deepEqual(declarations(phone, ".product", "grid-template-columns"), ["minmax(0, 1fr)"]);
-    assert.deepEqual(declarations(phone, ".order-form", "grid-template-columns"), ["minmax(0, 1fr)"]);
+    for (const selector of [".product", ".order-form"]) {
+      const columns = declarations(phone, selector, "grid-template-columns");
+      assert.ok(columns.length > 0, `${selector} declares a phone layout`);
+      assert.ok(columns.every((value) => value === "minmax(0, 1fr)"));
+    }
   });
 
   it("a wide table scrolls inside its own box, not the page", () => {
@@ -81,8 +94,9 @@ describe("a product page fits a phone screen", () => {
 });
 
 describe("the header fits a phone screen", () => {
-  it("nav links wrap instead of pushing the page wider (Products, Blog, Account, Your order)", () => {
+  it("desktop nav can wrap, and the phone navigation scrolls inside its own row", () => {
     assert.deepEqual(declarations(top, ".site-nav", "flex-wrap"), ["wrap"]);
     assert.deepEqual(declarations(top, ".site-nav", "min-width"), ["0"]);
+    assert.ok(declarations(phone, ".site-nav", "overflow-x").includes("auto"));
   });
 });

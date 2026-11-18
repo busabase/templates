@@ -83,6 +83,9 @@ for (const form of document.querySelectorAll("[data-add-form]")) {
     const data = new FormData(form);
     const quantity = Math.max(1, Math.trunc(Number(data.get("qty")) || 1));
     addToCart(String(data.get("add")), quantity);
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton && form.dataset.addedMessage) submitButton.textContent = form.dataset.addedMessage;
+    try { sessionStorage.setItem('busa-shop-added-item-v1', '1'); } catch { /* Checkout still works without storage. */ }
     // The form's own action, not a literal "/order": in the members-only preview
     // Busabase serves the site under a sub-path and rewrites that attribute.
     window.location.assign(form.action);
@@ -95,6 +98,7 @@ for (const thumb of document.querySelectorAll("[data-gallery-thumb]")) {
     if (!galleryMain) return;
     event.preventDefault();
     galleryMain.src = thumb.getAttribute("href");
+    for (const sibling of document.querySelectorAll("[data-gallery-thumb]")) sibling.setAttribute("aria-current", String(sibling === thumb));
   });
 }
 
@@ -106,6 +110,13 @@ const form = document.querySelector("[data-order-form]");
 if (dataElement && form) {
   const data = JSON.parse(dataElement.textContent);
   const messages = data.messages;
+  try {
+    if (sessionStorage.getItem('busa-shop-added-item-v1')) {
+      const feedback = form.querySelector('[data-cart-feedback]');
+      if (feedback) feedback.hidden = false;
+      sessionStorage.removeItem('busa-shop-added-item-v1');
+    }
+  } catch { /* Feedback is optional when browser storage is unavailable. */ }
   let products = new Map(data.products.map((product) => [product.id, product]));
   const itemsBox = form.querySelector("[data-order-items]");
   const totalBox = form.querySelector("[data-order-total]");
@@ -229,7 +240,11 @@ if (dataElement && form) {
       const empty = document.createElement("p");
       empty.className = "empty";
       empty.textContent = messages.order_empty;
-      itemsBox.append(empty);
+      const browse = document.createElement('a');
+      browse.className = 'text-link empty-browse';
+      browse.href = document.querySelector('a.brand')?.href || '/';
+      browse.textContent = messages.order_browse;
+      itemsBox.append(empty, browse);
     }
     for (const item of items) {
       const product = products.get(item.productId);
@@ -270,6 +285,8 @@ if (dataElement && form) {
       row.append(name, unit, label, remove);
       itemsBox.append(row);
     }
+    form.classList.toggle('is-empty-cart', items.length === 0);
+    submit.disabled = items.length === 0;
     const subtotal = subtotalOf(items);
     const shipping = shippingOf(subtotal);
     const total = Math.round((subtotal + shipping.cost) * 100) / 100;
@@ -541,3 +558,67 @@ if (payData && payBox) {
 }
 
 showCartCount();
+
+// ---- Catalog discovery: the rendered collection, with no extra API reads ----
+const catalog = document.querySelector('[data-catalog]');
+if (catalog?.querySelector("[data-catalog-grid]")) {
+  const grid = catalog.querySelector('[data-catalog-grid]');
+  const cards = [...catalog.querySelectorAll('[data-catalog-product]')];
+  const search = catalog.querySelector('[data-catalog-search]');
+  const sort = catalog.querySelector('[data-catalog-sort]');
+  const chips = [...catalog.querySelectorAll('[data-brand-filter]')];
+  const count = catalog.querySelector('[data-catalog-count]');
+  const empty = catalog.querySelector('[data-catalog-empty]');
+  const resets = [...catalog.querySelectorAll('[data-catalog-reset]')];
+  let brand = '';
+  const allowedSorts = new Set(['featured', 'price-asc', 'price-desc', 'name']);
+  const knownBrands = new Set(chips.map((chip) => chip.dataset.brandFilter));
+  const apply = () => {
+    const query = (search?.value || '').trim().toLocaleLowerCase();
+    const ordered = cards.map((card, index) => ({card, index}));
+    ordered.sort((a, b) => {
+      if (sort?.value === 'price-asc') return Number(a.card.dataset.price) - Number(b.card.dataset.price) || a.index - b.index;
+      if (sort?.value === 'price-desc') return Number(b.card.dataset.price) - Number(a.card.dataset.price) || a.index - b.index;
+      if (sort?.value === 'name') return a.card.dataset.name.localeCompare(b.card.dataset.name) || a.index - b.index;
+      return a.index - b.index;
+    });
+    let visible = 0;
+    for (const {card} of ordered) {
+      card.hidden = Boolean((brand && card.dataset.brand !== brand) || (query && !card.dataset.search.includes(query)));
+      if (!card.hidden) visible++;
+      grid?.append(card);
+    }
+    for (const chip of chips) chip.setAttribute('aria-pressed', String(chip.dataset.brandFilter === brand));
+    if (count) count.textContent = ((visible === 1 ? count.dataset.templateOne : count.dataset.template) || '{count}').replace('{count}', String(visible));
+    if (empty) empty.hidden = visible !== 0;
+    for (const reset of resets) if (!reset.closest('[data-catalog-empty]')) reset.hidden = !query && !brand && sort?.value === 'featured';
+  };
+  const store = (push = false) => {
+    const url = new URL(location.href);
+    const values = {q: (search?.value || '').trim(), brand, sort: sort?.value === 'featured' ? '' : sort?.value};
+    for (const [key, value] of Object.entries(values)) value ? url.searchParams.set(key, value) : url.searchParams.delete(key);
+    if (url.href !== location.href) history[push ? 'pushState' : 'replaceState'](null, '', url);
+    apply();
+  };
+  const restore = () => {
+    const params = new URL(location.href).searchParams;
+    if (search) search.value = params.get('q') || '';
+    brand = knownBrands.has(params.get('brand')) ? params.get('brand') : '';
+    if (sort) sort.value = allowedSorts.has(params.get('sort')) ? params.get('sort') : 'featured';
+    apply();
+  };
+  for (const chip of chips) chip.addEventListener('click', () => {brand = chip.dataset.brandFilter; store(true);});
+  search?.addEventListener('input', () => store());
+  sort?.addEventListener('change', () => store(true));
+  for (const reset of resets) reset.addEventListener('click', () => {brand = ''; if (search) search.value = ''; if (sort) sort.value = 'featured'; store(true); search?.focus();});
+  window.addEventListener('popstate', restore);
+  for (const control of catalog.querySelectorAll('[data-catalog-controls]')) control.hidden = false;
+  restore();
+  document.querySelector('[data-header-search]')?.addEventListener('click', (event) => {
+    if (!search) return;
+    event.preventDefault();
+    catalog.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    search.focus({ preventScroll: true });
+  });
+  if (location.hash === '#catalog-search') search?.focus();
+}
