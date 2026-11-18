@@ -131,7 +131,7 @@ describe("buyer login", () => {
     assert.match(page.text, /<meta name="robots" content="noindex">/);
     assert.equal(page.response.headers.get("cache-control"), "no-store");
     const home = await call("/");
-    assert.match(home.text, /<a class="account-link" href="\/account">Account<\/a>/);
+    assert.match(home.text, /<a class="icon-link account-link" href="\/account">[\s\S]*?<span>Account<\/span><\/a>/);
     const settings = appUserCalls("/settings");
     assert.equal(settings.length, 1, "the settings answer is cached");
     assert.equal(settings[0].path, `/api/v1/app-users/apps/${SHOP_APP_NODE.id}/settings`);

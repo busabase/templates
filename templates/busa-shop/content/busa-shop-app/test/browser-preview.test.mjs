@@ -75,7 +75,7 @@ describe("browser-preview.mjs", () => {
     const response = await fetch(`${preview}/`);
     assert.equal(response.status, 200);
     const text = await response.text();
-    const cards = [...text.matchAll(/<li class="card">[\s\S]*?<h3>([^<]+)<\/h3>/g)].map((match) => match[1]);
+    const cards = [...text.matchAll(/<li class="card"[^>]*>[\s\S]*?<h3>([^<]+)<\/h3>/g)].map((match) => match[1]);
     assert.equal(cards[0], "Walking Robot Buddy");
     assert.equal(cards.at(-1), "Bubble Machine");
     assert.ok(api.log.length > 0);

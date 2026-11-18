@@ -67,8 +67,8 @@ describe("the blog", () => {
     assert.match(text, /<time datetime="2026-11-05">Published November 5, 2026<\/time>/);
     assert.match(text, /<link rel="canonical" href="https:\/\/tumbleberry-toys\.example\/blog">/);
     const home = (await call("/")).text;
-    assert.match(home, /<nav class="site-nav"><a href="\/#products">Products<\/a><a href="\/blog">Blog<\/a>/);
-    assert.match(home, /<nav class="footer-links footer-blog" aria-label="Blog"><a href="\/blog">Blog<\/a><a href="\/blog\/rss\.xml">RSS feed<\/a><\/nav>/);
+    assert.match(home, /<nav class="site-nav"[^>]*>[\s\S]*?<a href="\/blog">Blog<\/a>/);
+    assert.match(home, /<footer[\s\S]*?<nav class="footer-links">[\s\S]*?<a href="\/blog">Blog<\/a><a href="\/blog\/rss\.xml">RSS feed<\/a>/);
     assert.match(home, /<link rel="alternate" type="application\/rss\+xml" title="Tumbleberry Toys · Blog" href="\/blog\/rss\.xml">/);
     assert.equal(api.log.find((entry) => entry.query.baseId === "bas_posts").query.sort.fieldSlug, "published-at");
   });
@@ -82,7 +82,7 @@ describe("the blog", () => {
     assert.match(text, /<h2>Is it made for the child&#39;s age\?<\/h2>/, "## is a section of the post, as in busabase-cms-sdk (demoteH1)");
     assert.match(text, /<td>Price<\/td><td>\$24\.00<\/td>/);
     assert.match(text, /<a href="\/products\/tt-walking-robot">Walking Robot Buddy<\/a>/);
-    assert.match(text, /<section class="post-products"[^>]*><h2 id="post-products-heading">Products in this post<\/h2><ul class="grid"><li class="card">\s*<a class="card-link" href="\/products\/tt-walking-robot">/);
+    assert.match(text, /<section class="post-products"[^>]*><h2 id="post-products-heading">Products in this post<\/h2><ul class="grid"><li class="card"[^>]*>\s*<a class="card-link" href="\/products\/tt-walking-robot">/);
     assert.match(text, /<link rel="canonical" href="https:\/\/tumbleberry-toys\.example\/blog\/first-robot-toy-for-a-three-year-old">/);
     assert.match(text, /<meta property="og:type" content="article">/);
     assert.match(text, /<meta property="og:image" content="https:\/\/tumbleberry-toys\.example\/images\/tt-walking-robot\/0">/, "no cover: the linked product's photo");

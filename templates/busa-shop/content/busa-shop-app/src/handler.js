@@ -85,7 +85,7 @@ import { sendMail } from "./smtp.js";
 import { createSecretsReader, readShopSecrets } from "./vault.js";
 
 export const MAX_ORDER_BODY_BYTES = 16 * 1024;
-export const SHOP_VERSION = "0.10.2";
+export const SHOP_VERSION = "0.11.0";
 // MCP requests per minute from one address, counted per Worker isolate (src/mcp.js).
 export const MCP_REQUESTS_PER_MINUTE = 120;
 export const MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
@@ -246,6 +246,7 @@ export const createHandler = (overrides = {}) => {
         spaceId: env.BUSABASE_SPACE_ID,
       });
       const shop = createShop({
+        shopFolderId: deps.shopFolderId,
         client,
         records: deps.createRecords(client, { appId: "busa-shop" }),
         busabaseOrigin: new URL(baseUrl).origin,
