@@ -1,0 +1,194 @@
+{
+  "name": "KPI Snapshots",
+  "description": "One row per KPI reading for one client and period: the value, the previous value and the target. Change versus previous and versus target is computed by the app — never store a computed percentage here. Notes are internal.",
+  "position": 3,
+  "agentPrompts": [
+    {
+      "key": "record-kpi-snapshot",
+      "label": "Record this period's KPI numbers",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder and follow its workflow, then record the KPI numbers I give you for the client and period I name: value, previous value, target, unit and source. Use only the numbers I give you — never estimate, carry over or invent a figure."
+    },
+    {
+      "key": "kpi-movers",
+      "label": "Which KPIs moved most this period?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder, then show me, for the client and period I name, each KPI's change versus its previous value and versus its target, biggest movers first. The change is computed — do not write it back as a field."
+    },
+    {
+      "key": "missing-kpis",
+      "label": "Which clients are missing KPI snapshots?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder, then tell me which active clients have no KPI snapshot for the period I name. Do not change anything."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "metric-label",
+      "name": "Metric Label",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "client",
+      "name": "Client",
+      "type": "relation",
+      "required": true,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "clients",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "project",
+      "name": "Project",
+      "type": "relation",
+      "required": false,
+      "position": 2,
+      "options": {
+        "targetBaseSlug": "projects",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "metric",
+      "name": "Metric",
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "sessions",
+            "name": "Sessions"
+          },
+          {
+            "id": "conversions",
+            "name": "Conversions"
+          },
+          {
+            "id": "leads",
+            "name": "Leads"
+          },
+          {
+            "id": "revenue",
+            "name": "Revenue"
+          },
+          {
+            "id": "ad-spend",
+            "name": "Ad Spend"
+          },
+          {
+            "id": "roas",
+            "name": "ROAS"
+          },
+          {
+            "id": "impressions",
+            "name": "Impressions"
+          },
+          {
+            "id": "clicks",
+            "name": "Clicks"
+          },
+          {
+            "id": "ctr",
+            "name": "CTR"
+          },
+          {
+            "id": "engagement",
+            "name": "Engagement"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "period",
+      "name": "Period",
+      "type": "text",
+      "required": true,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "value",
+      "name": "Value",
+      "type": "number",
+      "required": true,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "previous-value",
+      "name": "Previous Value",
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "target",
+      "name": "Target",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "unit",
+      "name": "Unit",
+      "type": "text",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "source",
+      "name": "Source",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "notes",
+      "name": "Notes",
+      "type": "longtext",
+      "required": false,
+      "position": 10,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest-period",
+      "name": "Latest Period Snapshots",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "period",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "metric-label",
+          "client",
+          "metric",
+          "period",
+          "value",
+          "previous-value",
+          "target",
+          "unit",
+          "source"
+        ]
+      }
+    }
+  ]
+}

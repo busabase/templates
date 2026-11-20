@@ -1,0 +1,4 @@
+interface:
+  display_name: "Busa Client Reporting"
+  short_description: "Per-client projects, deliverables and KPIs, shared as a read-only report page"
+  default_prompt: "Use $busa-client-reporting to prepare this period's report for a client and show me what is ready to share."

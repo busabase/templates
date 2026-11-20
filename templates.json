@@ -519,6 +519,63 @@
       }
     },
     {
+      "subdir": "templates/busa-client-reporting",
+      "name": "busa-client-reporting",
+      "displayName": {
+        "en": "Busa Client Reporting",
+        "zh-CN": "Busa 客户汇报"
+      },
+      "description": {
+        "en": "An agency client-reporting desk — per-client projects, deliverables, KPI snapshots, milestones and a ready-to-share report page the client opens read-only.",
+        "zh-CN": "代理商客户汇报工作台——按客户管理项目、交付物、KPI 快照与里程碑，并生成一份可分享给客户只读打开的汇报页。"
+      },
+      "category": "marketing",
+      "risk": "read-only",
+      "tags": [
+        "client-reporting",
+        "agency",
+        "reports",
+        "deliverables",
+        "metrics",
+        "risk:read-only",
+        "surface:busabase"
+      ],
+      "screenshots": [
+        "assets/screenshots/cover.webp",
+        "assets/screenshots/overview.webp",
+        "assets/screenshots/client-report.webp",
+        "assets/screenshots/reports.webp"
+      ],
+      "video": "assets/recordings/busa-client-reporting.mp4",
+      "locales": {
+        "zh-CN": {
+          "screenshots": [
+            "assets/screenshots/cover-zh-CN.webp",
+            "assets/screenshots/overview-zh-CN.webp",
+            "assets/screenshots/client-report-zh-CN.webp",
+            "assets/screenshots/reports-zh-CN.webp"
+          ],
+          "video": "assets/recordings/busa-client-reporting-zh-CN.mp4"
+        }
+      },
+      "agentPrompts": [
+        "Prepare this period's report for a client from its deliverables and KPI snapshots.",
+        "Show me which clients are waiting for a report this period.",
+        "Open a client's report page and walk me through its headline KPIs."
+      ],
+      "version": "0.1.0",
+      "license": "MIT",
+      "stats": {
+        "folders": 0,
+        "docs": 1,
+        "bases": 6,
+        "records": 36,
+        "files": 26,
+        "airapps": 1,
+        "skill": true
+      }
+    },
+    {
       "subdir": "templates/busa-clm",
       "name": "busa-clm",
       "displayName": {
@@ -3067,156 +3124,6 @@
       }
     },
     {
-      "subdir": "templates/busa-office-cashier",
-      "name": "busa-office-cashier",
-      "displayName": {
-        "en": "Cashier Desk",
-        "zh-CN": "出纳管理"
-      },
-      "description": {
-        "en": "Bank checks, payment evidence, cash movements and reconciliation exceptions without moving money.",
-        "zh-CN": "管理银行走查、付款依据、收付流水和对账异常。"
-      },
-      "category": "finance",
-      "risk": "gated-write",
-      "tags": [
-        "office",
-        "cashier",
-        "evidence-review"
-      ],
-      "screenshots": [
-        "assets/screenshots/cover.webp",
-        "assets/screenshots/overview.webp",
-        "assets/screenshots/core.webp",
-        "assets/screenshots/attention.webp"
-      ],
-      "video": "assets/recordings/busa-office-cashier-intro.mp4",
-      "videos": [
-        {
-          "src": "assets/recordings/busa-office-cashier-intro.mp4",
-          "title": "Scenario introduction (English)",
-          "poster": "assets/screenshots/busa-office-cashier-intro-poster.jpg"
-        },
-        {
-          "src": "assets/recordings/busa-office-cashier.mp4",
-          "title": "Existing template demo"
-        }
-      ],
-      "locales": {
-        "zh-CN": {
-          "screenshots": [
-            "assets/screenshots/cover-zh-CN.webp",
-            "assets/screenshots/overview-zh-CN.webp",
-            "assets/screenshots/core-zh-CN.webp",
-            "assets/screenshots/attention-zh-CN.webp"
-          ],
-          "video": "assets/recordings/busa-office-cashier-intro.mp4",
-          "videos": [
-            {
-              "src": "assets/recordings/busa-office-cashier-intro.mp4",
-              "title": "Scenario introduction (English)",
-              "poster": "assets/screenshots/busa-office-cashier-intro-poster.jpg"
-            },
-            {
-              "src": "assets/recordings/busa-office-cashier-zh-CN.mp4",
-              "title": "Existing zh-CN demo"
-            }
-          ]
-        }
-      },
-      "agentPrompts": [
-        "List active bank accounts and their last checked date; flag stale balances and restricted accounts without treating book balances as live bank data.",
-        "Compare each daily check with its book balance and bank evidence; list discrepancies and stale checks without inventing adjustments.",
-        "Review pending, approved and blocked payments, separating approval from actual payment and flagging missing invoice or bank receipt references."
-      ],
-      "version": "1.1.0",
-      "license": "MIT",
-      "stats": {
-        "folders": 0,
-        "docs": 0,
-        "bases": 4,
-        "records": 13,
-        "files": 26,
-        "airapps": 1,
-        "skill": true
-      }
-    },
-    {
-      "subdir": "templates/busa-office-finance",
-      "name": "busa-office-finance",
-      "displayName": {
-        "en": "Office Finance",
-        "zh-CN": "财务管理"
-      },
-      "description": {
-        "en": "Expense evidence, invoice requests, monthly actuals and filing deadlines in one review desk.",
-        "zh-CN": "集中复核报销依据、开票申请、月度实际报告和申报期限。"
-      },
-      "category": "finance",
-      "risk": "gated-write",
-      "tags": [
-        "office",
-        "finance",
-        "evidence-review"
-      ],
-      "screenshots": [
-        "assets/screenshots/cover.webp",
-        "assets/screenshots/overview.webp",
-        "assets/screenshots/core.webp",
-        "assets/screenshots/attention.webp"
-      ],
-      "video": "assets/recordings/busa-office-finance-intro.mp4",
-      "videos": [
-        {
-          "src": "assets/recordings/busa-office-finance-intro.mp4",
-          "title": "Scenario introduction (English)",
-          "poster": "assets/screenshots/busa-office-finance-intro-poster.jpg"
-        },
-        {
-          "src": "assets/recordings/busa-office-finance.mp4",
-          "title": "Existing template demo"
-        }
-      ],
-      "locales": {
-        "zh-CN": {
-          "screenshots": [
-            "assets/screenshots/cover-zh-CN.webp",
-            "assets/screenshots/overview-zh-CN.webp",
-            "assets/screenshots/core-zh-CN.webp",
-            "assets/screenshots/attention-zh-CN.webp"
-          ],
-          "video": "assets/recordings/busa-office-finance-intro.mp4",
-          "videos": [
-            {
-              "src": "assets/recordings/busa-office-finance-intro.mp4",
-              "title": "Scenario introduction (English)",
-              "poster": "assets/screenshots/busa-office-finance-intro-poster.jpg"
-            },
-            {
-              "src": "assets/recordings/busa-office-finance-zh-CN.mp4",
-              "title": "Existing zh-CN demo"
-            }
-          ]
-        }
-      },
-      "agentPrompts": [
-        "Review pending and blocked expense claims, list missing evidence and duplicates before suggesting approval.",
-        "Check invoice requests against supplied customer and contract details; flag missing tax information without inventing it.",
-        "Compare monthly actual reports against their evidence, identify incomplete sources and explain variances without presenting this as an audited statement."
-      ],
-      "version": "1.1.0",
-      "license": "MIT",
-      "stats": {
-        "folders": 0,
-        "docs": 0,
-        "bases": 4,
-        "records": 13,
-        "files": 26,
-        "airapps": 1,
-        "skill": true
-      }
-    },
-    {
       "subdir": "templates/busa-office-hr",
       "name": "busa-office-hr",
       "displayName": {
@@ -4812,5 +4719,26 @@
       }
     }
   ],
-  "rejected": []
+  "rejected": [
+    {
+      "subdir": "templates/busa-office-cashier",
+      "name": "busa-office-cashier",
+      "errors": [
+        "SKILL.md lists resource \"accounts\", but content/ has no Base with that slug. An agent told about a table that does not exist will write to the wrong one.",
+        "SKILL.md lists resource \"checks\", but content/ has no Base with that slug. An agent told about a table that does not exist will write to the wrong one.",
+        "SKILL.md lists resource \"payments\", but content/ has no Base with that slug. An agent told about a table that does not exist will write to the wrong one.",
+        "SKILL.md lists resource \"ledger\", but content/ has no Base with that slug. An agent told about a table that does not exist will write to the wrong one."
+      ]
+    },
+    {
+      "subdir": "templates/busa-office-finance",
+      "name": "busa-office-finance",
+      "errors": [
+        "SKILL.md lists resource \"expenses\", but content/ has no Base with that slug. An agent told about a table that does not exist will write to the wrong one.",
+        "SKILL.md lists resource \"invoices\", but content/ has no Base with that slug. An agent told about a table that does not exist will write to the wrong one.",
+        "SKILL.md lists resource \"reports\", but content/ has no Base with that slug. An agent told about a table that does not exist will write to the wrong one.",
+        "SKILL.md lists resource \"filings\", but content/ has no Base with that slug. An agent told about a table that does not exist will write to the wrong one."
+      ]
+    }
+  ]
 }

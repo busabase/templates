@@ -1,0 +1,17 @@
+{
+  "name": "Busa Client Reporting",
+  "description": "Agency client-reporting desk: per-client projects, deliverables, KPI snapshots, milestones and a read-only report page for each client",
+  "agentPrompts": [
+    {
+      "key": "prepare-client-report",
+      "label": "Prepare this period's client report",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder and follow its workflow, then prepare this period's report for the client I name: gather the deliverables and KPI snapshots for the period, draft the executive summary, highlights and next steps, and leave it in Draft for my review. Never invent a metric number and never put internal notes in the report."
+    },
+    {
+      "key": "clients-awaiting-report",
+      "label": "Which clients are waiting for a report?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder, then tell me which active clients have no Ready to Share or Shared report for the current period, grouped by their reporting cadence. Do not change anything."
+    }
+  ]
+}
