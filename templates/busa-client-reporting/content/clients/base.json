@@ -1,0 +1,197 @@
+{
+  "name": "Clients",
+  "description": "One row per agency client: who they are, who to contact, and how often they get a report. Notes are internal and never appear on the client report page.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "add-client",
+      "label": "Add a new client",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder and follow its workflow, then add the client I describe: name, primary contact, contact email, industry, status and reporting cadence. Leave anything I did not tell you empty — do not guess an email address."
+    },
+    {
+      "key": "client-picture",
+      "label": "Give me the full picture of one client",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder, then summarise the client I name: their projects and statuses, open deliverables, latest KPI snapshots and the status of their latest report. Keep internal notes out of the summary unless I ask for them."
+    },
+    {
+      "key": "pause-or-close-client",
+      "label": "Pause or close out a client",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder and follow its workflow, then set the client I name to Paused or Former Client as I describe, and tell me which of their projects and reports are still open."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "client-name",
+      "name": "Client Name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "primary-contact",
+      "name": "Primary Contact",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "contact-email",
+      "name": "Contact Email",
+      "type": "email",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "industry",
+      "name": "Industry",
+      "type": "select",
+      "required": false,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "retail-ecommerce",
+            "name": "Retail & E-commerce"
+          },
+          {
+            "id": "saas-technology",
+            "name": "SaaS & Technology"
+          },
+          {
+            "id": "professional-services",
+            "name": "Professional Services"
+          },
+          {
+            "id": "healthcare",
+            "name": "Healthcare"
+          },
+          {
+            "id": "finance",
+            "name": "Finance"
+          },
+          {
+            "id": "hospitality",
+            "name": "Hospitality"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "active",
+            "name": "Active"
+          },
+          {
+            "id": "paused",
+            "name": "Paused"
+          },
+          {
+            "id": "former-client",
+            "name": "Former Client"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "reporting-cadence",
+      "name": "Reporting Cadence",
+      "type": "select",
+      "required": false,
+      "position": 5,
+      "options": {
+        "choices": [
+          {
+            "id": "weekly",
+            "name": "Weekly"
+          },
+          {
+            "id": "biweekly",
+            "name": "Biweekly"
+          },
+          {
+            "id": "monthly",
+            "name": "Monthly"
+          },
+          {
+            "id": "quarterly",
+            "name": "Quarterly"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "notes",
+      "name": "Notes",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "active-clients",
+      "name": "Active Clients",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "active"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "client-name",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "client-name",
+          "primary-contact",
+          "contact-email",
+          "industry",
+          "reporting-cadence",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "all-clients",
+      "name": "All Clients",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "client-name",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "client-name",
+          "primary-contact",
+          "industry",
+          "status",
+          "reporting-cadence"
+        ]
+      }
+    }
+  ]
+}

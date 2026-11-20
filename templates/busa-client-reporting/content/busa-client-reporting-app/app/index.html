@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Busa Client Reporting</title>
+    <link rel="stylesheet" href="./base-ui.css">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./vendor/busabase-airapp-gate.css">
+    <link rel="stylesheet" href="./accent-theme.css">
+  </head>
+  <body class="ws-has-mobile-bar">
+    <div id="app" class="app-shell">
+      <aside class="sidebar" id="appSidebar">
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true">CR</div>
+          <div class="brand-copy">
+            <div class="brand-title">Busa Client Reporting</div>
+            <div id="sync-status" class="brand-subtitle">Loading</div>
+          </div>
+          <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-controls="appSidebar" aria-expanded="true" title="Toggle sidebar" aria-label="Toggle sidebar"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
+        </div>
+        <section class="human-work" aria-labelledby="humanWorkTitle">
+          <div class="human-work-eyebrow" data-i18n="attention">Ready to share</div>
+          <div id="humanWorkTitle" class="human-work-title" data-i18n="reportsTitle">Reports</div>
+          <a class="human-work-primary" href="#/reports" data-route="reports" title="Reports">
+            <span class="human-work-count">
+              <strong id="count-ready">0</strong>
+              <span data-i18n="attentionUnit">reports waiting</span>
+            </span>
+          </a>
+        </section>
+        <div class="sidebar-separator"></div>
+        <nav class="filters" aria-label="Main">
+          <a href="#/overview" data-route="overview" data-i18n="overview">Overview</a>
+          <a href="#/report" data-route="report" data-i18n="reportTitle">Client Report</a>
+          <a href="#/reports" data-route="reports" data-i18n="reportsTitle">Reports</a>
+        </nav>
+        <div class="sidebar-footer">
+          <label for="language" data-i18n="language">Language</label>
+          <select id="language">
+            <option value="auto">Auto</option>
+            <option value="en">English</option>
+            <option value="zh">中文</option>
+          </select>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="mobile-topbar">
+          <button id="mobileSidebarToggle" class="mobile-sidebar-toggle" type="button" aria-controls="appSidebar" aria-label="Open sidebar" title="Open sidebar"><span class="sidebar-toggle-icon" aria-hidden="true"></span></button>
+          <div class="mobile-topbar-copy">
+            <div id="mobileViewTitle" class="mobile-view-title">Busa Client Reporting</div>
+            <div id="mobileViewMeta" class="mobile-view-meta">Loading</div>
+          </div>
+          <button id="mobileRefresh" class="mobile-refresh-button" type="button" title="Refresh" aria-label="Refresh">↻</button>
+        </div>
+        <div id="loadState" class="load-state" role="status">Loading</div>
+        <section id="overviewPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 id="overviewTitle">Overview</h1>
+              <p id="overviewSummary"></p>
+            </div>
+            <div class="page-actions">
+              <button id="refresh" class="button" type="button" title="Refresh">Refresh</button>
+            </div>
+          </header>
+          <div id="overviewMetrics" class="ws-metrics" aria-label="Reporting summary"></div>
+          <div id="overviewBody"></div>
+        </section>
+        <!-- The client-facing report page: one client, one period. Only
+             client-visible fields render here (see reporting-model.js). -->
+        <section id="reportPage" class="ws-overview" hidden>
+          <header class="page-hero">
+            <div>
+              <h1 id="reportPageTitle">Client Report</h1>
+              <p id="reportPageHint"></p>
+            </div>
+            <div class="page-actions">
+              <label class="sr-only" for="clientPicker">Client</label>
+              <select id="clientPicker"></select>
+              <label class="sr-only" for="periodPicker">Period</label>
+              <select id="periodPicker"></select>
+            </div>
+          </header>
+          <div id="reportBody"></div>
+        </section>
+        <!-- Reports list/detail: one toolbar row over a full-bleed table. -->
+        <section id="viewPage" class="ws-view" hidden>
+          <header class="ws-toolbar">
+            <div class="ws-title">
+              <h1 id="viewTitle"></h1>
+              <span id="viewCount" class="ws-count"></span>
+            </div>
+            <div class="ws-actions">
+              <label class="search toolbar-search">
+                <span class="sr-only" data-i18n="search">Search</span>
+                <input id="search" type="search" autocomplete="off" placeholder="Search">
+              </label>
+              <button id="viewRefresh" class="button" type="button" title="Refresh">Refresh</button>
+            </div>
+          </header>
+          <div id="viewNotice" class="view-notice" hidden></div>
+          <div id="workspace" class="ws-workspace">
+            <div id="listPanel" class="ws-list"></div>
+            <aside id="detailPanel" class="ws-detail" aria-live="polite">
+              <div class="ws-detail-bar">
+                <button id="detailBack" class="button" type="button">Back to list</button>
+                <a id="detailExpand" class="button" hidden>Open full page</a>
+              </div>
+              <div id="detailBody"></div>
+            </aside>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div id="sidebarScrim" class="sidebar-scrim" hidden></div>
+    <script type="module" src="./app.js"></script>
+    <script type="module" src="./accent-theme.js"></script>
+  </body>
+</html>

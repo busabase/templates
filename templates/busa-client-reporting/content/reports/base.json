@@ -1,0 +1,180 @@
+{
+  "name": "Reports",
+  "description": "One row per client report for one period: the narrative the client reads (executive summary, highlights, next steps) and its sharing status. Risks & Blockers are internal and never appear on the client report page.",
+  "position": 5,
+  "agentPrompts": [
+    {
+      "key": "draft-report",
+      "label": "Draft a report for a client and period",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder and follow its workflow, then draft the report for the client and period I name from that period's deliverables, KPI snapshots and milestones: executive summary, highlights and next steps in client-safe language, risks and blockers kept in the internal field only. Leave the status in Draft."
+    },
+    {
+      "key": "mark-report-shared",
+      "label": "Mark a report as shared and log it",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder and follow its workflow, then mark the report I name as Shared and write into Shared Link Note where the read-only share link was sent and when, exactly as I tell you. The share link itself is created on the node in Busabase — never invent a URL."
+    },
+    {
+      "key": "reports-ready-to-share",
+      "label": "Which reports are ready to share?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder, then list the reports in Ready to Share, with client and period, and remind me of the sharing steps: create the read-only share link on the node, send it outside the app, then mark the report Shared."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "report-title",
+      "name": "Report Title",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "client",
+      "name": "Client",
+      "type": "relation",
+      "required": true,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "clients",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "project",
+      "name": "Project",
+      "type": "relation",
+      "required": false,
+      "position": 2,
+      "options": {
+        "targetBaseSlug": "projects",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "period",
+      "name": "Period",
+      "type": "text",
+      "required": true,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 4,
+      "options": {
+        "choices": [
+          {
+            "id": "draft",
+            "name": "Draft"
+          },
+          {
+            "id": "in-review",
+            "name": "In Review"
+          },
+          {
+            "id": "ready-to-share",
+            "name": "Ready to Share"
+          },
+          {
+            "id": "shared",
+            "name": "Shared"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "executive-summary",
+      "name": "Executive Summary",
+      "type": "longtext",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "highlights",
+      "name": "Highlights",
+      "type": "longtext",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "risks-blockers",
+      "name": "Risks & Blockers",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "next-steps",
+      "name": "Next Steps",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "shared-link-note",
+      "name": "Shared Link Note",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "ready-to-share",
+      "name": "Ready to Share",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "ready-to-share"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "period",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "report-title",
+          "client",
+          "period",
+          "status",
+          "shared-link-note"
+        ]
+      }
+    },
+    {
+      "slug": "reports-by-period",
+      "name": "Reports by Period",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "period",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "report-title",
+          "client",
+          "project",
+          "period",
+          "status"
+        ]
+      }
+    }
+  ]
+}

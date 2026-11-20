@@ -1,0 +1,207 @@
+{
+  "name": "Projects",
+  "description": "One row per engagement for a client: service type, status, dates and a plain-language summary. Owner is internal and never appears on the client report page.",
+  "position": 1,
+  "agentPrompts": [
+    {
+      "key": "start-project",
+      "label": "Start a project for a client",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder and follow its workflow, then create the project I describe under the client I name: service type, start and due dates, and a one-paragraph summary written the way we would show it to the client."
+    },
+    {
+      "key": "update-project-status",
+      "label": "Update a project's status",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder and follow its workflow, then update the status of the project I name to match what I describe, and refresh its summary if the scope changed. Owner is internal — never copy it into the summary."
+    },
+    {
+      "key": "projects-at-risk",
+      "label": "Which projects are at risk?",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder, then list the projects marked At Risk or On Hold, with their client, due date and summary. Do not change anything."
+    }
+  ],
+  "fields": [
+    {
+      "slug": "project-name",
+      "name": "Project Name",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "client",
+      "name": "Client",
+      "type": "relation",
+      "required": true,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "clients",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "service-type",
+      "name": "Service Type",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "seo",
+            "name": "SEO"
+          },
+          {
+            "id": "paid-media",
+            "name": "Paid Media"
+          },
+          {
+            "id": "social-media",
+            "name": "Social Media"
+          },
+          {
+            "id": "content",
+            "name": "Content"
+          },
+          {
+            "id": "analytics-reporting",
+            "name": "Analytics & Reporting"
+          },
+          {
+            "id": "strategy",
+            "name": "Strategy"
+          },
+          {
+            "id": "web",
+            "name": "Web"
+          },
+          {
+            "id": "other",
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": true,
+      "position": 3,
+      "options": {
+        "choices": [
+          {
+            "id": "not-started",
+            "name": "Not Started"
+          },
+          {
+            "id": "in-progress",
+            "name": "In Progress"
+          },
+          {
+            "id": "at-risk",
+            "name": "At Risk"
+          },
+          {
+            "id": "on-hold",
+            "name": "On Hold"
+          },
+          {
+            "id": "completed",
+            "name": "Completed"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "owner",
+      "name": "Owner",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "start-date",
+      "name": "Start Date",
+      "type": "date",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "due-date",
+      "name": "Due Date",
+      "type": "date",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "summary",
+      "name": "Summary",
+      "type": "longtext",
+      "required": false,
+      "position": 7,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "active-projects",
+      "name": "Active Projects",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "in-progress"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "due-date",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "project-name",
+          "client",
+          "service-type",
+          "status",
+          "due-date",
+          "summary"
+        ]
+      }
+    },
+    {
+      "slug": "at-risk-projects",
+      "name": "At Risk Projects",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "at-risk"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "due-date",
+            "direction": "asc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "project-name",
+          "client",
+          "service-type",
+          "status",
+          "due-date"
+        ]
+      }
+    }
+  ]
+}

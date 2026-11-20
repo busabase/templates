@@ -1,0 +1,19 @@
+{
+  "type": "airapp",
+  "name": "Busa Client Reporting",
+  "description": "Agency client-reporting desk: per-client projects, deliverables, KPI snapshots, milestones and a read-only report page for each client",
+  "agentPrompts": [
+    {
+      "key": "open-client-report",
+      "label": "Open a client's report page",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder, then open the report page for the client I name and walk me through its headline KPIs, deliverables and next steps. Show only client-visible fields — never internal notes, owners or risks and blockers."
+    },
+    {
+      "key": "reporting-overview",
+      "label": "Show me the reporting overview",
+      "intent": "read-only",
+      "body": "{target}\n\nRead the `busa-client-reporting` skill in this folder, then summarise the overview: active clients, projects in progress or at risk, deliverables waiting on the client, and the latest report status per client."
+    }
+  ]
+}

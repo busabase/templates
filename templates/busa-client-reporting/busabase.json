@@ -1,0 +1,63 @@
+{
+  "description": {
+    "en": "An agency client-reporting desk — per-client projects, deliverables, KPI snapshots, milestones and a ready-to-share report page the client opens read-only.",
+    "zh-CN": "代理商客户汇报工作台——按客户管理项目、交付物、KPI 快照与里程碑，并生成一份可分享给客户只读打开的汇报页。"
+  },
+  "displayName": {
+    "en": "Busa Client Reporting",
+    "zh-CN": "Busa 客户汇报"
+  },
+  "format": "busabase-package@1",
+  "license": "MIT",
+  "name": "busa-client-reporting",
+  "tags": [
+    "client-reporting",
+    "agency",
+    "reports",
+    "deliverables",
+    "metrics",
+    "risk:read-only",
+    "surface:busabase"
+  ],
+  "template": {
+    "agentPrompts": [
+      "Prepare this period's report for a client from its deliverables and KPI snapshots.",
+      "Show me which clients are waiting for a report this period.",
+      "Open a client's report page and walk me through its headline KPIs."
+    ],
+    "airapp": "busa-client-reporting-app",
+    "category": "marketing",
+    "requires": {
+      "airapp": true
+    },
+    "schemaVersion": 1,
+    "tags": [
+      "client-reporting",
+      "agency",
+      "reports",
+      "deliverables",
+      "metrics",
+      "risk:read-only",
+      "surface:busabase"
+    ],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/client-report.webp",
+      "assets/screenshots/reports.webp"
+    ],
+    "locales": {
+      "zh-CN": {
+        "screenshots": [
+          "assets/screenshots/cover-zh-CN.webp",
+          "assets/screenshots/overview-zh-CN.webp",
+          "assets/screenshots/client-report-zh-CN.webp",
+          "assets/screenshots/reports-zh-CN.webp"
+        ],
+        "video": "assets/recordings/busa-client-reporting-zh-CN.mp4"
+      }
+    },
+    "video": "assets/recordings/busa-client-reporting.mp4"
+  },
+  "version": "0.1.0"
+}
