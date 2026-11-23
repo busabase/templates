@@ -1,0 +1,158 @@
+{
+  "name": "Store Reviews",
+  "description": "The Monday store review an agent writes from the records above: revenue at risk, which stores slipped and why, which audits are overdue.",
+  "position": 3,
+  "agentPrompts": [
+    {
+      "key": "write-review",
+      "label": {
+        "en": "Write this Monday’s store review",
+        "zh-CN": "写本周一的门店周报"
+      },
+      "body": {
+        "en": "Read the `busa-store-ops` skill in this folder and follow it. Write the store review for last Monday to Sunday from the stores, signals and actions: a one-line headline, revenue at risk, how many stores are on standard, every at-risk store with what is wrong and the action, every store whose audit is overdue, and what changed since last week. Save it as a draft.",
+        "zh-CN": "先阅读本文件夹里的 `busa-store-ops` Skill，按它的规则做。根据门店、信号和整改措施，写上周一到周日的门店周报：一句话结论、有风险的营收、达标门店数、每家有风险门店的问题和对应措施、巡店逾期的门店、与上周相比的变化。保存为草稿。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "compare-weeks",
+      "label": {
+        "en": "What got better or worse since last week?",
+        "zh-CN": "和上周比哪些变好了、哪些变差了"
+      },
+      "body": {
+        "en": "Read the `busa-store-ops` skill in this folder and follow it. Compare the two latest reviews and the signals between them: revenue at risk, which stores changed status, how the at-risk count moved, and which actions closed. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-store-ops` Skill，按它的规则做。对比最近两份周报和期间的信号：有风险的营收、哪些门店换了状态、有风险门店数怎么变、哪些整改措施完成了。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Review",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "draft",
+            "name": "Draft",
+            "color": "amber"
+          },
+          {
+            "id": "final",
+            "name": "Final",
+            "color": "emerald"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "period-start",
+      "name": "From",
+      "type": "date",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "period-end",
+      "name": "To",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "headline",
+      "name": "Headline",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "revenue-at-risk",
+      "name": "Revenue at risk, 30 days ($)",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "on-track-count",
+      "name": "On standard",
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "at-risk-count",
+      "name": "At risk",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "audit-overdue-count",
+      "name": "Audits overdue",
+      "type": "number",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "written-by",
+      "name": "Written by",
+      "type": "text",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "body",
+      "name": "Review",
+      "type": "markdown",
+      "required": false,
+      "position": 10,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest",
+      "name": "Latest first",
+      "description": "Every store review, newest first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "period-end",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "period-end",
+          "revenue-at-risk",
+          "headline"
+        ]
+      }
+    }
+  ]
+}
