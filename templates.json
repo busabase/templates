@@ -4433,16 +4433,16 @@
       "subdir": "templates/busa-suppliers",
       "name": "busa-suppliers",
       "displayName": {
-        "en": "Supplier Scorecard",
-        "zh-CN": "供应商绩效评分与采购风险",
-        "es": "Evaluación del rendimiento de proveedores",
-        "fr": "Évaluation de la performance des fournisseurs"
+        "en": "AI Supplier Performance Scorecard",
+        "zh-CN": "AI 供应商绩效评分与风险跟踪",
+        "es": "Evaluación de proveedores con IA",
+        "fr": "Évaluation des fournisseurs avec l’IA"
       },
       "description": {
-        "en": "Agents read every supplier's deliveries, inspections, prices, invoices and response times, score each one by one rule, and flag the spend at risk before contracts come up, with an action for every red supplier.",
-        "zh-CN": "用供应商绩效评分表统一查看交付、质检、价格、发票匹配和响应时间。让 Agent 整理证据、标记采购风险并提出改进措施。",
-        "es": "Compara entregas a tiempo, calidad, precios, facturas y tiempos de respuesta en una ficha de evaluación de proveedores. Los agentes reúnen evidencias y proponen acciones de mejora.",
-        "fr": "Comparez les délais de livraison, la qualité, les prix, les factures et les temps de réponse dans une grille d’évaluation des fournisseurs. Les agents rassemblent les preuves et proposent des actions correctives."
+        "en": "Manage existing suppliers with an AI-assisted performance scorecard. Track delivery, quality, price, invoice matching and response time, with evidence and corrective actions.",
+        "zh-CN": "面向采购团队的供应商管理模板：统一评估已有供应商的交付、质检、合同价差、发票匹配和响应时间，让 Agent 整理证据、记录风险并跟踪改进措施。",
+        "es": "Plantilla para evaluar proveedores actuales. Los agentes reúnen evidencias de entregas, calidad, precios, facturas y respuesta para detectar riesgos y seguir acciones de mejora.",
+        "fr": "Modèle pour évaluer vos fournisseurs actuels avec l’IA : livraisons, qualité, prix, rapprochement des factures et réactivité. Suivez les preuves, les risques et les actions correctives."
       },
       "category": "operations",
       "risk": "gated-write",
@@ -4464,9 +4464,10 @@
         "assets/screenshots/procurement-review.webp"
       ],
       "agentPrompts": [
-        "Which suppliers put our supply at risk, and how much spend is exposed?",
-        "Run this week's supplier scan.",
-        "Write this Monday's procurement review."
+        "Compare our existing suppliers on delivery, quality, contract price variance, invoice matching and response time. Show the evidence behind each score.",
+        "Which suppliers pose the greatest supply risk, and how much annual spend is exposed?",
+        "Draft a corrective action for each at-risk supplier, with an owner, due date and supporting evidence.",
+        "Prepare this week's procurement review: score changes, contracts nearing renewal and outstanding actions."
       ],
       "version": "0.1.0",
       "license": "MIT",
