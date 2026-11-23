@@ -1,0 +1,56 @@
+{
+  "type": "airapp",
+  "name": "Client Delivery Desk",
+  "description": "Every client project in delivery, scored the same way and kept current by agents from time tracking, the project plan, the accounting system, the change-order log and client check-ins, with the actions that fix the ones that slip.",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "ask-risk",
+      "label": {
+        "en": "Which client projects are slipping, and how much contract value is at risk?",
+        "zh-CN": "哪些客户项目在下滑，多少合同额有风险"
+      },
+      "body": {
+        "en": "Read the `busa-client-delivery` skill in this folder and follow it. Answer as the head of delivery: contract value at risk, unbilled work and how many projects are on track, then every at-risk project, lowest score first, with its contract value, the measure that hurt most, and the open action. Then every client we have not checked in with for 14 days. Keep it to one screen. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-client-delivery` Skill，按它的规则做。以交付负责人的口吻回答：先说多少合同额有风险、多少工作没开票、多少项目正常，再按评分从低到高列出每个有风险的项目，附合同额、拉低最多的指标和对应的跟进措施；然后列出 14 天没沟通的客户。控制在一屏以内。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "weekly-scan",
+      "label": {
+        "en": "Run this week’s delivery scan",
+        "zh-CN": "跑本周交付扫描"
+      },
+      "body": {
+        "en": "Read the `busa-client-delivery` skill in this folder and follow it. For each project, read budget burn, the next milestone, unbilled work, unsigned scope changes and the client pulse from their sources, write a signal for anything that moved, re-score it by the skill’s rule, propose an action for any project newly at risk, and then write this week’s delivery review as a draft.",
+        "zh-CN": "先阅读本文件夹里的 `busa-client-delivery` Skill，按它的规则做。为每个项目从数据来源读取预算消耗、下一个里程碑、未开票工作、未签字的范围变更和客户满意度，有变动的写一条信号，按 Skill 的规则重新打分，新变成有风险的提一条跟进措施，最后写一份本周交付周报草稿。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "write-review",
+      "label": {
+        "en": "Write this Monday’s delivery review",
+        "zh-CN": "写本周一的交付周报"
+      },
+      "body": {
+        "en": "Read the `busa-client-delivery` skill in this folder and follow it. Write the delivery review for last Monday to Sunday: a one-line headline, contract value at risk, unbilled work, how many projects are on track, every at-risk project with what is wrong and the action, every client we have not checked in with for 14 days, and what changed since last week.",
+        "zh-CN": "先阅读本文件夹里的 `busa-client-delivery` Skill，按它的规则做。写上周一到周日的交付周报：一句话结论、有风险的合同额、未开票金额、正常项目数、每个有风险项目的问题和对应措施、14 天没沟通的客户、与上周相比的变化。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "billing-chase",
+      "label": {
+        "en": "What can we invoice this week?",
+        "zh-CN": "这周能开哪些票"
+      },
+      "body": {
+        "en": "Read the `busa-client-delivery` skill in this folder and follow it. List every project with unbilled work, largest amount first: how much, how old the oldest piece is, and what is stopping the invoice — an unsigned change order, a missing purchase order, or nothing. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-client-delivery` Skill，按它的规则做。列出每个有未开票工作的项目，金额大的排前面：多少钱、最早一笔多少天了、卡在哪里——未签字的变更单、客户没下采购单，还是没有阻碍。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ]
+}
