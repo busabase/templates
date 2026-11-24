@@ -119,19 +119,12 @@ export async function mergeChangeRequest(client, changeRequest) {
   return merged?.changeRequest || merged;
 }
 
-// busabase-sdk deliberately strips the Vault from its cloud client
-// (`const { vault: _localVault, ...cloudWorkbenchRoutes }`): /api/v1/vault is a
-// local/self-hosted Busabase route, not a Cloud API surface. So talk to it
-// directly, and treat "this server has no Vault route" as a normal answer
-// rather than a crash.
-//
-// Since 2026-08-13 (busabase-cloud abe3453a1a) Cloud also answers
-// GET/PUT /api/v1/vault with 200 — it no longer 404s here. A workspace API
-// key CAN list and write items, but every `.value` in the response is masked
-// to "" (see `maskVaultSettings` in apps/busabase-cloud), so this channel is
-// never a source of the real secret on Cloud. Real values for API-key
-// credentials come from `vaultRuntimeRequest` below, over the dedicated
-// /api/v1/vault/runtime surface Cloud added the same day.
+// Trusted Node scripts use the authenticated REST Vault compatibility routes.
+// Cloud management reads mask Secret values; permitted runtime reads can return
+// plaintext. These are ordinary operator credentials, never a Site-generated key.
+// A missing route and a permission denial are different outcomes. An available
+// runtime route does not identify the deployment edition or promise that every
+// Agent/task receives the same values as startup environment variables.
 const vaultRequest = async (method, body) => {
   const baseUrl = required("BUSABASE_BASE_URL").replace(/\/+$/, "");
   const response = await fetch(`${baseUrl}/api/v1/vault`, {
@@ -143,18 +136,20 @@ const vaultRequest = async (method, body) => {
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
-  if (response.status === 404 || response.status === 403) return null;
-  if (!response.ok) throw new Error(`VAULT_HTTP_${response.status}: ${await response.text()}`);
+  if (response.status === 404 || response.status === 403) {
+    await response.body?.cancel();
+    return null;
+  }
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new Error(`VAULT_HTTP_${response.status}`);
+  }
   return response.json();
 };
 
-// Cloud-only surface (self-hosted Busabase has no such route, hence the 404
-// guard): returns the *unmasked* values a workbench API key is entitled to at
-// runtime — every item marked `access.runtime`, merged personal → Space →
-// API-key scope, exactly like the environment a Cloud-started task would get.
-// Unlike environment injection this is a live HTTP call, so a value saved in
-// the Vault after this process started is still visible on the next request
-// — no new Session required.
+// The authenticated compatibility runtime route returns permitted values.
+// No session restart is needed for this HTTP read. Its availability does not
+// imply universal Agent environment injection or permit Site Vault export.
 const vaultRuntimeRequest = async () => {
   const baseUrl = required("BUSABASE_BASE_URL").replace(/\/+$/, "");
   const response = await fetch(`${baseUrl}/api/v1/vault/runtime`, {
@@ -163,22 +158,31 @@ const vaultRuntimeRequest = async () => {
       ...(process.env.BUSABASE_SPACE_ID ? { "x-busabase-space": process.env.BUSABASE_SPACE_ID } : {}),
     },
   });
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error(`VAULT_RUNTIME_HTTP_${response.status}: ${await response.text()}`);
+  if (response.status === 404) {
+    await response.body?.cancel();
+    return null;
+  }
+  if (response.status === 403) {
+    await response.body?.cancel();
+    throw Object.assign(new Error(
+      "VAULT_RUNTIME_HTTP_403: Vault runtime access was denied. Review the selected scope and current credential permissions in Account Settings > Vault. A Site key must use explicitly bound Site values; changing its level cannot export Space Vault.",
+    ), { code: "VAULT_RUNTIME_FORBIDDEN", status: 403 });
+  }
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new Error(`VAULT_RUNTIME_HTTP_${response.status}`);
+  }
   return response.json();
 };
 
-// vaultRequest("GET") answered 404/403 for /api/v1/vault. Since 2026-08-13
-// Cloud no longer 404s here (it answers 200 with masked values instead), so
-// this now means the write really is unreachable — a permission-restricted
-// API key, or a Busabase build without the Vault route — not "this is Cloud"
-// specifically. Point at the one place a write always works: the web UI.
+// A management 403/404 does not establish that the deployment lacks Vault.
+// Point to the real scope and permission settings without promising that a
+// different key level or a reserved Agent scope can bypass a refusal.
 export const vaultWriteUnavailableHint = [
-  "这台 Busabase 拒绝了 Vault 写入接口（/api/v1/vault），本地脚本没法直接写密钥。",
-  "去 Busabase 网页会话里配置，工作区 API Key 写不了：",
-  "  1. 打开 Busabase → Vault，在 Space 或 Agent 作用域新建 SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASS；",
-  "  2. 四项都勾上 runtime（运行时注入），SMTP_PASS 建议关掉 reveal；",
-  "  3. 存好之后直接重跑发送脚本——/api/v1/vault/runtime 是实时查询，不用重开 Session。",
+  "Vault 写入接口当前不可用或当前凭据未获授权（/api/v1/vault）。",
+  "请在 Account Settings → Vault 选择 User defaults 或 API key overrides；Space overrides 由所有者或管理员管理。",
+  "Cloud 新项默认允许用于运行时，页面没有 Runtime 或 Reveal 开关；此前已禁用的项请由所有者检查。",
+  "读取仍须获授权；Site key 只能使用网站显式绑定，不能导出 Space Vault。",
 ].join("\n");
 
 // The Vault API is a full-document PUT, not an upsert: sending only your own
@@ -245,14 +249,9 @@ export async function resolveSmtpSettings({ fromEmail } = {}) {
     if (process.env[key]) resolved.set(key, { value: process.env[key], source: "environment" });
   }
 
-  // Only ask the Vault about what is still missing: when the environment
-  // already carries everything there is no round trip to make.
-  //
-  // /api/v1/vault/runtime is a Cloud-only route (self-hosted Busabase 404s
-  // on it), so whether it answers at all doubles as the "is this Cloud"
-  // signal `smtpMissingHint` needs — `vaultAvailable` alone stopped meaning
-  // that once Cloud started answering plain /api/v1/vault with 200 (masked)
-  // instead of 404.
+  // Fully specified operator environment values avoid a Vault round trip.
+  // isCloud is a legacy return field recording runtime-route availability;
+  // it is not proof of the deployment edition or its startup injection policy.
   let vaultAvailable = null;
   let isCloud = false;
   if (resolved.size < SMTP_KEYS.length) {
@@ -306,22 +305,18 @@ export async function resolveSmtpSettings({ fromEmail } = {}) {
 // depends on whether this Busabase can store them at all.
 export function smtpMissingHint(missing, vaultAvailable, isCloud) {
   const keys = missing.join(" / ");
-  // `isCloud` — not `vaultAvailable` — is the write-path signal: since
-  // 2026-08-13 Cloud answers /api/v1/vault with 200 too, so `vaultAvailable`
-  // no longer tells local vs. Cloud on its own (see the comment on
-  // `vaultRequest` above). Whether /api/v1/vault/runtime answered does.
   if (isCloud) {
     return [
-      `缺 ${keys}。这台是 Busabase Cloud，工作区 API Key 写不了 Vault：`,
-      `  1. 在 Busabase Cloud → Vault 的 Space 或 Agent 作用域里配置 ${keys}，勾上 runtime；`,
-      "  2. 存好之后直接重跑这个脚本——/api/v1/vault/runtime 是实时查询，不用重开 Session；",
+      `缺 ${keys}。运行时读取接口可用，请检查目标 Vault 作用域：`,
+      `  1. 在 Account Settings → Vault 的 User defaults 或 API key overrides 中配置 ${keys}；Space overrides 由所有者或管理员管理；`,
+      "  2. Cloud 新项默认允许用于运行时，页面没有 Runtime 或 Reveal 开关。已获授权的 HTTP 读取不需要重开 Session；",
       `  3. 或者临时用环境变量跑：${missing.map((key) => `${key}=...`).join(" ")} node scripts/send_emails.mjs --apply`,
     ].join("\n");
   }
   if (vaultAvailable) {
     return `缺 ${keys}。跑 node scripts/configure_smtp.mjs --host ... --user ... --pass ... --apply 写进 Vault。`;
   }
-  return `缺 ${keys}。这台 Busabase 没有可用的 Vault，临时用环境变量跑：${missing.map((key) => `${key}=...`).join(" ")} node scripts/send_emails.mjs --apply`;
+  return `缺 ${keys}。当前 Vault 接口不可用或当前凭据未获授权，请先核对作用域与权限；也可以使用已获授权的环境变量跑：${missing.map((key) => `${key}=...`).join(" ")} node scripts/send_emails.mjs --apply`;
 }
 
 export const parseFlags = (argv) => ({
