@@ -175,9 +175,13 @@ The website reads the newest 100 rows by `published-at` and shows only
 | `google-site-verification` | text | Optional (0.7.0+): Search Console HTML-tag `content` (the whole tag works) |
 | `bing-site-verification` | text | Optional (0.7.0+): Bing `msvalidate.01` `content` |
 
-Secrets are never in Settings: the Space Vault holds `BUSA_SHOP_PAYPAL_CLIENT_SECRET`
-and `BUSA_SHOP_SMTP_PASSWORD` (Secrets, marked Runtime), read by the website at
-runtime through `GET /api/v1/vault/runtime` with its own key.
+Secrets are never in Settings. Configure `BUSA_SHOP_PAYPAL_CLIENT_SECRET`
+and `BUSA_SHOP_SMTP_PASSWORD` in the Site's Secrets & Variables, either as
+direct Secrets or as explicit references to runtime-enabled Space Vault
+Secrets. Deploying injects them into the Worker's `env`; preview and live
+must be deployed again after changes. Site-generated API keys cannot export
+Space Vault at any permission level. `/api/status` reports readiness only,
+never secret values.
 
 ## Reports (`busa-shop-reports`)
 

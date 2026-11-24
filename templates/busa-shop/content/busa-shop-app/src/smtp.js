@@ -205,7 +205,7 @@ export const sendMail = async ({
   if (!host || !Number.isInteger(port) || port <= 0 || port > 65535) throw new SmtpError("the mail server host or port is missing", { stage: "connect" });
   if (port === 25) throw new SmtpError("port 25 is blocked for websites: use 587 (STARTTLS) or 465 (TLS)", { stage: "connect" });
   const sendPassword = Boolean(username) && security !== "none";
-  if (username && !password && security !== "none") throw new SmtpError("the SMTP password is missing from the Vault", { stage: "auth" });
+  if (username && !password && security !== "none") throw new SmtpError("the SMTP password is missing", { stage: "auth" });
 
   let socket = connect({ hostname: host, port }, { secureTransport: security === "tls" ? "on" : security === "starttls" ? "starttls" : "off", allowHalfOpen: false });
   const results = [];

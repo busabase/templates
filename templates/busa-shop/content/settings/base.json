@@ -1,6 +1,6 @@
 {
   "name": "Settings",
-  "description": "One row, the shop's settings. Each view shows one group (Store, Payments, Order emails, Google, Products and daily check; All settings has every column), and each column's help says what it is for. It holds what the shop website shows (store name, tagline, currency, contact, language, ship-to countries), how it takes payment (PayPal off / sandbox / live, the PayPal client ID and webhook ID) and sends email (SMTP host, port, security, username, sender, where order notifications go), and what the daily shop check uses (required certificates, expiry warning, standing check rules). Never write a password or a secret here: the PayPal client secret and the SMTP password go in the Space Vault (BUSA_SHOP_PAYPAL_CLIENT_SECRET, BUSA_SHOP_SMTP_PASSWORD, marked Runtime). Products table is empty to sell from this folder's Products; write a Busa Product Hub Products table's slug there to sell from it instead. For Google: Google Analytics 4 measurement ID (G-…, loaded only on the public site, never in a preview), and the Google Search Console and Bing verification codes (the content value of their HTML tag; pasting the whole tag works too), all optional. The website reads it on every refresh, so a change here shows on the live site within about a minute, without a redeploy.",
+  "description": "One row, the shop's settings. Each view shows one group (Store, Payments, Order emails, Google, Products and daily check; All settings has every column), and each column's help says what it is for. It holds what the shop website shows (store name, tagline, currency, contact, language, ship-to countries), how it takes payment (PayPal off / sandbox / live, the PayPal client ID and webhook ID) and sends email (SMTP host, port, security, username, sender, where order notifications go), and what the daily shop check uses (required certificates, expiry warning, standing check rules). Never write a password or a secret here: the PayPal client secret and the SMTP password are configured in the Site Secrets & Variables as BUSA_SHOP_PAYPAL_CLIENT_SECRET and BUSA_SHOP_SMTP_PASSWORD, either directly or bound to Space Vault Secrets; redeploy preview and live after changes. Products table is empty to sell from this folder's Products; write a Busa Product Hub Products table's slug there to sell from it instead. For Google: Google Analytics 4 measurement ID (G-…, loaded only on the public site, never in a preview), and the Google Search Console and Bing verification codes (the content value of their HTML tag; pasting the whole tag works too), all optional. The website reads it on every refresh, so a change here shows on the live site within about a minute, without a redeploy.",
   "position": 6,
   "agentPrompts": [
     {
@@ -25,7 +25,7 @@
         "en": "Set up PayPal payments",
         "zh-CN": "设置 PayPal 收款"
       },
-      "body": "Read the `busa-shop` skill in this folder and follow \"Payments and orders (收款与订单)\", \"Set up PayPal\": tell me step by step what to create in my PayPal developer account, which values go into Settings (PayPal, client ID, webhook ID) and which one I put into the Space Vault myself (the client secret), then check with /api/status that the shop says PayPal is ready. Never ask me to paste the secret into the chat or a table, and never switch to live unless I tell you to."
+      "body": "Read the `busa-shop` skill in this folder and follow \"Payments and orders (收款与订单)\", \"Set up PayPal\": tell me step by step what to create in my PayPal developer account, which values go into Settings (PayPal, client ID, webhook ID) and which Secret I configure directly or bind from the Space Vault in the Site settings myself (the client secret), then deploy the preview and check with /api/status that the shop says PayPal is ready. Never ask me to paste the secret into the chat or a table, and never switch to live unless I tell you to."
     },
     {
       "key": "set-up-email",
@@ -33,7 +33,7 @@
         "en": "Set up order emails (SMTP)",
         "zh-CN": "设置订单邮件（SMTP）"
       },
-      "body": "Read the `busa-shop` skill in this folder and follow \"Payments and orders (收款与订单)\", \"Order emails (邮件, SMTP)\": ask me for my mail provider's SMTP host, port and username and the sender address, write them into Settings after I say yes, tell me to put the SMTP password into the Space Vault myself, and explain how to check that the emails arrive. Never ask me for the password."
+      "body": "Read the `busa-shop` skill in this folder and follow \"Payments and orders (收款与订单)\", \"Order emails (邮件, SMTP)\": ask me for my mail provider's SMTP host, port and username and the sender address, write them into Settings after I say yes, tell me to configure or bind BUSA_SHOP_SMTP_PASSWORD in the Site Secrets & Variables myself and deploy again, and explain how to check that the emails arrive. Never ask me for the password."
     }
   ],
   "fields": [
@@ -296,7 +296,7 @@
       "position": 17,
       "options": {
         "help": {
-          "description": "Your PayPal REST app's client ID (sandbox or live, matching PayPal above). Not a secret. The client secret never goes here: it goes in the Space Vault as BUSA_SHOP_PAYPAL_CLIENT_SECRET.",
+          "description": "Your PayPal REST app's client ID (sandbox or live, matching PayPal above). Not a secret. The client secret never goes here: configure it as the Site Secret BUSA_SHOP_PAYPAL_CLIENT_SECRET directly or bind a Space Vault Secret, then redeploy.",
           "example": "AYx…"
         }
       }
@@ -375,7 +375,7 @@
       "position": 22,
       "options": {
         "help": {
-          "description": "The mailbox login, usually its full email address. Its password never goes here: it goes in the Space Vault as BUSA_SHOP_SMTP_PASSWORD.",
+          "description": "The mailbox login, usually its full email address. Its password never goes here: configure it as the Site Secret BUSA_SHOP_SMTP_PASSWORD directly or bind a Space Vault Secret, then redeploy.",
           "example": "orders@yourshop.com"
         }
       }

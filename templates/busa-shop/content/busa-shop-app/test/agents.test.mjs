@@ -395,11 +395,10 @@ describe("MCP: create_checkout and the page it opens", () => {
       "paypal-client-id": "sb-client-id",
       "shipping-note": "We ship within 5 working days. Import duty and taxes, if any, are paid by the buyer on delivery.",
     });
-    // Without the secret in the Vault the page takes order requests, and the link says so.
+    // Without the secret binding the page takes order requests, and the link says so.
     const noSecret = await tool("create_checkout", { checkout: { line_items: [{ item: { id: "tt-walking-robot" } }], context: { address_country: "US" } } });
     assert.match(noSecret.content[0].text, /this shop takes order requests/);
-    api.state.vault = { BUSA_SHOP_PAYPAL_CLIENT_SECRET: "sandbox-secret-1" };
-    env = envFor();
+    env = envFor({ BUSA_SHOP_PAYPAL_CLIENT_SECRET: "sandbox-secret-1" });
     const result = await tool("create_checkout", { checkout: { line_items: [{ item: { id: "tt-walking-robot" }, quantity: 4 }], context: { address_country: "US" } } });
     assert.deepEqual(result.structuredContent.totals.map((total) => total.amount), [9600, 0, 9600]);
     const text = result.content[0].text;

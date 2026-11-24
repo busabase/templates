@@ -1,5 +1,34 @@
 # Busa Shop changelog
 
+## 0.11.1 — 2026-11-24
+
+### Request and intent
+
+Make the template consume explicitly configured Site Secrets so new shops do
+not depend on a Site key exporting Space Vault. Keep credential values out of
+public pages, diagnostics, workspace records and logs.
+
+### Changes
+
+- Read only `BUSA_SHOP_PAYPAL_CLIENT_SECRET` and `BUSA_SHOP_SMTP_PASSWORD` from
+  the Worker environment; remove the Vault HTTP reader and credential cache.
+- Preserve the existing status-only `/api/status`; no password-debug route is
+  added. Missing bindings keep the existing order-request and email-skip states.
+- Pass the two named bindings through local preview and rebuild the Worker.
+- Teach direct Site Secrets or explicit Space Vault bindings, deployment-time
+  refresh, and the fact that Site keys cannot export Space Vault at any level.
+- Update checkout, SMTP, PayPal and MCP regressions to use explicit bindings;
+  the local Busabase fixture refuses Site-key Vault export instead of allowing it.
+
+### Compatibility and validation
+
+No table or field migration, permission-level, buyer-login, SDK or dependency
+change. Schema version remains 5. Existing shops need the source/bundle update,
+the required Site bindings and a new preview/publication. Readiness is not proof
+of successful SMTP authentication or a PayPal transaction. Validation covers the
+full existing test suite, real local SMTP/PayPal HTTP fixtures, template checks
+and a scoped JavaScript typecheck of the Secret reader.
+
 ## 0.11.0 — 2026-11-18
 
 ### Request and intent

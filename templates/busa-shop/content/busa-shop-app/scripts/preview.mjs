@@ -77,6 +77,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       BUSABASE_API_KEY: process.env.BUSABASE_API_KEY ?? "",
       BUSABASE_SPACE_ID: process.env.BUSABASE_SPACE_ID ?? "",
       BUSABASE_AIRAPP_RUNTIME: "site",
+      BUSA_SHOP_SMTP_PASSWORD: process.env.BUSA_SHOP_SMTP_PASSWORD ?? "",
+      BUSA_SHOP_PAYPAL_CLIENT_SECRET: process.env.BUSA_SHOP_PAYPAL_CLIENT_SECRET ?? "",
       SOCKETS: createNodeSockets({ ca }),
       ...(process.env.PAYPAL_API_BASE ? { PAYPAL_API_BASE: process.env.PAYPAL_API_BASE } : {}),
       ...(process.env.PAYPAL_SDK_URL ? { PAYPAL_SDK_URL: process.env.PAYPAL_SDK_URL } : {}),

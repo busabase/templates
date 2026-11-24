@@ -374,7 +374,7 @@ export const normalizeSettings = (record) => {
   const smtpPort = finiteNumber(fields["smtp-port"]);
   return {
     // Payments and email. Only the non-secret half lives here: the PayPal
-    // secret and the SMTP password are in the Space Vault (src/vault.js).
+    // secret and SMTP password arrive through Site bindings (src/vault.js).
     paypalMode: PAYPAL_MODES.includes(paypalMode) ? paypalMode : "off",
     paypalClientId: text(fields["paypal-client-id"]),
     paypalWebhookId: text(fields["paypal-webhook-id"]),

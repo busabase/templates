@@ -19,7 +19,8 @@ server** (`/mcp`, public and read-only) that Claude or ChatGPT can add as a
 connector to search the catalog and hand the buyer a prefilled link to the
 shop's own checkout, plus `/agents.md`, a Universal Commerce Protocol profile
 and a Google Merchant Center feed. Texts and the non-secret setup are in **Settings**, the
-PayPal secret and the SMTP password in the Space **Vault**. A daily shop check
+PayPal secret and the SMTP password in the Site's **Secrets & Variables**
+(direct Secrets or explicit Space Vault bindings, applied on deployment). A daily shop check
 writes **Reports** and applies the owner's feedback on the next run. The
 manual is [`SKILL.md`](SKILL.md).
 

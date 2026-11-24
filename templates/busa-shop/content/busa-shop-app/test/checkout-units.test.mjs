@@ -1,5 +1,5 @@
 // The pure parts of checkout: shipping rates, policy pages and their
-// Markdown, the emails, the Vault read, and PayPal's order body and webhook
+// Markdown, the emails, the environment bindings, and PayPal's order body and webhook
 // decisions. The SMTP client is tested against a mock socket here and
 // against a real (local) SMTP server in test/smtp.test.mjs.
 import assert from "node:assert/strict";
@@ -10,7 +10,7 @@ import { orderFromRecord, orderToFields, validateOrder } from "../src/orders.js"
 import { createOrderBody, decideWebhook, eventOrderRef, paypalValue, sameAmount } from "../src/paypal.js";
 import { buildPages, fillPlaceholders, renderMarkdown, unfinishedPages } from "../src/policies.js";
 import { buildShippingRates, checkoutCountries, clientRates, shippingFor } from "../src/shipping.js";
-import { createSecretsReader, readShopSecrets } from "../src/vault.js";
+import { readShopSecrets } from "../src/vault.js";
 import { sampleRows } from "./fixtures.mjs";
 
 const settings = normalizeSettings({
@@ -243,7 +243,7 @@ describe("PayPal webhook decisions", () => {
 describe("emails", () => {
   const config = smtpConfig({ ...settings, smtpHost: "smtp.example.com", smtpPort: 587, smtpSecurity: "starttls", smtpUsername: "shop@tumbleberry.example", emailFrom: "", notifyEmail: "owner@tumbleberry.example" }, { smtpPassword: "pw" });
 
-  it("are ready only with a host, a sender and the Vault password", () => {
+  it("are ready only with a host, a sender and the bound password", () => {
     assert.equal(config.ready, true);
     assert.equal(config.from, "shop@tumbleberry.example");
     assert.equal(config.notify, "owner@tumbleberry.example");
@@ -296,25 +296,31 @@ describe("emails", () => {
   });
 });
 
-describe("the Vault read", () => {
-  it("keeps only the shop's two values, and caches them", async () => {
-    let calls = 0;
-    const fetchImpl = async (url, init) => {
-      calls += 1;
-      assert.equal(url, "https://busabase.example/api/v1/vault/runtime");
-      assert.equal(init.headers.authorization, "Bearer sk_site");
-      return new Response(JSON.stringify({ BUSA_SHOP_PAYPAL_CLIENT_SECRET: "s3cret", BUSA_SHOP_SMTP_PASSWORD: "pw", OTHER_APP_TOKEN: "not ours" }));
-    };
-    let now = 0;
-    const reader = createSecretsReader({ now: () => now, read: () => readShopSecrets({ baseUrl: "https://busabase.example/", apiKey: "sk_site", spaceId: "spc", fetchImpl }) });
-    const first = await reader.get();
-    assert.deepEqual(first, { secrets: { paypalSecret: "s3cret", smtpPassword: "pw" }, error: "" });
-    await reader.get();
-    assert.equal(calls, 1);
-    now = 6 * 60_000;
-    await reader.get();
-    assert.equal(calls, 2);
-    assert.deepEqual(await readShopSecrets({ baseUrl: "x", apiKey: "" }), { secrets: {}, error: "no-key" });
-    assert.deepEqual(await readShopSecrets({ baseUrl: "https://b.example", apiKey: "k", fetchImpl: async () => new Response("{}", { status: 403 }) }), { secrets: {}, error: "http-403" });
+describe("the Site secret bindings", () => {
+  it("reads only the two named bindings and preserves their exact strings", () => {
+    const password = " pw<&> ";
+    const env = { BUSA_SHOP_PAYPAL_CLIENT_SECRET: "paypal", BUSA_SHOP_SMTP_PASSWORD: password, PASSWORD: "generic" };
+    Object.defineProperty(env, "BUSABASE_API_KEY", { get() { throw new Error("must not read platform key"); } });
+    Object.defineProperty(env, "OTHER_APP_TOKEN", { get() { throw new Error("must not read unrelated binding"); } });
+    const result = readShopSecrets(env);
+    assert.deepEqual(result, { secrets: { paypalSecret: "paypal", smtpPassword: password }, error: "" });
+    assert.equal(smtpConfig({ ...settings, smtpHost: "h", smtpUsername: "u@x.example", smtpSecurity: "starttls" }, result.secrets).password, password);
+  });
+
+  it("treats absent, empty and non-string bindings as missing without a fallback", () => {
+    for (const value of [undefined, null, "", 0, false, [], {}, new String("wrapped")]) {
+      assert.deepEqual(readShopSecrets({ BUSA_SHOP_SMTP_PASSWORD: value, BUSA_SHOP_PAYPAL_CLIENT_SECRET: value, PASSWORD: "generic" }), { secrets: {}, error: "" });
+    }
+    assert.deepEqual(readShopSecrets(), { secrets: {}, error: "" });
+    assert.deepEqual(readShopSecrets(null), { secrets: {}, error: "" });
+  });
+
+  it("reflects rotation and removal without a stale Vault cache", () => {
+    const env = { BUSA_SHOP_SMTP_PASSWORD: "first" };
+    assert.equal(readShopSecrets(env).secrets.smtpPassword, "first");
+    env.BUSA_SHOP_SMTP_PASSWORD = "next";
+    assert.equal(readShopSecrets(env).secrets.smtpPassword, "next");
+    delete env.BUSA_SHOP_SMTP_PASSWORD;
+    assert.deepEqual(readShopSecrets(env).secrets, {});
   });
 });
