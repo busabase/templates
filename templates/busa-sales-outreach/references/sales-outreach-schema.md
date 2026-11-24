@@ -79,5 +79,14 @@ or credentials in this Base.
 
 ## Vault
 
-`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, and `SMTP_PASS` are Vault/runtime
+`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, and `SMTP_PASS` are trusted sender
 requirements. Base records contain only the comma-separated reference names.
+The Node sender uses explicit environment values or authorized ordinary-client
+Vault REST reads; the browser receives readiness only. Cloud Secret management
+reads are masked, while the compatibility runtime route returns only permitted
+values. A `403` means permission was denied; a `404` means the route is unavailable.
+
+Cloud configuration lives in Account Settings → Vault: User defaults, API key
+overrides, or Space overrides managed by an owner/admin. Agent scope and
+Runtime/Reveal UI switches are not available. Site-generated keys cannot export
+Space Vault at any level; Sites receive explicit deployment bindings instead.

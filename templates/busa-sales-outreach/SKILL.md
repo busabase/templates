@@ -165,6 +165,20 @@ The dry run prints sender, optional collateral readiness, SMTP readiness by key,
 and exact recipients without printing secret values. `--test-to` sends one
 approved message to an inbox the user controls and writes nothing to Busabase.
 
+The trusted Node script uses its own ordinary operator credential; the AirApp's
+browser session never supplies it. For Cloud, configure **Account Settings →
+Vault → User defaults** or **API key overrides**. A Space owner/admin can manage
+**Space overrides**. New Cloud values permit runtime use by default; the page
+has no Runtime or Reveal switches, and Agent scope is not currently configurable.
+Previously disabled runtime values keep their policy and need an owner's review.
+
+Authorized compatibility REST reads stay supported. A runtime `403` is a
+permission refusal: check the selected scope and current credential before
+continuing, and never treat it as "Vault missing". Site-generated keys cannot
+export Space Vault at any level; Sites use explicitly bound environment values.
+This script's HTTP read is live; it does not promise automatic Agent startup
+injection. Fully supplied, authorized `SMTP_*` environment values remain valid.
+
 For each real send, re-read the account immediately before `sendMail`. Require:
 
 - current status exactly `queued`;

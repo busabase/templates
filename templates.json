@@ -4137,7 +4137,7 @@
         "Summarize my product and ICP and flag what needs my attention.",
         "Find new target accounts that match my ICP and draft a first-touch email for each."
       ],
-      "version": "0.1.0",
+      "version": "0.1.1",
       "license": "MIT",
       "stats": {
         "folders": 0,
