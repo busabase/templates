@@ -1,0 +1,56 @@
+{
+  "type": "airapp",
+  "name": "Budget Desk",
+  "description": "Every cost center’s budget, scored the same way and kept current by agents from the general ledger, the forecast model, the HRIS, the procurement system and the contract register, with the actions that bring the ones heading over back in line.",
+  "position": 4,
+  "agentPrompts": [
+    {
+      "key": "ask-overrun",
+      "label": {
+        "en": "Which cost centers are heading over budget, and by how much?",
+        "zh-CN": "哪些部门预计超支，超多少"
+      },
+      "body": {
+        "en": "Read the `busa-budget` skill in this folder and follow it. Answer as the CFO: the projected overrun for the year, open purchase orders and how many cost centers are on track, then every at-risk cost center, lowest score first, with how far its forecast runs over budget, the measure that hurt most, and the open action. Then every forecast older than 30 days. Keep it to one screen. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-budget` Skill，按它的规则做。以 CFO 的口吻回答：先说全年预计超支多少、未付采购单多少、多少部门正常，再按评分从低到高列出每个有风险的部门，附预测超出预算多少、拉低最多的指标和对应措施；然后列出超过 30 天没更新的预测。控制在一屏以内。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    },
+    {
+      "key": "weekly-scan",
+      "label": {
+        "en": "Run this week’s budget scan",
+        "zh-CN": "跑本周预算扫描"
+      },
+      "body": {
+        "en": "Read the `busa-budget` skill in this folder and follow it. For each cost center, read spend against the year-to-date budget, the full-year forecast, heads against plan, open POs without a budget line and renewals coming up from their sources, write a signal for anything that moved, re-score it by the skill’s rule, propose an action for any cost center newly at risk, and then write this week’s budget review as a draft.",
+        "zh-CN": "先阅读本文件夹里的 `busa-budget` Skill，按它的规则做。为每个部门从数据来源读取实际对比年初至今预算、全年预测、编制对比计划、无预算科目的采购单和即将到期的续费，有变动的写一条信号，按 Skill 的规则重新打分，新变成有风险的提一条措施，最后写一份本周预算周报草稿。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "write-review",
+      "label": {
+        "en": "Write this Monday’s budget review",
+        "zh-CN": "写本周一的预算周报"
+      },
+      "body": {
+        "en": "Read the `busa-budget` skill in this folder and follow it. Write the budget review for last Monday to Sunday: a one-line headline, the projected overrun, open purchase orders, how many cost centers are on track, every at-risk cost center with what is wrong and the action, every forecast older than 30 days, and what changed since last week.",
+        "zh-CN": "先阅读本文件夹里的 `busa-budget` Skill，按它的规则做。写上周一到周日的预算周报：一句话结论、全年预计超支、未付采购单、正常部门数、每个有风险部门的问题和对应措施、超过 30 天没更新的预测、与上周相比的变化。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "renewals-due",
+      "label": {
+        "en": "Which renewals need a decision before notice periods close?",
+        "zh-CN": "哪些续费合同要在通知期结束前做决定"
+      },
+      "body": {
+        "en": "Read the `busa-budget` skill in this folder and follow it. List every cost center with renewals in the next 60 days and no decision, most first: what renews, roughly how much, and who has to decide. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-budget` Skill，按它的规则做。列出 60 天内有续费合同且还没决定的部门，数量多的排前面：什么合同到期、大约多少钱、谁来做决定。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ]
+}
