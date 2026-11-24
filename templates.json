@@ -2042,7 +2042,7 @@
         "Summarize my job-search profile and flag what needs my attention.",
         "Find new target companies that fit my profile and draft a tailored email for each."
       ],
-      "version": "0.1.0",
+      "version": "0.1.1",
       "license": "MIT",
       "stats": {
         "folders": 0,

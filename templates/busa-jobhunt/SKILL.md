@@ -253,20 +253,27 @@ Goal: the user's own mailbox sends the letters they approved.
      items and the write is refused, because Cloud takes the target scope from
      the items.
 
-   The user can equally add the items in the web app's Vault under a Space or
-   API-key scope, with **runtime** ticked. Either way no session restart is
-   needed — see step 3.
+   The owner can also use **Account Settings → Vault**: **User defaults** for
+   personal values, **API key overrides** for the current key, or **Space
+   overrides** managed by that Space's owner/admin. Cloud's new items permit
+   runtime use by default; the page has no Runtime or Reveal switches. Existing
+   items that were disabled keep that policy and need an owner's review.
 3. Understand where a value can come from, because the dry run names it:
-   - **self-hosted** serves `/api/v1/vault` with real values;
-   - **Cloud** serves the same route with every secret masked to `""` — it can
-     only tell you an item exists — and serves `/api/v1/vault/runtime` with the
-     values of items marked `access.runtime`. That is the same set Cloud injects
-     into a task's environment at startup, so reading it over HTTP just removes
-     the requirement to have restarted since the item was saved.
+   - explicitly supplied `SMTP_*` environment values take precedence;
+   - an instance that returns plaintext from `/api/v1/vault` can supply it;
+   - Cloud management reads mask saved Secrets. An authorized **ordinary
+     operator credential** can use the compatibility `/api/v1/vault/runtime`
+     route for permitted values. Values stay inside this trusted Node script.
 
-   Which routes answer is the only reliable way to tell the two apart. Never
-   infer it from the base URL, and never tell the user the Vault is missing —
-   that sentence was wrong even when the route 404'd.
+   A `403` means permission was denied, not that the value or Vault is missing.
+   Stop and check the selected scope and current credential; do not raise a
+   Site key's level to work around it. Site-generated keys cannot export Space
+   Vault and use explicit Site bindings instead. A `404` means the route is
+   unavailable; existing explicit environment fallback remains supported.
+
+   This script's HTTP read is live and needs no session restart. A remote
+   AirApp's startup environment is a separate snapshot that needs a new run
+   after changes; no universal Agent/task injection is promised here.
 4. Send what was approved:
    ```bash
    node scripts/send_emails.mjs           # dry run: prints sender, attachment, and the exact list
@@ -343,7 +350,7 @@ slugs, status values, and Vault keys are fixed by `references/jobhunt-schema.md`
 | `busa-jobhunt-profile` | One row. Identity, target role, channels, resume source text, resume file name, sender address, onboarding version, and the SMTP Vault reference names. |
 | `busa-jobhunt-companies` | One row per company: match evidence, drafted email, outreach status, the address actually used. |
 | `busa-jobhunt-leads` | Several rows per company: candidate addresses with role, source URL, and confidence. |
-| Vault `SMTP_*` | Host, port, user, app password. Values readable only by the trusted sender — from a self-hosted Vault, from Cloud's `/api/v1/vault/runtime`, or from the environment. |
+| Vault `SMTP_*` | Host, port, user, app password. Only the trusted Node sender resolves permitted values through an ordinary operator credential or its explicit environment; browser code receives readiness only. |
 
 `company-key` is a plain text foreign key, not a Busabase relation field. Two
 mutually referencing Bases cannot be created in one ChangeRequest, and the

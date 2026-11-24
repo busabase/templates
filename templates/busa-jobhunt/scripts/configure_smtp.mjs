@@ -47,8 +47,8 @@ const secret = (key, value, description) => ({
   scopeType: "personal",
   environment: "local",
   description,
-  // reveal:false keeps the password out of the Busabase UI as well; the sender
-  // resolves it at runtime, nobody needs to look at it.
+  // Keep the compatibility runtime policy. Cloud hides saved Secret values;
+  // its UI does not expose Runtime/Reveal toggles. Only the trusted sender reads it.
   access: { runtime: true, reveal: key !== "SMTP_PASS", edit: true, share: false },
 });
 

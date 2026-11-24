@@ -129,18 +129,25 @@ The profile stores the reference names; no Base ever stores a value.
 | `SMTP_HOST` | variable | |
 | `SMTP_PORT` | variable | 465 implies implicit TLS |
 | `SMTP_USER` | variable | usually the sender address itself |
-| `SMTP_PASS` | secret | app password / authorization code, `access.reveal: false` |
+| `SMTP_PASS` | secret | app password / authorization code; never printed or returned to browser code |
 
-Two things about the Vault API that are easy to get wrong:
+Vault rules that are easy to get wrong:
 
 - **`PUT /vault` replaces the whole document.** It is not an upsert. Writing
   only these four keys deletes every other item on the instance, so always read
   first and merge by key (`upsertVaultItems` in `scripts/lib.mjs`).
-- **`busabase-sdk` strips the Vault from its cloud client on purpose**
-  (`const { vault: _localVault, ...cloudWorkbenchRoutes }`): it is a
-  local/self-hosted capability, not a Cloud API surface. The scripts call
-  `/api/v1/vault` directly and treat 404/403 as "this instance has no Vault",
-  falling back to `SMTP_*` environment variables rather than failing.
+- Trusted scripts use the REST compatibility routes with their own ordinary
+  operator credential. Cloud management reads mask Secret values; an authorized
+  `/api/v1/vault/runtime` read can return runtime-permitted values. A runtime
+  `403` is an explicit permission denial and stops resolution without treating
+  it as a missing value or retrying with another identity. A `404` means that
+  route is unavailable; explicit `SMTP_*` environment values remain supported
+  and take precedence over Vault reads.
+- In Cloud, use Account Settings → Vault and the User defaults / API key
+  overrides scope, or have a Space owner/admin manage Space overrides. New
+  values allow runtime use by default; there are no Runtime/Reveal UI switches.
+  Site-generated keys cannot export Space Vault at any level. This Node sender
+  does not borrow an AirApp/browser session or assume Agent startup injection.
 
 ## Limits
 

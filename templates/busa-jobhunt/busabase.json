@@ -9,7 +9,7 @@
     "en": "Job-search profile, target companies, and outreach state",
     "zh-CN": "求职档案、目标公司与触达进度追踪。"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "tags": [
     "comms",
