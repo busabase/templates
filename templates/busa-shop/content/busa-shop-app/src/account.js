@@ -3,9 +3,9 @@
 // A buyer signs in with a 6-digit code emailed to them, and then sees the
 // orders placed while signed in, and only those. Busabase does the hard parts
 // (the code, the email, the session, and which rows belong to whom); this
-// module calls its app-user endpoints with the site's own key, the same way
-// src/vault.js reads the Vault: plain fetch, `Authorization: Bearer <key>`,
-// `x-busabase-space`, never from the visitor's browser.
+// module calls its app-user endpoints with the site's own key: plain fetch,
+// `Authorization: Bearer <key>` and `x-busabase-space`, never from the
+// visitor's browser. Secret bindings are read separately by src/vault.js.
 //
 //   GET  /api/v1/app-users/apps/<app>/settings   is login enabled? (cached, src/handler.js hides all account UI otherwise)
 //   POST /api/v1/app-users/send-code             { appId, email, locale } + x-busabase-app-user-ip: the buyer's IP

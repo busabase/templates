@@ -38,7 +38,7 @@ and the owner "new paid order" through the owner's own **SMTP** mailbox. The
 shop's **policy pages** (Shipping, Returns & warranty, Privacy, Terms,
 Contact) come from the **Pages** table and are linked in the footer. The
 secrets this needs (the PayPal client secret, the SMTP password) live in the
-**Space Vault**, never in a table.
+**Site Secret bindings**, optionally sourced from the **Space Vault**, never in a table.
 
 The shop also has a **blog**: the **Posts** table, shown at `/blog`, in the
 sitemap, an RSS feed and `/llms.txt`. An Agent writes a post as a **Draft**
@@ -78,11 +78,12 @@ busa-shop 0.5.0 already does.
 - **Never refund, and never set `refunded`.** Refunds are made by the owner in
   their PayPal account; PayPal tells the website, which records it. Never
   promise a refund in a reply draft unless the owner said so.
-- **Never touch the Vault.** The PayPal client secret and the SMTP password
-  are typed into the Space Vault by the owner (or a Space admin) themselves.
-  Never ask for them in chat, never write them into a table, a file, a prompt,
-  a report or a log, and never read them back. You may name the Vault items
-  that are needed and say whether `/api/status` sees them.
+- **Never read or write credential values.** The owner configures the PayPal
+  client secret and SMTP password in the Site's **Secrets & Variables**, either
+  as direct Secrets or as references to existing Space Vault Secrets. Never ask
+  for them in chat or write them into a table, file, prompt, report or log.
+  You may name the required bindings and check the status-only `/api/status`.
+  Never add a route that displays a credential, even temporarily.
 - Never switch Settings › PayPal to `live` unless the owner tells you to, after
   a sandbox payment went through.
 - Never invent a product fact: a price, stock, a specification, a certificate,
@@ -228,9 +229,9 @@ a setting, write that one cell; never add a second row.
 | Only list products with this tag | website | Optional: list only products whose Tags contain this word |
 | Products table | website, importer | Optional: sell from another table instead of this folder's Products (see "Sell from a product hub instead") |
 | PayPal | website | `off` (order requests only), `sandbox` (test money) or `live` (real payments). See "Set up PayPal" |
-| PayPal client ID | website | The PayPal REST app's client ID, sandbox or live to match. Not a secret: the buyer's browser gets it. Its **secret** goes in the Vault |
+| PayPal client ID | website | The PayPal REST app's client ID, sandbox or live to match. Not a secret: the buyer's browser gets it. Its **secret** is a Site binding |
 | PayPal webhook ID | website | The ID PayPal gives the webhook registered for `<live address>/api/paypal/webhook`; every notification is verified with it |
-| SMTP host, SMTP port, SMTP security, SMTP username | website | The owner's mailbox for order emails: `smtp.example.com`, `587` with `starttls` or `465` with `tls`, the login (usually the full address). Its **password** goes in the Vault |
+| SMTP host, SMTP port, SMTP security, SMTP username | website | The owner's mailbox for order emails: `smtp.example.com`, `587` with `starttls` or `465` with `tls`, the login (usually the full address). Its **password** is a Site binding |
 | Send emails from | website | The From address (the SMTP mailbox, or an alias it may send as). Empty = the SMTP username |
 | Order notifications to | website | Where "new paid order" and "new order request" go. Empty = Contact email |
 | Live site address | daily check | The public address shown after Go live |
@@ -244,9 +245,11 @@ a setting, write that one cell; never add a second row.
 
 The website reads Settings at most once a minute, so a change shows on the
 live site within about a minute, with no redeploy. **Never put a password or
-secret into Settings**: two things live in the **Space Vault** instead, each
-a Secret marked **Runtime**: `BUSA_SHOP_PAYPAL_CLIENT_SECRET` and
-`BUSA_SHOP_SMTP_PASSWORD` ("Payments and orders (收款与订单)").
+secret into Settings**: configure `BUSA_SHOP_PAYPAL_CLIENT_SECRET` and
+`BUSA_SHOP_SMTP_PASSWORD` as Secrets in the website's **Secrets & Variables**.
+Each can be a direct Site Secret or an explicit reference to a Space Vault
+Secret ("Payments and orders (收款与订单)"). Saving alone does not change a
+running Worker: deploy the preview, then Go live to update the public site.
 
 ### Shipping
 
@@ -755,8 +758,9 @@ folder with its own Products), and you import the product list into it.
    asks for **write** access, because checkout must save orders and record
    PayPal's confirmations on them. Going
    live creates an API key in your name, listed as `Site: Shop Website`, next
-   to the preview's `Site preview: Shop Website`; each can do whatever you
-   can do in this workspace, not only these tables, and the website's code is
+   to the preview's `Site preview: Shop Website`; each can read and write the
+   business data its owner can access in this workspace, not only these tables,
+   and the website's code is
    the only thing between a stranger and that. Turning Public off, or moving
    the app to Trash, cuts the live site off." The owner clicks **Go live**
    (「上线」), or asks you to: then follow "Publish the website for the
@@ -842,7 +846,7 @@ log, Email log. Nothing else, and never on an order it did not create.
 
 PayPal's own standard checkout, in the owner's own PayPal business account
 (https://developer.paypal.com/docs/checkout/standard/). The owner does every
-step below in PayPal and in the Vault; you explain, then check the result.
+step below in PayPal and the Site settings; you explain, then check the result.
 One shop, one Shop Website node: sandbox and live are a switch in Settings,
 each with its own credentials. Start in **sandbox** (test money):
 
@@ -851,24 +855,25 @@ each with its own credentials. Start in **sandbox** (test money):
    App** (type Merchant). It shows a **Client ID** and a **Secret**.
 2. **Client ID → Settings › PayPal client ID** (you may write it when the
    owner pastes it: a client ID is public, the buyer's browser receives it).
-3. **Secret → the Space Vault, by the owner.** In Busabase: the settings
-   window (「工作空间设置」, from the account menu) → **Vault** (under 账户) →
-   **Space overrides** (「Space 覆盖值」) → choose this shop's space → **Add
-   secret** (「添加 Secret」): Name
-   `BUSA_SHOP_PAYPAL_CLIENT_SECRET`, Value the Secret, **Runtime** ticked →
-   **Save** (「保存」). Only the Space's owners and admins can. It must be the
-   **Space** tab: the website's keys (`Site preview: Shop Website` for the
-   preview, `Site: Shop Website` for the live site) never receive anyone's
-   personal (User defaults) values, and receive the Space's only while the
-   person who ran the preview or clicked Go live can write in this space.
-4. **Settings › PayPal = `sandbox`.** Within a minute, open the preview's
-   `/api/status` (or the live one): `"payments": "paypal-sandbox"`. Anything
-   else comes with `paymentsNote`: `off`, `no-client-id`, `no-secret` (no
-   Vault item by that name in the Space tab marked Runtime, or the key's
-   person cannot write in the space), `vault-unreadable`,
-   `currency-not-supported` (PayPal does not take Settings › Currency),
-   `no-shipping-table`, `browser-engine` (Free: no online payment). Until it
-   is ready, checkout keeps taking order requests.
+3. **Secret → the Site binding, by the owner.** Open Shop Website's
+   settings → **Secrets & Variables**. Use the exact environment name
+   `BUSA_SHOP_PAYPAL_CLIENT_SECRET`: either enter it as a direct **Secret**,
+   or bind that name to the existing Secret in this Space's Vault. The value
+   never goes into Settings or chat. A Space source must allow runtime use;
+   new Cloud Vault entries do by default. Deploying Space bindings requires
+   the Space's owner/admin and a manage-capable request credential. The Site's
+   generated runtime key stays at its normal level: it cannot export Space
+   Vault at **any** API key level, so do not raise its level to work around a
+   refusal. Personal Vault entries are not Site sources.
+4. **Deploy the preview, then set Settings › PayPal = `sandbox`.** The
+   binding is copied into the Worker on deployment, not read through a Vault
+   API while shoppers browse. Within a minute of the Settings change, check
+   the preview's `/api/status`: `"payments": "paypal-sandbox"`. Other states
+   have a `paymentsNote`: `off`, `no-client-id`, `no-secret` (missing or empty
+   `BUSA_SHOP_PAYPAL_CLIENT_SECRET` binding), `currency-not-supported`,
+   `no-shipping-table`, or `browser-engine` (no online payment in the browser
+   preview). Until ready, checkout keeps taking order requests. A configured
+   state alone does not prove PayPal accepted the credentials.
 5. **A test purchase, in the members-only preview.** No Go live is needed:
    the preview (Plus and higher) is the same website with its own key. PayPal
    developer dashboard → **Testing Tools** → **Sandbox Accounts**: a
@@ -895,7 +900,8 @@ each with its own credentials. Start in **sandbox** (test money):
 
 **Switching to live** (only when the owner says so, after a sandbox purchase
 worked): in PayPal switch to **Live**, take the live app's Client ID (into
-Settings) and Secret (the owner replaces the Vault value, same name), add the
+Settings) and Secret (the owner replaces the Site Secret or its bound Vault
+source, then deploys a new preview and publishes it), add the
 same webhook URL to the live app and put its Webhook ID into Settings, then
 Settings › PayPal = `live`. All of them belong together: a sandbox client ID
 with a live secret is refused by PayPal (checkout then says PayPal is
@@ -904,7 +910,7 @@ refunded afterwards in PayPal, proves it.
 
 The Vault is on every Busabase Cloud plan, Free included (no plan switch
 gates it). Online payment needs the Website engine (Plus and higher): on a
-Free space the browser preview has no key to read the Vault with and cannot
+Free space the browser preview receives no secret bindings and cannot
 open a mail connection, so its checkout takes order requests and shows the
 owner, and only the owner, a note saying why.
 
@@ -925,18 +931,22 @@ Setup, all in Settings except the password: **SMTP host**, **SMTP port** and
 for websites), **SMTP username** (usually the full mailbox address), **Send
 emails from**, **Order notifications to**. The password (for Gmail or Outlook
 with two-step login an *app password*, for QQ / 163 mail the *authorization
-code*) goes into the Space Vault by the owner, as above: Name
-`BUSA_SHOP_SMTP_PASSWORD`, Runtime ticked.
+code*) is configured by the owner in the Site's **Secrets & Variables**, as
+above, using the exact name `BUSA_SHOP_SMTP_PASSWORD`. Enter a direct Secret
+or bind that name to a runtime-enabled Secret in this Space's Vault, save,
+then deploy a new preview and publish it. Updating a Vault source alone does
+not refresh a running Worker. Never return the password through a diagnostic
+page; `/api/status` reports readiness without its value.
 
 **QQ Mail (QQ 邮箱)**, the template's defaults: SMTP host `smtp.qq.com`,
 port `465` with `tls` (QQ also lists 587: then `starttls`), SMTP username and
 Send emails from both the full QQ address (`12345678@qq.com`), and in the
-Vault the mailbox's **授权码**, never the QQ password. The owner turns SMTP on
+Site Secret (or its bound Vault source) the mailbox's **授权码**, never the QQ password. The owner turns SMTP on
 and generates the 授权码 in QQ Mail's settings (设置 → 账号 → POP3/IMAP/SMTP
 服务 → 开启, then 生成授权码): https://service.mail.qq.com/detail/0/141 and
 https://wx.mail.qq.com/list/readtemplate?name=app_intro.html#/agreement/authorizationCode
 (changing the QQ password expires the 授权码: then put the new one in the
-Vault). `/api/status` then says
+Site Secret or bound Vault source, then deploy again). `/api/status` says
 `"email": "ready"`; otherwise `off` (no host), `no-sender`, `no-password`,
 `bad-port`. `none` security is only for a local test mail catcher: it sends no
 password.
@@ -1324,7 +1334,7 @@ optional, since Claude and ChatGPT never send it):
 - `create_checkout`: the buy link, `https://<address>/order?product=<id>&qty=<n>&country=<CC>`,
   with the items total, the shipping to that country and the total. It saves
   nothing. It says PayPal only when PayPal really works on that page
-  (Settings, the Vault secret and Shipping all set), otherwise order requests.
+  (Settings, the Site secret binding and Shipping all set), otherwise order requests.
   It passes on the sentences of Settings › **Shipping note** about import duty
   or taxes ("Import duty and taxes, if any, are paid by the buyer on
   delivery."); without one it says the total includes no duties or taxes.
@@ -1825,10 +1835,10 @@ write feedback into Owner feedback on this report for the next run.
   owner's own browser tab: no address, no Go live, nobody else can see it,
   it runs only while the tab is open, and the daily check has no live site to
   probe. Its orders are real rows all the same.
-- **The site's keys reach everything their owner can reach in this workspace**
-  at write level, not only these tables, and the Space's Vault values marked
-  Runtime (the website keeps only its two and drops the rest). The website's
-  fixed routes are the only thing in between. There are two:
+- **The site's keys reach the business data their owner can reach in this
+  workspace** at write level, not only these tables. They cannot export Space
+  Vault at any level. The Worker receives only the explicitly configured Site
+  bindings, and its fixed routes must never reveal their values. There are two keys:
   `Site: Shop Website` belongs to whoever clicked Go live,
   `Site preview: Shop Website` to whoever ran the preview (opening the node
   runs it), and each stops working if that person leaves the workspace.
@@ -1839,10 +1849,11 @@ write feedback into Owner feedback on this report for the next run.
 - **The blog is simple**: no comments, no categories or tags pages, one
   language per post (the shop's), no scheduled publishing (Published at is
   only the date shown), no pictures inside the body.
-- **The site shows what the tables say**, up to a minute late (the Vault up
-  to five minutes), and stays up with the last good data for up to ten
+- **The site shows what the tables say**, up to a minute late, and stays up
+  with the last good data for up to ten
   minutes if Busabase cannot be reached; after that it shows "temporarily
-  unavailable".
+  unavailable". Secret changes take effect only after deploying the preview
+  and publishing again.
 - **Certificates are shown as recorded.** The website cannot check the
   documents; an expired one is hidden, nothing more.
 - **Buyer login is email codes only** (no passwords, no Google or Apple
@@ -1878,12 +1889,11 @@ validation and the Orders fields written, `shipping.js` the rates rule,
 `agents.js` the MCP tools, `/agents.md`, `/.well-known/ucp` and the Google feed,
 `mcp.js` the MCP endpoint (Streamable HTTP, both protocol revisions),
 `posts.js` which Posts rows are on the site, their addresses and redirects, `paypal.js` PayPal's REST API
-and what each webhook event does, `vault.js` the two Vault values, `smtp.js`
+and what each webhook event does, `vault.js` the two Site environment bindings, `smtp.js`
 the SMTP client, `mail.js` the emails, `seo.js`, `pages.js`, `details.js`
 which product details a page shows and how Specs is read, `resources.js`
-table lookup, `shop.js` the only code that calls Busabase besides the Vault
-read and `account.js` (buyer login and My orders through Busabase's app-user
-endpoints), `handler.js` routes). Then, in
+table lookup, `shop.js` the business-data access and `account.js` (buyer login
+and My orders through Busabase's app-user endpoints), `handler.js` routes). Then, in
 that folder:
 
 ```bash

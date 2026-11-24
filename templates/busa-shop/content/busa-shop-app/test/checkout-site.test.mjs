@@ -28,6 +28,9 @@ const envFor = (overrides = {}) => ({
   BUSABASE_API_KEY: TEST_KEY,
   BUSABASE_SPACE_ID: "spc_demo",
   BUSABASE_AIRAPP_RUNTIME: "site",
+  BUSA_SHOP_PAYPAL_CLIENT_SECRET: PAYPAL_SECRET,
+  BUSA_SHOP_SMTP_PASSWORD: SMTP_PASSWORD,
+  ANOTHER_APPS_TOKEN: "not-the-shops",
   SOCKETS: createNodeSockets(),
   PAYPAL_API_BASE: paypal.origin,
   PAYPAL_SDK_URL: paypal.sdkUrl,
@@ -112,7 +115,6 @@ beforeEach(async () => {
   paypal.reset();
   Object.assign(api.state, structuredClone(pristine));
   api.state.records.bas_orders = [];
-  api.state.vault = { BUSA_SHOP_PAYPAL_CLIENT_SECRET: PAYPAL_SECRET, BUSA_SHOP_SMTP_PASSWORD: SMTP_PASSWORD, ANOTHER_APPS_TOKEN: "not-the-shops" };
   Object.assign(api.options, { failCreates: false, queueCreates: false, failReads: false, viewerSession: false, conflictOnce: undefined, conflictFields: undefined });
   api.log.length = 0;
   api.reset();
@@ -322,8 +324,9 @@ describe("checkout with PayPal", () => {
 });
 
 describe("when PayPal is not ready", () => {
-  it("takes order requests, and says why, when the secret is not in the Vault", async () => {
-    api.state.vault = { SOMETHING_ELSE: "x" };
+  it("takes order requests, and says why, when the secret binding is missing", async () => {
+    delete env.BUSA_SHOP_PAYPAL_CLIENT_SECRET;
+    delete env.BUSA_SHOP_SMTP_PASSWORD;
     const page = await call("/order");
     assert.match(page.text, /data-submit>Send order request</);
     const status = (await call("/api/status")).json();
@@ -349,7 +352,7 @@ describe("when PayPal is not ready", () => {
   });
 
   it("a wrong secret makes PayPal unavailable at the pay step, with the order kept", async () => {
-    api.state.vault = { BUSA_SHOP_PAYPAL_CLIENT_SECRET: "wrong" };
+    env.BUSA_SHOP_PAYPAL_CLIENT_SECRET = "wrong";
     await post("/api/orders", checkout());
     const created = await post("/api/paypal/orders", { orderId: "ORD-7K2M9QX4PT" });
     assert.equal(created.status, 502);
@@ -357,7 +360,7 @@ describe("when PayPal is not ready", () => {
     assert.ok(logged.some((line) => /PayPal refused the client id \/ secret \(401/.test(line)));
   });
 
-  it("a shop with PayPal off reads no Vault at all", async () => {
+  it("a shop with PayPal off never requests Vault export", async () => {
     Object.assign(settings(), { "paypal-mode": "off", "smtp-host": "" });
     await call("/order");
     await call("/api/status");
@@ -399,11 +402,11 @@ describe("order requests and email", () => {
 
   it("a missing SMTP password is said once in the Email log, never sent", async () => {
     Object.assign(settings(), { "smtp-security": "starttls", "smtp-username": "shop@tumbleberry.example" });
-    api.state.vault = {};
+    delete env.BUSA_SHOP_SMTP_PASSWORD;
     await post("/api/orders", checkout());
     await settle();
     assert.equal(smtp.messages.length, 0);
-    assert.match(orderRow().fields["email-log"], /no email sent: the SMTP password \(BUSA_SHOP_SMTP_PASSWORD\) is not in the Space Vault/);
+    assert.match(orderRow().fields["email-log"], /no email sent: the SMTP password binding \(BUSA_SHOP_SMTP_PASSWORD\) is missing; bind it in the Site Secrets & Variables/);
   });
 });
 
@@ -432,7 +435,18 @@ describe("policy pages", () => {
 });
 
 describe("secrets", () => {
-  it("never appear in a page, an API answer or a log line, and the Vault is read at most once per five minutes", async () => {
+  it("keeps password-debug URLs unavailable on public and preview hosts", async () => {
+    for (const site of [SITE, "https://shop-preview.example.test"]) {
+      for (const path of ["/debug/smtp-password", "/api/debug/smtp-password"]) {
+        const response = await worker.fetch(new Request(new URL(path, site)), env, ctx());
+        assert.equal(response.status, 404);
+        const text = await response.text();
+        assert.ok(!text.includes(PAYPAL_SECRET) && !text.includes(SMTP_PASSWORD));
+      }
+    }
+  });
+
+  it("never appear in a page, an API answer or a log line, and the Site never exports the Vault", async () => {
     const outputs = [];
     for (const path of ["/", "/order", "/api/status", "/pages/privacy", "/products/tt-walking-robot"]) outputs.push((await call(path)).text);
     await payFor();
@@ -441,7 +455,7 @@ describe("secrets", () => {
     for (const output of outputs) {
       assert.ok(!output.includes(PAYPAL_SECRET) && !output.includes(SMTP_PASSWORD) && !output.includes("not-the-shops"), output.slice(0, 200));
     }
-    assert.equal(api.log.filter((entry) => entry.path === "/api/v1/vault/runtime").length, 1);
+    assert.equal(api.log.filter((entry) => entry.path === "/api/v1/vault/runtime").length, 0);
     const status = (await call("/api/status")).json();
     assert.deepEqual(
       { payments: status.payments, email: status.email, shipping: status.shipping, pages: status.pages },

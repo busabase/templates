@@ -4271,13 +4271,13 @@
       "agentPrompts": [
         "Import this product list into my shop's Products (Excel with pictures, or CSV with photos and certificates). Show me the preview first.",
         "Open my shop: check the products it will list, the settings, shipping costs, policy pages, PayPal and order emails, and tell me what I still have to do before I click Go live.",
-        "Set up PayPal for my shop: tell me what to create in PayPal, what goes into Settings and what I put into the Space Vault myself.",
+        "Set up PayPal for my shop: tell me what to create in PayPal, what goes into Settings and which Secret I configure or bind in the Site settings myself, then deploy and check its status.",
         "Run today's shop check: read my feedback on the last report, then check products, certificates, orders and payments, and the live site, and write one report.",
         "Plan 3 blog posts that answer questions buyers in my shipping countries really ask, using only facts from my tables, then write the one I pick as a draft for me to publish.",
         "Let AI assistants sell for my shop: tell me my MCP address and how to add it to Claude or ChatGPT, then check that it finds my products and gives a working buy link.",
         "What do I need to ship today? List the paid orders with addresses, and draft replies for any new order requests."
       ],
-      "version": "0.11.0",
+      "version": "0.11.1",
       "license": "MIT",
       "stats": {
         "folders": 0,

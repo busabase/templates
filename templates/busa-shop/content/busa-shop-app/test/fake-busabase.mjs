@@ -4,8 +4,8 @@
 // POST /api/v1/records/{recordId}/change-requests, GET
 // /api/v1/file-trees/{nodeId}/files/{path}, POST /api/v1/assets/upload-urls and
 // /confirmations with a presigned PUT, GET /api/v1/records/get (one record by an
-// exact field value), GET /api/v1/vault/runtime (`state.vault`, the runtime
-// values the key would receive), plus a private asset path. It records every
+// exact field value), GET /api/v1/vault/runtime (refused for the Site key),
+// plus a private asset path. It records every
 // request so tests can assert what was asked for and which requests carried the key.
 import { readFile } from "node:fs/promises";
 import http from "node:http";
@@ -135,9 +135,8 @@ export const startFakeBusabase = async (state) => {
       return send(200, { records: page, nextCursor: rows.length > offset + limit ? String(offset + limit) : null });
     }
     if (req.method === "GET" && url.pathname === "/api/v1/vault/runtime") {
-      // Like Busabase: the endpoint wants an API key; a session (no key) is refused.
-      if (auth === "") return send(401, { code: "UNAUTHORIZED", message: "API key required" });
-      return send(200, state.vault ?? {});
+      // Like Cloud: a Site-generated key cannot export Space Vault at any level.
+      return send(403, { code: "FORBIDDEN", message: "Bind the required Secret to the Site instead" });
     }
     if (req.method === "GET" && url.pathname === "/api/v1/records/get") {
       const { baseId, fieldSlug, valueText } = entry.query;

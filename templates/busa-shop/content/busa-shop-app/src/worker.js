@@ -51,7 +51,9 @@
 //
 // Bindings (set by Busabase on every deploy, never written anywhere else):
 //   env.BUSABASE_BASE_URL, env.BUSABASE_API_KEY, env.BUSABASE_SPACE_ID
-// Secrets come from the Busabase Vault at runtime (src/vault.js), never from here.
+// Bind env.BUSA_SHOP_PAYPAL_CLIENT_SECRET and env.BUSA_SHOP_SMTP_PASSWORD
+// explicitly in the Site Secrets & Variables before deploying. src/vault.js
+// reads those bindings; a Site key never exports the Space Vault.
 // Only a local run sets these (npm run dev, tests); a deploy never does:
 //   env.SOCKETS          a `connect()` for SMTP outside Cloudflare (scripts/node-sockets.mjs)
 //   env.PAYPAL_API_BASE, env.PAYPAL_SDK_URL   a PayPal mock instead of PayPal

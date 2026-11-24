@@ -82,10 +82,10 @@ import { buildFeed, buildLlmsTxt, buildRobots, buildSitemap } from "./seo.js";
 import { checkoutCountries } from "./shipping.js";
 import { createShop, ShopUnavailableError } from "./shop.js";
 import { sendMail } from "./smtp.js";
-import { createSecretsReader, readShopSecrets } from "./vault.js";
+import { readShopSecrets } from "./vault.js";
 
 export const MAX_ORDER_BODY_BYTES = 16 * 1024;
-export const SHOP_VERSION = "0.11.0";
+export const SHOP_VERSION = "0.11.1";
 // MCP requests per minute from one address, counted per Worker isolate (src/mcp.js).
 export const MCP_REQUESTS_PER_MINUTE = 120;
 export const MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
@@ -235,7 +235,7 @@ export const createHandler = (overrides = {}) => {
   const sites = new WeakMap();
   const mcpLimit = createRateLimiter({ limit: deps.mcpRequestsPerMinute ?? MCP_REQUESTS_PER_MINUTE, now: deps.now });
 
-  /** Everything kept per env (one env per deploy): the shop, its secrets reader, its PayPal client. */
+  /** Everything kept per env (one env per deploy): the shop and its PayPal client. */
   const siteFor = (env) => {
     let site = sites.get(env);
     if (!site) {
@@ -255,10 +255,6 @@ export const createHandler = (overrides = {}) => {
         now: deps.now,
         log: deps.log,
       });
-      const secrets = createSecretsReader({
-        now: deps.now,
-        read: () => readShopSecrets({ baseUrl, apiKey: env.BUSABASE_API_KEY, spaceId: env.BUSABASE_SPACE_ID, fetchImpl: deps.fetch }),
-      });
       const accounts = createAccounts({
         baseUrl,
         apiKey: env.BUSABASE_API_KEY,
@@ -268,7 +264,7 @@ export const createHandler = (overrides = {}) => {
         log: deps.log,
       });
       const formGuard = createFormGuard({ secret: env.BUSABASE_API_KEY, now: deps.now });
-      site = { shop, secrets, accounts, formGuard, paypal: null };
+      site = { shop, accounts, formGuard, paypal: null };
       sites.set(env, site);
     }
     return site;
@@ -279,13 +275,11 @@ export const createHandler = (overrides = {}) => {
   /** The two secrets when this shop uses them and this engine can read them; `{}` otherwise. */
   const secretsFor = async (env, state) => {
     if (!env.BUSABASE_API_KEY || !needsSecrets(state.settings)) return { secrets: {}, error: env.BUSABASE_API_KEY ? "" : "no-key" };
-    const result = await siteFor(env).secrets.get();
-    if (result.error && result.error !== "no-key") deps.log.warn?.("busa-shop: Vault runtime values unreadable", result.error);
-    return result;
+    return readShopSecrets(env);
   };
 
   /**
-   * How this shop takes payment right now: PayPal when Settings, the Vault
+   * How this shop takes payment right now: PayPal when Settings, the bindings
    * and the engine all allow it, otherwise order requests, with the reason.
    */
   const paymentsFor = (env, state, vault) => {
@@ -296,7 +290,7 @@ export const createHandler = (overrides = {}) => {
     if (!settings.paypalClientId) return { payment: "request", reason: "no-client-id" };
     if (!PAYPAL_CURRENCIES.has(settings.currency)) return { payment: "request", reason: "currency-not-supported" };
     if (state.shipping.status !== "ready") return { payment: "request", reason: "no-shipping-table" };
-    if (!vault.secrets.paypalSecret) return { payment: "request", reason: vault.error ? "vault-unreadable" : "no-secret" };
+    if (!vault.secrets.paypalSecret) return { payment: "request", reason: "no-secret" };
     return {
       payment: "paypal",
       mode,
@@ -1049,7 +1043,7 @@ export const createHandler = (overrides = {}) => {
               : "This shop is still being set up: its catalog is not available yet.";
           return { content: [{ type: "text", text: textOut }], isError: true };
         }
-        // The buy link must say what its page will do: PayPal only when Settings, the Vault and this engine all allow it.
+        // The buy link must say what its page will do: PayPal only when Settings, the bindings and this engine all allow it.
         const payment = name === "create_checkout" ? paymentsFor(env, state, await secretsFor(env, state)).payment : publicPayment(env, state);
         const result = runTool(name, args, state, { origin: url.origin, payment });
         if (result === null) return null;
@@ -1341,7 +1335,7 @@ export const createHandler = (overrides = {}) => {
     }
     const { settings, catalog } = state;
     // Product and policy pages are the same for every visitor: they say
-    // "PayPal" from Settings alone, without reading the Vault on each view.
+    // "PayPal" from Settings alone, without resolving payment readiness on each view.
     const payment = publicPayment(env, state);
     const analytics = analyticsFor(url, env, settings);
     // The Account link, on the pages people read (not the feeds and machine documents).

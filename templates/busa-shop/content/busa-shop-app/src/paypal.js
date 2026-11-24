@@ -17,7 +17,7 @@
 //   https://developer.paypal.com/docs/api/orders/v2/                (order body, custom_id, invoice_id, shipping)
 //   https://developer.paypal.com/docs/api/reference/currency-codes/ (currencies, no decimals for HUF/JPY/TWD)
 //
-// The client secret comes from the Busabase Vault at runtime (src/vault.js),
+// The client secret comes from the explicit Site environment binding (src/vault.js),
 // never from a table or a file. Nothing here logs it, or an access token.
 
 export const PAYPAL_API = { sandbox: "https://api-m.sandbox.paypal.com", live: "https://api-m.paypal.com" };

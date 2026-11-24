@@ -19886,7 +19886,7 @@ function toArray(value2) {
 }
 var ORPC_NAME = "orpc";
 var ORPC_SHARED_PACKAGE_NAME = "@orpc/shared";
-var ORPC_SHARED_PACKAGE_VERSION = "1.16.2";
+var ORPC_SHARED_PACKAGE_VERSION = "1.16.1";
 var AbortError = class extends Error {
   constructor(...rest) {
     super(...rest);
@@ -20175,9 +20175,9 @@ function tryDecodeURIComponent(value2) {
   }
 }
 
-// node_modules/@orpc/client/dist/shared/client.DeR0HTYb.mjs
+// node_modules/@orpc/client/dist/shared/client.D_0j2fRr.mjs
 var ORPC_CLIENT_PACKAGE_NAME = "@orpc/client";
-var ORPC_CLIENT_PACKAGE_VERSION = "1.16.2";
+var ORPC_CLIENT_PACKAGE_VERSION = "1.16.1";
 var RECURSIVE_CLIENT_UNWRAP_KEYS = /* @__PURE__ */ new Set([
   /**
    * Commonly used by libraries to bind functions to a specific `this`
@@ -20962,7 +20962,7 @@ function toStandardLazyResponse(response, options = {}) {
   };
 }
 
-// node_modules/@orpc/client/dist/shared/client.BmCiDGqJ.mjs
+// node_modules/@orpc/client/dist/shared/client.BPI7fHX3.mjs
 var CompositeStandardLinkPlugin = class {
   plugins;
   constructor(plugins = []) {
@@ -29281,7 +29281,7 @@ var normalizeSettings = (record2) => {
   const smtpPort = finiteNumber(fields["smtp-port"]);
   return {
     // Payments and email. Only the non-secret half lives here: the PayPal
-    // secret and the SMTP password are in the Space Vault (src/vault.js).
+    // secret and SMTP password arrive through Site bindings (src/vault.js).
     paypalMode: PAYPAL_MODES.includes(paypalMode) ? paypalMode : "off",
     paypalClientId: text(fields["paypal-client-id"]),
     paypalWebhookId: text(fields["paypal-webhook-id"]),
@@ -31512,7 +31512,7 @@ var sendMail = async ({
   if (!host || !Number.isInteger(port) || port <= 0 || port > 65535) throw new SmtpError("the mail server host or port is missing", { stage: "connect" });
   if (port === 25) throw new SmtpError("port 25 is blocked for websites: use 587 (STARTTLS) or 465 (TLS)", { stage: "connect" });
   const sendPassword = Boolean(username) && security !== "none";
-  if (username && !password && security !== "none") throw new SmtpError("the SMTP password is missing from the Vault", { stage: "auth" });
+  if (username && !password && security !== "none") throw new SmtpError("the SMTP password is missing", { stage: "auth" });
   let socket = connect({ hostname: host, port }, { secureTransport: security === "tls" ? "on" : security === "starttls" ? "starttls" : "off", allowHalfOpen: false });
   const results = [];
   try {
@@ -31893,7 +31893,7 @@ var emailLogLines = (results, nowIso) => results.map(
 var EMAIL_SKIP_REASONS = {
   off: "no email sent: SMTP is not set up (Settings \u203A SMTP host)",
   "no-sender": "no email sent: Settings \u203A Send emails from is not a usable address",
-  "no-password": "no email sent: the SMTP password (BUSA_SHOP_SMTP_PASSWORD) is not in the Space Vault, marked Runtime",
+  "no-password": "no email sent: the SMTP password binding (BUSA_SHOP_SMTP_PASSWORD) is missing; bind it in the Site Secrets & Variables and deploy again",
   "bad-port": "no email sent: Settings \u203A SMTP port must be 587 (STARTTLS) or 465 (TLS); port 25 is blocked for websites",
   "browser-engine": "no email sent: the private browser preview cannot send email"
 };
@@ -33286,59 +33286,22 @@ var createShop = ({ client, records, busabaseOrigin, apiKey, shopFolderId, fetch
 };
 
 // src/vault.js
-var VAULT_KEYS = [
+var SECRET_BINDINGS = [
   ["paypalSecret", "BUSA_SHOP_PAYPAL_CLIENT_SECRET"],
   ["smtpPassword", "BUSA_SHOP_SMTP_PASSWORD"]
 ];
-var VAULT_TTL_MS = 5 * 6e4;
-var VAULT_ERROR_TTL_MS = 3e4;
-var readShopSecrets = async ({ baseUrl, apiKey, spaceId, fetchImpl = fetch }) => {
-  if (!apiKey) return { secrets: {}, error: "no-key" };
-  let response;
-  try {
-    response = await fetchImpl(`${String(baseUrl).replace(/\/+$/, "").replace(/\/api\/v1$/, "")}/api/v1/vault/runtime`, {
-      headers: { authorization: `Bearer ${apiKey}`, accept: "application/json", ...spaceId ? { "x-busabase-space": spaceId } : {} }
-    });
-  } catch {
-    return { secrets: {}, error: "unreachable" };
-  }
-  if (!response.ok) {
-    await response.body?.cancel?.();
-    return { secrets: {}, error: `http-${response.status}` };
-  }
-  const body = await response.json().catch(() => null);
+var readShopSecrets = (env2 = {}) => {
   const secrets = {};
-  if (body && typeof body === "object") {
-    for (const [name, key] of VAULT_KEYS) {
-      if (typeof body[key] === "string" && body[key]) secrets[name] = body[key];
-    }
+  for (const [name, binding] of SECRET_BINDINGS) {
+    const value2 = env2?.[binding];
+    if (typeof value2 === "string" && value2.length > 0) secrets[name] = value2;
   }
   return { secrets, error: "" };
-};
-var createSecretsReader = ({ read, now = () => Date.now() }) => {
-  let cached2 = null;
-  let inFlight = null;
-  return {
-    get: async () => {
-      const at = now();
-      if (cached2 && at - cached2.at < (cached2.value.error ? VAULT_ERROR_TTL_MS : VAULT_TTL_MS)) return cached2.value;
-      inFlight ??= read().then((value2) => {
-        cached2 = { value: value2, at: now() };
-        return value2;
-      }).finally(() => {
-        inFlight = null;
-      });
-      return inFlight;
-    },
-    forget: () => {
-      cached2 = null;
-    }
-  };
 };
 
 // src/handler.js
 var MAX_ORDER_BODY_BYTES = 16 * 1024;
-var SHOP_VERSION = "0.11.0";
+var SHOP_VERSION = "0.11.1";
 var MCP_REQUESTS_PER_MINUTE = 120;
 var MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
 var SECURITY_HEADERS = {
@@ -33456,10 +33419,6 @@ var createHandler = (overrides = {}) => {
         now: deps.now,
         log: deps.log
       });
-      const secrets = createSecretsReader({
-        now: deps.now,
-        read: () => readShopSecrets({ baseUrl, apiKey: env2.BUSABASE_API_KEY, spaceId: env2.BUSABASE_SPACE_ID, fetchImpl: deps.fetch })
-      });
       const accounts = createAccounts({
         baseUrl,
         apiKey: env2.BUSABASE_API_KEY,
@@ -33469,7 +33428,7 @@ var createHandler = (overrides = {}) => {
         log: deps.log
       });
       const formGuard = createFormGuard({ secret: env2.BUSABASE_API_KEY, now: deps.now });
-      site = { shop, secrets, accounts, formGuard, paypal: null };
+      site = { shop, accounts, formGuard, paypal: null };
       sites.set(env2, site);
     }
     return site;
@@ -33477,9 +33436,7 @@ var createHandler = (overrides = {}) => {
   const needsSecrets = (settings) => settings.paypalMode !== "off" || Boolean(settings.smtpHost);
   const secretsFor = async (env2, state) => {
     if (!env2.BUSABASE_API_KEY || !needsSecrets(state.settings)) return { secrets: {}, error: env2.BUSABASE_API_KEY ? "" : "no-key" };
-    const result = await siteFor(env2).secrets.get();
-    if (result.error && result.error !== "no-key") deps.log.warn?.("busa-shop: Vault runtime values unreadable", result.error);
-    return result;
+    return readShopSecrets(env2);
   };
   const paymentsFor = (env2, state, vault) => {
     const settings = state.settings;
@@ -33489,7 +33446,7 @@ var createHandler = (overrides = {}) => {
     if (!settings.paypalClientId) return { payment: "request", reason: "no-client-id" };
     if (!PAYPAL_CURRENCIES.has(settings.currency)) return { payment: "request", reason: "currency-not-supported" };
     if (state.shipping.status !== "ready") return { payment: "request", reason: "no-shipping-table" };
-    if (!vault.secrets.paypalSecret) return { payment: "request", reason: vault.error ? "vault-unreadable" : "no-secret" };
+    if (!vault.secrets.paypalSecret) return { payment: "request", reason: "no-secret" };
     return {
       payment: "paypal",
       mode,

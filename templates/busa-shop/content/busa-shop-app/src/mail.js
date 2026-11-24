@@ -174,7 +174,7 @@ const escapeHtml = (value) =>
   String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 
 /**
- * What sending needs, from Settings and the Vault. `{ ready: true, … }` or
+ * What sending needs, from Settings and the Site environment bindings. `{ ready: true, … }` or
  * `{ ready: false, reason }`, where reason is one of `off` (no SMTP host),
  * `no-sender`, `no-password`, `bad-port`, `browser-engine`.
  */
@@ -368,7 +368,7 @@ export const emailLogLines = (results, nowIso) =>
 export const EMAIL_SKIP_REASONS = {
   off: "no email sent: SMTP is not set up (Settings › SMTP host)",
   "no-sender": "no email sent: Settings › Send emails from is not a usable address",
-  "no-password": "no email sent: the SMTP password (BUSA_SHOP_SMTP_PASSWORD) is not in the Space Vault, marked Runtime",
+  "no-password": "no email sent: the SMTP password binding (BUSA_SHOP_SMTP_PASSWORD) is missing; bind it in the Site Secrets & Variables and deploy again",
   "bad-port": "no email sent: Settings › SMTP port must be 587 (STARTTLS) or 465 (TLS); port 25 is blocked for websites",
   "browser-engine": "no email sent: the private browser preview cannot send email",
 };

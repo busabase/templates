@@ -1,7 +1,7 @@
 // The data side of the site: one bounded read plan, cached in the Worker's
 // memory, the order lookups and writes, and the image fetch. Everything that
-// talks to Busabase is here (and src/vault.js for the two secrets, and
-// src/account.js for buyer login and a buyer's own orders), and it only
+// talks to Busabase is here (and src/account.js for buyer login and a
+// buyer's own orders), and it only
 // ever calls these procedures:
 //
 //   nodes.list({ types: ["base", "airapp"] })   find the tables (src/resources.js)
