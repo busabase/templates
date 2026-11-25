@@ -1,0 +1,285 @@
+{
+  "name": "Cost Centers",
+  "description": "Every department or cost center with a budget this year: its division, budget owner, finance partner, annual budget, year-to-date budget and actual, full-year forecast, open purchase orders, the five measures behind its score, and the score itself.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "rescore",
+      "label": {
+        "en": "Re-score this cost center from its latest measures",
+        "zh-CN": "用最新指标给这个部门重新打分"
+      },
+      "body": {
+        "en": "Read the `busa-budget` skill in this folder and follow it. For the cost center I name, read its five measures, compute the score and status by the skill’s rule, and update `score`, `status`, `scored-by`, `scored-on` and a one-sentence `summary`. Propose an action if it turned at risk and has none open.",
+        "zh-CN": "先阅读本文件夹里的 `busa-budget` Skill，按它的规则做。针对我说的部门，读它的五项指标，按 Skill 的规则算评分和状态，更新 `score`、`status`、`scored-by`、`scored-on` 和一句话的 `summary`。如果变成有风险且没有进行中的措施，提一条。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "owner-brief",
+      "label": {
+        "en": "Brief me before the budget review with this owner",
+        "zh-CN": "和这个部门负责人开预算会之前给我讲讲"
+      },
+      "body": {
+        "en": "Read the `busa-budget` skill in this folder and follow it. For the cost center I name, give a one-screen brief: annual budget, spend against the year-to-date budget, the full-year forecast and when it was last refreshed, open purchase orders, heads over plan, POs without a budget line, renewals waiting for a decision, the last five signals and who wrote them, open actions, and three questions to ask. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-budget` Skill，按它的规则做。针对我说的部门，给一屏简报：全年预算、实际对比年初至今预算、全年预测及最近更新时间、未付采购单、超编人数、无预算科目的采购单、待决定的续费、最近五条信号及写入者、进行中的措施，以及要问的三个问题。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Cost center",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "division",
+      "name": "Division",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "product",
+            "name": "Product & Engineering",
+            "color": "cyan"
+          },
+          {
+            "id": "gtm",
+            "name": "Go-to-market",
+            "color": "slate"
+          },
+          {
+            "id": "operations",
+            "name": "Operations",
+            "color": "slate"
+          },
+          {
+            "id": "g-and-a",
+            "name": "G&A",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "budget-owner",
+      "name": "Budget owner",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "finance-partner",
+      "name": "Finance partner",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "annual-budget",
+      "name": "Annual budget ($)",
+      "type": "number",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "forecast-on",
+      "name": "Forecast last refreshed",
+      "type": "date",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "ytd-budget",
+      "name": "Budget year to date ($)",
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "ytd-actual",
+      "name": "Actual year to date ($)",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "ytd-variance-pct",
+      "name": "Spend vs YTD budget (%)",
+      "type": "number",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "forecast",
+      "name": "Full-year forecast ($)",
+      "type": "number",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "forecast-variance-pct",
+      "name": "Forecast vs annual budget (%)",
+      "type": "number",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "committed",
+      "name": "Open purchase orders ($)",
+      "type": "number",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "headcount-gap",
+      "name": "Heads over plan",
+      "type": "number",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "unbudgeted-pos",
+      "name": "Open POs without a budget line",
+      "type": "number",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "renewals-undecided",
+      "name": "Renewals in 60 days without a decision",
+      "type": "number",
+      "required": false,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "score",
+      "name": "Budget score",
+      "type": "number",
+      "required": false,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 16,
+      "options": {
+        "choices": [
+          {
+            "id": "on-track",
+            "name": "On track",
+            "color": "emerald"
+          },
+          {
+            "id": "watch",
+            "name": "Watch",
+            "color": "amber"
+          },
+          {
+            "id": "at-risk",
+            "name": "At risk",
+            "color": "rose"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "scored-by",
+      "name": "Last scored by",
+      "type": "text",
+      "required": false,
+      "position": 17,
+      "options": {}
+    },
+    {
+      "slug": "scored-on",
+      "name": "Last scored",
+      "type": "date",
+      "required": false,
+      "position": 18,
+      "options": {}
+    },
+    {
+      "slug": "summary",
+      "name": "Latest word",
+      "type": "longtext",
+      "required": false,
+      "position": 19,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "All cost centers",
+      "description": "Every cost center, with its status",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "forecast-on",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "name",
+          "division",
+          "budget-owner",
+          "annual-budget",
+          "forecast",
+          "forecast-on",
+          "score",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "at-risk",
+      "name": "At risk",
+      "description": "Cost centers whose score is under 50",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "at-risk"
+          }
+        ],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "name",
+          "budget-owner",
+          "annual-budget",
+          "forecast",
+          "score",
+          "summary"
+        ]
+      }
+    }
+  ]
+}

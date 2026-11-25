@@ -1,0 +1,49 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-budget",
+  "displayName": {
+    "en": "Budget Desk",
+    "zh-CN": "部门预算执行"
+  },
+  "description": {
+    "en": "Agents read the ledger, the forecast, headcount, purchase orders and contract renewals for every cost center, score each by one rule, and flag the departments heading over budget while there is still time to act.",
+    "zh-CN": "Agent 读取每个部门的总账实际数、全年预测、编制、采购单和续费合同，按同一条规则打分，在还来得及调整的时候标出预计超支的部门——每个有风险的部门都有措施，每周一自动出预算周报。"
+  },
+  "version": "0.1.0",
+  "license": "MIT",
+  "tags": [
+    "budget",
+    "fp-and-a",
+    "finance",
+    "cost-centers",
+    "risk:gated-write"
+  ],
+  "template": {
+    "category": "finance",
+    "schemaVersion": 1,
+    "airapp": "busa-budget-app",
+    "tags": [
+      "budget",
+      "fp-and-a",
+      "finance",
+      "multi-agent",
+      "forecast"
+    ],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/cost-center.webp",
+      "assets/screenshots/signals.webp",
+      "assets/screenshots/budget-review.webp"
+    ],
+    "agentPrompts": [
+      "Which cost centers are heading over budget, and by how much?",
+      "Which renewals need a decision before notice periods close?",
+      "Write this Monday's budget review."
+    ],
+    "secrets": [],
+    "requires": {
+      "airapp": true
+    }
+  }
+}

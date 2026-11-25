@@ -1,0 +1,166 @@
+{
+  "name": "Budget Reviews",
+  "description": "The Monday budget review an agent writes from the records above: the projected overrun, open purchase orders, which cost centers are at risk and why, which forecasts are stale.",
+  "position": 3,
+  "agentPrompts": [
+    {
+      "key": "write-review",
+      "label": {
+        "en": "Write this Monday’s budget review",
+        "zh-CN": "写本周一的预算周报"
+      },
+      "body": {
+        "en": "Read the `busa-budget` skill in this folder and follow it. Write the budget review for last Monday to Sunday from the cost centers, signals and actions: a one-line headline, the projected overrun, open purchase orders, how many cost centers are on track, every at-risk cost center with what is wrong and the action, every forecast older than 30 days, and what changed since last week. Save it as a draft.",
+        "zh-CN": "先阅读本文件夹里的 `busa-budget` Skill，按它的规则做。根据部门、信号和措施，写上周一到周日的预算周报：一句话结论、全年预计超支、未付采购单、正常部门数、每个有风险部门的问题和对应措施、超过 30 天没更新的预测、与上周相比的变化。保存为草稿。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "compare-weeks",
+      "label": {
+        "en": "What got better or worse since last week?",
+        "zh-CN": "和上周比哪些变好了、哪些变差了"
+      },
+      "body": {
+        "en": "Read the `busa-budget` skill in this folder and follow it. Compare the two latest reviews and the signals between them: the projected overrun, open purchase orders, which cost centers changed status, and which actions closed. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-budget` Skill，按它的规则做。对比最近两份周报和期间的信号：全年预计超支、未付采购单、哪些部门换了状态、哪些措施完成了。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Review",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "draft",
+            "name": "Draft",
+            "color": "amber"
+          },
+          {
+            "id": "final",
+            "name": "Final",
+            "color": "emerald"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "period-start",
+      "name": "From",
+      "type": "date",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "period-end",
+      "name": "To",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "headline",
+      "name": "Headline",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "projected-overrun",
+      "name": "Projected overrun ($)",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "committed-total",
+      "name": "Open purchase orders ($)",
+      "type": "number",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "on-track-count",
+      "name": "On track",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "at-risk-count",
+      "name": "At risk",
+      "type": "number",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "forecast-stale-count",
+      "name": "Forecasts stale",
+      "type": "number",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "written-by",
+      "name": "Written by",
+      "type": "text",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "body",
+      "name": "Review",
+      "type": "markdown",
+      "required": false,
+      "position": 11,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest",
+      "name": "Latest first",
+      "description": "Every budget review, newest first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "period-end",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "status",
+          "period-end",
+          "projected-overrun",
+          "headline"
+        ]
+      }
+    }
+  ]
+}
