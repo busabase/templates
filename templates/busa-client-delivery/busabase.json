@@ -1,0 +1,49 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-client-delivery",
+  "displayName": {
+    "en": "Client Delivery Desk",
+    "zh-CN": "客户项目交付"
+  },
+  "description": {
+    "en": "Agents read budget burn, milestones, unbilled work, scope changes and client pulse for every client project, score each by one rule, and flag the projects that slip before the margin does.",
+    "zh-CN": "Agent 读取每个客户项目的预算消耗、里程碑、未开票工作、范围变更和客户满意度，按同一条规则打分，在利润被吃掉之前标出正在下滑的项目——每个有风险的项目都有跟进措施，每周一自动出交付周报。"
+  },
+  "version": "0.1.0",
+  "license": "MIT",
+  "tags": [
+    "client-delivery",
+    "agency",
+    "professional-services",
+    "billing",
+    "risk:gated-write"
+  ],
+  "template": {
+    "category": "operations",
+    "schemaVersion": 1,
+    "airapp": "busa-client-delivery-app",
+    "tags": [
+      "client-delivery",
+      "agency",
+      "professional-services",
+      "multi-agent",
+      "billing"
+    ],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/project.webp",
+      "assets/screenshots/signals.webp",
+      "assets/screenshots/delivery-review.webp"
+    ],
+    "agentPrompts": [
+      "Which client projects are slipping, and how much contract value is at risk?",
+      "What can we invoice this week?",
+      "Write this Monday's delivery review."
+    ],
+    "secrets": [],
+    "requires": {
+      "airapp": true
+    }
+  }
+}

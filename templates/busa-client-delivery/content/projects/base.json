@@ -1,0 +1,285 @@
+{
+  "name": "Client Projects",
+  "description": "Every client project in delivery: the client, service line, account lead, project manager, contract value, the date of the last client check-in, the five measures behind its score, and the score itself.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "rescore",
+      "label": {
+        "en": "Re-score this project from its latest measures",
+        "zh-CN": "用最新指标给这个项目重新打分"
+      },
+      "body": {
+        "en": "Read the `busa-client-delivery` skill in this folder and follow it. For the project I name, read its five measures, compute the score and status by the skill’s rule, and update `score`, `status`, `scored-by`, `scored-on` and a one-sentence `summary`. Propose an action if it turned at risk and has none open.",
+        "zh-CN": "先阅读本文件夹里的 `busa-client-delivery` Skill，按它的规则做。针对我说的项目，读它的五项指标，按 Skill 的规则算评分和状态，更新 `score`、`status`、`scored-by`、`scored-on` 和一句话的 `summary`。如果变成有风险且没有进行中的跟进措施，提一条。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "client-brief",
+      "label": {
+        "en": "Brief me before I call this client",
+        "zh-CN": "给客户打电话之前给我讲讲这个项目"
+      },
+      "body": {
+        "en": "Read the `busa-client-delivery` skill in this folder and follow it. For the project I name, give a one-screen brief: client, contract value, budget used against work done, the next milestone, unbilled work, unsigned scope changes, the client pulse and when we last spoke, the last five signals and who wrote them, open actions, and three things to raise on the call. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-client-delivery` Skill，按它的规则做。针对我说的项目，给一屏简报：客户、合同额、预算消耗和完成度、下一个里程碑、未开票金额、未签字的范围变更、客户满意度和上次沟通时间、最近五条信号及写入者、进行中的跟进措施，以及这次通话要提的三件事。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Project",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "client",
+      "name": "Client",
+      "type": "text",
+      "required": false,
+      "position": 1,
+      "options": {}
+    },
+    {
+      "slug": "service",
+      "name": "Service line",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "web",
+            "name": "Website",
+            "color": "cyan"
+          },
+          {
+            "id": "product",
+            "name": "Product",
+            "color": "slate"
+          },
+          {
+            "id": "brand",
+            "name": "Brand",
+            "color": "slate"
+          },
+          {
+            "id": "campaign",
+            "name": "Campaign",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "account-lead",
+      "name": "Account lead",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "project-manager",
+      "name": "Project manager",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "contract-value",
+      "name": "Contract value ($)",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "checked-in-on",
+      "name": "Last client check-in",
+      "type": "date",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "budget-used-pct",
+      "name": "Budget used (%)",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "complete-pct",
+      "name": "Work complete (%)",
+      "type": "number",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "burn-gap",
+      "name": "Budget ahead of work (points)",
+      "type": "number",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "slip-days",
+      "name": "Next milestone, days late",
+      "type": "number",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "wip-days",
+      "name": "Oldest unbilled work (days)",
+      "type": "number",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "unbilled",
+      "name": "Unbilled work ($)",
+      "type": "number",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "unsigned-changes",
+      "name": "Scope changes not signed",
+      "type": "number",
+      "required": false,
+      "position": 13,
+      "options": {}
+    },
+    {
+      "slug": "client-pulse",
+      "name": "Client pulse, last check-in (1–5)",
+      "type": "number",
+      "required": false,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "score",
+      "name": "Project score",
+      "type": "number",
+      "required": false,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 16,
+      "options": {
+        "choices": [
+          {
+            "id": "on-track",
+            "name": "On track",
+            "color": "emerald"
+          },
+          {
+            "id": "watch",
+            "name": "Watch",
+            "color": "amber"
+          },
+          {
+            "id": "at-risk",
+            "name": "At risk",
+            "color": "rose"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "scored-by",
+      "name": "Last scored by",
+      "type": "text",
+      "required": false,
+      "position": 17,
+      "options": {}
+    },
+    {
+      "slug": "scored-on",
+      "name": "Last scored",
+      "type": "date",
+      "required": false,
+      "position": 18,
+      "options": {}
+    },
+    {
+      "slug": "summary",
+      "name": "Latest word",
+      "type": "longtext",
+      "required": false,
+      "position": 19,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "All projects",
+      "description": "Every project in delivery, with its status",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "checked-in-on",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "name",
+          "client",
+          "service",
+          "account-lead",
+          "contract-value",
+          "checked-in-on",
+          "score",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "at-risk",
+      "name": "At risk",
+      "description": "Projects whose score is under 50",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "at-risk"
+          }
+        ],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "name",
+          "client",
+          "account-lead",
+          "contract-value",
+          "score",
+          "summary"
+        ]
+      }
+    }
+  ]
+}
