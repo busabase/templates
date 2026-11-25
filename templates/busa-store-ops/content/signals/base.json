@@ -1,0 +1,213 @@
+{
+  "name": "Signals",
+  "description": "One row every time a store’s measure moves — audit score, sales, reviews, staffing, overdue fixes — or there is something worth knowing, with the evidence and which agent or person wrote it.",
+  "position": 1,
+  "agentPrompts": [
+    {
+      "key": "log-signal",
+      "label": {
+        "en": "Log what I noticed at a store",
+        "zh-CN": "记下我在门店注意到的情况"
+      },
+      "body": {
+        "en": "Read the `busa-store-ops` skill in this folder and follow it. Record what I tell you about the store I name as one signal: the kind, today’s date, me as the writer and the evidence in my words. If it changes one of the five measures, update that field and re-score the store.",
+        "zh-CN": "先阅读本文件夹里的 `busa-store-ops` Skill，按它的规则做。把我说的关于某家门店的情况记成一条信号：类型、今天的日期、写入者是我、依据用我的原话。如果它改变了五项指标之一，更新那个字段并重新打分。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "what-moved",
+      "label": {
+        "en": "What moved this week, and who wrote it?",
+        "zh-CN": "这周哪些信号变了，是谁写的"
+      },
+      "body": {
+        "en": "Read the `busa-store-ops` skill in this folder and follow it. Summarise the signals of the last seven days by store, worst first: what moved, by how much, and which agent or person wrote each one. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-store-ops` Skill，按它的规则做。按门店汇总最近七天的信号，最差的排前面：变了什么、变了多少、每条是哪个 Agent 或哪个人写的。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "title",
+      "name": "Signal",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "store",
+      "name": "Store",
+      "type": "relation",
+      "required": false,
+      "position": 1,
+      "options": {
+        "targetBaseSlug": "stores",
+        "multiple": false
+      }
+    },
+    {
+      "slug": "kind",
+      "name": "Kind",
+      "type": "select",
+      "required": false,
+      "position": 2,
+      "options": {
+        "choices": [
+          {
+            "id": "audit",
+            "name": "Standards audit",
+            "color": "cyan"
+          },
+          {
+            "id": "sales",
+            "name": "Sales",
+            "color": "slate"
+          },
+          {
+            "id": "rating",
+            "name": "Reviews",
+            "color": "slate"
+          },
+          {
+            "id": "staffing",
+            "name": "Staffing",
+            "color": "slate"
+          },
+          {
+            "id": "fixes",
+            "name": "Overdue fixes",
+            "color": "slate"
+          },
+          {
+            "id": "note",
+            "name": "Note",
+            "color": "amber"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "recorded-on",
+      "name": "Date",
+      "type": "date",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "previous-value",
+      "name": "Was",
+      "type": "number",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "new-value",
+      "name": "Now",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "written-by",
+      "name": "Written by",
+      "type": "text",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "writer",
+      "name": "Writer",
+      "type": "select",
+      "required": false,
+      "position": 7,
+      "options": {
+        "choices": [
+          {
+            "id": "agent",
+            "name": "Agent",
+            "color": "cyan"
+          },
+          {
+            "id": "person",
+            "name": "Person",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "evidence",
+      "name": "Evidence",
+      "type": "longtext",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "source-url",
+      "name": "Source link",
+      "type": "url",
+      "required": false,
+      "position": 9,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "latest",
+      "name": "Latest first",
+      "description": "Every signal, newest first",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "recorded-on",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "store",
+          "kind",
+          "recorded-on",
+          "written-by"
+        ]
+      }
+    },
+    {
+      "slug": "notes",
+      "name": "Notes",
+      "description": "Equipment failures, staff changes, what an area manager noticed",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "kind",
+            "operator": "equals",
+            "value": "note"
+          }
+        ],
+        "sorts": [
+          {
+            "fieldSlug": "recorded-on",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "title",
+          "store",
+          "recorded-on",
+          "written-by"
+        ]
+      }
+    }
+  ]
+}

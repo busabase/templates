@@ -1,0 +1,49 @@
+{
+  "format": "busabase-package@1",
+  "name": "busa-store-ops",
+  "displayName": {
+    "en": "Store Ops Desk",
+    "zh-CN": "连锁门店巡店"
+  },
+  "description": {
+    "en": "Agents read audits, sales, reviews, staffing and overdue fixes for every store, score each by one rule, and flag the stores that slip before revenue does.",
+    "zh-CN": "Agent 读取每家门店的巡店结果、销售、点评、排班和逾期整改，按同一条规则打分，在营收掉下来之前标出正在下滑的门店——每家有风险的店都有整改措施，每周一自动出门店周报。"
+  },
+  "version": "0.1.0",
+  "license": "MIT",
+  "tags": [
+    "store-operations",
+    "retail",
+    "restaurants",
+    "audits",
+    "risk:gated-write"
+  ],
+  "template": {
+    "category": "operations",
+    "schemaVersion": 1,
+    "airapp": "busa-store-ops-app",
+    "tags": [
+      "store-operations",
+      "retail",
+      "restaurants",
+      "multi-agent",
+      "audits"
+    ],
+    "screenshots": [
+      "assets/screenshots/cover.webp",
+      "assets/screenshots/overview.webp",
+      "assets/screenshots/store.webp",
+      "assets/screenshots/signals.webp",
+      "assets/screenshots/store-review.webp"
+    ],
+    "agentPrompts": [
+      "Which stores are slipping, and how much revenue is at risk?",
+      "Run this week's store scan.",
+      "Write this Monday's store review."
+    ],
+    "secrets": [],
+    "requires": {
+      "airapp": true
+    }
+  }
+}

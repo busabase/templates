@@ -1,0 +1,260 @@
+{
+  "name": "Stores",
+  "description": "Every store in the chain: region, area manager, store manager, revenue, the date of its last standards audit, the five measures behind its score, and the score itself.",
+  "position": 0,
+  "agentPrompts": [
+    {
+      "key": "rescore",
+      "label": {
+        "en": "Re-score this store from its latest measures",
+        "zh-CN": "用最新指标给这家门店重新打分"
+      },
+      "body": {
+        "en": "Read the `busa-store-ops` skill in this folder and follow it. For the store I name, read its five measures, compute the score and status by the skill’s rule, and update `score`, `status`, `scored-by`, `scored-on` and a one-sentence `summary`. Propose an action if it turned at risk and has none open.",
+        "zh-CN": "先阅读本文件夹里的 `busa-store-ops` Skill，按它的规则做。针对我说的门店，读它的五项指标，按 Skill 的规则算评分和状态，更新 `score`、`status`、`scored-by`、`scored-on` 和一句话的 `summary`。如果变成有风险且没有进行中的跟进措施，提一条。"
+      },
+      "intent": "change"
+    },
+    {
+      "key": "store-brief",
+      "label": {
+        "en": "Brief me before I visit this store",
+        "zh-CN": "巡店之前给我讲讲这家店"
+      },
+      "body": {
+        "en": "Read the `busa-store-ops` skill in this folder and follow it. For the store I name, give a one-screen brief: region, store manager, revenue, when it was last audited, the score with each of its five parts, the last five signals and who wrote them, open actions, and three things to check on the visit. Do not change anything.",
+        "zh-CN": "先阅读本文件夹里的 `busa-store-ops` Skill，按它的规则做。针对我说的门店，给一屏简报：区域、店长、营收、上次巡店时间、评分及五项得分、最近五条信号及写入者、进行中的跟进措施，以及这次到店要查的三件事。不要修改任何记录。"
+      },
+      "intent": "read-only"
+    }
+  ],
+  "fields": [
+    {
+      "slug": "name",
+      "name": "Store",
+      "type": "text",
+      "required": true,
+      "position": 0,
+      "options": {}
+    },
+    {
+      "slug": "region",
+      "name": "Region",
+      "type": "select",
+      "required": false,
+      "position": 1,
+      "options": {
+        "choices": [
+          {
+            "id": "bay-area",
+            "name": "Bay Area",
+            "color": "cyan"
+          },
+          {
+            "id": "seattle",
+            "name": "Seattle",
+            "color": "slate"
+          },
+          {
+            "id": "portland",
+            "name": "Portland",
+            "color": "slate"
+          },
+          {
+            "id": "los-angeles",
+            "name": "Los Angeles",
+            "color": "slate"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "area-manager",
+      "name": "Area manager",
+      "type": "text",
+      "required": false,
+      "position": 2,
+      "options": {}
+    },
+    {
+      "slug": "store-manager",
+      "name": "Store manager",
+      "type": "text",
+      "required": false,
+      "position": 3,
+      "options": {}
+    },
+    {
+      "slug": "address",
+      "name": "Address",
+      "type": "text",
+      "required": false,
+      "position": 4,
+      "options": {}
+    },
+    {
+      "slug": "revenue-30d",
+      "name": "Revenue, last 30 days ($)",
+      "type": "number",
+      "required": false,
+      "position": 5,
+      "options": {}
+    },
+    {
+      "slug": "audited-on",
+      "name": "Last standards audit",
+      "type": "date",
+      "required": false,
+      "position": 6,
+      "options": {}
+    },
+    {
+      "slug": "audit-score",
+      "name": "Standards audit score (0–100)",
+      "type": "number",
+      "required": false,
+      "position": 7,
+      "options": {}
+    },
+    {
+      "slug": "sales-pct",
+      "name": "Sales vs target, month to date (%)",
+      "type": "number",
+      "required": false,
+      "position": 8,
+      "options": {}
+    },
+    {
+      "slug": "rating",
+      "name": "Review rating, last 30 days (1–5)",
+      "type": "number",
+      "required": false,
+      "position": 9,
+      "options": {}
+    },
+    {
+      "slug": "staffing-pct",
+      "name": "Shifts filled, last 14 days (%)",
+      "type": "number",
+      "required": false,
+      "position": 10,
+      "options": {}
+    },
+    {
+      "slug": "overdue-fixes",
+      "name": "Audit fixes past due",
+      "type": "number",
+      "required": false,
+      "position": 11,
+      "options": {}
+    },
+    {
+      "slug": "score",
+      "name": "Store score",
+      "type": "number",
+      "required": false,
+      "position": 12,
+      "options": {}
+    },
+    {
+      "slug": "status",
+      "name": "Status",
+      "type": "select",
+      "required": false,
+      "position": 13,
+      "options": {
+        "choices": [
+          {
+            "id": "on-track",
+            "name": "On standard",
+            "color": "emerald"
+          },
+          {
+            "id": "watch",
+            "name": "Watch",
+            "color": "amber"
+          },
+          {
+            "id": "at-risk",
+            "name": "At risk",
+            "color": "rose"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "scored-by",
+      "name": "Last scored by",
+      "type": "text",
+      "required": false,
+      "position": 14,
+      "options": {}
+    },
+    {
+      "slug": "scored-on",
+      "name": "Last scored",
+      "type": "date",
+      "required": false,
+      "position": 15,
+      "options": {}
+    },
+    {
+      "slug": "summary",
+      "name": "Latest word",
+      "type": "longtext",
+      "required": false,
+      "position": 16,
+      "options": {}
+    }
+  ],
+  "views": [
+    {
+      "slug": "all",
+      "name": "All stores",
+      "description": "Every store, by region, with its status",
+      "type": "table",
+      "config": {
+        "filters": [],
+        "sorts": [
+          {
+            "fieldSlug": "audited-on",
+            "direction": "desc"
+          }
+        ],
+        "visibleFieldSlugs": [
+          "name",
+          "region",
+          "area-manager",
+          "revenue-30d",
+          "audited-on",
+          "score",
+          "status"
+        ]
+      }
+    },
+    {
+      "slug": "at-risk",
+      "name": "At risk",
+      "description": "Stores whose score is under 50",
+      "type": "table",
+      "config": {
+        "filters": [
+          {
+            "fieldSlug": "status",
+            "operator": "equals",
+            "value": "at-risk"
+          }
+        ],
+        "sorts": [],
+        "visibleFieldSlugs": [
+          "name",
+          "region",
+          "area-manager",
+          "revenue-30d",
+          "score",
+          "summary"
+        ]
+      }
+    }
+  ]
+}
